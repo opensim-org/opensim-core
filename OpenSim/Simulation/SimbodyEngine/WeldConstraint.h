@@ -101,7 +101,7 @@ public:
     /** Advanced Method for computing induced accelerations given the constraint
         applied at the point of contact specified. */
     virtual void setContactPointForInducedAccelerations(
-        const SimTK::State &s, SimTK::Vec3 point);
+        const SimTK::State &s, SimTK::Vec3 point) override;
 
 protected:
     /** Extend Component Interface. */
