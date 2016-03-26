@@ -1891,7 +1891,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
 
-    delete mapColumns;
+    delete[] mapColumns;
 }
 
 /**
