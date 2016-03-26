@@ -1611,8 +1611,16 @@ protected:
 
     // End of System Creation and Access Methods.
 
+#if !defined(SWIG) && defined(__clang__)
+#pragma clang diagnostic push
+    // clang says this friend declaration is invalid but it's not.
+#pragma clang diagnostic ignored "-Wunsupported-friend"
+#endif
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
+#if !defined(SWIG) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 public:
     /** Utility method to find a component in the list of sub components of this
