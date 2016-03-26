@@ -90,7 +90,7 @@ public:
     /**
      * Get the Operation performed by this node.
      */
-    const Operation& getOperation() const;
+    const Operation* getOperation() const;
     /**
      * Get this node's child nodes.
      */

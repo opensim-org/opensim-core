@@ -59,7 +59,7 @@ ExpressionTreeNode::ExpressionTreeNode(Operation* operation) : operation(operati
         throw Exception("Parse error: wrong number of arguments to function: "+operation->getName());
 }
 
-ExpressionTreeNode::ExpressionTreeNode(const ExpressionTreeNode& node) : operation(&node.getOperation() == NULL ? NULL : node.getOperation().clone()), children(node.getChildren()) {
+ExpressionTreeNode::ExpressionTreeNode(const ExpressionTreeNode& node) : operation(node.getOperation() == nullptr ? nullptr : node.getOperation()->clone()), children(node.getChildren()) {
 }
 
 ExpressionTreeNode::ExpressionTreeNode() : operation(NULL) {
@@ -73,7 +73,7 @@ ExpressionTreeNode::~ExpressionTreeNode() {
 bool ExpressionTreeNode::operator!=(const ExpressionTreeNode& node) const {
     if (node.getOperation() != getOperation())
         return true;
-    if (getOperation().isSymmetric() && getChildren().size() == 2) {
+    if (getOperation()->isSymmetric() && getChildren().size() == 2) {
         if (getChildren()[0] == node.getChildren()[0] && getChildren()[1] == node.getChildren()[1])
             return false;
         if (getChildren()[0] == node.getChildren()[1] && getChildren()[1] == node.getChildren()[0])
@@ -93,13 +93,13 @@ bool ExpressionTreeNode::operator==(const ExpressionTreeNode& node) const {
 ExpressionTreeNode& ExpressionTreeNode::operator=(const ExpressionTreeNode& node) {
     if (operation != NULL)
         delete operation;
-    operation = node.getOperation().clone();
+    operation = node.getOperation()->clone();
     children = node.getChildren();
     return *this;
 }
 
-const Operation& ExpressionTreeNode::getOperation() const {
-    return *operation;
+const Operation* ExpressionTreeNode::getOperation() const {
+    return operation;
 }
 
 const vector<ExpressionTreeNode>& ExpressionTreeNode::getChildren() const {
