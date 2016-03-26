@@ -238,7 +238,7 @@ void Joint::setMotionType(CoordinateIndex cix, Coordinate::MotionType mt)
         "Joint::setMotionType() for an invalid CoordinateIndex");
     // Grow the size of _motionTypes (array) if it is less than the number of
     // coordinates. Joint's _motionTypes must correspond to its CoordinateSet.
-    if (_motionTypes.size() < unsigned int(nc))
+    if (_motionTypes.size() < static_cast<unsigned>(nc))
         _motionTypes.resize(nc);
 
     _motionTypes[cix] = mt;
