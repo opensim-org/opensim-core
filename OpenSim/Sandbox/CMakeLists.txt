@@ -31,5 +31,7 @@ foreach(exec_file ${TO_COMPILE})
 endforeach()
 
 
-add_executable(ImuStreaming ImuStreaming.cpp)
-target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
+if(UNIX)
+    add_executable(ImuStreaming ImuStreaming.cpp)
+    target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
+endif()
