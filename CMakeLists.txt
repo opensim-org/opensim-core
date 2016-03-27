@@ -330,6 +330,7 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
+    set(CMAKE_CXX_FLAGS "/wd4068") # Disable "unknown pragma" warning.
     set(CMAKE_CXX_FLAGS_DEBUG
     "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
