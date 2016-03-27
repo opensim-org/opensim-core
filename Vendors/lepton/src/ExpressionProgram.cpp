@@ -73,7 +73,7 @@ ExpressionProgram& ExpressionProgram::operator=(const ExpressionProgram& program
 void ExpressionProgram::buildProgram(const ExpressionTreeNode& node) {
     for (int i = (int) node.getChildren().size()-1; i >= 0; i--)
         buildProgram(node.getChildren()[i]);
-    operations.push_back(node.getOperation()->clone());
+    operations.push_back(node.getOperation().clone());
 }
 
 int ExpressionProgram::getNumOperations() const {

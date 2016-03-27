@@ -90,29 +90,29 @@ void CompiledExpression::compileExpression(const ExpressionTreeNode& node, vecto
     // Process the child nodes.
     
     vector<int> args;
-    for (size_t i = 0; i < node.getChildren().size(); i++) {
+    for (int i = 0; i < node.getChildren().size(); i++) {
         compileExpression(node.getChildren()[i], temps);
         args.push_back(findTempIndex(node.getChildren()[i], temps));
     }
     
     // Process this node.
     
-    if (node.getOperation()->getId() == Operation::VARIABLE) {
-        variableIndices[node.getOperation()->getName()] = (int) workspace.size();
-        variableNames.insert(node.getOperation()->getName());
+    if (node.getOperation().getId() == Operation::VARIABLE) {
+        variableIndices[node.getOperation().getName()] = (int) workspace.size();
+        variableNames.insert(node.getOperation().getName());
     }
     else {
         int stepIndex = (int) arguments.size();
         arguments.push_back(vector<int>());
         target.push_back((int) workspace.size());
-        operation.push_back(node.getOperation()->clone());
+        operation.push_back(node.getOperation().clone());
         if (args.size() == 0)
             arguments[stepIndex].push_back(0); // The value won't actually be used.  We just need something there.
         else {
             // If the arguments are sequential, we can just pass a pointer to the first one.
             
             bool sequential = true;
-            for (size_t i = 1; i < args.size(); i++)
+            for (int i = 1; i < args.size(); i++)
                 if (args[i] != args[i-1]+1)
                     sequential = false;
             if (sequential)
@@ -149,12 +149,12 @@ double CompiledExpression::evaluate() const {
 #else
     // Loop over the operations and evaluate each one.
     
-    for (size_t step = 0; step < operation.size(); step++) {
+    for (int step = 0; step < operation.size(); step++) {
         const vector<int>& args = arguments[step];
         if (args.size() == 1)
             workspace[target[step]] = operation[step]->evaluate(&workspace[args[0]], dummyVariables);
         else {
-            for (size_t i = 0; i < args.size(); i++)
+            for (int i = 0; i < args.size(); i++)
                 argValues[i] = workspace[args[i]];
             workspace[target[step]] = operation[step]->evaluate(&argValues[0], dummyVariables);
         }
