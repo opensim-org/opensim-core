@@ -672,7 +672,7 @@ void tableAndTrajectoryMatch(const Model& model,
             const auto& valueInStates = model.getStateVariableValue(
                     states[itime], stateName);
             const auto& column = table.getDependentColumnAtIndex(icol);
-            const auto& valueInTable = column[itime];
+            const auto& valueInTable = column[static_cast<int>(itime)];
 
             SimTK_TEST(valueInStates == valueInTable);
         }
