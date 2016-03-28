@@ -33,12 +33,31 @@ template <typename T>
 void ASSERT_EQUAL(T expected, 
                   T found, 
                   T tolerance, 
-                  std::string file="", 
-                  int line=-1, 
-                  std::string message="") {
+                  std::string file = "", 
+                  int line = -1, 
+                  std::string message = "") {
     if (found < expected - tolerance || found > expected + tolerance)
         throw OpenSim::Exception(message, file, line);
 }
+template<int M, typename ELT, int STRIDE>
+void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
+                  const SimTK::Vec<M, ELT, STRIDE>& vecB,
+                  const std::string& file = "",
+                  int line = -1,
+                  const std::string& message = "") {
+    SimTK_TEST_EQ(vecA, vecB);
+}
+template<int M, typename ELT, int STRIDE>
+void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
+                  const SimTK::Vec<M, ELT, STRIDE>& vecB,
+                  double tolerance,
+                  const std::string& file = "",
+                  int line = -1,
+                  const std::string& message = "") {
+    SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
+}
+
+
 inline void ASSERT(bool cond, 
                    std::string file="", 
                    int line=-1, 
