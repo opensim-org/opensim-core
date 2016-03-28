@@ -56,6 +56,10 @@ namespace OpenSim {
                                  "The location (Vec3) of the station in a reference frame. "
                                  "Frame is specified as Connector.");
         
+        OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3 , findLocationInGround, SimTK::Stage::Position);
+        OpenSim_DECLARE_OUTPUT(velocity, SimTK::Vec3 , findVelocityInGround, SimTK::Stage::Velocity);
+        OpenSim_DECLARE_OUTPUT(acceleration, SimTK::Vec3 , findAccelerationInGround, SimTK::Stage::Acceleration);
+        
     public:
         //--------------------------------------------------------------------------
         // CONSTRUCTION
