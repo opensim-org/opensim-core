@@ -45,7 +45,11 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   const std::string& file = "",
                   int line = -1,
                   const std::string& message = "") {
-    SimTK_TEST_EQ(vecA, vecB);
+    try {
+        SimTK_TEST_EQ(vecA, vecB);
+    } catch(const SimTK::Exception::Assert&) {
+        throw OpenSim::Exception(message, file, line);
+    }
 }
 template<int M, typename ELT, int STRIDE>
 void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
@@ -54,7 +58,11 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   const std::string& file = "",
                   int line = -1,
                   const std::string& message = "") {
-    SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
+    try {
+        SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
+    } catch(const SimTK::Exception::Assert&) {
+        throw OpenSim::Exception(message, file, line);
+    }
 }
 
 
