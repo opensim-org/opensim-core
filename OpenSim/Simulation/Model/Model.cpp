@@ -567,7 +567,8 @@ void Model::createMultibodyTree()
             IO::TrimWhitespace(name);
 
             if (name.empty()) {
-                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
+                name = js[i].getParentFrame().getName() + "_to_" + 
+                       js[i].getChildFrame().getName();
             }
 
             // Currently we need to take a first pass at connecting the joints in 
@@ -657,7 +658,7 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getFullPathName(), child->getFullPathName());
+            Joint* free = new FreeJoint(jname, *ground, *child);
             free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
         }
@@ -1432,8 +1433,8 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     for (int i = 0; i < jointSet.getSize(); i++) {
         const OpenSim::Joint& joint = get_JointSet().get(i);
         aOStream << "joint[" << i << "] = " << joint.getName() << ".";
-        aOStream << " parent: " << joint.getParentFrameName() <<
-            ", child: " << joint.getChildFrameName() << std::endl;
+        aOStream << " parent: " << joint.getParentFrame().getName() <<
+            ", child: " << joint.getChildFrame().getName() << std::endl;
     }
 
     aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;

@@ -72,8 +72,8 @@ public:
 
     /** Construct joint with supplied coordinates and transform axes */
     CustomJoint( const std::string &name,
-                 const std::string& parentName,
-                 const std::string& childName,
+                 const PhysicalFrame& parent,
+                 const PhysicalFrame& child,
                  SpatialTransform& aSpatialTransform,
                  bool reverse=false);
 

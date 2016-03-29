@@ -161,24 +161,6 @@ void Joint::constructConnectors()
     constructConnector<PhysicalFrame>("child_frame");
 }
 
-void Joint::setParentFrameName(const std::string& name)
-{
-    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(name);
-}
-const std::string& Joint::getParentFrameName() const
-{
-    return getConnector<PhysicalFrame>("parent_frame").getConnecteeName();
-}
-
-void Joint::setChildFrameName(const std::string& name)
-{
-    updConnector<PhysicalFrame>("child_frame").setConnecteeName(name);
-}
-const std::string& Joint::getChildFrameName() const
-{
-    return getConnector<PhysicalFrame>("child_frame").getConnecteeName();
-}
-
 void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
