@@ -107,7 +107,7 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
 private:
     // INITIALIZATION
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class ElasticFoundationForce

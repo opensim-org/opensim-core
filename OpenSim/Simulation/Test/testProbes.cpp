@@ -62,8 +62,8 @@ static const int CorrectnessTest        = 2;
 static const double MaxIsometricForce0 = 100.0,
 OptimalFiberLength0 = 0.1,
 TendonSlackLength0 = 0.2,
-PennationAngle0 = 0.0,
-PennationAngle1 = SimTK::Pi / 4;
+    PennationAngle0 = 0.0;
+// PennationAngle1 = SimTK::Pi / 4;
 
 static const double Activation0 = 0.01,
 Deactivation0 = 0.4,
@@ -247,7 +247,7 @@ void simulateMuscle(
     //==========================================================================
 
     //Attach the muscle
-    const string &actuatorType = aMuscle->getConcreteClassName();
+    /*const string &actuatorType = */aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
     aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
@@ -529,7 +529,7 @@ void simulateMuscle(
     //cout << "Muscle initial energy = " << Emuscle0 << endl;
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
     //cout << "Total initial system energy = " << Esys0 << endl; 
 
     //==========================================================================

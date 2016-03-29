@@ -138,9 +138,9 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
         //cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
         bool isList = ap.isListProperty();
-        bool t2 = ap.isObjectProperty();
-        bool t3 = ap.isOneObjectProperty();
-        bool t4 = ap.isOneValueProperty();
+        // bool t2 = ap.isObjectProperty();
+        // bool t3 = ap.isOneObjectProperty();
+        // bool t4 = ap.isOneValueProperty();
         string ts = ap.getTypeName();
         //cout << ts << endl;
         if (ap.isOptionalProperty()) 

@@ -417,7 +417,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
  */
 void ActivationFiberLengthMuscle_Deprecated::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
-    double force = computeIsometricForce(s, getActivation(s));
+    /*double force = */computeIsometricForce(s, getActivation(s));
 
     //cout<<getName()<<": isometric force = "<<force<<endl;
     //cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
