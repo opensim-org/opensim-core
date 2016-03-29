@@ -58,8 +58,8 @@ Joint::Joint() : Super()
 }
 
 /* API constructor. */
-Joint::Joint(const std::string &name, const std::string& parentName, 
-                                      const std::string& childName,
+Joint::Joint(const std::string &name, const PhysicalFrame& parent,
+                                      const PhysicalFrame& child,
                                       bool reverse) : Joint()
 {
     OPENSIM_THROW_IF( name.empty(), ComponentHasNoName,
@@ -68,8 +68,8 @@ Joint::Joint(const std::string &name, const std::string& parentName,
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(parentName);
-    updConnector<PhysicalFrame>("child_frame").setConnecteeName(childName);
+    updConnector<PhysicalFrame>("parent_frame").connect(parent);
+    updConnector<PhysicalFrame>("child_frame").connect(child);
 }
 
 /* Convenience Constructor*/
@@ -80,25 +80,22 @@ Joint::Joint(const std::string &name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    bool reverse)
-    // TODO. prefixing the joint name to the frame names should not be necessary.
-    // This is only required now because the search does not respect the local
-    // (relative) name, which it should find immediately, and instead is searching
-    // from the root of the tree.
-    : Joint(name, parent.getName() + "_offset", child.getName() + "_offset")
+    bool reverse) : Joint()
 {
-
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
         orientationInParent[0], XAxis,
         orientationInParent[1], YAxis,
         orientationInParent[2], ZAxis);
     SimTK::Transform parentTransform(parentRotation, locationInParent);
+
+    // Define the offset frame that the joint connects to in the parent
+    PhysicalOffsetFrame pInPo( parent.getName() + "_offset",
+                               parent,
+                               parentTransform);
     
     // Append the offset frame to the Joint's internal list of frames
-    int pix = append_frames( PhysicalOffsetFrame(parent.getName() + "_offset",
-                                                 parent.getName(),
-                                                 parentTransform) );
+    int pix = append_frames(pInPo);
 
     // CHILD TRANSFORM
     Rotation childRotation(BodyRotationSequence,
@@ -107,21 +104,13 @@ Joint::Joint(const std::string &name,
         orientationInChild[2], ZAxis);
     SimTK::Transform childTransform(childRotation, locationInChild);
 
-    // Append the child offset frame to the Joint's internal list of frames
-    int cix = append_frames( PhysicalOffsetFrame(child.getName() + "_offset",
-                                                 child.getName(),
-                                                 childTransform) );
+    PhysicalOffsetFrame cInCo( child.getName() + "_offset",
+                               child,
+                               childTransform);
 
-    // finalize recognizes the offset frames as the Joint's subcomponents
-    finalizeFromProperties();
-    
-    // When the PhysicalOffsetFrames are constructed they are unaware that this
-    // Joint contains them as subcomponents and the path name associated with 
-    // them will not be valid. This a temporary fix to set the name once the
-    // added frames have been included as subcomponents which occurs during
-    // finaliFromProperties() above.
-    static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
-    static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
+
+    // Append the child offset frame to the Joint's internal list of frames
+    int cix = append_frames(cInCo);
 }
 
 //=============================================================================

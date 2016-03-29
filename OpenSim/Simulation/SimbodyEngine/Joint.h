@@ -139,15 +139,15 @@ public:
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parentName   the name of the parent PhysicalFrame for the joint
-        @param[in] childName    the name of the child PhysicalFrame for the joint
+        @param[in] parent   the parent PhysicalFrame that joint connects to
+        @param[in] child    the child PhysicalFrame that joint connects to
         @param[in] reverse  Advanced optional flag (bool) specifying the 
                             direction of the Joint in the multibody tree. 
                             Default is false (that is, parent to child).
         */
     Joint( const std::string& name,
-           const std::string& parentName,
-           const std::string& childName,
+           const PhysicalFrame& parent,
+           const PhysicalFrame& child,
            bool reverse = false);
 
     /** Backwards compatible Convenience Constructor 
@@ -201,20 +201,12 @@ public:
     virtual ~Joint();
 
     // GET & SET
-
-    void setChildFrameName(const std::string& name);
-    const std::string& getChildFrameName() const;
-
     /**
      * Get the child joint frame.
      *
      * @return const PhysicalFrame reference.
      */
     const PhysicalFrame& getChildFrame() const;
-
-    // Relating to the parent joint frame
-    void setParentFrameName(const std::string& aName);
-    const std::string& getParentFrameName() const;
 
     /**
      * Get the parent frame to which this joint attaches.
