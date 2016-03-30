@@ -74,7 +74,7 @@ public:
     CustomJoint( const std::string &name,
                  const PhysicalFrame& parent,
                  const PhysicalFrame& child,
-                 SpatialTransform& aSpatialTransform,
+                 SpatialTransform& spatialTransform,
                  bool reverse=false);
 
     /** Joint constructor with explicit parent and child offsets in terms of
@@ -86,7 +86,7 @@ public:
         const PhysicalFrame& child,
         const SimTK::Vec3& locationInChild,
         const SimTK::Vec3& orientationInChild,
-        SpatialTransform& aSpatialTransform,
+        SpatialTransform& spatialTransform,
         bool reverse=false);
 
 

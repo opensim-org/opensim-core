@@ -354,7 +354,7 @@ void createLuxoJr(OpenSim::Model &model){
     // Fix a frame to the bracket for attaching joint
     shift_and_rotate->setP(Vec3(0.0));
     PhysicalOffsetFrame* pivot_frame_on_bottom_bracket =
-                new PhysicalOffsetFrame("pivot_frame_on_bottom_bracket",
+                new PhysicalOffsetFrame(*pivot_frame_on_base,
                                         *bottom_bracket, *shift_and_rotate);
     
     // Add visible geometry
@@ -364,8 +364,8 @@ void createLuxoJr(OpenSim::Model &model){
     // Make bottom bracket to twist on base with vertical pin joint.
     // You can create a joint from any existing physical frames attached to
     // rigid bodies. One way to reference them is by name, like this...
-    PinJoint* base_pivot = new PinJoint("base_pivot", "pivot_frame_on_base",
-                                        "pivot_frame_on_bottom_bracket");
+    PinJoint* base_pivot = new PinJoint("base_pivot", *pivot_frame_on_base,
+        *pivot_frame_on_bottom_bracket);
     
     base_pivot->append_frames(*pivot_frame_on_base);
     base_pivot->append_frames(*pivot_frame_on_bottom_bracket);
@@ -392,26 +392,34 @@ void createLuxoJr(OpenSim::Model &model){
     
     posteriorLegBar->attachMeshGeometry("Leg_meters.obj");
     
-    // Attache posterior leg to bottom bracket using another pin joint.
+
+    auto posterior_knee_on_bottom_bracket = 
+        new PhysicalOffsetFrame("posterior_knee_on_bottom_bracket",
+            *bottom_bracket, Transform(posterior_bracket_hinge_location));
+
+    auto posterior_knee_on_posterior_bar =
+        new PhysicalOffsetFrame("posterior_knee_on_posterior_bar",
+            *posteriorLegBar, Transform(inferior_bar_hinge_location));
+    
+        
+
+
+
+    // Attach posterior leg to bottom bracket using another pin joint.
     // Another way to reference physical frames in a joint is by creating them
     // in place, like this...
     OpenSim::PinJoint* posteriorKnee = new OpenSim::PinJoint("posterior_knee",
-                                    "posterior_knee_on_bottom_bracket",
-                                    "posterior_knee_on_posterior_bar");
-    posteriorKnee->append_frames(
-            PhysicalOffsetFrame("posterior_knee_on_bottom_bracket",
-                *bottom_bracket,
-                Transform(posterior_bracket_hinge_location)));
-    
-    posteriorKnee->append_frames(
-            PhysicalOffsetFrame("posterior_knee_on_posterior_bar",
-                *posteriorLegBar,
-                Transform(inferior_bar_hinge_location)));
+                                    *posterior_knee_on_bottom_bracket,
+                                    *posterior_knee_on_posterior_bar);
+    // posteriorKnee will own and serialize the attachment offset frames 
+    posteriorKnee->append_frames(*posterior_knee_on_bottom_bracket);
+    posteriorKnee->append_frames(*posterior_knee_on_posterior_bar);
+
     
     // add posterior leg to model
     model.addBody(posteriorLegBar); model.addJoint(posteriorKnee);
     
-    // allow this joint's coordinate to float freely when assembling contraints
+    // allow this joint's coordinate to float freely when assembling constraints
     // the joint we create next will drive the pose of the 4-bar linkage
     posteriorKnee->upd_CoordinateSet()[0]
                                     .set_is_free_to_satisfy_constraints(true);

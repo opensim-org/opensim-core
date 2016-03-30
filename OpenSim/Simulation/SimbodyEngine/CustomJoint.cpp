@@ -56,12 +56,12 @@ CustomJoint::CustomJoint()
 CustomJoint::CustomJoint(const std::string &name,
                          const PhysicalFrame& parent,
                          const PhysicalFrame& child,
-                         SpatialTransform& aSpatialTransform,
+                         SpatialTransform& spatialTransform,
                          bool reverse) :
                          Super(name, parent, child, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 CustomJoint::CustomJoint(const std::string& name,
@@ -71,13 +71,13 @@ CustomJoint::CustomJoint(const std::string& name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    SpatialTransform& aSpatialTransform,
+    SpatialTransform& spatialTransform,
     bool reverse) :
-        Joint(name, parent, locationInParent, orientationInParent,
+        Super(name, parent, locationInParent, orientationInParent,
             child, locationInChild, orientationInChild, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 //_____________________________________________________________________________

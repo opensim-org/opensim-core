@@ -82,6 +82,12 @@ Joint::Joint(const std::string &name,
     const SimTK::Vec3& orientationInChild,
     bool reverse) : Joint()
 {
+    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName,
+        getClassName());
+
+    setName(name);
+    set_reverse(reverse);
+
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
         orientationInParent[0], XAxis,
@@ -108,9 +114,22 @@ Joint::Joint(const std::string &name,
                                child,
                                childTransform);
 
-
     // Append the child offset frame to the Joint's internal list of frames
     int cix = append_frames(cInCo);
+
+    // finalize recognizes the offset frames as the Joint's subcomponents
+    finalizeFromProperties();
+
+    // When the PhysicalOffsetFrames are constructed they are unaware that this
+    // Joint contains them as subcomponents and the path name associated with 
+    // them will not be valid. This a temporary fix to set the name once the
+    // added frames have been included as subcomponents which occurs during
+    // finaliFromProperties() above.
+    static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
+    static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
+
+    updConnector<PhysicalFrame>("parent_frame").connect(upd_frames(pix));
+    updConnector<PhysicalFrame>("child_frame").connect(upd_frames(cix));
 }
 
 //=============================================================================
