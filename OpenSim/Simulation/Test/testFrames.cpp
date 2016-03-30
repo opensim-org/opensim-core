@@ -488,13 +488,14 @@ void testStationInGround()
     // Initialize the the sytem
     SimTK::State state = pendulum->initSystem();
 
-    // Set the states randomly
-    SimTK::Random::Uniform random(-1, 1);
-    for (int i = 0; i < state.getNY(); ++i)
-        state.updY()[i] = random.getValue();
-    
+    // set the model coordinates and coordinate speeds
+    pendulum->getCoordinateSet().get(0).setValue(state, 0.29);
+    pendulum->getCoordinateSet().get(0).setSpeedValue(state, 0.1 );
+    pendulum->getCoordinateSet().get(1).setValue(state, -0.38);
+    pendulum->getCoordinateSet().get(1).setSpeedValue(state, -0.13);
+
     // realize to accelerations
-    pendulum->computeStateVariableDerivatives(state);
+    pendulum->realizeAcceleration(state);
     
     // Get the frame's mobilized body
     const OpenSim::PhysicalFrame&  frame = myStation->getReferenceFrame();
@@ -508,5 +509,12 @@ void testStationInGround()
     SimTK_TEST_EQ(l, myStation->findLocationInGround(state) );
     SimTK_TEST_EQ(v, myStation->findVelocityInGround(state) );
     SimTK_TEST_EQ(a, myStation->findAccelerationInGround(state) );
+    
+    cout << l << endl;
+    cout << myStation->findLocationInGround(state) << endl;
+    cout << v << endl;
+    cout << myStation->findVelocityInGround(state) << endl;
+    cout << a << endl;
+    cout << myStation->findAccelerationInGround(state) << endl;
     
 }
