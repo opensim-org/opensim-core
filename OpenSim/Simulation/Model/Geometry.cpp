@@ -171,7 +171,10 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
 
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    if (cachedMesh.get() == nullptr && !triedToLoad) {
+    // Current interface to Visualizer calls this method on every frame.
+    // On first time through, load file and create DecorativeMeshFile else
+    // try to reuse it.
+    if (!triedToLoad) {
         triedToLoad = true;
         const std::string& file = get_mesh_file();
         bool isAbsolutePath; string directory, fileName, extension;
@@ -221,7 +224,7 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
         decoGeoms.push_back(*dmesh);
         cachedMesh.reset(dmesh);
     }
-    else {
+    else { // Not first time, reuse only if valid cachedMesh
         if (cachedMesh.get() != nullptr) {
             cachedMesh->setScaleFactors(get_scale_factors());
             decoGeoms.push_back(*cachedMesh);
