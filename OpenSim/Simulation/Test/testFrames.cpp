@@ -510,11 +510,4 @@ void testStationInGround()
     SimTK_TEST_EQ(v, myStation->findVelocityInGround(state) );
     SimTK_TEST_EQ(a, myStation->findAccelerationInGround(state) );
     
-    cout << l << endl;
-    cout << myStation->findLocationInGround(state) << endl;
-    cout << v << endl;
-    cout << myStation->findVelocityInGround(state) << endl;
-    cout << a << endl;
-    cout << myStation->findAccelerationInGround(state) << endl;
-    
 }
