@@ -289,7 +289,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     double prevErr  = 0;
     double errStart = err;
     double errMin   = 0;
-    double solMin   = 0;
+    // double solMin   = 0;
 
     bool flag_improvement = false;
     bool flag_Newton      = false;

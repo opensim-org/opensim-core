@@ -103,7 +103,7 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class EllipsoidJoint

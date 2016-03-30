@@ -47,7 +47,7 @@ using namespace OpenSim;
 class ModifiableConstant : public SimTK::Function_<SimTK::Real>{
 public:
     ModifiableConstant(const SimTK::Real& value, int argumentSize) : 
-      value(value), argumentSize(argumentSize) { }
+        argumentSize(argumentSize), value(value) { }
 
     ModifiableConstant* clone() const override {
         return new ModifiableConstant(this->value, this->argumentSize);
@@ -230,10 +230,10 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void Coordinate::extendRealizeInstance(const SimTK::State& state) const
 {
-    const MobilizedBody& mb
-        = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
+    //const MobilizedBody& mb
+    //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
 
-    int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
+    //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
 
     /* Set the YIndex on the StateVariable */
 }

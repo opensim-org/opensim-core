@@ -1177,7 +1177,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
             //UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name); BoolArray Handling on Write
             stringValue = "";
             {
-                int n = prop->getArraySize();
+                //int n = prop->getArraySize();
                 const Array<bool> &valueBs = prop->getValueArray<bool>();
                 for (int i=0; i<valueBs.size(); ++i) 
                     stringValue += (valueBs[i]?"true ":"false ");
@@ -1209,7 +1209,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 
         // Obj
         case(Property_Deprecated::Obj) : {
-            PropertyObj *propObj = (PropertyObj*)prop;
+            //PropertyObj *propObj = (PropertyObj*)prop;
             const Object &object = prop->getValueObj();
             object.updateXMLNode(myObjectElement);
             break; }

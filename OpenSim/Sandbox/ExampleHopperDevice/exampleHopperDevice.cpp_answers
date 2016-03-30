@@ -54,7 +54,7 @@ static const std::string HopperHeightOutput{
 
 namespace OpenSim {
 
-/* We begin by creating a class to conatin all the parts for the model of
+/* We begin by creating a class to contain all the parts for the model of
 our device. This is similar to how OpenSim uses Model to hold the parts
 of a musculoskeletal model. In a Model the parts are ModelComponents.
 Since the device will eventually be mounted on a musculoskeletal Model,
@@ -96,7 +96,8 @@ public:
         return getComponent<PathActuator>("cableAtoB").getPower(s);
     }
 
-    //device can read model height as measured from the block to ground
+    //device can read model height (the distance between the bottom of the block
+    //and the ground)
     double getHeight(const SimTK::State& s) const {
         return getModel().getOutputValue<double>(s, HopperHeightOutput);
     }
@@ -146,6 +147,7 @@ public:
 
     double computeControl(const SimTK::State& s) const {
         double activation = getInputValue<double>(s, "activation");
+        // A very simple control strategy that improves jump height.
         if (activation < 0.31)
             return 0;
         // Compute the control signal.
@@ -338,7 +340,7 @@ OpenSim::Device* createDevice() {
     controller->setName("controller");
     controller->set_gain(GAIN);
 
-    // Connect the the controller to the device actuator
+    // Connect the controller to the device actuator
     controller->updConnector<OpenSim::Actuator>("actuator").
         connect(*pathActuator);
 

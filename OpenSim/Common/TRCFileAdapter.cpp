@@ -131,10 +131,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // X1, Y1, Z1, X2, Y2, Z2, ... so on.
     // Check and ignore these labels.
     auto xyz_labels_found = nextLine();
-    for(int i = 1; i <= num_markers_expected; ++i) {
-        size_t j = 0;
+    for(unsigned i = 1; i <= num_markers_expected; ++i) {
+        unsigned j = 0;
         for(auto& letter : {_xLabel, _yLabel, _zLabel}) {
-            const size_t ind = ((i - 1) * 3) + j++;
+            const unsigned ind = ((i - 1) * 3) + j++;
             const std::string expected{letter + std::to_string(i)};
             OPENSIM_THROW_IF(xyz_labels_found.at(ind) != expected,
                              UnexpectedColumnLabel,
@@ -161,7 +161,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         // Columns 2 till the end are data.
         TimeSeriesTableVec3::RowVector 
             row_vector{static_cast<int>(num_markers_expected)};
-        size_t ind{0};
+        int ind{0};
         for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
             row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
                                             std::stod(row.at(c+1)),

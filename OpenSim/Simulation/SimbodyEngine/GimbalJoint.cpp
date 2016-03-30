@@ -61,7 +61,7 @@ void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 
-    GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
+    //GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
 

@@ -245,7 +245,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             ++f) {
             SimTK::RowVector_<SimTK::Vec3>
                 row{fp_force_pts->GetItemNumber() * 3};
-            size_t col{0};
+            int col{0};
             for(auto fit = fp_force_pts->Begin(),
                 mit =     fp_moment_pts->Begin(),
                 pit =   fp_position_pts->Begin();

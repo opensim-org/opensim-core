@@ -111,7 +111,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
     double computeForceMagnitude(const SimTK::State& s) const;
 
     // Set the Coordinate pointer, and set the corresponding name property

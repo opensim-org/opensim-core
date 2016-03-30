@@ -58,7 +58,7 @@ bool StatesTrajectory::isNondecreasingInTime() const {
     // An empty or size-1 trajectory necessarily has nondecreasing times.
     if (getSize() <= 1) return true;
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (get(itime).getTime() < get(itime - 1).getTime()) {
             return false;
@@ -74,7 +74,7 @@ bool StatesTrajectory::isConsistent() const {
 
     const auto& state0 = get(0);
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (!state0.isConsistent(get(itime))) {
             return false;
@@ -138,16 +138,17 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
             createVector(model.getStateVariableNames()) :
             requestedStateVars;
     table.setColumnLabels(stateVars);
-    int numDepColumns = stateVars.size();
+    size_t numDepColumns = stateVars.size();
 
     // Fill up the table with the data.
     for (size_t itime = 0; itime < getSize(); ++itime) {
         const auto& state = get(itime);
-        TimeSeriesTable::RowVector row(numDepColumns);
+        TimeSeriesTable::RowVector row(static_cast<int>(numDepColumns));
 
         // Get each state variable's value.
-        for (size_t icol = 0; icol < numDepColumns; ++icol) {
-            row[icol] = model.getStateVariableValue(state, stateVars[icol]);
+        for (unsigned icol = 0; icol < numDepColumns; ++icol) {
+            row[static_cast<int>(icol)] = 
+                model.getStateVariableValue(state, stateVars[icol]);
         }
 
         table.appendRow(state.getTime(), row);
@@ -219,7 +220,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Check if the Storage has columns that are not states in the Model.
     // ------------------------------------------------------------------
     if (!allowExtraColumns) {
-        if (numDependentColumns > statesToFillUp.size()) {
+        if ((unsigned)numDependentColumns > statesToFillUp.size()) {
             std::vector<std::string> extraColumnNames;
             // We want the actual column names, not the state names; the two
             // might be different b/c the state names changed in v4.0.

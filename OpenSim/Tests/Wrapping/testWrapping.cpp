@@ -648,8 +648,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     MultibodySystem& system = osimModel.updMultibodySystem();
     GeneralForceSubsystem& forceSubsystem = osimModel.updForceSubsystem();
-    const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
-    const SimbodyEngine& engine = osimModel.getSimbodyEngine();
+    // const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
+    // const SimbodyEngine& engine = osimModel.getSimbodyEngine();
 
     // add cable system
     CableTrackerSubsystem cables(system);
