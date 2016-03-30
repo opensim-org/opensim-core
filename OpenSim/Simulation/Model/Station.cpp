@@ -123,7 +123,7 @@ SimTK::Vec3 Station::findLocationInGround(const SimTK::State& s) const
     // Get the frame's mobilized body
     auto&  mb = frame.getMobilizedBody();
     
-    // Use simbody method to get the velocity in ground
+    // Use simbody method to get the location in ground
     return mb.findStationLocationInGround(s,currentLocation);
     
 }
