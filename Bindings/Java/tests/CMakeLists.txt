@@ -55,6 +55,8 @@ macro(OpenSimAddJavaTest TESTNAME)
             )
     endif()
 
+    file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestVisualization")
     if(WIN32)
         # On Windows, CMake cannot use RPATH to hard code the location of libraries
         # in the binary directory (DLL's don't have RPATH), so we must set PATH to
@@ -96,6 +98,7 @@ set_target_properties(RunJavaTests PROPERTIES
 # Test name must be the name of a java file in this directory.
 # Leave out the ".java" extension.
 OpenSimAddJavaTest(TestBasics)
+OpenSimAddJavaTest(TestVisualization)
 
 
 
