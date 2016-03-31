@@ -2,12 +2,6 @@
 # Generate C++ and Java wrapper code with SWIG.
 # ---------------------------------------------
 
-set(swig_generated_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/OpenSimJNI_wrap.cxx)
-set(swig_generated_header_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/OpenSimJNI_wrap.h)
-set(swig_interface_file_fullname
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig/javaWrapOpenSim.i)
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")

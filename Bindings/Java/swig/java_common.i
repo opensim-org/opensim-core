@@ -1,6 +1,8 @@
 %module(directors="1") opensimModel
 %module opensimModel
+
 #pragma SWIG nowarn=822,451,503,516,325,401
+
 %{
 
 #include <Bindings/OpenSimHeaders_common.h>
@@ -17,7 +19,6 @@ using namespace OpenSim;
 using namespace SimTK;
 
 %}
-
 
 /* This file is for creation/handling of arrays */
 %include "arrays_java.i";
@@ -86,53 +87,6 @@ using namespace SimTK;
 	}
 %}
 
-%typemap(javacode) SimTK::Vec3 %{
-    double[] getAsJavaArray() {
-		return new double[]{this->get(0), this->get(1), this->get(2)};
-	}
-%}
-
-%extend  SimTK::DecorativeGeometry {
-public:
-	bool hasUserRef() const {
-		return (self->getUserRef()!=0);
-	}
-
-	OpenSim::Object& getUserRefAsObject() {
-		return *((OpenSim::Object*)self->getUserRef());
-	}
-}
-%extend SimTK::DecorativeMeshFile {
-     SimTK::DecorativeMeshFile* clone() { return new SimTK::DecorativeMeshFile(*self); }
-}
-%extend SimTK::DecorativeSphere {
-     SimTK::DecorativeSphere* clone() { return new SimTK::DecorativeSphere(*self); }
-}
-%extend SimTK::DecorativeBrick {
-     SimTK::DecorativeBrick* clone() { return new SimTK::DecorativeBrick(*self); }
-}
-
-%extend SimTK::DecorativeLine {
-     SimTK::DecorativeLine* clone() { return new SimTK::DecorativeLine(*self); }
-}
-%extend SimTK::DecorativeCylinder {
-     SimTK::DecorativeCylinder* clone() { return new SimTK::DecorativeCylinder(*self); }
-}
-%extend SimTK::DecorativeEllipsoid {
-     SimTK::DecorativeEllipsoid* clone() { return new SimTK::DecorativeEllipsoid(*self); }
-}
-%extend SimTK::DecorativeFrame {
-     SimTK::DecorativeFrame* clone() { return new SimTK::DecorativeFrame(*self); }
-}
-%extend SimTK::DecorativeArrow {
-     SimTK::DecorativeArrow* clone() { return new SimTK::DecorativeArrow(*self); }
-}
-%extend SimTK::DecorativeTorus {
-     SimTK::DecorativeTorus* clone() { return new SimTK::DecorativeTorus(*self); }
-}
-%extend SimTK::DecorativeCone {
-     SimTK::DecorativeCone* clone() { return new SimTK::DecorativeCone(*self); }
-}
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
@@ -151,7 +105,6 @@ public:
 %rename OpenSim::Model::addController private_addController;
 %rename OpenSim::Model::addAnalysis private_addAnalysis;
 
-
 %typemap(javacode) OpenSim::FunctionSet %{
   public boolean adoptAndAppend(Function aFunction) {
 	aFunction.markAdopted();
@@ -165,6 +118,7 @@ public:
     return super.adoptAndAppend(aObject);
   }
 %}
+
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
   // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
@@ -445,8 +399,9 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 	}
 }
 
-%include <Bindings/preliminaries.i>
-%include <Bindings/simbody.i>
+
+%import "java_simbody.i"
+
 %include <Bindings/common.i>
 %include <Bindings/simulation.i>
 %include <Bindings/actuators.i>
