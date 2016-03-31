@@ -43,7 +43,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static int counter=0;
+//static int counter=0;
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================

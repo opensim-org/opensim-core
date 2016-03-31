@@ -29,3 +29,9 @@ foreach(exec_file ${TO_COMPILE})
         FOLDER "Future sandbox"
     )
 endforeach()
+
+
+if(UNIX)
+    add_executable(ImuStreaming ImuStreaming.cpp)
+    target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
+endif()

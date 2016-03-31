@@ -143,7 +143,7 @@ public:
     double computeIsometricForce(SimTK::State& s, double activation) const override;
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 //==============================================================================
 };  // END of class Thelen2003Muscle_Deprecated
 //==============================================================================

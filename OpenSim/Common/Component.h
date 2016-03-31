@@ -1611,8 +1611,11 @@ protected:
 
     // End of System Creation and Access Methods.
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsupported-friend"
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
+#pragma clang diagnostic pop
 
 public:
     /** Utility method to find a component in the list of sub components of this
@@ -2360,7 +2363,7 @@ void Connector<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ) {
+    catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }

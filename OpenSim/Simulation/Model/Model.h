@@ -983,7 +983,7 @@ private:
     void setNull();
 
     // Construct the properties of a Model.
-    void constructProperties();
+    void constructProperties() override;
     void setDefaultProperties();
 
     // Utility to build a connected graph (tree) of the multibody system
