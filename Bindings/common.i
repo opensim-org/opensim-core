@@ -72,16 +72,12 @@
 %template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 
-%include <OpenSim/Common/Component.h>
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
-
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
- // %include <Bindings/std.i>
 %shared_ptr(OpenSim::AbstractDataTable);
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
@@ -124,3 +120,4 @@
 %include <OpenSim/Common/MOTFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
+

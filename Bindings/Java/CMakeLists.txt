@@ -12,6 +12,13 @@ set(SWIG_JAVA_COMMON_CXX_FILE
 set(SWIG_JAVA_COMMON_H_FILE   
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_common.h")
 
+set(SWIG_JAVA_SIMULATION_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_simulation.i")
+set(SWIG_JAVA_SIMULATION_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simulation.cxx")
+set(SWIG_JAVA_SIMULATION_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simulation.h")
+
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -49,15 +56,14 @@ find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-    DEPENDS ${SWIG_JAVA_COMMON_CXX_FILE}
+    DEPENDS ${SWIG_JAVA_SIMULATION_CXX_FILE}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
-    COMMENT "Compiling Java sources and creating jar archive."
-    )
+    COMMENT "Compiling Java sources and creating jar archive.")
 
 # Umbrella target for assembling the java bindings in the build tree.
 # -------------------------------------------------------------------

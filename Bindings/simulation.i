@@ -1,4 +1,3 @@
-
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
@@ -206,23 +205,33 @@
 
 // Iterators.
 // TODO rename to singular form.
-%template(FrameList) OpenSim::ComponentList<OpenSim::Frame>;
-%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
-
-%template(BodyList) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
-
-%template(MuscleList) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
-
+%template(FrameList)          OpenSim::ComponentList<OpenSim::Frame>;
+%template(BodyList)           OpenSim::ComponentList<OpenSim::Body>;
+%template(MuscleList)         OpenSim::ComponentList<OpenSim::Muscle>;
 %template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
-%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+
+%template(FrameIterator) 
+    OpenSim::ComponentListIterator<OpenSim::Frame>;
+%template(BodyIterator) 
+    OpenSim::ComponentListIterator<OpenSim::Body>;
+%template(MuscleIterator) 
+    OpenSim::ComponentListIterator<OpenSim::Muscle>;
+%template(ModelComponentIterator) 
+    OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
 
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::Component::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Component::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
+%include <OpenSim/Common/Component.h>
+%template(getComponentsList) 
+    OpenSim::Component::getComponentList<OpenSim::Component>;
+%template(getFrameList) 
+    OpenSim::Component::getComponentList<OpenSim::Frame>;
+%template(getBodyList) 
+    OpenSim::Component::getComponentList<OpenSim::Body>;
+%template(getMuscleList) 
+    OpenSim::Component::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) 
+    OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) 
+    OpenSim::Component::getComponentList<OpenSim::Joint>;

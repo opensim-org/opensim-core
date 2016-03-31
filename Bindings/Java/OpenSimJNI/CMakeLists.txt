@@ -30,8 +30,7 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simbody."
-    )
+    COMMENT "Generating Java bindings source code with SWIG -- simbody.")
 
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
@@ -59,9 +58,35 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- common."
-    )
+    COMMENT "Generating Java bindings source code with SWIG -- common.")
 
+add_custom_command(
+    # This target actually creates a lot more (all the produced .java files); 
+    # but we will just use these two files as a proxy for all of those.
+    OUTPUT ${SWIG_JAVA_SIMULATION_CXX_FILE} ${SWIG_JAVA_SIMULATION_H_FILE}
+    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
+        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+        -I${OpenSim_SOURCE_DIR}
+        -I${OpenSim_SOURCE_DIR}/Bindings
+        -I${Simbody_INCLUDE_DIR}
+        ${SWIG_FLAGS}
+        -o ${SWIG_JAVA_SIMULATION_CXX_FILE}
+        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+        ${SWIG_JAVA_SIMULATION_INTERFACE_FILE}
+    DEPENDS ${SWIG_JAVA_SIMULATION_INTERFACE_FILE}
+            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
+    COMMENT "Generating Java bindings source code with SWIG -- simulation.")
 
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
@@ -76,7 +101,8 @@ add_library(osim${KIT}Simbody
     ${SWIG_JAVA_SIMBODY_CXX_FILE} 
     ${SWIG_JAVA_SIMBODY_H_FILE})
 
-target_link_libraries(osim${KIT}Simbody osimTools osimSimmFileWriter)
+target_link_libraries(osim${KIT}Simbody 
+    osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT}Simbody PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -84,17 +110,36 @@ set_target_properties(osim${KIT}Simbody PROPERTIES
    FOLDER "Bindings"
 )
 
-set(SOURCE_FILES  
+add_library(osim${KIT}Common 
+    SHARED 
     ${SWIG_JAVA_COMMON_CXX_FILE} 
+    ${SWIG_JAVA_COMMON_H_FILE})
+
+target_link_libraries(osim${KIT}Common 
+    osim${KIT}Simbody osimTools osimSimmFileWriter)
+    
+set_target_properties(osim${KIT}Common PROPERTIES
+   DEFINE_SYMBOL ${EXPORT_MACRO}
+   PROJECT_LABEL "Java - osim${KIT}"
+   FOLDER "Bindings"
+)
+
+set(SOURCE_FILES  
+    ${SWIG_JAVA_SIMULATION_CXX_FILE} 
     OpenSimContext.cpp)
 set(INCLUDE_FILES 
-    ${SWIG_JAVA_SIMBODY_H_FILE} 
-    ${SWIG_JAVA_COMMON_H_FILE} 
+    ${SWIG_JAVA_SIMULATION_H_FILE} 
     OpenSimContext.h)
 
-add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+add_library(osim${KIT} 
+    SHARED 
+    ${SWIG_JAVA_SIMULATION_CXX_FILE} 
+    OpenSimContext.cpp
+    ${SWIG_JAVA_SIMULATION_H_FILE} 
+    OpenSimContext.h)
 
-target_link_libraries(osim${KIT} osim${KIT}Simbody osimTools osimSimmFileWriter)
+target_link_libraries(osim${KIT} 
+    osim${KIT}Simbody osim${KIT}Common osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
