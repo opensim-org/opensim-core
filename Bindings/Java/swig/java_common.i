@@ -30,7 +30,8 @@ using namespace SimTK;
       equal = ((($javaclassname)obj).swigCPtr == this.swigCPtr);
     return equal;
   }
-  private int cacheId=-1;  // cache the Id to avoid recomputation for hashing purposes
+  // cache the Id to avoid recomputation for hashing purposes
+  private int cacheId=-1;  
  
   public int hashCode() {
      if (cacheId==-1)
@@ -60,7 +61,9 @@ using namespace SimTK;
 %typemap(out) OpenSim::Joint %{ $result = $1; markAdopted(); %}
 
 %typemap(javacode) OpenSim::MarkerData %{
-  public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
+  public double[] getTimeRange() { 
+      return new double[]{getStartFrameTime(), getLastFrameTime()}; 
+  }
 %}
 
 %newobject *::clone; 
@@ -75,7 +78,9 @@ using namespace SimTK;
           workString = workString.substring(liveStart+1, liveEnd);
       }
       else if (liveStart!=liveEnd){
-          //throw new ParseException("Illegal format: Expect space separated values, optionally between matched parentheses", liveEnd);
+          // throw new ParseException("Illegal format: Expect space separated" +
+          //                          " values, optionally between matched " +
+          //                          "parentheses", liveEnd);
           return;
       }
       String[] splits = workString.split(" ");
@@ -121,60 +126,67 @@ using namespace SimTK;
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
-  // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
+  // Important that we only refer to originalModelPath if the model's 
+  // getInputFileName() is not set.
   public void setOriginalModelPathFromModel(Model model) {
     originalModelPath = null;
-    if(model.getInputFileName()!=null && !model.getInputFileName().equals(""))
-      originalModelPath = (new java.io.File(model.getInputFileName())).getParent();
-	 else if(model.originalModelPath!=null && !model.originalModelPath.equals(""))
+    if(model.getInputFileName()!=null && 
+       !model.getInputFileName().equals(""))
+        originalModelPath = 
+            (new java.io.File(model.getInputFileName())).getParent();
+    else if(model.originalModelPath!=null && 
+            !model.originalModelPath.equals(""))
       originalModelPath = model.originalModelPath;
   }
   public String getFilePath() {
-    if(getInputFileName()!=null && !getInputFileName().equals("") && (new java.io.File(getInputFileName())).getParent()!=null)
-      return (new java.io.File(getInputFileName())).getParent() + java.io.File.separator;
-    else if(originalModelPath!=null && !originalModelPath.equals(""))
-      return originalModelPath + java.io.File.separator;
-    else return "";
+      if(getInputFileName()!=null && 
+         !getInputFileName().equals("") && 
+         (new java.io.File(getInputFileName())).getParent()!=null)
+          return (new java.io.File(getInputFileName())).getParent() + 
+              java.io.File.separator;
+      else if(originalModelPath!=null && !originalModelPath.equals(""))
+          return originalModelPath + java.io.File.separator;
+      else return "";
   }
 
   public void addModelComponent(ModelComponent aComponent) {
-	aComponent.markAdopted();
-    private_addModelComponent(aComponent);
+      aComponent.markAdopted();
+      private_addModelComponent(aComponent);
   }
 
   public void addBody(Body aBody) {
-	aBody.markAdopted();
-    private_addBody(aBody);
+      aBody.markAdopted();
+      private_addBody(aBody);
   }
 
   public void addConstraint(Constraint aConstraint) {
-	aConstraint.markAdopted();
-    private_addConstraint(aConstraint);
+      aConstraint.markAdopted();
+      private_addConstraint(aConstraint);
   }
 
   public void addProbe(Probe aProbe) {
-	aProbe.markAdopted();
-    private_addProbe(aProbe);
+      aProbe.markAdopted();
+      private_addProbe(aProbe);
   }  
   
   public void addContactGeometry(ContactGeometry aContactGeometry) {
-	aContactGeometry.markAdopted();
-    private_addContactGeometry(aContactGeometry);
+      aContactGeometry.markAdopted();
+      private_addContactGeometry(aContactGeometry);
   }
 
   public void addAnalysis(Analysis aAnalysis) {
-	aAnalysis.markAdopted();
-	private_addAnalysis(aAnalysis);
+      aAnalysis.markAdopted();
+      private_addAnalysis(aAnalysis);
   }
 
   public void addForce(Force aForce) {
-	aForce.markAdopted();
-	private_addForce(aForce);
+      aForce.markAdopted();
+      private_addForce(aForce);
   }
 
   public void addController(Controller aController) {
-	aController.markAdopted();
-	private_addController(aController);
+      aController.markAdopted();
+      private_addController(aController);
   }
 %}
 
@@ -182,34 +194,35 @@ using namespace SimTK;
 %rename OpenSim::ForceSet::append private_append;
 %typemap(javacode) OpenSim::ForceSet %{
    public boolean append(Force aFroce) {
-      aFroce.markAdopted();
-	  return private_append(aFroce);
+       aFroce.markAdopted();
+       return private_append(aFroce);
    }
 %}
 
 %typemap(javacode) OpenSim::Array<std::string> %{
    public java.util.Vector<String> toVector() {
-      java.util.Vector<String> vector = new java.util.Vector<String>();
-      vector.setSize(getSize());
-      for(int i=0; i<getSize(); i++) vector.set(i, getitem(i));
-      return vector;
+       java.util.Vector<String> vector = new java.util.Vector<String>();
+       vector.setSize(getSize());
+       for(int i=0; i<getSize(); i++) vector.set(i, getitem(i));
+       return vector;
    }
    public void append(java.util.Vector<String> vector) {
-      for(int i=0; i<vector.size(); i++) append(vector.get(i));
+       for(int i=0; i<vector.size(); i++) append(vector.get(i));
    }
    public static ArrayStr fromVector(java.util.Vector<String> vector) {
-      ArrayStr array = new ArrayStr();
-      array.append(vector);
-      return array;
+       ArrayStr array = new ArrayStr();
+       array.append(vector);
+       return array;
    }
 %}
 
 %typemap(javacode) OpenSim::XYFunctionInterface %{
-  private Function  dFunction;  // cache pointer to function so it's not garbage collected early
+    // cache pointer to function so it's not garbage collected early.
+  private Function  dFunction;  
 
   public XYFunctionInterface(Function aFunction, Boolean unused) {
-		this(aFunction);
-		dFunction = aFunction;
+      this(aFunction);
+      dFunction = aFunction;
   }
 %}
 
@@ -222,11 +235,13 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %pragma(java) jniclasscode=%{
   static {
       try{
-        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
+          // All OpenSim classes required for GUI operation.
+          System.loadLibrary("osimJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
-           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e, 
-				JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+          new JOptionPane("Required library failed to load. Check that the " +
+                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
+        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
       }
   }
 %}
@@ -234,16 +249,16 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 // Generic Exception handling
 %typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
-  SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
-                          "C++ $1_type exception thrown");
-  return $null;
+    SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
+                            "C++ $1_type exception thrown");
+    return $null;
 %}
 
 %typemap(throws, throws="java.io.IOException") OpenSim::Exception {
-  jclass excep = jenv->FindClass("java/io/IOException");
-  if (excep)
-    jenv->ThrowNew(excep, ($1).getMessage());
-  return $null;
+    jclass excep = jenv->FindClass("java/io/IOException");
+    if (excep)
+        jenv->ThrowNew(excep, ($1).getMessage());
+    return $null;
 }
 
 %exception {
@@ -252,9 +267,9 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	  $action
 	  }
 	  catch(std::exception& _ex){
-		  jclass excep = jenv->FindClass("java/lang/RuntimeException");
-		  if (excep)
-		  jenv->ThrowNew(excep,_ex.what());
+              jclass excep = jenv->FindClass("java/lang/RuntimeException");
+              if (excep)
+                  jenv->ThrowNew(excep,_ex.what());
 	  }
   }
   else
@@ -263,20 +278,19 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 
 %extend OpenSim::Body {
-	void getInertia(Array<double>& rInertia) {
-		SimTK::Mat33 inertia= self->getInertia().toMat33();
-		rInertia[0]=inertia[0][0];
-		rInertia[1]=inertia[1][1];
-		rInertia[2]=inertia[2][2];
-		rInertia[3]=inertia[0][1];
-		rInertia[4]=inertia[0][2];
-		rInertia[5]=inertia[1][2];
-
-	};
-	void setInertia(Array<double>& aInertia) {
-		self->setInertia(SimTK::Inertia(aInertia[0], 
-		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
-	}
+    void getInertia(Array<double>& rInertia) {
+        SimTK::Mat33 inertia= self->getInertia().toMat33();
+        rInertia[0]=inertia[0][0];
+        rInertia[1]=inertia[1][1];
+        rInertia[2]=inertia[2][2];
+        rInertia[3]=inertia[0][1];
+        rInertia[4]=inertia[0][2];
+        rInertia[5]=inertia[1][2];
+    };
+    void setInertia(Array<double>& aInertia) {
+        self->setInertia(SimTK::Inertia(aInertia[0], aInertia[1], aInertia[2], 
+                                        aInertia[3], aInertia[4], aInertia[5]));
+    }
 };
 
 /*
@@ -288,22 +302,22 @@ constructors because they have additional arguments.
 */
 %define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
 %extend OpenSim::NAME {
-	NAME(const std::string& name,
+    NAME(const std::string& name,
          const std::string& parentName,
          const std::string& childName) {
-		return new NAME(name, parentName, childName, false);
-	}
+        return new NAME(name, parentName, childName, false);
+    }
 	
-	NAME(const std::string& name,
+    NAME(const std::string& name,
          const PhysicalFrame& parent,
          const SimTK::Vec3& locationInParent,
          const SimTK::Vec3& orientationInParent,
          const PhysicalFrame& child,
          const SimTK::Vec3& locationInChild,
          const SimTK::Vec3& orientationInChild) {
-		return new NAME(name, parent, locationInParent, orientationInParent,
-					child, locationInChild, orientationInChild, false);
-	}
+        return new NAME(name, parent, locationInParent, orientationInParent,
+                        child, locationInChild, orientationInChild, false);
+    }
 };
 %enddef
 
@@ -318,85 +332,83 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 
 %extend OpenSim::Array<double> {
-	void setValues(double dValues[], int size) {
-		self->setSize(size);
-		for(int i=0; i< size; i++)
-		 self->set(i, dValues[i]);
-	};
-	SimTK::Vec3 getAsVec3() {
-		return SimTK::Vec3::getAs(self->get());
-	};
-	
-	static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
-		Array<double>* arr = new Array<double>(e1, 3);
-		arr->set(1, e2);
-		arr->set(2, e3);
-		return SimTK::Vec3::getAs(arr->get());
-	};
+    void setValues(double dValues[], int size) {
+        self->setSize(size);
+        for(int i=0; i< size; i++)
+            self->set(i, dValues[i]);
+    };
+    SimTK::Vec3 getAsVec3() {
+        return SimTK::Vec3::getAs(self->get());
+    };
+    
+    static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
+        Array<double>* arr = new Array<double>(e1, 3);
+        arr->set(1, e2);
+        arr->set(2, e3);
+        return SimTK::Vec3::getAs(arr->get());
+    };
   
-   static SimTK::Vec3 createVec3(double e1) {
-		Array<double>* arr = new Array<double>(e1, 3);
-		return SimTK::Vec3::getAs(arr->get());
-  };
+    static SimTK::Vec3 createVec3(double e1) {
+       Array<double>* arr = new Array<double>(e1, 3);
+       return SimTK::Vec3::getAs(arr->get());
+    };
    
    static SimTK::Vec3  createVec3(double es[3]) {
-		Array<double>* arr = new Array<double>(es[0], 3);
-		arr->set(1, es[1]);
-		arr->set(2, es[2]);
-		return SimTK::Vec3::getAs(arr->get());
-  };
+       Array<double>* arr = new Array<double>(es[0], 3);
+       arr->set(1, es[1]);
+       arr->set(2, es[2]);
+       return SimTK::Vec3::getAs(arr->get());
+   };
 
    SimTK::Vector_<double>  getAsVector() {
-		return SimTK::Vector(self->getSize(), &(*self)[0]);
-  };
+       return SimTK::Vector(self->getSize(), &(*self)[0]);
+   };
 
    void populateFromVector(SimTK::Vector_<double> aVector) {
-		int sz = aVector.size();
-		for(int i=0; i<sz; ++i)
-			self->append(aVector[i]);
+       int sz = aVector.size();
+       for(int i=0; i<sz; ++i)
+           self->append(aVector[i]);
    }
 
    static  OpenSim::Array<double> getValuesFromVec3(SimTK::Vec3 vec3) {
-		OpenSim::Array<double> arr(0, 3);
-		for (int i=0; i<3; i++) arr[i] = vec3[i];
-		return arr;
-  };
+       OpenSim::Array<double> arr(0, 3);
+       for (int i=0; i<3; i++) arr[i] = vec3[i];
+       return arr;
+   };
   
   std::string toString() const {
-		std::stringstream stream;
-		for (int i=0; i< self->getSize(); i++)
-			stream <<  self->get(i) << " ";
-		return stream.str(); 
+      std::stringstream stream;
+      for (int i=0; i< self->getSize(); i++)
+          stream <<  self->get(i) << " ";
+      return stream.str(); 
   }
-
 };
 
 %extend OpenSim::Model {
-	static void LoadOpenSimLibrary(std::string libraryName){
-		LoadOpenSimLibrary(libraryName);
-	}
-
-	void setDefaultControls(SimTK::Vector& newControls) {
-		self->updDefaultControls() = newControls;
-	}
+    static void LoadOpenSimLibrary(std::string libraryName){
+        LoadOpenSimLibrary(libraryName);
+    }
+    
+    void setDefaultControls(SimTK::Vector& newControls) {
+        self->updDefaultControls() = newControls;
+    }
 }
 
 %extend OpenSim::Manager {
-	void setIntegratorAccuracy(double accuracy){
-		self->getIntegrator().setAccuracy(accuracy);
-	}
+    void setIntegratorAccuracy(double accuracy){
+        self->getIntegrator().setAccuracy(accuracy);
+    }
 }
 
 %extend OpenSim::Object {
-	static OpenSim::Array<std::string> getFunctionClassNames() {
-		  OpenSim::Array<std::string> availableClassNames;
-		  ArrayPtrs<OpenSim::Function> rArray;
-		  Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
-		  for (int i=0;i<rArray.size(); i++)
-			availableClassNames.append(rArray[i]->getConcreteClassName());
-		  
-		  return availableClassNames;
-	}
+    static OpenSim::Array<std::string> getFunctionClassNames() {
+        OpenSim::Array<std::string> availableClassNames;
+        ArrayPtrs<OpenSim::Function> rArray;
+        Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
+        for (int i=0;i<rArray.size(); i++)
+            availableClassNames.append(rArray[i]->getConcreteClassName());
+        return availableClassNames;
+    }
 }
 
 
