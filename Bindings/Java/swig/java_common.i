@@ -235,8 +235,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %pragma(java) jniclasscode=%{
   static {
       try{
-          System.loadLibrary("osimJavaJNISimbody");
           // All OpenSim classes required for GUI operation.
+          System.loadLibrary("osimJavaJNISimbody");
           System.loadLibrary("osimJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
@@ -415,7 +415,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 %import "java_simbody.i"
 
-%include <Bindings/preliminaries.i>
+// %include <Bindings/preliminaries.i>
 %include <Bindings/common.i>
 %include <Bindings/simulation.i>
 %include <Bindings/actuators.i>
