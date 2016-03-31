@@ -72,8 +72,8 @@ AbstractTool::AbstractTool():
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     setNull();
 }
@@ -104,8 +104,8 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     _analysisSet.setMemoryOwner(false);
     setNull();
@@ -166,8 +166,8 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
     _analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
-    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-    _toolOwnsModel(true)
+    _toolOwnsModel(true),
+    _externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
     _analysisSet.setMemoryOwner(false);
     setNull();
@@ -706,13 +706,13 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
                     string saveWorkingDirectory = IO::getCwd();
                     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
                     IO::chDir(directoryOfSetupFile);
-                    bool extLoadsFile=false;
+                    //bool extLoadsFile=false;
                     try {
                         SimTK::Xml::Document doc(fileName);
                         doc.setIndentString("\t");
                         Xml::Element root = doc.getRootElement();
                         if (root.getElementTag()=="OpenSimDocument"){
-                            int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+                            //int curVersion = root.getRequiredAttributeValueAs<int>("Version");
                             Xml::element_iterator rootIter(root.element_begin("ForceSet"));
                             if (rootIter!=root.element_end()){
                                 rootIter->setElementTag("ExternalLoads");

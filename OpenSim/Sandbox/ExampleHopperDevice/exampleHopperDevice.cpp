@@ -299,7 +299,7 @@ OpenSim::Device* createDevice() {
     // TODO
     // TODO: finish implementing the PropMyoController class, above.
 
-    // Connect the the controller to the device actuator
+    // Connect the controller to the device actuator
     // TODO
 
     // Don't forget to add the controller to your device

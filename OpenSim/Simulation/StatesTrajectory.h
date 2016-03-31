@@ -351,7 +351,7 @@ public:
             std::string msg = "The following ";
             msg += std::to_string(missingStates.size()) + " states from Model '";
             msg += modelName + "' are missing from the states Storage:\n";
-            for (int i = 0; i < (missingStates.size() - 1); ++i) {
+            for (unsigned i = 0; i < (missingStates.size() - 1); ++i) {
                 msg += "    " + missingStates[i] + "\n";
             }
             msg += "    " + missingStates.back();
@@ -375,7 +375,7 @@ public:
             std::string msg = "The following ";
             msg += std::to_string(extraStates.size()) + " columns from the ";
             msg += "states Storage are not states in Model '" + modelName + "':\n";
-            for (int i = 0; i < (extraStates.size() - 1); ++i) {
+            for (unsigned i = 0; i < (extraStates.size() - 1); ++i) {
                 msg += "    " + extraStates[i] + "\n";
             }
             msg += "    " + extraStates.back();

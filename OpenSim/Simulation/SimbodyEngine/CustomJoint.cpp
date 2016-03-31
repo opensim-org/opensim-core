@@ -325,7 +325,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Array_<SimTK::Xml::Element> list = 
                 axesSetNode->getAllElements();
             unsigned int listLength = list.size();
-            int objectsFound = 0;
+            //int objectsFound = 0;
             Array<int> translationIndices(-1, 0);
             Array<int>  rotationIndices(-1, 0);
             int nextAxis = 0;

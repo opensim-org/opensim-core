@@ -49,7 +49,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
+           OptimizerSystem(numParameters), 
+           numControls(numParameters), 
+           si(s),
+           osimModel(aModel)
        {
            // Create the integrator for the simulation.
            p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());

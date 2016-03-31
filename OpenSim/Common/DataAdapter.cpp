@@ -51,4 +51,10 @@ registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{})
 
 }
 
+// Ignore this function. This exists to suppress compiler warning
+// about variable 'registerAdapters' being 'unused'.
+void ignore() {
+    registerAdapters = false;
+}
+
 }

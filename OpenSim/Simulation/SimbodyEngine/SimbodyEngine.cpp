@@ -346,19 +346,19 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
 void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForces, Vector_<Vec3>& rTorques) const
 {
     // get the number of mobilized bodies in the underlying SimbodyMatterSubsystem
-    int nmb = _model->getMatterSubsystem().getNumBodies();
+    //int nmb = _model->getMatterSubsystem().getNumBodies();
     
     // get the number of bodies in the OpenSim model
     int nj = _model->getNumJoints();
 
-    int nf = rForces.size();
-    int ntorq = rTorques.size();
+    //int nf = rForces.size();
+    //int ntorq = rTorques.size();
 
     // there may be more mobilized bodies than joint exposed in the OpenSim model
     // since joints and other components may use (massless) bodies internally
-    assert(nmb >= nj);
-    assert(nj == nf);
-    assert(nf == ntorq);
+    assert(_model->getMatterSubsystem().getNumBodies() >= nj);
+    assert(nj == rForces.size());
+    assert(rForces.size() == rTorques.size());
 
     SimTK::Vector_<SpatialVec> reactionForces(nj);
 
@@ -480,7 +480,7 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
  */
 void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const
 {
-    const Body* bFrom = (const Body*)&aBodyFrom;
+    //const Body* bFrom = (const Body*)&aBodyFrom;
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
     // the output vector.

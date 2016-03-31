@@ -87,7 +87,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class AbstractReporter
@@ -217,7 +217,8 @@ private:
             for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
                 const auto& chan = input.getChannel(idx);
                 const auto& outName = chan.getName();
-                const auto& truncName = outName.size() <= _width ?
+                const auto& truncName = 
+                    static_cast<int>(outName.size()) <= _width ?
                     outName : outName.substr(outName.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
             }

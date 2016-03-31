@@ -104,7 +104,7 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
         TimeSeriesTable::RowVector 
             row_vector{static_cast<int>(column_labels.size())};
         for(std::size_t c = 0; c < column_labels.size(); ++c)
-            row_vector[c] = std::stod(row.at(c + 1));
+            row_vector[static_cast<int>(c)] = std::stod(row.at(c + 1));
 
         // Column 1 is time.
         table->appendRow(std::stod(row.at(0)), std::move(row_vector));

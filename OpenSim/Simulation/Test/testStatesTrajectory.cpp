@@ -81,7 +81,7 @@ void testPopulateTrajectory() {
     // Make sure we have all the states
     SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
     // ...and that they aren't all just references to the same single state.
-    for (int i = 0; i < states.getSize(); ++i) {
+    for (size_t i = 0; i < states.getSize(); ++i) {
         SimTK_TEST_EQ(states[i].getTime(), times[i]);
     }
 
@@ -493,7 +493,7 @@ void testCopying() {
         // Ideally we'd check for equality (operator==()), but State does not
         // have an equality operator.
         SimTK_TEST_EQ((int)statesCopyConstruct.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyConstruct[i].getTime(), states[i].getTime());
         }
     }
@@ -502,7 +502,7 @@ void testCopying() {
         StatesTrajectory statesCopyAssign;
         statesCopyAssign = states;
         SimTK_TEST_EQ((int)statesCopyAssign.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyAssign[i].getTime(), states[i].getTime());
         }
     }
@@ -648,7 +648,7 @@ void tableAndTrajectoryMatch(const Model& model,
 
     const auto stateNames = model.getStateVariableNames();
 
-    int numColumns = -1;
+    size_t numColumns{};
     if (columns.empty()) {
         numColumns = stateNames.getSize();
     } else {
@@ -660,19 +660,19 @@ void tableAndTrajectoryMatch(const Model& model,
     const auto& colNames = table.getColumnLabels();
 
     // Test that the data table has exactly the same numbers.
-    for (int itime = 0; itime < states.getSize(); ++itime) {
+    for (size_t itime = 0; itime < states.getSize(); ++itime) {
         // Test time.
         SimTK_TEST(table.getIndependentColumn()[itime] ==
                    states[itime].getTime());
 
         // Test state values.
-        for (int icol = 0; icol < table.getNumColumns(); ++icol) {
+        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
             const auto& stateName = colNames[icol];
 
             const auto& valueInStates = model.getStateVariableValue(
                     states[itime], stateName);
             const auto& column = table.getDependentColumnAtIndex(icol);
-            const auto& valueInTable = column[itime];
+            const auto& valueInTable = column[static_cast<int>(itime)];
 
             SimTK_TEST(valueInStates == valueInTable);
         }

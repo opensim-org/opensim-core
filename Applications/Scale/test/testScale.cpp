@@ -161,7 +161,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
     guiModel.getMultibodySystem().realizeTopology();
     SimTK::State* configState=&guiModel.updWorkingState();
-    bool retValue= subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
+    subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
     // Model has changed need to recreate a valid state 
     guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
