@@ -51,7 +51,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
 void testStationOnFrame();
 void testStationInGround();
-void testVelocityandAcceletationInGround();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -103,12 +102,6 @@ int main()
     }
     
     try { testStationInGround(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; failures.push_back("testStationInGround");
-    }
-    
-
-    try { testVelocityandAcceletationInGround(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testStationInGround");
     }
@@ -468,70 +461,53 @@ void testStationOnFrame()
 void testStationInGround()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
-    
+    SimTK::MultibodySystem system;
+    SimTK::SimbodyMatterSubsystem matter(system);
+    SimTK::GeneralForceSubsystem forces(system);
+
     cout << "Running testStationInGround" << endl;
     
     Model* pendulum = new Model("double_pendulum.osim");
-    // Get "rod1" frame
-    const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
-    const SimTK::Vec3& com = rod1.get_mass_center();
-    // Create station aligned with rod1 com in rod1_frame
+    const OpenSim::Body& rod2 = pendulum->getBodySet().get("rod2");
+    
+    // Define and add a frame to the rod2 body
+    SimTK::Transform X_RO;
+    X_RO.setP(SimTK::Vec3(0.2, -0.2, 0));
+    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi/2, SimTK::ZAxis);
+    PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod2, X_RO);
+    offsetFrame->setName("myExtraFrame");
+    pendulum->addFrame(offsetFrame);
+    
+    // Create station in the extra frame
     Station* myStation = new Station();
-    myStation->set_location(com);
-    myStation->updConnector<PhysicalFrame>("reference_frame")
-    .setConnecteeName("rod1");
+    const SimTK::Vec3 point(0.5, 1, -1.5);
+    myStation->set_location(point);
+    myStation->updConnector<PhysicalFrame>("reference_frame").setConnecteeName("myExtraFrame");
     pendulum->addModelComponent(myStation);
-    // myStation should coincide with com location of rod1 in ground
-    SimTK::State& s = pendulum->initSystem();
-    for (double ang = 0; ang <= 90.0; ang += 10.){
-        double radAngle = SimTK::convertDegreesToRadians(ang);
-        const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
-        coord.setValue(s, radAngle);
-        
-        // Get the station in ground via Simbody
-        SimTK::Vec3 comBySimbody = rod1.getMobilizedBody().findStationLocationInGround(s, com);
-        
-        // test findLocationInGround
-        SimTK::Vec3 stationInGround = myStation->findLocationInGround(s);
-        
-        SimTK_TEST_EQ(stationInGround, comBySimbody);
-        
-    }
-}
 
-void testVelocityandAcceletationInGround()
-{
-    SimTK::Vec3 tolerance(SimTK::Eps);
+    // Initialize the the sytem
+    SimTK::State state = pendulum->initSystem();
+
+    // set the model coordinates and coordinate speeds
+    pendulum->getCoordinateSet().get(0).setValue(state, 0.29);
+    pendulum->getCoordinateSet().get(0).setSpeedValue(state, 0.1 );
+    pendulum->getCoordinateSet().get(1).setValue(state, -0.38);
+    pendulum->getCoordinateSet().get(1).setSpeedValue(state, -0.13);
+
+    // realize to accelerations
+    pendulum->realizeAcceleration(state);
     
-    cout << "Running testVelocityandAcceletationInGround" << endl;
+    // Get the frame's mobilized body
+    const OpenSim::PhysicalFrame&  frame = myStation->getReferenceFrame();
+    SimTK::MobilizedBody  mb = frame.getMobilizedBody();
     
-    OpenSim::Model testBed;
+    // Use simbody to get the location, velocity and acceleration in ground.
+    SimTK::Vec3 l, v, a;
+    mb.findStationLocationVelocityAndAccelerationInGround(state, point, l, v, a);
     
-    auto load = new OpenSim::Body("load", 10, SimTK::Vec3(0), SimTK::Inertia(1));
+    // Compare Simbody values to values from Station
+    SimTK_TEST_EQ(l, myStation->findLocationInGround(state) );
+    SimTK_TEST_EQ(v, myStation->findVelocityInGround(state) );
+    SimTK_TEST_EQ(a, myStation->findAccelerationInGround(state) );
     
-    testBed.addBody(load);
-    
-    // Joints that connect the bodies together.
-    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
-    testBed.addJoint(grndToLoad);
-    
-    Station* myStation = new Station();
-    myStation->set_location(SimTK::Vec3(0));
-    myStation->updConnector<PhysicalFrame>("reference_frame").setConnecteeName("load");
-    testBed.addModelComponent(myStation);
-    auto& state = testBed.initSystem();
-    
-    // Simulate.
-    SimTK::RungeKuttaMersonIntegrator integrator(testBed.getSystem());
-    OpenSim::Manager manager(testBed, integrator);
-    manager.setInitialTime(0);
-    manager.setFinalTime(1);
-    manager.integrate(state);
-    
-    testBed.realizeAcceleration(state);
-    
-    // after simulating for 1 second the velocity should be
-    SimTK_TEST_EQ(SimTK::Vec3(0,-9.80665,0), myStation->findVelocityInGround(state))
-    // and the acceleration should
-    SimTK_TEST_EQ(SimTK::Vec3(0,-9.80665,0), myStation->findAccelerationInGround(state))
 }
