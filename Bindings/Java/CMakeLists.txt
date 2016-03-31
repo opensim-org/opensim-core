@@ -1,6 +1,16 @@
+set(SWIG_JAVA_SIMBODY_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_simbody.i")
+set(SWIG_JAVA_SIMBODY_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simbody.cxx")
+set(SWIG_JAVA_SIMBODY_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simbody.h")
 
-# Generate C++ and Java wrapper code with SWIG.
-# ---------------------------------------------
+set(SWIG_JAVA_COMMON_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_common.i")
+set(SWIG_JAVA_COMMON_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_common.cxx")
+set(SWIG_JAVA_COMMON_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_common.h")
 
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
@@ -39,7 +49,7 @@ find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-    DEPENDS "${swig_generated_file_fullname}"
+    DEPENDS ${SWIG_JAVA_COMMON_CXX_FILE}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6

@@ -28,9 +28,9 @@ namespace SimTK {
 }
 
 // Vector and Matrix
-%include <Bindings/std.i>
+//%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
-%template(StdVectorVec3) std::vector<SimTK::Vec3>;
+%template(StdVecVec3) std::vector<SimTK::Vec3>;
 namespace SimTK {
 %extend RowVectorBase<double> {
      double __getitem__(size_t i) {

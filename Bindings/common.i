@@ -81,7 +81,7 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
-%include <Bindings/std.i>
+ // %include <Bindings/std.i>
 %shared_ptr(OpenSim::AbstractDataTable);
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);

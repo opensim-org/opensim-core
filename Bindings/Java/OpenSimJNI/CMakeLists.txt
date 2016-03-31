@@ -4,13 +4,6 @@ set(UKIT JAVAJNI)
 # For building C++ wrapper.
 find_package(JNI 1.6 REQUIRED)
 
-set(SWIG_JAVA_SIMBODY_INTERFACE_FILE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../swig/java_simbody.i")
-set(SWIG_JAVA_SIMBODY_CXX_FILE 
-    "${CMAKE_CURRENT_BINARY_DIR}/java_simbody.cxx")
-set(SWIG_JAVA_SIMBODY_H_FILE   
-    "${CMAKE_CURRENT_BINARY_DIR}/java_simbody.h")
-
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
     # but we will just use these two files as a proxy for all of those.
@@ -39,14 +32,6 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
     COMMENT "Generating Java bindings source code with SWIG -- simbody."
     )
-
-
-set(SWIG_JAVA_COMMON_INTERFACE_FILE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../swig/java_common.i")
-set(SWIG_JAVA_COMMON_CXX_FILE 
-    "${CMAKE_CURRENT_BINARY_DIR}/java_common.cxx")
-set(SWIG_JAVA_COMMON_H_FILE   
-    "${CMAKE_CURRENT_BINARY_DIR}/java_common.h")
 
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
@@ -78,14 +63,6 @@ add_custom_command(
     )
 
 
-set(SOURCE_FILES  
-    ${SWIG_JAVA_COMMON_CXX_FILE} 
-    OpenSimContext.cpp)
-set(INCLUDE_FILES 
-    ${SWIG_JAVA_SIMBODY_H_FILE} 
-    ${SWIG_JAVA_COMMON_H_FILE} 
-    OpenSimContext.h)
-
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
                     ${JAVA_INCLUDE_PATH}
@@ -106,6 +83,14 @@ set_target_properties(osim${KIT}Simbody PROPERTIES
    PROJECT_LABEL "Java - osim${KIT}"
    FOLDER "Bindings"
 )
+
+set(SOURCE_FILES  
+    ${SWIG_JAVA_COMMON_CXX_FILE} 
+    OpenSimContext.cpp)
+set(INCLUDE_FILES 
+    ${SWIG_JAVA_SIMBODY_H_FILE} 
+    ${SWIG_JAVA_COMMON_H_FILE} 
+    OpenSimContext.h)
 
 add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

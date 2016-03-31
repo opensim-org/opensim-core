@@ -1,5 +1,5 @@
 %module(directors="1") opensimSimbody
-%module opensimSimbody
+ // %module opensimSimbody
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
