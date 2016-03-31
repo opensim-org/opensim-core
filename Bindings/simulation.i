@@ -3,6 +3,7 @@
 
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
+%include <OpenSim/Common/Component.h>
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -209,6 +210,7 @@
 %template(BodyList)           OpenSim::ComponentList<OpenSim::Body>;
 %template(MuscleList)         OpenSim::ComponentList<OpenSim::Muscle>;
 %template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
+%template(JointList)          OpenSim::ComponentList<OpenSim::Joint>;
 
 %template(FrameIterator) 
     OpenSim::ComponentListIterator<OpenSim::Frame>;
@@ -218,11 +220,9 @@
     OpenSim::ComponentListIterator<OpenSim::Muscle>;
 %template(ModelComponentIterator) 
     OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+%template(JointIterator) 
+    OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
-
-%include <OpenSim/Common/Component.h>
 %template(getComponentsList) 
     OpenSim::Component::getComponentList<OpenSim::Component>;
 %template(getFrameList) 

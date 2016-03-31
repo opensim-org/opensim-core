@@ -1,17 +1,11 @@
-%module(directors="1") opensimModel
-%module opensimModel
+%module(directors="1") opensimModelSimulation
+%module opensimModelSimulation
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
 %{
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
-#include <Bindings/OpenSimHeaders_actuators.h>
-#include <Bindings/OpenSimHeaders_analyses.h>
-#include <Bindings/OpenSimHeaders_tools.h>
-#include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 using namespace OpenSim;
@@ -54,6 +48,7 @@ using namespace SimTK;
             !model.originalModelPath.equals(""))
       originalModelPath = model.originalModelPath;
   }
+
   public String getFilePath() {
       if(getInputFileName()!=null && 
          !getInputFileName().equals("") && 
@@ -115,28 +110,6 @@ using namespace SimTK;
    }
 %}
 
-%pragma(java) jniclassclassmodifiers="public class"
-
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
-
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-          // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimJavaJNISimbody");
-          System.loadLibrary("osimJavaJNICommon");
-          System.loadLibrary("osimJavaJNI");
-      }
-      catch(UnsatisfiedLinkError e){
-          new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
-        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
-      }
-  }
-%}
-
 %extend OpenSim::Body {
     void getInertia(Array<double>& rInertia) {
         SimTK::Mat33 inertia= self->getInertia().toMat33();
@@ -147,6 +120,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         rInertia[4]=inertia[0][2];
         rInertia[5]=inertia[1][2];
     };
+
     void setInertia(Array<double>& aInertia) {
         self->setInertia(SimTK::Inertia(aInertia[0], aInertia[1], aInertia[2], 
                                         aInertia[3], aInertia[4], aInertia[5]));
@@ -217,15 +191,27 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
     }
 }
 
+/* Load the required libraries when this module is loaded.                    */
+%pragma(java) jniclassclassmodifiers="public class"
+SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
+%pragma(java) jniclasscode=%{
+  static {
+      try{
+          // All OpenSim classes required for GUI operation.
+          System.loadLibrary("osimJavaJNISimbody");
+          System.loadLibrary("osimJavaJNICommon");
+          System.loadLibrary("osimJavaJNISimulation");
+      }
+      catch(UnsatisfiedLinkError e){
+          new JOptionPane("Required library failed to load. Check that the " +
+                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
+        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+      }
+  }
+%}
+
 
 %import "java_common.i"
 
 %include <Bindings/simulation.i>
-%include <Bindings/actuators.i>
-%include <Bindings/analyses.i>
-%include <Bindings/tools.i>
-%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-%include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
-%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>

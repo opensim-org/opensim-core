@@ -19,6 +19,13 @@ set(SWIG_JAVA_SIMULATION_CXX_FILE
 set(SWIG_JAVA_SIMULATION_H_FILE   
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simulation.h")
 
+set(SWIG_JAVA_ACTUATORS_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_actuators.i")
+set(SWIG_JAVA_ACTUATORS_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.cxx")
+set(SWIG_JAVA_ACTUATORS_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.h")
+
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -56,7 +63,7 @@ find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-    DEPENDS ${SWIG_JAVA_SIMULATION_CXX_FILE}
+    DEPENDS ${SWIG_JAVA_ACTUATORS_CXX_FILE}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
