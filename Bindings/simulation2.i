@@ -1,3 +1,9 @@
+// Following three lines hacked in out of order to work around WrapObjects 
+// use in PhysicalFrame.
+%include <OpenSim/Simulation/Wrap/WrapObject.h>
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
 %template(PhysicalFrameWithOffset) 
     OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
