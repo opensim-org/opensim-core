@@ -160,6 +160,7 @@ OpenSim::Model createTestBed() {
     using SimTK::Inertia;
 
     OpenSim::Model testBed; 
+    testBed.setName("testBed");
     testBed.setUseVisualizer(true);
     testBed.setGravity(Vec3(0));
 
