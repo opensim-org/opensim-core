@@ -1,3 +1,9 @@
+%include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
+%include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
+%include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+%include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+%include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
+
 %template(SetControllers) OpenSim::Set<OpenSim::Controller>;
 %template(ModelComponentSetControllers) 
     OpenSim::ModelComponentSet<OpenSim::Controller>;

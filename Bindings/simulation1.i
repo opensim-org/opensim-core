@@ -89,12 +89,6 @@
 %include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 
-%include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
-%include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-%include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
-%include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-%include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
-
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %include <OpenSim/Simulation/Model/Analysis.h>
