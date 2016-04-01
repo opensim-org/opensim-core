@@ -204,9 +204,9 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
                 SimTK::MobilizerQIndex(_mobilizerQIndex));
         mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
     }
-    else{
-        // even if prescribed is set to true, if there is no prescribed 
-        // function defined, then it cannot be prescribed.
+    else if(get_prescribed()){
+        // if prescribed is set to true, and there is no prescribed 
+        // function defined, then it cannot be prescribed (set to false).
         mutableThis->upd_prescribed() = false;
     }
 
