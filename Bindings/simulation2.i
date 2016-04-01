@@ -1,3 +1,11 @@
+%include <OpenSim/Simulation/Model/OffsetFrame.h>
+%template(PhysicalFrameWithOffset) 
+    OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+%template(SetFrames) OpenSim::Set<OpenSim::Frame>;
+%template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/FrameSet.h>
+
 %template(SetBodies) OpenSim::Set<OpenSim::Body>;
 %template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodySet.h>
