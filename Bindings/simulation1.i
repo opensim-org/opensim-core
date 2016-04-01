@@ -9,7 +9,8 @@
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
-%template(ModelComponentSetModelComponent) OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
+%template(ModelComponentSetModelComponent) 
+    OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ComponentSet.h>
 
 %template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
@@ -19,7 +20,8 @@
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-// Following three lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+// Following three lines hacked in out of order to work around WrapObjects 
+// use in PhysicalFrame.
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -27,7 +29,8 @@
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
-%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%template(PhysicalFrameWithOffset) 
+    OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
@@ -47,7 +50,8 @@
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
-%template(ModelComponentSetCoordinates) OpenSim::ModelComponentSet<OpenSim::Coordinate>;
+%template(ModelComponentSetCoordinates) 
+    OpenSim::ModelComponentSet<OpenSim::Coordinate>;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -57,7 +61,8 @@
 
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
-%template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
+%template(ModelComponentSetConstraints) 
+    OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
@@ -68,8 +73,10 @@
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
 
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
-%template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
-%template(TwoFrameLinkerConstraint) OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerForce) 
+    OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerConstraint) 
+    OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
@@ -90,17 +97,19 @@
 
 %include <OpenSim/Simulation/Control/Controller.h>
 %template(SetControllers) OpenSim::Set<OpenSim::Controller>;
-%template(ModelComponentSetControllers) OpenSim::ModelComponentSet<OpenSim::Controller>;
+%template(ModelComponentSetControllers) 
+    OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ControllerSet.h>
-
-%template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
+%template(ModelComponentSetExternalForces) 
+    OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
-%template(ModelComponentSetContactGeometry) OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
+%template(ModelComponentSetContactGeometry) 
+    OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
 %include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 %include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 %include <OpenSim/Simulation/Model/ContactMesh.h>
