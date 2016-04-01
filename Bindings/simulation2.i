@@ -1,3 +1,9 @@
+%include <OpenSim/Simulation/Model/TwoFrameLinker.h>
+%template(TwoFrameLinkerForce) 
+    OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerConstraint) 
+    OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
+
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>

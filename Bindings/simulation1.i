@@ -72,12 +72,6 @@
 %include <OpenSim/Simulation/Model/ExternalForce.h>
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
 
-%include <OpenSim/Simulation/Model/TwoFrameLinker.h>
-%template(TwoFrameLinkerForce) 
-    OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
-%template(TwoFrameLinkerConstraint) 
-    OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
-
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %include <OpenSim/Simulation/Model/Analysis.h>
