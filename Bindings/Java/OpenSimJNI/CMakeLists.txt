@@ -156,45 +156,22 @@ include_directories(${OpenSim_SOURCE_DIR}
 
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-add_library(osim${KIT}Simbody 
-    SHARED 
-    ${SWIG_JAVA_SIMBODY_CXX_FILE} 
-    ${SWIG_JAVA_SIMBODY_H_FILE})
-
-target_link_libraries(osim${KIT}Simbody 
-    osimTools osimSimmFileWriter)
-    
-set_target_properties(osim${KIT}Simbody PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings")
-
-add_library(osim${KIT}Common 
-    SHARED 
-    ${SWIG_JAVA_COMMON_CXX_FILE} 
-    ${SWIG_JAVA_COMMON_H_FILE})
-
-target_link_libraries(osim${KIT}Common 
-    osim${KIT}Simbody osimTools osimSimmFileWriter)
-    
-set_target_properties(osim${KIT}Common PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings")
-
 add_library(osim${KIT} 
     SHARED 
+    ${SWIG_JAVA_SIMBODY_CXX_FILE} 
+    ${SWIG_JAVA_SIMBODY_H_FILE}
+    ${SWIG_JAVA_COMMON_CXX_FILE} 
+    ${SWIG_JAVA_COMMON_H_FILE}
     ${SWIG_JAVA_SIMULATION1_CXX_FILE} 
     ${SWIG_JAVA_SIMULATION1_H_FILE}
     ${SWIG_JAVA_SIMULATION2_CXX_FILE} 
     ${SWIG_JAVA_SIMULATION2_H_FILE}
     ${SWIG_JAVA_ACTUATORS_CXX_FILE} 
-    OpenSimContext.cpp
     ${SWIG_JAVA_ACTUATORS_H_FILE} 
+    OpenSimContext.cpp
     OpenSimContext.h)
 
-target_link_libraries(osim${KIT} 
-    osim${KIT}Simbody osim${KIT}Common osimTools osimSimmFileWriter)
+target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -212,7 +189,7 @@ endif()
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-install(TARGETS osim${KIT}Simbody osim${KIT}Common osim${KIT}
+install(TARGETS osim${KIT}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
