@@ -1,3 +1,15 @@
+%include <OpenSim/Simulation/Model/PathPoint.h>
+%include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
+%include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
+%include <OpenSim/Simulation/Model/MovingPathPoint.h>
+%template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
+%template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
+%include <OpenSim/Simulation/Model/PathPointSet.h>
+
+%include <OpenSim/Simulation/Model/PointForceDirection.h>
+%template(ArrayPointForceDirection) 
+    OpenSim::Array<OpenSim::PointForceDirection*>;
+
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>
