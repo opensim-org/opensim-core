@@ -21,7 +21,8 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
             "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
             "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
             "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
@@ -49,7 +50,8 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
             "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
             "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
             "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
@@ -63,21 +65,22 @@ add_custom_command(
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
     # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_SIMULATION_CXX_FILE} ${SWIG_JAVA_SIMULATION_H_FILE}
+    OUTPUT ${SWIG_JAVA_SIMULATION1_CXX_FILE} ${SWIG_JAVA_SIMULATION1_H_FILE}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
         -I${OpenSim_SOURCE_DIR}
         -I${OpenSim_SOURCE_DIR}/Bindings
         -I${Simbody_INCLUDE_DIR}
         ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_SIMULATION_CXX_FILE}
+        -o ${SWIG_JAVA_SIMULATION1_CXX_FILE}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_SIMULATION_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_SIMULATION_INTERFACE_FILE}
+        ${SWIG_JAVA_SIMULATION1_INTERFACE_FILE}
+    DEPENDS ${SWIG_JAVA_SIMULATION1_INTERFACE_FILE}
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
             "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
             "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
             "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
@@ -86,7 +89,36 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simulation.")
+    COMMENT "Generating Java bindings source code with SWIG -- simulation 1.")
+
+add_custom_command(
+    # This target actually creates a lot more (all the produced .java files); 
+    # but we will just use these two files as a proxy for all of those.
+    OUTPUT ${SWIG_JAVA_SIMULATION2_CXX_FILE} ${SWIG_JAVA_SIMULATION2_H_FILE}
+    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
+        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+        -I${OpenSim_SOURCE_DIR}
+        -I${OpenSim_SOURCE_DIR}/Bindings
+        -I${Simbody_INCLUDE_DIR}
+        ${SWIG_FLAGS}
+        -o ${SWIG_JAVA_SIMULATION2_CXX_FILE}
+        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+        ${SWIG_JAVA_SIMULATION2_INTERFACE_FILE}
+    DEPENDS ${SWIG_JAVA_SIMULATION2_INTERFACE_FILE}
+            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
+    COMMENT "Generating Java bindings source code with SWIG -- simulation 2.")
 
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
@@ -105,7 +137,8 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
             "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
             "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
             "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
@@ -114,13 +147,12 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simulation.")
+    COMMENT "Generating Java bindings source code with SWIG -- actuators.")
 
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
                     ${JAVA_INCLUDE_PATH}
-                    ${JAVA_INCLUDE_PATH2}
-)
+                    ${JAVA_INCLUDE_PATH2})
 
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
@@ -135,8 +167,7 @@ target_link_libraries(osim${KIT}Simbody
 set_target_properties(osim${KIT}Simbody PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings"
-)
+   FOLDER "Bindings")
 
 add_library(osim${KIT}Common 
     SHARED 
@@ -149,22 +180,34 @@ target_link_libraries(osim${KIT}Common
 set_target_properties(osim${KIT}Common PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings"
-)
+   FOLDER "Bindings")
 
-add_library(osim${KIT}Simulation 
+add_library(osim${KIT}Simulation1 
     SHARED 
-    ${SWIG_JAVA_SIMULATION_CXX_FILE} 
-    ${SWIG_JAVA_SIMULATION_H_FILE})
+    ${SWIG_JAVA_SIMULATION1_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION1_H_FILE})
 
-target_link_libraries(osim${KIT}Simulation 
+target_link_libraries(osim${KIT}Simulation1 
     osim${KIT}Simbody osim${KIT}Common osimTools osimSimmFileWriter)
     
-set_target_properties(osim${KIT}Simulation PROPERTIES
+set_target_properties(osim${KIT}Simulation1 PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings"
-)
+   FOLDER "Bindings")
+
+add_library(osim${KIT}Simulation2 
+    SHARED 
+    ${SWIG_JAVA_SIMULATION2_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION2_H_FILE})
+
+target_link_libraries(osim${KIT}Simulation2 
+    osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1 osimTools 
+    osimSimmFileWriter)
+    
+set_target_properties(osim${KIT}Simulation1 PROPERTIES
+   DEFINE_SYMBOL ${EXPORT_MACRO}
+   PROJECT_LABEL "Java - osim${KIT}"
+   FOLDER "Bindings")
 
 add_library(osim${KIT} 
     SHARED 
@@ -174,8 +217,8 @@ add_library(osim${KIT}
     OpenSimContext.h)
 
 target_link_libraries(osim${KIT} 
-    osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation osimTools 
-    osimSimmFileWriter)
+    osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1 
+    osim${KIT}Simulation2 osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -193,8 +236,8 @@ endif()
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-install(TARGETS osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation
-    osim${KIT}
+install(TARGETS osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1
+    osim${KIT}Simulation2 osim${KIT}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
