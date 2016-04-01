@@ -104,7 +104,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
     Coordinate()
 {
     setName(aName);
-    setMotionType(aMotionType);
+    //setMotionType(aMotionType);
     setDefaultValue(defaultValue);
     setRangeMin(aRangeMin);
     setRangeMax(aRangeMax);
@@ -117,9 +117,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
 void Coordinate::constructProperties(void)
 {
     setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
-    //The motion type of a Coordinate is determined by its parent Joint
-    constructProperty_motion_type("set_by_joint");
-    
+
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
 
@@ -294,6 +292,13 @@ const Joint& Coordinate::getJoint() const
     return(_joint.getRef());
 }
 
+Coordinate::MotionType Coordinate::getMotionType() const
+{
+    int ix = getJoint().get_CoordinateSet().getIndex(this);
+    return getJoint().getMotionType(Joint::CoordinateIndex(ix));
+}
+
+
 //-----------------------------------------------------------------------------
 // VALUE
 //-----------------------------------------------------------------------------
@@ -414,35 +419,6 @@ void Coordinate::setRangeMax(double aMax)
 {
     upd_range(1) = aMax;
 }
-
-//_____________________________________________________________________________
-/**
- * Set coordinate's motion type.
- *
- */
- void Coordinate::setMotionType(MotionType motionType)
- {
-     if (_motionType == motionType) {
-         return;
-     }
-
-     _motionType = motionType;
-
-     //Also update the motionTypeName so that it is serialized with the model
-     switch(motionType){
-        case(Rotational) :  
-            //upd_motion_type() = "rotational";
-            break;
-        case(Translational) :
-            //upd_motion_type() = "translational";
-            break;
-        case(Coupled) :
-            //upd_motion_type() = "coupled";
-            break;
-        default :
-            throw(Exception("Coordinate: Attempting to specify an undefined motion type."));
-     }
- } 
 
 //_____________________________________________________________________________
 /**

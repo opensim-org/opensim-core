@@ -174,19 +174,14 @@ void CustomJoint::constructCoordinates()
 
     for (int i = 0; i < ncoords; i++){
         std::string coordName = spatialTransform.getCoordinateNames()[i];
-
+        // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = coordinateSet.getIndex(coordName);
-        Coordinate* coord = nullptr;
         if (coordIndex < 0){
-            coord = new Coordinate();
-            coord->setName(coordName);
-            // Let joint take ownership as it should
-            coordinateSet.adoptAndAppend(coord);
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
         }
-        else {
-            //otherwise already in the set 
-            coord = &coordinateSet.get(coordIndex);
-        }
+        Coordinate& coord = coordinateSet.get(coordIndex);
+        coord.setName(coordName);
+
 
         // Determine if the MotionType of the Coordinate based
         // on which TransformAxis it is relate to 0-2 are Rotational
@@ -212,7 +207,7 @@ void CustomJoint::constructCoordinates()
                 }
             }
         }
-        coord->setMotionType(mt);
+        setMotionType(CoordinateIndex(i), mt);
     }
 }
 
