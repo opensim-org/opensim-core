@@ -240,8 +240,8 @@ public:
     const T& getConnectee() const {
         if (!isConnected()) {
             std::string msg = getOwner().getConcreteClassName() + "::Connector '"
-                + getName() + " is not connected to '";// +get_connectee_name(0) +
-                //"' of type " + T::getClassName();
+                + getName() + "' is not connected to '" + getConnecteeName()
+                + "' of type " + T::getClassName();
             OPENSIM_THROW(Exception, msg);
         }
         return connectee.getRef();
