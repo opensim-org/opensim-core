@@ -7,13 +7,8 @@
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
-%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
-%template(ModelComponentSetModelComponent) 
-    OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ComponentSet.h>
-
-%template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
 
 %include <OpenSim/Simulation/Solver.h>
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>

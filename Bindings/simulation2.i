@@ -1,3 +1,10 @@
+%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
+
+%template(ModelComponentSetModelComponent) 
+    OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
+
+%template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
+
 // Following three lines hacked in out of order to work around WrapObjects 
 // use in PhysicalFrame.
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
