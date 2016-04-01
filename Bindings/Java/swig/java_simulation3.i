@@ -1,17 +1,11 @@
-%module(directors="1") opensimModel
-%module opensimModel
+%module(directors="1") opensimModelSimulation3
+%module opensimModelSimulation3
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
 %{
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
-#include <Bindings/OpenSimHeaders_actuators.h>
-#include <Bindings/OpenSimHeaders_analyses.h>
-#include <Bindings/OpenSimHeaders_tools.h>
-#include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 using namespace OpenSim;
@@ -39,13 +33,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 
-%import "java_simulation3.i"
+%import "java_simulation2.i"
 
-%include <Bindings/actuators.i>
-%include <Bindings/analyses.i>
-%include <Bindings/tools.i>
-%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-%include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
-%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
+%include <Bindings/simulation3.i>

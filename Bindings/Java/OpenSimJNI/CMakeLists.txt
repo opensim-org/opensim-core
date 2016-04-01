@@ -123,6 +123,35 @@ add_custom_command(
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
     # but we will just use these two files as a proxy for all of those.
+    OUTPUT ${SWIG_JAVA_SIMULATION3_CXX_FILE} ${SWIG_JAVA_SIMULATION3_H_FILE}
+    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
+        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+        -I${OpenSim_SOURCE_DIR}
+        -I${OpenSim_SOURCE_DIR}/Bindings
+        -I${Simbody_INCLUDE_DIR}
+        ${SWIG_FLAGS}
+        -o ${SWIG_JAVA_SIMULATION3_CXX_FILE}
+        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+        ${SWIG_JAVA_SIMULATION3_INTERFACE_FILE}
+    DEPENDS ${SWIG_JAVA_SIMULATION3_INTERFACE_FILE}
+            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
+            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
+    COMMENT "Generating Java bindings source code with SWIG -- simulation 3.")
+
+add_custom_command(
+    # This target actually creates a lot more (all the produced .java files); 
+    # but we will just use these two files as a proxy for all of those.
     OUTPUT ${SWIG_JAVA_ACTUATORS_CXX_FILE} ${SWIG_JAVA_ACTUATORS_H_FILE}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
@@ -166,6 +195,8 @@ add_library(osim${KIT}
     ${SWIG_JAVA_SIMULATION1_H_FILE}
     ${SWIG_JAVA_SIMULATION2_CXX_FILE} 
     ${SWIG_JAVA_SIMULATION2_H_FILE}
+    ${SWIG_JAVA_SIMULATION3_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION3_H_FILE}
     ${SWIG_JAVA_ACTUATORS_CXX_FILE} 
     ${SWIG_JAVA_ACTUATORS_H_FILE} 
     OpenSimContext.cpp
