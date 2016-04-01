@@ -1,3 +1,13 @@
+%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
+%template(ModelComponentSetControllers) 
+    OpenSim::ModelComponentSet<OpenSim::Controller>;
+%include <OpenSim/Simulation/Model/ControllerSet.h>
+%template(ModelComponentSetExternalForces) 
+    OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
+%include <OpenSim/Simulation/Model/ExternalLoads.h>
+%include <OpenSim/Simulation/Model/PrescribedForce.h>
+%include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
+
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
 %template(ModelComponentSetContactGeometry) 
     OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;

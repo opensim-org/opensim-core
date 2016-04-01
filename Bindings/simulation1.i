@@ -96,16 +96,6 @@
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
 %include <OpenSim/Simulation/Control/Controller.h>
-%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
-%template(ModelComponentSetControllers) 
-    OpenSim::ModelComponentSet<OpenSim::Controller>;
-%include <OpenSim/Simulation/Model/ControllerSet.h>
-%template(ModelComponentSetExternalForces) 
-    OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
-%include <OpenSim/Simulation/Model/ExternalLoads.h>
-%include <OpenSim/Simulation/Model/PrescribedForce.h>
-%include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
-
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %include <OpenSim/Simulation/Model/Analysis.h>
 
