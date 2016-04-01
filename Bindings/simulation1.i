@@ -117,11 +117,7 @@
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 
-%include <OpenSim/Simulation/Model/Actuator.h>
-%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
 %include <OpenSim/Simulation/Model/Analysis.h>
-%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
-%include <OpenSim/Simulation/Model/AnalysisSet.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe>;
