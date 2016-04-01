@@ -112,3 +112,48 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
     return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
             aFrame);
 }
+
+SimTK::Vec3 Station::findLocationInGround(const SimTK::State& s) const
+{
+    // Get the transform from the station's frame to the other frame
+    SimTK::Vec3 currentLocation = get_location();
+    
+    // Get station's physical frame
+    const PhysicalFrame& frame = getReferenceFrame();
+    // Get the frame's mobilized body
+    auto&  mb = frame.getMobilizedBody();
+    
+    // Use simbody method to get the location in ground
+    return mb.findStationLocationInGround(s,currentLocation);
+    
+}
+
+SimTK::Vec3 Station::findVelocityInGround(const SimTK::State& s) const
+{
+    // Get stations current location
+    SimTK::Vec3 currentLocation = get_location();
+    
+    // Get station's physical frame
+    const PhysicalFrame& frame = getReferenceFrame();
+    // Get the frame's mobilized body
+    auto&  mb = frame.getMobilizedBody();
+    
+    // Use simbody method to get the velocity in ground
+    return mb.findStationVelocityInGround(s, currentLocation);
+    
+}
+
+SimTK::Vec3 Station::findAccelerationInGround(const SimTK::State& s) const
+{
+    // Get stations current location
+    SimTK::Vec3 currentLocation = get_location();
+    
+    // Get station's physical frame
+    const PhysicalFrame& frame = getReferenceFrame();
+    
+    // Get the frame's mobilized body
+    auto&  mb = frame.getMobilizedBody();
+    
+    // Use simbody method to get the acceleration in ground
+    return mb.findStationAccelerationInGround(s, currentLocation);
+}
