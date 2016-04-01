@@ -1,3 +1,13 @@
+%include <OpenSim/Simulation/Control/Control.h>
+%template(SetControls) OpenSim::Set<OpenSim::Control>;
+%include <OpenSim/Simulation/Control/ControlSet.h>
+%include <OpenSim/Simulation/Control/ControlConstant.h>
+%include <OpenSim/Simulation/Control/ControlLinearNode.h>
+%template(SetControlNodes) OpenSim::ArrayPtrs<OpenSim::ControlLinearNode>;
+%include <OpenSim/Simulation/Control/ControlLinear.h>
+%include <OpenSim/Simulation/Control/Controller.h>
+%include <OpenSim/Simulation/Control/PrescribedController.h>
+
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
 %include <OpenSim/Simulation/Model/Station.h>
