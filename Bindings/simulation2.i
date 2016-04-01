@@ -1,3 +1,17 @@
+//%include <OpenSim/Simulation/Wrap/WrapObject.h>
+%include <OpenSim/Simulation/Wrap/WrapSphere.h>
+%include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+%include <OpenSim/Simulation/Wrap/WrapTorus.h>
+%include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
+//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+%include <OpenSim/Simulation/Wrap/PathWrap.h>
+%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
+%include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+%include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
+%include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
+%include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
+
 %include <OpenSim/Simulation/Model/PathPoint.h>
 %include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
