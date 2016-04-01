@@ -55,10 +55,6 @@
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-%template(SetJoints) OpenSim::Set<OpenSim::Joint>;
-%template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
-%include <OpenSim/Simulation/Model/JointSet.h>
-
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %include <OpenSim/Simulation/Model/Force.h>
 %include <OpenSim/Simulation/Control/Controller.h>

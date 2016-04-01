@@ -1,3 +1,7 @@
+%template(SetJoints) OpenSim::Set<OpenSim::Joint>;
+%template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
+%include <OpenSim/Simulation/Model/JointSet.h>
+
 %template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
 %template(ModelComponentSetConstraints) 
     OpenSim::ModelComponentSet<OpenSim::Constraint>;
