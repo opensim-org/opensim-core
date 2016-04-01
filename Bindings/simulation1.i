@@ -37,10 +37,6 @@
 %include <OpenSim/Simulation/Model/FrameSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
-%template(SetBodies) OpenSim::Set<OpenSim::Body>;
-%template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
-%include <OpenSim/Simulation/Model/BodySet.h>
-
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %include <OpenSim/Simulation/Model/Force.h>
