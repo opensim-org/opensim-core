@@ -22,8 +22,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   static {
       try{
           // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimJavaJNISimbody");
-          System.loadLibrary("osimJavaJNICommon");
           System.loadLibrary("osimJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
