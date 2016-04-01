@@ -66,12 +66,6 @@
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
-%template(SetForces) OpenSim::Set<OpenSim::Force>;
-%template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
-%include <OpenSim/Simulation/Model/ForceSet.h>
-%include <OpenSim/Simulation/Model/ExternalForce.h>
-%template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
-
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %include <OpenSim/Simulation/Model/Analysis.h>
