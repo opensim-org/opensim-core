@@ -1,3 +1,13 @@
+%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
+%template(ModelComponentSetContactGeometry) 
+    OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
+%include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+%include <OpenSim/Simulation/Model/ContactHalfSpace.h>
+%include <OpenSim/Simulation/Model/ContactMesh.h>
+%include <OpenSim/Simulation/Model/ContactSphere.h>
+%include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
+%include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+
 %include <OpenSim/Simulation/Control/Control.h>
 %template(SetControls) OpenSim::Set<OpenSim::Control>;
 %include <OpenSim/Simulation/Control/ControlSet.h>

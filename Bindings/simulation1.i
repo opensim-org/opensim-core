@@ -107,16 +107,6 @@
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
-%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
-%template(ModelComponentSetContactGeometry) 
-    OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
-%include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-%include <OpenSim/Simulation/Model/ContactHalfSpace.h>
-%include <OpenSim/Simulation/Model/ContactMesh.h>
-%include <OpenSim/Simulation/Model/ContactSphere.h>
-%include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
-%include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-
 %include <OpenSim/Simulation/Model/Analysis.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
