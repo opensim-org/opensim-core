@@ -45,15 +45,6 @@
 %template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
-%include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-%include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
-%include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
-%include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-%template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
-%template(ModelComponentSetCoordinates) 
-    OpenSim::ModelComponentSet<OpenSim::Coordinate>;
-%include <OpenSim/Simulation/Model/CoordinateSet.h>
-
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %include <OpenSim/Simulation/Model/Force.h>
