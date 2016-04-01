@@ -571,10 +571,19 @@ void Model::createMultibodyTree()
                        js[i].getChildFrame().getName();
             }
 
-            // Currently we need to take a first pass at connecting the joints in 
-            // order to ask the joint for the frames that they attach to and 
-            // and determine their underlying base (physical) frames.
+            // Currently we need to take a first pass at connecting the joints
+            // in order to ask the joint for the frames that they attach to and
+            // to determine their underlying base (physical) frames.
             js[i].connect(*this);
+            // hack to make sure underlying Frame is also connected so it can 
+            // traverse to the base frame and get its name. This allows the
+            // (offset) frames to satisfy the connectors of Joint to be added
+            // to a Body, for example, and not just joint itself.
+            // TODO: try to create the multibody tree later when components
+            // can already be expected to be connected then traverse those
+            // relationships to create the multibody tree. -aseth
+            const_cast<PhysicalFrame&>(js[i].getParentFrame()).connect(*this);
+            const_cast<PhysicalFrame&>(js[i].getChildFrame()).connect(*this);
 
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
