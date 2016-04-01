@@ -1,3 +1,11 @@
+%include <OpenSim/Simulation/Manager/Manager.h>
+%include <OpenSim/Simulation/Model/AbstractTool.h>
+%include <OpenSim/Simulation/Model/Station.h>
+%include <OpenSim/Simulation/Model/Marker.h>
+%template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
+%include <OpenSim/Simulation/Model/MarkerSet.h>
+
 //%include <OpenSim/Simulation/Wrap/WrapObject.h>
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
