@@ -78,17 +78,6 @@
 %template(TwoFrameLinkerConstraint) 
     OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
 
-%include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
-%include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
-
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %include <OpenSim/Simulation/Model/Analysis.h>
