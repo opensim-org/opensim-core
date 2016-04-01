@@ -182,43 +182,19 @@ set_target_properties(osim${KIT}Common PROPERTIES
    PROJECT_LABEL "Java - osim${KIT}"
    FOLDER "Bindings")
 
-add_library(osim${KIT}Simulation1 
-    SHARED 
-    ${SWIG_JAVA_SIMULATION1_CXX_FILE} 
-    ${SWIG_JAVA_SIMULATION1_H_FILE})
-
-target_link_libraries(osim${KIT}Simulation1 
-    osim${KIT}Simbody osim${KIT}Common osimTools osimSimmFileWriter)
-    
-set_target_properties(osim${KIT}Simulation1 PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings")
-
-add_library(osim${KIT}Simulation2 
-    SHARED 
-    ${SWIG_JAVA_SIMULATION2_CXX_FILE} 
-    ${SWIG_JAVA_SIMULATION2_H_FILE})
-
-target_link_libraries(osim${KIT}Simulation2 
-    osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1 osimTools 
-    osimSimmFileWriter)
-    
-set_target_properties(osim${KIT}Simulation1 PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Java - osim${KIT}"
-   FOLDER "Bindings")
-
 add_library(osim${KIT} 
     SHARED 
+    ${SWIG_JAVA_SIMULATION1_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION1_H_FILE}
+    ${SWIG_JAVA_SIMULATION2_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION2_H_FILE}
     ${SWIG_JAVA_ACTUATORS_CXX_FILE} 
     OpenSimContext.cpp
     ${SWIG_JAVA_ACTUATORS_H_FILE} 
     OpenSimContext.h)
 
 target_link_libraries(osim${KIT} 
-    osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1 
-    osim${KIT}Simulation2 osimTools osimSimmFileWriter)
+    osim${KIT}Simbody osim${KIT}Common osimTools osimSimmFileWriter)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -236,8 +212,7 @@ endif()
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-install(TARGETS osim${KIT}Simbody osim${KIT}Common osim${KIT}Simulation1
-    osim${KIT}Simulation2 osim${KIT}
+install(TARGETS osim${KIT}Simbody osim${KIT}Common osim${KIT}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
