@@ -1,3 +1,7 @@
+%include <OpenSim/Simulation/Model/BodyScale.h>
+%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
+%include <OpenSim/Simulation/Model/BodyScaleSet.h>
+
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>

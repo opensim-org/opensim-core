@@ -41,10 +41,6 @@
 %template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodySet.h>
 
-%include <OpenSim/Simulation/Model/BodyScale.h>
-%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
-%include <OpenSim/Simulation/Model/BodyScaleSet.h>
-
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 %include <OpenSim/Simulation/Model/Force.h>
