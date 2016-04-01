@@ -1,3 +1,8 @@
+%template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
+%template(ModelComponentSetConstraints) 
+    OpenSim::ModelComponentSet<OpenSim::Constraint>;
+%include <OpenSim/Simulation/Model/ConstraintSet.h>
+
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>

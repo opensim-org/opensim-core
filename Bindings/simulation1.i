@@ -60,11 +60,6 @@
 %include <OpenSim/Simulation/Model/JointSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
-%template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
-%template(ModelComponentSetConstraints) 
-    OpenSim::ModelComponentSet<OpenSim::Constraint>;
-%include <OpenSim/Simulation/Model/ConstraintSet.h>
-
 %include <OpenSim/Simulation/Model/Force.h>
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
