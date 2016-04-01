@@ -2,11 +2,6 @@ import org.opensim.modeling.*;
 
 class TestBasics {
   public static void main(String[] args) {
-          System.loadLibrary("osimJavaJNISimbody");
-          System.loadLibrary("osimJavaJNICommon");
-          System.loadLibrary("osimJavaJNISimulation");
-          System.loadLibrary("osimJavaJNI");
-
     Model m = new Model();
     m.print("empty_model.osim");
     Frame gnd = m.getGround();
