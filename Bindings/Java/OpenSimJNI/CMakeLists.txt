@@ -4,20 +4,22 @@ set(UKIT JAVAJNI)
 # For building C++ wrapper.
 find_package(JNI 1.6 REQUIRED)
 
+function(GenerateJavaWrapper
+        INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 add_custom_command(
     # This target actually creates a lot more (all the produced .java files); 
     # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_SIMBODY_CXX_FILE} ${SWIG_JAVA_SIMBODY_H_FILE}
+    OUTPUT ${OUTPUT_CXX_FILE} ${OUTPUT_H_FILE}
     COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
         -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
         -I${OpenSim_SOURCE_DIR}
         -I${OpenSim_SOURCE_DIR}/Bindings
         -I${Simbody_INCLUDE_DIR}
         ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_SIMBODY_CXX_FILE}
+        -o ${OUTPUT_CXX_FILE}
         -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_SIMBODY_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_SIMBODY_INTERFACE_FILE}
+        ${INPUT_INTERFACE_FILE}
+    DEPENDS ${INPUT_INTERFACE_FILE}
             "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
             "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
             "${CMAKE_SOURCE_DIR}/Bindings/common.i"
@@ -32,151 +34,31 @@ add_custom_command(
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
             "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
     COMMENT "Generating Java bindings source code with SWIG -- simbody.")
+endfunction()
 
-add_custom_command(
-    # This target actually creates a lot more (all the produced .java files); 
-    # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_COMMON_CXX_FILE} ${SWIG_JAVA_COMMON_H_FILE}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_COMMON_CXX_FILE}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_COMMON_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_COMMON_INTERFACE_FILE}
-            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- common.")
+GenerateJavaWrapper(${SWIG_JAVA_SIMBODY_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMBODY_CXX_FILE}
+    ${SWIG_JAVA_SIMBODY_H_FILE})
 
-add_custom_command(
-    # This target actually creates a lot more (all the produced .java files); 
-    # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_SIMULATION1_CXX_FILE} ${SWIG_JAVA_SIMULATION1_H_FILE}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_SIMULATION1_CXX_FILE}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_SIMULATION1_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_SIMULATION1_INTERFACE_FILE}
-            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simulation 1.")
+GenerateJavaWrapper(${SWIG_JAVA_COMMON_INTERFACE_FILE}
+    ${SWIG_JAVA_COMMON_CXX_FILE}
+    ${SWIG_JAVA_COMMON_H_FILE})
 
-add_custom_command(
-    # This target actually creates a lot more (all the produced .java files); 
-    # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_SIMULATION2_CXX_FILE} ${SWIG_JAVA_SIMULATION2_H_FILE}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_SIMULATION2_CXX_FILE}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_SIMULATION2_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_SIMULATION2_INTERFACE_FILE}
-            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simulation 2.")
+GenerateJavaWrapper(${SWIG_JAVA_SIMULATION1_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMULATION1_CXX_FILE}
+    ${SWIG_JAVA_SIMULATION1_H_FILE})
 
-add_custom_command(
-    # This target actually creates a lot more (all the produced .java files); 
-    # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_SIMULATION3_CXX_FILE} ${SWIG_JAVA_SIMULATION3_H_FILE}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_SIMULATION3_CXX_FILE}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_SIMULATION3_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_SIMULATION3_INTERFACE_FILE}
-            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- simulation 3.")
+GenerateJavaWrapper(${SWIG_JAVA_SIMULATION2_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMULATION2_CXX_FILE}
+    ${SWIG_JAVA_SIMULATION2_H_FILE})
 
-add_custom_command(
-    # This target actually creates a lot more (all the produced .java files); 
-    # but we will just use these two files as a proxy for all of those.
-    OUTPUT ${SWIG_JAVA_ACTUATORS_CXX_FILE} ${SWIG_JAVA_ACTUATORS_H_FILE}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        ${SWIG_FLAGS}
-        -o ${SWIG_JAVA_ACTUATORS_CXX_FILE}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${SWIG_JAVA_ACTUATORS_INTERFACE_FILE}
-    DEPENDS ${SWIG_JAVA_ACTUATORS_INTERFACE_FILE}
-            "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation1.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/simulation2.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-            "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
-    COMMENT "Generating Java bindings source code with SWIG -- actuators.")
+GenerateJavaWrapper(${SWIG_JAVA_SIMULATION3_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMULATION3_CXX_FILE}
+    ${SWIG_JAVA_SIMULATION3_H_FILE})
+
+GenerateJavaWrapper(${SWIG_JAVA_ACTUATORS_INTERFACE_FILE}
+    ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+    ${SWIG_JAVA_ACTUATORS_H_FILE})
 
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
