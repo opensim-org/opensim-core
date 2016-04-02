@@ -1,3 +1,8 @@
+%include <OpenSim/Simulation/Model/Actuator.h>
+%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
+%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%include <OpenSim/Simulation/Model/AnalysisSet.h>
+
 %include <OpenSim/Simulation/Control/Control.h>
 %template(SetControls) OpenSim::Set<OpenSim::Control>;
 %include <OpenSim/Simulation/Control/ControlSet.h>

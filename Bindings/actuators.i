@@ -1,8 +1,3 @@
-%include <OpenSim/Simulation/Model/Actuator.h>
-%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
-%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
-%include <OpenSim/Simulation/Model/AnalysisSet.h>
-
 //osimActuators
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/CoordinateActuator.h>
