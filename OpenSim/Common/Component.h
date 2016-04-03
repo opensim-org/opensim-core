@@ -1684,7 +1684,7 @@ public:
                 // when what appears to be the complete path.
                 std::string details = msg + " Found '" + compFullPathName + 
                     "' as a match for:\n Component '" + name + "' of type " + 
-                    comp.getConcreteClassName() + " found, but it "
+                    comp.getConcreteClassName() + ", but it "
                     "is not on specified path.\n";
                 //throw Exception(details, __FILE__, __LINE__);
                 std::cout << details << std::endl;
