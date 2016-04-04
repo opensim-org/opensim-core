@@ -217,7 +217,18 @@ public:
         
         OPENSIM_THROW(KeyNotFound, columnLabel);
     }
-    
+
+    /** Check if the table has a column with the given label.                 */
+    bool hasColumnLabel(const std::string& columnLabel) const {
+        const auto& metadata = getDependentsMetaData();
+        const auto& absArray = metadata.getValueArrayForKey("labels");
+        for(size_t i = 0; i < absArray.size(); ++i)
+            if(absArray[i].getValue<std::string>() == columnLabel)
+                return true;
+
+        return false;
+    }
+
 protected:
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
