@@ -27,7 +27,7 @@ env:
     - OPENSIM_HOME=~/opensim-core
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
-    - SWIG_VER=3.0.5
+    - SWIG_VER=3.0.6
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
