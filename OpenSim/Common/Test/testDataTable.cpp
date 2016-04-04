@@ -50,6 +50,10 @@ int main() {
     TimeSeriesTable table{};
     {
         table.setColumnLabels({"0", "1", "2", "3"});
+        assert(table.hasColumnLabel("1"));
+        assert(table.hasColumnLabel("2"));
+        assert(!table.hasColumnLabel("column-does-not-exist"));
+
         const auto& labels = table.getColumnLabels();
         for(size_t i = 0; i < labels.size(); ++i) 
             if(labels.at(i) != std::to_string(i))
