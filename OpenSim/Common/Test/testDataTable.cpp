@@ -54,6 +54,15 @@ int main() {
         assert(table.hasColumn("2"));
         assert(!table.hasColumn("column-does-not-exist"));
 
+        table.setColumnLabel(0, "zero");
+        table.setColumnLabel(2, "two");
+        
+        assert(table.getColumnLabel(0) == "zero");
+        assert(table.getColumnLabel(2) == "two");
+
+        table.setColumnLabel(0, "0");
+        table.setColumnLabel(2, "2");
+
         const auto& labels = table.getColumnLabels();
         for(size_t i = 0; i < labels.size(); ++i) 
             if(labels.at(i) != std::to_string(i))
