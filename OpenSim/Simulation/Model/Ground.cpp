@@ -48,10 +48,20 @@ Ground::Ground() : PhysicalFrame()
 /*
 * Implementation of Frame interface by Ground.
 */
-SimTK::Transform Ground::
-    calcGroundTransform(const SimTK::State& s) const
+SimTK::Transform Ground::calcTransformInGround(const SimTK::State& s) const
 {
     return SimTK::Transform();
+}
+
+SimTK::SpatialVec Ground::calcVelocityInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
+}
+
+/** The spatial acceleration {alpha; a} for this Frame in ground */
+SimTK::SpatialVec Ground::calcAccelerationInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
 }
 
 void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const

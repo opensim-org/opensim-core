@@ -2000,7 +2000,7 @@ void testAutomaticJointReversal()
     ASSERT(knee->get_reverse() == true);
     ASSERT(ankle->get_reverse() == true);
 
-    SimTK::Transform pelvisX = pelvis->getGroundTransform(s);
+    SimTK::Transform pelvisX = pelvis->getTransformInGround(s);
     cout << "Pelvis Transform (reverse): " << pelvisX << endl;
 
     model.print("reversedLegWeldJointToGround.osim");
@@ -2056,7 +2056,7 @@ void testAutomaticJointReversal()
     modelConstrained.dumpSubcomponents();
     SimTK::State& sc = modelConstrained.initSystem();
 
-    SimTK::Transform pelvisXc = cpelvis.getGroundTransform(sc);
+    SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);
     cout << "Shank Transform (constrained): " << pelvisXc << endl;
 
     modelConstrained.print("forwardLegWeldConstraintToGround.osim");

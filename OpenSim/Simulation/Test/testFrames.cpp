@@ -132,11 +132,11 @@ void testBody()
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
         coord.setValue(s, radAngle);
 
-        const SimTK::Transform& xform = rod1.getGroundTransform(s);
+        const SimTK::Transform& xform = rod1.getTransformInGround(s);
 
         now = std::clock();
         for (int i = 0; i < 1000; ++i){
-            /*const SimTK::Transform& xform1 = */rod1.getGroundTransform(s);
+            /*const SimTK::Transform& xform1 = */rod1.getTransformInGround(s);
         }
         after = std::clock();
         lookup_time += (after-now);
@@ -176,8 +176,8 @@ void testPhysicalOffsetFrameOnBody()
     pendulum->addFrame(offsetFrame);
 
     SimTK::State& s = pendulum->initSystem();
-    const SimTK::Transform& X_GR = rod1.getGroundTransform(s);
-    const SimTK::Transform& X_GO = offsetFrame->getGroundTransform(s);
+    const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
+    const SimTK::Transform& X_GO = offsetFrame->getTransformInGround(s);
 
     // Compute the offset transform based on frames expressed in ground
     SimTK::Transform X_RO_2 = ~X_GR*X_GO;
@@ -261,8 +261,8 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     const Frame& base = secondFrame->findBaseFrame();
     SimTK::Transform XinBase = secondFrame->findTransformInBaseFrame();
 
-    const SimTK::Transform& X_GR = rod1.getGroundTransform(s);
-    const SimTK::Transform& X_GO = secondFrame->getGroundTransform(s);
+    const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
+    const SimTK::Transform& X_GO = secondFrame->getTransformInGround(s);
 
     SimTK::Vec3 angs_known = XinBase.R().convertRotationToBodyFixedXYZ();
 
@@ -310,7 +310,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
     pendulum->addFrame(offsetFrame);
 
     SimTK::State& s1 = pendulum->initSystem();
-    const SimTK::Transform& X_GO_1 = offsetFrame->getGroundTransform(s1);
+    const SimTK::Transform& X_GO_1 = offsetFrame->getTransformInGround(s1);
     pendulum->print("double_pendulum_extraFrame.osim");
     // now read the model from file
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
@@ -321,7 +321,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
         dynamic_cast<const PhysicalFrame&>(pendulumWFrame->getComponent("myExtraFrame"));
     ASSERT(*offsetFrame == myExtraFrame);
 
-    const SimTK::Transform& X_GO_2 = myExtraFrame.getGroundTransform(s2);
+    const SimTK::Transform& X_GO_2 = myExtraFrame.getTransformInGround(s2);
     ASSERT_EQUAL(X_GO_2.p(), X_GO_1.p(), tolerance, __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect expression of offset in ground.");
     ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(), 

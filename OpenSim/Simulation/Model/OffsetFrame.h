@@ -153,7 +153,13 @@ public:
 protected:
     /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
     SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
+        calcTransformInGround(const SimTK::State& state) const override;
+    /** The spatial velocity {omega; v} for this OffsetFrame in ground. */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override;
+    /** The spatial acceleration {alpha; a} for this OffsetFrame in ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override;
 
     /** Extend how OffsetFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override final;
@@ -247,9 +253,24 @@ void OffsetFrame<C>::constructConnectors()
 // Implementation of Frame interface by OffsetFrame.
 template <class C>
 SimTK::Transform OffsetFrame<C>::
-calcGroundTransform(const SimTK::State& s) const
+calcTransformInGround(const SimTK::State& s) const
 {
-    return getParentFrame().getGroundTransform(s)*getOffsetTransform();
+    return getParentFrame().getTransformInGround(s)*getOffsetTransform();
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcVelocityInGround(const SimTK::State& state) const
+{
+    const SimTK::Vec3& r = getTransformInGround(state).p();
+    return Super::getVelocityInGround(state);
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcAccelerationInGround(const SimTK::State& state) const
+{
+    return Super::getAccelerationInGround(state);
 }
 
 //=============================================================================
