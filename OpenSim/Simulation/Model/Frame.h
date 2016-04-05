@@ -93,7 +93,7 @@ public:
     //=============================================================================
     OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3, getPositionInGround,
         SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getGroundTransform,
+    OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getTransformInGround,
         SimTK::Stage::Position);
 
     /** @name Spatial Operations for Frames
@@ -112,7 +112,25 @@ public:
                        transform.
     @return transform  The transform between this frame and the ground frame
     */
-    const SimTK::Transform& getGroundTransform(const SimTK::State& state) const;
+    const SimTK::Transform&
+        getTransformInGround(const SimTK::State& state) const;
+
+    /** The spatial velocity V_GF {omega; v} for this Frame in ground.
+        It can be used to compute the velocity of any stationary point on F,
+        located at r_F (Vec3), in ground, G, as:
+            v_G = V_GF(0)*r_F + V_GF(1);
+        Is only valid at Stage::Velocity or higher. */
+    const SimTK::SpatialVec&
+        getVelocityInGround(const SimTK::State& state) const;
+
+    /** The spatial acceleration A_GF {alpha; a} for this Frame in ground.
+        It can also be used to compute the acceleration of any stationary point
+        on F, located at r_F (Vec3), in ground, G, as:
+            a_G = A_GF(0)*r_F + A_GF(1);
+        Is only valid at Stage::Acceleration or higher. */
+    const SimTK::SpatialVec&
+        getAccelerationInGround(const SimTK::State& state) const;
+
 
     /**
     Find the transform that describes this frame (F) relative to another
@@ -195,7 +213,7 @@ public:
 
     /** Accessor for position of the origin of the Frame in Ground. */
     SimTK::Vec3 getPositionInGround(const SimTK::State& state) const {
-        return getGroundTransform(state).p();
+        return getTransformInGround(state).p();
     };
 
     // End of Base Frame and Transform accessors
@@ -237,14 +255,24 @@ private:
     This is mathematically stated as:
         vec_G = X_GF*vec_F  */
     virtual SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const = 0;
+        calcTransformInGround(const SimTK::State& state) const = 0;
+
+    /** The spatial velocity {omega; v} for this Frame in ground. */
+    virtual SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const = 0;
+
+    /** The spatial acceleration {alpha; a} for this Frame in ground */
+    virtual SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const = 0;
 
     /** Extend how concrete Frame determines its base Frame. */
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
     /**@}**/
 
-    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _groundTransformIndex;
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
 
 //=============================================================================
 };  // END of class Frame
