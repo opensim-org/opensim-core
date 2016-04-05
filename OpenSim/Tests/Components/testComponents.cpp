@@ -53,6 +53,13 @@ int main()
         availableComponents.push_back(availableFrames[i]);
     }
 
+    // starting with type Frame
+    ArrayPtrs<Point> availablePoints;
+    Object::getRegisteredObjectsOfGivenType(availablePoints);
+    for (int i = 0; i < availablePoints.size(); ++i) {
+        availableComponents.push_back(availablePoints[i]);
+    }
+
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
