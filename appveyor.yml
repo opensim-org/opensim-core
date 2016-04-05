@@ -59,7 +59,7 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
-  - cmake --build . --config Release -- /maxcpucount:4 # /verbosity:quiet
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
@@ -72,14 +72,14 @@ build_script:
   # Hack to avoid error MSB3191: Unable to create directory "C:\projects\opensim_build\Release\"
   # which may result from parallel jobs trying to create this directory.
   - cmake --build . --target SimbodyFiles --config Release
-  - cmake --build . --config Release -- /maxcpucount:4 # /verbosity:quiet #/p:TreatWarningsAsErrors="true"
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
 test_script:
   ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure
 
   ## Ensure we have no trouble installing.
-  - cmake --build . --target install --config Release -- /maxcpucount:4 # /verbosity:quiet
+  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
   ## Test python wrapping.
   - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
