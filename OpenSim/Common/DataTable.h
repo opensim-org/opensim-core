@@ -196,6 +196,18 @@ public:
         return labels;
     }
 
+    /** Get column label of a given column.                                   */
+    const std::string& getColumnLabel(const size_t columnIndex) const {
+        const auto& labels = 
+            _dependentsMetaData.getValueArrayForKey("labels");
+        
+        OPENSIM_THROW_IF(columnIndex >= labels.size(),
+                         ColumnIndexOutOfRange,
+                         columnIndex, 0, labels.size());
+
+        return labels[columnIndex].getValue<std::string>();
+    }
+
     /** Set column labels.                                                    */
     void setColumnLabels(const std::vector<std::string>& columnLabels) {
         ValueArray<std::string> newLabels{};
