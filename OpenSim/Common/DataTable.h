@@ -219,7 +219,7 @@ public:
     }
 
     /** Check if the table has a column with the given label.                 */
-    bool hasColumnLabel(const std::string& columnLabel) const {
+    bool hasColumn(const std::string& columnLabel) const {
         const auto& metadata = getDependentsMetaData();
         const auto& absArray = metadata.getValueArrayForKey("labels");
         for(size_t i = 0; i < absArray.size(); ++i)
