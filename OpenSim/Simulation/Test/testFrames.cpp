@@ -28,7 +28,6 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
-    5. Station on a PhysicalFrame computations 
       
      Add tests here as Frames are added to OpenSim
 
@@ -46,7 +45,6 @@ void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
-void testStationOnFrame();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -90,11 +88,6 @@ int main()
     catch (const std::exception& e){
         cout << e.what() << endl;
         failures.push_back("testFilterByFrameType");
-    }
-
-    try { testStationOnFrame(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; failures.push_back("testStationOnFrame");
     }
 
     if (!failures.empty()) {
@@ -389,38 +382,5 @@ void testFilterByFrameType()
     }
     ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
-}
-
-
-void testStationOnFrame()
-{
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
-    cout << "Running testStationOnFrame" << endl;
-
-    Model* pendulum = new Model("double_pendulum.osim");
-    // Get "rod1" frame
-    const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
-    const SimTK::Vec3& com = rod1.get_mass_center();
-    // Create station aligned with rod1 com in rod1_frame
-    Station* myStation = new Station();
-    myStation->set_location(com);
-    myStation->updConnector<PhysicalFrame>("reference_frame")
-        .setConnecteeName("rod1");
-    pendulum->addModelComponent(myStation);
-    // myStation should coincide with com location of rod1 in ground
-    SimTK::State& s = pendulum->initSystem();
-    for (double ang = 0; ang <= 90.0; ang += 10.){
-        double radAngle = SimTK::convertDegreesToRadians(ang);
-        const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
-        coord.setValue(s, radAngle);
-
-        SimTK::Vec3 comInGround = 
-            myStation->findLocationInFrame(s, pendulum->getGround());
-        SimTK::Vec3 comBySimbody = 
-            rod1.getMobilizedBody().findStationLocationInGround(s, com);
-        ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnFrame(): failed to resolve station position in ground.");
-    }
 }
 
