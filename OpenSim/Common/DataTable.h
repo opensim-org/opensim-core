@@ -229,6 +229,11 @@ public:
         return false;
     }
 
+    /** Check if the table has a column with the given index.                 */
+    bool hasColumn(const size_t columnIndex) const {
+        return columnIndex < getNumColumns();
+    }
+
 protected:
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
