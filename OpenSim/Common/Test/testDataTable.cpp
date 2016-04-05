@@ -90,6 +90,10 @@ int main() {
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
 
+    assert(table.hasColumn(0));
+    assert(table.hasColumn(2));
+    assert(!table.hasColumn(100));
+
     // Print out the DataTable to console.
     std::cout << table << std::endl;
 
