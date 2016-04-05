@@ -1076,7 +1076,6 @@ void testFreeJoint()
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
         hip_coords[i].setName(coord_name.str());
-        hip_coords[i].setMotionType(((i<3) ? Coordinate::Rotational : Coordinate::Translational));
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1495,9 +1494,7 @@ void testPlanarJoint()
     CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
     kneeCoords[0].setName("knee_rz");
     kneeCoords[0].setName("knee_tx");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
     kneeCoords[0].setName("knee_ty");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
