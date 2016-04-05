@@ -209,8 +209,8 @@ public:
 
     /** Get index of a column label.                                          */
     size_t getColumnIndex(const std::string& columnLabel) const {
-        const auto& metadata = getDependentsMetaData();
-        const auto& absArray = metadata.getValueArrayForKey("labels");
+        const auto& absArray = 
+            _dependentsMetaData.getValueArrayForKey("labels");
         for(size_t i = 0; i < absArray.size(); ++i)
             if(absArray[i].getValue<std::string>() == columnLabel)
                 return i;
@@ -220,8 +220,8 @@ public:
 
     /** Check if the table has a column with the given label.                 */
     bool hasColumn(const std::string& columnLabel) const {
-        const auto& metadata = getDependentsMetaData();
-        const auto& absArray = metadata.getValueArrayForKey("labels");
+        const auto& absArray = 
+            _dependentsMetaData.getValueArrayForKey("labels");
         for(size_t i = 0; i < absArray.size(); ++i)
             if(absArray[i].getValue<std::string>() == columnLabel)
                 return true;
