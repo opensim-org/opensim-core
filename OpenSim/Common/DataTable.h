@@ -187,8 +187,8 @@ public:
 
     /** Get column labels.                                                    */
     std::vector<std::string> getColumnLabels() const {
-        const auto& metadata = getDependentsMetaData();
-        const auto& absArray = metadata.getValueArrayForKey("labels");
+        const auto& absArray = 
+            _dependentsMetaData.getValueArrayForKey("labels");
         std::vector<std::string> labels{};
         for(size_t i = 0; i < absArray.size(); ++i)
             labels.push_back(absArray[i].getValue<std::string>());
