@@ -1850,7 +1850,7 @@ protected:
                 const SimTK::State& s, const std::string&, T& result) -> void {
             result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
-        return constructOutput<T>(name, outputFunc, dependsOn);
+        return this->constructOutput<T>(name, outputFunc, dependsOn);
     }
     /** This variant handles component member functions that return the
      * output value by const reference (const T&). 
@@ -1872,7 +1872,7 @@ protected:
                 const SimTK::State& s, const std::string&, T& result) -> void {
             result = std::mem_fn(memFunc)(dynamic_cast<const CompType*>(comp), s);
         };
-        return constructOutput<T>(name, outputFunc, dependsOn);
+        return this->constructOutput<T>(name, outputFunc, dependsOn);
     }
     /** Construct an output that can have multiple channels. You add Channels
     to this Output in extendFinalizeFromProperties() using
@@ -1899,7 +1899,7 @@ protected:
             result = std::mem_fn(memFunc)(
                     dynamic_cast<const CompType*>(comp), s, channel);
         };
-        return constructOutput<T>(name, outputFunc, dependsOn, true);
+        return this->constructOutput<T>(name, outputFunc, dependsOn, true);
     }
 #endif
 
@@ -2010,7 +2010,7 @@ private:
         if (_outputsTable.count(name) == 1) {
             throw Exception("Output with name '" + name + "' already exists.");
         }
-        _outputsTable[name].reset(
+        this->_outputsTable[name].reset(
                 new Output<T>(name, outputFunction, dependsOn, isList));
         return true;
     }

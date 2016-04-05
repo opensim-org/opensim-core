@@ -27,10 +27,12 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/Force.h>
 
 namespace OpenSim {
 
-class PhysicalOffsetFrame;
+
+
 
 //=============================================================================
 //=============================================================================
@@ -59,6 +61,22 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
+    
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(deflection, SimTK::Vec6, computeDeflection,
+                           SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(deflection_rate, SimTK::Vec6, computeDeflectionRate,
+                           SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(relative_velocity, SimTK::SpatialVec,
+                           computeRelativeVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(relative_offset, SimTK::Transform,
+                           computeRelativeOffset, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(forces_on_frame1, SimTK::SpatialVec,
+                           computeForcesOnFrame1, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(forces_on_frame2, SimTK::SpatialVec,
+                           computeForcesOnFrame2, SimTK::Stage::Dynamics);
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -169,6 +187,22 @@ public:
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
+    /** Compute the force and moment this component applies on frame1, if any. 
+        @return F   SpatialVec where F[0] is the Vec3 moment, and F[1] is 
+                    the Vec3 force this component applies on frame1*/
+    SimTK::SpatialVec computeForcesOnFrame1(const SimTK::State& s) const
+    {
+        return SimTK::SpatialVec();
+    }
+    
+    /** Compute the force and moment this component applies on frame2, if any.
+     @return F   SpatialVec where F[0] is the Vec3 moment, and F[1] is
+                 the Vec3 force this component applies on frame1*/
+    SimTK::SpatialVec computeForcesOnFrame2(const SimTK::State& s) const
+    {
+        return SimTK::SpatialVec();
+    }
+    
     /**
     * Scale the TwoFrameLinker component according to XYZ scale factors.
     * Associate PhysicalFrames. Generic behavior is to scale the locations
@@ -236,14 +270,15 @@ private:
     mutable SimTK::ReferencePtr<const F> _frame1;
     mutable SimTK::ReferencePtr<const F> _frame2;
 
+
 //=============================================================================
-}; // END of class OffsetFrame
+}; // END of class TwoFrameLinker<C,F>
 //=============================================================================
 
 
 
 //=============================================================================
-// Implementation of OffsetFrame<C> template methods
+// Implementation of TwoFrameLinker<C,F> template methods
 //=============================================================================
 // Default constructor
 template <class C, class F>
@@ -662,5 +697,76 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
 }
 
 
+template<>
+inline SimTK::SpatialVec TwoFrameLinker<OpenSim::Force,
+                                        OpenSim::PhysicalFrame>::
+                            computeForcesOnFrame1(const SimTK::State &s) const
+{
+    const SimTK::MultibodySystem& system = getSystem();
+    SimTK::Vector_<SimTK::SpatialVec> bodyForces(system.getMatterSubsystem()
+                                                       .getNumBodies());
+    SimTK::Vector generalizedForces(system.getMatterSubsystem()
+                                          .getNumMobilities());
+    computeForce(s, bodyForces, generalizedForces);
+    
+    const PhysicalFrame& frame1 = getFrame1();
+    
+    // get load at body1 origin
+    SimTK::SpatialVec F_GB1 = bodyForces[getFrame1().getMobilizedBodyIndex()];
+    
+    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody()
+                                          .getBodyTransform(s);
+    SimTK::Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
+    
+    // Shift forces from body to frame 1 origin
+    SimTK::SpatialVec F_GF1(F_GB1[0] - p_B1F_G % F_GB1[1], F_GB1[1]);
+    
+    // re-express in frame1 basis
+    const SimTK::Transform X_GF1 = frame1.getGroundTransform(s);
+    SimTK::SpatialVec F_F1(X_GF1.RInv()*F_GF1[0], X_GF1.RInv()*F_GF1[1]);
+    
+    return F_F1;
+    
+}
+
+
+
+template<> 
+inline SimTK::SpatialVec TwoFrameLinker<OpenSim::Force,
+                                        OpenSim::PhysicalFrame>::
+                            computeForcesOnFrame2(const SimTK::State &s) const
+{
+    const SimTK::MultibodySystem& system = getSystem();
+    SimTK::Vector_<SimTK::SpatialVec> bodyForces(system.getMatterSubsystem()
+                                                 .getNumBodies());
+    SimTK::Vector generalizedForces(system.getMatterSubsystem()
+                                    .getNumMobilities());
+    computeForce(s, bodyForces, generalizedForces);
+    
+    const PhysicalFrame& frame2 = getFrame2();
+    
+    // get load at body2 origin
+    SimTK::SpatialVec F_GB2 = bodyForces[getFrame2().getMobilizedBodyIndex()];
+    
+    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody()
+    .getBodyTransform(s);
+    SimTK::Vec3 p_B2F_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
+    
+    // Shift forces from body to frame 1 origin
+    SimTK::SpatialVec F_GF2(F_GB2[0] - p_B2F_G % F_GB2[1], F_GB2[1]);
+    
+    // re-express in frame1 basis
+    const SimTK::Transform X_GF2 = frame2.getGroundTransform(s);
+    SimTK::SpatialVec F_F2(X_GF2.RInv()*F_GF2[0], X_GF2.RInv()*F_GF2[1]);
+    
+    return F_F2;
+    
+}
+
+    
+
+
 } // end of namespace OpenSim
 #endif // OPENSIM_TWO_FRAME_LINKER_H_
+
+

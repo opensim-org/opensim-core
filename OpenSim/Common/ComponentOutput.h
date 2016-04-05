@@ -386,7 +386,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    bool _has_output_##oname { this->template constructOutput<T>(#oname, &Self::func, ostage) }; \
     /** @endcond                                                         */
     
 /**
