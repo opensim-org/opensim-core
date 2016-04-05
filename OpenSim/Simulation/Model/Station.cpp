@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -40,11 +40,19 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Station::Station() :
-   ModelComponent()
+Station::Station() : Super()
 {
     setNull();
     constructInfrastructure();
+}
+
+Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location)
+    : Super()
+{
+    setNull();
+    constructInfrastructure();
+    setReferenceFrame(frame);
+    set_location(location);
 }
 
 //_____________________________________________________________________________
@@ -82,23 +90,17 @@ void Station::constructConnectors()
     constructConnector<PhysicalFrame>("reference_frame");
 }
 
-/**
+/*
  * Return the reference frame with respect to which this station is defined
- *
 */
 const PhysicalFrame& Station::getReferenceFrame() const
 {
     return getConnector<PhysicalFrame>("reference_frame").getConnectee();
 }
-/**
- * setReferenceFrame sets the "reference_frame" connection
- *
- * @param aFrame a frame to be used as reference. 
- * 
- */
-// TODO: Connection is based on name so it may make more sense to pass in name instead
-// TODO: Not clear what to do when connection is re-established or who would trigger it
 
+/*
+ * setReferenceFrame sets the "reference_frame" connection
+ */
 void Station::setReferenceFrame(const OpenSim::PhysicalFrame& aFrame)
 {
     updConnector<PhysicalFrame>("reference_frame").connect(aFrame);
@@ -107,8 +109,26 @@ void Station::setReferenceFrame(const OpenSim::PhysicalFrame& aFrame)
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
-    // Get the transform from the station's frame to the other frame
-    SimTK::Vec3 currentLocation = get_location();
-    return getReferenceFrame().findLocationInAnotherFrame(s, currentLocation,
-            aFrame);
+    // transform location from the station's frame to the other frame
+    return getReferenceFrame().findLocationInAnotherFrame(s, 
+                                                get_location(), aFrame);
+}
+
+SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
+{
+    return getReferenceFrame().getTransformInGround(s)*get_location();
+}
+
+SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
+{
+    const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+    return V_GF[1] + V_GF[0] % getLocationInGround(s);
+}
+
+SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
+{
+    const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+    const SimTK::SpatialVec& A_GF = getReferenceFrame().getAccelerationInGround(s);
+    const Vec3& r = getLocationInGround(s);
+    return A_GF[1] + A_GF[0]%r +  V_GF[0] % V_GF[0] % r ;
 }
