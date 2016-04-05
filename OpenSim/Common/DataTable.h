@@ -219,6 +219,35 @@ public:
         validateDependentsMetaData();
     }
 
+    /** Set the label for a column.                                           */
+    void setColumnLabel(const size_t columnIndex,
+                        const std::string& columnLabel) {
+        using namespace SimTK;
+        using namespace std;
+
+        ValueArray<std::string> newLabels{};
+        const auto& oldLabels = 
+            _dependentsMetaData.getValueArrayForKey("labels");
+
+        OPENSIM_THROW_IF(columnIndex >= oldLabels.size(),
+                         ColumnIndexOutOfRange,
+                         columnIndex, 0, oldLabels.size());
+
+        for(unsigned i = 0; i < oldLabels.size(); ++i) {
+            if(i == columnIndex) {
+                newLabels.upd().push_back(Value<string>(columnLabel));
+            } else {
+                auto value = Value<string>(oldLabels[i].getValue<string>());
+                newLabels.upd().push_back(value);
+            }
+        }
+
+        _dependentsMetaData.removeValueArrayForKey("labels");
+        _dependentsMetaData.setValueArrayForKey("labels", newLabels);
+
+        validateDependentsMetaData();
+    }
+
     /** Get index of a column label.                                          */
     size_t getColumnIndex(const std::string& columnLabel) const {
         const auto& absArray = 
