@@ -208,18 +208,45 @@ public:
         return labels[columnIndex].getValue<std::string>();
     }
 
-    /** Set column labels.                                                    */
-    void setColumnLabels(const std::vector<std::string>& columnLabels) {
-        ValueArray<std::string> newLabels{};
-        for(const auto& label : columnLabels)
-            newLabels.upd().push_back(SimTK::Value<std::string>(label));
+    /** %Set column labels using a pair of iterators.
+
+    \param first InputIterator representing the beginning of the sequence of
+                 labels.
+    \param last  InputIterator representing the sentinel or one past the end of
+                 sequence of labels.                                          */
+    template<typename InputIt>
+    void setColumnLabels(InputIt first, InputIt last) {
+        ValueArray<std::string> labels{};
+        for(auto it = first; it != last; ++it)
+            labels.upd().push_back(SimTK::Value<std::string>(*it));
         _dependentsMetaData.removeValueArrayForKey("labels");
-        _dependentsMetaData.setValueArrayForKey("labels", newLabels);
+        _dependentsMetaData.setValueArrayForKey("labels", labels);
 
         validateDependentsMetaData();
     }
 
-    /** Set the label for a column.                                           */
+    /** %Set column labels using a container.
+
+    \tparam Container Any container type (like std::vector, std::list or your 
+                      own) that supports begin() and end(). Type of the values
+                      produced by iterator should be std::string.             */
+    template<typename Container>
+    void setColumnLabels(const Container& columnLabels) {
+        setColumnLabels(columnLabels.begin(), columnLabels.end());
+    }
+
+    /** %Set column labels using a std::initializer_list.
+    
+    Example:
+    \code
+    setColumnLabels({"col1", "col2", "col3"});
+    \endcode                                                                  */
+    void 
+    setColumnLabels(const std::initializer_list<std::string>& columnLabels) {
+        setColumnLabels(columnLabels.begin(), columnLabels.end());
+    }
+
+    /** %Set the label for a column.                                          */
     void setColumnLabel(const size_t columnIndex,
                         const std::string& columnLabel) {
         using namespace SimTK;
