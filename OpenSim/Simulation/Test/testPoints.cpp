@@ -32,6 +32,8 @@ Tests Include:
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -127,6 +129,7 @@ void testStationOnBody()
 
 void testStationOnOffsetFrame()
 {
+    using SimTK::Vec3;
     SimTK::Vec3 tolerance(SimTK::Eps);
     SimTK::MultibodySystem system;
     SimTK::SimbodyMatterSubsystem matter(system);
@@ -134,50 +137,95 @@ void testStationOnOffsetFrame()
 
     cout << "Running testStationOnOffsetFrame" << endl;
 
-    Model* pendulum = new Model("double_pendulum.osim");
-    const OpenSim::Body& rod2 = pendulum->getBodySet().get("rod2");
+    Model pendulum;
+    pendulum.setName("pendulum3D");
+
+    auto rod1 = new Body("rod1", 0.54321, SimTK::Vec3(0.1, 0.5, 0.2),
+        SimTK::Inertia::cylinderAlongY(0.025, 0.55));
+    rod1->addGeometry(Cylinder(0.025, 0.55));
+
+    auto rod2 = rod1->clone();
+    rod2->setName("rod2");
+
+    pendulum.addBody(rod1);
+    pendulum.addBody(rod2);
+
+    auto hip = new GimbalJoint("hip", pendulum.getGround(), Vec3(0), Vec3(1, 2, 3),
+                        *rod1, Vec3(0, 0.25, 0), Vec3(0.9, 0.5, 0.2));
+
+    auto knee = new EllipsoidJoint("knee", *rod1, Vec3(0, -0.25, 0), Vec3(0.2, 3.3, 0.7),
+        *rod2, Vec3(0, 0.25, 0), Vec3(0.2, 0.5, 0.1), Vec3(0.03, 0.04, 0.05));
+
+    pendulum.addJoint(hip);
+    pendulum.addJoint(knee);
 
     // Define and add a frame to the rod2 body
     SimTK::Transform X_RO;
     X_RO.setP(SimTK::Vec3(1.234, -0.2667, 0));
     X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi/3.33 , SimTK::ZAxis);
-    PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod2, X_RO);
+    PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(*rod2, X_RO);
     offsetFrame->setName("myExtraFrame");
-    pendulum->addFrame(offsetFrame);
+    pendulum.addFrame(offsetFrame);
 
     // Create station in the extra frame
     Station* myStation = new Station();
     const SimTK::Vec3 point(0.5, 1, -1.5);
     myStation->set_location(point);
     myStation->setReferenceFrame(*offsetFrame);
-    pendulum->addModelComponent(myStation);
+    pendulum.addModelComponent(myStation);
 
-    // Initialize the the system
-    SimTK::State state = pendulum->initSystem();
+    // optionally turn on visualizer to help debug
+    //pendulum.setUseVisualizer(true);
+
+    // Initialize the system
+    SimTK::State state = pendulum.initSystem();
 
     // set the model coordinates and coordinate speeds
-    pendulum->getCoordinateSet().get(0).setValue(state, 0.29);
-    pendulum->getCoordinateSet().get(0).setSpeedValue(state, 0.1);
-    pendulum->getCoordinateSet().get(1).setValue(state, -0.38);
-    pendulum->getCoordinateSet().get(1).setSpeedValue(state, -0.13);
-
-    // realize to accelerations
-    pendulum->realizeAcceleration(state);
+    hip->upd_CoordinateSet()[0].setValue(state, 0.29);
+    hip->upd_CoordinateSet()[0].setSpeedValue(state, 0.1);
+    hip->upd_CoordinateSet()[1].setValue(state, -0.38);
+    hip->upd_CoordinateSet()[1].setSpeedValue(state, -0.13);
 
     // Get the frame's mobilized body
     const OpenSim::PhysicalFrame&  frame = myStation->getReferenceFrame();
     SimTK::MobilizedBody  mb = frame.getMobilizedBody();
 
-    // Use simbody to get the location, velocity and acceleration in ground.
-    SimTK::Vec3 l, v, a;
-    // Need to map the point into the base frame to use MobilizedBody's
-    // station methods otherwise we exclude the effect of the offset frame
-    SimTK::Vec3 pointInBase = frame.findTransformInBaseFrame()*point;
-    mb.findStationLocationVelocityAndAccelerationInGround(state, 
-        pointInBase, l, v, a);
+    // Do a simulation
+    SimTK::RungeKuttaMersonIntegrator integrator(pendulum.getSystem());
+    SimTK::TimeStepper ts(pendulum.getSystem(), integrator);
+    ts.initialize(state);
 
-    // Compare Simbody values to values from Station
-    SimTK_TEST_EQ(l, myStation->getLocationInGround(state));
-    SimTK_TEST_EQ(v, myStation->getVelocityInGround(state));
-    SimTK_TEST_EQ(a, myStation->getAccelerationInGround(state));
+    double finalT = 1.0;
+    double dt = 0.01;
+    int n = int(round(finalT / dt));
+
+    // Hold the computed kinematics from OpenSim and Simbody
+    SimTK::Vec3 lo, vo, ao, l, v, a;
+
+    for (int i = 1; i <= n; ++i) {
+        ts.stepTo(i*dt);
+        state = ts.getState();
+        
+        // realize to acceleration to access acceleration stage cache
+        pendulum.realizeAcceleration(state);
+
+        // Use Simbody to get the location, velocity & acceleration in ground.
+        // Need to map the point into the base frame to use MobilizedBody's
+        // station methods otherwise we exclude the effect of the offset frame
+        SimTK::Vec3 pointInBase = frame.findTransformInBaseFrame()*point;
+        mb.findStationLocationVelocityAndAccelerationInGround(state,
+            pointInBase, l, v, a);
+
+        lo = myStation->getLocationInGround(state);
+        vo = myStation->getVelocityInGround(state);
+        ao = myStation->getAccelerationInGround(state);
+
+        cout << "t = " << state.getTime() << ": os_a = " << ao;
+        cout << " | sb_a = " << a << endl;
+
+        // Compare Simbody values to values from Station
+        SimTK_TEST_EQ(l, lo);
+        SimTK_TEST_EQ(v, vo);
+        SimTK_TEST_EQ(a, ao);
+    }
 }
