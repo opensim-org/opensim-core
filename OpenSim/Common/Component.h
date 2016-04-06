@@ -1611,8 +1611,11 @@ protected:
 
     // End of System Creation and Access Methods.
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsupported-friend"
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
+#pragma clang diagnostic pop
 
 public:
     /** Utility method to find a component in the list of sub components of this
@@ -2470,7 +2473,7 @@ void Input<T>::connect(const AbstractChannel& channel,
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
     std::string outputPath, channelName, annotation;
-    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {

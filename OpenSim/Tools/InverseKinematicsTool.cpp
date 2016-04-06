@@ -296,12 +296,12 @@ bool InverseKinematicsTool::run()
 
         FunctionSet *coordFunctions = NULL;
         // Load the coordinate data
-        bool haveCoordinateFile = false;
+        // bool haveCoordinateFile = false;
         if(_coordinateFileName != "" && _coordinateFileName != "Unassigned"){
             Storage coordinateValues(_coordinateFileName);
             // Convert degrees to radian (TODO: this needs to have a check that the storage is, in fact, in degrees!)
             _model->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
-            haveCoordinateFile = true;
+            // haveCoordinateFile = true;
             coordFunctions = new GCVSplineSet(5,&coordinateValues);
         }
 

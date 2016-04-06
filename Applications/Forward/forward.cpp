@@ -127,7 +127,7 @@ int main(int argc,char **argv)
     ForwardTool forward(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = forward.getModel();
+    // Model& model = forward.getModel();
 
     cout<<"-----------------------------------------------------------------------"<<endl;
 

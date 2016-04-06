@@ -1708,8 +1708,8 @@ calcFiberStateGivenBoundaryCond(double lengthMT,
     output[2] = 0;
     output[3] = 0;
 
-    double a, lt, vt, lm, vm, phi /*, dphidt = 0*/;
-    double ltN, lmN, vmN = 0;
+    double a, lt{}, vt{}, lm, vm, phi /*, dphidt = 0*/;
+    double ltN{}, lmN, vmN = 0;
 
     try {
         //1. Compute tendon length given F

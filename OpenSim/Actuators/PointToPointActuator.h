@@ -113,7 +113,7 @@ public:
     // default destructor, copy constructor, copy assignment
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
     // Set the bodies to which this actuator applies; setting these pointers
     // also sets the corresponding body name properties.

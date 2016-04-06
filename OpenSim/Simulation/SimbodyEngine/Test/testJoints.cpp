@@ -407,7 +407,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     manager.setFinalTime(duration);
 
     // Integrate
-    const SimbodyMatterSubsystem& matter2 = osimModel->getMultibodySystem().getMatterSubsystem();
+    /*const SimbodyMatterSubsystem& matter2 = */osimModel->getMultibodySystem().getMatterSubsystem();
     //for (int i = 0; i < matter2.getNumConstraints(); i++)
     //    printf("%d: %d\n", i, matter2.isConstraintDisabled(osim_state, SimTK::ConstraintIndex(i)));
     //cout << osim_state.getQ()<<endl;
@@ -475,13 +475,13 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state,
     // Set the initial states for both Simbody system and OpenSim model
     Vector& q = state.updQ();
     Vector& u = state.updU();
-    int nq_sb = initTestStates(q, u);
-    int nq = osim_state.getNQ();
+    /*int nq_sb = */initTestStates(q, u);
+    /*int nq = */osim_state.getNQ();
 
     // Push down to OpenSim "state"
     osim_state.updY() = state.getY();
     Vector delta = osim_state.updY() - state.getY();
-    double errnorm = delta.norm();
+    /*double errnorm = */delta.norm();
     cout << "osim_state - sb_state: " << delta << endl;
 
     /* Debugging Info */
@@ -1076,7 +1076,6 @@ void testFreeJoint()
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
         hip_coords[i].setName(coord_name.str());
-        hip_coords[i].setMotionType(((i<3) ? Coordinate::Rotational : Coordinate::Translational));
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1495,9 +1494,7 @@ void testPlanarJoint()
     CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
     kneeCoords[0].setName("knee_rz");
     kneeCoords[0].setName("knee_tx");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
     kneeCoords[0].setName("knee_ty");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1780,7 +1777,7 @@ void testCustomVsCompoundJoint()
     customModel.print("Gimbal_CustomZXY_test.osim");
     compoundModel.print("Gimbal_CompoundPinsZXY_test.osim");    
 
-    SimTK::Vec3 com1 = customModel.calcMassCenterPosition(state1);
+    /*SimTK::Vec3 com1 = */customModel.calcMassCenterPosition(state1);
     com2 = compoundModel.calcMassCenterPosition(state2);
 
     //============================================================================
@@ -1820,7 +1817,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
     Vector& qi = state.updQ();
     Vector& ui = state.updU();
     // Randomly select the initial state of this model
-    int nq = initTestStates(qi, ui);
+    /*int nq = */initTestStates(qi, ui);
 
     const SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
 
@@ -2049,8 +2046,8 @@ void testAutomaticJointReversal()
     auto off1Path = off1.getFullPathName();
     auto off2Path = off2.getFullPathName();
 
-    auto& pathOff1 = c1.getConnecteeName();
-    auto& pathOff2 = c2.getConnecteeName();
+    /*auto& pathOff1 = */c1.getConnecteeName();
+    /*auto& pathOff2 = */c2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);
@@ -2066,7 +2063,7 @@ void testAutomaticJointReversal()
 
     std::vector<std::string> qNames{"hip_q0", "hip_q1", "knee_q","ankle_coord_0" };
 
-    for (int i = 0; i < qNames.size(); ++i) {
+    for (unsigned i = 0; i < qNames.size(); ++i) {
         cout << "reversed " << qNames[i] << " = ";
         cout << model.getCoordinateSet().get(qNames[i]).getValue(s);
         cout << " constrained = ";
@@ -2202,8 +2199,8 @@ void testAutomaticLoopJointBreaker()
     Model loadedModel(file);
     SimTK::State &s2 = loadedModel.initSystem();
 
-    int ncoords2 = loadedModel.getNumCoordinates();
-    int nconstraints2 = loadedModel.getNumConstraints();
+    /*int ncoords2 = */loadedModel.getNumCoordinates();
+    /*int nconstraints2 = */loadedModel.getNumConstraints();
 
     ASSERT(model == loadedModel);
 

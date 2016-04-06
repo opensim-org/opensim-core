@@ -658,7 +658,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
             maStore = _momentArmStorageArray[i]->momentArmStore;
             mStore = _momentArmStorageArray[i]->momentStore;
            
-            bool locked = q->getLocked(s);
+            // bool locked = q->getLocked(s);
 
             _model->getMultibodySystem().realize(s, s.getSystemStage());
             // LOOP OVER MUSCLES
@@ -739,7 +739,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
 {
     if(!proceed(stepNumber)) return 0;
 
-    int status = record(s);
+    /*int status = */record(s);
 
     return 0;
 }

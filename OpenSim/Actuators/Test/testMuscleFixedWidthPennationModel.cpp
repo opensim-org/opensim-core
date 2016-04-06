@@ -206,7 +206,7 @@ SimTK::Vector calcTrapzIntegral(SimTK::Vector x, SimTK::Vector y,
     inty = 0;
 
 
-    int startIdx = 1;
+    // int startIdx = 1;
     int endIdx = y.size()-1;
 
     if(flag_TrueIntForward_FalseIntBackward == true){
@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
         double smallTol = SimTK::Eps*1e2;
         double bigTol   = sqrt(SimTK::Eps);
         int numPts = 1000;
-        int numPtsMid = 100;
+        // int numPtsMid = 100;
 
         string caller = "testMuscleParallelogramPennationModel";
         double optFibLen = 0.1;
@@ -635,7 +635,7 @@ int main(int argc, char* argv[])
         cout << "TEST: calcFiberLength correctness" << endl;
 
         maxErr = 0;
-        int maxErrIdx = 0;
+        // int maxErrIdx = 0;
         err = 0;
         double tmp = 0;
 
@@ -645,7 +645,7 @@ int main(int argc, char* argv[])
             err = abs(tmp-fibLen(i));
             if(err > maxErr){
                 maxErr=err;
-                maxErrIdx = i;
+                // maxErrIdx = i;
             }
         }
 
@@ -659,7 +659,7 @@ int main(int argc, char* argv[])
         cout << "TEST: calcFiberVelocity correctness" << endl;
 
         maxErr = 0;
-        maxErrIdx = 0;
+        // maxErrIdx = 0;
         err = 0;
         tmp = 0;
 
@@ -669,7 +669,7 @@ int main(int argc, char* argv[])
             err = abs(tmp-fibVel(i));
             if(err > maxErr){
                 maxErr=err;
-                maxErrIdx = i;
+                // maxErrIdx = i;
             }
         }
 
@@ -683,7 +683,7 @@ int main(int argc, char* argv[])
         << endl;
 
         maxErr = 0;
-        maxErrIdx = 0;
+        // maxErrIdx = 0;
         err = 0;
         tmp = 0;
         double tmp1 = 0;
@@ -718,7 +718,7 @@ int main(int argc, char* argv[])
             
             if(err > maxErr){
                 maxErr=err;
-                maxErrIdx = i;
+                // maxErrIdx = i;
             }
         }
         
@@ -736,7 +736,7 @@ int main(int argc, char* argv[])
              << endl;
 
         maxErr = 0;
-        maxErrIdx = 0;
+        // maxErrIdx = 0;
         err = 0;
         tmp = 0;
         tmp1 = 0;
@@ -781,7 +781,7 @@ int main(int argc, char* argv[])
             
             if(err > maxErr){
                 maxErr=err;
-                maxErrIdx = i;
+                // maxErrIdx = i;
             }
         }
         
@@ -832,7 +832,7 @@ int main(int argc, char* argv[])
         //Unset properties
         MuscleFixedWidthPennationModel fibKinDirty;
         fibKinDirty.set_maximum_pennation_angle(acos(0.01));
-        double valTest=0;
+        // double valTest=0;
         std::string nameTest = "test";
         //SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalFiberLength());
         //SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalPennationAngle());

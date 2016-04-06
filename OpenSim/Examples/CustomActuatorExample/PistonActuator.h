@@ -97,7 +97,7 @@ public:
     virtual ~PistonActuator();
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 public:
 

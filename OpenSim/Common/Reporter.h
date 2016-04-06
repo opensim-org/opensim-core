@@ -87,7 +87,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class AbstractReporter
@@ -153,7 +153,7 @@ protected:
         const auto& input = this->template getInput<InputT>("inputs");
         SimTK::RowVector_<ValueT> result(int(input.getNumConnectees()));
 
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+        for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
               const auto& chan = input.getChannel(idx);
               const auto& value = chan.getValue(state);
               result[idx] = value;
@@ -168,7 +168,7 @@ protected:
         const auto& input = this->template getInput<InputT>("inputs");
 
         std::vector<std::string> labels;
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+        for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
             const auto& chan = input.getChannel(idx);
             std::string label = chan.getName();
             if (label.empty()) {
@@ -214,7 +214,7 @@ private:
         if (_printCount % 40 == 0) {
             std::cout << "[" << this->getName() << "] " << "\n";
             std::cout << std::setw(_width) << "time" << "| ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
                 const auto& chan = input.getChannel(idx);
                 const auto& outName = chan.getName();
                 const auto& truncName = 

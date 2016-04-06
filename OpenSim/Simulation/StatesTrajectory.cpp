@@ -138,16 +138,17 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
             createVector(model.getStateVariableNames()) :
             requestedStateVars;
     table.setColumnLabels(stateVars);
-    int numDepColumns = stateVars.size();
+    size_t numDepColumns = stateVars.size();
 
     // Fill up the table with the data.
     for (size_t itime = 0; itime < getSize(); ++itime) {
         const auto& state = get(itime);
-        TimeSeriesTable::RowVector row(numDepColumns);
+        TimeSeriesTable::RowVector row(static_cast<int>(numDepColumns));
 
         // Get each state variable's value.
-        for (size_t icol = 0; icol < numDepColumns; ++icol) {
-            row[icol] = model.getStateVariableValue(state, stateVars[icol]);
+        for (unsigned icol = 0; icol < numDepColumns; ++icol) {
+            row[static_cast<int>(icol)] = 
+                model.getStateVariableValue(state, stateVars[icol]);
         }
 
         table.appendRow(state.getTime(), row);

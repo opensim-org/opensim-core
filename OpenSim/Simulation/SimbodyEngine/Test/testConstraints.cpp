@@ -1031,7 +1031,7 @@ void testRollingOnSurfaceConstraint()
     roll->setRollingBodyByName("rod");
     roll->setSurfaceBodyByName("ground");
 
-    double h = roll->get_surface_height();
+    /*double h = */roll->get_surface_height();
     
     osimModel->addConstraint(roll);
     osimModel->setGravity(gravity_vec);
