@@ -1378,7 +1378,7 @@ void Component::dumpConnections() const {
         if (connector.getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (int i = 0; i < connector.getNumConnectees(); ++i) {
+            for (unsigned i = 0; i < connector.getNumConnectees(); ++i) {
                 std::cout << connector.getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
@@ -1396,9 +1396,11 @@ void Component::dumpConnections() const {
         if (input.getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (int i = 0; i < input.getNumConnectees(); ++i) {
+            for (unsigned i = 0; i < input.getNumConnectees(); ++i) {
                 std::cout << input.getConnecteeName(i) << " ";
-                // TODO as is, requires the input connections to be satisfied. std::cout << " (annotation: " << input.getAnnotation(i) << ") ";
+                // TODO as is, requires the input connections to be satisfied. 
+                // std::cout << " (annotation: " << input.getAnnotation(i) 
+                //           << ") ";
             }
             std::cout << std::endl;
         }
