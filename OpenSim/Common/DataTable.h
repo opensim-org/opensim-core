@@ -307,7 +307,9 @@ public:
         validateDependentsMetaData();
     }
 
-    /** Get index of a column label.                                          */
+    /** Get index of a column label.                                          
+
+    \throw KeyNotFound If columnLabel is not found to be label for any column.*/
     size_t getColumnIndex(const std::string& columnLabel) const {
         const auto& absArray = 
             _dependentsMetaData.getValueArrayForKey("labels");
