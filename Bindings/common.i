@@ -72,7 +72,8 @@
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 
 %include <OpenSim/Common/Component.h>
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
+%template(getComponentsList) 
+    OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
@@ -93,6 +94,13 @@
 %ignore OpenSim::AbstractDataTable::setIndependentMetaData;
 %ignore OpenSim::AbstractDataTable::getDependentsMetaData;
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
+%ignore OpenSim::AbstractDataTable::setColumnLabels(
+                                     const std::initializer_list<std::string>&);
+%extend OpenSim::AbstractDataTable {
+    void setColumnLabels(const std::vector<std::string>& columnLabels) {
+        $self->setColumnLabels(columnLabels);
+    }
+}
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTable)           OpenSim::DataTable_<double, double>;
