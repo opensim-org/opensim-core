@@ -62,18 +62,31 @@ public:
     virtual ~Point() {};
 
     /** @name Spatial Operations for Point
-    Convenient spatial operations with Points.*/
+    Convenient access to spatial kinematics of Points.*/
     /**@{**/
 
     /**
     Get the location of this Point relative to the Ground frame.
     @param state       The state applied to the model when determining the
                        location of the Point.
-    @return location   The location of the point expressed in the Ground frame
-    */
+    @return location   The location of the point expressed in the Ground. */
     const SimTK::Vec3& getLocationInGround(const SimTK::State& state) const;
 
-    // End of Point's Spatial Operations
+    /** The velocity v_G of this Point expressed in ground.
+    Is only valid at Stage::Velocity or higher.
+    @param state       The state applied to the model when determining the
+                       velocity of the Point.
+    @return velocity   The velocity of the point expressed in the Ground. */
+    const SimTK::Vec3& getVelocityInGround(const SimTK::State& state) const;
+
+    /** The acceleration a_G, of this Point expressed in ground.
+    Is only valid at Stage::Acceleration or higher. 
+    @param state       The state applied to the model when determining the
+                       acceleration of the Point.
+    @return velocity   The acceleration of the point expressed in Ground */
+    const SimTK::Vec3& getAccelerationInGround(const SimTK::State& state) const;
+
+    // End of Point's Spatial Kinematics
     ///@}
 
 protected:
@@ -105,7 +118,9 @@ protected:
 
 private:
 
-    mutable SimTK::CacheEntryIndex _groundLocationIndex;
+    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _locationIndex;
+    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
+    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
 
 //=============================================================================
 };  // END of class Point

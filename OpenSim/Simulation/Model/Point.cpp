@@ -54,24 +54,62 @@ void Point::extendAddToSystem(SimTK::MultibodySystem& system) const
     // If the properties, topology or coordinate values change, 
     // Stage::Position will be invalid.
     addCacheVariable("location", v, SimTK::Stage::Position);
+    addCacheVariable("velocity", v, SimTK::Stage::Velocity);
+    addCacheVariable("acceleration", v, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Vec3& Point::getLocationInGround(const SimTK::State& s) const
 {
     if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _groundLocationIndex)){
+        isCacheValueRealized(s, _locationIndex)){
         //cache is not valid so calculate the transform
         SimTK::Value<SimTK::Vec3>::downcast(
             getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _groundLocationIndex)).upd()
+            updCacheEntry(s, _locationIndex)).upd()
                 = calcLocationInGround(s);
         // mark cache as up-to-date
         getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _groundLocationIndex);
+            markCacheValueRealized(s, _locationIndex);
     }
     return SimTK::Value<SimTK::Vec3>::downcast(
         getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _groundLocationIndex)).get();
+        getCacheEntry(s, _locationIndex)).get();
+}
+
+const SimTK::Vec3& Point::getVelocityInGround(const SimTK::State& s) const
+{
+    if (!getSystem().getDefaultSubsystem().
+        isCacheValueRealized(s, _velocityIndex)) {
+        //cache is not valid so calculate the transform
+        SimTK::Value<SimTK::Vec3>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, _velocityIndex)).upd()
+            = calcVelocityInGround(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, _velocityIndex);
+    }
+    return SimTK::Value<SimTK::Vec3>::downcast(
+        getSystem().getDefaultSubsystem().
+        getCacheEntry(s, _velocityIndex)).get();
+}
+
+const SimTK::Vec3& Point::getAccelerationInGround(const SimTK::State& s) const
+{
+    if (!getSystem().getDefaultSubsystem().
+        isCacheValueRealized(s, _accelerationIndex)) {
+        //cache is not valid so calculate the transform
+        SimTK::Value<SimTK::Vec3>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, _accelerationIndex)).upd()
+            = calcAccelerationInGround(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, _accelerationIndex);
+    }
+    return SimTK::Value<SimTK::Vec3>::downcast(
+        getSystem().getDefaultSubsystem().
+        getCacheEntry(s, _accelerationIndex)).get();
 }
 
 //=============================================================================
@@ -85,5 +123,7 @@ const SimTK::Vec3& Point::getLocationInGround(const SimTK::State& s) const
 void Point::extendRealizeTopology(SimTK::State& s) const
 {
     Super::extendRealizeTopology(s);
-    _groundLocationIndex = getCacheVariableIndex("ground_location");
+    _locationIndex = getCacheVariableIndex("location");
+    _velocityIndex = getCacheVariableIndex("velocity");
+    _accelerationIndex = getCacheVariableIndex("acceleration");
 }

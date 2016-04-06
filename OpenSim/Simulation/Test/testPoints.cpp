@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                          *
+ * Author(s): Ajay Seth, James Dunne                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -40,6 +40,7 @@ using namespace std;
 using SimTK::Transform;
 
 void testStationOnFrame();
+void testStationKinematicsInGround();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -54,9 +55,16 @@ public:
 
 int main()
 {
+    SimTK::Array_<std::string> failures;
+
     try { testStationOnFrame(); }
     catch (const std::exception& e){
         cout << e.what() << endl; failures.push_back("testStationOnFrame");
+    }
+
+    try { testStationKinematicsInGround(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testStationInGround");
     }
 
     if (!failures.empty()) {
@@ -105,3 +113,56 @@ void testStationOnFrame()
     }
 }
 
+void testStationKinematicsInGround()
+{
+    SimTK::Vec3 tolerance(SimTK::Eps);
+    SimTK::MultibodySystem system;
+    SimTK::SimbodyMatterSubsystem matter(system);
+    SimTK::GeneralForceSubsystem forces(system);
+
+    cout << "Running testStationInGround" << endl;
+
+    Model* pendulum = new Model("double_pendulum.osim");
+    const OpenSim::Body& rod2 = pendulum->getBodySet().get("rod2");
+
+    // Define and add a frame to the rod2 body
+    SimTK::Transform X_RO;
+    X_RO.setP(SimTK::Vec3(0.2, -0.2, 0));
+    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 2, SimTK::ZAxis);
+    PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod2, X_RO);
+    offsetFrame->setName("myExtraFrame");
+    pendulum->addFrame(offsetFrame);
+
+    // Create station in the extra frame
+    Station* myStation = new Station();
+    const SimTK::Vec3 point(0.5, 1, -1.5);
+    myStation->set_location(point);
+    myStation->updConnector<PhysicalFrame>("reference_frame").setConnecteeName("myExtraFrame");
+    pendulum->addModelComponent(myStation);
+
+    // Initialize the the sytem
+    SimTK::State state = pendulum->initSystem();
+
+    // set the model coordinates and coordinate speeds
+    pendulum->getCoordinateSet().get(0).setValue(state, 0.29);
+    pendulum->getCoordinateSet().get(0).setSpeedValue(state, 0.1);
+    pendulum->getCoordinateSet().get(1).setValue(state, -0.38);
+    pendulum->getCoordinateSet().get(1).setSpeedValue(state, -0.13);
+
+    // realize to accelerations
+    pendulum->realizeAcceleration(state);
+
+    // Get the frame's mobilized body
+    const OpenSim::PhysicalFrame&  frame = myStation->getReferenceFrame();
+    SimTK::MobilizedBody  mb = frame.getMobilizedBody();
+
+    // Use simbody to get the location, velocity and acceleration in ground.
+    SimTK::Vec3 l, v, a;
+    mb.findStationLocationVelocityAndAccelerationInGround(state, point, l, v, a);
+
+    // Compare Simbody values to values from Station
+    SimTK_TEST_EQ(l, myStation->getLocationInGround(state));
+    SimTK_TEST_EQ(v, myStation->calcVelocityInGround(state));
+    SimTK_TEST_EQ(a, myStation->calcAccelerationInGround(state));
+
+}
