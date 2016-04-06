@@ -284,7 +284,10 @@ public:
         setColumnLabels(columnLabels.begin(), columnLabels.end());
     }
 
-    /** %Set the label for a column.                                          */
+    /** %Set the label for a column.                                          
+
+    \throws ColumnIndexOutOfRange If columnIndex is out of range for number of
+                                  columns in the table.                       */
     void setColumnLabel(const size_t columnIndex,
                         const std::string& columnLabel) {
         using namespace SimTK;
