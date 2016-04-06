@@ -210,12 +210,28 @@ public:
 
     /** %Set column labels using a pair of iterators.
 
+    Example:
+    \code
+    std::vector<std::string> labels{"col1", "col2", "col3", "col4", "col5"};
+    // Use subsequence of vector as labels.
+    setColumnLabels(labels.begin() + 2, labels.end());
+    \endcode
+
     \param first InputIterator representing the beginning of the sequence of
                  labels.
-    \param last  InputIterator representing the sentinel or one past the end of
-                 sequence of labels.                                          */
+    \param last InputIterator representing the sentinel or one past the end of
+                sequence of labels.                                          
+
+    \throws MetaDataLengthZero If input sequence of labels is zero.
+    \throws IncorrectMetaDataLength If length of the input sequence of labels is
+                                    incorrect -- does not match the number of
+                                    columns in the table.                     */
     template<typename InputIt>
     void setColumnLabels(InputIt first, InputIt last) {
+        OPENSIM_THROW_IF(first == last, 
+                         MetaDataLengthZero,
+                         "labels");
+
         ValueArray<std::string> labels{};
         for(auto it = first; it != last; ++it)
             labels.upd().push_back(SimTK::Value<std::string>(*it));
@@ -225,11 +241,22 @@ public:
         validateDependentsMetaData();
     }
 
-    /** %Set column labels using a container.
+    /** %Set column labels using a sequence container.
+
+    Example:
+    \code
+    std::vector<std::string> columnLabels{"col1", "col2", "col3"};
+    setColumnLabels(columnLabels);
+    \endcode
 
     \tparam Container Any container type (like std::vector, std::list or your 
                       own) that supports begin() and end(). Type of the values
-                      produced by iterator should be std::string.             */
+                      produced by iterator should be std::string.
+
+    \throws MetaDataLengthZero If input sequence of labels is zero.
+    \throws IncorrectMetaDataLength If length of the input sequence of labels is
+                                    incorrect -- does not match the number of
+                                    columns in the table.                     */
     template<typename Container>
     void setColumnLabels(const Container& columnLabels) {
         setColumnLabels(columnLabels.begin(), columnLabels.end());
@@ -240,7 +267,12 @@ public:
     Example:
     \code
     setColumnLabels({"col1", "col2", "col3"});
-    \endcode                                                                  */
+    \endcode                                                                  
+
+    \throws MetaDataLengthZero If input sequence of labels is zero.
+    \throws IncorrectMetaDataLength If length of the input sequence of labels is
+                                    incorrect -- does not match the number of
+                                    columns in the table.                     */
     void 
     setColumnLabels(const std::initializer_list<std::string>& columnLabels) {
         setColumnLabels(columnLabels.begin(), columnLabels.end());
