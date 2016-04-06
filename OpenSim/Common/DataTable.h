@@ -185,7 +185,9 @@ public:
         validateDependentsMetaData();
     }
 
-    /** Get column labels.                                                    */
+    /** Get column labels.                                                    
+
+    \throws KeyNotFound If column labels have not be set for the table.       */
     std::vector<std::string> getColumnLabels() const {
         const auto& absArray = 
             _dependentsMetaData.getValueArrayForKey("labels");
@@ -196,7 +198,11 @@ public:
         return labels;
     }
 
-    /** Get column label of a given column.                                   */
+    /** Get column label of a given column.                                   
+
+    \throws ColumnIndexOutOfRange If columnIndex is out of range of number of
+                                  columns.                                    
+    \throws KeyNotFound If column labels have not be set for the table.       */
     const std::string& getColumnLabel(const size_t columnIndex) const {
         const auto& labels = 
             _dependentsMetaData.getValueArrayForKey("labels");
