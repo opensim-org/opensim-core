@@ -121,14 +121,15 @@ SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
 
 SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
 {
+    Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
     const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
-    return V_GF[1] + V_GF[0] % getLocationInGround(s);
+    return V_GF[1] + V_GF[0] % r;
 }
 
 SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
 {
     const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
     const SimTK::SpatialVec& A_GF = getReferenceFrame().getAccelerationInGround(s);
-    const Vec3& r = getLocationInGround(s);
-    return A_GF[1] + A_GF[0]%r +  V_GF[0] % V_GF[0] % r ;
+    Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
+    return A_GF[1] + A_GF[0]%r +  V_GF[0] % (V_GF[0] % r) ;
 }

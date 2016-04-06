@@ -33,3 +33,38 @@ void PhysicalOffsetFrame::extendAddToSystem(SimTK::MultibodySystem& system) cons
     Super::extendAddToSystem(system);
     setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
 }
+
+SimTK::Transform PhysicalOffsetFrame::
+calcTransformInGround(const SimTK::State& state) const
+{
+    return getParentFrame().getTransformInGround(state)*getOffsetTransform();
+}
+
+SimTK::SpatialVec PhysicalOffsetFrame::
+calcVelocityInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the base frame in ground
+    SimTK::SpatialVec V_G = getParentFrame().getVelocityInGround(state);
+    // translational velocity needs additional omega x r term due to offset 
+    V_G(1) += V_G(0) % r;
+
+    return V_G;
+}
+
+SimTK::SpatialVec PhysicalOffsetFrame::
+calcAccelerationInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the parent frame in ground
+    const SimTK::SpatialVec& V_G = getParentFrame().getVelocityInGround(state);
+    // Velocity of the parent frame in ground
+    SimTK::SpatialVec A_G = getParentFrame().getAccelerationInGround(state);
+    A_G[1] += (A_G[0] % r + V_G[0] % (V_G[0] % r));
+
+    return A_G;
+}

@@ -248,29 +248,28 @@ void OffsetFrame<C>::constructConnectors()
 }
 
 //=============================================================================
-// FRAME COMPUTATIONS
+// FRAME COMPUTATIONS must be specialized by concrete derived Offsets
 //=============================================================================
 // Implementation of Frame interface by OffsetFrame.
 template <class C>
 SimTK::Transform OffsetFrame<C>::
-calcTransformInGround(const SimTK::State& s) const
+calcTransformInGround(const SimTK::State& state) const
 {
-    return getParentFrame().getTransformInGround(s)*getOffsetTransform();
+    return SimTK::Transform(SimTK::Vec3(SimTK::NaN));
 }
 
 template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcVelocityInGround(const SimTK::State& state) const
 {
-    const SimTK::Vec3& r = getTransformInGround(state).p();
-    return Super::getVelocityInGround(state);
+    return SimTK::SpatialVec(SimTK::Vec3(SimTK::NaN));
 }
 
 template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcAccelerationInGround(const SimTK::State& state) const
 {
-    return Super::getAccelerationInGround(state);
+    return SimTK::SpatialVec(SimTK::Vec3(SimTK::NaN));
 }
 
 //=============================================================================

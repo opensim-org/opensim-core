@@ -66,6 +66,20 @@ protected:
         underlying multibody system */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
 
+private:
+    /** The transform X_GO for this PhysicalOffsetFrame, O, in ground, G. */
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override final;
+
+    /** The spatial velocity {omega; v} for this PhysicalOffsetFrame in
+    ground. */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override final;
+    /** The spatial acceleration {alpha; a} for this PhysicalOffsetFrame
+        in ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override final;
+
 //=============================================================================
 }; // END of class PhysicalOffsetFrame
 //=============================================================================
