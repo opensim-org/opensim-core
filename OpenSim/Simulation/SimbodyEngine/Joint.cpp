@@ -137,8 +137,10 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
     upd_CoordinateSet().adoptAndAppend(coord);
     auto cix = CoordinateIndex(get_CoordinateSet().getIndex(coord));
     _motionTypes.push_back(mt);
-    SimTK_ASSERT_ALWAYS(numCoordinates() == _motionTypes.size(), 
-        "Joint::constructCoordinate() MotionTypes do not correspond to coordinates");
+    SimTK_ASSERT_ALWAYS(static_cast<unsigned>(numCoordinates()) == 
+                        _motionTypes.size(), 
+                        "Joint::constructCoordinate() MotionTypes do not "
+                        "correspond to coordinates");
     return cix;
 }
 
