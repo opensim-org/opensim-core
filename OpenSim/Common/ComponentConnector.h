@@ -127,8 +127,9 @@ public:
     
     /** The number of connectees connected to this connector. This is either
         0 or 1 for a non-list connector. */
-    int getNumConnectees() const {
-        return getProperty_connectee_name().size();
+    unsigned getNumConnectees() const {
+        auto num = getProperty_connectee_name().size();
+        return static_cast<unsigned>(num);
     }
 
     /** Get the type of object this connector connects to*/
