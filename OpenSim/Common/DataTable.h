@@ -494,7 +494,7 @@ public:
         return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
-    /** Set independent column at index.                                      
+    /** %Set independent column at index.                                      
 
     \throws RowIndexOutOfRange If index is out of range.                        
     \throws InvalidRow If this operation invalidates the row. Validation is
@@ -506,10 +506,17 @@ public:
         _indData[index] = value;
     }
 
+    /** Get a read-only view to the underlying matrix.                        */
     MatrixView getMatrix() const {
         return _depData;
     }
 
+    /** Get a read-only view of a block of the underlying matrix.             
+
+    \throws RowIndexOutOfRange If one or more rows of the desired block is out
+                               of range of the matrix.
+    \throws ColumnIndexOutOfRange If one or more columns of the desired block is
+                                  out of range of the matrix.                 */
     MatrixView getMatrix(size_t rowStart,
                          size_t columnStart,
                          size_t numRows,
