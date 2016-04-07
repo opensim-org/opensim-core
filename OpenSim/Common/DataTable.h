@@ -534,10 +534,12 @@ public:
     }
 
 protected:
+    /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
     }
 
+    /** Check if column index is out of range.                                */
     bool isColumnIndexOutOfRange(size_t index) const {
         return index >= static_cast<size_t>(_depData.ncol());
     }
