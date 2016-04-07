@@ -95,6 +95,9 @@ int main() {
         table.appendRow(0.5, row);
     } catch (OpenSim::Exception&) {}
 
+    table.updMatrix() += 2;
+    table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
+
     table.updTableMetaData().setValueForKey("DataRate", 600);
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
