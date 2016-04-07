@@ -372,13 +372,24 @@ independent column and a set of dependent columns. The type of the independent
 column can be configured using ETX (template param). The type of the dependent 
 columns, which together form a matrix, can be configured using ETY (template 
 param). Independent and Dependent columns can contain metadata. DataTable_ as a 
-whole can contain metadata.                                                   */
+whole can contain metadata.                                                   
+
+\tparam ETX Type of each element of the underlying matrix holding dependent 
+            data.
+\tparam ETY Type of each element of the column holding independent data.      */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
 public:
+    /** Type of each row of matrix holding dependent data.                    */
     typedef SimTK::RowVector_<ETY>     RowVector;
+    /** (Read only view) Type of each row of matrix.                          */
     typedef SimTK::RowVectorView_<ETY> RowVectorView;
+    /** Type of each column of matrix holding dependent data.                 */
     typedef SimTK::VectorView_<ETY>    VectorView;
+    /** Type of the matrix holding the dependent data.                        */
+    typedef SimTK::Matrix_<ETY>        Matrix;
+    /** (Read only view) Type of the matrix  holding the dependent data.      */
+    typedef SimTK::MatrixView_<ETY>    MatrixView;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
