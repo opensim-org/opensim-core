@@ -548,6 +548,48 @@ public:
                               static_cast<int>(numColumns));
     }
 
+    /** Get a writable view to the underlying matrix.                         */
+    MatrixView& updMatrix() const {
+        return _depData.updAsMatrixView();
+    }
+
+    /** Get a writable view of a block of the underlying matrix.
+
+    \throws InvalidArgument If numRows or numColumns is zero.
+    \throws RowIndexOutOfRange If one or more rows of the desired block is out
+                               of range of the matrix.
+    \throws ColumnIndexOutOfRange If one or more columns of the desired block is
+                                  out of range of the matrix.                 */
+    MatrixView updMatrixBlock(size_t rowStart,
+                              size_t columnStart,
+                              size_t numRows,
+                              size_t numColumns) const {
+        OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
+                         InvalidArgument,
+                         "Either numRows or numColumns is zero.");
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
+                         RowIndexOutOfRange,
+                         rowStart, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart + numRows - 1),
+                         RowIndexOutOfRange,
+                         rowStart + numRows - 1, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart),
+                         ColumnIndexOutOfRange,
+                         columnStart, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart + numColumns - 1),
+                         ColumnIndexOutOfRange,
+                         columnStart + numColumns - 1, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+
+        return _depData.updBlock(static_cast<int>(rowStart),
+                                 static_cast<int>(columnStart),
+                                 static_cast<int>(numRows),
+                                 static_cast<int>(numColumns));
+    }
+
 protected:
     /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
