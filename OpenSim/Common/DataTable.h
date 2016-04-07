@@ -549,7 +549,7 @@ public:
     }
 
     /** Get a writable view to the underlying matrix.                         */
-    MatrixView& updMatrix() const {
+    MatrixView& updMatrix() {
         return _depData.updAsMatrixView();
     }
 
@@ -563,7 +563,7 @@ public:
     MatrixView updMatrixBlock(size_t rowStart,
                               size_t columnStart,
                               size_t numRows,
-                              size_t numColumns) const {
+                              size_t numColumns) {
         OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
                          InvalidArgument,
                          "Either numRows or numColumns is zero.");
