@@ -508,7 +508,7 @@ public:
 
     /** Get a read-only view to the underlying matrix.                        */
     MatrixView getMatrix() const {
-        return _depData;
+        return _depData.getAsMatrixView();
     }
 
     /** Get a read-only view of a block of the underlying matrix.             
