@@ -507,12 +507,13 @@ public:
     }
 
     /** Get a read-only view to the underlying matrix.                        */
-    MatrixView getMatrix() const {
+    const MatrixView& getMatrix() const {
         return _depData.getAsMatrixView();
     }
 
     /** Get a read-only view of a block of the underlying matrix.             
 
+    \throws InvalidArgument If numRows or numColumns is zero.
     \throws RowIndexOutOfRange If one or more rows of the desired block is out
                                of range of the matrix.
     \throws ColumnIndexOutOfRange If one or more columns of the desired block is
