@@ -506,6 +506,10 @@ public:
         _indData[index] = value;
     }
 
+    MatrixView getMatrix() {
+        return _depData;
+    }
+
 protected:
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
