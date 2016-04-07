@@ -517,22 +517,22 @@ public:
                                of range of the matrix.
     \throws ColumnIndexOutOfRange If one or more columns of the desired block is
                                   out of range of the matrix.                 */
-    MatrixView getMatrix(size_t rowStart,
-                         size_t columnStart,
-                         size_t numRows,
-                         size_t numColumns) const {
+    MatrixView getMatrixBlock(size_t rowStart,
+                              size_t columnStart,
+                              size_t numRows,
+                              size_t numColumns) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
                          RowIndexOutOfRange,
-                         rowStart, 0, _depData.row() - 1);
+                         rowStart, 0, _depData.nrow() - 1);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart + numRows - 1),
                          RowIndexOutOfRange,
-                         rowStart + numRows - 1, 0, _depData.row() - 1);
+                         rowStart + numRows - 1, 0, _depData.nrow() - 1);
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart),
                          ColumnIndexOutOfRange,
-                         columnStart, 0, _depData.col() - 1);
+                         columnStart, 0, _depData.ncol() - 1);
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart + numColumns - 1),
                          ColumnIndexOutOfRange,
-                         columnStart + numColumns - 1, 0, _depData.col() - 1);
+                         columnStart + numColumns - 1, 0, _depData.ncol() - 1);
 
         return _depData.block(static_cast<int>(rowStart),
                               static_cast<int>(columnStart),
