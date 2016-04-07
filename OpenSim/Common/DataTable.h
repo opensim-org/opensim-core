@@ -521,18 +521,25 @@ public:
                               size_t columnStart,
                               size_t numRows,
                               size_t numColumns) const {
+        OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
+                         InvalidArgument,
+                         "Either numRows or numColumns is zero.");
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
                          RowIndexOutOfRange,
-                         rowStart, 0, _depData.nrow() - 1);
+                         rowStart, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart + numRows - 1),
                          RowIndexOutOfRange,
-                         rowStart + numRows - 1, 0, _depData.nrow() - 1);
+                         rowStart + numRows - 1, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart),
                          ColumnIndexOutOfRange,
-                         columnStart, 0, _depData.ncol() - 1);
+                         columnStart, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart + numColumns - 1),
                          ColumnIndexOutOfRange,
-                         columnStart + numColumns - 1, 0, _depData.ncol() - 1);
+                         columnStart + numColumns - 1, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
 
         return _depData.block(static_cast<int>(rowStart),
                               static_cast<int>(columnStart),
