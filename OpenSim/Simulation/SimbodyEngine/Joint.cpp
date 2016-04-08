@@ -415,7 +415,9 @@ double Joint::calcPower(const SimTK::State &s) const
     for(int i=0; i<nc; ++i){
         if (coords[i].isPrescribed(s)){
             // get the reaction force for this coordinate prescribed motion constraint
-            const SimTK::Constraint &pc = _model->updMultibodySystem().updMatterSubsystem().getConstraint(coords[i]._prescribedConstraintIndex);
+            const SimTK::Constraint &pc =
+                _model->updMultibodySystem().updMatterSubsystem()
+                    .getConstraint(coords[i]._prescribedConstraintIndex);
             power += pc.calcPower(s);
         }
     }
