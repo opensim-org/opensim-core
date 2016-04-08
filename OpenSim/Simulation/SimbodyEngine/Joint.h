@@ -115,12 +115,8 @@ public:
 // OUTPUTS
 //=============================================================================
     OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
-    /** get the joint reaction force and moment experienced on the parent frame
-        and expressed in ground. */
     OpenSim_DECLARE_OUTPUT(reaction_on_parent, SimTK::SpatialVec,
         calcReactionOnParentExpressedInGround, SimTK::Stage::Acceleration);
-    /** alternatively, get the joint reaction force and moment experienced on
-        the child frame and expressed in ground. */
     OpenSim_DECLARE_OUTPUT(reaction_on_child, SimTK::SpatialVec,
         calcReactionOnChildExpressedInGround, SimTK::Stage::Acceleration);
 
@@ -254,7 +250,7 @@ public:
         and expressed in Ground. 
     @param[in]  state containing the generalized coordinate and speed values 
     @return     SpatialVec of reaction force, RP_G, acting on parent frame, P,
-            and expressed in ground, G.  */
+                and expressed in ground, G.  */
     SimTK::SpatialVec
         calcReactionOnParentExpressedInGround(const SimTK::State &state) const {
         return getChildFrame().getMobilizedBody()
