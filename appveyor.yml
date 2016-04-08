@@ -23,10 +23,10 @@ platform: x64
 
 environment:
   matrix:
-    - PYTHON_DIR: "C:\\Python27\\"
-      CMAKE_GENERATOR: "\"Visual Studio 14 2015\""
-    - PYTHON_DIR: "C:\\Python27-x64\\"
-      CMAKE_GENERATOR: "\"Visual Studio 14 2015 Win64\""
+    - PYTHON_DIR: "C:\\Python27"
+      CMAKE_GENERATOR: "Visual Studio 14 2015"
+    - PYTHON_DIR: "C:\\Python27-x64"
+      CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
@@ -51,7 +51,7 @@ install:
   - choco install swig --version 3.0.5 -y
   
   ## Install python-nose for python testing.
-  - C:\Python27-x64\Scripts\pip install nose
+  - %PYTHON_DIR%\Scripts\pip install nose
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -65,7 +65,7 @@ build_script:
   ## Superbuild dependencies. 
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
-  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G%CMAKE_GENERATOR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
+  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
@@ -93,7 +93,7 @@ test_script:
   # Move to the installed location of the python package.
   - cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
-  - C:\Python27-x64\Scripts\nosetests -v
+  - %PYTHON_DIR%\Scripts\nosetests -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
