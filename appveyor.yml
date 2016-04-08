@@ -51,7 +51,7 @@ install:
   - choco install swig --version 3.0.5 -y
   
   ## Install python-nose for python testing.
-  - '%PYTHON_DIR%\Scripts\pip' install nose
+  - "%PYTHON_DIR%\Scripts\pip" install nose
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -93,7 +93,7 @@ test_script:
   # Move to the installed location of the python package.
   - cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
-  - '%PYTHON_DIR%\Scripts\nosetests' -v
+  - "%PYTHON_DIR%\Scripts\nosetests" -v
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
