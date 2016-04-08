@@ -307,7 +307,7 @@ void testTorqueActuator()
     }
 
     // determine the initial kinetic energy of the system
-    double iKE = model->getMatterSubsystem().calcKineticEnergy(state);
+    /*double iKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
     RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
     integrator.setAccuracy(integ_accuracy);
@@ -322,7 +322,7 @@ void testTorqueActuator()
 
     model->computeStateVariableDerivatives(state);
 
-    double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
+    /*double fKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
     // Change in system kinetic energy can only be attributable to actuator work
     //double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
@@ -354,9 +354,9 @@ void testClutchedPathSpring()
     double stiffness = 100;
     double dissipation = 0.3;
     double start_h = 0.5;
-    double ball_radius = 0.25;
+    //double ball_radius = 0.25;
 
-    double omega = sqrt(stiffness/mass);
+    //double omega = sqrt(stiffness/mass);
 
     // Setup OpenSim model
     Model* model = new Model;
@@ -376,7 +376,7 @@ void testClutchedPathSpring()
     block->attachMeshGeometry("box.vtp");
     block->scale(Vec3(0.2, 0.1, 0.1), false);
 
-    double dh = mass*gravity_vec(1)/stiffness;
+    //double dh = mass*gravity_vec(1)/stiffness;
     
     WrapCylinder* pulley = new WrapCylinder();
     pulley->setRadius(0.1);
@@ -781,7 +781,7 @@ void testActuatorsCombination()
     Vec3 torqueInG = torqueMag*torqueUnitAxis;
 
     // needed to be called here once to build controller for body actuator
-    State& state = model->initSystem();
+    /*State& state = */model->initSystem();
     
     // ---------------------------------------------------------------------------
     // Add a set of PointActuator, TorqueActuator and BodyActuator to the model
