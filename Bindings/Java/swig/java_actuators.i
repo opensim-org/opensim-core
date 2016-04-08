@@ -39,7 +39,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 
-%import "java_simulation3.i"
+%import "java_simulation.i"
 
 %include <Bindings/actuators.i>
 %include <Bindings/analyses.i>

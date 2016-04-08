@@ -1,5 +1,5 @@
-%module(directors="1") opensimModelSimulation1
-%module opensimModelSimulation1
+%module(directors="1") opensimModelSimulation
+%module opensimModelSimulation
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
@@ -212,4 +212,4 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %import "java_common.i"
 
-%include <Bindings/simulation1.i>
+%include <Bindings/simulation.i>

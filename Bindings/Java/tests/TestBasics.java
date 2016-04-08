@@ -10,7 +10,7 @@ class TestBasics {
     while (!fi.equals(frames.end())) {
          System.out.println("Frame name: "+fi.getName());
          System.out.println("number of outputs: "+fi.getNumOutputs());
-         StdVecString outNames = fi.getOutputNames();
+         StdVectorString outNames = fi.getOutputNames();
          int sz = (int) outNames.size();
          for (int j =0; j <sz; j++) {
             System.out.println("output name:"+outNames.get(j));
