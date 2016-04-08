@@ -206,7 +206,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
 {
     int i;
    ofstream out;
-    int functionIndex = 1;
+   //int functionIndex = 1;
 
    out.open(aFileName.c_str());
    out.setf(ios::fixed);

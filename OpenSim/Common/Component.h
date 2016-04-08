@@ -2473,7 +2473,7 @@ void Input<T>::connect(const AbstractChannel& channel,
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
     std::string outputPath, channelName, annotation;
-    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {
