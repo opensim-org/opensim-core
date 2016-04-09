@@ -87,7 +87,7 @@ build_script:
   
 test_script:
   ## Run tests.
-  - ctest --parallel 4 --build-config Release --output-on-failure --exclude-regex %TESTS_TO_EXCLUDE%
+  - ctest --parallel 4 --build-config Release --output-on-failure --exclude-regex "%TESTS_TO_EXCLUDE%"
 
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
