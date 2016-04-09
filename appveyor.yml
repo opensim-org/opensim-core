@@ -102,9 +102,7 @@ test_script:
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
   - # Detect if we are on the master branch.
-  - # TODO: Temporarily create NuGet package regardless of branch (to test before merging).
-  - #IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-  - SET DISTR=TRUE
+  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - # Create and upload NuGet package.
   - IF DEFINED DISTR cd %APPVEYOR_BUILD_FOLDER%
   - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%" -BasePath %OPENSIM_INSTALL_DIR%
