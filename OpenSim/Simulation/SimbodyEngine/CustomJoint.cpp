@@ -54,14 +54,14 @@ CustomJoint::CustomJoint()
  * Constructor with specified SpatialTransform.
  */
 CustomJoint::CustomJoint(const std::string &name,
-                         const std::string& parentName,
-                         const std::string& childName,
-                         SpatialTransform& aSpatialTransform,
+                         const PhysicalFrame& parent,
+                         const PhysicalFrame& child,
+                         SpatialTransform& spatialTransform,
                          bool reverse) :
-                         Super(name, parentName, childName, reverse)
+                         Super(name, parent, child, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 CustomJoint::CustomJoint(const std::string& name,
@@ -71,13 +71,13 @@ CustomJoint::CustomJoint(const std::string& name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    SpatialTransform& aSpatialTransform,
+    SpatialTransform& spatialTransform,
     bool reverse) :
-        Joint(name, parent, locationInParent, orientationInParent,
+        Super(name, parent, locationInParent, orientationInParent,
             child, locationInChild, orientationInChild, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 //_____________________________________________________________________________
@@ -150,7 +150,7 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentFrameName();
+    const string& parentName = getParentFrame().getName();
     for (int i=0; i<aScaleSet.getSize(); i++) {
         Scale& scale = aScaleSet.get(i);
         if (scale.getSegmentName()==parentName) {

@@ -242,6 +242,11 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
+    // Hack since clone does not copy internal ownership (parent) references
+    // TODO: should be removed when Component cloning preserves ownership
+    // relationships.
+    secondFrame->finalizeFromProperties();
+
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));

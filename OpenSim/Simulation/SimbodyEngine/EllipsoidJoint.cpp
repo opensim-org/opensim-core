@@ -51,11 +51,11 @@ EllipsoidJoint::EllipsoidJoint() : Super()
  * Convenience Constructor.
  */
 EllipsoidJoint::EllipsoidJoint( const std::string& name,
-                                const std::string& parentName,
-                                const std::string& childName,
+                                const PhysicalFrame& parent,
+                                const PhysicalFrame& child,
                                 const SimTK::Vec3& ellipsoidRadii,
                                 bool reverse) :
-                                  Super(name, parentName, childName, reverse)
+                                  Super(name, parent, child, reverse)
 {
     constructProperties();
     set_radii_x_y_z(ellipsoidRadii);
@@ -129,7 +129,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentFrameName();
+    const string& parentName = getParentFrame().getName();
     for (int i=0; i<aScaleSet.getSize(); i++) {
         Scale& scale = aScaleSet.get(i);
         if (scale.getSegmentName()==parentName) {
