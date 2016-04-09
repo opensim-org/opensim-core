@@ -61,12 +61,12 @@ public:
     }
 };
 
-class RowIndexOutOfRange : public IndexOutOfRange<size_t> {
+class RowIndexOutOfRange : public IndexOutOfRange {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };
 
-class ColumnIndexOutOfRange : public IndexOutOfRange<size_t> {
+class ColumnIndexOutOfRange : public IndexOutOfRange {
 public:
     using IndexOutOfRange::IndexOutOfRange;
 };
@@ -353,7 +353,7 @@ public:
 
     /** Get dependent Column which has the given column label.                */
     VectorView getDependentColumn(const std::string& columnLabel) {
-        return _depData.col(getColumnIndex(columnLabel));
+        return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** Set independent column at index.                                      

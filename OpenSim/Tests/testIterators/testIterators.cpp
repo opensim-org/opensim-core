@@ -96,6 +96,7 @@ int main()
         int numGeomPaths = 0;
         ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
         for (const GeometryPath& gpath : geomPathList) {
+            (void)gpath; // Suppress unused variable warning.
             numGeomPaths++;
         }
         const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);

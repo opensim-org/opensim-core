@@ -407,7 +407,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     manager.setFinalTime(duration);
 
     // Integrate
-    const SimbodyMatterSubsystem& matter2 = osimModel->getMultibodySystem().getMatterSubsystem();
+    /*const SimbodyMatterSubsystem& matter2 = */osimModel->getMultibodySystem().getMatterSubsystem();
     //for (int i = 0; i < matter2.getNumConstraints(); i++)
     //    printf("%d: %d\n", i, matter2.isConstraintDisabled(osim_state, SimTK::ConstraintIndex(i)));
     //cout << osim_state.getQ()<<endl;
@@ -475,13 +475,13 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state,
     // Set the initial states for both Simbody system and OpenSim model
     Vector& q = state.updQ();
     Vector& u = state.updU();
-    int nq_sb = initTestStates(q, u);
-    int nq = osim_state.getNQ();
+    /*int nq_sb = */initTestStates(q, u);
+    /*int nq = */osim_state.getNQ();
 
     // Push down to OpenSim "state"
     osim_state.updY() = state.getY();
     Vector delta = osim_state.updY() - state.getY();
-    double errnorm = delta.norm();
+    /*double errnorm = */delta.norm();
     cout << "osim_state - sb_state: " << delta << endl;
 
     /* Debugging Info */
@@ -1076,7 +1076,6 @@ void testFreeJoint()
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
         hip_coords[i].setName(coord_name.str());
-        hip_coords[i].setMotionType(((i<3) ? Coordinate::Rotational : Coordinate::Translational));
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1219,8 +1218,8 @@ void testPinJoint()
     cout << "=============================================================" << endl;
 
     Random::Uniform randomAngle(-Pi/2, Pi/2);
-    Vec3 oInB(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
-    Vec3 oInP(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
+    Vec3 oInB(randomAngle.getValue(), randomAngle.getValue(), randomAngle.getValue());
+    Vec3 oInP(randomAngle.getValue(), randomAngle.getValue(), randomAngle.getValue());
 
     // Define the Simbody system
     MultibodySystem system;
@@ -1232,10 +1231,11 @@ void testPinJoint()
     MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInPelvis), 
         SimTK::Body::Rigid(femurMass), SimTK::Transform(hipInFemur));
     //Pin knee connects shank
-    MobilizedBody::Pin shank(thigh, 
-        SimTK::Transform(Rotation(BodyRotationSequence, oInP[0], XAxis, oInP[1], YAxis, oInP[2],ZAxis), kneeInFemur),
-        SimTK::Body::Rigid(tibiaMass),
-        SimTK::Transform(Rotation(BodyRotationSequence, oInB[0], XAxis, oInB[1], YAxis, oInB[2],ZAxis), kneeInTibia));
+    MobilizedBody::Pin shank(thigh, SimTK::Transform( Rotation( 
+            BodyRotationSequence, oInP[0], XAxis, oInP[1], YAxis, oInP[2], ZAxis),
+        kneeInFemur), SimTK::Body::Rigid(tibiaMass),
+            SimTK::Transform( Rotation( BodyRotationSequence,
+                oInB[0], XAxis, oInB[1], YAxis, oInB[2], ZAxis), kneeInTibia));
 
     // Simbody model state setup
     system.realizeTopology();
@@ -1243,7 +1243,7 @@ void testPinJoint()
     matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
-    //==========================================================================================================
+    //=========================================================================
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
@@ -1285,53 +1285,75 @@ void testPinJoint()
 
     // verify that default copy constructor handles coordinates appropriately
     auto knee2(knee);
-    ASSERT(knee2.get_CoordinateSet().getSize() == knee.get_CoordinateSet().getSize());
+    ASSERT(knee2.get_CoordinateSet().getSize() 
+        == knee.get_CoordinateSet().getSize());
     ASSERT(knee2.get_CoordinateSet()[0].getName() == "knee_q");
 
-    // Exercise new convenience constructor
-    PinJoint knee3("knee", "thigh_offset", "shank_offset");
-    knee3.getCoordinateSet()[0].setName("knee_q"); // use the same coordinate name
-    // and current way of specifying the offset locations of the joint
-    // in the respective PhysicalFrames (e.g. Bodies)
-    knee3.append_frames(PhysicalOffsetFrame("thigh_offset", osim_thigh,
+    PhysicalOffsetFrame thigh_offset("thigh_offset", osim_thigh,
         SimTK::Transform(Rotation(BodyRotationSequence,
             oInP[0], XAxis,
             oInP[1], YAxis,
-            oInP[2], ZAxis), kneeInFemur)));
-    knee3.append_frames(PhysicalOffsetFrame("shank_offset", osim_shank,
+            oInP[2], ZAxis), kneeInFemur));
+
+    PhysicalOffsetFrame shank_offset("shank_offset", osim_shank,
         SimTK::Transform(Rotation(BodyRotationSequence,
             oInB[0], XAxis,
             oInB[1], YAxis,
-            oInB[2], ZAxis), kneeInTibia)));
-    knee3.finalizeFromProperties();
+            oInB[2], ZAxis), kneeInTibia));
 
+    // Exercise new convenience constructor with common use case of adding
+    // offsets to the body of interest
+    PinJoint knee3("knee", thigh_offset, shank_offset);
+    knee3.append_frames(thigh_offset);
+    knee3.append_frames(shank_offset);
+    // use the same coordinate name
+    knee3.getCoordinateSet()[0].setName("knee_q");
+
+    knee3.connect(*osimModel);
+    knee3.dumpConnections();
+    knee3.dumpSubcomponents();
+
+    knee.connect(*osimModel);
+    knee.dumpConnections();
+    knee.dumpSubcomponents();
+
+    // once connected the two ways of constructing the knee joint should
+    // yield identical definitions
     ASSERT(knee3 == knee);
 
+    // Adding the offsets to the bodies instead of the joint should not change
+    // the resulting system and results
     osimModel->addJoint(&knee3);
 
-    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
+    knee3.dumpConnections();
+    knee.dumpConnections();
+
+    // BAD: have to set memoryOwner to false or program will crash when this
+    // test is complete.
     osimModel->disownAllComponents();
 
     osimModel->setGravity(gravity_vec);
     osimModel->finalizeFromProperties();
 
-    osimModel->print("testPinJointModel.osim");
-
-    Model* osimModelcopy = new Model("testPinJointModel.osim");
-
-    ASSERT(*osimModel == *osimModelcopy);
-
-    osimModelcopy->initSystem();
-
     testEquivalentBodyForceForGenForces(*osimModel);
 
-    // Need to setup model before adding an analysis since it creates the AnalysisSet
-    // for the model if it does not exist.
+
+
+    // Initialize the system and get the model state
     SimTK::State osim_state = osimModel->initSystem();
 
-    //==========================================================================================================
+    // double check that the deserialized model is identical to the live model
+    osimModel->print("testPinJointModel.osim");
+    Model* osimModelcopy = new Model("testPinJointModel.osim");
+    ASSERT(*osimModel == *osimModelcopy);
+    SimTK::State copy_state = osimModelcopy->initSystem();
+
+    SimTK_TEST_EQ(osim_state.getQ(), copy_state.getQ());
+
+    //=========================================================================
     // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state, "testPinJoint FAILED\n");
+    compareSimulations(system, state, osimModel, osim_state,
+                       "testPinJoint FAILED\n");
 } // end testPinJoint
 
 void testSliderJoint()
@@ -1495,9 +1517,7 @@ void testPlanarJoint()
     CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
     kneeCoords[0].setName("knee_rz");
     kneeCoords[0].setName("knee_tx");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
     kneeCoords[0].setName("knee_ty");
-    kneeCoords[0].setMotionType(Coordinate::Translational);
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1780,7 +1800,7 @@ void testCustomVsCompoundJoint()
     customModel.print("Gimbal_CustomZXY_test.osim");
     compoundModel.print("Gimbal_CompoundPinsZXY_test.osim");    
 
-    SimTK::Vec3 com1 = customModel.calcMassCenterPosition(state1);
+    /*SimTK::Vec3 com1 = */customModel.calcMassCenterPosition(state1);
     com2 = compoundModel.calcMassCenterPosition(state2);
 
     //============================================================================
@@ -1820,7 +1840,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
     Vector& qi = state.updQ();
     Vector& ui = state.updU();
     // Randomly select the initial state of this model
-    int nq = initTestStates(qi, ui);
+    /*int nq = */initTestStates(qi, ui);
 
     const SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
 
@@ -2049,8 +2069,8 @@ void testAutomaticJointReversal()
     auto off1Path = off1.getFullPathName();
     auto off2Path = off2.getFullPathName();
 
-    auto& pathOff1 = c1.getConnecteeName();
-    auto& pathOff2 = c2.getConnecteeName();
+    /*auto& pathOff1 = */c1.getConnecteeName();
+    /*auto& pathOff2 = */c2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);
@@ -2066,7 +2086,7 @@ void testAutomaticJointReversal()
 
     std::vector<std::string> qNames{"hip_q0", "hip_q1", "knee_q","ankle_coord_0" };
 
-    for (int i = 0; i < qNames.size(); ++i) {
+    for (unsigned i = 0; i < qNames.size(); ++i) {
         cout << "reversed " << qNames[i] << " = ";
         cout << model.getCoordinateSet().get(qNames[i]).getValue(s);
         cout << " constrained = ";
@@ -2202,8 +2222,8 @@ void testAutomaticLoopJointBreaker()
     Model loadedModel(file);
     SimTK::State &s2 = loadedModel.initSystem();
 
-    int ncoords2 = loadedModel.getNumCoordinates();
-    int nconstraints2 = loadedModel.getNumConstraints();
+    /*int ncoords2 = */loadedModel.getNumCoordinates();
+    /*int nconstraints2 = */loadedModel.getNumConstraints();
 
     ASSERT(model == loadedModel);
 

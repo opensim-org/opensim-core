@@ -187,7 +187,8 @@ protected:
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void 
+    updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
 
     /** Helper method to convert internal force expressed in the mobility basis
@@ -520,8 +521,8 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     const F& frame1 = getFrame1();
     const F& frame2 = getFrame2();
 
-    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
     SimTK::Transform X_GF = frame1.getGroundTransform(s);
     SimTK::Transform X_GM = frame2.getGroundTransform(s);

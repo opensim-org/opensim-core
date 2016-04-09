@@ -224,7 +224,7 @@ protected:
 private:
     // Object helpers
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     // Model Component Interface when computing energy
     void computeStateVariableDerivatives(const SimTK::State& s) const override;

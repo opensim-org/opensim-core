@@ -703,30 +703,8 @@ public:
     */
     AbstractOutput& updOutput(const std::string& name)
     {
-        auto it = _outputsTable.find(name);
-        
-        if (it != _outputsTable.end()) {
-            return it->second.updRef();
-        }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string outName = name.substr(back + 1, name.length() - back);
-            
-            const Component* found = findComponent(prefix);
-            // if found is this component again, no point trying to find
-            // output again, otherwise we would not have reached here 
-            if (found && (found != this)) {
-                return const_cast<Component*>(found)->updOutput(outName);
-            }
-        }
-        
-            std::stringstream msg;
-        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+        return *const_cast<AbstractOutput *>(&getOutput(name));
+    }
 
     /** An iterator to traverse all the Outputs of this component, pointing at the
     * first Output. This can be used in a loop as such:
@@ -1633,9 +1611,13 @@ protected:
 
     // End of System Creation and Access Methods.
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsupported-friend"
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
+#pragma clang diagnostic pop
 
+public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1652,6 +1634,7 @@ protected:
         NOTE: If the component name or the state variable name is ambiguous, 
          an exception is thrown. To disambiguate use the full name provided
          by owning component(s). */
+#ifndef SWIG // StateVariable is protected.
     template<class C = Component>
     const C* findComponent(const std::string& name, 
                            const StateVariable** rsv = nullptr) const {
@@ -1696,14 +1679,15 @@ protected:
               // where only names were used (not path or type)
               // TODO replace with an exception -aseth
             else if (comp.getName() == subname) {
-                if (foundCs.size() == 0) {
-                    foundCs.push_back(&comp);
-                    msg += "a match for Component '" + name + "' of type " +
-                        comp.getConcreteClassName() + " found, but it "
-                        "is not on specified path.";
-                    //throw Exception(msg, __FILE__, __LINE__);
-                    std::cout << msg << std::endl;
-                }
+                foundCs.push_back(&comp);
+                // TODO Revisit why the exact match isn't found when
+                // when what appears to be the complete path.
+                std::string details = msg + " Found '" + compFullPathName + 
+                    "' as a match for:\n Component '" + name + "' of type " + 
+                    comp.getConcreteClassName() + ", but it "
+                    "is not on specified path.\n";
+                //throw Exception(details, __FILE__, __LINE__);
+                std::cout << details << std::endl;
             }
         }
 
@@ -1732,12 +1716,16 @@ protected:
         // Not found
         return nullptr;
     }
+#endif
 
-    /** Similarly find a Connector of this Component (also amongst its subcomponents) */
+    /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
-
+    /** Similarly find a StateVariable of this Component (includes its subcomponents) */
+#ifndef SWIG // StateVariable is protected.
     const StateVariable* findStateVariable(const std::string& name) const;
+#endif
 
+protected:
     /** Access the parent of this Component.
         An exception is thrown if the Component has no parent.
         @see hasParent() */
@@ -2373,7 +2361,7 @@ void Connector<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+    catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path);
     }
@@ -2483,7 +2471,7 @@ void Input<T>::connect(const AbstractChannel& channel,
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
     std::string outputPath, channelName, annotation;
-    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {

@@ -97,6 +97,12 @@ void testPopulateTrajectoryAndStatesAccumulator() {
         }
     }
 
+    // Make sure we have all the states
+    SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
+    // ...and that they aren't all just references to the same single state.
+    for (size_t i = 0; i < states.getSize(); ++i) {
+        SimTK_TEST_EQ(states[i].getTime(), times[i]);
+    }
 
     // Test the StatesAccumulator with a constant reporting interval.
     statesCol->clear();
@@ -534,7 +540,7 @@ void testCopying() {
         // Ideally we'd check for equality (operator==()), but State does not
         // have an equality operator.
         SimTK_TEST_EQ((int)statesCopyConstruct.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyConstruct[i].getTime(), states[i].getTime());
         }
     }
@@ -543,7 +549,7 @@ void testCopying() {
         StatesTrajectory statesCopyAssign;
         statesCopyAssign = states;
         SimTK_TEST_EQ((int)statesCopyAssign.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyAssign[i].getTime(), states[i].getTime());
         }
     }
@@ -580,9 +586,9 @@ void testBoundsCheck() {
         states[4];
         states[5];
     #endif
-    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange<size_t>);
+    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
-            IndexOutOfRange<size_t>);
+                              IndexOutOfRange);
 }
 
 void testIntegrityChecks() {
@@ -682,6 +688,86 @@ void testIntegrityChecks() {
     // and Z's both pass the check. 
 }
 
+void tableAndTrajectoryMatch(const Model& model,
+                             const TimeSeriesTable& table,
+                             const StatesTrajectory& states,
+                             std::vector<std::string> columns = {}) {
+
+    const auto stateNames = model.getStateVariableNames();
+
+    size_t numColumns{};
+    if (columns.empty()) {
+        numColumns = stateNames.getSize();
+    } else {
+        numColumns = columns.size();
+    }
+    SimTK_TEST(table.getNumColumns() == numColumns);
+    SimTK_TEST(table.getNumRows() == states.getSize());
+
+    const auto& colNames = table.getColumnLabels();
+
+    // Test that the data table has exactly the same numbers.
+    for (size_t itime = 0; itime < states.getSize(); ++itime) {
+        // Test time.
+        SimTK_TEST(table.getIndependentColumn()[itime] ==
+                   states[itime].getTime());
+
+        // Test state values.
+        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
+            const auto& stateName = colNames[icol];
+
+            const auto& valueInStates = model.getStateVariableValue(
+                    states[itime], stateName);
+            const auto& column = table.getDependentColumnAtIndex(icol);
+            const auto& valueInTable = column[static_cast<int>(itime)];
+
+            SimTK_TEST(valueInStates == valueInTable);
+        }
+    }
+}
+
+void testExport() {
+    Model gait("gait2354_simbody.osim");
+    gait.initSystem();
+
+    // Exported data exactly matches data in the trajectory.
+    const auto stateNames = gait.getStateVariableNames();
+    Storage sto(statesStoFname);
+    auto states = StatesTrajectory::createFromStatesStorage(gait, sto);
+
+    {
+        auto tableAll = states.exportToTable(gait);
+        tableAndTrajectoryMatch(gait, tableAll, states);
+    }
+
+    // Exporting only certain columns.
+    {
+        std::vector<std::string> columns {"knee_l/knee_angle_l/value",
+                                          "knee_r/knee_angle_r/value",
+                                          "knee_r/knee_angle_r/speed"};
+        auto tableKnee = states.exportToTable(gait, columns);
+        tableAndTrajectoryMatch(gait, tableKnee, states, columns);
+    }
+
+    // Trying to export the trajectory with an incompatible model.
+    {
+        Model arm26("arm26.osim");
+        SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
+                                  StatesTrajectory::IncompatibleModel);
+    }
+
+    // Exception if given a non-existant column name.
+    SimTK_TEST_MUST_THROW_EXC(
+            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+                                        "not_an_actual_state",
+                                        "knee_r/knee_angle_r/speed"}),
+            OpenSim::Exception);
+    SimTK_TEST_MUST_THROW_EXC(
+            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+                                        "nor/is/this",
+                                        "knee_r/knee_angle_r/speed"}),
+            OpenSim::Exception);
+}
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
@@ -702,7 +788,7 @@ int main() {
         SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
         SimTK_SUBTEST(testCopying);
 
-        // Test creation of trajectory from astates storage.
+        // Test creation of trajectory from a states storage.
         // -------------------------------------------------
         // Using a pre-4.0 states storage file with old column names.
         SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
@@ -714,6 +800,9 @@ int main() {
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
         SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
+
+        // Export to data table.
+        SimTK_SUBTEST(testExport);
 
     SimTK_END_TEST();
 }

@@ -87,7 +87,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class AbstractReporter
@@ -153,7 +153,7 @@ protected:
         const auto& input = this->template getInput<InputT>("inputs");
         SimTK::RowVector_<ValueT> result(int(input.getNumConnectees()));
 
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+        for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
               const auto& chan = input.getChannel(idx);
               const auto& value = chan.getValue(state);
               result[idx] = value;
@@ -168,7 +168,7 @@ protected:
         const auto& input = this->template getInput<InputT>("inputs");
 
         std::vector<std::string> labels;
-        for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+        for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
             const auto& chan = input.getChannel(idx);
             std::string label = chan.getName();
             if (label.empty()) {
@@ -206,21 +206,26 @@ private:
         // Output::getNumberOfSignificantDigits().
         const auto& input = this->template getInput<T>("inputs");
 
-        if (_printCount % 20 == 0) {
-            std::cout << "[" << this->getName() << "] "
-                << std::setw(_width) << "time" << "| ";
-            for (auto idx = 0; idx < input.getNumConnectees(); ++idx) {
+        if (state.getTime() <= SimTK::Eps) {
+            // reset print count if we reset the simulation
+            const_cast<ConsoleReporter_<T>*>(this)->_printCount = 0;
+        }
+
+        if (_printCount % 40 == 0) {
+            std::cout << "[" << this->getName() << "] " << "\n";
+            std::cout << std::setw(_width) << "time" << "| ";
+            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
                 const auto& chan = input.getChannel(idx);
                 const auto& outName = chan.getName();
-                const auto& truncName = outName.size() <= _width ?
+                const auto& truncName = 
+                    static_cast<int>(outName.size()) <= _width ?
                     outName : outName.substr(outName.size() - _width);
                 std::cout << std::setw(_width) << truncName << "|";
             }
             std::cout << "\n";
         }
         // TODO set width based on number of significant digits.
-        std::cout << "[" << this->getName() << "] "
-            << std::setw(_width) << state.getTime() << "| ";
+        std::cout << std::setw(_width) << state.getTime() << "| ";
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
@@ -231,6 +236,7 @@ private:
 
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }
+
     unsigned int _printCount = 0;
     int _width = 12;
 };

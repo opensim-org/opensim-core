@@ -72,9 +72,9 @@ public:
 
     /** Construct joint with supplied coordinates and transform axes */
     CustomJoint( const std::string &name,
-                 const std::string& parentName,
-                 const std::string& childName,
-                 SpatialTransform& aSpatialTransform,
+                 const PhysicalFrame& parent,
+                 const PhysicalFrame& child,
+                 SpatialTransform& spatialTransform,
                  bool reverse=false);
 
     /** Joint constructor with explicit parent and child offsets in terms of
@@ -86,7 +86,7 @@ public:
         const PhysicalFrame& child,
         const SimTK::Vec3& locationInChild,
         const SimTK::Vec3& orientationInChild,
-        SpatialTransform& aSpatialTransform,
+        SpatialTransform& spatialTransform,
         bool reverse=false);
 
 
@@ -111,7 +111,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    void constructProperties();
+    void constructProperties() override;
 
     // Construct coordinates according to the SpatialTransform of the CustomJoint
     void constructCoordinates();

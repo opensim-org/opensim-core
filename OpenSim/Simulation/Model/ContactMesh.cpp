@@ -30,8 +30,8 @@ namespace OpenSim {
 
 ContactMesh::ContactMesh() :
     ContactGeometry(),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+    _geometry(NULL),
+    _filename(_filenameProp.getValueStr())
 {
     setNull();
     setupProperties();
@@ -39,8 +39,8 @@ ContactMesh::ContactMesh() :
 
 ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body) :
     ContactGeometry(location, orientation, body),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+    _geometry(NULL),
+    _filename(_filenameProp.getValueStr())
 {
     setNull();
     setupProperties();
@@ -59,8 +59,8 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
 
 ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body, const std::string& name) :
     ContactGeometry(location, orientation, body),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+    _geometry(NULL),
+    _filename(_filenameProp.getValueStr())
 {
     setNull();
     setupProperties();
@@ -77,8 +77,8 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
 
 ContactMesh::ContactMesh(const ContactMesh& geom) :
     ContactGeometry(geom),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+    _geometry(NULL),
+    _filename(_filenameProp.getValueStr())
 {
     setNull();
     setupProperties();

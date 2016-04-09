@@ -747,7 +747,7 @@ Array<std::string> Component::getStateVariableNames() const
 
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName = _memberSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
@@ -1106,8 +1106,8 @@ const int Component::getStateIndex(const std::string& name) const
 SimTK::SystemYIndex Component::
 getStateVariableSystemIndex(const std::string& stateVariableName) const
 {
-    const SimTK::State& s = getSystem().getDefaultState();
-
+    //const SimTK::State& s = getSystem().getDefaultState();   
+    
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(stateVariableName);
     
@@ -1378,7 +1378,7 @@ void Component::dumpConnections() const {
         if (connector.getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (int i = 0; i < connector.getNumConnectees(); ++i) {
+            for (unsigned i = 0; i < connector.getNumConnectees(); ++i) {
                 std::cout << connector.getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
@@ -1396,9 +1396,11 @@ void Component::dumpConnections() const {
         if (input.getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (int i = 0; i < input.getNumConnectees(); ++i) {
+            for (unsigned i = 0; i < input.getNumConnectees(); ++i) {
                 std::cout << input.getConnecteeName(i) << " ";
-                // TODO as is, requires the input connections to be satisfied. std::cout << " (annotation: " << input.getAnnotation(i) << ") ";
+                // TODO as is, requires the input connections to be satisfied. 
+                // std::cout << " (annotation: " << input.getAnnotation(i) 
+                //           << ") ";
             }
             std::cout << std::endl;
         }

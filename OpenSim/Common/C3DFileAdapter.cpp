@@ -1,5 +1,10 @@
 #include "C3DFileAdapter.h"
 
+#include "btkAcquisitionFileReader.h"
+#include "btkAcquisition.h"
+#include "btkForcePlatformsExtractor.h"
+#include "btkGroundReactionWrenchFilter.h"
+
 namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
@@ -145,18 +150,60 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
     }
 
+    //shrik<btk::ForcePlatform::Origin> foo;
+
     if(fp_force_pts->GetItemNumber() != 0) {
-        force_table.
-            updTableMetaData().
-            setValueForKey("CalibrationMatrices", std::move(fp_cal_matrices));
+        // Convert Eigen matrices into SimTK matrices before updating metadata
+        // of the force table.
+
+        std::vector<SimTK::Matrix_<double>> cal_matrices{};
+        for(const auto& eigen_mat : fp_cal_matrices) {
+            SimTK::Matrix_<double> 
+                simtk_mat{static_cast<int>(eigen_mat.rows()),
+                          static_cast<int>(eigen_mat.cols())};
+            
+            for(int r = 0; r < eigen_mat.rows(); ++r)
+                for(int c = 0; c < eigen_mat.cols(); ++c)
+                    simtk_mat(r, c) = eigen_mat(r, c);
+            
+            cal_matrices.push_back(simtk_mat);
+        }
+
+        std::vector<SimTK::Matrix_<double>> corners{};
+        for(const auto& eigen_mat : fp_corners) {
+            SimTK::Matrix_<double> 
+                simtk_mat{static_cast<int>(eigen_mat.rows()),
+                          static_cast<int>(eigen_mat.cols())};
+            
+            for(int r = 0; r < eigen_mat.rows(); ++r)
+                for(int c = 0; c < eigen_mat.cols(); ++c)
+                    simtk_mat(r, c) = eigen_mat(r, c);
+            
+            corners.push_back(simtk_mat);
+        }
+
+        std::vector<SimTK::Vector_<double>> origins{};
+        for(const auto& eigen_vec : fp_origins) {
+            SimTK::Vector_<double> 
+                simtk_vec{static_cast<int>(eigen_vec.rows())};
+
+            for(int r = 0; r < eigen_vec.rows(); ++r)
+                simtk_vec(r) = eigen_vec(r, 0);
+
+            origins.push_back(simtk_vec);
+        }
 
         force_table.
             updTableMetaData().
-            setValueForKey("Corners",             std::move(fp_corners));
+            setValueForKey("CalibrationMatrices", std::move(cal_matrices));
 
         force_table.
             updTableMetaData().
-            setValueForKey("Origins",             std::move(fp_origins));
+            setValueForKey("Corners",             std::move(corners));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("Origins",             std::move(origins));
 
         force_table.
             updTableMetaData().
@@ -198,7 +245,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             ++f) {
             SimTK::RowVector_<SimTK::Vec3>
                 row{fp_force_pts->GetItemNumber() * 3};
-            size_t col{0};
+            int col{0};
             for(auto fit = fp_force_pts->Begin(),
                 mit =     fp_moment_pts->Begin(),
                 pit =   fp_position_pts->Begin();

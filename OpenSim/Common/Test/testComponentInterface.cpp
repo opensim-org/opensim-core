@@ -70,7 +70,7 @@ public:
     void add(Component* comp) {
         addComponent(comp);
         // Edit Sub 
-        Sub& subc = updMemberSubcomponent<Sub>(intSubix);
+        /*Sub& subc = */updMemberSubcomponent<Sub>(intSubix);
     }
 
     // Top level connection method for this all encompassing component, TheWorld
@@ -95,7 +95,7 @@ protected:
             matter = system.updMatterSubsystem();
         }
         else{
-            const Sub& subc = getMemberSubcomponent<Sub>(intSubix);
+            // const Sub& subc = getMemberSubcomponent<Sub>(intSubix);
 
             SimbodyMatterSubsystem* old_matter = matter.release();
             delete old_matter;
@@ -427,7 +427,7 @@ void testMisc() {
     theWorld.add(&foo);
     foo.set_mass(2.0);
 
-    Foo* footTest = foo.clone();
+    // Foo* footTest = foo.clone();
 
     // bar0 is to test copying of the function within a component's outputs.
     std::unique_ptr<Bar> bar0(new Bar());
@@ -500,7 +500,7 @@ void testMisc() {
     // Simbody model state setup
     State s = system.realizeTopology();
 
-    int nu = system.getMatterSubsystem().getNumMobilities();
+    // int nu = system.getMatterSubsystem().getNumMobilities();
 
     //SimTK::Visualizer viz(system);
     //viz.drawFrameNow(s);
@@ -658,14 +658,14 @@ void testMisc() {
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
-        const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
+          /*const AbstractOutput& out = */bar.getOutput("hiddenStateVar") );
 
     s = system3.realizeTopology();
 
     bar.setStateVariableValue(s, "fiberLength", 1.5);
     bar.setStateVariableValue(s, "activation", 0);
 
-    int nu3 = system3.getMatterSubsystem().getNumMobilities();
+    // int nu3 = system3.getMatterSubsystem().getNumMobilities();
 
     // realize simbody system to velocity stage
     system3.realize(s, Stage::Velocity);
@@ -691,7 +691,7 @@ void testMisc() {
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
-    ASSERT(ncols == finalVal.size(), __FILE__, __LINE__,
+    ASSERT(ncols == static_cast<size_t>(finalVal.size()), __FILE__, __LINE__,
         "Number of cols in Reporter results not equal to size of Output'Qs' size.");
 
     // Check the result of the integration on our state variables.
@@ -715,7 +715,7 @@ void testMisc() {
 
     // With path to the component it should work
     auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
-    const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
+    // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
@@ -899,7 +899,7 @@ void testComponentPathNames()
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
-        auto& eref = top.getComponent("E") );
+                 /*auto& eref = */top.getComponent("E") );
 
     auto& cref = top.getComponent(fullPathC);
     auto& eref = top.getComponent(fullPathE);
@@ -951,7 +951,7 @@ void testComponentPathNames()
     bar2->updConnector<Foo>("childFoo")
         .connect(F->getComponent<Foo>("Foo2"));
 
-    auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
+    // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
 
     // now wire up bar2 that belongs to F and connect the 
     // two foo1s one in A and other F
