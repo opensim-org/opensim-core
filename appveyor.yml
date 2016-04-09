@@ -23,12 +23,12 @@ platform: x64
 
 environment:
   matrix:
-    - PYTHON_DIR: "C:\\Python27"
-      CMAKE_GENERATOR: "Visual Studio 14 2015"
+    - CMAKE_GENERATOR: "Visual Studio 14 2015"
       NUGET_PACKAGE_ID_SUFFIX: "-x86"
-    - PYTHON_DIR: "C:\\Python27-x64"
-      CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
+      PYTHON_DIR: "C:\\Python27"
+    - CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
       NUGET_PACKAGE_ID_SUFFIX: "-x64"
+      PYTHON_DIR: "C:\\Python27-x64"
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
@@ -61,6 +61,8 @@ install:
   # chrisdembia once uploaded a simbody 3.5.0 nupkg.
   # Output directory must match how Simbody was packaged, otherwise
   # SimbodyConfig.cmake will have all the wrong paths.
+  # Change destination directory (default is package name).
+  - nuget config -Set repositoryPath=C:\simbody
   - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
 build_script:
@@ -68,9 +70,7 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
-  # TODO: Temporarily increase verbosity.
-  #- cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
-  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:diagnostic
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
