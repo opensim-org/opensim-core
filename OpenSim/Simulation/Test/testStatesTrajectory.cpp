@@ -97,13 +97,6 @@ void testPopulateTrajectoryAndStatesAccumulator() {
         }
     }
 
-    // Make sure we have all the states
-    SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
-    // ...and that they aren't all just references to the same single state.
-    for (size_t i = 0; i < states.getSize(); ++i) {
-        SimTK_TEST_EQ(states[i].getTime(), times[i]);
-    }
-
     // Test the StatesAccumulator with a constant reporting interval.
     statesCol->clear();
     auto* statesColInterval = new StatesAccumulator();
