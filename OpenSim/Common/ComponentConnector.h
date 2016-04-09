@@ -253,6 +253,12 @@ public:
         once it is connected.
     Return a const reference to the object connected to this Connector */
     const T& getConnectee() const {
+        if (!isConnected()) {
+            std::string msg = getOwner().getConcreteClassName() + "::Connector '"
+                + getName() + "' is not connected to '" + getConnecteeName()
+                + "' of type " + T::getClassName();
+            OPENSIM_THROW(Exception, msg);
+        }
         return connectee.getRef();
     }
 
@@ -265,10 +271,20 @@ public:
             std::string objPathName = objT->getFullPathName();
             std::string ownerPathName = getOwner().getFullPathName();
 
+            // check if the full pathname is just /name
+            if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
+                // in which case we likely are connecting to an orphan
+                // (yet to adopted component) which the API permits when passing
+                // in the dependency directly.
+                // better off stripping off the / to identify it as a "floating"
+                // Component and we will need to find its full path next time
+                // we try to connect
+                setConnecteeName(objT->getName());
+            }
             // This can happen when top level components like a Joint and Body
             // have the same name like a pelvis Body and pelvis Joint that
             // connects that connects to a Body of the same name.
-            if(objPathName == ownerPathName)
+            else if(objPathName == ownerPathName)
                 setConnecteeName(objPathName);
             else { // otherwise store the relative path name to the object
                 std::string relPathName = objT->getRelativePathName(getOwner());
