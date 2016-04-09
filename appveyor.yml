@@ -68,7 +68,9 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
-  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
+  # TODO: Temporarily increase verbosity.
+  #- cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:diagnostic
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
