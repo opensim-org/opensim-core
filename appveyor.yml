@@ -26,7 +26,7 @@ environment:
     - CMAKE_GENERATOR: "Visual Studio 14 2015"
       NUGET_PACKAGE_ID_SUFFIX: "-x86"
       PYTHON_DIR: "C:\\Python27"
-      TESTS_TO_EXCLUDE: "testC3DFileAdapter|python_Release"
+      TESTS_TO_EXCLUDE: "testC3DFileAdapter|python_Release|Java_TestBasics_Release"
     - CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
       NUGET_PACKAGE_ID_SUFFIX: "-x64"
       PYTHON_DIR: "C:\\Python27-x64"
