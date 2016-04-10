@@ -99,7 +99,7 @@ test_script:
   # Move to the installed location of the python package.
   - cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
-  "%PYTHON_DIR%\\Scripts\\nosetests -v --exclude=%PYTHON_TESTS_TO_EXCLUDE%"
+  - "%PYTHON_DIR%\\Scripts\\nosetests -v --exclude=%PYTHON_TESTS_TO_EXCLUDE%"
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
