@@ -98,7 +98,7 @@ test_script:
   - cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
   # TODO Do not run on x86 (test_C3DFileAdapter currently fails).
-  - IF %NUGET_PACKAGE_ID_SUFFIX% NEQ "-x86" DO "%PYTHON_DIR%\\Scripts\\nosetests -v"
+  - IF "%NUGET_PACKAGE_ID_SUFFIX%" NEQ "-x86" ("%PYTHON_DIR%\\Scripts\\nosetests -v")
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
