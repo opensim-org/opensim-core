@@ -142,7 +142,7 @@ void testStationOnOffsetFrame()
 
     auto rod1 = new Body("rod1", 0.54321, SimTK::Vec3(0.1, 0.5, 0.2),
         SimTK::Inertia::cylinderAlongY(0.025, 0.55));
-    rod1->addGeometry(Cylinder(0.025, 0.55));
+    rod1->attachGeometry(Cylinder(0.025, 0.55));
 
     auto rod2 = rod1->clone();
     rod2->setName("rod2");
