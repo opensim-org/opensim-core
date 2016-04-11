@@ -485,9 +485,10 @@ public:
         return _indData;
     }
 
-    /** Get dependent column.                                                 
+    /** Get dependent column at index.
 
-    \throws ColumnIndexOutOfRange If index is out of range.                   */
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.                               */
     VectorView getDependentColumnAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
@@ -504,6 +505,10 @@ public:
         return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
+    /** Update dependent column at index.
+
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.                               */
     VectorView updDependentColumnAtIndex(size_t index) {
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
