@@ -495,7 +495,10 @@ public:
         return _depData.col((int)index);
     }
 
-    /** Get dependent Column which has the given column label.                */
+    /** Get dependent Column which has the given column label.                
+
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.                                               */
     VectorView getDependentColumn(const std::string& columnLabel) {
         return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
