@@ -504,6 +504,14 @@ public:
         return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
+    VectorView updDependentColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+                         ColumnIndexOutOfRange, index, 0,
+                         static_cast<size_t>(_depData.ncol() - 1));
+
+        return _depData.updCol(static_cast<int>(index));
+    }
+
     /** %Set independent column at index.                                      
 
     \throws RowIndexOutOfRange If index is out of range.                        
