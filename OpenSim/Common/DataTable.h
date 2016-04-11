@@ -491,8 +491,9 @@ public:
     VectorView getDependentColumnAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
-                         static_cast<size_t>(_depData.ncol()));
-        return _depData.col((int)index);
+                         static_cast<size_t>(_depData.ncol() - 1));
+
+        return _depData.col(static_cast<int>(index));
     }
 
     /** Get dependent Column which has the given column label.                
