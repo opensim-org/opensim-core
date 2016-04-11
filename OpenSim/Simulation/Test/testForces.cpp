@@ -1442,7 +1442,7 @@ void testCoordinateLimitForceRotational()
         double ediss = clf->getDissipatedEnergy(osim_state);
         // system KE + PE including strain energy in CLF
         double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
-        double EKsys = osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
+        /*double EKsys = */osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
 
         ASSERT_EQUAL(eSys/eSys0, 1.0, integ_accuracy);
 

@@ -58,8 +58,8 @@ Joint::Joint() : Super()
 }
 
 /* API constructor. */
-Joint::Joint(const std::string &name, const std::string& parentName, 
-                                      const std::string& childName,
+Joint::Joint(const std::string &name, const PhysicalFrame& parent,
+                                      const PhysicalFrame& child,
                                       bool reverse) : Joint()
 {
     OPENSIM_THROW_IF( name.empty(), ComponentHasNoName,
@@ -68,8 +68,8 @@ Joint::Joint(const std::string &name, const std::string& parentName,
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(parentName);
-    updConnector<PhysicalFrame>("child_frame").setConnecteeName(childName);
+    updConnector<PhysicalFrame>("parent_frame").connect(parent);
+    updConnector<PhysicalFrame>("child_frame").connect(child);
 }
 
 /* Convenience Constructor*/
@@ -80,13 +80,13 @@ Joint::Joint(const std::string &name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    bool reverse)
-    // TODO. prefixing the joint name to the frame names should not be necessary.
-    // This is only required now because the search does not respect the local
-    // (relative) name, which it should find immediately, and instead is searching
-    // from the root of the tree.
-    : Joint(name, parent.getName() + "_offset", child.getName() + "_offset")
+    bool reverse) : Joint()
 {
+    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName,
+        getClassName());
+
+    setName(name);
+    set_reverse(reverse);
 
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
@@ -94,11 +94,14 @@ Joint::Joint(const std::string &name,
         orientationInParent[1], YAxis,
         orientationInParent[2], ZAxis);
     SimTK::Transform parentTransform(parentRotation, locationInParent);
+
+    // Define the offset frame that the joint connects to in the parent
+    PhysicalOffsetFrame pInPo( parent.getName() + "_offset",
+                               parent,
+                               parentTransform);
     
     // Append the offset frame to the Joint's internal list of frames
-    int pix = append_frames( PhysicalOffsetFrame(parent.getName() + "_offset",
-                                                 parent.getName(),
-                                                 parentTransform) );
+    int pix = append_frames(pInPo);
 
     // CHILD TRANSFORM
     Rotation childRotation(BodyRotationSequence,
@@ -107,14 +110,16 @@ Joint::Joint(const std::string &name,
         orientationInChild[2], ZAxis);
     SimTK::Transform childTransform(childRotation, locationInChild);
 
+    PhysicalOffsetFrame cInCo( child.getName() + "_offset",
+                               child,
+                               childTransform);
+
     // Append the child offset frame to the Joint's internal list of frames
-    int cix = append_frames( PhysicalOffsetFrame(child.getName() + "_offset",
-                                                 child.getName(),
-                                                 childTransform) );
+    int cix = append_frames(cInCo);
 
     // finalize recognizes the offset frames as the Joint's subcomponents
     finalizeFromProperties();
-    
+
     // When the PhysicalOffsetFrames are constructed they are unaware that this
     // Joint contains them as subcomponents and the path name associated with 
     // them will not be valid. This a temporary fix to set the name once the
@@ -122,6 +127,9 @@ Joint::Joint(const std::string &name,
     // finaliFromProperties() above.
     static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
     static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
+
+    updConnector<PhysicalFrame>("parent_frame").connect(upd_frames(pix));
+    updConnector<PhysicalFrame>("child_frame").connect(upd_frames(cix));
 }
 
 //=============================================================================
@@ -137,8 +145,10 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
     upd_CoordinateSet().adoptAndAppend(coord);
     auto cix = CoordinateIndex(get_CoordinateSet().getIndex(coord));
     _motionTypes.push_back(mt);
-    SimTK_ASSERT_ALWAYS(numCoordinates() == _motionTypes.size(), 
-        "Joint::constructCoordinate() MotionTypes do not correspond to coordinates");
+    SimTK_ASSERT_ALWAYS(static_cast<unsigned>(numCoordinates()) == 
+                        _motionTypes.size(), 
+                        "Joint::constructCoordinate() MotionTypes do not "
+                        "correspond to coordinates");
     return cix;
 }
 
@@ -171,24 +181,6 @@ void Joint::constructConnectors()
 {
     constructConnector<PhysicalFrame>("parent_frame");
     constructConnector<PhysicalFrame>("child_frame");
-}
-
-void Joint::setParentFrameName(const std::string& name)
-{
-    updConnector<PhysicalFrame>("parent_frame").setConnecteeName(name);
-}
-const std::string& Joint::getParentFrameName() const
-{
-    return getConnector<PhysicalFrame>("parent_frame").getConnecteeName();
-}
-
-void Joint::setChildFrameName(const std::string& name)
-{
-    updConnector<PhysicalFrame>("child_frame").setConnecteeName(name);
-}
-const std::string& Joint::getChildFrameName() const
-{
-    return getConnector<PhysicalFrame>("child_frame").getConnecteeName();
 }
 
 void Joint::extendFinalizeFromProperties()
@@ -425,7 +417,9 @@ double Joint::calcPower(const SimTK::State &s) const
     for(int i=0; i<nc; ++i){
         if (coords[i].isPrescribed(s)){
             // get the reaction force for this coordinate prescribed motion constraint
-            const SimTK::Constraint &pc = _model->updMultibodySystem().updMatterSubsystem().getConstraint(coords[i]._prescribedConstraintIndex);
+            const SimTK::Constraint &pc =
+                _model->updMultibodySystem().updMatterSubsystem()
+                    .getConstraint(coords[i]._prescribedConstraintIndex);
             power += pc.calcPower(s);
         }
     }
