@@ -60,6 +60,7 @@ protected:
 
 private:
     static const std::unordered_map<std::string, std::size_t> _unit_index;
+
 };
 
 } // namespace OpenSim
