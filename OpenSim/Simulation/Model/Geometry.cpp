@@ -169,8 +169,11 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
     decoGeoms.push_back(deco);
 }
 
-void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
-{
+void Mesh::extendConnect(Component&  root) {
+
+    Super::extendConnect(root);
+
+    Model& rootModel = dynamic_cast<Model&>(root);
     // Current interface to Visualizer calls this method on every frame.
     // On first time through, load file and create DecorativeMeshFile else
     // try to reuse it.
@@ -189,7 +192,7 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
 
         // File is a .vtp or .obj. See if we can find it.
         Array_<string> attempts;
-        const Model& model = getFrame().getModel();
+        const Model& model = rootModel;
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
         if (!foundIt) {
@@ -220,14 +223,16 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
         }
 
         DecorativeMeshFile* dmesh = new DecorativeMeshFile(attempts.back().c_str());
-        dmesh->setScaleFactors(get_scale_factors());
-        decoGeoms.push_back(*dmesh);
         cachedMesh.reset(dmesh);
     }
-    else { // Not first time, reuse only if valid cachedMesh
-        if (cachedMesh.get() != nullptr) {
-            cachedMesh->setScaleFactors(get_scale_factors());
-            decoGeoms.push_back(*cachedMesh);
-        }
+
+}
+
+
+void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    if (cachedMesh.get() != nullptr) {
+        cachedMesh->setScaleFactors(get_scale_factors());
+        decoGeoms.push_back(*cachedMesh);
     }
 }

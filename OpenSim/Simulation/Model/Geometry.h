@@ -612,6 +612,10 @@ public:
         return get_mesh_file();
     };
 protected:
+    // ModelComponent interface.
+    void extendConnect(Component&  root) override;
+
+protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
