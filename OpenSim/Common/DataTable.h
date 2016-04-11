@@ -209,7 +209,8 @@ public:
         
         OPENSIM_THROW_IF(columnIndex >= labels.size(),
                          ColumnIndexOutOfRange,
-                         columnIndex, 0, labels.size());
+                         columnIndex, 0, 
+                         static_cast<unsigned>(labels.size() - 1));
 
         return labels[columnIndex].getValue<std::string>();
     }
@@ -299,7 +300,8 @@ public:
 
         OPENSIM_THROW_IF(columnIndex >= oldLabels.size(),
                          ColumnIndexOutOfRange,
-                         columnIndex, 0, oldLabels.size());
+                         columnIndex, 0, 
+                         static_cast<unsigned>(oldLabels.size() - 1));
 
         for(unsigned i = 0; i < oldLabels.size(); ++i) {
             if(i == columnIndex) {
@@ -435,8 +437,10 @@ public:
     \throws RowIndexOutOfRange If index is out of range.                      */
     RowVectorView getRowAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size())
-        return _depData.row((int)index);
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
+        return _depData.row(static_cast<int>(index));
     }
 
     /** Get row corresponding to the given entry in the independent column.   
@@ -457,7 +461,9 @@ public:
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size());
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
         return _depData.updRow((int)index);
     }
 
@@ -501,7 +507,9 @@ public:
                        performed by derived classes.                          */
     void setIndependentColumnAtIndex(size_t index, const ETX& value) {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size());
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
         validateRow(index, value, _depData.row((int)index));
         _indData[index] = value;
     }
