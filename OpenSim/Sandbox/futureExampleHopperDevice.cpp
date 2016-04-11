@@ -160,6 +160,7 @@ OpenSim::Model createTestBed() {
     using SimTK::Inertia;
 
     OpenSim::Model testBed; 
+    testBed.setName("testBed");
     testBed.setUseVisualizer(true);
     testBed.setGravity(Vec3(0));
 
@@ -174,7 +175,8 @@ OpenSim::Model createTestBed() {
     load->addGeometry(sphere);
     testBed.addBody(load);
 
-    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", 
+                                             testBed.getGround(), *load);
     // Set the location of the load to (1, 0, 0).
     grndToLoad->getCoordinateSet()[3].setDefaultValue(1.0);
     testBed.addJoint(grndToLoad);
@@ -194,9 +196,11 @@ void connectDeviceToTestBed(OpenSim::Joint* anchorA,
                             OpenSim::Device* device,
                             OpenSim::Model& testBed) {
     // Set parent of anchorA as ground.
-    anchorA->setParentFrameName("ground");
+    anchorA->updConnector<OpenSim::PhysicalFrame>("parent_frame").
+        connect(testBed.getGround());
     // Set parent of anchorB as load.
-    anchorB->setParentFrameName("load");
+    anchorB->updConnector<OpenSim::PhysicalFrame>("parent_frame").
+        connect(testBed.getComponent<OpenSim::PhysicalFrame>("load"));
     // Add the device to the testBed.
     testBed.addModelComponent(device);
 }
@@ -256,14 +260,14 @@ int main() {
     auto anchorA = new OpenSim::WeldJoint();
     anchorA->setName("anchorA");
     // Set only the child now. Parent will be in the environment.
-    anchorA->setChildFrameName("massA");
+    anchorA->updConnector<OpenSim::PhysicalFrame>("child_frame").connect(*massA);
     device->addComponent(anchorA);
 
     // Joint from something in the environment to massB. 
     auto anchorB = new OpenSim::WeldJoint();
     anchorB->setName("anchorB");
     // Set only the child now. Parent will be in the environment.
-    anchorB->setChildFrameName("massB");
+    anchorB->updConnector<OpenSim::PhysicalFrame>("child_frame").connect(*massB);
     device->addComponent(anchorB);
 
     // Actuator connecting the two masses.

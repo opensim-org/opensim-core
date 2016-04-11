@@ -192,6 +192,9 @@ OpenSim::Model createTestBed() {
     testBed.setUseVisualizer(true);
     testBed.setGravity(Vec3(0));
 
+    // Get the ground frame which must be the base of any mechanism
+    auto& ground = testBed.getGround();
+
     // Create a load of mass LOAD kg.
     auto load = new OpenSim::Body("load", LOAD, Vec3(0), Inertia(1));
     // Set properties of a sphere geometry to be used for the load.
@@ -203,7 +206,7 @@ OpenSim::Model createTestBed() {
     load->addGeometry(sphere);
     testBed.addBody(load);
 
-    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", "ground", "load");
+    auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", ground, *load);
     // Set the location of the load to (1, 0, 0).
     grndToLoad->getCoordinateSet()[3].setDefaultValue(1.0);
     testBed.addJoint(grndToLoad);
