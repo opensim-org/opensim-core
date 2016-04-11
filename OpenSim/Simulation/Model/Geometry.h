@@ -619,7 +619,7 @@ private:
     // We cache the DecorativeMeshFile and a flag indicating if we tried to
     // load the mesh from file so we don't try loading from disk every frame.
     // These are mutable since they're not part of the public interface.
-    mutable std::shared_ptr<SimTK::DecorativeMeshFile> cachedMesh;
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
     mutable bool triedToLoad;
 };
 
