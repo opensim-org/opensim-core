@@ -522,7 +522,7 @@ public:
     \throws KeyNotFound If columnLabel is not found to be label of any existing
                         column.                                               */
     VectorView updDependentColumn(const std::string& columnLabel) {
-        return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
+        return _depData.updCol(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
     /** %Set independent column at index.                                      
