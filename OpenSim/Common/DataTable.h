@@ -166,7 +166,7 @@ public:
         return _independentMetaData;
     }
     
-    /** Set metadata associated with the independent column.                  */
+    /** %Set metadata associated with the independent column.                 */
     void 
     setIndependentMetaData(const IndependentMetaData& independentMetaData) {
         _independentMetaData = independentMetaData;
@@ -178,7 +178,7 @@ public:
         return _dependentsMetaData;
     }
 
-    /** Set metadata associated with the dependent columns.                   */
+    /** %Set metadata associated with the dependent columns.                  */
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData) {
         _dependentsMetaData = dependentsMetaData;
