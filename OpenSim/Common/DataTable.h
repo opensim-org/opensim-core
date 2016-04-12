@@ -517,6 +517,14 @@ public:
         return _depData.updCol(static_cast<int>(index));
     }
 
+    /** Update dependent Column which has the given column label.
+
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.                                               */
+    VectorView updDependentColumn(const std::string& columnLabel) {
+        return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
+    }
+
     /** %Set independent column at index.                                      
 
     \throws RowIndexOutOfRange If index is out of range.                        
