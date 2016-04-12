@@ -25,14 +25,12 @@ environment:
   matrix:
     - CMAKE_GENERATOR: "Visual Studio 14 2015"
       NUGET_PACKAGE_ID_SUFFIX: "-x86"
+      JAVA_DIR: "C:\\Program Files (x86)\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27"
-      OPENSIM_TESTS_TO_EXCLUDE: "nothingToExclude"
-      PYTHON_TESTS_TO_EXCLUDE: "nothingToExclude"
     - CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
       NUGET_PACKAGE_ID_SUFFIX: "-x64"
+      JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27-x64"
-      OPENSIM_TESTS_TO_EXCLUDE: "nothingToExclude"
-      PYTHON_TESTS_TO_EXCLUDE: "nothingToExclude"
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
@@ -47,7 +45,10 @@ init:
   - SET OPENSIM_DEPENDENCIES_SOURCE_DIR=%OPENSIM_SOURCE_DIR%\dependencies
   - SET OPENSIM_DEPENDENCIES_BUILD_DIR=C:\projects\opensim_dependencies_build
   - SET OPENSIM_DEPENDENCIES_INSTALL_DIR=C:\projects\opensim_dependencies_install
-  
+  # The CMake variable JAVA_HOME tells CMake where to look for Java.
+  - SET JAVA_HOME=%JAVA_DIR%
+  - SET PATH=%JAVA_HOME%\bin;%PATH%
+
 nuget:
   account_feed: true
 
@@ -89,7 +90,7 @@ build_script:
   
 test_script:
   ## Run tests.
-  - ctest --parallel 4 --build-config Release --output-on-failure --exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
+  - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
@@ -99,7 +100,7 @@ test_script:
   # Move to the installed location of the python package.
   - cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
-  - "%PYTHON_DIR%\\Scripts\\nosetests -v --exclude=%PYTHON_TESTS_TO_EXCLUDE%"
+  - "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
 
 after_test:
   - ## On master branch, create NuGet package for OpenSim.
