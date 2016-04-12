@@ -2,13 +2,23 @@
 # see SampleCMakeLists.txt.
 #
 # This config file defines the following variables:
-#   @CMAKE_PROJECT_NAME@_FOUND               True if search for libraries and headers
-#                               succeeds.
-#   @CMAKE_PROJECT_NAME@_ROOT_DIR            The installation directory.
-#   @CMAKE_PROJECT_NAME@_LIB_DIR             The directory containing libraries.
-#                               Suitable for link_directories().
-#   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS        Suitable for include_directories().
-#   @CMAKE_PROJECT_NAME@_LIBRARIES           Suitable for target_link_libraries().
+#   @CMAKE_PROJECT_NAME@_FOUND -- True if search for libraries and headers
+#                                 succeeds.
+#   @CMAKE_PROJECT_NAME@_ROOT_DIR -- The installation directory.
+#   @CMAKE_PROJECT_NAME@_LIB_DIR -- The directory containing libraries.
+#                                   Suitable for link_directories().
+#   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS -- Suitable for include_directories().
+#   @CMAKE_PROJECT_NAME@_LIBRARIES -- Suitable for target_link_libraries().
+#   @CMAKE_PROJECT_NAME@_JAVA_WRAPPING -- Boolean indicating whether or not
+#                                         OpenSim was built to include Java
+#                                         wrapping.
+#   @CMAKE_PROJECT_NAME@_PYTHON_WRAPPING -- Boolean indicating whether or not
+#                                           OpenSim was built to include Python
+#                                           wrapping.
+#   @CMAKE_PROJECT_NAME@_JAR_FILE -- Path to jar file..
+#   @CMAKE_PROJECT_NAME@_JAVA_FILES_DIR -- Directory containing the Java source
+#                                          files.
+#                                            
 #
 # Note that these variables also contain the Simbody include directories
 # and libraries that OpenSim was built with.
