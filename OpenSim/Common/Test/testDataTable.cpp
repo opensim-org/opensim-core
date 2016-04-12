@@ -149,18 +149,21 @@ int main() {
         throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
                 "(\"column-index\").getValue<unsigned>() != unsigned{0}"};
 
+    for(auto i = 0u; i < 5; ++i)
+        table.updDependentColumnAtIndex(i) += 2;
+
     for(unsigned i = 0; i < 5; ++i) {
         for(unsigned j = 0; j < 5; ++j) {
             const auto row_i_1 = table.getRowAtIndex(i);
-            if(row_i_1[j] != (row + i)[j])
+            if(row_i_1[j] != (row + i)[j] + 2)
                 throw Exception{"Test failed: row_i_1[j] != (row + i)[j]"};
 
             const auto row_i_2 = table.getRow(0 + 0.25 * i);
-            if(row_i_2[j] != (row + i)[j])
+            if(row_i_2[j] != (row + i)[j] + 2)
                 throw Exception{"Test failed: row_i_2[j] != (row + i)[j]"};
 
             const auto col_i = table.getDependentColumnAtIndex(i);
-            if(col_i[j] != j)
+            if(col_i[j] != j + 2)
                 throw Exception{"Test failed: table.getDependentColumnAtIndex"
                         "(i)[j] != j"};
         }
