@@ -71,6 +71,8 @@ class TestDataTable(unittest.TestCase):
 
     def test_TimeSeriesTable(self):
         table = osim.TimeSeriesTable()
+        table.setColumnLabels(('col1', 'col2', 'col3', 'col4'))
+        assert(table.getColumnLabels() == ('col1', 'col2', 'col3', 'col4'))
         # Append a row to the table.
         row = osim.RowVector([1, 2, 3, 4])
         table.appendRow(0.1, row)
@@ -101,7 +103,7 @@ class TestDataTable(unittest.TestCase):
             assert False
         except RuntimeError:
             pass
-            
+
     def test_DataTableVec3(self):
         table = osim.DataTableVec3()
         # Set columns labels.
