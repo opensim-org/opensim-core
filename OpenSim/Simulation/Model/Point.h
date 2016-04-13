@@ -52,9 +52,9 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Point, ModelComponent);
 public:
     OpenSim_DECLARE_OUTPUT(location, SimTK::Vec3, getLocationInGround,
         SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(velocity, SimTK::Vec3, calcVelocityInGround,
+    OpenSim_DECLARE_OUTPUT(velocity, SimTK::Vec3, getVelocityInGround,
         SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(acceleration, SimTK::Vec3, calcAccelerationInGround,
+    OpenSim_DECLARE_OUTPUT(acceleration, SimTK::Vec3, getAccelerationInGround,
         SimTK::Stage::Acceleration);
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -135,5 +135,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_POINT_H_
-
-
