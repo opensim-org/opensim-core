@@ -121,15 +121,30 @@ SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
 
 SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
 {
+    // compute the local position vector of the station in its reference frame
+    // expressed in ground
     Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
     const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+
+    // The velocity of the station in ground is a function of its frame's
+    // linear (vF = V_GF[1]) and angular (omegaF = A_GF[0]) velocity, such that
+    // velocity of the station: v = vF + omegaF x r
     return V_GF[1] + V_GF[0] % r;
 }
 
 SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
 {
+    // The spatial velocity of the reference frame expressed in ground
     const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+    // The spatial acceleration of the reference frame expressed in ground
     const SimTK::SpatialVec& A_GF = getReferenceFrame().getAccelerationInGround(s);
+    // compute the local position vector of the point in its reference frame
+    // expressed in ground
     Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
+
+    // The acceleration of the station in ground is a function of its frame's
+    // linear (aF = A_GF[1]) and angular (alpha = A_GF[0]) accelerations and
+    // Corriolois acceleration due to the angular velocity (omega = V_GF[0]) of
+    // its frame, such that: a = aF + alphaF x r + omegaF x (omegaF x r)
     return A_GF[1] + A_GF[0]%r +  V_GF[0] % (V_GF[0] % r) ;
 }
