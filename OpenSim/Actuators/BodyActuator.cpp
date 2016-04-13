@@ -54,7 +54,7 @@ BodyActuator::BodyActuator()
 /**
 * Convenience constructor.
 */
-BodyActuator::BodyActuator(const Body& body, 
+BodyActuator::BodyActuator(const OpenSim::Body& body,
                            const SimTK::Vec3& point,
                            bool pointIsGlobal,
                            bool spatialForceIsGlobal)
@@ -100,7 +100,7 @@ const std::string& BodyActuator::getBodyName() const
 /**
 * Set the Body to which the BodyActuator is applied
 */
-void BodyActuator::setBody(const Body& body)
+void BodyActuator::setBody(const OpenSim::Body& body)
 {
     updConnector<Body>("body").connect(body);
 }
@@ -108,7 +108,7 @@ void BodyActuator::setBody(const Body& body)
 /**
 * Get the Body to which the BodyActuator is applied
 */
-const Body& BodyActuator::getBody() const
+const OpenSim::Body& BodyActuator::getBody() const
 {
     return getConnectee<Body>("body");
 }

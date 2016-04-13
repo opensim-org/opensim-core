@@ -180,7 +180,7 @@ bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
  * @param aForceLengthCurve Pointer to a force-length curve (Function).
  * @return Whether the force-length curve was successfully changed.
  */
-bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
+bool Ligament::setForceLengthCurve(const OpenSim::Function& aForceLengthCurve)
 {
     set_force_length_curve(aForceLengthCurve);
     return true;

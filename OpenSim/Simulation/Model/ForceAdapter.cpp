@@ -35,7 +35,7 @@ using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-ForceAdapter::ForceAdapter(const Force& force) : _force(&force)
+ForceAdapter::ForceAdapter(const OpenSim::Force& force) : _force(&force)
 {
 }
 

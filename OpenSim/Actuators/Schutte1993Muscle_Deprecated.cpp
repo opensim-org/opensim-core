@@ -268,7 +268,7 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
  *
  * @return Pointer to the active force-length curve (Function).
  */
-const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
+const OpenSim::Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
 {
     return get_active_force_length_curve();
 }
@@ -281,7 +281,7 @@ const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
  * @return Whether active force-length curve was successfully changed.
  */
 bool Schutte1993Muscle_Deprecated::
-setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
+setActiveForceLengthCurve(const OpenSim::Function& aActiveForceLengthCurve)
 {
     set_active_force_length_curve(aActiveForceLengthCurve);
     return true;
@@ -293,7 +293,7 @@ setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
  *
  * @return Pointer to the passive force-length curve (Function).
  */
-const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
+const OpenSim::Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
 {
     return get_passive_force_length_curve();
 }
@@ -306,7 +306,7 @@ const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
  * @return Whether passive force-length curve was successfully changed.
  */
 bool Schutte1993Muscle_Deprecated::
-setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
+setPassiveForceLengthCurve(const OpenSim::Function& aPassiveForceLengthCurve)
 {
     set_passive_force_length_curve(aPassiveForceLengthCurve);
     return true;
@@ -318,7 +318,7 @@ setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
  *
  * @return Pointer to the tendon force-length curve (Function).
  */
-const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
+const OpenSim::Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
 {
     return get_tendon_force_length_curve();
 }
@@ -331,7 +331,7 @@ const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
  * @return Whether tendon force-length curve was successfully changed.
  */
 bool Schutte1993Muscle_Deprecated::
-setTendonForceLengthCurve(const Function& aTendonForceLengthCurve)
+setTendonForceLengthCurve(const OpenSim::Function& aTendonForceLengthCurve)
 {
     set_tendon_force_length_curve(aTendonForceLengthCurve);
     return true;

@@ -36,7 +36,7 @@ using namespace std;
 static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
-static int NUM_SAMPLE_PTS = 100;
+static int SSF_NUM_SAMPLE_PTS = 100;
 //=============================================================================
 // UTILITY FUNCTIONS
 //=============================================================================
@@ -102,25 +102,25 @@ _x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
     //////////////////////////////////////////////////
     //Generate the set of splines that approximate u(x)
     //////////////////////////////////////////////////
-    SimTK::Vector u(NUM_SAMPLE_PTS); //Used for the approximate inverse
-    SimTK::Vector x(NUM_SAMPLE_PTS); //Used for the approximate inverse
+    SimTK::Vector u(SSF_NUM_SAMPLE_PTS); //Used for the approximate inverse
+    SimTK::Vector x(SSF_NUM_SAMPLE_PTS); //Used for the approximate inverse
 
     //Used to generate the set of knot points of the integral of y(x)    
-   SimTK::Vector xALL(NUM_SAMPLE_PTS*_numBezierSections-(_numBezierSections-1));
+   SimTK::Vector xALL(SSF_NUM_SAMPLE_PTS*_numBezierSections-(_numBezierSections-1));
     _arraySplineUX.resize(_numBezierSections);
     int xidx = 0;
 
     for(int s=0; s < _numBezierSections; s++){
         //Sample the local set for u and x
-        for(int i=0;i<NUM_SAMPLE_PTS;i++){
-            u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
+        for(int i=0;i<SSF_NUM_SAMPLE_PTS;i++){
+            u(i) = ( (double)i )/( (double)(SSF_NUM_SAMPLE_PTS-1) );
             x(i) = SegmentedQuinticBezierToolkit::
                 calcQuinticBezierCurveVal(u(i),mX(s));            
             if(_numBezierSections > 1){
                 //Skip the last point of a set that has another set of points
                 //after it. Why? The last point and the starting point of the
                 //next set are identical in value.
-                if(i<(NUM_SAMPLE_PTS-1) || s == (_numBezierSections-1)){
+                if(i<(SSF_NUM_SAMPLE_PTS-1) || s == (_numBezierSections-1)){
                     xALL(xidx) = x(i);
                     xidx++;
                 }
@@ -473,8 +473,8 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
 
     double x0,x1,delta;
     //y,dy,d1y,d2y,d3y,d4y,d5y,d6y,iy
-   SimTK::Vector midX(NUM_SAMPLE_PTS*_numBezierSections-(_numBezierSections-1));
-   SimTK::Vector x(NUM_SAMPLE_PTS);
+   SimTK::Vector midX(SSF_NUM_SAMPLE_PTS*_numBezierSections-(_numBezierSections-1));
+   SimTK::Vector x(SSF_NUM_SAMPLE_PTS);
 
    //Generate a sample of X values inside of the curve that is denser where 
    //the curve is more curvy.
@@ -482,15 +482,15 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
    int idx = 0;
       for(int s=0; s < _numBezierSections; s++){
         //Sample the local set for u and x
-        for(int i=0;i<NUM_SAMPLE_PTS;i++){
-                u = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
+        for(int i=0;i<SSF_NUM_SAMPLE_PTS;i++){
+                u = ( (double)i )/( (double)(SSF_NUM_SAMPLE_PTS-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveVal(u,_mXVec[s]);    
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
                    //after it. Why? The last point and the starting point of the
                    //next set are identical in value.
-                    if(i<(NUM_SAMPLE_PTS-1) || s == (_numBezierSections-1)){
+                    if(i<(SSF_NUM_SAMPLE_PTS-1) || s == (_numBezierSections-1)){
                         midX(idx) = x(i);
                         idx++;
                     }

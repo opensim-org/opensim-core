@@ -48,7 +48,7 @@ using SimTK::Vector;
 /**
  * Destructor.
  */
-Function::~Function()
+OpenSim::Function::~Function()
 {
     if (_function != NULL)
         delete _function;
@@ -57,7 +57,7 @@ Function::~Function()
 /**
  * Default constructor.
  */
-Function::Function() :
+OpenSim::Function::Function() :
     _function(NULL)
 {
     setNull();
@@ -68,7 +68,7 @@ Function::Function() :
  *
  * @param aFunction Function to copy.
  */
-Function::Function(const Function &aFunction) :
+OpenSim::Function::Function(const Function &aFunction) :
     Object(aFunction),
     _function(NULL)
 {
@@ -82,7 +82,7 @@ Function::Function(const Function &aFunction) :
 /**
  * Set all member variables to NULL values.
  */
-void Function::
+void OpenSim::Function::
 setNull()
 {
 }
@@ -96,7 +96,7 @@ setNull()
  *
  * @return Reference to this object.
  */
-Function& Function::
+OpenSim::Function& OpenSim::Function::
 operator=(const Function &aFunction)
 {
     // BASE CLASS
@@ -109,7 +109,8 @@ operator=(const Function &aFunction)
 //=============================================================================
 // UTILITIES
 //=============================================================================
-Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTypeName)
+OpenSim::Function* OpenSim::Function::makeFunctionOfType(Function* aFunction, 
+    const string& aNewTypeName)
 {
     Function* newFunction = NULL;
 
@@ -160,35 +161,36 @@ evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
     return evaluate(1,aX) * aD2xdt2 + evaluate(2,aX) * aDxdt * aDxdt;
 }
 */
-double Function::calcValue(const Vector& x) const
+double OpenSim::Function::calcValue(const Vector& x) const
 {
     if (_function == NULL)
         _function = createSimTKFunction();
     return _function->calcValue(x);
 }
 
-double Function::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
+double OpenSim::Function::calcDerivative(const std::vector<int>& derivComponents, 
+    const Vector& x) const
 {
     if (_function == NULL)
         _function = createSimTKFunction();
     return _function->calcDerivative(derivComponents, x);
 }
 
-int Function::getArgumentSize() const
+int OpenSim::Function::getArgumentSize() const
 {
     if (_function == NULL)
         _function = createSimTKFunction();
     return _function->getArgumentSize();
 }
 
-int Function::getMaxDerivativeOrder() const
+int OpenSim::Function::getMaxDerivativeOrder() const
 {
     if (_function == NULL)
         _function = createSimTKFunction();
     return _function->getMaxDerivativeOrder();
 }
 
-void Function::resetFunction()
+void OpenSim::Function::resetFunction()
 {
     if (_function != NULL)
         delete _function;

@@ -42,7 +42,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-Constraint::Constraint() 
+OpenSim::Constraint::Constraint()
 {
     setNull();
     constructProperties();
@@ -52,7 +52,7 @@ Constraint::Constraint()
 /**
  * Destructor.
  */
-Constraint::~Constraint()
+OpenSim::Constraint::~Constraint()
 {
 }
 
@@ -60,7 +60,7 @@ Constraint::~Constraint()
 /**
  * Set the data members of this Constraint to their null values.
  */
-void Constraint::setNull(void)
+void OpenSim::Constraint::setNull(void)
 {
     setAuthors("Frank Anderson, Ajay Seth");
 }
@@ -69,7 +69,7 @@ void Constraint::setNull(void)
 /**
  * Connect properties to local pointers.
  */
-void Constraint::constructProperties(void)
+void OpenSim::Constraint::constructProperties(void)
 {
     constructProperty_isDisabled(false);
 }
@@ -81,12 +81,12 @@ void Constraint::constructProperties(void)
  *
  * @param aModel OpenSim model containing this Constraint.
  */
-void Constraint::extendConnectToModel(Model& aModel)
+void OpenSim::Constraint::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 }
 
-void Constraint::extendInitStateFromProperties(SimTK::State& s) const
+void OpenSim::Constraint::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
     SimTK::Constraint& simConstraint = 
@@ -99,7 +99,7 @@ void Constraint::extendInitStateFromProperties(SimTK::State& s) const
         simConstraint.enable(s);
 }
 
-void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
+void OpenSim::Constraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
     Super::extendSetPropertiesFromState(state);
     set_isDisabled(isDisabled(state));
@@ -116,7 +116,8 @@ void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
  *
  * @param aConstraint Constraint to update from
  */
-void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstraint)
+void OpenSim::Constraint::updateFromConstraint(SimTK::State& s, 
+    const Constraint &aConstraint)
 {
     setDisabled(s, aConstraint.isDisabled(s));
 }
@@ -136,7 +137,7 @@ void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstr
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::isDisabled(const SimTK::State& s) const
+bool OpenSim::Constraint::isDisabled(const SimTK::State& s) const
 {
     return _model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
 }
@@ -149,7 +150,7 @@ bool Constraint::isDisabled(const SimTK::State& s) const
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
+bool OpenSim::Constraint::setDisabled(SimTK::State& s, bool isDisabled)
 {
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
     bool modelConstraintIsDisabled = simConstraint.isDisabled(s);
@@ -187,8 +188,9 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilities associated with this constraint
  */
-void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
-                                      SimTK::Vector& mobilityForces) const
+void OpenSim::Constraint::calcConstraintForces(const SimTK::State& s, 
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+    SimTK::Vector& mobilityForces) const
 {
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
     if(!simConstraint.isDisabled(s)){
@@ -202,7 +204,7 @@ void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimT
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
  */
-Array<std::string> Constraint::getRecordLabels() const
+Array<std::string> OpenSim::Constraint::getRecordLabels() const
 {
     SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
     const SimTK::State &ds = _model->getWorkingState();
@@ -251,7 +253,7 @@ Array<std::string> Constraint::getRecordLabels() const
  * Given SimTK::State object extract all the values necessary to report constraint forces, application 
  * location frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
-Array<double> Constraint::getRecordValues(const SimTK::State& state) const
+Array<double> OpenSim::Constraint::getRecordValues(const SimTK::State& state) const
 {
     // EOMs are solved for accelerations (udots) and constraint multipliers (lambdas)
     // simultaneously, so system must be realized to acceleration

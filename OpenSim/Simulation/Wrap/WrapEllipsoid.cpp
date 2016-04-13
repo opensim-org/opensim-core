@@ -39,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const char* wrapTypeName = "ellipsoid";
+static const char* wrapEllipsoidTypeName = "ellipsoid";
 #define ELLIPSOID_TOLERANCE_1 1e-4     // tolerance for pt_to_ellipsoid() special case detection
 #define ELLIPSOID_TINY        0.00000001
 #define MU_BLEND_MIN          0.7073   // 100% fan (must be greater than cos(45)!)
@@ -188,7 +188,7 @@ void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
  */
 const char* WrapEllipsoid::getWrapTypeName() const
 {
-    return wrapTypeName;
+    return wrapEllipsoidTypeName;
 }
 
 //_____________________________________________________________________________

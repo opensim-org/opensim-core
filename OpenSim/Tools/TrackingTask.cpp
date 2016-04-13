@@ -274,8 +274,8 @@ getNumTaskFunctions() const
  * @param aF1 Function for track goal 1.
  * @param aF2 Function for track goal 2.
  */
-void TrackingTask::setTaskFunctions(Function *aF0,
-                 Function *aF1,Function *aF2)
+void TrackingTask::setTaskFunctions(OpenSim::Function *aF0,
+    OpenSim::Function *aF1, OpenSim::Function *aF2)
 {
     if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
     if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }

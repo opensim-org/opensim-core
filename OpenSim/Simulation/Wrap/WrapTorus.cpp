@@ -41,7 +41,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const char* wrapTypeName = "torus";
+static const char* wrapTorusTypeName = "torus";
 
 #define CYL_LENGTH 10000.0
 
@@ -199,7 +199,7 @@ void WrapTorus::copyData(const WrapTorus& aWrapTorus)
  */
 const char* WrapTorus::getWrapTypeName() const
 {
-    return wrapTypeName;
+    return wrapTorusTypeName;
 }
 
 //_____________________________________________________________________________

@@ -1,3 +1,6 @@
+#ifndef GCVSPL_H_
+#define GCVSPL_H_
+
 /* -------------------------------------------------------------------------- *
  *                             OpenSim:  gcvspl.h                             *
  * -------------------------------------------------------------------------- *
@@ -51,4 +54,6 @@ double trinv(double *b, double *e, int m, int n) ;
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

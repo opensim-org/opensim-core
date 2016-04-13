@@ -353,7 +353,7 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
  * @param aBody Body ID
  */
 void PointKinematics::
-setBody(Body* aBody)
+setBody(OpenSim::Body* aBody)
 {
     // CHECK
     if (aBody==NULL) {
@@ -368,7 +368,7 @@ setBody(Body* aBody)
     cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
 }
 void PointKinematics::
-setRelativeToBody(Body* aBody)
+setRelativeToBody(OpenSim::Body* aBody)
 {
     // CHECK
     if (aBody==NULL) {
@@ -389,12 +389,12 @@ setRelativeToBody(Body* aBody)
  *
  * @return Body pointer
  */
-Body* PointKinematics::getBody()
+OpenSim::Body* PointKinematics::getBody()
 {
     return(_body);
 }
 
-Body* PointKinematics::getRelativeToBody()
+OpenSim::Body* PointKinematics::getRelativeToBody()
 {
     return(_relativeToBody);
 }

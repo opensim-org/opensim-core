@@ -95,7 +95,7 @@ void PointActuator::constructProperties()
 //_____________________________________________________________________________
 // Set the generalized Body to which the Body actuator is applied, and set
 // the body name property to match.
-void PointActuator::setBody(Body* aBody)
+void PointActuator::setBody(OpenSim::Body* aBody)
 {
     _body = aBody;
     if(aBody)
@@ -103,7 +103,7 @@ void PointActuator::setBody(Body* aBody)
 }
 //_____________________________________________________________________________
 // Get the generalized Body to which the Body actuator is applied.
-Body* PointActuator::getBody() const
+OpenSim::Body* PointActuator::getBody() const
 {
     return _body.get();
 }

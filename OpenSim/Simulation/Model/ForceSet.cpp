@@ -186,7 +186,7 @@ bool ForceSet::remove(int aIndex)
  * @return True if successful; false otherwise.
  */
 bool ForceSet::
-append(Force *aForce)
+append(OpenSim::Force *aForce)
 {
     bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
@@ -209,7 +209,7 @@ append(Force *aForce)
  * @return True if successful; false otherwise.
  */
 bool ForceSet::
-append(Force &aForce)
+append(OpenSim::Force &aForce)
 {
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
@@ -273,7 +273,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
  * @param aActuator Pointer to the actuator to be set.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::set(int aIndex,Force *aActuator)
+bool ForceSet::set(int aIndex, OpenSim::Force *aActuator)
 {
     bool success = ModelComponentSet<Force>::set(aIndex,aActuator);
 
@@ -285,7 +285,7 @@ bool ForceSet::set(int aIndex,Force *aActuator)
     return(success);
 }
 
-bool ForceSet::insert(int aIndex, Force *aForce)
+bool ForceSet::insert(int aIndex, OpenSim::Force *aForce)
 {
     bool success = ModelComponentSet<Force>::insert(aIndex, aForce);
 
