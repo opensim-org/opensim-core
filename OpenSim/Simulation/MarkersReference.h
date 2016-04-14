@@ -24,11 +24,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "Reference.h"
+#include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 namespace OpenSim {
 
@@ -89,6 +90,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MarkersReference, Reference_<SimTK::Vec3>);
 // MEMBER VARIABLES
 //=============================================================================
 
+public:
+    using MarkerTable = TimeSeriesTable_<SimTK::Vec3>;
+
 protected:
 
     /** Specify the reference markers value from a file of columns in time. */
@@ -108,7 +112,7 @@ private:
     // Implementation details
 
     // Use a specialized data structure for holding the marker data
-    SimTK::ReferencePtr<MarkerData> _markerData;
+    MarkerTable _markerData;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
     // corresponding list of weights guaranteed to be in the same order as names above
@@ -126,7 +130,7 @@ public:
     // Convenience load markers from a file
     MarkersReference(const std::string filename, Units modelUnits=Units(Units::Meters));
 
-    MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
+    MarkersReference(MarkerTable& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
 
     MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
     
@@ -145,7 +149,7 @@ public:
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    int getNumRefs() const override {return _markerData->getNumMarkers(); }
+    int getNumRefs() const override;
     /** get the time range for which the MarkersReference values are valid,
         based on the loaded marker data.*/
     SimTK::Vec2 getValidTimeRange() const override;
@@ -163,7 +167,7 @@ public:
     //--------------------------------------------------------------------------
     // Convenience Access
     //--------------------------------------------------------------------------
-    double getSamplingFrequency() {return _markerData->getDataRate(); }
+    double getSamplingFrequency();
     Set<MarkerWeight> &updMarkerWeightSet() {return _markerWeightSet; }
     void setMarkerWeightSet(Set<MarkerWeight> &markerWeights);
     void setDefaultWeight(double weight) {_defaultWeight = weight; }
@@ -173,7 +177,7 @@ private:
     // default values.
     void setupProperties();
 
-    void populateFromMarkerData(MarkerData& aMarkerData);
+    void populateFromMarkerData(MarkerTable& aMarkerData);
 
 //=============================================================================
 };  // END of class MarkersReference
