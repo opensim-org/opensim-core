@@ -10,7 +10,7 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off  DOXY=on  NPROC=1 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
     - os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
