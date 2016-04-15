@@ -590,16 +590,14 @@ public:
     /// Default constructor
     Mesh() :
         Geometry(),
-        cachedMesh(nullptr),
-        triedToLoad(false)
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
         Geometry(),
-        cachedMesh(nullptr),
-        triedToLoad(false)
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -612,15 +610,18 @@ public:
         return get_mesh_file();
     };
 protected:
+    // ModelComponent interface.
+    void extendConnect(Component&  root) override;
+
+protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    // We cache the DecorativeMeshFile and a flag indicating if we tried to
+    // We cache the DecorativeMeshFile if we successfully
     // load the mesh from file so we don't try loading from disk every frame.
-    // These are mutable since they're not part of the public interface.
-    mutable std::shared_ptr<SimTK::DecorativeMeshFile> cachedMesh;
-    mutable bool triedToLoad;
+    // This is mutable since it is not part of the public interface.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
 };
 
 /**

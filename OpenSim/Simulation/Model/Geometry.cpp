@@ -169,65 +169,66 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
     decoGeoms.push_back(deco);
 }
 
+void Mesh::extendConnect(Component&  root) {
+
+    Super::extendConnect(root);
+
+    Model& rootModel = dynamic_cast<Model&>(root);
+    // Current interface to Visualizer calls generateDecorations on every frame.
+    // On first time through, load file and create DecorativeMeshFile and cache it
+    // so we don't load files from disk during live drawing/rendering.
+    const std::string& file = get_mesh_file();
+    bool isAbsolutePath; string directory, fileName, extension;
+    SimTK::Pathname::deconstructPathname(file,
+        isAbsolutePath, directory, fileName, extension);
+    const string lowerExtension = SimTK::String::toLower(extension);
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
+        std::clog << "ModelVisualizer ignoring '" << file
+            << "'; only .vtp .stl and .obj files currently supported.\n";
+        return;
+    }
+
+    // File is a .vtp or .obj. See if we can find it.
+    Array_<string> attempts;
+    const Model& model = rootModel;
+    bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
+
+    if (!foundIt) {
+        std::clog << "ModelVisualizer couldn't find file '" << file
+            << "'; tried\n";
+        for (unsigned i = 0; i < attempts.size(); ++i)
+            std::clog << "  " << attempts[i] << "\n";
+        if (!isAbsolutePath &&
+            !Pathname::environmentVariableExists("OPENSIM_HOME"))
+            std::clog << "Set environment variable OPENSIM_HOME "
+            << "to search $OPENSIM_HOME/Geometry.\n";
+        return;
+    }
+
+    SimTK::PolygonalMesh pmesh;
+    try {
+        std::ifstream objFile;
+        objFile.open(attempts.back().c_str());
+        pmesh.loadFile(attempts.back().c_str());
+        // objFile closes when destructed
+
+    }
+    catch (const std::exception& e) {
+        std::clog << "Visualizer couldn't read "
+            << attempts.back() << " because:\n"
+            << e.what() << "\n";
+        return;
+    }
+
+    cachedMesh.reset(new DecorativeMeshFile(attempts.back().c_str()));
+
+}
+
+
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    // Current interface to Visualizer calls this method on every frame.
-    // On first time through, load file and create DecorativeMeshFile else
-    // try to reuse it.
-    if (!triedToLoad) {
-        triedToLoad = true;
-        const std::string& file = get_mesh_file();
-        bool isAbsolutePath; string directory, fileName, extension;
-        SimTK::Pathname::deconstructPathname(file,
-            isAbsolutePath, directory, fileName, extension);
-        const string lowerExtension = SimTK::String::toLower(extension);
-        if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            std::clog << "ModelVisualizer ignoring '" << file
-                << "'; only .vtp .stl and .obj files currently supported.\n";
-            return;
-        }
-
-        // File is a .vtp or .obj. See if we can find it.
-        Array_<string> attempts;
-        const Model& model = getFrame().getModel();
-        bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
-
-        if (!foundIt) {
-            std::clog << "ModelVisualizer couldn't find file '" << file
-                << "'; tried\n";
-            for (unsigned i = 0; i < attempts.size(); ++i)
-                std::clog << "  " << attempts[i] << "\n";
-            if (!isAbsolutePath &&
-                !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                std::clog << "Set environment variable OPENSIM_HOME "
-                << "to search $OPENSIM_HOME/Geometry.\n";
-            return;
-        }
-
-        SimTK::PolygonalMesh pmesh;
-        try {
-            std::ifstream objFile;
-            objFile.open(attempts.back().c_str());
-            pmesh.loadFile(attempts.back().c_str());
-            // objFile closes when destructed
-
-        }
-        catch (const std::exception& e) {
-            std::clog << "Visualizer couldn't read "
-                << attempts.back() << " because:\n"
-                << e.what() << "\n";
-            return;
-        }
-
-        DecorativeMeshFile* dmesh = new DecorativeMeshFile(attempts.back().c_str());
-        dmesh->setScaleFactors(get_scale_factors());
-        decoGeoms.push_back(*dmesh);
-        cachedMesh.reset(dmesh);
-    }
-    else { // Not first time, reuse only if valid cachedMesh
-        if (cachedMesh.get() != nullptr) {
-            cachedMesh->setScaleFactors(get_scale_factors());
-            decoGeoms.push_back(*cachedMesh);
-        }
+    if (cachedMesh.get() != nullptr) {
+        cachedMesh->setScaleFactors(get_scale_factors());
+        decoGeoms.push_back(*cachedMesh);
     }
 }
