@@ -209,11 +209,12 @@ class InvalidArgument : public Exception {
 public:
     InvalidArgument(const std::string& file,
                     size_t line,
-                    const std::string& func) :
+                    const std::string& func,
+                    const std::string& msg = "") :
         Exception(file, line, func) {
-        std::string msg = "Invalid Argument.";
+        std::string mesg = "Invalid Argument. " + msg;
 
-        addMessage(msg);
+        addMessage(mesg);
     }
 };
 

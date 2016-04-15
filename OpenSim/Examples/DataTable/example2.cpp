@@ -76,7 +76,7 @@ int main() {
 
     // Edit the entry in the independent column to make the column strictly
     // increasing.
-    dataTable.setIndependentColumnAtIndex(5, 1.25);
+    dataTable.setIndependentValueAtIndex(5, 1.25);
     // TimeSeriesTable construction now successful. 
     TimeSeriesTable timeseries_table3{dataTable};
 

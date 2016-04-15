@@ -1,6 +1,12 @@
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
+// Include base class from osimCommon
+%include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
@@ -205,7 +211,6 @@
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 
 // Iterators.
-// TODO rename to singular form.
 %template(FrameList) OpenSim::ComponentList<OpenSim::Frame>;
 %template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
 

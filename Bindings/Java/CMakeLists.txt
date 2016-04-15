@@ -1,13 +1,31 @@
+set(SWIG_JAVA_SIMBODY_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_simbody.i")
+set(SWIG_JAVA_SIMBODY_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simbody.cxx")
+set(SWIG_JAVA_SIMBODY_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simbody.h")
 
-# Generate C++ and Java wrapper code with SWIG.
-# ---------------------------------------------
+set(SWIG_JAVA_COMMON_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_common.i")
+set(SWIG_JAVA_COMMON_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_common.cxx")
+set(SWIG_JAVA_COMMON_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_common.h")
 
-set(swig_generated_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/OpenSimJNI_wrap.cxx)
-set(swig_generated_header_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/OpenSimJNI_wrap.h)
-set(swig_interface_file_fullname
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig/javaWrapOpenSim.i)
+set(SWIG_JAVA_SIMULATION_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_simulation.i")
+set(SWIG_JAVA_SIMULATION_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simulation.cxx")
+set(SWIG_JAVA_SIMULATION_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_simulation.h")
+
+set(SWIG_JAVA_ACTUATORS_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_actuators.i")
+set(SWIG_JAVA_ACTUATORS_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.cxx")
+set(SWIG_JAVA_ACTUATORS_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.h")
+
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -45,15 +63,14 @@ find_package(Java 1.6 REQUIRED)
 
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-    DEPENDS "${swig_generated_file_fullname}"
+    DEPENDS ${SWIG_JAVA_ACTUATORS_CXX_FILE}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
-    COMMENT "Compiling Java sources and creating jar archive."
-    )
+    COMMENT "Compiling Java sources and creating jar archive.")
 
 # Umbrella target for assembling the java bindings in the build tree.
 # -------------------------------------------------------------------
