@@ -562,6 +562,8 @@ public:
     /// @}
 
     /// @name Matrix accessors/mutators.
+    /// Following functions operate on the matrix not including the independent
+    /// column.
     /// @{
 
     /** Get a read-only view to the underlying matrix.                        */
