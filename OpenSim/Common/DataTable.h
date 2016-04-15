@@ -545,18 +545,19 @@ public:
         return _depData.updCol(static_cast<int>(getColumnIndex(columnLabel)));
     }
 
-    /** %Set independent column at index.                                      
+    /** %Set value of the independent column at index.
 
-    \throws RowIndexOutOfRange If index is out of range.                        
+    \throws RowIndexOutOfRange If rowIndex is out of range.
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
-    void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+    void setIndependentValueAtIndex(size_t rowIndex, const ETX& value) {
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowIndex),
                          RowIndexOutOfRange, 
-                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+                         rowIndex, 0, 
+                         static_cast<unsigned>(_indData.size() - 1));
 
-        validateRow(index, value, _depData.row((int)index));
-        _indData[index] = value;
+        validateRow(rowIndex, value, _depData.row((int)rowIndex));
+        _indData[rowIndex] = value;
     }
 
     /// @}
