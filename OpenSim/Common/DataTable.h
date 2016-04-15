@@ -188,7 +188,7 @@ public:
         validateDependentsMetaData();
     }
 
-    /// @} End of MetaData.
+    /// @} End of MetaData accessors/mutators.
 
     /// @name Column-labels related accessors/mutators.
     /// @{
@@ -350,7 +350,7 @@ public:
         return false;
     }
 
-    /// @}
+    /// @} End of Column-labels related accessors/mutators.
 
     /** Check if the table has a column with the given index.                 */
     bool hasColumn(const size_t columnIndex) const {
@@ -493,7 +493,7 @@ public:
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
-    /// @}
+    /// @} End of Row accessors/mutators.
 
     /** Get independent column.                                               */
     const std::vector<ETX>& getIndependentColumn() const {
