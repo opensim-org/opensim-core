@@ -141,6 +141,7 @@ namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
+%template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
 
@@ -167,9 +168,9 @@ namespace SimTK {
 %template(SimTKArrayString) SimTK::Array_<std::string>;
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
+%template(SimTKArrayInt) SimTK::Array_<int>;
 }
 
-typedef int MobilizedBodyIndex;
 typedef int SubsystemIndex;
 typedef int SystemQIndex;
 typedef int SystemQErrIndex;
@@ -179,7 +180,10 @@ typedef int SystemYErrIndex;
 typedef int SystemUIndex;
 typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
-
+namespace SimTK {
+%template(SimTKArrayMobilizedBodyIndex) SimTK::Array_<MobilizedBodyIndex>;
+}
+typedef int MobilizedBodyIndex;
 
 namespace SimTK {
 %template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
@@ -199,3 +203,4 @@ namespace SimTK {
 %include <SWIGSimTK/State.h>
 // Used for StatesTrajectory iterating.
 %template(StdVectorState) std::vector<SimTK::State>;
+%include <SWIGSimTK/SimbodyMatterSubsystem.h>
