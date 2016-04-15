@@ -141,16 +141,6 @@ public:
     virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
 
-    /** Get metadata associated with the table.                               */
-    const TableMetaData& getTableMetaData() const {
-        return _tableMetaData;
-    }
-
-    /** Update metadata associated with the table.                            */
-    TableMetaData& updTableMetaData() {
-        return _tableMetaData;
-    }
-
     /** Get number of rows.                                                   */
     size_t getNumRows() const {
         return implementGetNumRows();
@@ -159,6 +149,19 @@ public:
     /** Get number of dependent columns.                                      */
     size_t getNumColumns() const {
         return implementGetNumColumns();
+    }
+
+    /// @name MetaData accessors/mutators.
+    /// @{
+
+    /** Get metadata associated with the table.                               */
+    const TableMetaData& getTableMetaData() const {
+        return _tableMetaData;
+    }
+
+    /** Update metadata associated with the table.                            */
+    TableMetaData& updTableMetaData() {
+        return _tableMetaData;
     }
 
     /** Get metadata associated with the independent column.                  */
@@ -184,6 +187,11 @@ public:
         _dependentsMetaData = dependentsMetaData;
         validateDependentsMetaData();
     }
+
+    /// @} End of MetaData.
+
+    /// @name Column-labels related accessors/mutators.
+    /// @{
 
     /** Get column labels.                                                    
 
@@ -341,6 +349,8 @@ public:
 
         return false;
     }
+
+    /// @}
 
     /** Check if the table has a column with the given index.                 */
     bool hasColumn(const size_t columnIndex) const {
