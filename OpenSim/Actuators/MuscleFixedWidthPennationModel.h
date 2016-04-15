@@ -327,7 +327,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;

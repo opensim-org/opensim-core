@@ -187,7 +187,8 @@ protected:
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void 
+    updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
 
     /** Helper method to convert internal force expressed in the mobility basis

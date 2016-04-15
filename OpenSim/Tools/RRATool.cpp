@@ -381,7 +381,7 @@ bool RRATool::run()
                                  _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
     }
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
     cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;         
@@ -656,10 +656,10 @@ bool RRATool::run()
     SimTK::Vector &actSysZ = actuatorSystemState.updZ();
     const SimTK::Vector &modelZ = _model->getForceSubsystem().getZ(s);
     
-    int nra = actSysZ.size();
-    int nrm = modelZ.size();
+    // int nra = actSysZ.size();
+    // int nrm = modelZ.size();
 
-    assert(nra == nrm);
+    assert(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =

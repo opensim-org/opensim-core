@@ -59,8 +59,8 @@ AnalyzeTool::AnalyzeTool() :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
 }
@@ -79,8 +79,8 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(aLoadModelAndInput),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(aLoadModelAndInput)
 {
     setNull();
     updateFromXMLDocument();
@@ -111,8 +111,8 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
     setModel(aModel);
@@ -514,7 +514,7 @@ bool AnalyzeTool::run(bool plotting)
     }
 
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
     // Call initSystem except when plotting
@@ -602,7 +602,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
-    double tPrev=0.0,t=0.0,dt=0.0;
+    double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;
     int ny = s.getNY();
     Array<double> dydt(0.0,ny);
     Array<double> yFromStorage(0.0,ny);
@@ -614,7 +614,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     stateData.resize(numOpenSimStates);
 
     for(int i=iInitial;i<=iFinal;i++) {
-        tPrev = t;
+        // tPrev = t;
         aStatesStore.getTime(i,s.updTime()); // time
         t = s.getTime();
         aModel.setAllControllersEnabled(true);

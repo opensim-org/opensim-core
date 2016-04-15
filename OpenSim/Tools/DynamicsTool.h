@@ -147,7 +147,7 @@ public:
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
                                      Model& aModel, const Storage *loadKinematics=NULL);
 
-    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
+    virtual bool run() override SWIG_DECLARE_EXCEPTION=0;
 
 
 //=============================================================================

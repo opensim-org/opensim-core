@@ -1611,8 +1611,11 @@ protected:
 
     // End of System Creation and Access Methods.
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsupported-friend"
     template<class C>
     friend void Connector<C>::findAndConnect(const Component& root);
+#pragma clang diagnostic pop
 
 public:
     /** Utility method to find a component in the list of sub components of this
@@ -1676,17 +1679,15 @@ public:
               // where only names were used (not path or type)
               // TODO replace with an exception -aseth
             else if (comp.getName() == subname) {
-                if (foundCs.size() == 0) {
-                    foundCs.push_back(&comp);
-                    // Silenced this Message for Hackathon
-                    // TODO Revisit why the exact match isn't found when
-                    // when what appears to be the complete path.
-                    /*msg += "a match for Component '" + name + "' of type " +
-                        comp.getConcreteClassName() + " found, but it "
-                        "is not on specified path."; */
-                    //throw Exception(msg, __FILE__, __LINE__);
-                    //std::cout << msg << std::endl;
-                }
+                foundCs.push_back(&comp);
+                // TODO Revisit why the exact match isn't found when
+                // when what appears to be the complete path.
+                std::string details = msg + " Found '" + compFullPathName + 
+                    "' as a match for:\n Component '" + name + "' of type " + 
+                    comp.getConcreteClassName() + ", but it "
+                    "is not on specified path.\n";
+                //throw Exception(details, __FILE__, __LINE__);
+                std::cout << details << std::endl;
             }
         }
 
@@ -2470,7 +2471,7 @@ void Input<T>::connect(const AbstractChannel& channel,
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
     std::string outputPath, channelName, annotation;
-    for (int ix = 0; ix < getNumConnectees(); ++ix) {
+    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {

@@ -364,7 +364,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    int i;
    double length,tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
-   double old_fiber_length, length_change, tendon_stiffness, percent;
+   double old_fiber_length{}, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, norm_tendon_length;
    double passiveForce;
    double fiberLength;

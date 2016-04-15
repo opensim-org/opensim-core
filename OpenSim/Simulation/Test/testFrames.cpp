@@ -119,7 +119,7 @@ void testBody()
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     SimTK::State& s = pendulum->initSystem();
 
-    const SimTK::DefaultSystemSubsystem& dsys =
+    /*const SimTK::DefaultSystemSubsystem& dsys =*/
         pendulum->getSystem().getDefaultSubsystem();
 
     std::clock_t now = std::clock();
@@ -136,7 +136,7 @@ void testBody()
 
         now = std::clock();
         for (int i = 0; i < 1000; ++i){
-            const SimTK::Transform& xform1 = rod1.getGroundTransform(s);
+            /*const SimTK::Transform& xform1 = */rod1.getGroundTransform(s);
         }
         after = std::clock();
         lookup_time += (after-now);
@@ -249,6 +249,11 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
+    // Hack since clone does not copy internal ownership (parent) references
+    // TODO: should be removed when Component cloning preserves ownership
+    // relationships.
+    secondFrame->finalizeFromProperties();
+
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));
