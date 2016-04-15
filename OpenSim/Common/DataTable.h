@@ -415,6 +415,8 @@ public:
     }
 
     /// @name Row accessors/mutators.
+    /// Following get/upd functions operate on matrix and not the independent
+    /// column.
     /// @{
 
     /** Append row to the DataTable_.                                         
@@ -495,6 +497,9 @@ public:
 
     /// @} End of Row accessors/mutators.
 
+    /// @name Dependent and Independent column accessors/mutators.
+    /// @{
+
     /** Get independent column.                                               */
     const std::vector<ETX>& getIndependentColumn() const {
         return _indData;
@@ -553,6 +558,11 @@ public:
         validateRow(index, value, _depData.row((int)index));
         _indData[index] = value;
     }
+
+    /// @}
+
+    /// @name Matrix accessors/mutators.
+    /// @{
 
     /** Get a read-only view to the underlying matrix.                        */
     const MatrixView& getMatrix() const {
@@ -637,6 +647,8 @@ public:
                                  static_cast<int>(numRows),
                                  static_cast<int>(numColumns));
     }
+
+    /// @}
 
 protected:
     /** Check if row index is out of range.                                   */
