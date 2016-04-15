@@ -86,6 +86,13 @@
 %ignore OpenSim::AbstractDataTable::setIndependentMetaData;
 %ignore OpenSim::AbstractDataTable::getDependentsMetaData;
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
+%ignore OpenSim::AbstractDataTable::setColumnLabels(
+                                     const std::initializer_list<std::string>&);
+%extend OpenSim::AbstractDataTable {
+    void setColumnLabels(const std::vector<std::string>& columnLabels) {
+        $self->setColumnLabels(columnLabels);
+    }
+}
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTable)           OpenSim::DataTable_<double, double>;
@@ -116,4 +123,3 @@
 %include <OpenSim/Common/MOTFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
-
