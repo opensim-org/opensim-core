@@ -191,6 +191,8 @@ public:
     /// @} End of MetaData accessors/mutators.
 
     /// @name Column-labels related accessors/mutators.
+    /// Following functions operate on column labels of dependent columns only
+    /// excluding the independent column.
     /// @{
 
     /** Get column labels.                                                    
