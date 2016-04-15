@@ -106,7 +106,7 @@ public:
     It transforms quantities expressed in F into quantities expressed
     in G. This is mathematically stated as:
         vec_G = X_GF*vec_F ,
-    where X_GF is the transform returned by getGroundTransform.
+    where X_GF is the transform returned by getTransformInGround.
 
     @param state       The state applied to the model when determining the
                        transform.
