@@ -115,12 +115,10 @@ public:
 // OUTPUTS
 //=============================================================================
     OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
-    // reaction_load_at_parent_frame
-    OpenSim_DECLARE_OUTPUT(reaction_load_at_parent_frame_in_ground_frame, SimTK::SpatialVec,
-        calcReactionAtParentFrameInGround, SimTK::Stage::Acceleration);
-    // reaction_load_at_child_frame
-    OpenSim_DECLARE_OUTPUT(reaction_load_at_child_frame_in_ground_frame, SimTK::SpatialVec,
-        calcReactionAtChildFrameInGround, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(reaction_on_parent, SimTK::SpatialVec,
+        calcReactionOnParentExpressedInGround, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(reaction_on_child, SimTK::SpatialVec,
+        calcReactionOnChildExpressedInGround, SimTK::Stage::Acceleration);
 
 //=============================================================================
 // METHODS
@@ -130,30 +128,29 @@ public:
     Joint();
 
     /** Convenience Constructor */
-    /** Create a Joint where the parent and child frames are specified by name.
+    /** Create a Joint by specifying the parent and child frames.
         Also an advanced option to reverse the direction in the multibody tree,
         that is child to parent, but the coordinates remain as if defined parent
-        to child. This can be useful for defining models from the ground up, yet
-        maintaining the convention of the knee, for example, of the relative
-        motion of the tibia (child) w.r.t. the femur (parent).
+        to child. The model determines the multibody tree and can reverse the
+        joint when necessary.
 
         @param[in] name     the name associated with this joint (should be
                             unique from other joints in the same model)
-        @param[in] parentName   the name of the parent PhysicalFrame for the joint
-        @param[in] childName    the name of the child PhysicalFrame for the joint
+        @param[in] parent   the parent PhysicalFrame that joint connects to
+        @param[in] child    the child PhysicalFrame that joint connects to
         @param[in] reverse  Advanced optional flag (bool) specifying the 
                             direction of the Joint in the multibody tree. 
                             Default is false (that is, parent to child).
         */
     Joint( const std::string& name,
-           const std::string& parentName,
-           const std::string& childName,
+           const PhysicalFrame& parent,
+           const PhysicalFrame& child,
            bool reverse = false);
 
     /** Backwards compatible Convenience Constructor 
     Construct a Joint where the parent and child are specified as well as the
-    joint frames in the child and parent bodies in terms of their location
-    and orientation in their respective physical frames. Also an advanced option
+    location and orientation of parent and child joint frames in their
+    respective physical frames. Also an advanced option
     to specify the tree structure to be constructed in the reverse direction,
     that is child to parent, but the coordinates remain as if defined parent
     to child. This can be useful for defining models from the ground up, yet
@@ -201,20 +198,12 @@ public:
     virtual ~Joint();
 
     // GET & SET
-
-    void setChildFrameName(const std::string& name);
-    const std::string& getChildFrameName() const;
-
     /**
      * Get the child joint frame.
      *
      * @return const PhysicalFrame reference.
      */
     const PhysicalFrame& getChildFrame() const;
-
-    // Relating to the parent joint frame
-    void setParentFrameName(const std::string& aName);
-    const std::string& getParentFrameName() const;
 
     /**
      * Get the parent frame to which this joint attaches.
@@ -247,25 +236,35 @@ public:
     comprised of multiple mobilizers and/or constraints, should override this 
     method and account for multiple internal components.
 
-    @param s containing the generalized coordinate and speed values 
+    @param state containing the generalized coordinate and speed values 
     @param mobilityForces for the system as computed by inverse dynamics, 
                           for example 
     @return spatial force, FB_G, acting on the body connected by this joint at 
     its location B, expressed in ground.  */
     SimTK::SpatialVec 
-    calcEquivalentSpatialForce(const SimTK::State &s, 
+        calcEquivalentSpatialForce(const SimTK::State& state, 
                                const SimTK::Vector &mobilityForces) const;
     
-    // Reaction forces (direct calls into Simbody methods)
-    /** Reaction forces on Parent Frame at Mobilizer in Ground @see SimTK::MobilizedBody method. */
+    /// Joint Reaction forces 
+    /** Calculate the joint reaction force and moment acting on the parent frame
+        and expressed in Ground. 
+    @param[in]  state containing the generalized coordinate and speed values 
+    @return     SpatialVec of reaction force, RP_G, acting on parent frame, P,
+                and expressed in ground, G.  */
     SimTK::SpatialVec
-        calcReactionAtParentFrameInGround(const SimTK::State &s) const {
-        return getChildFrame().getMobilizedBody().findMobilizerReactionOnParentAtFInGround(s);
+        calcReactionOnParentExpressedInGround(const SimTK::State &state) const {
+        return getChildFrame().getMobilizedBody()
+            .findMobilizerReactionOnParentAtFInGround(state);
     }
-    /** Reaction forces on Child Frame at Mobilizer Frame in Ground @see SimTK::MobilizedBody method. */
+    /** Calculate the joint reaction force and moment acting on the child frame
+        and expressed in Ground.
+    @param[in]  state containing the generalized coordinate and speed values 
+    @return     SpatialVec of reaction force, RP_G, acting on child frame, C,
+                and expressed in ground, G.  */
     SimTK::SpatialVec
-        calcReactionAtChildFrameInGround(const SimTK::State &s) const {
-        return getChildFrame().getMobilizedBody().findMobilizerReactionOnBodyAtMInGround(s);
+        calcReactionOnChildExpressedInGround(const SimTK::State &state) const {
+        return getChildFrame().getMobilizedBody()
+            .findMobilizerReactionOnBodyAtMInGround(state);
     }
 
     /** Joints in general do not contribute power since the reaction space
@@ -339,9 +338,12 @@ protected:
     /** Updating XML formating to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
-    /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index
-       acting at its mobilizer frame B, expressed in ground.  */
-    SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
+    /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body
+        specified by index acting at its mobilizer frame B, expressed in ground. */
+    SimTK::SpatialVec 
+        calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s,
+            const SimTK::MobilizedBodyIndex mbx, 
+            const SimTK::Vector &mobilityForces) const;
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
         OpenSim::Body. Not valid until after extendAddToSystem on the Body has been called.*/
@@ -440,9 +442,6 @@ protected:
             SimTK::MobilizedBody::Direction(get_reverse());
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
-
-        //const CoordinateSet& coords = get_CoordinateSet();
-        //int nc = numCoordinates();
 
         SimTK_ASSERT1(numCoordinates() == get_CoordinateSet().getSize(), 
                       "%s list of coordinates does not match number of mobilities.",

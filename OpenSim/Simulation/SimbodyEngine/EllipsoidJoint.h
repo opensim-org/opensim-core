@@ -67,8 +67,8 @@ public:
     EllipsoidJoint();
     /** Convenience Joint like Constructor */
     EllipsoidJoint( const std::string& name,
-                    const std::string& parentName,
-                    const std::string& child,
+                    const PhysicalFrame& parent,
+                    const PhysicalFrame& child,
                     const SimTK::Vec3& ellipsoidRadii,
                     bool reverse = false);
 
