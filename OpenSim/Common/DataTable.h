@@ -414,6 +414,9 @@ public:
         return std::shared_ptr<AbstractDataTable>{new DataTable_{*this}};
     }
 
+    /// @name Row accessors/mutators.
+    /// @{
+
     /** Append row to the DataTable_.                                         
 
     \throws IncorrectNumColumns If the row added is invalid. Validity of the 
@@ -489,6 +492,8 @@ public:
 
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
+
+    /// @}
 
     /** Get independent column.                                               */
     const std::vector<ETX>& getIndependentColumn() const {
