@@ -3,10 +3,18 @@
 # OpenSim does not use this file directly.
 
 project(OpenSimDependencies)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1.3)
 
 include(ExternalProject)
 include(CMakeParseArguments)
+
+# Minimum required C++ standard --> C++11. OpenSim dependencies have to be
+# compiled with same standard requirement as OpenSim to have dependencies ABI 
+# compatible.
+set(CMAKE_CXX_STANDARD_REQUIRED 11
+    CACHE INTERNAL "Minimum C++ standard support required from compiler.")
+set(CMAKE_CXX_STANDARD 11
+    CACHE INTERNAL "C++ standard for all targets.")
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -84,7 +92,8 @@ function(AddDependency)
         set(DEFAULT_INSTALL_DIR ${DEFAULT_CMAKE_INSTALL_PREFIX}/${DEP_NAME})
         RemoveDefaultInstallDirIfEmpty(${DEFAULT_INSTALL_DIR})
 
-        set(CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR})
+        set(CMAKE_ARGS -DCMAKE_CXX_STANDARD:INTERNAL=${CMAKE_CXX_STANDARD}
+                       -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR})
         if(NOT CMAKE_CONFIGURATION_TYPES)
             list(APPEND CMAKE_ARGS
                 -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
