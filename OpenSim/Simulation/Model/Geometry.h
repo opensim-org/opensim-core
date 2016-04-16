@@ -611,7 +611,7 @@ public:
     };
 protected:
     // ModelComponent interface.
-    void extendConnect(Component&  root) override;
+    void extendFinalizeFromProperties() override;
 
 protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.

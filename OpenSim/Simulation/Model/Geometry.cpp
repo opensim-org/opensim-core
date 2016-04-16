@@ -169,11 +169,29 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
     decoGeoms.push_back(deco);
 }
 
-void Mesh::extendConnect(Component&  root) {
+void Mesh::extendFinalizeFromProperties() {
 
-    Super::extendConnect(root);
+    const Component* rootModel = nullptr;
+    if (!hasParent()) {
+        std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+        return;   // Orphan Mesh not part of a model yet
+    }
+    const Component* parent = &getParent();
+    while (parent != nullptr) {
+        if (dynamic_cast<const Model*>(parent) != nullptr) {
+            rootModel = parent;
+            break;
+        }
+        if (parent->hasParent())
+            parent = &(parent->getParent()); // traverse up Component tree
+        else
+            break; // can't traverse up.
+    }
 
-    Model& rootModel = dynamic_cast<Model&>(root);
+    if (rootModel == nullptr) {
+        std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+        return;   // Orphan Mesh not descendent of a model
+    }
     // Current interface to Visualizer calls generateDecorations on every frame.
     // On first time through, load file and create DecorativeMeshFile and cache it
     // so we don't load files from disk during live drawing/rendering.
@@ -190,7 +208,7 @@ void Mesh::extendConnect(Component&  root) {
 
     // File is a .vtp or .obj. See if we can find it.
     Array_<string> attempts;
-    const Model& model = rootModel;
+    const Model& model = dynamic_cast<const Model&>(*rootModel);
     bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
     if (!foundIt) {
