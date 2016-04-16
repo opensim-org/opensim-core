@@ -374,7 +374,7 @@ endif()
 
 include(InstallRequiredSystemLibraries)
 
-# Minimum required C++ standard --> C++11
+# Minimum required C++ standard --> C++11.
 set(CMAKE_CXX_STANDARD_REQUIRED 11
     CACHE INTERNAL "Minimum C++ standard support required from compiler.")
 set(CMAKE_CXX_STANDARD 11

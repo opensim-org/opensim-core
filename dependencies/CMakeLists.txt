@@ -15,6 +15,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED 11
 set(CMAKE_CXX_STANDARD 11
     CACHE INTERNAL "C++ standard for all targets.")
 
+# Suppress warnings when compiling dependencies.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+   CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS "-w")
+    set(CMAKE_C_FLAGS   "-w")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(CMAKE_CXX_FLAGS "/w")
+    set(CMAKE_C_FLAGS   "/w")
+endif()
+
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
@@ -92,6 +102,7 @@ function(AddDependency)
         RemoveDefaultInstallDirIfEmpty(${DEFAULT_INSTALL_DIR})
 
         set(CMAKE_ARGS -DCMAKE_CXX_STANDARD:INTERNAL=${CMAKE_CXX_STANDARD}
+                       -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                        -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR})
         if(NOT CMAKE_CONFIGURATION_TYPES)
             list(APPEND CMAKE_ARGS
