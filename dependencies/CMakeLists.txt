@@ -8,9 +8,8 @@ cmake_minimum_required(VERSION 3.1.3)
 include(ExternalProject)
 include(CMakeParseArguments)
 
-# Minimum required C++ standard --> C++11. OpenSim dependencies have to be
-# compiled with same standard requirement as OpenSim to have dependencies ABI 
-# compatible.
+# Minimum required C++ standard --> C++11. This is to make sure dependencies
+# are compiled with same minimum standard as OpenSim.
 set(CMAKE_CXX_STANDARD_REQUIRED 11
     CACHE INTERNAL "Minimum C++ standard support required from compiler.")
 set(CMAKE_CXX_STANDARD 11
