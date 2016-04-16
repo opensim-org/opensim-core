@@ -374,28 +374,11 @@ endif()
 
 include(InstallRequiredSystemLibraries)
 
-# C++11
-# -----
-# In revision 8629, we started using std::unique_ptr, which requires
-# C++11 features to be enabled when using GCC or Clang.
-if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    # Using C++11 on OSX requires using libc++ instead of libstd++.
-    # libc++ is an implementation of the C++ standard library for OSX.
-    if(APPLE)
-        if(XCODE)
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-            endif()
-        endif()
-    else() # not APPLE
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-endif()
-
+# Minimum required C++ standard --> C++11
+set(CMAKE_CXX_STANDARD_REQUIRED 11
+    CACHE INTERNAL "Minimum C++ standard support required from compiler.")
+set(CMAKE_CXX_STANDARD 11
+    CACHE INTERNAL "C++ standard for all targets.")
 
 ## On APPLE, use MACOSX_RPATH.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
