@@ -136,7 +136,8 @@ AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/klshrinidhi/BTKCore.git
               TAG        ae0d2a43de0fe6c9ef2acce34a87c944dd113829
-              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
+              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON 
+                         -DCMAKE_CXX_FLAGS:STRING="/EHsc")
 
 
 AddDependency(NAME       simbody
