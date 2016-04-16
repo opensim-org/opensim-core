@@ -16,13 +16,14 @@ set(CMAKE_CXX_STANDARD 11
     CACHE INTERNAL "C++ standard for all targets.")
 
 # Suppress warnings when compiling dependencies.
+# Set the exception handling model for MSVC.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
    CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-w")
     set(CMAKE_C_FLAGS   "-w")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CMAKE_CXX_FLAGS "/w")
-    set(CMAKE_C_FLAGS   "/w")
+    set(CMAKE_CXX_FLAGS "/W0 /EHsc")
+    set(CMAKE_C_FLAGS   "/W0 /EHsc")
 endif()
 
 # Set the default for CMAKE_INSTALL_PREFIX.
@@ -136,8 +137,7 @@ AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/klshrinidhi/BTKCore.git
               TAG        ae0d2a43de0fe6c9ef2acce34a87c944dd113829
-              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON 
-                         -DCMAKE_CXX_FLAGS:STRING="/EHsc")
+              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 
 AddDependency(NAME       simbody
