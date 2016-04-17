@@ -33,6 +33,36 @@ template<typename ET>
 class TableSource : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource, ET, ModelComponent);
 
+public:
+    OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
+                                SimTK::Stage::Time);
+
+    ET getColumnAtTime(const SimTK::State& state, 
+                       const std::string& columnLabel) const {
+        OPENSIM_THROW_IF(_table.getNumRows() == 0, EmptyTable);
+
+        const auto time = state.getTime();
+        const auto colInd = _table.getColumnIndex(columnLabel);
+        const auto& timeCol = _table.getIndependentColumn();
+        auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
+        unsigned rowInd{};
+        if(*lb == timeCol.begin())
+            rowInd = 0;
+        if(*lb == timeCol.end())
+            rowInd = timeCol.size() - 1;
+        else if(*lb == time)
+            rowInd = lb - timeCol.begin();
+        else {
+            if((time - *(lb - 1)) < (*lb - time))
+                rowInd = lb - 1 - timeCol.begin();
+            else
+                rowInd = lb - timeCol.begin();
+        }
+
+        return _table.getMatrix().getElt(rowInd, colInd);
+    }
+
+
 private:
     TimeSeriesTable_<ET> _table;
 
