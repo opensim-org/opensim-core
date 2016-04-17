@@ -29,6 +29,23 @@
 
 namespace OpenSim {
 
+class TimeOutOfRange : public InvalidTimestamp {
+    TimeOutOfRange(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   double timestamp,
+                   double minTimestamp,
+                   double maxTimestamp) :
+        InvalidTimestamp(file, line, func) {
+        std::string msg = "min = " + std::to_string(minTimestamp);
+        msg += " max = " + std::to_string(maxTimestamp);
+        msg += " timestamp = " + std::to_string(timestamp);
+
+        addMessage(msg);
+    }
+};
+
+
 template<typename ET>
 class TableSource : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource, ET, ModelComponent);
@@ -37,13 +54,18 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
 
+
     ET getColumnAtTime(const SimTK::State& state, 
                        const std::string& columnLabel) const {
         OPENSIM_THROW_IF(_table.getNumRows() == 0, EmptyTable);
-
-        const auto time = state.getTime();
-        const auto colInd = _table.getColumnIndex(columnLabel);
         const auto& timeCol = _table.getIndependentColumn();
+        const auto time = state.getTime();
+        OPENSIM_THROW_IF(time < timeCol.front() ||
+                         time > timeCol.back(),
+                         TimeOutOfRange, 
+                         time, timeCol.front(), timeCol.back());
+
+        const auto colInd = _table.getColumnIndex(columnLabel);
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
         unsigned rowInd{};
         if(*lb == timeCol.begin())
@@ -61,7 +83,6 @@ public:
 
         return _table.getMatrix().getElt(rowInd, colInd);
     }
-
 
 private:
     TimeSeriesTable_<ET> _table;
