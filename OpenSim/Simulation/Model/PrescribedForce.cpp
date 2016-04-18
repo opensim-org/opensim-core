@@ -42,14 +42,13 @@ using namespace std;
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(Body* body)
+PrescribedForce::PrescribedForce(const PhysicalFrame* body)
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 
-    _body = body;
-    if (_body)
-        setBodyName(_body->getName());
+    if (body)
+        updConnector<PhysicalFrame>("frame").setConnecteeName(body->getName());
 }
 
 //_____________________________________________________________________________
@@ -74,6 +73,15 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : Super(aNode)
 void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     // Base class
+    if (versionNumber < 30506) {
+        // Convert body property into a connector to PhysicalFrame with name "frame"
+        SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
+        std::string frame_name("");
+        if (bodyElement != aNode.element_end()) {
+            bodyElement->getValueAs<std::string>(frame_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "frame", frame_name);
+        }
+    }
     Super::updateFromXMLNode(aNode, versionNumber);
 
     const FunctionSet& forceFunctions  = getForceFunctions();
@@ -103,12 +111,25 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
  */
 void PrescribedForce::constructProperties()
 {
-    constructProperty_body();
     constructProperty_pointIsGlobal(false);
     constructProperty_forceIsGlobal(true);
     constructProperty_forceFunctions(FunctionSet());
     constructProperty_pointFunctions(FunctionSet());
     constructProperty_torqueFunctions(FunctionSet());
+}
+
+
+void PrescribedForce::constructConnectors()
+{
+    constructConnector<PhysicalFrame>("frame");
+}
+
+
+void PrescribedForce::setFrameName(const std::string& frameName) {
+    updConnector<PhysicalFrame>("frame").setConnecteeName(frameName);
+}
+const std::string& PrescribedForce::getFrameName() const {
+    return getConnector<PhysicalFrame>("frame").getConnecteeName();
 }
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
@@ -235,13 +256,15 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const bool hasPointFunctions  = pointFunctions.getSize()==3;
     const bool hasTorqueFunctions = torqueFunctions.getSize()==3;
 
-    assert(_body!=0);
+    const PhysicalFrame& frame =
+        getConnector<PhysicalFrame>("frame").getConnectee();
+
     if (hasForceFunctions) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
                    forceFunctions[1].calcValue(timeAsVector), 
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body,                 force, 
+            engine.transform(state, frame,                 force,
                                     getModel().getGround(), force);
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
@@ -251,18 +274,18 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
                 engine.transformPosition(state, getModel().getGround(), point,
-                                                *_body,                 point);
+                    frame,                 point);
         }
-        applyForceToPoint(state, *_body, point, force, bodyForces);
+        applyForceToPoint(state, frame, point, force, bodyForces);
     }
     if (hasTorqueFunctions){
         Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
                     torqueFunctions[1].calcValue(timeAsVector), 
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body,                 torque, 
+            engine.transform(state, frame,                 torque,
                                     getModel().getGround(), torque);
-        applyTorque(state, *_body, torque, bodyForces);
+        applyTorque(state, frame, torque, bodyForces);
     }
 }
 
@@ -328,8 +351,9 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
     const bool appliesForce   = forceFunctions.getSize()==3;
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
-
-    std::string BodyToReport = (forceIsGlobal?"ground":_body->getName());
+    const PhysicalFrame& frame =
+        getConnector<PhysicalFrame>("frame").getConnectee();
+    std::string BodyToReport = (forceIsGlobal?"ground": frame.getName());
     if (appliesForce) {
         labels.append(BodyToReport+"_"+getName()+"_fx");
         labels.append(BodyToReport+"_"+getName()+"_fy");
@@ -353,7 +377,6 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
  */
 OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& state) const {
     OpenSim::Array<double>  values(SimTK::NaN);
-    assert(_body!=0);
 
     const bool pointIsGlobal = get_pointIsGlobal();
     const bool forceIsGlobal = get_forceIsGlobal();
@@ -370,13 +393,14 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const double time = state.getTime();
     const SimbodyEngine& engine = getModel().getSimbodyEngine();
     const SimTK::Vector timeAsVector(1, time);
-
+    const PhysicalFrame& frame =
+        getConnector<PhysicalFrame>("frame").getConnectee();
     if (appliesForce) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
                    forceFunctions[1].calcValue(timeAsVector), 
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body, force, 
+            engine.transform(state, frame, force,
                              getModel().getGround(), force);
         if (!pointSpecified) {
             //applyForce(*_body, force);
@@ -387,7 +411,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
                        pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
                 engine.transformPosition(state, getModel().getGround(), point, 
-                                         *_body, point);
+                    frame, point);
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);
             for (int i=0; i<3; i++) values.append(point[i]);
@@ -398,7 +422,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
                     torqueFunctions[1].calcValue(timeAsVector), 
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, *_body, torque, 
+            engine.transform(state, frame, torque,
                              getModel().getGround(), torque);
         for (int i=0; i<3; i++) values.append(torque[i]);
         //applyTorque(*_body, torque);
@@ -408,15 +432,5 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 
 void PrescribedForce::setNull()
 {
-    setAuthors("Peter Eastman, Matt DeMers");
-    _body = NULL;
-}
-
-void PrescribedForce::extendConnectToModel(Model& model)
-{
-    Super::extendConnectToModel(model);
-
-    // hook up body pointer to name
-    if (_model)
-        _body = &_model->updBodySet().get(getBodyName());
+    setAuthors("Peter Eastman, Matt DeMers, Ayman Habib");
 }
