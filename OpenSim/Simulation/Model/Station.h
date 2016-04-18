@@ -65,10 +65,12 @@ public:
     Station(const PhysicalFrame& frame, const SimTK::Vec3& location);
 
     virtual ~Station();
+
     /** get the parent PhysicalFrame to which the Station is attached */
-    const PhysicalFrame& getReferenceFrame() const;
+    const PhysicalFrame& getParentFrame() const;
     /** setter of Reference Frame off which the Station is defined */
-    void setReferenceFrame(const OpenSim::PhysicalFrame& aFrame);
+    void setParentFrame(const OpenSim::PhysicalFrame& aFrame);
+
     /** Find this Station's location in any Frame */
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s,
                                     const OpenSim::Frame& frame) const;

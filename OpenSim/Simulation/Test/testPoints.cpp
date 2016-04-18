@@ -171,7 +171,7 @@ void testStationOnOffsetFrame()
     Station* myStation = new Station();
     const SimTK::Vec3 point(0.5, 1, -1.5);
     myStation->set_location(point);
-    myStation->setReferenceFrame(*offsetFrame);
+    myStation->setParentFrame(*offsetFrame);
     pendulum.addModelComponent(myStation);
 
     // optionally turn on visualizer to help debug
@@ -187,7 +187,7 @@ void testStationOnOffsetFrame()
     hip->upd_CoordinateSet()[1].setSpeedValue(state, -0.13);
 
     // Get the frame's mobilized body
-    const OpenSim::PhysicalFrame&  frame = myStation->getReferenceFrame();
+    const OpenSim::PhysicalFrame&  frame = myStation->getParentFrame();
     SimTK::MobilizedBody  mb = frame.getMobilizedBody();
 
     // Do a simulation

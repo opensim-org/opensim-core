@@ -51,7 +51,7 @@ Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location)
 {
     setNull();
     constructInfrastructure();
-    setReferenceFrame(frame);
+    setParentFrame(frame);
     set_location(location);
 }
 
@@ -87,44 +87,44 @@ void Station::constructProperties()
 
 void Station::constructConnectors()
 {
-    constructConnector<PhysicalFrame>("reference_frame");
+    constructConnector<PhysicalFrame>("parent_frame");
 }
 
 /*
- * Return the reference frame with respect to which this station is defined
+ * Return the parent frame with respect to which this station is defined
 */
-const PhysicalFrame& Station::getReferenceFrame() const
+const PhysicalFrame& Station::getParentFrame() const
 {
-    return getConnector<PhysicalFrame>("reference_frame").getConnectee();
+    return getConnector<PhysicalFrame>("parent_frame").getConnectee();
 }
 
 /*
- * setReferenceFrame sets the "reference_frame" connection
+ * setParentFrame sets the "parent_frame" connection
  */
-void Station::setReferenceFrame(const OpenSim::PhysicalFrame& aFrame)
+void Station::setParentFrame(const OpenSim::PhysicalFrame& aFrame)
 {
-    updConnector<PhysicalFrame>("reference_frame").connect(aFrame);
+    updConnector<PhysicalFrame>("parent_frame").connect(aFrame);
 }
 
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
     // transform location from the station's frame to the other frame
-    return getReferenceFrame().findLocationInAnotherFrame(s, 
+    return getParentFrame().findLocationInAnotherFrame(s, 
                                                 get_location(), aFrame);
 }
 
 SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
 {
-    return getReferenceFrame().getTransformInGround(s)*get_location();
+    return getParentFrame().getTransformInGround(s)*get_location();
 }
 
 SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
 {
     // compute the local position vector of the station in its reference frame
     // expressed in ground
-    Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
-    const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+    Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
+    const SimTK::SpatialVec& V_GF = getParentFrame().getVelocityInGround(s);
 
     // The velocity of the station in ground is a function of its frame's
     // linear (vF = V_GF[1]) and angular (omegaF = A_GF[0]) velocity, such that
@@ -135,12 +135,12 @@ SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
 SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
 {
     // The spatial velocity of the reference frame expressed in ground
-    const SimTK::SpatialVec& V_GF = getReferenceFrame().getVelocityInGround(s);
+    const SimTK::SpatialVec& V_GF = getParentFrame().getVelocityInGround(s);
     // The spatial acceleration of the reference frame expressed in ground
-    const SimTK::SpatialVec& A_GF = getReferenceFrame().getAccelerationInGround(s);
+    const SimTK::SpatialVec& A_GF = getParentFrame().getAccelerationInGround(s);
     // compute the local position vector of the point in its reference frame
     // expressed in ground
-    Vec3 r = getReferenceFrame().getTransformInGround(s).R()*get_location();
+    Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
 
     // The acceleration of the station in ground is a function of its frame's
     // linear (aF = A_GF[1]) and angular (alpha = A_GF[0]) accelerations and
