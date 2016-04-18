@@ -35,6 +35,7 @@ const StatesTrajectory& StatesAccumulator::getStates() const {
 }
 
 /*
+TODO we have to discuss if the trajectory should be cleared.
 void StatesAccumulator::extendRealizeInstance(const SimTK::State& state) const {
     Super::extendRealizeInstance(state);
     const_cast<StatesAccumulator*>(this)->clear();
