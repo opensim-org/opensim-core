@@ -33,103 +33,96 @@ namespace OpenSim {
 
 class ScaleSet;
 
-/**
- * This class represents the physical shape of an object for use in contact modeling.
- * It is an abstract class, with subclasses for particular geometric representations.
+/** This class represents the physical shape of an object for use in contact
+ * modeling.  It is an abstract class, with subclasses for particular geometric
+ * representations.
  *
  * @author Peter Eastman
  */
 class OSIMSIMULATION_API ContactGeometry : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
 
+public:
+
 //=============================================================================
-// DATA
+// PROPERTIES
 //=============================================================================
-protected:
-    SimTK::ReferencePtr<PhysicalFrame> _body;
+    // TODO OpenSim_DECLARE_PROPERTY(body_name, std::string,
+    // TODO     "Body name to connect the contact geometry to");
+
+    // TODO OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+    // TODO     "Location of geometry center in the body frame");
+
+    // TODO OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
+    // TODO     "Orientation of geometry in the body frame");
+
+    OpenSim_DECLARE_PROPERTY(display_preference, int,
+        "0:Hide 1:Wire 3:Flat 4:Shaded");
+
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
+        "Display Color to apply to the contact geometry.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
-    /**
-     * Construct an empty ContactGeometry.  This constructor is protected, and is used
-     * by subclasses.
-     */
+    /** Construct an empty ContactGeometry. */
     ContactGeometry();
+
+    // TODO add constructor that just takes a frame.
     /**
-     * Construct a ContactGeometry.  This constructor is protected, and is used
-     * by subclasses.
+     * Backwards-compatible convenience constructor. This constructor will
+     * create a new intermediate PhysicalOffsetFrame using the provided
+     * location and orientation, and add that frame as a subcomponent of this
+     * component with the name `frame.getName() + "_offset"`.
      *
-     * @param location     the location of the geometry within the Body it is attached to
-     * @param orientation  the orientation of the geometry within the Body it is attached to
-     * @param body         the Body this geometry is attached to
+     * @param location     the location of the geometry expressed in `frame`
+     * @param orientation  the orientation of the geometry expressed in `frame`
+     *                     as XYZ body-fixed Euler angles.
+     * @param frame        the PhysicalFrame this geometry is attached to
      */
-    ContactGeometry(const SimTK::Vec3& location, const SimTK::Vec3& orientation, PhysicalFrame& body);
-
-
-    /** Body name.  **/
-    OpenSim_DECLARE_PROPERTY(body_name, std::string,
-        "Body name to connect the contact geometry to");
-
-    /** Location.  **/
-    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "Location of geometry center in the body frame");
-
-    /** Orientation.  **/
-    OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-        "Orientation of geometry in the body frame");
-
-    /** Display Preference to apply to the contact geometry.  **/
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    /** Display Color to apply to the contact geometry.  **/
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color");
+    ContactGeometry(const SimTK::Vec3& location,
+                    const SimTK::Vec3& orientation,
+                    PhysicalFrame& frame); // TODO this arg must be const.
 
 
     // ACCESSORS
-    /**
-     * Get the location of the geometry within the Body it is attached to.
-     */
-    const SimTK::Vec3& getLocation() const;
-    /**
-     * %Set the location of the geometry within the Body it is attached to.
-     */
-    void setLocation(const SimTK::Vec3& location);
-    /**
-     * Get the orientation of the geometry within the Body it is attached to.
-     */
-    const SimTK::Vec3& getOrientation() const;
-    /**
-     * %Set the orientation of the geometry within the Body it is attached to.
-     */
-    void setOrientation(const SimTK::Vec3& orientation);
+    // TODO /**
+    // TODO  * Get the location of the geometry within the Body it is attached to.
+    // TODO  */
+    // TODO const SimTK::Vec3& getLocation() const;
+    // TODO /**
+    // TODO  * %Set the location of the geometry within the Body it is attached to.
+    // TODO  */
+    // TODO void setLocation(const SimTK::Vec3& location);
+    // TODO /**
+    // TODO  * Get the orientation of the geometry within the Body it is attached to.
+    // TODO  */
+    // TODO const SimTK::Vec3& getOrientation() const;
+    // TODO /**
+    // TODO  * %Set the orientation of the geometry within the Body it is attached to.
+    // TODO  */
+    // TODO void setOrientation(const SimTK::Vec3& orientation);
 #ifndef SWIG
     /**
-     * Get the Body this geometry is attached to.
+     * Get the PhysicalFrame this geometry is attached to.
      */
-    const PhysicalFrame& getBody() const;
+    const PhysicalFrame& getFrame() const;
 #endif
     /**
-     * Get a writeable reference to the Body this geometry is attached to.
+     * %Set the PhysicalFrame this geometry is attached to.
      */
-    OpenSim::PhysicalFrame& updBody();
+    void setFrame(PhysicalFrame& body);
     /**
-     * %Set the Body this geometry is attached to.
+     * Get the path name of the PhysicalFrame this geometry is attached to.
      */
-    void setBody(PhysicalFrame& body);
+    const std::string& getFrameName() const;
     /**
-     * Get the name of the Body this geometry is attached to.
+     * %Set the path name (relative or absolute) of the PhysicalFrame this
+     * geometry is attached to.
      */
-    const std::string& getBodyName();
-    /**
-     * %Set the name of the Body this geometry is attached to.  This will cause the
-     * Body to be set to NULL, then resolved when extendConnectToModel() is called.
-     */
-    void setBodyName(const std::string& name);
+    void setFrameName(const std::string& name);
     /**
      * Get the display_preference of this geometry.
      */
@@ -144,9 +137,11 @@ public:
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
     /**
      * Get a Transform representing the position and orientation of the geometry
-     * within the Body it is attached to.
+     * within the Body it is attached to (*not* the "frame" that the geometry
+     * is connected to).
      */
-    SimTK::Transform getTransform();
+    // TODO rename to findTransform (for consistency).
+    SimTK::Transform getTransform() const;
 
     /**
     * Scale a ContactGeometry based on XYZ scale factors for the bodies.
@@ -158,14 +153,69 @@ public:
     // Override this method if geometry changes/deforms
     virtual void updateGeometry() {};
 
+    /**
+     * TODO
+     * Returns a heap-allocated %ContactGeometry that contains a
+     * PhysicalOffsetFrame as a subcomponent named `frame.getName() + "_offset".
+     * This new frame's parent is `frame` and it is offset by the given
+     * `location` and `orientation`.
+     */
+    static void setFrameWithOffset(const SimTK::Vec3& location,
+                                   const SimTK::Vec3& orientation,
+                                   PhysicalFrame& frame,
+                                   ContactGeometry& geom); // TODO const
+
+    /** @name Deprecated */
+    // @{
+#ifndef SWIG
+    /** <b>(Deprecated)</b> Use getFrame() instead.
+     * Get the Body this geometry is attached to.
+     */
+    DEPRECATED_14("use getFrame() instead")
+    const PhysicalFrame& getBody() const;
+#endif
+    // TODO /** <b>(Deprecated)</b> Use updFrame() instead.
+    // TODO  * Get a writeable reference to the Body this geometry is attached to.
+    // TODO  */
+    // TODO DEPRECATED_14("use updFrame() instead")
+    // TODO OpenSim::PhysicalFrame& updBody();
+    /** <b>(Deprecated)</b> Use setFrame() instead.
+     * %Set the Body this geometry is attached to.
+     */
+    DEPRECATED_14("use setFrame() instead")
+    void setBody(PhysicalFrame& body);
+    /** <b>(Deprecated)</b> Use getFrameName() instead.
+     * Get the name of the Body this geometry is attached to.
+     */
+    DEPRECATED_14("use getFrameName() instead")
+    const std::string& getBodyName() const;
+    /** <b>(Deprecated)</b> Use setFrameName() instead.
+     * %Set the name of the Body this geometry is attached to.
+     */
+    DEPRECATED_14("use setFrameName() instead")
+    void setBodyName(const std::string& name);
+    // @}
+
 protected:
     // ModelComponent interface
-    void extendConnectToModel(Model& aModel) override;
+    // TODO void extendConnectToModel(Model& aModel) override;
+
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+        override;
 
 private:
     // INITIALIZATION
     void setNull();
     void constructProperties() override;
+    void constructConnectors() override;
+
+//=============================================================================
+// DATA
+//=============================================================================
+
+protected:
+    // TODO SimTK::ReferencePtr<PhysicalFrame> _body;
+
 //=============================================================================
 };  // END of class ContactGeometry
 //=============================================================================

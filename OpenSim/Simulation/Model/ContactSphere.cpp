@@ -101,7 +101,7 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     if (fixed) { return; }
 
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
-                           .setTransform(Transform(getLocation()))
+                           .setTransform(getTransform())
                            .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
                            .setBodyId(getBody().getMobilizedBodyIndex())
                            .setColor(SimTK::Vec3(0,1,0))

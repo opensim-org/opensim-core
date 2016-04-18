@@ -22,14 +22,17 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactGeometry.h"
-#include "BodySet.h"
-#include "Model.h"
+// TODO #include "BodySet.h"
+// TODO #include "Model.h"
+#include "PhysicalOffsetFrame.h"
 #include <OpenSim/Common/ScaleSet.h>
 
+using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Rotation;
 
-namespace OpenSim {
+// TODO test ContactSphere visualization.
+// TODO test updateFromXML.
 
 //=============================================================================
 // CONSTRUCTOR
@@ -42,21 +45,43 @@ namespace OpenSim {
 ContactGeometry::ContactGeometry() : ModelComponent()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
 // Convenience constructor.
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
-    PhysicalFrame& body) : ModelComponent()
+    PhysicalFrame& frame) : ContactGeometry()
 {
-    setNull();
-    constructProperties();
+    // This hack is here because `addComponent()` calls a pure virtual function
+    // (getConcreteClassName), and we are not supposed to do that in
+    // constructors. We can avoid the call to getConcreteClassName() by setting
+    // the name here.
+    // TODO
+    setName("ContactGeometry");
 
-    _body = &body;
-    set_body_name(body.getName());
-    set_location(location);
-    set_orientation(orientation);
+    Rotation rotation(SimTK::BodyRotationSequence,
+            orientation[0], SimTK::XAxis,
+            orientation[1], SimTK::YAxis,
+            orientation[2], SimTK::ZAxis);
+    SimTK::Transform transform(rotation, location);
+    auto* offsetFrame = new PhysicalOffsetFrame(frame.getName() + "_offset",
+                                                frame, transform);
+    // TODO PhysicalOffsetFrame offsetFrame(frame.getName() + "_offset",
+    // TODO                                             frame, transform);
+    addComponent(offsetFrame);
+    // TODO int cix = append_components(offsetFrame);
+
+    offsetFrame->setParentFrame(frame);
+    updConnector(0).connect(*offsetFrame);
+    // TODO upd_components(cix).updConnector<PhysicalFrame>("parent").setConnecteeName(frame.getName());
+//    static_cast<PhysicalOffsetFrame&>(upd_components(cix)).setParentFrame(frame);
+    // TODO updConnector<PhysicalFrame>("frame").connect(get_components(cix));
+
+    //// TODO create an intermediate offset frame.
+    //set_body_name(body.getName());
+    //set_location(location);
+    //set_orientation(orientation);
 }
 
 void ContactGeometry::setNull()
@@ -71,9 +96,9 @@ void ContactGeometry::setNull()
  */
 void ContactGeometry::constructProperties()
 {
-    constructProperty_body_name("Unassigned");
-    constructProperty_location(Vec3(0));
-    constructProperty_orientation(Vec3(0));
+    // TODO constructProperty_body_name("Unassigned");
+    // TODO constructProperty_location(Vec3(0));
+    // TODO constructProperty_orientation(Vec3(0));
     constructProperty_display_preference(1);
 
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
@@ -81,6 +106,12 @@ void ContactGeometry::constructProperties()
     constructProperty_color(defaultColor);
 }
 
+void ContactGeometry::constructConnectors()
+{
+    constructConnector<PhysicalFrame>("frame");
+}
+
+/* TODO
 const Vec3& ContactGeometry::getLocation() const
 {
     return get_location();
@@ -100,40 +131,36 @@ void ContactGeometry::setOrientation(const Vec3& orientation)
 {
     set_orientation(orientation);
 }
+*/
 
-SimTK::Transform ContactGeometry::getTransform()
+SimTK::Transform ContactGeometry::getTransform() const
 {
-    return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
-        get_orientation()[0], SimTK::XAxis,
-        get_orientation()[1], SimTK::YAxis,
-        get_orientation()[2], SimTK::ZAxis), get_location());
+    return getFrame().findTransformInBaseFrame();
+    // TODO return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
+    // TODO     get_orientation()[0], SimTK::XAxis,
+    // TODO     get_orientation()[1], SimTK::YAxis,
+    // TODO     get_orientation()[2], SimTK::ZAxis), get_location());
 }
 
-PhysicalFrame& ContactGeometry::updBody()
+const PhysicalFrame& ContactGeometry::getFrame() const
 {
-    return *_body;
+    return getConnector<PhysicalFrame>("frame").getConnectee();
 }
 
-const PhysicalFrame& ContactGeometry::getBody() const
+void ContactGeometry::setFrame(PhysicalFrame& frame)
 {
-    return *_body;
+    updConnector<PhysicalFrame>("frame").setConnecteeName(
+            frame.getRelativePathName(*this));
 }
 
-void ContactGeometry::setBody(PhysicalFrame& body)
+const std::string& ContactGeometry::getFrameName() const
 {
-    _body = &body;
-    set_body_name(body.getName());
+    return getConnector<PhysicalFrame>("frame").getConnecteeName();
 }
 
-const std::string& ContactGeometry::getBodyName()
+void ContactGeometry::setFrameName(const std::string& name)
 {
-    return get_body_name();
-}
-
-void ContactGeometry::setBodyName(const std::string& name)
-{
-    set_body_name(name);
-    _body = nullptr;
+    updConnector<PhysicalFrame>("frame").setConnecteeName(name);
 }
 
 const int ContactGeometry::getDisplayPreference()
@@ -146,25 +173,75 @@ void ContactGeometry::setDisplayPreference(const int dispPref)
     set_display_preference(dispPref);
 }
 
-void ContactGeometry::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
+// TODO PhysicalFrame& ContactGeometry::updBody()
+// TODO {
+// TODO     return updFrame();
+// TODO }
 
-    //TODO use Connectors!
-    try {
-        _body =
-            static_cast<PhysicalFrame*>(&updModel().updComponent(get_body_name()));
-    }
-    catch (...)
-    {
-        std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-}
+const PhysicalFrame& ContactGeometry::getBody() const
+{ return getFrame(); }
+
+void ContactGeometry::setBody(PhysicalFrame& frame)
+{ setFrame(frame); }
+
+const std::string& ContactGeometry::getBodyName() const
+{ return getFrameName(); }
+
+void ContactGeometry::setBodyName(const std::string& name)
+{ setFrameName(name); }
+
+// TODO void ContactGeometry::extendConnectToModel(Model& aModel)
+// TODO {
+// TODO     Super::extendConnectToModel(aModel);
+// TODO 
+// TODO     //TODO use Connectors!
+// TODO     try {
+// TODO         _body =
+// TODO             static_cast<PhysicalFrame*>(&updModel().updComponent(get_body_name()));
+// TODO     }
+// TODO     catch (...)
+// TODO     {
+// TODO         std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
+// TODO         throw (Exception(errorMessage.c_str()));
+// TODO     }
+// TODO }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)
 {
     throw Exception("ContactGeometry::Scale is not implemented");
 }
 
-} // end of namespace OpenSim
+void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
+                                        int versionNumber) {
+    Super::updateFromXMLNode(node, versionNumber);
+}
+
+void ContactGeometry::setFrameWithOffset(const SimTK::Vec3& location,
+        const SimTK::Vec3& orientation,
+        PhysicalFrame& frame,
+        ContactGeometry& geom) {
+
+    Rotation rotation(SimTK::BodyRotationSequence,
+            orientation[0], SimTK::XAxis,
+            orientation[1], SimTK::YAxis,
+            orientation[2], SimTK::ZAxis);
+    SimTK::Transform transform(rotation, location);
+    auto* offsetFrame = new PhysicalOffsetFrame(frame.getName() + "_offset",
+                                                frame, transform);
+    geom.addComponent(offsetFrame);
+
+    offsetFrame->setParentFrame(frame);
+    geom.updConnector<PhysicalFrame>("frame").connect(*offsetFrame);
+}
+
+
+
+
+
+
+
+
+
+
+
+
