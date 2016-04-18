@@ -163,9 +163,6 @@ void PathActuator::addNewPathPoint(
  */
 double PathActuator::computeActuation( const SimTK::State& s ) const
 {
-    if(!_model)
-        return 0.0;
-
     // FORCE
     return( getControl(s) * get_optimal_force() );
 }
