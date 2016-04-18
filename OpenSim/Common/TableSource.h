@@ -78,9 +78,9 @@ public:
 
         const auto colInd = _table.getColumnIndex(columnLabel);
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
-        if(*lb == timeCol.begin())
+        if(lb == timeCol.begin())
             return _table.getMatrix().getElt(0, colInd);
-        else if(*lb == timeCol.end())
+        else if(lb == timeCol.end())
             return _table.getMatrix().getElt(timeCol.size() - 1, colInd);
         else if(*lb == time)
             return _table.getMatrix().getElt(lb - timeCol.begin(), colInd);
@@ -107,9 +107,9 @@ public:
                          time, timeCol.front(), timeCol.back());
 
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
-        if(*lb == timeCol.begin())
+        if(lb == timeCol.begin())
             return _table.getRowAtIndex(0);
-        else if(*lb == timeCol.end())
+        else if(lb == timeCol.end())
             return _table.getRowAtIndex(timeCol.size() - 1);
         else if(*lb == time)
             return _table.getRowAtIndex(lb - timeCol.begin());
