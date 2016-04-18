@@ -57,6 +57,9 @@ macro(OpenSimAddJavaTest TESTNAME)
 
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestVisualization")
+
+    file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditProperties")
     if(WIN32)
         # On Windows, CMake cannot use RPATH to hard code the location of libraries
         # in the binary directory (DLL's don't have RPATH), so we must set PATH to
@@ -70,7 +73,7 @@ macro(OpenSimAddJavaTest TESTNAME)
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             set_tests_properties(Java_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
                 "PATH=${CMAKE_BINARY_DIR}/${cfg}"
-                TIMEOUT 30)
+                TIMEOUT 40)
             # Timeout (seconds) is because Java might hang if it can't find
             # the DLL's.
         endforeach()

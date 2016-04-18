@@ -8,6 +8,7 @@ class TestEditProperties {
     try {
         Model model = new Model("gait10dof18musc_subject01.osim");
         OpenSimContext context=null;
+        long t1  = System.currentTimeMillis();
         try {
             context = new OpenSimContext(model.initSystem(), model);
         } catch (IOException ex) {
@@ -15,6 +16,8 @@ class TestEditProperties {
             System.out.println("Failed to initialize Context");
             System.exit(-1);
         }
+        long t2  = System.currentTimeMillis();
+        System.out.println("Model loading and initialization time (ms):"+(t2 - t1));
         Object gnd = model.getGround();
         Object gndValue = getValue(gnd);
         Body bdy = model.getBodySet().get("pelvis");
@@ -35,6 +38,8 @@ class TestEditProperties {
                     System.exit(-1);
                 } 
         }
+        long t3  = System.currentTimeMillis();
+        System.out.println("Time to perform 10 edits (ms):"+(t3 - t2));
         System.out.println("Test finished!");
         System.exit(0);
     }
