@@ -30,6 +30,7 @@
 namespace OpenSim {
 
 class TimeOutOfRange : public InvalidTimestamp {
+public:
     TimeOutOfRange(const std::string& file,
                    size_t line,
                    const std::string& func,
