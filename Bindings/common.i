@@ -123,3 +123,5 @@
 %include <OpenSim/Common/MOTFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
+
+%include <OpenSim/Common/Reporter.h>

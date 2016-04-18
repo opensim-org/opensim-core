@@ -139,6 +139,7 @@
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

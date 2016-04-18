@@ -87,6 +87,17 @@ care of deleting it.
 %}
 };
 
+/*
+The added component is not responsible for its own memory management anymore
+once added to another Component. This snippet is based on the
+MODEL_ADOPT_HELPER macro in python_simulation.i.
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%pythonappend OpenSim::Component::addComponent %{
+    comp._markAdopted()
+%}
+
 
 %extend OpenSim::Array<double> {
 	void appendVec3(SimTK::Vec3 vec3) {
