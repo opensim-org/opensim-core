@@ -47,8 +47,8 @@ class TimeOutOfRange : public InvalidTimestamp {
 
 
 template<typename ET>
-class TableSource : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource, ET, ModelComponent);
+class TableSource_ : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, ModelComponent);
 
 public:
     typedef SimTK::RowVectorView_<ET> RowVectorView;
@@ -121,6 +121,9 @@ private:
     TimeSeriesTable_<ET> _table;
 
 };
+
+typedef TableSource_<SimTK::Real> TableSource;
+typedef TableSource_<SimTK::Vec3> TableSourceVec3;
 
 } // namespace Opensim
 
