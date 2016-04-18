@@ -106,11 +106,6 @@ public:
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
-    // XML
-    //--------------------------------------------------------------------------
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
-
-    //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
     virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
