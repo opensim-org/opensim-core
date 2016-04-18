@@ -24,8 +24,8 @@
 #ifndef OPENSIM_TABLE_SOURCE_H_
 #define OPENSIM_TABLE_SOURCE_H_
 
-#include "OpenSim/Common/TimeSeriesTable.h"
-#include "ModelComponent.h"
+#include "TimeSeriesTable.h"
+#include "Component.h"
 
 namespace OpenSim {
 
@@ -47,8 +47,8 @@ class TimeOutOfRange : public InvalidTimestamp {
 
 
 template<typename ET>
-class TableSource_ : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, ModelComponent);
+class TableSource_ : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
     typedef SimTK::RowVectorView_<ET> RowVectorView;
@@ -57,6 +57,12 @@ public:
                            SimTK::Stage::Time);
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
+
+    TableSource_()                               = default;
+    TableSource_(const TableSource_&)            = default;
+    TableSource_(TableSource_&&)                 = default;
+    TableSource_& operator=(const TableSource_&) = default;
+    TableSource_& operator=(TableSource_&&)      = default;
 
 
     ET getColumnAtTime(const SimTK::State& state, 
@@ -117,9 +123,16 @@ public:
         }
     }
 
+protected:
+    void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
+        auto& columnOutput = updOutput("column");
+        for(const auto& columnLabel : _table.getColumnLabels())
+            columnOutput.addChannel(columnLabel);
+    }
+
 private:
     TimeSeriesTable_<ET> _table;
-
 };
 
 typedef TableSource_<SimTK::Real> TableSource;

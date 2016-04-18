@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Model/TableSource.h"
 #include "Model/AnalysisSet.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Model.h"
