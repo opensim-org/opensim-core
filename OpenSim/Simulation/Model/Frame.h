@@ -95,6 +95,10 @@ public:
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getTransformInGround,
         SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(velocity, SimTK::SpatialVec, getVelocityInGround,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(acceleration, SimTK::SpatialVec, getAccelerationInGround,
+        SimTK::Stage::Acceleration);
 
     /** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
@@ -235,22 +239,10 @@ public:
         const SimTK::Vec3 scale = SimTK::Vec3(1));
 
 protected:
-    /** @name Component Extension methods.
-        Frame types override these Component methods. */
-    /**@{**/
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeTopology(SimTK::State& s) const override;
-
-    /// override default extendAddGeometry to set Frame to this Object
-    void extendAddGeometry(OpenSim::Geometry& geom) override;
-
-    /**@}**/
-
-private:
-    /** @name Extension methods.
+    /** @name Extension of calculations of Frame kinematics.
     Concrete Frame types must override these calculations.
     Results of the calculations are cached by the Frame and made accessible
-    via the corresponding getTransformInGround, getVelocityInGround, 
+    via the corresponding getTransformInGround, getVelocityInGround,
     getAccelerationInGround public methods (above). */
     /**@{**/
 
@@ -262,18 +254,30 @@ private:
     virtual SimTK::Transform
         calcTransformInGround(const SimTK::State& state) const = 0;
 
-    /** The spatial velocity {omega; v} for this Frame in ground. */
+    /** The spatial velocity {omega; v} of this Frame in ground. */
     virtual SimTK::SpatialVec
         calcVelocityInGround(const SimTK::State& state) const = 0;
 
     /** The spatial acceleration {alpha; a} for this Frame in ground */
     virtual SimTK::SpatialVec
         calcAccelerationInGround(const SimTK::State& state) const = 0;
+    /**@}**/
 
+    /** @name Component Extension methods.
+    Frame types override these Component methods. */
+    /**@{**/
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendRealizeTopology(SimTK::State& s) const override;
+
+    /// override default extendAddGeometry to set Frame to this Object
+    void extendAddGeometry(OpenSim::Geometry& geom) override;
+    /**@}**/
+
+private:
     /** Extend how concrete Frame determines its base Frame. */
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
-    /**@}**/
+
 
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
