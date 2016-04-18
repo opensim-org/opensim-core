@@ -178,7 +178,7 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element connectorsElement("connectors");
             SimTK::Xml::Element frameElement("Connector_PhysicalFrame_");
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
-            frameElement.setAttributeValue("name", "reference_frame");
+            frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
