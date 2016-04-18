@@ -36,10 +36,10 @@ class Body;
 //=============================================================================
 //=============================================================================
 /**
- * A Station is a Point fixed to and located on a PhysicalFrame, which can be a 
- * Body (w.r.t. the Body origin), Ground or any PhysicalOffsetFrame.
- * A Station is an analogous physical Point to a PhyscialFrame where joints,
- * constraints and forces can be attached and/or applied.
+ * A Station is a Point fixed to and located on a PhysicalFrame, which can be
+ * a Body, Ground or any PhysicalOffsetFrame. Stations are analogous to
+ * PhyscialOffsetFrames where joints, constraints and forces can be attached
+ * and/or applied.
  *
  * @author Ayman Habib, Ajay Seth
  */
@@ -49,12 +49,8 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with a Station. **/
-    /**@{**/
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "The location of the station in its reference frame.");
-    /**@}**/
+        "The fixed location of the station expressed in its parent frame.");
 
 public:
     //--------------------------------------------------------------------------
@@ -69,7 +65,7 @@ public:
     Station(const PhysicalFrame& frame, const SimTK::Vec3& location);
 
     virtual ~Station();
-    /** getter of Reference Frame off which the Station is defined */
+    /** get the parent PhysicalFrame to which the Station is attached */
     const PhysicalFrame& getReferenceFrame() const;
     /** setter of Reference Frame off which the Station is defined */
     void setReferenceFrame(const OpenSim::PhysicalFrame& aFrame);
@@ -77,12 +73,13 @@ public:
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s,
                                     const OpenSim::Frame& frame) const;
 private:
-    /** Calculate this Station's location in Ground */
+    /* Calculate the Station's location with respect to and expressed in Ground
+    */
     SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const override;
-    /** Calculate the velocity of this Station with respect to and expressed in
-        ground as a function of the state. */
+    /* Calculate the velocity of this Station with respect to and expressed in
+       Ground as a function of the state. */
     SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const override;
-    /** Calculate the acceleration of this Station with respect to and 
+    /* Calculate the acceleration of this Station with respect to and 
         expressed in ground as a function of the state. */
     SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
 

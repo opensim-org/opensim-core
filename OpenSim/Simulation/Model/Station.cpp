@@ -40,14 +40,14 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Station::Station() : Super()
+Station::Station() : Point()
 {
     setNull();
     constructInfrastructure();
 }
 
 Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location)
-    : Super()
+    : Point()
 {
     setNull();
     constructInfrastructure();
@@ -144,7 +144,7 @@ SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
 
     // The acceleration of the station in ground is a function of its frame's
     // linear (aF = A_GF[1]) and angular (alpha = A_GF[0]) accelerations and
-    // Corriolois acceleration due to the angular velocity (omega = V_GF[0]) of
+    // Coriolis acceleration due to the angular velocity (omega = V_GF[0]) of
     // its frame, such that: a = aF + alphaF x r + omegaF x (omegaF x r)
     return A_GF[1] + A_GF[0]%r +  V_GF[0] % (V_GF[0] % r) ;
 }
