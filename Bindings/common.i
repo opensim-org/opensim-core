@@ -64,6 +64,8 @@
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
+%include <OpenSim/Common/Component.h>
+
 %include <OpenSim/Common/ComponentConnector.h>
 
 %include <OpenSim/Common/ComponentList.h>

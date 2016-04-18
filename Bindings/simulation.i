@@ -1,8 +1,6 @@
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
-// Include base class from osimCommon
-%include <OpenSim/Common/Component.h>
 
 %template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
