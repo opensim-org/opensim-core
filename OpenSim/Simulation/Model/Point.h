@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A Point is an OpenSim abstraction for any point location in space. Points
+ * A Point is an OpenSim abstraction for any location in space. Points
  * are intended to locate physical structures (such as points of constraints
  * and points of muscle attachments) as well as embody the results of spatial
  * calculations. For example, if your system involves contact, you can define
@@ -63,26 +63,27 @@ public:
 
     virtual ~Point() {};
 
-    /** @name Spatial Operations for Point
-    Convenient access to spatial kinematics of Points.*/
+    /** @name The three dimensional kinematics of the Point.
+    Convenient access to the kinematics of a Point expressed in Ground.*/
     /**@{**/
 
     /**
-    Get the location of this Point relative to the Ground frame.
+    Get the location, r_GP, of this Point, P, relative to and expressed in 
+    the Ground. Point position only valid at Stage::Position or higher.
     @param state       The state applied to the model when determining the
                        location of the Point.
     @return location   The location of the point expressed in the Ground. */
     const SimTK::Vec3& getLocationInGround(const SimTK::State& state) const;
 
-    /** The velocity v_G of this Point expressed in ground.
-        Is only valid at Stage::Velocity or higher.
+    /** The velocity v_GP of this Point, P, relative to and expressed in Ground.
+        Point's velocity is only valid at Stage::Velocity or higher.
     @param state       The state applied to the model when determining the
                        velocity of the Point.
     @return velocity   The velocity of the point expressed in the Ground. */
     const SimTK::Vec3& getVelocityInGround(const SimTK::State& state) const;
 
-    /** The acceleration a_G, of this Point expressed in ground.
-        Is only valid at Stage::Acceleration or higher. 
+    /** The acceleration a_GP, of this Point, P, relative to and expressed in
+    Ground. Point's acceleration is only valid at Stage::Acceleration or higher. 
     @param state       The state applied to the model when determining the
                        acceleration of the Point.
     @return velocity   The acceleration of the point expressed in Ground */
@@ -93,21 +94,24 @@ public:
 
 protected:
     /** @name Point Extension methods.
-    Concrete Point types must override these methods. */
+    Concrete Point types must override these calculations.
+    Results of the calculations are cached by the Point and made accessible
+    via the corresponding getLocationInGround, getVelocityInGround, 
+    getAccelerationInGround public methods (above). */
     /**@{**/
 
     /** Calculate the location of this Point with respect to and expressed in
-        ground as a function of the state. Can expect state to be realized to 
+        Ground as a function of the state. Can expect state to be realized to 
         at least SimTK::Stage::Position */
     virtual SimTK::Vec3
         calcLocationInGround(const SimTK::State& state) const = 0;
     /** Calculate the velocity of this Point with respect to and expressed in
-        ground as a function of the state. Can expect state to be realized to
+        Ground as a function of the state. Can expect state to be realized to
         at least SimTK::Stage::Velocity */
     virtual SimTK::Vec3
         calcVelocityInGround(const SimTK::State& state) const = 0;
     /** Calculate the acceleration of this Point with respect to and expressed
-        in ground as a function of the state. Can expect state to be realized 
+        in Ground as a function of the state. Can expect state to be realized 
         to SimTK::Stage::Acceleration */
     virtual SimTK::Vec3
         calcAccelerationInGround(const SimTK::State& state) const = 0;
