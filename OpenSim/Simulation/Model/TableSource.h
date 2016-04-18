@@ -67,21 +67,23 @@ public:
 
         const auto colInd = _table.getColumnIndex(columnLabel);
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
-        unsigned rowInd{};
         if(*lb == timeCol.begin())
-            rowInd = 0;
-        if(*lb == timeCol.end())
-            rowInd = timeCol.size() - 1;
+            return _table.getMatrix().getElt(0, colInd);
+        else if(*lb == timeCol.end())
+            return _table.getMatrix().getElt(timeCol.size() - 1, colInd);
         else if(*lb == time)
-            rowInd = lb - timeCol.begin();
+            return _table.getMatrix().getElt(lb - timeCol.begin(), colInd);
         else {
-            if((time - *(lb - 1)) < (*lb - time))
-                rowInd = lb - 1 - timeCol.begin();
-            else
-                rowInd = lb - timeCol.begin();
+            auto prevTime = *(lb - 1);
+            auto nextTime = *lb;
+            auto prevElt = _table.getMatrix().getElt(lb - 1 - timeCol.begin(), 
+                                                     colInd);
+            auto nextElt = _table.getMatrix().getElt(lb - timeCol.begin(), 
+                                                     colInd);
+            auto elt = ((time - prevTime) / (nextTime - prevTime)) * 
+                       (nextElt - prevElt);
+            return elt;
         }
-
-        return _table.getMatrix().getElt(rowInd, colInd);
     }
 
 private:
