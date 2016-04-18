@@ -53,6 +53,9 @@ public:
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
+    OpenSim_DECLARE_OUTPUT(tension, double, computeActuation,
+                           SimTK::Stage::Acceleration);
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
