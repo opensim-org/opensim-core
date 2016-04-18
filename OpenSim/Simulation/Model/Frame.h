@@ -222,7 +222,8 @@ public:
     /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
     Scale defaults to 1.0 but can be changed on the call line for convenience.
     */
-    void attachMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void attachMeshGeometry(const std::string &aGeometryFileName,
+        const SimTK::Vec3 scale = SimTK::Vec3(1));
     /** Add a piece of Geometry to the list of Geometry owned by the Frame.
     This function is a convenience for ModelComponent::addGeometry() for the case 
     of adding Geometry directly to a Frame, and thus sets the "frame name" of the 
@@ -230,7 +231,8 @@ public:
     own a copy of the Geometry so any changes you make to geom after calling this 
     method will not have an effect.
     */
-    void attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale = SimTK::Vec3(1));
+    void attachGeometry(const OpenSim::Geometry& geom,
+        const SimTK::Vec3 scale = SimTK::Vec3(1));
 
 protected:
     /** @name Component Extension methods.
@@ -246,7 +248,10 @@ protected:
 
 private:
     /** @name Extension methods.
-        Concrete Frame types must override these methods. */
+    Concrete Frame types must override these calculations.
+    Results of the calculations are cached by the Frame and made accessible
+    via the corresponding getTransformInGround, getVelocityInGround, 
+    getAccelerationInGround public methods (above). */
     /**@{**/
 
     /** Calculate the transform related to this Frame with respect to ground.
