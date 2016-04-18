@@ -55,14 +55,14 @@ Real getStorageEntry(const Storage& sto,
     return value;
 }
 
-void testPopulateTrajectoryAndStatesAccumulator() {
+void testPopulateTrajectoryAndStatesTrajectoryReporter() {
     Model model("gait2354_simbody.osim");
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
 
-    // Also, test the StatesAccumulator.
-    auto* statesCol = new StatesAccumulator();
+    // Also, test the StatesTrajectoryReporter.
+    auto* statesCol = new StatesTrajectoryReporter();
     statesCol->setName("states_collector_all_steps");
     model.addComponent(statesCol);
 
@@ -83,7 +83,7 @@ void testPopulateTrajectoryAndStatesAccumulator() {
             times.push_back(ts.getState().getTime());
             // StatesTrajectory API for appending states:
             states.append(ts.getState());
-            // For the StatesAccumulator:
+            // For the StatesTrajectoryReporter:
             model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
         }
     
@@ -97,9 +97,9 @@ void testPopulateTrajectoryAndStatesAccumulator() {
         }
     }
 
-    // Test the StatesAccumulator with a constant reporting interval.
+    // Test the StatesTrajectoryReporter with a constant reporting interval.
     statesCol->clear();
-    auto* statesColInterval = new StatesAccumulator();
+    auto* statesColInterval = new StatesTrajectoryReporter();
     statesColInterval->setName("states_collector_interval");
     statesColInterval->set_report_time_interval(0.01);
     model.addComponent(statesColInterval);
@@ -774,7 +774,7 @@ int main() {
         // generate it later and we don't want to use a stale one by accident.
         remove(statesStoFname.c_str());
 
-        SimTK_SUBTEST(testPopulateTrajectoryAndStatesAccumulator);
+        SimTK_SUBTEST(testPopulateTrajectoryAndStatesTrajectoryReporter);
         SimTK_SUBTEST(testFrontBack);
         SimTK_SUBTEST(testBoundsCheck);
         SimTK_SUBTEST(testIntegrityChecks);

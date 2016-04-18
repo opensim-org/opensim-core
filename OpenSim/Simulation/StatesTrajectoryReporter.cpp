@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  StatesAccumulator.cpp                      *
+ *                   OpenSim:  StatesTrajectoryReporter.cpp                   *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,27 +21,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "StatesAccumulator.h"
+#include "StatesTrajectoryReporter.h"
 
 using namespace OpenSim;
 
 
-void StatesAccumulator::clear() {
+void StatesTrajectoryReporter::clear() {
     m_states.clear();
 }
 
-const StatesTrajectory& StatesAccumulator::getStates() const {
+const StatesTrajectory& StatesTrajectoryReporter::getStates() const {
     return m_states;
 }
 
 /*
 TODO we have to discuss if the trajectory should be cleared.
-void StatesAccumulator::extendRealizeInstance(const SimTK::State& state) const {
+void StatesTrajectoryReporter::extendRealizeInstance(const SimTK::State& state) const {
     Super::extendRealizeInstance(state);
-    const_cast<StatesAccumulator*>(this)->clear();
+    const_cast<StatesTrajectoryReporter*>(this)->clear();
 }
 */
 
-void StatesAccumulator::implementReport(const SimTK::State& state) const {
-    const_cast<StatesAccumulator*>(this)->m_states.append(state);
+void StatesTrajectoryReporter::implementReport(const SimTK::State& state) const {
+    const_cast<StatesTrajectoryReporter*>(this)->m_states.append(state);
 }

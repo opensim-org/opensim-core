@@ -1,7 +1,7 @@
-#ifndef OPENSIM_STATES_ACCUMULATOR_H_
-#define OPENSIM_STATES_ACCUMULATOR_H_
+#ifndef OPENSIM_STATES_TRAJECTORY_REPORTER_H_
+#define OPENSIM_STATES_TRAJECTORY_REPORTER_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  StatesAccumulator.h                        *
+ *                     OpenSim:  StatesTrajectoryReporter.h                   *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -38,8 +38,8 @@ namespace OpenSim {
  *
  * @ingroup reporters
  */
-class OSIMSIMULATION_API StatesAccumulator : public AbstractReporter {
-OpenSim_DECLARE_CONCRETE_OBJECT(StatesAccumulator, AbstractReporter);
+class OSIMSIMULATION_API StatesTrajectoryReporter : public AbstractReporter {
+OpenSim_DECLARE_CONCRETE_OBJECT(StatesTrajectoryReporter, AbstractReporter);
 
 public:
     /** Access the accumulated states. */
@@ -62,4 +62,4 @@ private:
 
 } // namespace
 
-#endif // OPENSIM_STATES_ACCUMULATOR_H_
+#endif // OPENSIM_STATES_TRAJECTORY_REPORTER_H_
