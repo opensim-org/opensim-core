@@ -100,6 +100,7 @@ set_target_properties(RunJavaTests PROPERTIES
 OpenSimAddJavaTest(TestBasics)
 OpenSimAddJavaTest(TestIteratorsJava)
 OpenSimAddJavaTest(TestVisualization)
+OpenSimAddJavaTest(TestEditProperties)
 
 
 
