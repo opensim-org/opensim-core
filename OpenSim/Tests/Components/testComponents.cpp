@@ -53,7 +53,7 @@ int main()
         availableComponents.push_back(availableFrames[i]);
     }
 
-    // starting with type Frame
+    // next with type Point
     ArrayPtrs<Point> availablePoints;
     Object::getRegisteredObjectsOfGivenType(availablePoints);
     for (int i = 0; i < availablePoints.size(); ++i) {
