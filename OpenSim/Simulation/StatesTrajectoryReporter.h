@@ -57,7 +57,9 @@ protected:
     void implementReport(const SimTK::State& state) const override;
 
 private:
-    StatesTrajectory m_states;
+    // Mutable because we append during reporting. This is OK to do since
+    // reporting never occurs for trial states.
+    mutable StatesTrajectory m_states;
 };
 
 } // namespace

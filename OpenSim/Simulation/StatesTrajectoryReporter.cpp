@@ -38,10 +38,10 @@ const StatesTrajectory& StatesTrajectoryReporter::getStates() const {
 TODO we have to discuss if the trajectory should be cleared.
 void StatesTrajectoryReporter::extendRealizeInstance(const SimTK::State& state) const {
     Super::extendRealizeInstance(state);
-    const_cast<StatesTrajectoryReporter*>(this)->clear();
+    clear();
 }
 */
 
 void StatesTrajectoryReporter::implementReport(const SimTK::State& state) const {
-    const_cast<StatesTrajectoryReporter*>(this)->m_states.append(state);
+    m_states.append(state);
 }
