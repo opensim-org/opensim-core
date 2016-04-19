@@ -262,26 +262,6 @@ SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
 
 
 //=============================================================================
-// XML
-//=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- *
- * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
- * a few methods in this class to ensure that variable members have been
- * set in a consistent manner.
- */
-void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    updGeometryPath().setOwner(this);
-    Super::updateFromXMLNode(aNode, versionNumber);
-}   
-
-//=============================================================================
 // SCALING
 //=============================================================================
 //_____________________________________________________________________________
