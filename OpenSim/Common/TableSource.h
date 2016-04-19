@@ -52,9 +52,9 @@ class TableSource_ : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
-    typedef SimTK::RowVectorView_<ET> RowVectorView;
+    typedef SimTK::Vector_<ET> Vector;
 
-    OpenSim_DECLARE_OUTPUT(row, RowVectorView, getRowAtTime, 
+    OpenSim_DECLARE_OUTPUT(row, Vector, getRowAtTime, 
                            SimTK::Stage::Time);
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
@@ -97,7 +97,7 @@ public:
         }
     }
 
-    RowVectorView getRowAtTime(const SimTK::State& state) const {
+    Vector getRowAtTime(const SimTK::State& state) const {
         OPENSIM_THROW_IF(_table.getNumRows() == 0, EmptyTable);
         const auto& timeCol = _table.getIndependentColumn();
         const auto time = state.getTime();
@@ -108,11 +108,11 @@ public:
 
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
         if(lb == timeCol.begin())
-            return _table.getRowAtIndex(0);
+            return _table.getRowAtIndex(0).getAsVector();
         else if(lb == timeCol.end())
-            return _table.getRowAtIndex(timeCol.size() - 1);
+            return _table.getRowAtIndex(timeCol.size() - 1).getAsVector();
         else if(*lb == time)
-            return _table.getRowAtIndex(lb - timeCol.begin());
+            return _table.getRowAtIndex(lb - timeCol.begin()).getAsVector();
         else {
             auto prevTime = *(lb - 1);
             auto nextTime = *lb;
@@ -120,7 +120,7 @@ public:
             auto nextRow = _table.getRowAtIndex(lb - timeCol.begin());
             auto row = ((time - prevTime) / (nextTime - prevTime)) * 
                        (nextRow - prevRow);
-            return row;
+            return row.getAsVector();
         }
     }
 
