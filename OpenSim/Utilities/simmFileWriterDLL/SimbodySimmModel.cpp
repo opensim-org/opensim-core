@@ -61,14 +61,13 @@
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
 
+#include "SimbodySimmModel.h"
+
 #define ROUNDOFF_ERROR 0.000000001
 #define DABS(a) ((a)>(double)0.0?(a):(-(a)))
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
-static const double defaultAxes[][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
-
-#include "SimbodySimmModel.h"
-
+const double SimbodySimmModel::defaultAxes[][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
 
 //=============================================================================
 // STATICS
