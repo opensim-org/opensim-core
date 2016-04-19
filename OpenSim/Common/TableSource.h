@@ -128,6 +128,18 @@ public:
         }
     }
 
+    const Table& getTable() const {
+        return _table;
+    }
+
+    void setTable(const Table& table) {
+        _table = table;
+        auto& columnOutput = updOutput("column");
+        columnOutput.clearChannels();
+        for(const auto& columnLabel : _table.getColumnLabels())
+            columnOutput.addChannel(columnLabel);
+    }
+
 protected:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
