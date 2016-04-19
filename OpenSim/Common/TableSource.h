@@ -52,7 +52,8 @@ class TableSource_ : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
-    typedef SimTK::Vector_<ET> Vector;
+    typedef TimeSeriesTable_<ET> Table;
+    typedef SimTK::Vector_<ET>   Vector;
 
     OpenSim_DECLARE_OUTPUT(row, Vector, getRowAtTime, 
                            SimTK::Stage::Time);
@@ -64,7 +65,10 @@ public:
     TableSource_(TableSource_&&)                 = default;
     TableSource_& operator=(const TableSource_&) = default;
     TableSource_& operator=(TableSource_&&)      = default;
-
+    
+    TableSource_(const Table& table) : 
+        _table{table} 
+    {}
 
     ET getColumnAtTime(const SimTK::State& state, 
                        const std::string& columnLabel) const {
@@ -133,7 +137,7 @@ protected:
     }
 
 private:
-    TimeSeriesTable_<ET> _table;
+    Table _table;
 };
 
 typedef TableSource_<SimTK::Real> TableSource;
