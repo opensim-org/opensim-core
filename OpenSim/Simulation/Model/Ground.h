@@ -46,12 +46,21 @@ public:
     virtual ~Ground() {}
 
 protected:
-    /** The transform X_GF is the identity transform since this frame is Ground.*/
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override final;
-
     /** Extending the Component interface. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+private:
+    /** The transform X_GF is the identity transform since this frame is Ground.*/
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override final;
+
+    /** The spatial velocity {omega; v} if {0; 0} for ground */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override final;
+
+    /** The spatial acceleration {alpha; a} = {0; 0} for ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override final;
 
 };  // END of class Ground
 

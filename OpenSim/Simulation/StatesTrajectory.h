@@ -190,7 +190,8 @@ public:
         try {
             return m_states.at(index);
         } catch (const std::out_of_range&) {
-            OPENSIM_THROW(IndexOutOfRange<size_t>, index, 0, m_states.size() - 1);
+            OPENSIM_THROW(IndexOutOfRange, index, 0, 
+                          static_cast<unsigned>(m_states.size() - 1));
         }
     }
     /** Get a const reference to the first state in the trajectory. */
@@ -222,8 +223,10 @@ public:
     const_iterator end() const { return m_states.cend(); }
     /// @}
 
-    /// @name Populating the trajectory with states
+    /// @name Modify the contents of the trajectory
     /// @{
+    /** Clear all the states in the trajectory. */
+    void clear();
     /** Append a SimTK::State to this trajectory.
      * This function ensures that the time in the new SimTK::State is
      * greater than the time in the last SimTK::State in the trajectory.

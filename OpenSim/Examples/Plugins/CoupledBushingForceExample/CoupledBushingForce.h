@@ -152,7 +152,7 @@ private:
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
-    void constructProperties();
+    void constructProperties() override;
     void extendFinalizeFromProperties() override;
 
     void finalizeMatricesFromProperties();

@@ -1630,3 +1630,218 @@ estimateMuscleFiberState(double aActivation,
     }
     return results;
 }
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED  XXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================
+double Millard2012EquilibriumMuscle::
+calcActiveFiberForceAlongTendon(double activation,
+                                double fiberLength,
+                                double fiberVelocity) const
+{
+    double activeFiberForce = SimTK::NaN;
+
+    if(fiberLength <= getMinimumFiberLength()) {
+        return 0.0;
+    }
+
+    try {
+        //Clamp activation to a legal range
+        double ca = clampActivation(activation);
+
+        //Normalize fiber length and velocity
+        double lceN  = fiberLength/getOptimalFiberLength();
+        double dlceN = fiberVelocity /
+                        (getOptimalFiberLength()*getMaxContractionVelocity());
+
+        //Get the necessary curves
+        const ActiveForceLengthCurve& falCurve =
+            get_ActiveForceLengthCurve();
+        const FiberForceLengthCurve& fpeCurve = get_FiberForceLengthCurve();
+
+        //Evaluate the active-force-length and force-velocity multipliers
+        double fal  = falCurve.calcValue(lceN);
+        double fv   = get_ForceVelocityCurve().calcValue(dlceN);
+        double fiso = getMaxIsometricForce();
+        double fpe  = fpeCurve.calcValue(lceN);
+
+        //Evaluate the pennation angle
+        double phi = penMdl.calcPennationAngle(lceN);
+
+        //Compute the active fiber force
+        Vec4 fiberForceV = calcFiberForce(fiso,ca,fal,fv,fpe,dlceN);
+        double fa = fiberForceV[1];
+        activeFiberForce = fa * cos(phi);
+
+    } catch(const std::exception &x) {
+        std::string msg = "Exception caught in: " + getName()
+                            + ":calcActiveFiberForceAlongTendon\n" + x.what();
+        throw OpenSim::Exception(msg);
+    }
+  
+    return activeFiberForce;
+}
+
+SimTK::Vec4 Millard2012EquilibriumMuscle::
+calcFiberStateGivenBoundaryCond(double lengthMT,
+                                double velocityMT,
+                                double tendonForce,
+                                double dTendonForceDT) const
+{
+    SimTK::Vec4 output;
+
+    output[0] = 0;
+    output[1] = 0;
+    output[2] = 0;
+    output[3] = 0;
+
+    double a, lt{}, vt{}, lm, vm, phi /*, dphidt = 0*/;
+    double ltN{}, lmN, vmN = 0;
+
+    try {
+        //1. Compute tendon length given F
+        if(!get_ignore_tendon_compliance() && tendonForce > 0) {
+            //Use Newton's method to solve for the strain of the tendon
+            const TendonForceLengthCurve& fseCurve =
+                get_TendonForceLengthCurve();
+
+            //Good initial guess at the tendon length
+            lt = getTendonSlackLength()*
+                 (1 + fseCurve.getStrainAtOneNormForce()*
+                  tendonForce/getMaxIsometricForce());
+
+            double tol = 1e-8*getMaxIsometricForce();
+            if(tol < SimTK::SignificantReal*100) {
+                tol = SimTK::SignificantReal*100;
+            }
+
+            int maxIter = 100;
+            int iter = 0;
+            double err = 1e10;
+            double derr_dtlN = 0;
+
+            ltN = lt/getTendonSlackLength();
+            double delta_ltN = 0;
+
+            while(abs(err) > tol && iter < maxIter) {
+                //Compute error
+                err = fseCurve.calcValue(ltN)*getMaxIsometricForce()
+                      - tendonForce;
+                derr_dtlN = fseCurve.calcDerivative(ltN,1) *
+                            getMaxIsometricForce();
+
+                //Check tolerance; take a Newton step if possible
+                if(abs(err) > tol && abs(derr_dtlN) > SimTK::SignificantReal) {
+                   delta_ltN = -err / derr_dtlN;
+                   if(abs(delta_ltN) > 0.5*fseCurve.getStrainAtOneNormForce()) {
+                        delta_ltN = 0.5*fseCurve.getStrainAtOneNormForce();
+                   }
+                   ltN = ltN + delta_ltN;
+                }
+                iter++;
+            }
+
+            if(abs(err) <= tol) {
+                lt = ltN*getTendonSlackLength();
+            } else {
+                lt = SimTK::NaN;
+            }
+
+        } else {
+            if(get_ignore_tendon_compliance()) {        // rigid tendon
+                lt  = getTendonSlackLength();
+                ltN = 1.0;
+            } else if(tendonForce <= 0) {               // slack elastic tendon
+                lt  = lengthMT - penMdl.getMinimumFiberLengthAlongTendon();
+                ltN = lt/getTendonSlackLength();
+            }
+        }
+
+        //If we have a valid tendon length, proceed
+        if(!SimTK::isNaN(lt)) {
+
+            //2. Compute tendon stretch velocity given dF/dt
+            //   Due to the equilibrium assumption
+            //     tendonForce = k*(lt - lt0)
+            //     dtendonForce/dt = k*(dlt_dt)
+            if(!get_ignore_tendon_compliance() && tendonForce > 0) {
+                const TendonForceLengthCurve& fseCurve =
+                    get_TendonForceLengthCurve();
+                double ktN = fseCurve.calcDerivative(ltN,1);
+                double kt = ktN*(getMaxIsometricForce()
+                            /getTendonSlackLength());
+                vt = dTendonForceDT / kt;
+            } else {
+                if(get_ignore_tendon_compliance()) {  // rigid tendon
+                    vt = 0;
+                }else if(tendonForce <= 0) {          //buckling elastic tendon
+                    vt = velocityMT;
+                }
+            }
+
+            //3. Compute fiber length, pennation angle
+            lm  = penMdl.calcFiberLength(lengthMT,lt);
+            lmN = lm/getOptimalFiberLength();
+            phi = penMdl.calcPennationAngle(lm);
+
+            //4. Compute fiber velocity, pennation angular velocity
+            vm  = penMdl.calcFiberVelocity( cos(phi), velocityMT,vt);
+            vmN = vm / (getOptimalFiberLength()*getMaxContractionVelocity());
+
+            //5. Compute activation
+            const ActiveForceLengthCurve& falCurve =
+                get_ActiveForceLengthCurve();
+            //fvCurve is a private member object
+            const FiberForceLengthCurve& fpeCurve = get_FiberForceLengthCurve();
+
+            double fal = falCurve.calcValue(lmN);
+            double fpe = fpeCurve.calcValue(lmN);
+            double fv  = get_ForceVelocityCurve().calcValue(vmN);
+            a = calcActivation(getMaxIsometricForce(),tendonForce,
+                               cos(phi),fal,fv,fpe,vmN);
+
+            //6. Populate output vector
+            output[0] = a;
+            output[1] = lmN;
+            output[2] = phi;
+            output[3] = vmN;
+        }
+
+    } catch(const std::exception &x) {
+        std::string msg = "Exception caught in: " + getName()
+                          + ":calcFiberStateGivenBoundaryCond\n" + x.what();
+        throw OpenSim::Exception(msg);
+    }
+    return output;
+}
+
+double Millard2012EquilibriumMuscle::
+calcInextensibleTendonActiveFiberForce(SimTK::State& s,
+                                       double aActivation) const
+{
+    double inextensibleTendonActiveFiberForce = 0.0;
+    try {
+        double lm    = getLength(s);
+        double dlm   = getLengtheningSpeed(s);
+        double ltslk = getTendonSlackLength();
+        double dlt   = 0.0; //inextensible tendon
+        double lce   = penMdl.calcFiberLength(lm,ltslk);
+        double phi   = penMdl.calcPennationAngle(lce);
+        double dlce  = penMdl.calcFiberVelocity(cos(phi),dlm,dlt);
+
+        if(!SimTK::isNaN(dlce)) {
+            inextensibleTendonActiveFiberForce =
+                calcActiveFiberForceAlongTendon(aActivation,lce,dlce);
+        }
+    } catch(const std::exception &x) {
+        std::string msg = "Exception caught in: " + getName()
+                          + ":calcInextensibleTendonActiveFiberForce\n"
+                          + x.what();
+        throw OpenSim::Exception(msg);
+    }
+    return inextensibleTendonActiveFiberForce;
+}
+
+//==============================================================================
+// XXXXXXXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED  XXXXXXXXXXXXXXXXXXXXXXXXX
+//==============================================================================

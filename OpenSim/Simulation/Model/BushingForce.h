@@ -170,7 +170,7 @@ private:
                                                                     const override;
 
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 //==============================================================================
 };  // END of class BushingForce
 //==============================================================================

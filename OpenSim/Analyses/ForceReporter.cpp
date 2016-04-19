@@ -52,9 +52,10 @@ ForceReporter::~ForceReporter()
  *
  * @param aModel Model for which the Forces are to be recorded.
  */
-ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(Model *aModel) :   
+    Analysis(aModel),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     // NULL
     setNull();
@@ -75,9 +76,10 @@ ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
  *
  * @param aFileName File name of the document.
  */
-ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, false),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(const std::string &aFileName): 
+    Analysis(aFileName, false),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     setNull();
 
@@ -99,8 +101,8 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
  */
 ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
     Analysis(aForceReporter),
-    _forceStore(aForceReporter._forceStore),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(aForceReporter._forceStore)
 {
     setNull();
     // COPY TYPE AND NAME

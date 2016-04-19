@@ -301,9 +301,7 @@ directory to your `PATH` environment variable.
 * In **PowerShell**, *run as Administrator* --
 
  ```powershell
- choco install python
- choco install jdk8
- choco install swig
+ choco install python2 jdk8 swig
  ```
 * In **PowerShell** --
 

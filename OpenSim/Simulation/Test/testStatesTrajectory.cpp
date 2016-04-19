@@ -26,6 +26,7 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <random>
 #include <cstdio>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -54,37 +55,76 @@ Real getStorageEntry(const Storage& sto,
     return value;
 }
 
-void testPopulateTrajectory() {
+void testPopulateTrajectoryAndStatesTrajectoryReporter() {
     Model model("gait2354_simbody.osim");
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
 
-    auto& state = model.initSystem();
+    // Also, test the StatesTrajectoryReporter.
+    auto* statesCol = new StatesTrajectoryReporter();
+    statesCol->setName("states_collector_all_steps");
+    model.addComponent(statesCol);
 
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-    SimTK::TimeStepper ts(model.getSystem(), integrator);
-    ts.initialize(state);
-    ts.setReportAllSignificantStates(true);
-    integrator.setReturnEveryInternalStep(true);
-
-    StatesTrajectory states;
-    const double finalTime = 0.05;
-    std::vector<double> times;
-    while (ts.getState().getTime() < finalTime) {
-        ts.stepTo(finalTime);
-        times.push_back(ts.getState().getTime());
-        // StatesTrajectory API for appending states:
-        states.append(ts.getState());
+        const double finalTime = 0.05;
+    {
+        auto& state = model.initSystem();
+    
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        SimTK::TimeStepper ts(model.getSystem(), integrator);
+        ts.initialize(state);
+        ts.setReportAllSignificantStates(true);
+        integrator.setReturnEveryInternalStep(true);
+    
+        StatesTrajectory states;
+        std::vector<double> times;
+        while (ts.getState().getTime() < finalTime) {
+            ts.stepTo(finalTime);
+            times.push_back(ts.getState().getTime());
+            // StatesTrajectory API for appending states:
+            states.append(ts.getState());
+            // For the StatesTrajectoryReporter:
+            model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
+        }
+    
+        // Make sure we have all the states
+        SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
+        SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
+        // ...and that they aren't all just references to the same single state.
+        for (int i = 0; i < states.getSize(); ++i) {
+            SimTK_TEST_EQ(states[i].getTime(), times[i]);
+            SimTK_TEST_EQ(statesCol->getStates()[i].getTime(), times[i]);
+        }
     }
 
-    // Make sure we have all the states
-    SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
-    // ...and that they aren't all just references to the same single state.
-    for (int i = 0; i < states.getSize(); ++i) {
-        SimTK_TEST_EQ(states[i].getTime(), times[i]);
-    }
+    // Test the StatesTrajectoryReporter with a constant reporting interval.
+    statesCol->clear();
+    auto* statesColInterval = new StatesTrajectoryReporter();
+    statesColInterval->setName("states_collector_interval");
+    statesColInterval->set_report_time_interval(0.01);
+    model.addComponent(statesColInterval);
 
+    {
+        auto& state = model.initSystem();
+        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        SimTK::TimeStepper ts(model.getSystem(), integrator);
+        ts.initialize(state);
+        ts.setReportAllSignificantStates(true);
+        integrator.setReturnEveryInternalStep(true);
+
+        while (ts.getState().getTime() < finalTime) {
+            ts.stepTo(finalTime);
+            model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
+        }
+
+        SimTK_TEST(statesColInterval->getStates().getSize() == 6);
+        std::vector<double> times { 0, 0.01, 0.02, 0.03, 0.04, 0.05 };
+        int i = 0;
+        for (const auto& s : statesColInterval->getStates()) {
+            ASSERT_EQUAL(s.getTime(), times[i], 1e-5);
+            ++i;
+        }
+    }
 }
 
 void testFrontBack() {
@@ -493,7 +533,7 @@ void testCopying() {
         // Ideally we'd check for equality (operator==()), but State does not
         // have an equality operator.
         SimTK_TEST_EQ((int)statesCopyConstruct.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyConstruct[i].getTime(), states[i].getTime());
         }
     }
@@ -502,7 +542,7 @@ void testCopying() {
         StatesTrajectory statesCopyAssign;
         statesCopyAssign = states;
         SimTK_TEST_EQ((int)statesCopyAssign.getSize(), (int)states.getSize());
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (size_t i = 0; i < states.getSize(); ++i) {
             SimTK_TEST_EQ(statesCopyAssign[i].getTime(), states[i].getTime());
         }
     }
@@ -539,9 +579,9 @@ void testBoundsCheck() {
         states[4];
         states[5];
     #endif
-    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange<size_t>);
+    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
     SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
-            IndexOutOfRange<size_t>);
+                              IndexOutOfRange);
 }
 
 void testIntegrityChecks() {
@@ -648,7 +688,7 @@ void tableAndTrajectoryMatch(const Model& model,
 
     const auto stateNames = model.getStateVariableNames();
 
-    int numColumns = -1;
+    size_t numColumns{};
     if (columns.empty()) {
         numColumns = stateNames.getSize();
     } else {
@@ -660,19 +700,19 @@ void tableAndTrajectoryMatch(const Model& model,
     const auto& colNames = table.getColumnLabels();
 
     // Test that the data table has exactly the same numbers.
-    for (int itime = 0; itime < states.getSize(); ++itime) {
+    for (size_t itime = 0; itime < states.getSize(); ++itime) {
         // Test time.
         SimTK_TEST(table.getIndependentColumn()[itime] ==
                    states[itime].getTime());
 
         // Test state values.
-        for (int icol = 0; icol < table.getNumColumns(); ++icol) {
+        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
             const auto& stateName = colNames[icol];
 
             const auto& valueInStates = model.getStateVariableValue(
                     states[itime], stateName);
             const auto& column = table.getDependentColumnAtIndex(icol);
-            const auto& valueInTable = column[itime];
+            const auto& valueInTable = column[static_cast<int>(itime)];
 
             SimTK_TEST(valueInStates == valueInTable);
         }
@@ -734,7 +774,7 @@ int main() {
         // generate it later and we don't want to use a stale one by accident.
         remove(statesStoFname.c_str());
 
-        SimTK_SUBTEST(testPopulateTrajectory);
+        SimTK_SUBTEST(testPopulateTrajectoryAndStatesTrajectoryReporter);
         SimTK_SUBTEST(testFrontBack);
         SimTK_SUBTEST(testBoundsCheck);
         SimTK_SUBTEST(testIntegrityChecks);
