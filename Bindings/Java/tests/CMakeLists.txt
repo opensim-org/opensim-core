@@ -73,7 +73,7 @@ macro(OpenSimAddJavaTest TESTNAME)
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             set_tests_properties(Java_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
                 "PATH=${CMAKE_BINARY_DIR}/${cfg}"
-                TIMEOUT 40)
+                TIMEOUT 30)
             # Timeout (seconds) is because Java might hang if it can't find
             # the DLL's.
         endforeach()
