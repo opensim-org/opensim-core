@@ -1,4 +1,3 @@
-
 //osimActuators
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/CoordinateActuator.h>
