@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
+      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
     - os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
+      env: BTYPE=Release WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=Release WRAP=off DOXY=off NPROC=3 DEPLOY=yes
 
 env:
   global:
