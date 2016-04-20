@@ -86,6 +86,9 @@ public:
         _table{table} 
     {}
 
+    /// \name Get/Set underlying TimeSeriesTable_
+    /// @{
+
     /** Get a read-only reference to the TimeSeriesTable_ this TableSource_ 
     currently holds.                                                          */
     const Table& getTable() const {
@@ -103,6 +106,8 @@ public:
         for(const auto& columnLabel : _table.getColumnLabels())
             columnOutput.addChannel(columnLabel);
     }
+
+    /// @}
 
 protected:
     /** Retrieve value of a column at a given time(implicit in the State 
