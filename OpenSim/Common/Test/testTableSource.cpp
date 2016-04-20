@@ -134,7 +134,7 @@ private:
 
 
 template<typename RowVec>
-void assertEqual(RowVec a, RowVec b) {
+void assertEqual(const RowVec& a, const RowVec& b) {
     assert(a.nrow() == b.nrow());
     assert(a.ncol() == b.ncol());
     for(int i = 0; i < a.ncol(); ++i)
