@@ -54,9 +54,9 @@ This Component has two outputs:
 - A non-list output for a row of the TimeSeriesTable_.
 
 Construct this Component by giving it a TimeSeriesTable_. Then use it by 
-connecting its output to the input of another Component that accepts one. Make
-sure to populate the column-labels of the TimeSeriesTable_ before connecting
-this Component to the input of another Component.    
+connecting its output to the Input of another Component that accepts compatible
+type of Input. Make sure to populate the column-labels of the TimeSeriesTable_ 
+before connecting this Component to the input of another Component.    
 
 \tparam ET Type of each element of the TimeSeriesTable_ this Component 
            represents.                                                        */
