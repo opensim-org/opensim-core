@@ -96,7 +96,7 @@ public:
             auto nextElt = _table.getMatrix().getElt(lb - timeCol.begin(), 
                                                      colInd);
             auto elt = ((time - prevTime) / (nextTime - prevTime)) * 
-                       (nextElt - prevElt);
+                       (nextElt - prevElt) + prevElt;
             return elt;
         }
     }
@@ -123,7 +123,7 @@ public:
             auto prevRow = _table.getRowAtIndex(lb - 1 - timeCol.begin());
             auto nextRow = _table.getRowAtIndex(lb - timeCol.begin());
             auto row = ((time - prevTime) / (nextTime - prevTime)) * 
-                       (nextRow - prevRow);
+                       (nextRow - prevRow) + prevRow;
             return row.getAsVector();
         }
     }
