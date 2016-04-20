@@ -1,5 +1,5 @@
-#ifndef __PathPoint_h__
-#define __PathPoint_h__
+#ifndef OPENSIM_PATH_POINT_H_
+#define OPENSIM_PATH_POINT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  PathPoint.h                            *
  * -------------------------------------------------------------------------- *
@@ -25,25 +25,14 @@
 
 
 // INCLUDE
+#include "OpenSim/Simulation/Model/Point.h"
+#include "OpenSim/Simulation/Model/Station.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Object.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
 class PhysicalFrame;
 class Model;
-class Geometry;
 class GeometryPath;
 class SimbodyEngine;
 class WrapObject;
@@ -56,28 +45,23 @@ class WrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathPoint : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Object);
+
+//Preserve old PathPoint behavior while basing on concrete Points
+
+class OSIMSIMULATION_API PathPoint : public Station {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Station);
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
 
-   const Model* _model;
-
-   PropertyDblVec3 _locationProp;
-   SimTK::Vec3 &_location;
-
-    PropertyStr _bodyNameProp;
-   std::string &_bodyName;
-
-
-    const PhysicalFrame* _body;
-
     GeometryPath* _path; // the path that owns this location point
+
+    // TODO: Remove this temporary hack to support transition to new Component
+    // interface and properties handling.
+    SimTK::Vec3 _location;
+
 
 //=============================================================================
 // METHODS
@@ -86,68 +70,103 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    PathPoint();
-    PathPoint(const PathPoint &aPoint);
-    virtual ~PathPoint();
+    PathPoint() :  Station() {
+        _location = this->get_location();
+    }
 
-#ifndef SWIG
-    PathPoint& operator=(const PathPoint &aPoint);
-#endif
+    virtual void init(const PathPoint& point) {
+        *this = point;
+    }
    void copyData(const PathPoint &aPoint);
-    virtual void init(const PathPoint& aPoint);
 
 #ifndef SWIG
     const SimTK::Vec3& getLocation() const { return _location; }
 #endif
     SimTK::Vec3& getLocation()  { return _location; }
 
-    const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
-    void setLocationCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _location[aXYZ]=aValue; }
-    // A variant that uses basic types for use by GUI
+    const double& getLocationCoord(int aXYZ) const {
+        assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ];
+    }
 
-    void setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation);
-    void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation);
+    // A variant that uses basic types for use by GUI
+    void setLocationCoord(int aXYZ, double aValue) {
+        assert(aXYZ>=0 && aXYZ<=2);
+        _location[aXYZ]=aValue;
+    }
+
+    void setLocation( const SimTK::State& s, const SimTK::Vec3& location) {
+        _location = location;
+    }
+    void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation) {
+        if (aCoordIndex >= 0 && aCoordIndex <= 2)
+            _location[aCoordIndex] = aLocation;
+    }
     void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
-    void setBody(const PhysicalFrame& aBody);
-    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody);
+    void setBody(const PhysicalFrame& body) {
+        this->setParentFrame(body);
+    }
 
-    const PhysicalFrame& getBody() const { return *_body; }
-    const std::string& getBodyName() const { return _bodyName; }
+    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& body){
+        if (!hasParent()) {
+            throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+                " change the body on PathPoint which was not assigned to a body.");
+        }
+        // if it is already assigned to aBody, do nothing
+        const PhysicalFrame& currentFrame = getParentFrame();
+
+        if (currentFrame == body)
+            return;
+
+        // Preserve location means to switch bodies without changing
+        // the location of the point in the inertial reference frame.
+        _location = currentFrame.findLocationInAnotherFrame(s, _location, body);
+
+        // now assign this point's body to point to aBody
+        setParentFrame(body);
+    }
+
+    const PhysicalFrame& getBody() const { return getParentFrame(); }
+    const std::string& getBodyName() const { return getParentFrame().getName(); }
+
     GeometryPath* getPath() const { return _path; }
 
-    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
+    virtual void scale(const SimTK::State& s, const SimTK::Vec3& scaleFactors) {
+        for (int i = 0; i < 3; i++)
+            _location[i] *= scaleFactors[i];
+    }
+
     virtual const WrapObject* getWrapObject() const { return NULL; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
-    virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
+    virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) {};
     virtual void update(const SimTK::State& s) { }
 
     // get the relative velocity of the path point with respect to the body
     // it is connected to.
-    virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
+    virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& velocity) {
+        velocity[0] = velocity[1] = velocity[2] = 0.0;
+    }
     // get the partial of the point location w.r.t. to the coordinates (Q)
     // it is dependent on.
     virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
         { return SimTK::Vec3(0); }
 
-    virtual void updateGeometry();
+    virtual void updateGeometry() {}
 
     // Utility
-    static PathPoint* makePathPointOfType(PathPoint* aPoint, const std::string& aNewTypeName);
+    static PathPoint* makePathPointOfType(PathPoint* aPoint,
+        const std::string& aNewTypeName);
+
     static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 
-protected:
+//=============================================================================
+};  // END of class PathPoint_
+//=============================================================================
+//=============================================================================
 
-private:
-    void setNull();
-    void setupProperties();
-//=============================================================================
-};  // END of class PathPoint
-//=============================================================================
-//=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __PathPoint_h__
+#endif // OPENSIM_PATH_POINT_H_
