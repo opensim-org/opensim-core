@@ -44,15 +44,30 @@ public:
 
         addMessage(msg);
     }
-};
+}; // class TimeOutOfRange
 
 
+/** Component representing a source of data from a TimeSeriesTable_.
+
+This Component has two outputs:
+* A list output wih one channel per column of the TimeSeriesTable_. 
+* A non-list output for a row of the TimeSeriesTable_.
+
+Construct this Component by giving it a TimeSeriesTable_. Then use it by 
+connecting its output to the input of another Component that accepts one. Make
+sure to populate the column-labels of the TimeSeriesTable_ before connecting
+this Component to the input of another Component.    
+
+\tparam ET Type of each element of the TimeSeriesTable_ this Component 
+           represents.                                                        */
 template<typename ET>
 class TableSource_ : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
+    /** Type of the TimeSeriesTable_ this Component will hold.                */
     typedef TimeSeriesTable_<ET> Table;
+    /** Type of the 'row' Output of this Component.                           */
     typedef SimTK::Vector_<ET>   Vector;
 
     OpenSim_DECLARE_OUTPUT(row, Vector, getRowAtTime, 
@@ -66,10 +81,40 @@ public:
     TableSource_& operator=(const TableSource_&) = default;
     TableSource_& operator=(TableSource_&&)      = default;
     
+    /** Construct the TableSource_ by giving it a TimeSeriesTable_ to hold.   */
     TableSource_(const Table& table) : 
         _table{table} 
     {}
 
+    /** Get a read-only reference to the TimeSeriesTable_ this TableSource_ 
+    currently holds.                                                          */
+    const Table& getTable() const {
+        return _table;
+    }
+
+    /** Replace the existing TimeSeriesTable_ this TableSource_ currently 
+    holds.                                                                    
+
+    \throws KeyNotFound If table provided does not have column-labels.        */
+    void setTable(const Table& table) {
+        _table = table;
+        auto& columnOutput = updOutput("column");
+        columnOutput.clearChannels();
+        for(const auto& columnLabel : _table.getColumnLabels())
+            columnOutput.addChannel(columnLabel);
+    }
+
+protected:
+    /** Retrieve value of a column at a given time(implicit in the State 
+    provided). Linear interpolation is performed if the TimeSeriesTable_ does
+    not contain an entry for the time mentioned by the state.
+
+    \throws EmptyTable If the TimeSeriesTable_ this TableSource_ holds is 
+                       currently empty.
+    \throws TimeOutOfRange If the time specified by the State is either less 
+                           than the smallest timestamp or greater than the 
+                           largest timestamp in the TimeSeriesTable_.
+    \throws KeyNotFound If TimeSeriesTable_ does not have column-labels.      */
     ET getColumnAtTime(const SimTK::State& state, 
                        const std::string& columnLabel) const {
         OPENSIM_THROW_IF(_table.getNumRows() == 0, EmptyTable);
@@ -101,6 +146,15 @@ public:
         }
     }
 
+    /** Retrieve a row of the TimeSeriesTable_ at a given time (specified by the
+    state). Linear interpolation is performed if the TimeSeriesTable_ does not
+    have an entry for the time mentioned by the state.
+
+    \throws EmptyTable If the TimeSeriesTable_ this TableSource_ holds is 
+                       currently empty.
+    \throws TimeOutOfRange If the time specified by the State is either less 
+                           than the smallest timestamp or greater than the 
+                           largest timestamp in the TimeSeriesTable_.         */
     Vector getRowAtTime(const SimTK::State& state) const {
         OPENSIM_THROW_IF(_table.getNumRows() == 0, EmptyTable);
         const auto& timeCol = _table.getIndependentColumn();
@@ -128,19 +182,6 @@ public:
         }
     }
 
-    const Table& getTable() const {
-        return _table;
-    }
-
-    void setTable(const Table& table) {
-        _table = table;
-        auto& columnOutput = updOutput("column");
-        columnOutput.clearChannels();
-        for(const auto& columnLabel : _table.getColumnLabels())
-            columnOutput.addChannel(columnLabel);
-    }
-
-protected:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         auto& columnOutput = updOutput("column");
@@ -150,9 +191,17 @@ protected:
 
 private:
     Table _table;
-};
+}; // class TableSource_
 
+
+/** This TableSource_ can hold a TimeSeriesTable_<SimTK::Real> and so its 
+list-output 'column' will have channels of type SimTK::Real (double). Its other
+output 'row' will be of type SimTK::Vector_<SimTK::Real>.                     */
 typedef TableSource_<SimTK::Real> TableSource;
+
+/** This TableSource_ can hold a TimeSeriesTable_<SimTK::Vec3> and so its 
+list-output 'column' will have channels of type SimTK::Vec3. Its other output
+'row' will be of type SimTK::Vector_<SimTK::Vec3>.                            */
 typedef TableSource_<SimTK::Vec3> TableSourceVec3;
 
 } // namespace Opensim
