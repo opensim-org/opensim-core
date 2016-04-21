@@ -55,13 +55,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Station);
 // DATA
 //=============================================================================
 protected:
-
-    GeometryPath* _path; // the path that owns this location point
-
-    // TODO: Remove this temporary hack to support transition to new Component
-    // interface and properties handling.
-    SimTK::Vec3 _location;
-
+    // the path that owns this path point
+    SimTK::ReferencePtr<GeometryPath> _path; 
 
 //=============================================================================
 // METHODS
@@ -70,38 +65,40 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    PathPoint() :  Station() {
-        _location = this->get_location();
-    }
+    PathPoint() : Station() {}
 
     virtual void init(const PathPoint& point) {
         *this = point;
+        copyData(point);
     }
    void copyData(const PathPoint &aPoint);
 
 #ifndef SWIG
-    const SimTK::Vec3& getLocation() const { return _location; }
+    const SimTK::Vec3& getLocation() const { return get_location(); }
 #endif
-    SimTK::Vec3& getLocation()  { return _location; }
+    SimTK::Vec3& getLocation()  { return upd_location(); }
 
     const double& getLocationCoord(int aXYZ) const {
-        assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ];
+        assert(aXYZ>=0 && aXYZ<=2); return get_location()[aXYZ];
     }
 
     // A variant that uses basic types for use by GUI
     void setLocationCoord(int aXYZ, double aValue) {
         assert(aXYZ>=0 && aXYZ<=2);
-        _location[aXYZ]=aValue;
+        upd_location()[aXYZ]=aValue;
     }
 
     void setLocation( const SimTK::State& s, const SimTK::Vec3& location) {
-        _location = location;
+        // TODO this is completely wrong to be taking a state and changing a property!
+        upd_location() = location;
     }
     void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation) {
         if (aCoordIndex >= 0 && aCoordIndex <= 2)
-            _location[aCoordIndex] = aLocation;
+           upd_location()[aCoordIndex] = aLocation;
     }
-    void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
+
+    // A variant that uses basic types for use by GUI
+    void setLocation( const SimTK::State& s, double pt[]){ 
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
     void setBody(const PhysicalFrame& body) {
@@ -121,7 +118,7 @@ public:
 
         // Preserve location means to switch bodies without changing
         // the location of the point in the inertial reference frame.
-        _location = currentFrame.findLocationInAnotherFrame(s, _location, body);
+        upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
 
         // now assign this point's body to point to aBody
         setParentFrame(body);
@@ -130,17 +127,17 @@ public:
     const PhysicalFrame& getBody() const { return getParentFrame(); }
     const std::string& getBodyName() const { return getParentFrame().getName(); }
 
-    GeometryPath* getPath() const { return _path; }
+    GeometryPath* getPath() const { return _path.get(); }
 
     virtual void scale(const SimTK::State& s, const SimTK::Vec3& scaleFactors) {
         for (int i = 0; i < 3; i++)
-            _location[i] *= scaleFactors[i];
+            upd_location()[i] *= scaleFactors[i];
     }
 
     virtual const WrapObject* getWrapObject() const { return NULL; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
-    virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) {};
+    virtual void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
     virtual void update(const SimTK::State& s) { }
 
     // get the relative velocity of the path point with respect to the body
@@ -161,6 +158,7 @@ public:
 
     static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
 //=============================================================================
 };  // END of class PathPoint_
 //=============================================================================

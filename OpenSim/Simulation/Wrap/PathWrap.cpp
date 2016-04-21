@@ -114,7 +114,7 @@ void PathWrap::setupProperties()
 }
 
 
-void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
+void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
 {
     _path = &aPath;
 

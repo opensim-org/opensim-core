@@ -144,13 +144,9 @@ void PathActuator::addNewPathPoint(
          const std::string& proposedName, 
          PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
-    // Create new PathPoint
+    // Create new PathPoint already appended to the PathPointSet for the path
     PathPoint* newPathPoint = updGeometryPath()
         .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
-    // Set offset/position on owner body
-    newPathPoint->setName(proposedName);
-    for (int i=0; i<3; i++) // Use interface that does not depend on state
-        newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
 }
 
 //=============================================================================

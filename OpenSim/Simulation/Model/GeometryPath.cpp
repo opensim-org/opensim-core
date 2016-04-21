@@ -510,7 +510,7 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
     newPoint->setBody(aBody);
     Vec3& location = newPoint->getLocation();
     placeNewPathPoint(s, location, aIndex, aBody);
-    newPoint->connectToModelAndPath(getModel(), *this);
+    newPoint->connectToModelAndPath(updModel(), *this);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.
@@ -540,7 +540,7 @@ appendNewPathPoint(const std::string& proposedName,
     PathPoint* newPoint = new PathPoint();
     newPoint->setBody(aBody);
     newPoint->setName(proposedName);
-    for (int i=0; i<3; i++) newPoint->setLocationCoord(i, aPositionOnBody[i]);
+    newPoint->set_location(aPositionOnBody);
     upd_PathPointSet().adoptAndAppend(newPoint);
 
     return newPoint;
@@ -729,7 +729,7 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
     PathWrap* newWrap = new PathWrap();
     newWrap->setWrapObject(aWrapObject);
     newWrap->setMethod(PathWrap::hybrid);
-    newWrap->connectToModelAndPath(getModel(), *this);
+    newWrap->connectToModelAndPath(updModel(), *this);
     upd_PathWrapSet().adoptAndAppend(newWrap);
 }
 

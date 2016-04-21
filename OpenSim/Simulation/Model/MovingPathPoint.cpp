@@ -312,8 +312,7 @@ void MovingPathPoint::setZFunction( const SimTK::State& s, OpenSim::Function& aF
  *
  * @param aModel model containing this MovingPathPoint.
  */
-void MovingPathPoint::
-connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
+void MovingPathPoint::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
 {
     // base class
     Super::connectToModelAndPath(aModel, aPath);
@@ -375,25 +374,25 @@ void MovingPathPoint::update(const SimTK::State& s)
         const double xval = SimTK::clamp(_xCoordinate->getRangeMin(),
                                          _xCoordinate->getValue(s),
                                          _xCoordinate->getRangeMax());
-        _location[0] = _xLocation->calcValue(SimTK::Vector(1, xval));
+        upd_location()[0] = _xLocation->calcValue(SimTK::Vector(1, xval));
     } else // type == Constant
-        _location[0] = _xLocation->calcValue(SimTK::Vector(1, 0.0));
+        upd_location()[0] = _xLocation->calcValue(SimTK::Vector(1, 0.0));
 
     if (_yCoordinate) {
         const double yval = SimTK::clamp(_yCoordinate->getRangeMin(),
                                          _yCoordinate->getValue(s),
                                          _yCoordinate->getRangeMax());
-        _location[1] = _yLocation->calcValue(SimTK::Vector(1, yval));
+        upd_location()[1] = _yLocation->calcValue(SimTK::Vector(1, yval));
     } else // type == Constant
-        _location[1] = _yLocation->calcValue(SimTK::Vector(1, 0.0));
+        upd_location()[1] = _yLocation->calcValue(SimTK::Vector(1, 0.0));
 
     if (_zCoordinate) {
         const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
                                          _zCoordinate->getValue(s),
                                          _zCoordinate->getRangeMax());
-        _location[2] = _zLocation->calcValue(SimTK::Vector(1, zval));
+        upd_location()[2] = _zLocation->calcValue(SimTK::Vector(1, zval));
     } else // type == Constant
-        _location[2] = _zLocation->calcValue(SimTK::Vector(1, 0.0));
+        upd_location()[2] = _zLocation->calcValue(SimTK::Vector(1, 0.0));
 }
 
 //_____________________________________________________________________________

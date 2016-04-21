@@ -56,14 +56,27 @@ using SimTK::Transform;
  */
 void PathPoint::copyData(const PathPoint &aPoint)
 {
-    _location = aPoint._location;
+    cout << getConcreteClassName() << "::copyData()" << endl;
     _path = aPoint._path;
 }
+
+/* TODO: All Points should be Components that use Connectors
+* and extendConnect(). This must go away! -aseth
+*/
+void PathPoint::connectToModelAndPath(Model& model, GeometryPath& path)
+{
+    Super::connectToModel(model);
+    _path = &path;
+
+    cout << getConcreteClassName() << " connected to model " << model.getName();
+    cout << "and path " << path.getFullPathName();
+}
+
 
 PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewTypeName)
 {
     PathPoint* newPoint = NULL;
-
+    cout << "PathPoint::makePathPointOfType()" << endl;
     if (aPoint != NULL) {
         Object* newObject = Object::newInstanceOfType(aNewTypeName);
         if (newObject) {
@@ -76,5 +89,26 @@ PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewT
     }
 
     return newPoint;
+}
+
+void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+    using SimTK::Vec3;
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion < 30505) {
+            // replace old properties with latest use of Connectors
+            SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
+            std::string bodyName("");
+            if (bodyElement != aNode.element_end()) {
+                bodyElement->getValueAs<std::string>(bodyName);
+                XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "parent_frame", bodyName);
+
+                cout << getConcreteClassName() << " converted body property " << bodyName;
+                cout << " to Connector_PhysicalFrame_" << endl;
+            }
+        }
+    }
 }
 

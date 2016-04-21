@@ -103,7 +103,7 @@ public:
 
 #ifndef SWIG
     PathWrap& operator=(const PathWrap& aPathWrap);
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
+    void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
     void setStartPoint( const SimTK::State& s, int aIndex);
     void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
