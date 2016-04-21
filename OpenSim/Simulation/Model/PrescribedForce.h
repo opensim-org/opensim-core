@@ -89,11 +89,19 @@ public:
     /** These are three functions providing the x,y,z measure numbers of the
     torque vector being applied to the body. The coordinate frame in which
     this vector is interpreted depends on the "torqueIsGlobal" property. **/
+
     // Would have been better for this to be a list property. 
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
+    /** The force applied by the PrescribedForce, this depends only on time */
+    OpenSim_DECLARE_OUTPUT(force_applied, SimTK::Vec3, getForceApplied, SimTK::Stage::Time);
 
-//==============================================================================
+    /** The torque applied by the PrescribedForce, this depends only on time */
+    OpenSim_DECLARE_OUTPUT(torque_applied, SimTK::Vec3, getTorqueApplied, SimTK::Stage::Time);
+
+    /** The point where force is applied by the PrescribedForce, this depends only on time */
+    OpenSim_DECLARE_OUTPUT(point_of_application, SimTK::Vec3, getApplicationPoint, SimTK::Stage::Time);
+    //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     /**
@@ -236,8 +244,18 @@ public:
      * getRecordLabels() and should return same size Array.
      */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
+    /** Methods to support outputs */
+    SimTK::Vec3 getForceApplied(const SimTK::State& state) const {
+        return getForceAtTime(state.getTime());
+    }
 
+    SimTK::Vec3 getTorqueApplied(const SimTK::State& state) const {
+        return getTorqueAtTime(state.getTime());
+    }
 
+    SimTK::Vec3 getApplicationPoint(const SimTK::State& state) const {
+        return getPointAtTime(state.getTime());
+    }
 protected:
 
     /** Force interface. **/

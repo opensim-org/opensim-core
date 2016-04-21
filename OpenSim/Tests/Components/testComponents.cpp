@@ -74,6 +74,8 @@ int main()
         availableComponents.push_back(availableBushingForces[i]);
     }
 
+    // Test PrescribedForce
+    availableComponents.push_back(new PrescribedForce());
     // continue with other Constraints, Forces, Actuators, ...
     //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;

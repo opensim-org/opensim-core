@@ -396,9 +396,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const PhysicalFrame& frame =
         getConnector<PhysicalFrame>("frame").getConnectee();
     if (appliesForce) {
-        Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                   forceFunctions[1].calcValue(timeAsVector), 
-                   forceFunctions[2].calcValue(timeAsVector));
+        Vec3 force = getForceApplied(state);
         if (!forceIsGlobal)
             engine.transform(state, frame, force,
                              getModel().getGround(), force);
@@ -406,9 +404,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
             //applyForce(*_body, force);
             for (int i=0; i<3; i++) values.append(force[i]);
         } else {
-            Vec3 point(pointFunctions[0].calcValue(timeAsVector), 
-                       pointFunctions[1].calcValue(timeAsVector), 
-                       pointFunctions[2].calcValue(timeAsVector));
+            Vec3 point = getApplicationPoint(state);
             if (pointIsGlobal)
                 engine.transformPosition(state, getModel().getGround(), point, 
                     frame, point);
@@ -418,9 +414,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
         }
     }
     if (appliesTorque) {
-        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                    torqueFunctions[1].calcValue(timeAsVector), 
-                    torqueFunctions[2].calcValue(timeAsVector));
+        Vec3 torque = getTorqueApplied(state);
         if (!forceIsGlobal)
             engine.transform(state, frame, torque,
                              getModel().getGround(), torque);
