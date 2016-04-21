@@ -75,7 +75,8 @@ int main()
     }
 
     // Test PrescribedForce
-    availableComponents.push_back(new PrescribedForce());
+    std::unique_ptr<PrescribedForce> f(new PrescribedForce());
+    availableComponents.push_back(f.get());
     // continue with other Constraints, Forces, Actuators, ...
     //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
