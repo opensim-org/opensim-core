@@ -41,5 +41,5 @@ endforeach()
 
 add_executable(XsensImuStreaming ImuStreaming.cpp)
 target_link_libraries(XsensImuStreaming 
-	osimCommon osimSimulation osimTools ${XSENS_LIBRARIES})
+    osimCommon osimSimulation osimTools ${XSENS_LIBRARIES})
 add_dependencies(XsensImuStreaming ${XSENS_DLL_TARGETS})
