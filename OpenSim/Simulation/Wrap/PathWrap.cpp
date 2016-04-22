@@ -44,7 +44,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 PathWrap::PathWrap() :
-    Object(),
+    Component(),
     _wrapObjectName(_wrapObjectNameProp.getValueStr()),
     _methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
@@ -68,7 +68,7 @@ PathWrap::~PathWrap()
  * @param aPathWrap PathWrap to be copied.
  */
 PathWrap::PathWrap(const PathWrap& aPathWrap) :
-    Object(aPathWrap),
+    Component(aPathWrap),
     _wrapObjectName(_wrapObjectNameProp.getValueStr()),
     _methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
@@ -124,18 +124,18 @@ void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
         if (wo) {
             _wrapObject = wo;
-            _wrapPoints[0].setBody(wo->getBody());
-            _wrapPoints[0].setWrapObject(wo);
-            _wrapPoints[1].setBody(wo->getBody());
-            _wrapPoints[1].setWrapObject(wo);
+            updWrapPoint1().setBody(wo->getBody());
+            updWrapPoint1().setWrapObject(wo);
+            updWrapPoint2().setBody(wo->getBody());
+            updWrapPoint2().setWrapObject(wo);
             break;
         }
     }
 
     // connectToModelAndPath() must be called after setBody() because it requires
     // that _bodyName already be assigned.
-    _wrapPoints[0].connectToModelAndPath(aModel, aPath);
-    _wrapPoints[1].connectToModelAndPath(aModel, aPath);
+    updWrapPoint1().connectToModelAndPath(aModel, aPath);
+    updWrapPoint2().connectToModelAndPath(aModel, aPath);
 
     if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
         _method = hybrid;
@@ -167,8 +167,8 @@ void PathWrap::copyData(const PathWrap& aPathWrap)
     _wrapObject = aPathWrap._wrapObject;
     _previousWrap = aPathWrap._previousWrap;
 
-    _wrapPoints[0] = aPathWrap._wrapPoints[0];
-    _wrapPoints[1] = aPathWrap._wrapPoints[1];
+    updWrapPoint1() = aPathWrap.getWrapPoint1();
+    updWrapPoint2() = aPathWrap.getWrapPoint2();
 }
 
 //=============================================================================
@@ -190,16 +190,6 @@ PathWrap& PathWrap::operator=(const PathWrap& aPathWrap)
     return(*this);
 }
 
-PathWrapPoint& PathWrap::getWrapPoint(int aIndex)
-{
-    if (aIndex < 0 || aIndex > 1)
-    {
-        // TODO string errorMessage = "PathWrap::getWrapPoint(): invalid index (" + aIndex + ")";
-        // throw Exception(errorMessage);
-    }
-
-    return _wrapPoints[aIndex];
-}
 
 void PathWrap::setStartPoint( const SimTK::State& s, int aIndex)
 {

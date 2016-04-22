@@ -57,8 +57,8 @@ class GeometryPath;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrap : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Object);
+class OSIMSIMULATION_API PathWrap : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Component);
 
 //=============================================================================
 // DATA
@@ -88,7 +88,12 @@ protected:
 
     WrapResult _previousWrap;  // results from previous wrapping
 
-    PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
+    //PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
+
+    MemberSubcomponentIndex _wrapPoint1Ix {
+        constructSubcomponent<PathWrapPoint>("pwpt1") };
+    MemberSubcomponentIndex _wrapPoint2Ix {
+        constructSubcomponent<PathWrapPoint>("pwpt2") };
 
 //=============================================================================
 // METHODS
@@ -113,7 +118,21 @@ public:
     const std::string& getWrapObjectName() const { return _wrapObjectName; }
     const WrapObject* getWrapObject() const { return _wrapObject; }
     void setWrapObject(WrapObject& aWrapObject);
-    PathWrapPoint& getWrapPoint(int aIndex);
+
+    const PathWrapPoint& getWrapPoint1() const {
+        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+    }
+    const PathWrapPoint& getWrapPoint2() const {
+        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
+    }
+    PathWrapPoint& updWrapPoint1() { 
+        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+    }
+    PathWrapPoint& updWrapPoint2() {
+        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
+    }
+
+
     WrapMethod getMethod() const { return _method; }
     void setMethod(WrapMethod aMethod);
     const std::string& getMethodName() const { return _methodName; }

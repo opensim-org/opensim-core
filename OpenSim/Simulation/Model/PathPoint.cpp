@@ -93,7 +93,6 @@ PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewT
 
 void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    using SimTK::Vec3;
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {
         if (documentVersion < 30505) {
@@ -104,11 +103,10 @@ void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 bodyElement->getValueAs<std::string>(bodyName);
                 XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "parent_frame", bodyName);
-
-                cout << getConcreteClassName() << " converted body property " << bodyName;
-                cout << " to Connector_PhysicalFrame_" << endl;
             }
         }
     }
+
+    Super::updateFromXMLNode(aNode, versionNumber);
 }
 
