@@ -30,8 +30,8 @@ endif()
 
 include_directories("${XSENS_ROOT}/include")
 
-add_executable(IMUStreaming ImuStreaming.cpp)
-target_link_libraries(IMUStreaming ${XSENS_LIBRARIES})
+add_executable(XsensImuStreaming ImuStreaming.cpp)
+target_link_libraries(XsensImuStreaming ${XSENS_LIBRARIES})
 
 file(GLOB XSENS_DLLS "${XSENS_ROOT}/lib/*.dll")
 foreach(DLL ${XSENS_DLLS})
