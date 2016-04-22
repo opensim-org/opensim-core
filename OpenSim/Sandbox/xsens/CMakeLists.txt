@@ -40,5 +40,6 @@ foreach(DLL ${XSENS_DLLS})
 endforeach()
 
 add_executable(XsensImuStreaming ImuStreaming.cpp)
-target_link_libraries(XsensImuStreaming ${XSENS_LIBRARIES})
+target_link_libraries(XsensImuStreaming 
+	osimCommon osimSimulation osimTools ${XSENS_LIBRARIES})
 add_dependencies(XsensImuStreaming ${XSENS_DLL_TARGETS})
