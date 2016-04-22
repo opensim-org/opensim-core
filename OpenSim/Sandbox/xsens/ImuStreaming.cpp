@@ -105,6 +105,8 @@ protected:
     int onWriteMessageToLogFile(XsDevice *dev, 
                                 const XsMessage *message) override {
         std::cout << "MtwCallback::onWriteMessageToLogFile()" << std::endl;
+
+        return 0;
     }
 
     void onRecordingDataAvailable(XsDevice *dev, 
