@@ -177,12 +177,6 @@ void Joint::constructProperties()
     constructProperty_frames();
 }
 
-void Joint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("parent_frame");
-    constructConnector<PhysicalFrame>("child_frame");
-}
-
 void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();

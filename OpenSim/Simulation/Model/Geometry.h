@@ -69,12 +69,16 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
     
+// TODO     OpenSim_DECLARE_CONNECTOR(frame, Frame, "TODO");
 //    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
 //        "The frame to which this geometry is attached.");
     int _connector_frame;
     void constructConnector_frame(); /* {
-        _connector_frame = this->template constructConnector<Frame>("frame");
-    }*/
+//        _connector_frame = this->template constructConnector<Frame>("frame");
+//    }*/
+    //void constructConnector_frame() {
+    //    constructConnector<Frame>("frame");
+    //}
     
     //--------------------------------------------------------------------------
     // CONSTRUCTION

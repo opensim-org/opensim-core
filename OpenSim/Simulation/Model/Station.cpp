@@ -85,11 +85,6 @@ void Station::constructProperties()
 }
 
 
-void Station::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("parent_frame");
-}
-
 /*
  * Return the parent frame with respect to which this station is defined
 */

@@ -222,7 +222,7 @@ private:
 
 
 template<class T>
-class  Connector : public AbstractConnector {
+class Connector : public AbstractConnector {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
     
@@ -240,7 +240,7 @@ public:
     @param connectAtStage   Stage at which Connector should be connected.
     @param owner The component that contains this input. */
     Connector(const std::string& name, const SimTK::Stage& connectAtStage,
-              Component& owner) :
+              const Component& owner) :
         AbstractConnector(name, connectAtStage, false, owner),
         connectee(nullptr) {}
 
@@ -324,13 +324,15 @@ private:
 
 template <class T>
 struct Connector<T>::TypeHelper {
-    static Connector<T>* create(const std::string& name);
+    static Connector<T>* create(const std::string& name,
+        const Component& owner);
     static const std::string& getTypeName() { return T::getClassName(); }
 };
             
 template <class T>
-inline Connector<T>* Connector<T>::TypeHelper::create(const std::string& name) {
-    return new Connector<T>(name, SimTK::Stage::Topology);
+inline Connector<T>* Connector<T>::TypeHelper::create(const std::string& name,
+        const Component& owner) {
+    return new Connector<T>(name, SimTK::Stage::Topology, owner);
 }
             
 template <class T>
@@ -633,7 +635,8 @@ private:
  *  @code{.cpp}
  *  class MyComponent : public Component {
  *  public:
- *      OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame, "To locate this component.");
+ *      OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
+ *              "To locate this component.");
  *      ...
  *  };
  *  @endcode
@@ -649,10 +652,12 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _connector_##cname { constructConnector<T>(#cname) };               \
+    int _connector_##cname {                                                \
+        this->template constructConnector<T>(#cname)                        \
+    };                                                                      \
     /** @endcond                                                         */
 
-            
+// TODO 
 #define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment) \
     int _connector_##cname;               \
     void constructConnector_##cname() { \

@@ -167,7 +167,8 @@ public:
     valid at a given realization Stage.
     @param name             The name of the output.
     @param outputFunction   The output function to be invoked (returns Output T)
-    @param dependsOnStage   Stage at which Output can be evaluated. */
+    @param dependsOnStage   Stage at which Output can be evaluated.
+    @param isList           Can this Output have more than one channel? */
     explicit Output(const std::string& name,
         const std::function<void (const Component* comp,
                                  const SimTK::State&,
@@ -410,7 +411,7 @@ private:
  *     }
  * };
  * @endcode
- *
+ * @relates OpenSim::Output
  */
 #define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
     /** @name Outputs (list)                                             */ \

@@ -40,7 +40,7 @@ namespace OpenSim {
 /**
  * A class implementing a constraint that maintains a constant distance between
  * between two points on separate PhysicalFrames. 
- * The underlying SimTK::Constraint in Simbody is a Constraint::Rod
+ * The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.
  *
  * @author Matt DeMers
  */

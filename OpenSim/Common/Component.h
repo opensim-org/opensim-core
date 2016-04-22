@@ -2305,7 +2305,7 @@ private:
 template <typename T>
 int Component::constructConnector(const std::string& name) {
     int ix = updProperty_connectors().adoptAndAppendValue(
-         Connector<T>::TypeHelper::create(name));
+         Connector<T>::TypeHelper::create(name, *this));
         // TODO new Connector<T>(name, SimTK::Stage::Topology));
     //add pointer to connectorsTable so we can access connectors easily by name
     _connectorsTable[name] = ix;

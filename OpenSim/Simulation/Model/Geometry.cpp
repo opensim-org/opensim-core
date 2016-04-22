@@ -39,6 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
+// TODO
 void Geometry::constructConnector_frame() {
     _connector_frame = this->template constructConnector<Frame>("frame");
 }
@@ -47,6 +48,7 @@ Geometry::Geometry() {
     setNull();
     constructInfrastructure();
     constructConnector_frame();
+    // TODO constructConnector_frame();
 }
 
 void Geometry::setFrameName(const std::string& name)
