@@ -85,9 +85,9 @@ constructors because they have additional arguments.
 %define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
 %extend OpenSim::NAME {
 	NAME(const std::string& name,
-         const std::string& parentName,
-         const std::string& childName) {
-		return new NAME(name, parentName, childName, false);
+         const PhysicalFrame& parent,
+         const PhysicalFrame& child) {
+		return new NAME(name, parent, child, false);
 	}
 	
 	NAME(const std::string& name,
@@ -115,6 +115,41 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 // Typemaps
 // ========
 // None.
+
+// Pythonic operators
+// ==================
+// Allow iterating through a StatesTrajectory.
+// This extend block must appear before the %template call in simulation.i.
+
+// TODO remove.
+%rename(_getBetween) OpenSim::StatesTrajectory::getBetween;
+
+%extend OpenSim::StatesTrajectory {
+%pythoncode %{
+
+    def __iter__(self):
+        """Get an iterator for this Set, to be used as such (where `states` is
+        the StatesTrajectory object)::
+           
+            for state in states:
+                model.calcMassCenterPosition(state)
+        """
+        it = self.begin()
+        while it != self.end():
+            yield it.next()
+
+    def getBetween(self, *args, **kwargs):
+        iter_range = self._getBetween(*args, **kwargs)
+        it = iter_range.begin()
+        while it != iter_range.end():
+            yield it.next()
+%}
+};
+
+// TODO we already made a StdVectorState in simbody.i, but this is required
+// to create type traits for the simulation module. Ideally, we would not need
+// the following line:
+%template(_StdVectorState) std::vector<SimTK::State>;
 
 
 // Include all the OpenSim code.
@@ -151,4 +186,13 @@ SET_ADOPT_HELPER(Analysis);
         aForce._markAdopted()
         return self.appendNative(aForce)
 %}
+};
+
+// Pythonic operators
+// ==================
+// Allow indexing operator in python (e.g., states[i]).
+%extend OpenSim::StatesTrajectory {
+    const SimTK::State&  __getitem__(int i) const {
+        return $self->get(i);
+    }
 };

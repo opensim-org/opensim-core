@@ -161,7 +161,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
     guiModel.getMultibodySystem().realizeTopology();
     SimTK::State* configState=&guiModel.updWorkingState();
-    bool retValue= subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
+    subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
     // Model has changed need to recreate a valid state 
     guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
@@ -239,6 +239,13 @@ void scaleModelWithLigament()
 
     std.print("std_toyLigamentModelScaled_latest.osim");
     comp.print("comp_toyLigamentModelScaled_latest.osim");
+
+    // the latest model will not match the standard because the naming convention has
+    // been updated to store path names and connecting a model results in connectors
+    // storing relative paths so that collections of components are more portable.
+    // The models must be equivalent after being connected.
+    comp.setup();
+    std.setup();
 
     //Finally make sure we didn't incorrectly scale anything else in the model
     ASSERT(std == comp);

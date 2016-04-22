@@ -27,7 +27,7 @@ env:
     - OPENSIM_HOME=~/opensim-core
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
-    - SWIG_VER=3.0.5
+    - SWIG_VER=3.0.6
     - USE_CCACHE=1
     - CCACHE_COMPRESS=1
     # for Clang to work with ccache.
@@ -42,18 +42,16 @@ addons:
     sources:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
+      # for clang
+      - llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
       - cmake
       # For Simbody.
       - liblapack-dev
-      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
-      # use this script because if building Simbody with C++11, we need gcc-4.8,
-      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
-      # building with Clang, we need the newer libstdc++ that we get by updating to
-      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
-      - g++-4.8
+      - g++-4.9
+      - clang-3.5
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -65,10 +63,21 @@ addons:
 
 before_install:
 
+  ## Ensure that there are no tabs in source code.
+  - cd $TRAVIS_BUILD_DIR
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+
   ## Set up environment variables.
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
   
   ## Temporary hack to find libblas and liblapack.
   # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
@@ -133,7 +142,8 @@ before_install:
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/"
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+
   # Build OpenSim.
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
@@ -158,7 +168,7 @@ script:
 
   ## Test python wrapping.
   # Add OpenSim libraries to library path.
-  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib/x86_64-linux-gnu; fi
+  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/share/doc/OpenSim/python; fi
   # Run the python tests, verbosely.
@@ -188,16 +198,6 @@ script:
   # The "shutdown" command shuts down the ssh environment.
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
   
-  ## Ensure that there are no tabs in source code.
-  - cd $TRAVIS_BUILD_DIR
-  # GREP returns 0 (true) if there are any matches, and
-  # we don't want any matches. If there are matches,
-  # print a helpful message, and make the test fail by using "false".
-  # The GREP command here checks for any tab characters in the the files
-  # that match the specified pattern. GREP does not pick up explicit tabs
-  # (e.g., literally a \t in a source file).
-  - if grep --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
-
   # Maximum size of cache is 100 MB.
   # TODO 100 MB is not big enough. Using default limit of 1 GB for now.
   #- ccache --max-size 100M

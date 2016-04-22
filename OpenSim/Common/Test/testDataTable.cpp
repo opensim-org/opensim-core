@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <iostream>
 
 int main() {
     using namespace SimTK;
@@ -47,6 +48,35 @@ int main() {
     ind_metadata.setValueForKey("column-index", unsigned{0});
 
     TimeSeriesTable table{};
+    {
+        table.setColumnLabels({"0", "1", "2", "3"});
+        assert(table.hasColumn("1"));
+        assert(table.hasColumn("2"));
+        assert(!table.hasColumn("column-does-not-exist"));
+
+        table.setColumnLabel(0, "zero");
+        table.setColumnLabel(2, "two");
+        
+        assert(table.getColumnLabel(0) == "zero");
+        assert(table.getColumnLabel(2) == "two");
+
+        table.setColumnLabel(0, "0");
+        table.setColumnLabel(2, "2");
+
+        const auto& labels = table.getColumnLabels();
+        for(size_t i = 0; i < labels.size(); ++i) 
+            if(labels.at(i) != std::to_string(i))
+                throw Exception{"Test failed: labels.at(i) != "
+                                "std::to_string(i)"};
+
+        for(size_t i = 0; i < labels.size(); ++i)
+            if(table.getColumnIndex(labels.at(i)) != i)
+                throw Exception{"Test failed: "
+                                "table.getColumnIndex(labels.at(i)) != i"};
+    }
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
+
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
 
@@ -65,9 +95,19 @@ int main() {
         table.appendRow(0.5, row);
     } catch (OpenSim::Exception&) {}
 
+    table.updMatrix() += 2;
+    table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
+
     table.updTableMetaData().setValueForKey("DataRate", 600);
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
+
+    assert(table.hasColumn(0));
+    assert(table.hasColumn(2));
+    assert(!table.hasColumn(100));
+
+    // Print out the DataTable to console.
+    std::cout << table << std::endl;
 
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})
@@ -83,6 +123,13 @@ int main() {
         if(labels_ref[i].getValue<std::string>() != std::to_string(i + 1))
             throw Exception{"Test failed: labels_ref[i].getValue<std::string>()"
                     " != std::to_string(i + 1)"};
+    {
+    const auto& labels = table.getColumnLabels();
+    for(unsigned i = 0; i < 5; ++i)
+        if(labels.at(i) != std::to_string(i + 1))
+            throw Exception{"Test failed: labels[i].getValue<std::string>()"
+                    " != std::to_string(i + 1)"};
+    }
 
     const auto& col_index_ref 
         = dep_metadata_ref.getValueArrayForKey("column-index");
@@ -101,6 +148,11 @@ int main() {
        != unsigned{0})
         throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
                 "(\"column-index\").getValue<unsigned>() != unsigned{0}"};
+
+    table.updDependentColumnAtIndex(0) += 2;
+    table.updDependentColumnAtIndex(2) += 2;
+    table.updDependentColumn("1") -= 2;
+    table.updDependentColumn("3") -= 2;
 
     for(unsigned i = 0; i < 5; ++i) {
         for(unsigned j = 0; j < 5; ++j) {

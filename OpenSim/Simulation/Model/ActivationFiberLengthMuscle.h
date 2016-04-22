@@ -126,7 +126,7 @@ protected:
     static const std::string STATE_FIBER_LENGTH_NAME;   
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class ActivationFiberLengthMuscle

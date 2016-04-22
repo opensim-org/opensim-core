@@ -53,6 +53,9 @@ public:
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
+    OpenSim_DECLARE_OUTPUT(tension, double, computeActuation,
+                           SimTK::Stage::Acceleration);
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -106,11 +109,6 @@ public:
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
-    // XML
-    //--------------------------------------------------------------------------
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
-
-    //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
     virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
@@ -144,7 +142,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class PathActuator

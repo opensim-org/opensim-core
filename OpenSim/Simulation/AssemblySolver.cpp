@@ -134,7 +134,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
                 // keep a handle to the goal so we can update
                 _coordinateAssemblyConditions.push_back(coordGoal);
                 // Add coordinate matching goal to the ik objective
-                SimTK::AssemblyConditionIndex acIx = _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
+                _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
             }
         }
     }

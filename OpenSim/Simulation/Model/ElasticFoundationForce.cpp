@@ -56,7 +56,7 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
-    SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
+    //SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::ElasticFoundationForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);

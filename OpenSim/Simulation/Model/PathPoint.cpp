@@ -149,14 +149,10 @@ void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
         return;
     }
 
-    // Look up the body by name in the kinematics engine and
-    // store a pointer to it.
-    if (!aModel.getBodySet().contains(_bodyName))
-    {
-        string errorMessage = "Body " + _bodyName + " referenced in path" + aPath.getName() + " not found in model " + aModel.getName();
-        throw Exception(errorMessage);
-    }
-    _body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
+    // Look up the body by name in the Model.
+    // will throw ComponentNotFound Exception if the body (PhysicalFrame)
+    // with this name cannot be found.
+    _body = aModel.findComponent<PhysicalFrame>(_bodyName);
 }
 
 //_____________________________________________________________________________

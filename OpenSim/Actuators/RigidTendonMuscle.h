@@ -114,7 +114,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 protected:
 

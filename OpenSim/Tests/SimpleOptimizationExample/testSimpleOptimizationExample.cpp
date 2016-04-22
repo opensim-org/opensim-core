@@ -43,7 +43,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
+             OptimizerSystem(numParameters), 
+             numKnobs(numParameters), 
+             si(s), 
+             osimModel(aModel){}
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 

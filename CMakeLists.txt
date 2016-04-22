@@ -330,6 +330,8 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
+    # Disable "C4068: unknown pragma" warning.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4068") 
     set(CMAKE_CXX_FLAGS_DEBUG
     "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
@@ -362,6 +364,16 @@ endif()
 set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+
+if(${BUILD_JAVA_WRAPPING})
+    # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
+    # To print info on where MATLAB is found: set(MATLAB_FIND_DEBUG ON)
+    # Running tests requires that we can find the matlab executable (component
+    # MAIN_PROGRAM).
+    # Also, the mechanism we use to set the java classpath and library path 
+    # for MATLAB requires version 7.0 (R14).
+    find_package(Matlab 7.0 COMPONENTS MAIN_PROGRAM)
+endif()
 
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
@@ -434,11 +446,21 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-find_package(BTK 
-    REQUIRED
-    HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
-CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+set(WITH_BTK
+    OFF
+    CACHE
+    BOOL
+    "Compile OpenSim with BTK ? BTK provides C3D reading.")
 
+# If compiling with BTK, find and use it.
+if(WITH_BTK)
+    find_package(BTK 
+                 REQUIRED
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
+    include(${BTK_USE_FILE})
+    add_definitions(-DWITH_BTK)
+    CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")

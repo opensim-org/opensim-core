@@ -177,7 +177,7 @@ ParsedExpression Parser::parse(const string& expression, const map<string, Custo
         vector<ParseToken> tokens = tokenize(subexpressions[i].substr(equalsPos+1));
         int pos = 0;
         subexpDefs[name] = parsePrecedence(tokens, pos, customFunctions, subexpDefs, 0);
-        if (pos != tokens.size())
+        if (static_cast<unsigned>(pos) != tokens.size())
             throw Exception("Parse error: unexpected text at end of subexpression: "+tokens[pos].getText());
     }
 
@@ -186,14 +186,14 @@ ParsedExpression Parser::parse(const string& expression, const map<string, Custo
     vector<ParseToken> tokens = tokenize(primaryExpression);
     int pos = 0;
     ExpressionTreeNode result = parsePrecedence(tokens, pos, customFunctions, subexpDefs, 0);
-    if (pos != tokens.size())
+    if (static_cast<unsigned>(pos) != tokens.size())
         throw Exception("Parse error: unexpected text at end of expression: "+tokens[pos].getText());
     return ParsedExpression(result);
 }
 
 ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int& pos, const map<string, CustomFunction*>& customFunctions,
             const map<string, ExpressionTreeNode>& subexpressionDefs, int precedence) {
-    if (pos == tokens.size())
+    if (static_cast<unsigned>(pos) == tokens.size())
         throw Exception("Parse error: unexpected end of expression");
 
     // Parse the next value (number, variable, function, parenthesized expression)
@@ -219,7 +219,8 @@ ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int
     else if (token.getType() == ParseToken::LeftParen) {
         pos++;
         result = parsePrecedence(tokens, pos, customFunctions, subexpressionDefs, 0);
-        if (pos == tokens.size() || tokens[pos].getType() != ParseToken::RightParen)
+        if (static_cast<unsigned>(pos) == tokens.size() || 
+            tokens[pos].getType() != ParseToken::RightParen)
             throw Exception("Parse error: unbalanced parentheses");
         pos++;
     }
@@ -233,7 +234,8 @@ ExpressionTreeNode Parser::parsePrecedence(const vector<ParseToken>& tokens, int
             if (moreArgs)
                 pos++;
         } while (moreArgs);
-        if (pos == tokens.size() || tokens[pos].getType() != ParseToken::RightParen)
+        if (static_cast<unsigned>(pos) == tokens.size() || 
+            tokens[pos].getType() != ParseToken::RightParen)
             throw Exception("Parse error: unbalanced parentheses");
         pos++;
         Operation* op = getFunctionOperation(token.getText(), customFunctions);

@@ -151,10 +151,6 @@ public:
     void scale(const SimTK::Vec3& scaleFactors);
 
 protected:
-    /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
-
     /** Extend how OffsetFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override final;
     /** Extend how OffsetFrame determines its transform in its base Frame. */
@@ -167,13 +163,22 @@ protected:
     void extendFinalizeFromProperties() override;
     /**@}**/
 
+    // The transform X_GO for this OffsetFrame, O, in Ground, G.
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override final;
+    // The spatial velocity, V_GO  {omega; v} of this OffsetFrame in Ground.
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override final;
+    // The spatial acceleration, A_GO {alpha; a} of this OffsetFrame in Ground.
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override final;
+
 private:
 
     void setNull();
     void constructProperties() override;
 
-    
-    // the tranform on my parent frame
+    // the Offset transform in its parent frame
     SimTK::Transform _offsetTransform;
 //=============================================================================
 }; // END of class OffsetFrame
@@ -215,7 +220,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updConnector<C>("parent").set_connectee_name(parentName);
+    this->template updConnector<C>("parent").setConnecteeName(parentName);
     setOffsetTransform(offset);
 }
 
@@ -242,14 +247,45 @@ void OffsetFrame<C>::constructConnectors()
 }
 
 //=============================================================================
-// FRAME COMPUTATIONS
+// FRAME COMPUTATIONS must be specialized by concrete derived Offsets
 //=============================================================================
 // Implementation of Frame interface by OffsetFrame.
 template <class C>
 SimTK::Transform OffsetFrame<C>::
-calcGroundTransform(const SimTK::State& s) const
+calcTransformInGround(const SimTK::State& state) const
 {
-    return getParentFrame().getGroundTransform(s)*getOffsetTransform();
+    return this->getParentFrame().getTransformInGround(state)*getOffsetTransform();
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcVelocityInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the base frame in ground
+    SimTK::SpatialVec V_GF = this->getParentFrame().getVelocityInGround(state);
+    // translational velocity needs additional omega x r term due to offset 
+    V_GF(1) += V_GF(0) % r;
+
+    return V_GF;
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcAccelerationInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the parent frame in ground
+    const SimTK::SpatialVec& V_GF = this->getParentFrame().getVelocityInGround(state);
+    // Velocity of the parent frame in ground
+    SimTK::SpatialVec A_GF = getParentFrame().getAccelerationInGround(state);
+    A_GF[1] += (A_GF[0] % r + V_GF[0] % (V_GF[0] % r));
+
+    return A_GF;
 }
 
 //=============================================================================

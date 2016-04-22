@@ -67,6 +67,17 @@ public:
         "The GeometryPath defines the set of points and wrapping surface" 
         "interactions that form the path of action of the PathSpring");
 
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(length, double, getLength,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(stretch, double, getStretch,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension,
+        SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
@@ -177,7 +188,6 @@ protected:
 
 private:
     void constructProperties() override;
-    void constructOutputs() override;
 
 //=============================================================================
 };  // END of class PathSpring

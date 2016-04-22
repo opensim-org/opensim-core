@@ -51,18 +51,18 @@ Geometry::Geometry() {
 
 void Geometry::setFrameName(const std::string& name)
 {
-    updConnector<Frame>("frame").set_connectee_name(name);
+    updConnector<Frame>("frame").setConnecteeName(name);
 }
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").set_connectee_name(frame.getName());
+    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
 
 const std::string& Geometry::getFrameName() const
 {
-    return getConnector<Frame>("frame").get_connectee_name();
+    return getConnector<Frame>("frame").getConnecteeName();
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
@@ -173,59 +173,85 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
     decoGeoms.push_back(deco);
 }
 
-void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
-{
-    const std::string& file = get_mesh_file();
-    // TODO: when API visualizer changes to use DecorativeGeometry::MeshFile instead of 
-    // DecorativeGeometry::DecorativeMesh with PolygonalMesh underneath it, the logic below 
-    // to locate the files will need to be transferred there. -Ayman 05/15
-#if 0
-    bool isAbsolutePath; string directory, fileName, extension;
-    SimTK::Pathname::deconstructPathname(file,
-        isAbsolutePath, directory, fileName, extension);
-    const string lowerExtension = SimTK::String::toLower(extension);
-    if (lowerExtension != ".vtp" && lowerExtension != ".obj") {
-        std::clog << "ModelVisualizer ignoring '" << file
-            << "'; only .vtp and .obj files currently supported.\n";
-        return;
-    }
+void Mesh::extendFinalizeFromProperties() {
 
-    // File is a .vtp or .obj. See if we can find it.
-    Array_<string> attempts;
-    bool foundIt = ModelVisualizer::findGeometryFile(getFrame().getModel(), file, isAbsolutePath, attempts);
-
-    if (!foundIt) {
-        std::clog << "ModelVisualizer couldn't find file '" << file
-            << "'; tried\n";
-        for (unsigned i = 0; i < attempts.size(); ++i)
-            std::clog << "  " << attempts[i] << "\n";
-        if (!isAbsolutePath &&
-            !Pathname::environmentVariableExists("OPENSIM_HOME"))
-            std::clog << "Set environment variable OPENSIM_HOME "
-            << "to search $OPENSIM_HOME/Geometry.\n";
-        return;
-    }
-
-    SimTK::PolygonalMesh pmesh;
-    try {
-        if (lowerExtension == ".vtp") {
-            pmesh.loadVtpFile(attempts.back());
+    if (!isObjectUpToDateWithProperties()) {
+        const Component* rootModel = nullptr;
+        if (!hasParent()) {
+            std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            return;   // Orphan Mesh not part of a model yet
         }
-        else {
+        const Component* parent = &getParent();
+        while (parent != nullptr) {
+            if (dynamic_cast<const Model*>(parent) != nullptr) {
+                rootModel = parent;
+                break;
+            }
+            if (parent->hasParent())
+                parent = &(parent->getParent()); // traverse up Component tree
+            else
+                break; // can't traverse up.
+        }
+
+        if (rootModel == nullptr) {
+            std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            return;   // Orphan Mesh not descendent of a model
+        }
+        // Current interface to Visualizer calls generateDecorations on every frame.
+        // On first time through, load file and create DecorativeMeshFile and cache it
+        // so we don't load files from disk during live drawing/rendering.
+        const std::string& file = get_mesh_file();
+        bool isAbsolutePath; string directory, fileName, extension;
+        SimTK::Pathname::deconstructPathname(file,
+            isAbsolutePath, directory, fileName, extension);
+        const string lowerExtension = SimTK::String::toLower(extension);
+        if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
+            std::clog << "ModelVisualizer ignoring '" << file
+                << "'; only .vtp .stl and .obj files currently supported.\n";
+            return;
+        }
+
+        // File is a .vtp or .obj. See if we can find it.
+        Array_<string> attempts;
+        const Model& model = dynamic_cast<const Model&>(*rootModel);
+        bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
+
+        if (!foundIt) {
+            std::clog << "ModelVisualizer couldn't find file '" << file
+                << "'; tried\n";
+            for (unsigned i = 0; i < attempts.size(); ++i)
+                std::clog << "  " << attempts[i] << "\n";
+            if (!isAbsolutePath &&
+                !Pathname::environmentVariableExists("OPENSIM_HOME"))
+                std::clog << "Set environment variable OPENSIM_HOME "
+                << "to search $OPENSIM_HOME/Geometry.\n";
+            return;
+        }
+
+        SimTK::PolygonalMesh pmesh;
+        try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            pmesh.loadObjFile(objFile);
+            pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
+
         }
+        catch (const std::exception& e) {
+            std::clog << "Visualizer couldn't read "
+                << attempts.back() << " because:\n"
+                << e.what() << "\n";
+            return;
+        }
+
+        cachedMesh.reset(new DecorativeMeshFile(attempts.back().c_str()));
     }
-    catch (const std::exception& e) {
-        std::clog << "ModelVisualizer couldn't read "
-            << attempts.back() << " because:\n"
-            << e.what() << "\n";
-        return;
+}
+
+
+void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+{
+    if (cachedMesh.get() != nullptr) {
+        cachedMesh->setScaleFactors(get_scale_factors());
+        decoGeoms.push_back(*cachedMesh);
     }
-#endif
-    DecorativeMeshFile dmesh(file);
-    dmesh.setScaleFactors(get_scale_factors());
-    decoGeoms.push_back(dmesh);
 }

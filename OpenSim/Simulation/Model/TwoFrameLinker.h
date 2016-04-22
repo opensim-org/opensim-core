@@ -80,6 +80,20 @@ public:
         const std::string& frame1Name,
         const std::string& frame2Name);
 
+    /** Convenience Constructor with two Frames
+    Construct a TwoFrameLinker where the two frames are specified by name
+    and offset transforms on the respective frames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1           the first Frame being linked
+    @param[in] offsetOnFrame1   offset Transform on the first frame
+    @param[in] frame2           the second Frame being linked
+    @param[in] offsetOnFrame2   offset Transform on the second frame
+    */
+    TwoFrameLinker(const std::string &name,
+        const F& frame1, const SimTK::Transform& offsetOnFrame1,
+        const F& frame2, const SimTK::Transform& offsetOnFrame2);
+
     /** Convenience Constructor
     Construct a TwoFrameLinker where the two frames are specified by name 
     and offset transforms on the respective frames.
@@ -173,7 +187,8 @@ protected:
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void 
+    updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
 
     /** Helper method to convert internal force expressed in the mobility basis
@@ -246,9 +261,36 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updConnector<F>("frame1").set_connectee_name(frame1Name);
-    this->template updConnector<F>("frame2").set_connectee_name(frame2Name);
+    this->template updConnector<F>("frame1").setConnecteeName(frame1Name);
+    this->template updConnector<F>("frame2").setConnecteeName(frame2Name);
 }
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1, const SimTK::Transform& transformInFrame1,
+    const F& frame2, const SimTK::Transform& transformInFrame2)
+    : TwoFrameLinker()
+{
+    this->setName(name);
+
+    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
+        frame1, transformInFrame1);
+
+    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset",
+        frame2, transformInFrame2);
+
+    // Append the offset frames to the Joints internal list of frames
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
+
+    this->template updConnector<F>("frame1").connect(get_frames(ix1));
+    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
+}
+
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
@@ -265,13 +307,12 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
         frame2Name, transformInFrame2);
 
     // Append the offset frames to the Joints internal list of frames
-    append_frames(frame1Offset);
-    append_frames(frame2Offset);
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
 
-    this->template updConnector<PhysicalFrame>("frame1")
-        .set_connectee_name(frame1Offset.getName());
-    this->template updConnector<PhysicalFrame>("frame2")
-        .set_connectee_name(frame2Offset.getName());
+    this->template updConnector<F>("frame1").connect(get_frames(ix1));
+    this->template updConnector<F>("frame2").connect(get_frames(ix2));
 }
 
 template <class C, class F>
@@ -309,7 +350,7 @@ void TwoFrameLinker<C,F>::constructConnectors()
 template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
-    if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
+    if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
         _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
@@ -385,9 +426,9 @@ template <class C, class F>
 SimTK::Transform TwoFrameLinker<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
     // Define frame1 as the "fixed" frame, F
-    SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
+    SimTK::Transform X_GF = getFrame1().getTransformInGround(s);
     // Define the frame2 as the "moving" frame, M
-    SimTK::Transform X_GM = getFrame2().getGroundTransform(s);
+    SimTK::Transform X_GM = getFrame2().getTransformInGround(s);
     // Express M in F
     return ~X_GF * X_GM;
 }
@@ -417,8 +458,8 @@ SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVelocity(const SimTK::Sta
     const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Rotation& R_GF = X_GF.R();
 
@@ -480,11 +521,11 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     const F& frame1 = getFrame1();
     const F& frame2 = getFrame2();
 
-    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Mat33 N_FM =
         SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));

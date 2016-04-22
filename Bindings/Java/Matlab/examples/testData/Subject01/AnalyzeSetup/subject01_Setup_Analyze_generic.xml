@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<OpenSimDocument Version="20302">
+	<AnalyzeTool name="subject01_walk1">
+		
+		<model_file> ../subject01_gait2392_scaled.osim</model_file>
+		
+		<replace_force_set> false </replace_force_set>
+		
+		<force_set_files>  </force_set_files>
+		
+		<results_directory> ../AnalyzeResults </results_directory>
+		
+		<output_precision> 8 </output_precision>
+		
+		<initial_time>       0.80000000 </initial_time>
+		
+		<final_time>       1.18000000 </final_time>
+		
+		<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
+		
+		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+		
+		<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
+		
+		<minimum_integrator_step_size>       0.00000001 </minimum_integrator_step_size>
+		
+		<integrator_error_tolerance>       0.00001000 </integrator_error_tolerance>
+		
+		<AnalysisSet name="Analyses">
+			<objects>
+				<Kinematics name="Kinematics">
+					
+					<on> true </on>
+					
+					<start_time> -infinity </start_time>
+					
+					<end_time> infinity </end_time>
+					
+					<step_interval> 10 </step_interval>
+					
+					<in_degrees> true </in_degrees>
+					
+					<coordinates> all </coordinates>
+				</Kinematics>
+				<MuscleAnalysis name="MuscleAnalysis">
+					
+					<on> true </on>
+					
+					<start_time> -infinity </start_time>
+					
+					<end_time> infinity </end_time>
+					
+					<step_interval> 1 </step_interval>
+					
+					<in_degrees> true </in_degrees>
+					
+					<muscle_list> all </muscle_list>
+					
+					<moment_arm_coordinate_list>  </moment_arm_coordinate_list>
+					
+					<compute_moments> false </compute_moments>
+				</MuscleAnalysis>
+			</objects>
+			<groups></groups>
+		</AnalysisSet>
+		
+		<ControllerSet></ControllerSet>
+		
+		<external_loads_file> </external_loads_file>
+		
+		<states_file>  </states_file>
+		
+		<coordinates_file> ../subject01_walk1_ik.mot </coordinates_file>
+		
+		<speeds_file>  </speeds_file>
+		
+		<lowpass_cutoff_frequency_for_coordinates>      -1.00000000 </lowpass_cutoff_frequency_for_coordinates>
+	</AnalyzeTool>
+</OpenSimDocument>

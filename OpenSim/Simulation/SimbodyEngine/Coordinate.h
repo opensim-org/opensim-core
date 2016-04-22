@@ -56,10 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
-        "Coordinate can describe rotational, translational, or coupled motion. "
-        "Defaults to rotational.");
-
     OpenSim_DECLARE_PROPERTY(default_value, double, 
         "The value of this coordinate before any value has been set. "
         "Rotational coordinate value is in radians and Translational in meters.");
@@ -97,10 +93,19 @@ public:
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(value, double, getValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeedValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(acceleration, double, getAccelerationValue,
+            SimTK::Stage::Acceleration);
+
     /** Motion type that describes the motion dictated by the coordinate.
         Types include: Rotational, Translational and Coupled (both) */
     enum MotionType
     {
+        Undefined,
         Rotational,
         Translational,
         Coupled
@@ -119,8 +124,7 @@ public:
 
     /** access to the generalized Coordinate's motion type
         This can be Rotational, Translational, or Coupled (both) */
-    MotionType getMotionType() const { return _motionType; }
-    void setMotionType(MotionType aMotionType);
+    MotionType getMotionType() const;
 
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
@@ -295,9 +299,6 @@ private:
     Constraint, so we can change the value at which to lock the joint. */
     SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
-    /* Motion type (translational, rotational or combination). */
-    MotionType _motionType;
-
     /* Label for the related state that is the generalized speed of
        this coordinate. */
     std::string _speedName;
@@ -309,7 +310,6 @@ private:
 
     // PRIVATE METHODS implementing the Component interface
     void constructProperties() override;
-    void constructOutputs() override;
     void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 

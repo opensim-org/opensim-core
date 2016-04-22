@@ -227,8 +227,8 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     SimTK::Vec3 aYvec = aZvec % aXvec;          aYvec = aYvec.normalize();  // Y = Z x X
     
     // Compute displacements of P and S from sphere center within wrap coordinate system
-    double Px=aPointP.norm(), Py=0.0, Pz=0.0,               dP=Px*Px+Py*Py,  rootP=dP-R*R;
-    double Sx=~aPointS*aXvec, Sy=~aPointS*aYvec, Sz=0.0,    dS=Sx*Sx+Sy*Sy,  rootS=dS-R*R;
+    double Px=aPointP.norm(), Py=0.0, /*Pz=0.0,*/               dP=Px*Px+Py*Py,  rootP=dP-R*R;
+    double Sx=~aPointS*aXvec, Sy=~aPointS*aYvec, /*Sz=0.0,*/    dS=Sx*Sx+Sy*Sy,  rootS=dS-R*R;
 
     // Check P and S against sphere, and compute x and y components of wrap points Q and T
     if( rootP<0.0 || rootS<0.0 ) return insideRadius;   // One of P or S lies within the sphere
@@ -240,8 +240,8 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     if( R*(Qx*Ty-Qy*Tx) < 0.0 ) return noWrap;
 
     // Compute respective wrapping segment lengths
-    double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
-    double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
+    //double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
+    //double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
     double QT = R*acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
     if(QT<0.0) QT=-QT;
     

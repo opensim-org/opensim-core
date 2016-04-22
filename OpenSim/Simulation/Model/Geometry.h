@@ -109,11 +109,13 @@ public:
     // will be removed before release 4.0 in favor of a mechanism that 
     // handles local/global/shared Appearance objects
     /// Convenient access to set Appearance/Color
+    /// color is RGB, each components is in the range [0, 1].
     void setColor(const SimTK::Vec3& color) { 
         upd_Appearance().set_color(color); 
     };
 
     /// Convenient access to get Appearance/Color
+    /// returns RGB , each components is in the range [0, 1].
     const SimTK::Vec3& getColor() const { 
         return get_Appearance().get_color(); 
     };
@@ -128,11 +130,11 @@ public:
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(VisualRepresentation rep) { 
+    void setRepresentation(OpenSim::VisualRepresentation rep) { 
         upd_Appearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
-    VisualRepresentation getRepresentation() { return
+    OpenSim::VisualRepresentation getRepresentation() { return
         get_Appearance().get_representation(); 
     };
     // END DEPRECATED
@@ -239,7 +241,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() override {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_end_point(SimTK::Vec3(1));
     }
@@ -284,7 +286,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() override {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_direction(SimTK::Vec3(1));
         constructProperty_length(1.0);
@@ -335,7 +337,7 @@ public:
         return _piece;
     }
 private:
-    void constructProperties() {
+    void constructProperties() override {
         constructProperty_quadrants();
     }
 };
@@ -370,7 +372,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() override {
         constructProperty_radius(1.0);
     }
 };  // Sphere
@@ -411,7 +413,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() {
+    void constructProperties() override {
         constructProperty_radii(SimTK::Vec3(0.5, 1., 2.));
     }
 };
@@ -457,7 +459,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() {
+    void constructProperties() override {
         constructProperty_radius(0.5);
         constructProperty_half_height(0.5);
     }
@@ -502,7 +504,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() {
+    void constructProperties() override {
         constructProperty_origin(SimTK::Vec3(0));
         constructProperty_direction(SimTK::UnitVec3(1));
         constructProperty_base_radius(0.5);
@@ -590,13 +592,15 @@ public:
 public:
     /// Default constructor
     Mesh() :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -609,10 +613,18 @@ public:
         return get_mesh_file();
     };
 protected:
+    // ModelComponent interface.
+    void extendFinalizeFromProperties() override;
+
+protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
-
+private:
+    // We cache the DecorativeMeshFile if we successfully
+    // load the mesh from file so we don't try loading from disk every frame.
+    // This is mutable since it is not part of the public interface.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
 };
 
 /**

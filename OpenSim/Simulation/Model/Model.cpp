@@ -89,9 +89,9 @@ Model::Model() : ModelComponent(),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {
     constructInfrastructure();
     setNull();
@@ -106,9 +106,9 @@ Model::Model(const string &aFileName, const bool finalize) :
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {   
     constructInfrastructure();
     setNull();
@@ -567,13 +567,23 @@ void Model::createMultibodyTree()
             IO::TrimWhitespace(name);
 
             if (name.empty()) {
-                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
+                name = js[i].getParentFrame().getName() + "_to_" + 
+                       js[i].getChildFrame().getName();
             }
 
-            // Currently we need to take a first pass at connecting the joints in 
-            // order to ask the joint for the frames that they attach to and 
-            // and determine their underlying base (physical) frames.
+            // Currently we need to take a first pass at connecting the joints
+            // in order to ask the joint for the frames that they attach to and
+            // to determine their underlying base (physical) frames.
             js[i].connect(*this);
+            // hack to make sure underlying Frame is also connected so it can 
+            // traverse to the base frame and get its name. This allows the
+            // (offset) frames to satisfy the connectors of Joint to be added
+            // to a Body, for example, and not just joint itself.
+            // TODO: try to create the multibody tree later when components
+            // can already be expected to be connected then traverse those
+            // relationships to create the multibody tree. -aseth
+            const_cast<PhysicalFrame&>(js[i].getParentFrame()).connect(*this);
+            const_cast<PhysicalFrame&>(js[i].getChildFrame()).connect(*this);
 
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
@@ -605,7 +615,6 @@ void Model::extendConnectToModel(Model &model)
     //_multibodyTree.dumpGraph(cout);
     //cout << endl;
 
-    SimTK::Array_<Component *>::iterator it = nullptr;
     JointSet& joints = upd_JointSet();
     BodySet& bodies = upd_BodySet();
     int nb = bodies.getSize();
@@ -627,7 +636,7 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
             Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
-            Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
+            //Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
             Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
             Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
 
@@ -637,12 +646,11 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
+                std::string pathName = outb->getFullPathName();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // TODO: add all added compoents to a private list of owned components
-                // that are not serialized so that they are destroyed.
-                // Currently this is a leak.
+                // include within adopted list of owned components
                 adoptSubcomponent(weld);
             }
         }
@@ -659,34 +667,42 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
+            Joint* free = new FreeJoint(jname, *ground, *child);
+            free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
         }
         else{
-            Component* compToMoveOut = _components.at(m+nb);
+            Component* compToMoveOut = _propertySubcomponents.at(m+nb).get();
             // reorder the joint components in the order of the multibody tree
             Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
-            it = std::find(_components.begin(), _components.end(), jointToSwap);
-            if (it != _components.end()){
+            auto it = std::find(_propertySubcomponents.begin(),
+                                _propertySubcomponents.end(), 
+                                SimTK::ReferencePtr<Component>(jointToSwap));
+            if (it != _propertySubcomponents.end()){
                 // Only if the joint is not in the correct sequence the swap
                 if (compToMoveOut != jointToSwap){
-                    _components[m + nb] = jointToSwap;
-                    *it = compToMoveOut;
+                    _propertySubcomponents[m + nb].reset(jointToSwap);
+                    it->reset(compToMoveOut);
                 }
             }
-            //(static_cast<Component*>(jointToSwap));
             int jx = joints.getIndex(jointToSwap, m);
             //if in the set but not already in the right order
-            if ((jx >= 0) && (jx != m)){
-                // perform a move to put the joint in correct order
+            if ((jx >= 0) && (jx != m)) {
+                // perform a move to put the joint in tree order
+                // this is necessary ONLY because some tools assume that the
+                // order or joints and specifically coordinates is the
+                // order of the mobility (generalized) forces.
+                // IDTool, StaticOptimization and RRA for example will fail.
+                // TODO: when the tools are fixed/removed remove this as well.
                 jointToSwap = &joints.get(jx);
                 joints.set(jx, &joints.get(m));
                 joints.set(m, jointToSwap);
             }
+            // Update the directionality of the joint according to tree's
+            // preferential direction
+            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
+                mob.isReversedFromJoint();
         }
-        // Update the directionality of the joint to tree's preferential direction
-        joints[m].upd_reverse() = mob.isReversedFromJoint();
-    
     }
     joints.setMemoryOwner(isMemoryOwner);
 
@@ -864,8 +880,8 @@ void Model::addProbe(OpenSim::Probe *probe)
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
     disconnect();
-    clearComponents();
     updProbeSet().remove(aProbe);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -905,8 +921,6 @@ void Model::setup()
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
     connect(*this);
-
-    populatePathName("");
 }
 
 //_____________________________________________________________________________
@@ -1428,8 +1442,8 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     for (int i = 0; i < jointSet.getSize(); i++) {
         const OpenSim::Joint& joint = get_JointSet().get(i);
         aOStream << "joint[" << i << "] = " << joint.getName() << ".";
-        aOStream << " parent: " << joint.getParentFrameName() <<
-            ", child: " << joint.getChildFrameName() << std::endl;
+        aOStream << " parent: " << joint.getParentFrame().getName() <<
+            ", child: " << joint.getChildFrame().getName() << std::endl;
     }
 
     aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
@@ -1774,7 +1788,11 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    getControllerSet().computeControls(s, controls);
+    for (auto& controller : getComponentList<Controller>()) {
+        if (!controller.isDisabled()) {
+            controller.computeControls(s, controls);
+        }
+    }
 }
 
 
@@ -1883,7 +1901,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
 
-    delete mapColumns;
+    delete[] mapColumns;
 }
 
 /**

@@ -245,7 +245,7 @@ bool ModelVisualizer::
 findGeometryFile(const Model& aModel, 
                  const std::string&          geoFile,
                  bool&                       geoFileIsAbsolute,
-                 SimTK::Array_<std::string>& attempts) const
+                 SimTK::Array_<std::string>& attempts)
 {
     attempts.clear();
     std::string geoDirectory, geoFileName, geoExtension; 

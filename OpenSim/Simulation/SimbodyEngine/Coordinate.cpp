@@ -47,7 +47,7 @@ using namespace OpenSim;
 class ModifiableConstant : public SimTK::Function_<SimTK::Real>{
 public:
     ModifiableConstant(const SimTK::Real& value, int argumentSize) : 
-      value(value), argumentSize(argumentSize) { }
+        argumentSize(argumentSize), value(value) { }
 
     ModifiableConstant* clone() const override {
         return new ModifiableConstant(this->value, this->argumentSize);
@@ -104,7 +104,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
     Coordinate()
 {
     setName(aName);
-    setMotionType(aMotionType);
+    //setMotionType(aMotionType);
     setDefaultValue(defaultValue);
     setRangeMin(aRangeMin);
     setRangeMax(aRangeMax);
@@ -117,9 +117,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
 void Coordinate::constructProperties(void)
 {
     setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
-    //The motion type of a Coordinate is determined by its parent Joint
-    constructProperty_motion_type("set_by_joint");
-    
+
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
 
@@ -204,9 +202,9 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
                 SimTK::MobilizerQIndex(_mobilizerQIndex));
         mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
     }
-    else{
-        // even if prescribed is set to true, if there is no prescribed 
-        // function defined, then it cannot be prescribed.
+    else if(get_prescribed()){
+        // if prescribed is set to true, and there is no prescribed 
+        // function defined, then it cannot be prescribed (set to false).
         mutableThis->upd_prescribed() = false;
     }
 
@@ -230,10 +228,10 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void Coordinate::extendRealizeInstance(const SimTK::State& state) const
 {
-    const MobilizedBody& mb
-        = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
+    //const MobilizedBody& mb
+    //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
 
-    int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
+    //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
 
     /* Set the YIndex on the StateVariable */
 }
@@ -293,6 +291,13 @@ const Joint& Coordinate::getJoint() const
 {
     return(_joint.getRef());
 }
+
+Coordinate::MotionType Coordinate::getMotionType() const
+{
+    int ix = getJoint().get_CoordinateSet().getIndex(this);
+    return getJoint().getMotionType(Joint::CoordinateIndex(ix));
+}
+
 
 //-----------------------------------------------------------------------------
 // VALUE
@@ -414,35 +419,6 @@ void Coordinate::setRangeMax(double aMax)
 {
     upd_range(1) = aMax;
 }
-
-//_____________________________________________________________________________
-/**
- * Set coordinate's motion type.
- *
- */
- void Coordinate::setMotionType(MotionType motionType)
- {
-     if (_motionType == motionType) {
-         return;
-     }
-
-     _motionType = motionType;
-
-     //Also update the motionTypeName so that it is serialized with the model
-     switch(motionType){
-        case(Rotational) :  
-            //upd_motion_type() = "rotational";
-            break;
-        case(Translational) :
-            //upd_motion_type() = "translational";
-            break;
-        case(Coupled) :
-            //upd_motion_type() = "coupled";
-            break;
-        default :
-            throw(Exception("Coordinate: Attempting to specify an undefined motion type."));
-     }
- } 
 
 //_____________________________________________________________________________
 /**
@@ -636,17 +612,6 @@ bool Coordinate::getClamped(const SimTK::State& s) const
 void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 {
     setModelingOption(s, "is_clamped", (int)aLocked);
-}
-
-void Coordinate::constructOutputs()
-{
-    //return the coordinate value
-    constructOutput<double>("value", &Coordinate::getValue, Stage::Model);
-    //return the speed value;
-    constructOutput<double>("speed", &Coordinate::getSpeedValue, Stage::Model);
-    //return the acceleration value;
-    constructOutput<double>("acceleration", &Coordinate::getAccelerationValue,
-                             Stage::Acceleration);
 }
 
 //-----------------------------------------------------------------------------
