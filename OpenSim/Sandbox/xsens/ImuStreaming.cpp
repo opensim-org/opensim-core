@@ -3,6 +3,8 @@
 #include <xsens/xscontrol.h>
 #include <xsens/xsmutex.h>
 
+#include <OpenSim/OpenSim.h>
+
 #include <iostream>
 #include <iomanip>
 #include <mutex>
