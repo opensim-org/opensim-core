@@ -1,9 +1,13 @@
+// Important note: Have to include OpenSim before
+// xsens because otherwise there will be compiler
+// errors in Simbody headers. This happens because
+// xsens sysmbols are in global namespace.
+#include <OpenSim/OpenSim.h>
+
 #include <xsensdeviceapi.h>
 #include <xsens/xsstring.h>
 #include <xsens/xscontrol.h>
 #include <xsens/xsmutex.h>
-
-#include <OpenSim/OpenSim.h>
 
 #include <iostream>
 #include <iomanip>
