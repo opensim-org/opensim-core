@@ -9,8 +9,7 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED 11)
 set(CMAKE_CXX_STANDARD 11)
 
-set(XSENS_SDK_DIR "" CACHE PATH
-    "Directory containing XSENS SDK.")
+set(XSENS_SDK_DIR "" CACHE PATH "Directory containing XSENS SDK.")
 
 if(NOT XSENS_SDK_DIR)
     return()
@@ -30,13 +29,16 @@ endif()
 
 include_directories("${XSENS_ROOT}/include")
 
-add_executable(XsensImuStreaming ImuStreaming.cpp)
-target_link_libraries(XsensImuStreaming ${XSENS_LIBRARIES})
-
 file(GLOB XSENS_DLLS "${XSENS_ROOT}/lib/*.dll")
 foreach(DLL ${XSENS_DLLS})
     get_filename_component(DLLNAME ${DLL} NAME)
-    add_custom_target(CopyXsensDll_${DLLNAME}
-                      COMMAND ${CMAKE_COMMAND} -E copy ${DLL}
-                              "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    set(XSENS_DLL_TARGETS ${XSENS_DLL_TARGETS} ${DLLNAME})
+    add_custom_target(${DLLNAME}
+        COMMAND ${CMAKE_COMMAND} -E copy ${DLL}
+                "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}"
+        COMMENT "Copying XSENS DLL ${DLLNAME} to ${CMAKE_CFG_INTDIR}")
 endforeach()
+
+add_executable(XsensImuStreaming ImuStreaming.cpp)
+target_link_libraries(XsensImuStreaming ${XSENS_LIBRARIES})
+add_dependencies(XsensImuStreaming ${XSENS_DLL_TARGETS})
