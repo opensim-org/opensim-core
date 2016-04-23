@@ -55,6 +55,14 @@ protected:
 };
 
 class MtwCallback : public XsCallback {
+public:
+    MtwCallback() = default;
+    
+    MtwCallback(OpenSim::Model& model) :
+        _numPackets{},
+        _model{&model}
+    {}
+    
 protected:
     void onDeviceStateChanged(XsDevice *dev, 
                               XsDeviceState newState, 
@@ -64,26 +72,23 @@ protected:
 
     void onLiveDataAvailable(XsDevice* device, 
                              const XsDataPacket* packet) override {
-        const auto time  = packet->sampleTime64();
         const auto euler = packet->orientationEuler();
-        const auto quat  = packet->orientationQuaternion();
-        const auto accel = packet->rawAcceleration();
         ++_numPackets;
         if(_numPackets % 10 == 0) {
+            auto& state = _model->updWorkingState();
+            _model->getCoordinateSet()[0].setValue(state, euler.roll());
+            _model->getCoordinateSet()[1].setValue(state, euler.pitch());
+            _model->getCoordinateSet()[2].setValue(state, euler.yaw());
+            _model->updVisualizer().updSimbodyVisualizer().drawFrameNow(state);
+            
             std::cout << "Packet received: " << _numPackets << " " 
                       << device->deviceId() << " "
-                      << time << " "
-                      << std::setw(7) << std::fixed << std::setprecision(2)
-                      << euler.x() << " " 
-                      << euler.y() << " " 
-                      << euler.z() << " "
-                      << quat.w() << " " 
-                      << quat.x() << " " 
-                      << quat.y() << " " 
-                      << quat.z() << " "
-                      << accel[0] << " "
-                      << accel[1] << " "
-                      << accel[2] << " "
+                      << std::setw(8) << std::fixed << std::setprecision(2)
+                      << euler.x()
+                      << std::setw(8) << std::fixed << std::setprecision(2)
+                      << euler.y()
+                      << std::setw(8) << std::fixed << std::setprecision(2)
+                      << euler.z()
                       << std::endl;
         }
     }
@@ -160,6 +165,7 @@ protected:
 
 private:
     unsigned _numPackets;
+    OpenSim::Model* _model;
 };
 
 int main() {
@@ -237,11 +243,48 @@ int main() {
     std::cout << "Retrieve devices connected to wireless master ... end"
               << std::endl;
 
-    std::cout << "Add callback handler for devices ... begin" << std::endl;
-    std::vector<MtwCallback> deviceCallbacks{connectedDevices.size()};
-    for(auto i = 0u; i < connectedDevices.size(); ++i)
-        connectedDevices[i]->addCallbackHandler(&deviceCallbacks.at(i));
-    std::cout << "Add callback handler for devices ... end" << std::endl;
+    OpenSim::Model model{};
+    model.setUseVisualizer(true);
+    
+    auto slab = new OpenSim::Body{"slab", 
+                                  1, 
+                                  SimTK::Vec3{0}, 
+                                  SimTK::Inertia{0}};
+
+    auto balljoint = new OpenSim::BallJoint{"balljoint",
+                                            model.getGround(),
+                                            SimTK::Vec3{0, 1, 0},
+                                            SimTK::Vec3{0},
+                                            *slab,
+                                            SimTK::Vec3{0},
+                                            SimTK::Vec3{0}};
+
+    OpenSim::Brick brick{};
+    brick.setFrameName("slab");
+    brick.set_half_lengths(SimTK::Vec3{0.5, 0.05, 0.25});
+    slab->addGeometry(brick);
+
+    model.addBody(slab);
+    model.addJoint(balljoint);
+
+    auto& state = model.initSystem();
+
+    model.updMatterSubsystem().setShowDefaultGeometry(false);
+    SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    viz.setBackgroundType(viz.GroundAndSky);
+    viz.setShowSimTime(true);
+    viz.drawFrameNow(state);
+    
+    std::cout << "Add callback handler for first device ... begin" << std::endl;
+    MtwCallback mtwCallback{model};
+    connectedDevices.at(0)->addCallbackHandler(&mtwCallback);
+    std::cout << "Add callback handler for first device ... end" << std::endl;
+
+    // std::cout << "Add callback handler for devices ... begin" << std::endl;
+    // std::vector<MtwCallback> deviceCallbacks{connectedDevices.size()};
+    // for(auto i = 0u; i < connectedDevices.size(); ++i)
+        // connectedDevices[i]->addCallbackHandler(&deviceCallbacks.at(i));
+    // std::cout << "Add callback handler for devices ... end" << std::endl;
 
     std::cout << "Measuring ..." << std::endl;
     std::cout << "(Press any key to stop)" << std::endl;
