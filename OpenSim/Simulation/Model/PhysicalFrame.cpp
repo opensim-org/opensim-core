@@ -196,9 +196,13 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                 physFrameNode.setAttributeValue("name", physFrameName + "_frame_geometry");
                 XMLDocument::addConnector(physFrameNode, "Connector_Frame_", "frame", physFrameName);
                 SimTK::Xml::Element appearanceNode("Appearance");
+                SimTK::Xml::Element surface_properties{"SurfaceProperties"};
+                surface_properties.setAttributeValue("name", 
+                                                     "surface_properties");
                 SimTK::Xml::Element frameRepresentation("representation");
                 frameRepresentation.setValue("0");
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
+                surface_properties.insertNodeAfter(surface_properties.element_end(), frameRepresentation);
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(), surface_properties);
                 physFrameNode.insertNodeAfter(physFrameNode.element_end(), appearanceNode);
                 SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
                 if (geomSetIter != aNode.element_end()) {
@@ -304,7 +308,12 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                     SimTK::String rep = "3";
                     reprIter->setValue(rep);
                 }
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(reprIter));
+                SimTK::Xml::Element surface_properties("SurfaceProperties");
+                surface_properties.setAttributeValue("name", 
+                                                     "surface_properties");
+                surface_properties.insertNodeAfter(surface_properties.element_end(), displayGeomIter->removeNode(reprIter));
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                                               surface_properties);
             }
             meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
             // Insert Mesh into parent

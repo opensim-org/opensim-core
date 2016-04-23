@@ -730,6 +730,14 @@ Object::checkForInvalidPropertiesInXml(SimTK::Xml::Element& aNode) const {
             msg += " name=\"" + elemName + "\"";
         msg += "> that is not a valid property.";
 
+        const auto& nodeToPrint = aNode.hasParentElement() ? 
+                                  aNode.getParentElement() : aNode;
+        SimTK::String nodeAsStr{};
+        nodeToPrint.writeToString(nodeAsStr);
+
+        msg += "\n----------------------------------------------\n";
+        msg += nodeAsStr;
+
         OPENSIM_THROW_IF(_invalidPropertyException,
                          InvalidXmlProperty,
                          msg);
