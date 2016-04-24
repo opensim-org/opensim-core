@@ -99,6 +99,7 @@ for both OpenSim and Simbody." ON)
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (ik, rra, etc.)." OFF)
 
+option(USE_UNITY_BUILD "Use unity build for fast building" ON)
 
 # Configure installation directories across platforms.
 # ----------------------------------------------------

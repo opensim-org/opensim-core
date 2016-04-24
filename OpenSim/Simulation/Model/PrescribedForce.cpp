@@ -42,7 +42,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(Body* body)
+PrescribedForce::PrescribedForce(OpenSim::Body* body)
 {
     setNull();
     constructProperties();
@@ -111,7 +111,8 @@ void PrescribedForce::constructProperties()
     constructProperty_torqueFunctions(FunctionSet());
 }
 
-void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
+void PrescribedForce::setForceFunctions(OpenSim::Function* forceX, 
+    OpenSim::Function* forceY, OpenSim::Function* forceZ)
 {
     FunctionSet& forceFunctions = updForceFunctions();
 
@@ -122,7 +123,8 @@ void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Func
 }
 
 
-void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Function* pointZ)
+void PrescribedForce::setPointFunctions(OpenSim::Function* pointX, 
+    OpenSim::Function* pointY, OpenSim::Function* pointZ)
 {
     FunctionSet& pointFunctions = updPointFunctions();
 
@@ -132,7 +134,8 @@ void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Func
     pointFunctions.cloneAndAppend(*pointZ);
 }
 
-void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ)
+void PrescribedForce::setTorqueFunctions(OpenSim::Function* torqueX, 
+    OpenSim::Function* torqueY, OpenSim::Function* torqueZ)
 {
     FunctionSet& torqueFunctions = updTorqueFunctions();
 

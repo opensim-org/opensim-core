@@ -139,6 +139,8 @@ public:
     int getUniqueFunctionUserNumber(const OpenSim::Function* aFunction);
     bool writeMuscleFile(const std::string& aFileName);
     bool writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet, std::ofstream& aStream);
+    
+    static const double defaultAxes[][3];
 
 //=============================================================================
 };  // END of class SimbodySimmModel

@@ -84,7 +84,7 @@ void PointToPointActuator::constructProperties()
  *
  * @param aBody Pointer to the generalized Body.
  */
-void PointToPointActuator::setBodyA(Body* aBody)
+void PointToPointActuator::setBodyA(OpenSim::Body* aBody)
 {
     _bodyA = aBody;
     if(aBody)
@@ -97,7 +97,7 @@ void PointToPointActuator::setBodyA(Body* aBody)
  *
  * @param aBody Pointer to the generalized Body.
  */
-void PointToPointActuator::setBodyB(Body* aBody)
+void PointToPointActuator::setBodyB(OpenSim::Body* aBody)
 {
     _bodyB = aBody;
     if(aBody)

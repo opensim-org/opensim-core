@@ -39,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const char* wrapTypeName = "doubleCylinderObst";
+static const char* wrapDoubleCylinderObstTypeName = "doubleCylinderObst";
 
 //static const double TwoPi = 2.0*SimTK::Pi;
 // static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
@@ -242,7 +242,7 @@ void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleC
  */
 const char* WrapDoubleCylinderObst::getWrapTypeName() const
 {
-    return wrapTypeName;
+    return wrapDoubleCylinderObstTypeName;
 }
 
 //_____________________________________________________________________________

@@ -175,7 +175,7 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 //=============================================================================
 
 void PrescribedController::
-    prescribeControlForActuator(int index, Function *prescribedFunction)
+    prescribeControlForActuator(int index, OpenSim::Function *prescribedFunction)
 {
     SimTK_ASSERT( index < getActuatorSet().getSize(), 
         "PrescribedController::computeControl:  index > number of actuators" );
@@ -186,9 +186,8 @@ void PrescribedController::
     upd_ControlFunctions().set(index, prescribedFunction);  
 }
 
-void PrescribedController::
-    prescribeControlForActuator(const std::string actName, 
-                                Function *prescribedFunction)
+void PrescribedController::prescribeControlForActuator(const std::string actName, 
+    OpenSim::Function *prescribedFunction)
 {
     int index = getProperty_actuator_list().findIndex(actName);
     if(index < 0 )
@@ -197,8 +196,8 @@ void PrescribedController::
 }
 
 // utility
-Function* PrescribedController::createFunctionFromData(const std::string& name,
-                        const Array<double>& time, const Array<double>& data)
+OpenSim::Function* PrescribedController::createFunctionFromData(const std::string& name,
+    const Array<double>& time, const Array<double>& data)
 {
     int method = 1;
     if(!getProperty_interpolation_method().empty())

@@ -229,12 +229,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactMesh() );
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
-    Object::registerType( HuntCrossleyForce() );
-    Object::registerType( ElasticFoundationForce() );
-    Object::registerType( HuntCrossleyForce::ContactParameters() );
-    Object::registerType( HuntCrossleyForce::ContactParametersSet() );
-    Object::registerType( ElasticFoundationForce::ContactParameters() );
-    Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType( OpenSim::HuntCrossleyForce() );
+    Object::registerType( OpenSim::ElasticFoundationForce() );
+    Object::registerType( OpenSim::HuntCrossleyForce::ContactParameters() );
+    Object::registerType( OpenSim::HuntCrossleyForce::ContactParametersSet() );
+    Object::registerType( OpenSim::ElasticFoundationForce::ContactParameters() );
+    Object::registerType( OpenSim::ElasticFoundationForce::ContactParametersSet() );
 
     Object::registerType( Ligament() );
     Object::registerType( PrescribedForce() );
@@ -266,7 +266,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<Frame>());
     Object::registerType(Connector<PhysicalFrame>());
-    Object::registerType(Connector<Body>());
+    Object::registerType(Connector<OpenSim::Body>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

@@ -49,7 +49,7 @@ using namespace std;
  *
  * @param aTrueFalse Scientific notation if true, and float if false.
  */
-Exception::
+OpenSim::Exception::
 Exception(const string &aMsg,const string &aFile,int aLine):
 exception()
 {
@@ -66,14 +66,14 @@ exception()
 //#endif
 }
 
-Exception::Exception(const std::string& file,
+OpenSim::Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
     addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
                "\tIn function '" + func + "'");
 }
 
-Exception::Exception(const std::string& file,
+OpenSim::Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func,
                      const std::string& msg)
@@ -81,7 +81,7 @@ Exception::Exception(const std::string& file,
     addMessage(msg);
 }
 
-Exception::Exception(const std::string& file,
+OpenSim::Exception::Exception(const std::string& file,
               size_t line,
               const std::string& func,
               const Object& obj) 
@@ -92,7 +92,7 @@ Exception::Exception(const std::string& file,
     addMessage("\tIn object '" + objName + "' of type " + className + ".");
 }
 
-Exception::Exception(const std::string& file,
+OpenSim::Exception::Exception(const std::string& file,
               size_t line,
               const std::string& func,
               const Object& obj,
@@ -102,7 +102,7 @@ Exception::Exception(const std::string& file,
 }
 
 void
-Exception::addMessage(const std::string& msg) {
+OpenSim::Exception::addMessage(const std::string& msg) {
     if(_msg.length() == 0)
         _msg = msg;
     else
@@ -110,7 +110,7 @@ Exception::addMessage(const std::string& msg) {
 }
 
 const char*
-Exception::what() const noexcept {
+OpenSim::Exception::what() const noexcept {
     return getMessage();
 }
 
@@ -121,7 +121,7 @@ Exception::what() const noexcept {
 /**
  * Set the member variables to NULL values.
  */
-void Exception::
+void OpenSim::Exception::
 setNull()
 {
     setMessage("");
@@ -141,7 +141,7 @@ setNull()
  *
  * @param aMsg Message.
  */
-void Exception::
+void OpenSim::Exception::
 setMessage(const string &aMsg)
 {
     _msg = aMsg;
@@ -152,7 +152,7 @@ setMessage(const string &aMsg)
  *
  * @return Message.
  */
-const char* Exception::
+const char* OpenSim::Exception::
 getMessage() const
 {
     return(_msg.c_str());
@@ -171,7 +171,7 @@ getMessage() const
  *
  * @param aOut Output stream
  */
-void Exception::
+void OpenSim::Exception::
 print(ostream &aOut) const
 {
     // HEADER

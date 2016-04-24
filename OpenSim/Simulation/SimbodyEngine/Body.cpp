@@ -47,7 +47,7 @@ using SimTK::DecorativeGeometry;
 /**
  * Default constructor.
  */
-Body::Body() : PhysicalFrame()
+OpenSim::Body::Body() : PhysicalFrame()
 {
     constructProperties();
 }
@@ -56,7 +56,8 @@ Body::Body() : PhysicalFrame()
 /**
  * Constructor.
  */
-Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
+OpenSim::Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
+    const SimTK::Inertia& aInertia) :
     PhysicalFrame()
 {
     constructProperties();
@@ -70,7 +71,7 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
 /**
  * Connect properties to local pointers.
  */
-void Body::constructProperties()
+void OpenSim::Body::constructProperties()
 {
     constructProperty_mass(SimTK::NaN);
     constructProperty_mass_center(SimTK::Vec3(0));
@@ -78,7 +79,7 @@ void Body::constructProperties()
 }
 
 
-void Body::extendFinalizeFromProperties()
+void OpenSim::Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
     const SimTK::MassProperties& massProps = getMassProperties();
@@ -90,7 +91,7 @@ void Body::extendFinalizeFromProperties()
  *
  * @param aModel OpenSim model containing this Body.
  */
-void Body::extendConnectToModel(Model& aModel)
+void OpenSim::Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
     
@@ -125,7 +126,7 @@ void Body::extendConnectToModel(Model& aModel)
  *
  * @return 3x3 inertia matrix.
  */
-const SimTK::Inertia& Body::getInertia() const
+const SimTK::Inertia& OpenSim::Body::getInertia() const
 {
     // Has not been set programmatically
     if (_inertia.isNaN()){
@@ -170,7 +171,7 @@ const SimTK::Inertia& Body::getInertia() const
  *
  * @param aInertia 9-element inertia matrix.
  */
-void Body::setInertia(const SimTK::Inertia& inertia)
+void OpenSim::Body::setInertia(const SimTK::Inertia& inertia)
 {
     _inertia = inertia;
     const SimTK::SymMat33& I = _inertia.asSymMat33();
@@ -192,7 +193,7 @@ void Body::setInertia(const SimTK::Inertia& inertia)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+void OpenSim::Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
     Super::scale(aScaleFactors);
     for(int i=0; i<3; i++) {
@@ -209,7 +210,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass Whether or not to scale the mass
  */
-void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+void OpenSim::Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
     // Save the unscaled mass for possible use later.
     double unscaledMass = get_mass();
@@ -338,7 +339,7 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void Body::scaleMass(double aScaleFactor)
+void OpenSim::Body::scaleMass(double aScaleFactor)
 {
     upd_mass() *= aScaleFactor;
     _inertia *= aScaleFactor;
@@ -348,7 +349,7 @@ void Body::scaleMass(double aScaleFactor)
 //=============================================================================
 // UTILITY
 //=============================================================================
-SimTK::MassProperties Body::getMassProperties() const
+SimTK::MassProperties OpenSim::Body::getMassProperties() const
 {
     const double& m = get_mass();
     const Vec3& com = get_mass_center();
@@ -376,7 +377,7 @@ SimTK::MassProperties Body::getMassProperties() const
 // I/O
 //=============================================================================
 
-void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void OpenSim::Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30500) {
@@ -402,7 +403,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-Body* Body::addSlave()
+OpenSim::Body* OpenSim::Body::addSlave()
 {
     Body* slave = new Body();
     int count = (int)_slaves.size();

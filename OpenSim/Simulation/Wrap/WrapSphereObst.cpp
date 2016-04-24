@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const char* wrapTypeName = "sphereObst";
+static const char* wrapSphereObstTypeName = "sphereObst";
 
 
 //=============================================================================
@@ -154,7 +154,7 @@ void WrapSphereObst::copyData(const WrapSphereObst& aWrapSphereObst)
  */
 const char* WrapSphereObst::getWrapTypeName() const
 {
-    return wrapTypeName;
+    return wrapSphereObstTypeName;
 }
 
 //_____________________________________________________________________________
