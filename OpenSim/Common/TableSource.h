@@ -50,7 +50,7 @@ public:
 /** Component representing a source of data from a TimeSeriesTable_.
 
 This Component has two outputs:
-- A list output wih one channel per column of the TimeSeriesTable_. 
+- A list output with one channel per column of the TimeSeriesTable_.
 - A non-list output for a row of the TimeSeriesTable_.
 
 Construct this Component by giving it a TimeSeriesTable_. Then use it by 
