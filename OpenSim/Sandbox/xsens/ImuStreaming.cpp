@@ -33,22 +33,22 @@ protected:
             std::cout << "Master event: disconnected " << device->deviceId()
                       << std::endl;
         } else if (newState == XCS_Rejected) {
-            std::cout << "Master event: rejected " << device->deviceId()
+            std::cout << "Master event: rejected "     << device->deviceId()
                       << std::endl;
         } else if (newState == XCS_PluggedIn) {
-            std::cout << "Master event: plugged-in " << device->deviceId()
+            std::cout << "Master event: plugged-in "   << device->deviceId()
                       << std::endl;
         } else if (newState == XCS_Wireless) {
-            std::cout << "Master event: connected " << device->deviceId()
+            std::cout << "Master event: connected "    << device->deviceId()
                       << std::endl;
         } else if (newState == XCS_File) {
-            std::cout << "Master event: file " << device->deviceId()
+            std::cout << "Master event: file "         << device->deviceId()
                       << std::endl;
         } else if (newState == XCS_Unknown) {
-            std::cout << "Master event: unknown " << device->deviceId()
+            std::cout << "Master event: unknown "      << device->deviceId()
                       << std::endl;
         } else {
-            std::cout << "Master event: error " << device->deviceId() 
+            std::cout << "Master event: error "        << device->deviceId() 
                       << std::endl; 
         }
     }
@@ -64,6 +64,11 @@ public:
     {}
     
 protected:
+    double degToRad(double deg) {
+        constexpr double DEGTORAD{0.01745329};
+        return deg * DEGTORAD;
+    }
+
     void onDeviceStateChanged(XsDevice *dev, 
                               XsDeviceState newState, 
                               XsDeviceState oldState) override {
@@ -76,17 +81,24 @@ protected:
         ++_numPackets;
         if(_numPackets % 10 == 0) {
             auto& state = _model->updWorkingState();
-            _model->getCoordinateSet()[0].setValue(state, euler.roll());
-            _model->getCoordinateSet()[1].setValue(state, euler.pitch());
-            _model->getCoordinateSet()[2].setValue(state, euler.yaw());
+            // Switch yaw and pitch to make the visualizer aligned with IMU.
+            _model->getCoordinateSet()[0].setValue(state, 
+                                                   degToRad(euler.roll()));
+            _model->getCoordinateSet()[1].setValue(state, 
+                                                   degToRad(euler.yaw()));
+            _model->getCoordinateSet()[2].setValue(state, 
+                                                   degToRad(euler.pitch()));
             _model->updVisualizer().updSimbodyVisualizer().drawFrameNow(state);
             
-            std::cout << "Packet received: " << _numPackets << " " 
-                      << device->deviceId() << " "
+            std::cout << "Packet: " << _numPackets << " " 
+                      << "Device: " << device->deviceId() << " "
+                      << " Roll: "
                       << std::setw(8) << std::fixed << std::setprecision(2)
                       << euler.x()
+                      << " Pitch: "
                       << std::setw(8) << std::fixed << std::setprecision(2)
                       << euler.y()
+                      << " Yaw: "
                       << std::setw(8) << std::fixed << std::setprecision(2)
                       << euler.z()
                       << std::endl;
