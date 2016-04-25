@@ -121,8 +121,8 @@ void testNoCommand() {
         testCommand("--version", output);
     }
 
-    // Library (plugin).
-    // =================
+    // Library option.
+    // ===============
     // Syntax errors.
     testCommand("-L", std::regex("(-L requires an argument)((.|\n|\r)*)"));
     testCommand("--library",
@@ -148,21 +148,16 @@ void testNoCommand() {
 }
 
 void testInfo() {
+    // Help.
+    // =====
     {
         auto output = std::regex("(Show description )((.|\n|\r)*)");
         testCommand("info -h", output);
         testCommand("info -help", output);
     }
 
-    testCommand("info", std::regex("(REGISTERED CLASSES )((.|\n|\r)*)"));
-
-
-    testCommand("info PathSpring",
-            std::regex("\n(PROPERTIES FOR PathSpring)((.|\n|\r)*)"));
-
-    testCommand("info Body mass", "\nBody.mass\nThe mass of the body (kg)\n");
-
-    // Bad input. TODO where to place these in this method?
+    // Error messages.
+    // ===============
     testCommand("info x",
             "No registered class with name 'x'. "
             "Did you intend to load a plugin?\n");
@@ -172,7 +167,18 @@ void testInfo() {
     testCommand("info Body y",
             "No property with name 'y' found in class 'Body'.\n");
 
+    // Successful input.
+    // =================
+    testCommand("info", std::regex("(REGISTERED CLASSES )((.|\n|\r)*)"));
+    testCommand("info PathSpring",
+            std::regex("\n(PROPERTIES FOR PathSpring)((.|\n|\r)*)"));
+    testCommand("info Body mass", "\nBody.mass\nThe mass of the body (kg)\n");
+
     // TODO passing library option.
+    // Library option.
+    // ===============
+    testCommand("-L x info",
+            std::regex("((.|\n|\r)*)(Failed to load library x)\n"));
 }
 
 int main() {
