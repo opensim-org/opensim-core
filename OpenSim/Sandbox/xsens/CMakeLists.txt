@@ -6,7 +6,7 @@ if(NOT WIN32)
     return()
 endif()
 
-set(CMAKE_CXX_STANDARD_REQUIRED 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
 
 set(XSENS_SDK_DIR "" CACHE PATH "Directory containing XSENS SDK.")
