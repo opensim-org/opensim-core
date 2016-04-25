@@ -57,6 +57,11 @@ public:
         "Name of the generalized coordinate to which the actuator applies.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum generalized force produced by this actuator.");
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(force, double, computeActuation,
+                           SimTK::Stage::Acceleration);
 
 //==============================================================================
 // PUBLIC METHODS
