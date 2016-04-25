@@ -7,14 +7,7 @@ project(OpenSim)
 #
 #
 #----------------------------------------------------
-
-if(MSVC)
-    # To properly support Visual Studio 2015.
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 3.1.3)
-else()
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 2.8.8)
-endif()
-cmake_minimum_required(VERSION ${OPENSIM_REQUIRED_CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.1.3)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -381,28 +374,11 @@ endif()
 
 include(InstallRequiredSystemLibraries)
 
-# C++11
-# -----
-# In revision 8629, we started using std::unique_ptr, which requires
-# C++11 features to be enabled when using GCC or Clang.
-if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    # Using C++11 on OSX requires using libc++ instead of libstd++.
-    # libc++ is an implementation of the C++ standard library for OSX.
-    if(APPLE)
-        if(XCODE)
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-            endif()
-        endif()
-    else() # not APPLE
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-endif()
-
+# Minimum required C++ standard --> C++11.
+set(CMAKE_CXX_STANDARD_REQUIRED ON
+    CACHE INTERNAL "Minimum C++ standard support required from compiler.")
+set(CMAKE_CXX_STANDARD 11
+    CACHE INTERNAL "C++ standard for all targets.")
 
 ## On APPLE, use MACOSX_RPATH.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
