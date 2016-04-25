@@ -77,6 +77,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew unlink cmake; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install cmake; fi
   - cmake --version
+  
   ## Set up environment variables.
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
