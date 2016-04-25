@@ -55,28 +55,35 @@ int info(int argc, const char** argv) {
             HELP_INFO, { argv + 1, argv + argc },
             true); // show help if requested
 
+    // No arguments were provided.
     if (!args["<class>"]) {
         Object::PrintPropertyInfo(std::cout, "", false);
-    } else if (!args["<property>"]) {
-        const std::string& className = args["<class>"].asString();
-        const Object* object = Object::getDefaultInstanceOfType(className);
-        if (object == nullptr) {
-            throw Exception( "No registered class with name '" + className +
-                    "'. Did you intend to load a plugin?");
-        }
-        Object::PrintPropertyInfo(std::cout, className, false);
-    } else {
-        const std::string& className = args["<class>"].asString();
-        const std::string& propName = args["<property>"].asString();
-
-        const bool success = Object::PrintPropertyInfo(std::cout,
-                className, propName, false);
-        if (!success) {
-            throw Exception("No property with name '" + propName +
-                            "' found in class '" + className + "'.");
-        }
+        return EXIT_SUCCESS;
     }
 
+    // Class was provided.
+    const std::string& className = args["<class>"].asString();
+    const Object* object = Object::getDefaultInstanceOfType(className);
+    if (object == nullptr) {
+        throw Exception( "No registered class with name '" + className +
+                "'. Did you intend to load a plugin?");
+    }
+
+    // Property was not provided.
+    if (!args["<property>"]) {
+        Object::PrintPropertyInfo(std::cout, className, false);
+        return EXIT_SUCCESS;
+    }
+
+    // Both class and property were provided.
+    const std::string& propName = args["<property>"].asString();
+
+    const bool success = Object::PrintPropertyInfo(std::cout,
+            className, propName, false);
+    if (!success) {
+        throw Exception("No property with name '" + propName +
+                "' found in class '" + className + "'.");
+    }
     return EXIT_SUCCESS;
 }
 

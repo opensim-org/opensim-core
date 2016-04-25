@@ -166,11 +166,13 @@ void testInfo() {
     testCommand("info x",
             "No registered class with name 'x'. "
             "Did you intend to load a plugin?\n");
-    // TODO testCommand("info x y",
-    // TODO         "No registered class with name 'x'. "
-    // TODO         "Did you intend to load a plugin?\n");
+    testCommand("info x y",
+            "No registered class with name 'x'. "
+            "Did you intend to load a plugin?\n");
     testCommand("info Body y",
             "No property with name 'y' found in class 'Body'.\n");
+
+    // TODO passing library option.
 }
 
 int main() {

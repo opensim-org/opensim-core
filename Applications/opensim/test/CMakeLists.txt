@@ -10,4 +10,4 @@ add_dependencies(testCommandLineInterface opensim-cli)
 
 # TODO different with Xcode or MSVC.
 set_target_properties(testCommandLineInterface PROPERTIES
-    COMPILE_DEFINITIONS "OSIM_CLI_PATH=../../../opensim-cli")
+    COMPILE_DEFINITIONS "OSIM_CLI_PATH=$<TARGET_FILE:opensim-cli>")
