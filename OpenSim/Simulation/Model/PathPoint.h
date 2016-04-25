@@ -158,7 +158,7 @@ public:
 
     static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 //=============================================================================
 };  // END of class PathPoint_
 //=============================================================================

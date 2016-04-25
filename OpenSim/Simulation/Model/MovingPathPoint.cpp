@@ -50,7 +50,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-MovingPathPoint::MovingPathPoint() :
+MovingPathPoint::MovingPathPoint() : PathPoint(),
    _xLocation(_xLocationProp.getValueObjPtrRef()),
     _xCoordinateName(_xCoordinateNameProp.getValueStr()),
    _yLocation(_yLocationProp.getValueObjPtrRef()),
@@ -224,7 +224,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         }
     
     // Call base class now assuming _node has been corrected for current version
-    Object::updateFromXMLNode(aNode, versionNumber);
+    Super::updateFromXMLNode(aNode, versionNumber);
 }
 
 //_____________________________________________________________________________

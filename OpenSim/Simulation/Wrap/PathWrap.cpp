@@ -43,14 +43,10 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-PathWrap::PathWrap() :
-    Component(),
-    _wrapObjectName(_wrapObjectNameProp.getValueStr()),
-    _methodName(_methodNameProp.getValueStr()),
-   _range(_rangeProp.getValueIntArray())
+PathWrap::PathWrap() : Component()
 {
     setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -61,24 +57,6 @@ PathWrap::~PathWrap()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aPathWrap PathWrap to be copied.
- */
-PathWrap::PathWrap(const PathWrap& aPathWrap) :
-    Component(aPathWrap),
-    _wrapObjectName(_wrapObjectNameProp.getValueStr()),
-    _methodName(_methodNameProp.getValueStr()),
-   _range(_rangeProp.getValueIntArray())
-{
-    setNull();
-    setupProperties();
-    copyData(aPathWrap);
-}
-
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -88,8 +66,6 @@ PathWrap::PathWrap(const PathWrap& aPathWrap) :
  */
 void PathWrap::setNull()
 {
-    _method = hybrid;
-
     resetPreviousWrap();
 }
 
@@ -97,20 +73,12 @@ void PathWrap::setNull()
 /**
  * Connect properties to local pointers.
  */
-void PathWrap::setupProperties()
+void PathWrap::constructProperties()
 {
-    _wrapObjectNameProp.setName("wrap_object");
-    _propertySet.append(&_wrapObjectNameProp);
-
-    _methodNameProp.setName("method");
-    _methodNameProp.setValue("Unassigned");
-    _propertySet.append(&_methodNameProp);
-
-    const int defaultRange[] = {-1, -1};
-    _rangeProp.setName("range");
-    _rangeProp.setValue(2, defaultRange);
-    _rangeProp.setAllowableListSize(2);
-    _propertySet.append(&_rangeProp);
+    constructProperty_wrap_object("");
+    constructProperty_method("hybrid");
+    OpenSim::Array<int> range(-1, 2);
+    constructProperty_range(range);
 }
 
 
@@ -137,75 +105,36 @@ void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
     updWrapPoint1().connectToModelAndPath(aModel, aPath);
     updWrapPoint2().connectToModelAndPath(aModel, aPath);
 
-    if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
+    if (get_method() == "hybrid" || get_method() == "Hybrid" || get_method() == "HYBRID")
         _method = hybrid;
-    else if (_methodName == "midpoint" || _methodName == "Midpoint" || _methodName == "MIDPOINT")
+    else if (get_method() == "midpoint" || get_method() == "Midpoint" || get_method() == "MIDPOINT")
         _method = midpoint;
-    else if (_methodName == "axial" || _methodName == "Axial" || _methodName == "AXIAL")
+    else if (get_method() == "axial" || get_method() == "Axial" || get_method() == "AXIAL")
         _method = axial;
-    else if (_methodName == "Unassigned") {  // method was not specified in wrap object definition; use default
+    else if (get_method() == "Unassigned") {  // method was not specified in wrap object definition; use default
         _method = hybrid;
-        _methodName = "hybrid";
+        upd_method() = "hybrid";
     } else {  // method was specified incorrectly in wrap object definition; throw an exception
         string errorMessage = "Error: wrapping method for wrap object " + getName() + " was either not specified, or specified incorrectly.";
         throw Exception(errorMessage);
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Copy data members from one PathWrap to another.
- *
- * @param aPathWrap PathWrap to be copied.
- */
-void PathWrap::copyData(const PathWrap& aPathWrap)
-{
-    _wrapObjectName = aPathWrap._wrapObjectName;
-    _methodName = aPathWrap._methodName;
-    _method = aPathWrap._method;
-    _range = aPathWrap._range;
-    _wrapObject = aPathWrap._wrapObject;
-    _previousWrap = aPathWrap._previousWrap;
-
-    updWrapPoint1() = aPathWrap.getWrapPoint1();
-    updWrapPoint2() = aPathWrap.getWrapPoint2();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-PathWrap& PathWrap::operator=(const PathWrap& aPathWrap)
-{
-    // BASE CLASS
-    Object::operator=(aPathWrap);
-
-    copyData(aPathWrap);
-
-    return(*this);
-}
-
-
 void PathWrap::setStartPoint( const SimTK::State& s, int aIndex)
 {
-    if ((aIndex != _range[0]) && (aIndex == -1 || _range[1] == -1 || (aIndex >= 1 && aIndex <= _range[1])))
+    if ((aIndex != get_range(0)) && 
+        (aIndex == -1 || get_range(1) == -1 || (aIndex >= 1 && aIndex <= get_range(1))))
     {
-        _range[0] = aIndex;
-        _rangeProp.setValueIsDefault(false);
+        upd_range(0) = aIndex;
     }
 }
 
 void PathWrap::setEndPoint( const SimTK::State& s, int aIndex)
 {
-    if ((aIndex != _range[1]) && (aIndex == -1 || _range[0] == -1 || (aIndex >= _range[0] && aIndex <= _path->getPathPointSet().getSize())))
+    if ((aIndex != get_range(1)) && 
+        (aIndex == -1 || get_range(0) == -1 || (aIndex >= get_range(0) && aIndex <= _path->getPathPointSet().getSize())))
     {
-        _range[1] = aIndex;
-        _rangeProp.setValueIsDefault(false);
+        upd_range(1) = aIndex;
     }
 }
 
@@ -233,19 +162,19 @@ void PathWrap::setPreviousWrap(const WrapResult& aWrapResult)
 void PathWrap::setWrapObject(WrapObject& aWrapObject)
 {
     _wrapObject = &aWrapObject;
-    _wrapObjectName = aWrapObject.getName();
+    upd_wrap_object() = aWrapObject.getName();
 }
 
 void PathWrap::setMethod(WrapMethod aMethod)
 {
     if (aMethod == axial) {
         _method = axial;
-        _methodName = "axial";
+        upd_method() = "axial";
     } else if (aMethod == midpoint) {
         _method = midpoint;
-        _methodName = "midpoint";
+        upd_method() = "midpoint";
     } else if (aMethod == hybrid) {
         _method = hybrid;
-        _methodName = "hybrid";
+        upd_method() = "hybrid";
     }
 }
