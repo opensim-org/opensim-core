@@ -362,14 +362,23 @@ public:
         PropertyName is empty or "*", the information for all properties in the 
         class is printed. If ClassName is empty, the information for the 
         properties of all registered classes is printed.
-    **/
-    static void PrintPropertyInfo(std::ostream&      os,
-                                  const std::string& classNameDotPropertyName);
+    @param           printFlagInfo 
+        Print to the ostream some instructions for using the -PropertyInfo
+        command line flag.
+
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&      os,
+                                  const std::string& classNameDotPropertyName,
+                                  bool printFlagInfo = true);
     /** Same as the other signature but the class name and property name are
-    provided as two separate strings. **/
-    static void PrintPropertyInfo(std::ostream&         os,
+    provided as two separate strings. 
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&         os,
                                   const std::string&    className,
-                                  const std::string&    propertyName);
+                                  const std::string&    propertyName,
+                                  bool printFlagInfo = true);
     /**@}**/
     //--------------------------------------------------------------------------
 

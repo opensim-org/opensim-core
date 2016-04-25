@@ -1,1 +1,1 @@
-OpenSimAddApplication(versionUpdate)
+OpenSimAddApplication(NAME versionUpdate)

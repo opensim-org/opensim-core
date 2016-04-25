@@ -1,4 +1,4 @@
-OpenSimAddApplication(forward)
+OpenSimAddApplication(NAME forward)
 
 if(BUILD_TESTING)
     subdirs(test)

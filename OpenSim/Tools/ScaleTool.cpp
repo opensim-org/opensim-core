@@ -245,3 +245,36 @@ Model* ScaleTool::createModel()
     }
     return 0;
 }
+
+bool ScaleTool::run() {
+    std::unique_ptr<Model> model(createModel());
+
+    if(model == nullptr) { 
+        throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+    }
+
+    if (!isDefaultModelScaler() && getModelScaler().getApply())
+    {
+        ModelScaler& scaler = getModelScaler();
+        if(!scaler.processModel(model.get(), getPathToSubject(), getSubjectMass())) {
+            return false;
+        }
+    }
+    else
+    {
+        cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
+    }
+
+    if (!isDefaultMarkerPlacer())
+    {
+        MarkerPlacer& placer = getMarkerPlacer();
+        if(!placer.processModel(model.get(), getPathToSubject())) {
+            return false;
+        }
+    }
+    else
+    {
+        cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
+    }
+    return true;
+}

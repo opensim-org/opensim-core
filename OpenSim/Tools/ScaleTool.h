@@ -118,6 +118,8 @@ public:
         return _markerPlacer;
     }
 
+    bool run();
+
     bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getValueIsDefault(); }
     bool isDefaultModelScaler() { return _modelScalerProp.getValueIsDefault(); }
     bool isDefaultMarkerPlacer() { return _markerPlacerProp.getValueIsDefault(); }

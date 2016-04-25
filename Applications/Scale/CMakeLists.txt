@@ -1,4 +1,4 @@
-OpenSimAddApplication(scale)
+OpenSimAddApplication(NAME scale)
 
 if(BUILD_TESTING)
     subdirs(test)
