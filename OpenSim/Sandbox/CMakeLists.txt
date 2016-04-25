@@ -35,3 +35,5 @@ if(UNIX)
     add_executable(ImuStreaming ImuStreaming.cpp)
     target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
 endif()
+
+add_subdirectory(xsens)
