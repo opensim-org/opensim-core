@@ -87,8 +87,6 @@ void scaleGait2354()
     IO::SetDigitsPad(4);
 
     std::string setupFilePath;
-    ScaleTool* subject;
-    Model* model;
 
     // Remove old results if any
     FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
@@ -97,43 +95,19 @@ void scaleGait2354()
     fclose(file2Remove);
 
     // Construct model and read parameters file
-    subject = new ScaleTool("subject01_Setup_Scale.xml");
+    std::unique_ptr<ScaleTool> subject(new ScaleTool("subject01_Setup_Scale.xml"));
 
     // Keep track of the folder containing setup file, will be used to locate results to compare against
     setupFilePath=subject->getPathToSubject();
 
-    model = subject->createModel();
+    subject->run();
 
-    SimTK::State& s = model->updWorkingState();
-    model->getMultibodySystem().realize(s, SimTK::Stage::Position );
-
-    if(!model) {
-        //throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
-        cout << "scale: ERROR- No model specified.";
-    }
-
-    ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
-    ModelScaler& scaler = subject->getModelScaler();
-    ASSERT(scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass()));
-
-    /*
-    if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
-        MarkerPlacer& placer = subject->getMarkerPlacer();
-        if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
-    }
-    else {
-        return(1);
-    }
-    */
     // Compare ScaleSet
     ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
     const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
     ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
-
-    delete model;
-    delete subject;
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)
