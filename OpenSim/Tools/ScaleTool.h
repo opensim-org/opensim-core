@@ -118,6 +118,10 @@ public:
         return _markerPlacer;
     }
 
+    /** Run the scale tool. This first runs the ModelScaler, then runs the
+     * MarkerPlacer. This is the method called by the command line `scale`
+     * executable. 
+     * @returns whether or not the scale procedure was successful. */
     bool run();
 
     bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getValueIsDefault(); }
