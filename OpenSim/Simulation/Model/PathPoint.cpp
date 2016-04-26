@@ -56,7 +56,6 @@ using SimTK::Transform;
  */
 void PathPoint::copyData(const PathPoint &aPoint)
 {
-    cout << getConcreteClassName() << "::copyData()" << endl;
     _path = aPoint._path;
 }
 
