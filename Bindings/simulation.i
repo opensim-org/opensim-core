@@ -132,6 +132,8 @@
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
+
+%include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
