@@ -67,9 +67,6 @@ void PathPoint::connectToModelAndPath(Model& model, GeometryPath& path)
 {
     Super::connectToModel(model);
     _path = &path;
-
-    cout << getConcreteClassName() << " connected to model " << model.getName();
-    cout << "and path " << path.getFullPathName();
 }
 
 
