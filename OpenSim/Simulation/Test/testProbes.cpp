@@ -90,10 +90,10 @@ why this value is included.
 @param printResults print the osim model associated with this test.
 */
 void simulateMuscle(const Muscle &aMuscle,
-    double startX,
-    double act0,
-    const Function *motion,
-    const Function *control,
+                    double startX,
+                    double act0,
+                    const OpenSim::Function *motion,
+                    const OpenSim::Function *control,
                     double integrationAccuracy,
                     int testType,
                     double testTolerance,
@@ -135,7 +135,7 @@ int main()
         cout << "Probes test passed" << endl;
     }
 
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         failures.push_back("testProbes");
     }
@@ -164,17 +164,17 @@ TODO: Test will fail with prescribed motion until the work done by this
 constraint is accounted for.
 ================================================================================
 */
-void simulateMuscle(
-    const Muscle &aMuscModel,
-    double startX,
-    double act0,
-        const Function *motion,  // prescribe motion of free end of muscle
-        const Function *control, // prescribed excitation signal to the muscle
-        double integrationAccuracy,
-        int testType,
-        double testTolerance,
-        bool printResults)
-{
+void simulateMuscle(const Muscle &aMuscModel,
+                    double startX,
+                    double act0,
+                    // prescribe motion of free end of muscle
+                    const OpenSim::Function *motion,  
+                    // prescribed excitation signal to the muscle
+                    const OpenSim::Function *control, 
+                    double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
+                    bool printResults) {
     string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
     cout << "\n******************************************************" << endl;
