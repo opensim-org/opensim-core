@@ -27,16 +27,8 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <sstream>
-#include <iostream>
-#include "IO.h"
-#include "Signal.h"
-#include "Storage.h"
-#include "GCVSplineSet.h"
-#include "SimmIO.h"
-#include "SimmMacros.h"
-#include "SimTKcommon.h"
+#include "common.h"
+
 
 using namespace OpenSim;
 using namespace std;
