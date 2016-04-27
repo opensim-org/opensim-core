@@ -44,10 +44,10 @@ set(PCH_ARGS ${CMAKE_CXX_COMPILER_ARG1}
              -o ${HEADER_PCH})
 separate_arguments(PCH_ARGS)
 
-add_custom_target(CommonPCH
+add_custom_command(OUTPUT ${HEADER_PCH}
     COMMAND rm -f ${HEADER_PCH}
     COMMAND ${CMAKE_CXX_COMPILER} ${PCH_ARGS} 
-    DEPENDS ${HEADER}
+    DEPENDS ${INCLUDES} ${HEADER}
     COMMENT "Generating precompiled header -- common")
 
 #################################################### PRECOMPILE HEADER -- End.
@@ -55,6 +55,5 @@ add_custom_target(CommonPCH
 OpenSimAddLibrary(KIT Common
     LINKLIBS ${Simbody_LIBRARIES} ${BTK_LIBRARIES}
     INCLUDES ${INCLUDES}
-    SOURCES ${SOURCES} 
+    SOURCES ${SOURCES} ${HEADER_PCH}
     TESTDIRS "Test")
-add_dependencies(osimCommon CommonPCH)
