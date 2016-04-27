@@ -29,9 +29,7 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include "Property_Deprecated.h"
-#include <climits>
-
+#include "common.h"
 
 
 using namespace OpenSim;
