@@ -84,7 +84,7 @@ int main(int argc,char **argv)
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
-    } catch(const Exception& x) {
+    } catch(const OpenSim::Exception& x) {
         x.print(cout);
         return(-1);
     }
