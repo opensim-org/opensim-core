@@ -86,7 +86,7 @@ int main()
 
         cout << "Arm26 optimization results passed\n";
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }
