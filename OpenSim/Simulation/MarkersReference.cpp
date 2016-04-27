@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MarkersReference.h"
-#include <OpenSim/Common/Units.h>
+#include "simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
