@@ -178,15 +178,16 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
             //FunctionSet's objects getTypeName() returns "Function"
             //which is wrong! This is a HACK to test that we aren't
             //treating the PropertyObjArray<Function> as a Function.
-            PropertyObjArray<Function>* propObjArray =
-                dynamic_cast<PropertyObjArray<Function>*>(&ap);
+            PropertyObjArray<OpenSim::Function>* propObjArray =
+                dynamic_cast<PropertyObjArray<OpenSim::Function>*>(&ap);
             if (propObjArray){
                 if (propObjArray->size()){
                     randomize(&(propObjArray->updValueAsObject(0)));
                 }
             }
             else{
-                Property<Function>& prop = Property<Function>::updAs(ap);
+                Property<OpenSim::Function>& prop = 
+                    Property<OpenSim::Function>::updAs(ap);
                 prop = LinearFunction();
             }
             
