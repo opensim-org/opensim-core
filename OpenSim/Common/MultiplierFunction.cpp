@@ -23,8 +23,8 @@
 
 
 // C++ INCLUDES
-#include "MultiplierFunction.h"
-#include "FunctionAdapter.h"
+#include "common.h"
+
 
 using namespace OpenSim;
 using namespace std;
