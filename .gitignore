@@ -14,3 +14,7 @@ build*
 
 # Ignore directories under 'dependencies'
 dependencies/*
+
+# Ignore precompiled headers.
+*.gch
+*.pch
