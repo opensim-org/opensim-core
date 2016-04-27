@@ -143,7 +143,7 @@ public:
     // get the relative velocity of the path point with respect to the body
     // it is connected to.
     virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& velocity) {
-        velocity[0] = velocity[1] = velocity[2] = 0.0;
+        velocity.setToZero();
     }
     // get the partial of the point location w.r.t. to the coordinates (Q)
     // it is dependent on.
