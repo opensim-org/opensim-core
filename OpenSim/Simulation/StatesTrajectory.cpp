@@ -21,9 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "StatesTrajectory.h"
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include "simulation.h"
+
 
 using namespace OpenSim;
 
