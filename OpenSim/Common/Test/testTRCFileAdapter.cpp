@@ -101,12 +101,12 @@ int main() {
     for(const auto& filename : filenames) {
         TRCFileAdapter trcfileadapter{};
         auto table = trcfileadapter.read(filename);
-        trcfileadapter.write(*table, tmpfile);
+        trcfileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     for(const auto& filename : filenames) {
-        auto table = std::move(FileAdapter::readFile(filename).at("markers"));
+        auto table = FileAdapter::readFile(filename).at("markers");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"markers"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);

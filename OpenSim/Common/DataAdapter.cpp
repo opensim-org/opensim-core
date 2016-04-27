@@ -14,17 +14,17 @@ DataAdapter::registerDataAdapter(const std::string& identifier,
                      identifier);
 
     auto result = _registeredDataAdapters.emplace(identifier, 
-                                 std::unique_ptr<DataAdapter>{adapter.clone()});
+                                 std::shared_ptr<DataAdapter>{adapter.clone()});
 
     return result.second;
 }
 
-std::unique_ptr<DataAdapter> 
+std::shared_ptr<DataAdapter> 
 DataAdapter::createAdapter(const std::string& identifier) {
     try {
         DataAdapter* adapter = 
             _registeredDataAdapters.at(identifier)->clone();
-        return std::unique_ptr<DataAdapter>{adapter};
+        return std::shared_ptr<DataAdapter>{adapter};
     } catch(std::out_of_range&) {
         OPENSIM_THROW(NoRegisteredDataAdapter,
                       identifier);
@@ -49,6 +49,12 @@ registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{})
 #endif
                 };
 
+}
+
+// Ignore this function. This exists to suppress compiler warning
+// about variable 'registerAdapters' being 'unused'.
+void ignore() {
+    registerAdapters = false;
 }
 
 }

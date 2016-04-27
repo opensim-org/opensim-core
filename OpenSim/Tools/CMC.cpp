@@ -98,9 +98,9 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
-    _f(0.0),
-    _controlSet()
+    _controlSet(),
+    _paramList(-1),
+    _f(0.0)
 {
     setNull();
     setupProperties();
@@ -1024,8 +1024,8 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     Array<double> x0(0.0,size),x1(0.0,size),x2(0.0,size);
 
     // SET TIMES
-    double t0,t1,t2;
-    t2 = s.getTime();
+    double t0,t1/*,t2*/;
+    // t2 = s.getTime();
     t1 = s.getTime() - aDT;
     t0 = t1 - aDT;
 
@@ -1080,7 +1080,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 
-    double *val = &controls[0];
+    // double *val = &controls[0];
 }
 
 // for any post XML deserialization initialization

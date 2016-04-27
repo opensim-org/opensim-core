@@ -50,7 +50,7 @@ public:
     DelimFileAdapter* clone() const override;
 
     /** Read a given file using the delimiters specified at construction.     */
-    std::unique_ptr<TimeSeriesTable> read(const std::string& filename) const;
+    TimeSeriesTable read(const std::string& filename) const;
 
     /** Write the table to a file using the delimiter specified at 
     construction.                                                             */

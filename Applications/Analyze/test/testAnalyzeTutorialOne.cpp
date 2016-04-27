@@ -40,7 +40,7 @@ int main()
         Storage resultFiberLength("testPlotterTool/BothLegs__FiberLength.sto");
         Storage standardFiberLength("std_BothLegs_fiberLength.sto");
         CHECK_STORAGE_AGAINST_STANDARD(resultFiberLength, standardFiberLength, Array<double>(0.0001, 100), __FILE__, __LINE__, "testAnalyzeTutorialOne failed");
-        const Model& mdl = analyze1.getModel();
+        // const Model& mdl = analyze1.getModel();
         //mdl.updMultibodySystem()
         analyze1.setStatesFileName("plotterGeneratedStatesHip45.sto");
         //analyze1.setModel(mdl);

@@ -397,7 +397,7 @@ void simulateMuscle(
     //cout << "Muscle initial energy = " << Emuscle0 << endl;
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
     //cout << "Total initial system energy = " << Esys0 << endl; 
 
 //==========================================================================
@@ -494,10 +494,10 @@ void simulateMuscle(
     if(false){
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
         double Esys = model.getMultibodySystem().calcEnergy(si);
-        double KEsys =  model.getMultibodySystem().calcKineticEnergy(si);
-        double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
-        double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
-        double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
+        /*double KEsys =  */model.getMultibodySystem().calcKineticEnergy(si);
+        /*double xSpeed = */modelCoordinateSet[0].getSpeedValue(si);
+        // double KEsysCheck = 0.5*ballMass*xSpeed*xSpeed;
+        /*double PEsys =  */model.getMultibodySystem().calcPotentialEnergy(si);
         double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
         double ESysMinusWork = Esys 
                                 - muscWorkProbe->computeProbeInputs(si)(0)
@@ -835,6 +835,97 @@ void testThelen2003Muscle()
 
         musc.set_fv_linear_extrap_threshold(1.001 / 3.0);
         musc.finalizeFromProperties();
+    }
+
+    // Ensure the properties of MuscleFixedWidthPennationModel and
+    // MuscleFirstOrderActivationDynamicModel are being set by Thelen2003Muscle
+    // when they are subcomponents of the Muscle. Here, we set the properties
+    // of Thelen2003Muscle and then check the properties of its subcomponents.
+    // Also ensures properties survive serialization/deserialization.
+    {
+        const string& filename = "testSettingMuscleSubcomponentProperties.osim";
+        const double optimalFiberLength = 1234.56;
+        const double pennAngAtOptimal   = 0.123456;
+        const double maximumPennation   = 1.23456;
+        const double actTimeConstant    = 0.0123;
+        const double deactTimeConstant  = 0.0246;
+        const double minimumActivation  = 0.0357;
+
+        // Create muscle and add to model.
+        Model myModel;
+        Thelen2003Muscle* myMcl = new Thelen2003Muscle("myMuscle",
+            MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
+            PennationAngle0);
+        myModel.addForce(myMcl);
+
+        // Set properties of Thelen2003Muscle.
+        myMcl->setOptimalFiberLength(optimalFiberLength);
+        myMcl->setPennationAngleAtOptimalFiberLength(pennAngAtOptimal);
+        myMcl->setMaximumPennationAngle(maximumPennation);
+        myMcl->setActivationTimeConstant(actTimeConstant);
+        myMcl->setDeactivationTimeConstant(deactTimeConstant);
+        myMcl->setMinimumActivation(minimumActivation);
+
+        myMcl->finalizeFromProperties();
+
+        // Check properties of MuscleFixedWidthPennationModel.
+        const MuscleFixedWidthPennationModel& pennMdl =
+            myMcl->getPennationModel();
+        ASSERT_EQUAL(optimalFiberLength, pennMdl.get_optimal_fiber_length(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "optimal_fiber_length was not set in pennation model");
+        ASSERT_EQUAL(pennAngAtOptimal, pennMdl.get_pennation_angle_at_optimal(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "pennation_angle_at_optimal was not set in pennation model");
+        ASSERT_EQUAL(maximumPennation, pennMdl.get_maximum_pennation_angle(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "maximum_pennation_angle was not set in pennation model");
+
+        // Check properties of MuscleFirstOrderActivationDynamicModel.
+        const MuscleFirstOrderActivationDynamicModel& actMdl =
+            myMcl->getActivationModel();
+        ASSERT_EQUAL(actTimeConstant, actMdl.get_activation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "activation_time_constant was not set in activation model");
+        ASSERT_EQUAL(deactTimeConstant, actMdl.get_deactivation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "deactivation_time_constant was not set in activation model");
+        ASSERT_EQUAL(minimumActivation, actMdl.get_minimum_activation(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "minimum_activation was not set in activation model");
+
+        // Print model and read back in.
+        myModel.print(filename);
+        Model myModel2(filename);
+
+        const Thelen2003Muscle& myMcl2 = dynamic_cast<const Thelen2003Muscle&>(
+            myModel2.getMuscles().get("myMuscle") );
+
+        // Check properties of MuscleFixedWidthPennationModel.
+        const MuscleFixedWidthPennationModel& pennMdl2 =
+            myMcl2.getPennationModel();
+        ASSERT_EQUAL(optimalFiberLength, pennMdl2.get_optimal_fiber_length(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "optimal_fiber_length was not set in pennation model");
+        ASSERT_EQUAL(pennAngAtOptimal, pennMdl2.get_pennation_angle_at_optimal(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "pennation_angle_at_optimal was not set in pennation model");
+        ASSERT_EQUAL(maximumPennation, pennMdl2.get_maximum_pennation_angle(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "maximum_pennation_angle was not set in pennation model");
+
+        // Check properties of MuscleFirstOrderActivationDynamicModel.
+        const MuscleFirstOrderActivationDynamicModel& actMdl2 =
+            myMcl2.getActivationModel();
+        ASSERT_EQUAL(actTimeConstant, actMdl2.get_activation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "activation_time_constant was not set in activation model");
+        ASSERT_EQUAL(deactTimeConstant, actMdl2.get_deactivation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "deactivation_time_constant was not set in activation model");
+        ASSERT_EQUAL(minimumActivation, actMdl2.get_minimum_activation(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "minimum_activation was not set in activation model");
     }
 }
 

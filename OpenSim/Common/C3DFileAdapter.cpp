@@ -1,5 +1,30 @@
 #include "C3DFileAdapter.h"
 
+#include "btkAcquisitionFileReader.h"
+#include "btkAcquisition.h"
+#include "btkForcePlatformsExtractor.h"
+#include "btkGroundReactionWrenchFilter.h"
+
+namespace {
+
+// Function to convert Eigen matrix to SimTK matrix. This can become a lambda
+// funciton inside extendRead in future.
+template<typename _Scalar, int _Rows, int _Cols>
+SimTK::Matrix_<double>
+convertToSimtkMatrix(const Eigen::Matrix<_Scalar, _Rows, _Cols>&
+                     eigenMat) {
+    SimTK::Matrix_<double> simtkMat{static_cast<int>(eigenMat.rows()),
+                                    static_cast<int>(eigenMat.cols())};
+            
+    for(int r = 0; r < eigenMat.rows(); ++r)
+        for(int c = 0; c < eigenMat.cols(); ++c)
+            simtkMat(r, c) = eigenMat(r, c);
+
+    return simtkMat;
+}
+
+} // anonymous namespace
+
 namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
@@ -20,13 +45,15 @@ C3DFileAdapter::clone() const {
 
 C3DFileAdapter::Tables
 C3DFileAdapter::read(const std::string& fileName) const {
-    auto tables = extendRead(fileName);
-    auto    abs_marker_table = tables.at(_markers).release();
-    auto     abs_force_table = tables.at(_forces ).release();
-    auto    marker_table = static_cast<TimeSeriesTableVec3*>(abs_marker_table);
-    auto     force_table = static_cast<TimeSeriesTableVec3*>(abs_force_table);
-    return std::make_tuple(std::unique_ptr<TimeSeriesTableVec3>{marker_table}, 
-                           std::unique_ptr<TimeSeriesTableVec3>{force_table});
+    auto abstables = extendRead(fileName);
+    auto marker_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
+    auto force_table = 
+        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_forces));
+    Tables tables{};
+    tables.emplace(_markers, marker_table);
+    tables.emplace( _forces,  force_table);
+    return tables;
 }
 
 void
@@ -46,9 +73,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto& marker_table = *(new TimeSeriesTableVec3{});
     auto&  force_table = *(new TimeSeriesTableVec3{});
     tables.emplace(_markers, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&marker_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
     tables.emplace(_forces, 
-                   std::unique_ptr<TimeSeriesTableVec3>(&force_table));
+                   std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
     auto marker_pts = btk::PointCollection::New();
 
@@ -109,20 +136,23 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto force_platform_collection = force_platforms_extractor->GetOutput();
     force_platforms_extractor->Update();
 
-    std::vector<btk::ForcePlatform::CalMatrix> fp_cal_matrices{};
-    std::vector<btk::ForcePlatform::Corners>   fp_corners{};
-    std::vector<btk::ForcePlatform::Origin>    fp_origins{};
-    std::vector<unsigned>                      fp_types{};
+    std::vector<SimTK::Matrix_<double>> fpCalMatrices{};
+    std::vector<SimTK::Matrix_<double>> fpCorners{};
+    std::vector<SimTK::Matrix_<double>> fpOrigins{};
+    std::vector<unsigned>               fpTypes{};
     auto    fp_force_pts = btk::PointCollection::New();
     auto   fp_moment_pts = btk::PointCollection::New();
     auto fp_position_pts = btk::PointCollection::New();
     for(auto platform = force_platform_collection->Begin(); 
         platform != force_platform_collection->End(); 
         ++platform) {
-        fp_cal_matrices.push_back((*platform)->GetCalMatrix());
-        fp_corners.push_back((*platform)->GetCorners());
-        fp_origins.push_back((*platform)->GetOrigin());
-        fp_types.push_back(static_cast<unsigned>((*platform)->GetType()));
+        const auto& calMatrix = (*platform)->GetCalMatrix();
+        const auto& corners   = (*platform)->GetCorners();
+        const auto& origins   = (*platform)->GetOrigin();
+        fpCalMatrices.push_back(convertToSimtkMatrix(calMatrix));
+        fpCorners.push_back(convertToSimtkMatrix(corners));
+        fpOrigins.push_back(convertToSimtkMatrix(origins));
+        fpTypes.push_back(static_cast<unsigned>((*platform)->GetType()));
 
         // Get ground reaction wrenches for the force platform.
         auto ground_reaction_wrench_filter = 
@@ -143,22 +173,24 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
     }
 
+    //shrik<btk::ForcePlatform::Origin> foo;
+
     if(fp_force_pts->GetItemNumber() != 0) {
         force_table.
             updTableMetaData().
-            setValueForKey("CalibrationMatrices", std::move(fp_cal_matrices));
+            setValueForKey("CalibrationMatrices", std::move(fpCalMatrices));
 
         force_table.
             updTableMetaData().
-            setValueForKey("Corners",             std::move(fp_corners));
+            setValueForKey("Corners",             std::move(fpCorners));
 
         force_table.
             updTableMetaData().
-            setValueForKey("Origins",             std::move(fp_origins));
+            setValueForKey("Origins",             std::move(fpOrigins));
 
         force_table.
             updTableMetaData().
-            setValueForKey("Types",               std::move(fp_types));
+            setValueForKey("Types",               std::move(fpTypes));
 
         force_table.
             updTableMetaData().
@@ -196,7 +228,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             ++f) {
             SimTK::RowVector_<SimTK::Vec3>
                 row{fp_force_pts->GetItemNumber() * 3};
-            size_t col{0};
+            int col{0};
             for(auto fit = fp_force_pts->Begin(),
                 mit =     fp_moment_pts->Begin(),
                 pit =   fp_position_pts->Begin();
@@ -235,7 +267,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
        marker_table.updTableMetaData().setValueForKey("events", event_table);
         force_table.updTableMetaData().setValueForKey("events", event_table);
 
-    return std::move(tables);
+    return tables;
 }
 
 void

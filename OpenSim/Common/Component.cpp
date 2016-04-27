@@ -111,23 +111,44 @@ private:
 Component::Component() : Object()
 {
     constructProperty_connectors();
+    constructProperty_components();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
     constructProperty_connectors();
+    constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
+    constructProperty_components();
+}
+
+void Component::addComponent(Component* comp) {
+    //get to the root Component
+    const Component* root = this;
+    while (root->hasParent()) {
+        root = &(root->getParent());
+    }
+
+    auto components = root->getComponentList<Component>();
+    for (auto& c : components) {
+        if (comp == &c) {
+            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                comp->getName(), getName());
+        }
+    }
+
+    updProperty_components().adoptAndAppendValue(comp);
+    finalizeFromProperties();
 }
 
 void Component::finalizeFromProperties()
 {
     reset();
-
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
@@ -147,11 +168,14 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
 
-    // Provide each Output with a pointer to this component so that it can
-    // invoke its methods.
+    // Provide each Input and Output with a pointer to its component (this) so 
+    // that it can invoke its methods.
     // TODO if we implement custom copy constructor and assignment methods,
     // then this could be moved there (and then Output could take owner as an
     // argument to its constructor).
+    for (auto& it : _inputsTable) {
+        it.second->setOwner(*this);
+    }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
     }
@@ -195,15 +219,38 @@ void Component::connect(Component &root)
         AbstractConnector& connector = upd_connectors(ix);
         connector.disconnect();
         try {
-            const std::string& compName = connector.get_connectee_name();
             connector.findAndConnect(root);
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"
                 "::connect() \nFailed to connect Connector<" +
                 connector.getConnecteeTypeName() + "> '" + connector.getName() +
-                "' as a subcomponent of " + root.getName() + 
-                ".\n Details:" + x.what());
+                "' within " + root.getConcreteClassName() + " '" + root.getName() +
+                "' (details: " + x.what() + ").");
+        }
+    }
+
+    for (auto& inputPair : _inputsTable) {
+        AbstractInput& input = inputPair.second.updRef();
+
+        if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+            std::cout << getConcreteClassName() << "'" << getName() << "'";
+            std::cout << "::connect() Input<" << input.getConnecteeTypeName();
+            std::cout << ">`" << input.getName();
+            std::cout << "' Output has not been specified." << std::endl;
+            continue;
+        }
+
+        try {
+            input.disconnect();
+            input.findAndConnect(root);
+        }
+        catch (const std::exception& x) {
+            throw Exception(getConcreteClassName() + "'" + getName() + "'"
+                "::connect() \nFailed to connect Input<" +
+                input.getConnecteeTypeName() + "> '" + input.getName() +
+                "' within " + root.getConcreteClassName() + " '" +
+                root.getName() + "' (details: " + x.what() + ").");
         }
     }
 
@@ -249,6 +296,11 @@ void Component::disconnect()
     std::map<std::string, int>::const_iterator it;
     for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
         upd_connectors(it->second).disconnect();
+    }
+    
+    // Must also clear the input's connections.
+    for (auto& it : _inputsTable) {
+        it.second->disconnect();
     }
 
     //now clear all the stored system indices from this component
@@ -695,7 +747,7 @@ Array<std::string> Component::getStateVariableNames() const
 
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName = _memberSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
@@ -906,11 +958,12 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
 
 bool Component::constructOutputForStateVariable(const std::string& name)
 {
-    return constructOutput<double>(name,
-            std::bind(&Component::getStateVariableValue,
-             // (const Component*    , const SimTK::State&  , std::string)
-                std::placeholders::_1, std::placeholders::_2, name),
-            SimTK::Stage::Model);
+    auto func = [name](const Component* comp,
+                       const SimTK::State& s, const std::string&,
+                       double& result) -> void {
+        result = comp->getStateVariableValue(s, name);
+    };
+    return constructOutput<double>(name, func, SimTK::Stage::Model);
 }
 
 // mark components owned as properties as subcomponents
@@ -1053,8 +1106,8 @@ const int Component::getStateIndex(const std::string& name) const
 SimTK::SystemYIndex Component::
 getStateVariableSystemIndex(const std::string& stateVariableName) const
 {
-    const SimTK::State& s = getSystem().getDefaultState();
-
+    //const SimTK::State& s = getSystem().getDefaultState();   
+    
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(stateVariableName);
     
@@ -1301,7 +1354,7 @@ void Component::dumpSubcomponents(int depth) const
     }
 
     std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'s Components:" << std::endl;
+    std::cout << " '" << getName() << "'" << std::endl;
     for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
         _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
     }
@@ -1310,6 +1363,47 @@ void Component::dumpSubcomponents(int depth) const
     }
     for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
         _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
+    }
+}
+
+void Component::dumpConnections() const {
+    std::cout << "Connectors for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumConnectors() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
+        const auto& connector = get_connectors(ix);
+        std::cout << "  " << connector.getConnecteeTypeName() << " '"
+                  << connector.getName() << "': ";
+        if (connector.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (unsigned i = 0; i < connector.getNumConnectees(); ++i) {
+                std::cout << connector.getConnecteeName(i) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    std::cout << "Inputs for " << getConcreteClassName() << " '"
+              << getName() << "':";
+    if (getNumInputs() == 0) std::cout << " none";
+    std::cout << std::endl;
+    for (const auto it : _inputsTable) {
+        const auto& input = it.second.getRef();
+        std::cout << "  " << input.getConnecteeTypeName() << " '"
+                  << input.getName() << "': ";
+        if (input.getNumConnectees() == 0) {
+            std::cout << "no connectees" << std::endl;
+        } else {
+            for (unsigned i = 0; i < input.getNumConnectees(); ++i) {
+                std::cout << input.getConnecteeName(i) << " ";
+                // TODO as is, requires the input connections to be satisfied. 
+                // std::cout << " (annotation: " << input.getAnnotation(i) 
+                //           << ") ";
+            }
+            std::cout << std::endl;
+        }
     }
 }
 

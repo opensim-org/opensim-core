@@ -23,6 +23,7 @@
 
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <iostream>
 
 // This example demonstrates creating TimeSeriesTable from a DataTable.
 int main() {
@@ -65,6 +66,9 @@ int main() {
     
     dataTable.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
+    // Print out the DataTable to console. Use this for debugging only.
+    std::cout << dataTable << std::endl;
+
     // Contruction of TimeSeriesTable fails because independent column is not
     // strictly increasing. 
     ASSERT_THROW(OpenSim::Exception,
@@ -72,9 +76,12 @@ int main() {
 
     // Edit the entry in the independent column to make the column strictly
     // increasing.
-    dataTable.setIndependentColumnAtIndex(5, 1.25);
+    dataTable.setIndependentValueAtIndex(5, 1.25);
     // TimeSeriesTable construction now successful. 
     TimeSeriesTable timeseries_table3{dataTable};
+
+    // Print out the table to console. Use this for debugging only.
+    std::cout << timeseries_table3 << std::endl;
 
     return 0;
 }

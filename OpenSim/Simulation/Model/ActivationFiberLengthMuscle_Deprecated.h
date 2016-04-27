@@ -112,7 +112,7 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     void computeInitialFiberEquilibrium(SimTK::State& s ) const override;
-    virtual double computeActuation( const SimTK::State& s ) const = 0;
+    virtual double computeActuation( const SimTK::State& s ) const override = 0;
     virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
     //virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
     
@@ -176,7 +176,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 //==============================================================================
 };  // END of class ActivationFiberLengthMuscle_Deprecated
 //==============================================================================

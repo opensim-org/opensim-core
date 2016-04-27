@@ -39,7 +39,8 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="modules" visible="no" title="" intro=""/>
+    <tab type="modules" visible="yes" title="Class Groups"
+        intro="Here is a list of manually-curated class groupings:"/>
     <tab type="namespaces" visible="yes" title="">
       <tab type="namespaces" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>
@@ -66,7 +67,7 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <properties title="OpenSim Properties, Outputs"/>
+      <properties title="OpenSim Properties, Outputs, Input"/>
       <publicmethods title=""/>
     </memberdecl>
    
@@ -75,7 +76,7 @@
       <constructors title=""/>
       <typedefs title=""/>
       <functions title=""/>
-      <properties title="OpenSim Property, Output Documentation"/>
+      <properties title="OpenSim Property, Output, Input Documentation"/>
       <!-- <enums title=""/>
       
       

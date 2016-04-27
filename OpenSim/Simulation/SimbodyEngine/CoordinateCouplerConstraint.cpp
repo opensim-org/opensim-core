@@ -258,7 +258,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
         double scaleFactor = 1.0;
         // Get appropriate scale factors from parent body
         Vec3 bodyScaleFactors(1.0); 
-        const string& parentName = depCoordinate.getJoint().getParentFrameName();
+        const string& parentName = depCoordinate.getJoint().getParentFrame().getName();
 
         // Cycle through the scale set to get the appropriate factors
         for (int i=0; i<aScaleSet.getSize(); i++) {

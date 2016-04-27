@@ -180,14 +180,21 @@ public:
 //==============================================================================
 // OUTPUTS
 //==============================================================================
-   OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
-           calcMassCenterPosition, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(com_position, SimTK::Vec3,
+            calcMassCenterPosition, SimTK::Stage::Position);
 
-   OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
-           calcMassCenterVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(com_velocity, SimTK::Vec3,
+            calcMassCenterVelocity, SimTK::Stage::Velocity);
 
-   OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
-           calcMassCenterAcceleration, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(com_acceleration, SimTK::Vec3,
+            calcMassCenterAcceleration, SimTK::Stage::Acceleration);
+
+    OpenSim_DECLARE_OUTPUT(kinetic_energy, double,
+            calcKineticEnergy, SimTK::Stage::Position);
+
+    OpenSim_DECLARE_OUTPUT(potential_energy, double,
+        calcPotentialEnergy, SimTK::Stage::Velocity);
+
 
 //=============================================================================
 // METHODS
@@ -761,7 +768,14 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
-
+    /** return the total Kinetic Energy for the underlying system.*/
+    double calcKineticEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcKineticEnergy(s);
+    }    
+    /** return the total Potential Energy for the underlying system.*/
+    double calcPotentialEnergy(const SimTK::State &s) const {
+        return getMultibodySystem().calcPotentialEnergy(s);
+    }
     //--------------------------------------------------------------------------
     // STATES
     //--------------------------------------------------------------------------
@@ -969,7 +983,7 @@ private:
     void setNull();
 
     // Construct the properties of a Model.
-    void constructProperties();
+    void constructProperties() override;
     void setDefaultProperties();
 
     // Utility to build a connected graph (tree) of the multibody system

@@ -251,7 +251,7 @@ bool ForwardTool::run()
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
     IO::chDir(directoryOfSetupFile);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
 
     // Re create the system with forces above and Realize the topology

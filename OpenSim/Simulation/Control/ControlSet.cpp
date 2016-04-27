@@ -1062,9 +1062,8 @@ ControlSet::ExtractControl(const Storage& storage,int index)
 
     // VALUE
     int nValues = nTimes;
-    int rValue;
     double *values = NULL;
-    rValue = storage.getDataColumn(index,values);
+    storage.getDataColumn(index,values);
 
     // CONSTRUCT LINEAR CONTROL NODE
     ControlLinear *control = new ControlLinear;
