@@ -21,11 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "InverseKinematicsSolver.h"
-#include "CoordinateReference.h"
-#include "MarkersReference.h"
-#include "Model/Model.h"
-#include "Model/MarkerSet.h"
+#include "simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
