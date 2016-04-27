@@ -33,11 +33,8 @@
  * Passing C++ and thread-safe by Ned Phipps
  *
  *****************************************************/
+#include "common.h"
 
-
-#include <stdio.h>
-#include <math.h>
-#include "Lmdif.h"
 
 void pmat(int m, int n, double y[]);
 int mod(int k, int m);
