@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>opensim-core</id>
+        <id>opensim-core$packageIdSuffix$</id>
         <version>0.0.0</version>
         <authors>OpenSim Team</authors>
         <owners>OpenSim Team</owners>
@@ -9,10 +9,9 @@
         <projectUrl>https://opensim.stanford.edu</projectUrl>
         <iconUrl>http://simtk-confluence.stanford.edu:8080/download/attachments/3376252/OpenSimLogoWhiteNoText.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>SimTK OpenSim C++ libraries and command-line applications
-            and Java/Python wrapping.</description>
+        <description>SimTK OpenSim C++ libraries and command-line applications and Java/Python wrapping.</description>
         <releaseNotes>https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md</releaseNotes>
-        <copyright>Copyright 2015</copyright>
+        <copyright>Copyright 2016</copyright>
         <tags>biomechanics</tags>
     </metadata>
     <files>
