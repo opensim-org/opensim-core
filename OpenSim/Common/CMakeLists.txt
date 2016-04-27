@@ -15,7 +15,7 @@ endif()
 # Original header.
 set(HEADER     "${CMAKE_CURRENT_SOURCE_DIR}/osimCommon.h")
 # Precompiled header (PCH).
-set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/common.h.gch")
+set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/common.h.gch")
 
 # Append necessary flags for compiling PCH.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winvalid-pch -fPIC")
@@ -49,8 +49,6 @@ add_custom_target(CommonPCH
     COMMAND ${CMAKE_CXX_COMPILER} ${PCH_ARGS} 
     DEPENDS ${HEADER}
     COMMENT "Generating precompiled header -- common")
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #################################################### PRECOMPILE HEADER -- End.
 
