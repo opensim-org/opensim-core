@@ -27,10 +27,7 @@
 
 
 // INCLUDES
-#include "VectorFunctionUncoupledNxN.h"
-#include "PropertyDbl.h"
-
-
+#include "common.h"
 
 
 using namespace OpenSim;
