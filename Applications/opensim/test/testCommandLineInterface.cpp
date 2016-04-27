@@ -225,6 +225,48 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     }
 }
 
+void testRunTool() {
+    // Help.
+    // =====
+    {
+        auto output = std::regex("(Run a tool )((.|\n|\r)*)");
+        testCommand("run-tool -h", EXIT_SUCCESS, output);
+        testCommand("run-tool -help", EXIT_SUCCESS, output);
+    }
+
+    // Error messages.
+    // ===============
+    testCommand("run-tool", EXIT_FAILURE,
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("run-tool putes.xml", EXIT_FAILURE,
+            std::regex("(SimTK Exception thrown at Xml.cpp)"
+                       "((.|\n|\r)*)"
+                       "(A problem occured when trying to load "
+                            "file 'putes.xml'.)"
+                       "((.|\n|\r)*)"));
+    // We use print-xml to create a setup file that we can try to run.
+    testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
+            "Printing 'testruntool_cmc_setup.xml'.\n");
+    // This fails because this setup file doesn't have much in it.
+    testCommand("run-tool testruntool_cmc_setup.xml", EXIT_FAILURE,
+            std::regex("(Running tool default.)"
+                       "((.|\n|\r)*)"
+                       "(ERROR- A model has not been set.)"
+                       "((.|\n|\r)*)"));
+    // Now we'll try loading a valid OpenSim XML file that is *not* a Tool
+    // setup file, and we get a helpful error.
+    testCommand("print-xml Model testruntool_Model.xml", EXIT_SUCCESS,
+            "Printing 'testruntool_Model.xml'.\n");
+    testCommand("run-tool testruntool_Model.xml", EXIT_FAILURE,
+            "The provided file 'testruntool_Model.xml' does not define "
+            "an OpenSim Tool. Did you intend to load a plugin?\n");
+
+    // Library option.
+    // ===============
+    testLoadPluginLibraries("run-tool");
+}
+
 void testPrintXML() {
     // Help.
     // =====
@@ -300,6 +342,7 @@ void testInfo() {
 int main() {
     SimTK_START_TEST("testCommandLineInterface");
         SimTK_SUBTEST(testNoCommand);
+        SimTK_SUBTEST(testRunTool);
         SimTK_SUBTEST(testPrintXML);
         SimTK_SUBTEST(testInfo);
     SimTK_END_TEST();
