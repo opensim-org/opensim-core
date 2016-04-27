@@ -20,8 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDES
-#include "ScaleSet.h"
-
+#include "common.h"
 
 
 using namespace OpenSim;
