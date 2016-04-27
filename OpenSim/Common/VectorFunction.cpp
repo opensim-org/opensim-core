@@ -27,11 +27,7 @@
 
 
 // INCLUDES
-#include "VectorFunction.h"
-#include "PropertyDbl.h"
-#include "SimTKsimbody.h"
-
-
+#include "common.h"
 
 
 using namespace OpenSim;
