@@ -34,11 +34,14 @@ Options:
   -L <path>, --library <path>  Load a plugin.
 
 Description:
-  In an OpenSim XML file, the XML file version appears as
-  the "Version" attribute the "OpenSimDocument" element.
+  In an OpenSim XML file, the XML file format version appears as
+  the "Version" attribute the "OpenSimDocument" element. The XML file format
+  version number is generally not the same as the OpenSim software version
+  number.
 
 Examples:
   opensim update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
+  opensim update-file RRA_taskset_v3.3.xml RRA_taskset_updated.osim
   opensim update-file data_v3.3.sto data_updated.sto
 )";
 

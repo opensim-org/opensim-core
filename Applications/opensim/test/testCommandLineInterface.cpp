@@ -246,6 +246,7 @@ void testRunTool() {
                             "file 'putes.xml'.)"
                        "((.|\n|\r)*)"));
     // We use print-xml to create a setup file that we can try to run.
+    // (We are not really trying to test print-xml right now.)
     testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
             "Printing 'testruntool_cmc_setup.xml'.\n");
     // This fails because this setup file doesn't have much in it.
@@ -256,6 +257,7 @@ void testRunTool() {
                        "((.|\n|\r)*)"));
     // Now we'll try loading a valid OpenSim XML file that is *not* a Tool
     // setup file, and we get a helpful error.
+    // (We are not really trying to test print-xml right now.)
     testCommand("print-xml Model testruntool_Model.xml", EXIT_SUCCESS,
             "Printing 'testruntool_Model.xml'.\n");
     testCommand("run-tool testruntool_Model.xml", EXIT_FAILURE,
@@ -339,11 +341,79 @@ void testInfo() {
     testLoadPluginLibraries("info");
 }
 
+void testUpdateFile() {
+    // Help.
+    // =====
+    {
+        auto output = std::regex("(Update an .osim, .xml )((.|\n|\r)*)");
+        testCommand("update-file -h", EXIT_SUCCESS, output);
+        testCommand("update-file -help", EXIT_SUCCESS, output);
+    }
+
+    // Error messages.
+    // ===============
+
+    // Syntax errors.
+    testCommand("update-file", EXIT_FAILURE,
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x", EXIT_FAILURE, 
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x.doc", EXIT_FAILURE, 
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x.xml", EXIT_FAILURE, 
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x y", EXIT_FAILURE, 
+            "Input file 'x' does not have an extension.\n");
+    testCommand("update-file x.doc y", EXIT_FAILURE, 
+            "Input file 'x.doc' has an unrecognized extension.\n");
+
+    // File does not exist.
+    testCommand("update-file x.xml y", EXIT_FAILURE, 
+            std::regex("(Loading input file 'x.xml')"
+                       "((.|\n|\r)*)"
+                       "(Could not make object from file 'x.xml')"
+                       "((.|\n|\r)*)"
+                       "Did you intend to load a plugin (with --library)?"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x.osim y", EXIT_FAILURE, 
+            std::regex("(Loading input file 'x.osim')"
+                       "((.|\n|\r)*)"
+                       "(Could not make object from file 'x.osim')"
+                       "((.|\n|\r)*)"
+                       "Did you intend to load a plugin (with --library)?"
+                       "((.|\n|\r)*)"));
+    testCommand("update-file x.sto y", EXIT_FAILURE, 
+            std::regex("(Loading input file 'x.sto')"
+                       "((.|\n|\r)*)"
+                       "(Storage: ERROR- failed to open file x.sto)"
+                       "((.|\n|\r)*)"));
+
+    // Successful input.
+    // =================
+    // We use print-xml to create a file that we can try to update.
+    // (We are not really trying to test print-xml right now.)
+    testCommand("print-xml Model testupdatefile_Model.osim", EXIT_SUCCESS,
+            "Printing 'testupdatefile_Model.osim'.\n");
+    testCommand("update-file testupdatefile_Model.osim "
+                "testupdatefile_Model_updated.osim", EXIT_SUCCESS,
+            "Loading input file 'testupdatefile_Model.osim'.\n"
+            "Printing updated file to 'testupdatefile_Model_updated.osim'.\n");
+
+    // Library option.
+    // ===============
+    testLoadPluginLibraries("update-file");
+}
+
 int main() {
     SimTK_START_TEST("testCommandLineInterface");
         SimTK_SUBTEST(testNoCommand);
         SimTK_SUBTEST(testRunTool);
         SimTK_SUBTEST(testPrintXML);
         SimTK_SUBTEST(testInfo);
+        SimTK_SUBTEST(testUpdateFile);
     SimTK_END_TEST();
 }
