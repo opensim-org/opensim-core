@@ -21,33 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "common.h"
 
-#include "Object.h"
-#include "Component.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseLinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
-
-#include "ObjectGroup.h"
-
-#include "Reporter.h"
-
-#include <string>
-#include <iostream>
-#include <exception>
 
 using namespace OpenSim;
 using namespace std;
