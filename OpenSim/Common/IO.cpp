@@ -27,11 +27,8 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <time.h>
-#include <math.h>
-#include <string>
-#include <climits>
+#include "common.h"
+
 
 #include "IO.h"
 #if defined(__linux__) || defined(__APPLE__)
