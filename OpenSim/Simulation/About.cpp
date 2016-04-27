@@ -24,13 +24,7 @@
 /**
  * Define the standard SimTK compliant "version" and "about" routines.
  */
-
-
-#include "osimSimulationDLL.h"
-
-#include <string>
-#include <cstring>
-#include <cctype>
+#include "simulation.h"
 
 
 #define STR(var) #var
