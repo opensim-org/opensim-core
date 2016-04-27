@@ -23,9 +23,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
-#include "OpenSim/Common/Set.h"
-#include "OpenSim/Common/IO.h"
+#include "common.h"
+
 
 using namespace SimTK;
 
