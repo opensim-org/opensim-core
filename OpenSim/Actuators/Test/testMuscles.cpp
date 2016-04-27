@@ -90,8 +90,8 @@ functioning
 void simulateMuscle(const Muscle &aMuscle, 
                     double startX, 
                     double act0, 
-                    const Function *motion, 
-                    const Function *control, 
+                    const OpenSim::Function *motion, 
+                    const OpenSim::Function *control, 
                     double integrationAccuracy,
                     int testType,
                     double testTolerance,
@@ -144,23 +144,23 @@ int main()
 */    
     try { testRigidTendonMuscle();
         cout << "RigidTendonMuscle Test passed" << endl; }
-    catch (const Exception& e)
+    catch (const OpenSim::Exception& e)
         { e.print(cerr); failures.push_back("testRigidTendonMuscle"); }
     
     try { testThelen2003Muscle();
         cout << "Thelen2003Muscle Test passed" << endl; }
-    catch (const Exception& e)
+    catch (const OpenSim::Exception& e)
         { e.print(cerr); failures.push_back("testThelen2003Muscle"); }
     
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
-    }catch (const Exception& e){ 
+    }catch (const OpenSim::Exception& e){ 
         e.print(cerr);
         failures.push_back("testMillard2012EquilibriumMuscle");
     }
     try { testMillard2012AccelerationMuscle();
         cout << "Millard2012AccelerationMuscle Test passed" << endl; 
-    }catch (const Exception& e){ 
+    }catch (const OpenSim::Exception& e){ 
         e.print(cerr);
         failures.push_back("testMillard2012AccelerationMuscle");
     }
@@ -188,17 +188,17 @@ int main()
     constraint is accounted for.
 ================================================================================
 */
-void simulateMuscle(
-        const Muscle &aMuscModel, 
-        double startX, 
-        double act0, 
-        const Function *motion,  // prescribe motion of free end of muscle
-        const Function *control, // prescribed excitation signal to the muscle
-        double integrationAccuracy,
-        int testType,
-        double testTolerance,
-        bool printResults)
-{
+void simulateMuscle(const Muscle &aMuscModel, 
+                    double startX, 
+                    double act0, 
+                    // prescribe motion of free end of muscle
+                    const OpenSim::Function *motion,  
+                    // prescribed excitation signal to the muscle
+                    const OpenSim::Function *control, 
+                    double integrationAccuracy,
+                    int testType,
+                    double testTolerance,
+                    bool printResults) {
     string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
     cout << "\n******************************************************" << endl;
