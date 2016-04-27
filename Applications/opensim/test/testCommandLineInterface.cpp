@@ -117,6 +117,7 @@ template <typename T>
 void testCommand(const std::string& arguments,
                  int expectedReturnCode,
                  const T& expectedOutput) {
+    std::cout << "DEBUG testing arguments " << arguments << std::endl;
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
     checkCommandOutput(arguments, out.output, expectedOutput);
