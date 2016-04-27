@@ -28,11 +28,7 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <string>
-#include "Array.h"
-#include "ArrayPtrs.h"
-#include "Set.h"
+#include "common.h"
 
 
 using namespace OpenSim;
