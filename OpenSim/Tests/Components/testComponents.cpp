@@ -68,14 +68,18 @@ int main()
     }
 
     // then type TwoFrameLinker<Constraint>
-    ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
+    ArrayPtrs<OpenSim::TwoFrameLinker<OpenSim::Constraint, 
+                                      OpenSim::PhysicalFrame>> 
+        availableLink2Constraints;
     Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
     for (int i = 0; i < availableLink2Constraints.size(); ++i) {
         availableComponents.push_back(availableLink2Constraints[i]);
     }
 
     // then type TwoFrameLinker<Force> which are all the BushingForces
-    ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
+    ArrayPtrs<OpenSim::TwoFrameLinker<OpenSim::Force, 
+                                      OpenSim::PhysicalFrame>> 
+        availableBushingForces;
     Object::getRegisteredObjectsOfGivenType(availableBushingForces);
     for (int i = 0; i < availableBushingForces.size(); ++i) {
         availableComponents.push_back(availableBushingForces[i]);
@@ -385,7 +389,7 @@ void testCloning(Component* instance)
         cout << "XML serialization for the clone:" << endl;
         cout << copyInstance->dump() << endl;
         const string& className = instance->getConcreteClassName();
-        throw Exception(
+        throw OpenSim::Exception(
             "testComponents: for " + className +
             ", clone() did not produce an identical object.",
             __FILE__, __LINE__);
@@ -414,7 +418,7 @@ void testSerialization(Component* instance)
         cout << instance->dump() << endl;
         cout << "XML for serialization of deserialized instance:" << endl;
         cout << deserializedInstance->dump() << endl;
-        throw Exception(
+        throw OpenSim::Exception(
             "testComponents: for " + className +
             ", deserialization did not produce an identical object.",
             __FILE__, __LINE__);
@@ -432,30 +436,35 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     cout << "Adding " << className << " to the model." << endl;
 
     try{
-        if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+        using OpenSim::Body;
+        using OpenSim::Constraint;
+        using OpenSim::ContactGeometry;
+        using OpenSim::Force;
+
+        if(Object::isObjectTypeDerivedFrom<Analysis>(className))
             model.addAnalysis(dynamic_cast<Analysis*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Body >(className))
+        else if(Object::isObjectTypeDerivedFrom<Body>(className))
             model.addBody(dynamic_cast<Body*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+        else if(Object::isObjectTypeDerivedFrom<Constraint>(className))
             model.addConstraint(dynamic_cast<Constraint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+        else if(Object::isObjectTypeDerivedFrom<ContactGeometry>(className))
             model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+        else if(Object::isObjectTypeDerivedFrom<Controller>(className))
             model.addController(dynamic_cast<Controller*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Force >(className))
+        else if(Object::isObjectTypeDerivedFrom<Force>(className))
             model.addForce(dynamic_cast<Force*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+        else if(Object::isObjectTypeDerivedFrom<Probe>(className))
             model.addProbe(dynamic_cast<Probe*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+        else if(Object::isObjectTypeDerivedFrom<Joint>(className))
             model.addJoint(dynamic_cast<Joint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+        else if(Object::isObjectTypeDerivedFrom<Frame>(className))
             model.addFrame(dynamic_cast<Frame*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
+        else if(Object::isObjectTypeDerivedFrom<ModelComponent>(className))
             model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
-        else
-        {
-            throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
+        else{
+                throw OpenSim::Exception(className + 
+                                         " is not a ModelComponent.",
+                                         __FILE__, __LINE__);
         }
     }
     // It is more than likely that connect() will fail, but the subcomponents tree
