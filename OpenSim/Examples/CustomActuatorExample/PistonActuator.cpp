@@ -133,7 +133,7 @@ void PistonActuator::setBodyB(Body* aBody)
  *
  * @return Pointer to the Body
  */
-Body* PistonActuator::getBodyA() const
+OpenSim::Body* PistonActuator::getBodyA() const
 {
     return(_bodyA);
 }
@@ -144,7 +144,7 @@ Body* PistonActuator::getBodyA() const
  *
  * @return Pointer to the Body
  */
-Body* PistonActuator::getBodyB() const
+OpenSim::Body* PistonActuator::getBodyB() const
 {
     return(_bodyB);
 }
