@@ -10,13 +10,53 @@ if(NOT WITH_BTK)
     unset(BTK_LIBRARIES)
 endif()
 
-OpenSimAddLibrary(
-    KIT Common
-    AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
+#################################################### PRECOMPILE HEADER -- Begin.
+
+# Original header.
+set(HEADER     "${CMAKE_CURRENT_SOURCE_DIR}/osimCommon.h")
+# Precompiled header (PCH).
+set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/common.h.gch")
+
+# Append necessary flags for compiling PCH.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winvalid-pch -fPIC")
+
+# Create define flag for each macro definition.
+get_property(MACRO_DEFS DIRECTORY PROPERTY COMPILE_DEFINITIONS)
+set(MACRO_DEFINITIONS "-DOSIMCOMMON_EXPORTS")
+foreach(DEF ${MACRO_DEFS})
+    set(MACRO_DEFINITIONS ${MACRO_DEFINITIONS} "-D${DEF}")
+endforeach()
+
+# Create include flag for each include directory.
+get_property(INCLUDE_DIRECTORIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+foreach(DIR ${INCLUDE_DIRECTORIES})
+    set(INCLUDE_FLAGS ${INCLUDE_FLAGS} -I"${DIR}")
+endforeach()
+set(INCLUDE_FLAGS ${INCLUDE_FLAGS} -I"${CMAKE_SOURCE_DIR}")
+
+# Lump all arguments together.
+set(PCH_ARGS ${CMAKE_CXX_COMPILER_ARG1} 
+             ${MACRO_DEFINITIONS}
+             ${CMAKE_CXX_FLAGS} 
+             ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
+             ${INCLUDE_FLAGS}
+             -c ${HEADER}
+             -o ${HEADER_PCH})
+separate_arguments(PCH_ARGS)
+
+add_custom_target(CommonPCH
+    COMMAND rm -f ${HEADER_PCH}
+    COMMAND ${CMAKE_CXX_COMPILER} ${PCH_ARGS} 
+    DEPENDS ${HEADER}
+    COMMENT "Generating precompiled header -- common")
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+#################################################### PRECOMPILE HEADER -- End.
+
+OpenSimAddLibrary(KIT Common
     LINKLIBS ${Simbody_LIBRARIES} ${BTK_LIBRARIES}
     INCLUDES ${INCLUDES}
-    SOURCES ${SOURCES}
-    TESTDIRS "Test"
-    )
-
-    
+    SOURCES ${SOURCES} 
+    TESTDIRS "Test")
+add_dependencies(osimCommon CommonPCH)
