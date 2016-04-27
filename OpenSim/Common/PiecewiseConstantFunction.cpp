@@ -23,13 +23,8 @@
 
 
 // C++ INCLUDES
-#include "PiecewiseConstantFunction.h"
-#include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
-#include "SimmMacros.h"
-#include "XYFunctionInterface.h"
+#include "common.h"
+
 
 using namespace OpenSim;
 using namespace std;
