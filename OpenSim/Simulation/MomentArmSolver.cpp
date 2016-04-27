@@ -21,11 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MomentArmSolver.h"
-#include "Model/GeometryPath.h"
-#include "Model/PointForceDirection.h"
-#include "Model/Model.h"
-#include "SimbodyEngine/Body.h"
+#include "simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
