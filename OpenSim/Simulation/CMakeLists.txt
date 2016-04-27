@@ -16,12 +16,51 @@ foreach(dir ${SIMULATION_SUBDIRS})
     list(APPEND INCLUDES ${INCLUDES_ONEDIR})
 endforeach()
 
-OpenSimAddLibrary(
-    KIT Simulation
-    AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
+#################################################### PRECOMPILE HEADER -- Begin.
+
+# Original header.
+set(HEADER     "${CMAKE_CURRENT_SOURCE_DIR}/osimSimulation.h")
+# Precompiled header (PCH).
+set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/simulation.h.gch")
+
+# Append necessary flags for compiling PCH.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winvalid-pch -fPIC")
+
+# Create define flag for each macro definition.
+get_property(MACRO_DEFS DIRECTORY PROPERTY COMPILE_DEFINITIONS)
+set(MACRO_DEFINITIONS "-DOSIMSIMULATION_EXPORTS")
+foreach(DEF ${MACRO_DEFS})
+    set(MACRO_DEFINITIONS ${MACRO_DEFINITIONS} "-D${DEF}")
+endforeach()
+
+# Create include flag for each include directory.
+get_property(INCLUDE_DIRECTORIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+foreach(DIR ${INCLUDE_DIRECTORIES})
+    set(INCLUDE_FLAGS ${INCLUDE_FLAGS} -I"${DIR}")
+endforeach()
+set(INCLUDE_FLAGS ${INCLUDE_FLAGS} -I"${CMAKE_SOURCE_DIR}")
+
+# Lump all arguments together.
+set(PCH_ARGS ${CMAKE_CXX_COMPILER_ARG1} 
+             ${MACRO_DEFINITIONS}
+             ${CMAKE_CXX_FLAGS} 
+             ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
+             ${INCLUDE_FLAGS}
+             -c ${HEADER}
+             -o ${HEADER_PCH})
+separate_arguments(PCH_ARGS)
+
+add_custom_command(OUTPUT ${HEADER_PCH}
+    COMMAND ${CMAKE_CXX_COMPILER} ${PCH_ARGS} 
+    DEPENDS ${HEADER}
+    COMMENT "Generating precompiled header -- simulation")
+
+#################################################### PRECOMPILE HEADER -- End.
+
+
+OpenSimAddLibrary(KIT Simulation
     LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton
     INCLUDES ${INCLUDES}
-    SOURCES ${SOURCES}
+    SOURCES ${SOURCES} ${HEADER_PCH}
     TESTDIRS SimbodyEngine Test
-    INCLUDEDIRS ${SIMULATION_SUBDIRS}
-    )
+    INCLUDEDIRS ${SIMULATION_SUBDIRS})
