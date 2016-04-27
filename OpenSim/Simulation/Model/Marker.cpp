@@ -77,7 +77,7 @@ void Marker::setFrameName(const string& aName)
     const PhysicalFrame* refFrame = dynamic_cast<const PhysicalFrame*>(&getModel().getFrameSet().get(aName));
     if (refFrame)
     {
-        setReferenceFrame(*refFrame);
+        setParentFrame(*refFrame);
     }
     else
     {
@@ -99,7 +99,7 @@ const string& Marker::getFrameName() const
     //if (_bodyNameProp.getValueIsDefault())
     //  return NULL;
 
-    return getReferenceFrame().getName();
+    return getParentFrame().getName();
 }
 
 //_____________________________________________________________________________
@@ -113,7 +113,7 @@ const string& Marker::getFrameName() const
 void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
 {
 
-    if (aPhysicalFrame == getReferenceFrame())
+    if (aPhysicalFrame == getParentFrame())
         return;
 
     setFrameName(aPhysicalFrame.getName());
@@ -133,7 +133,7 @@ void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
 void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame)
 {
 
-    if (aPhysicalFrame == getReferenceFrame())
+    if (aPhysicalFrame == getParentFrame())
         return;
 
     // Preserve location means to switch bodies without changing
@@ -178,7 +178,7 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element connectorsElement("connectors");
             SimTK::Xml::Element frameElement("Connector_PhysicalFrame_");
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
-            frameElement.setAttributeValue("name", "reference_frame");
+            frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
@@ -198,7 +198,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     if (hints.get_show_markers()) { 
         // @TODO default color, size, shape should be obtained from hints
         const Vec3 pink(1, .6, .8);
-        const OpenSim::PhysicalFrame& frame = getReferenceFrame();
+        const OpenSim::PhysicalFrame& frame = getParentFrame();
         //const Frame& bf = frame.findBaseFrame();
         //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
         //const Vec3& p_BM = bTrans*get_location();

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  PhysicalOffsetFrame.cpp                         *
+ *                   OpenSim:  StatesTrajectoryReporter.cpp                   *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2016 Stanford University and the Authors                     *
+ * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,15 +21,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "PhysicalOffsetFrame.h"
+#include "StatesTrajectoryReporter.h"
 
 using namespace OpenSim;
 
-void PhysicalOffsetFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::extendAddToSystem(system);
-    setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
+
+void StatesTrajectoryReporter::clear() {
+    m_states.clear();
+}
+
+const StatesTrajectory& StatesTrajectoryReporter::getStates() const {
+    return m_states;
+}
+
+/*
+TODO we have to discuss if the trajectory should be cleared.
+void StatesTrajectoryReporter::extendRealizeInstance(const SimTK::State& state) const {
+    Super::extendRealizeInstance(state);
+    clear();
+}
+*/
+
+void StatesTrajectoryReporter::implementReport(const SimTK::State& state) const {
+    m_states.append(state);
 }

@@ -1725,7 +1725,6 @@ public:
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 
-protected:
     /** Access the parent of this Component.
         An exception is thrown if the Component has no parent.
         @see hasParent() */
@@ -1736,6 +1735,7 @@ protected:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
+protected:
     /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);
 

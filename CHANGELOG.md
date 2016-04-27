@@ -51,6 +51,7 @@ New Classes
 - Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)  
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 - The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
+- Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
 
 Removed Classes
 --------------------------------
@@ -70,7 +71,7 @@ Other Changes
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
 - InverseKinematics tool outputs marker error .sto file if report error flag is true.
-- Marker location file output name in IK changed to reflect trial name for batch processing. 
+- Marker location file output name in IK changed to reflect trial name for batch processing.
 
 Documentation
 --------------

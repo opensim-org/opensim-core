@@ -147,8 +147,8 @@ void WeldConstraint::
     // We must also get that point position vector wrt ground (i.e., frame1)
     Vec3 spoint = frame2.findLocationInAnotherFrame(s, point, frame1);
 
-    SimTK::Transform in1(frame1.getGroundTransform(s).R(), spoint);
-    SimTK::Transform in2(frame2.getGroundTransform(s).R(), point);
+    SimTK::Transform in1(frame1.getTransformInGround(s).R(), spoint);
+    SimTK::Transform in2(frame2.getTransformInGround(s).R(), point);
 
     // Add new internal PhysicalOffSetFrames that the Constraint can update 
     // without affecting any other components.

@@ -271,10 +271,10 @@ getPointForceDirections(const SimTK::State& s,
 
             // Find the positions of start and end in the inertial frame.
             //engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-            posStart = start->getBody().getGroundTransform(s)*start->getLocation();
+            posStart = start->getBody().getTransformInGround(s)*start->getLocation();
             
             //engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
-            posEnd = end->getBody().getGroundTransform(s)*end->getLocation();
+            posEnd = end->getBody().getTransformInGround(s)*end->getLocation();
 
             // Form a vector from start to end, in the inertial frame.
             direction = (posEnd - posStart);
@@ -913,10 +913,10 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 
         // Find the positions and velocities in the inertial frame.
         posStartInertial =
-            start->getBody().getGroundTransform(s)*start->getLocation();
+            start->getBody().getTransformInGround(s)*start->getLocation();
 
         posEndInertial =
-            end->getBody().getGroundTransform(s)*end->getLocation();
+            end->getBody().getTransformInGround(s)*end->getLocation();
 
         velStartInertial = start->getBody().getMobilizedBody()
             .findStationVelocityInGround(s, start->getLocation());

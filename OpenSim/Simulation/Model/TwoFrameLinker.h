@@ -426,9 +426,9 @@ template <class C, class F>
 SimTK::Transform TwoFrameLinker<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
     // Define frame1 as the "fixed" frame, F
-    SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
+    SimTK::Transform X_GF = getFrame1().getTransformInGround(s);
     // Define the frame2 as the "moving" frame, M
-    SimTK::Transform X_GM = getFrame2().getGroundTransform(s);
+    SimTK::Transform X_GM = getFrame2().getTransformInGround(s);
     // Express M in F
     return ~X_GF * X_GM;
 }
@@ -458,8 +458,8 @@ SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVelocity(const SimTK::Sta
     const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Rotation& R_GF = X_GF.R();
 
@@ -524,8 +524,8 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     //const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     //const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Mat33 N_FM =
         SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
