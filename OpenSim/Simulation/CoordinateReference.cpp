@@ -21,7 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "CoordinateReference.h"
+#include "simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
