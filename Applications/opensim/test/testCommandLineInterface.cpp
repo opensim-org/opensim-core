@@ -47,8 +47,19 @@ struct CommandOutput {
     std::string output;
 };
 
+// Cross-platform pipe, popen, pclose.
+// http://stackoverflow.com/questions/12402578/crossplatform-lightweight-wrapper-for-pipe-popen
+#ifdef _WIN32
+inline FILE* popen(const char* command, const char* type) {
+    return _popen(command, type);
+}
+inline void pclose(FILE* file) { 
+    _pclose(file); 
+}
+#endif
+
 // Execute a system command and also grab its console output.
-// TODO set status.
+// TODO set status so we can test the expected status.
 CommandOutput system_output(const std::string& command) {
     // http://stackoverflow.com/questions/478898/
     // how-to-execute-a-command-and-get-output-of-command-within-c-using-posix
