@@ -1,4 +1,5 @@
-#include "FileAdapter.h"
+#include "common.h"
+
 
 namespace OpenSim {
 
