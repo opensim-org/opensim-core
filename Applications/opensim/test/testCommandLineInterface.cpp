@@ -30,8 +30,12 @@
 // OpenSim through its command-line interface. But we do use Simbody's testing
 // macros.
 
-// Note: We do not test *all* possible commands here, since some commands would
+// These tests are fairly weak, and are mostly about syntax.
+// We do not test *all* possible commands here, since some commands would
 // invoke a long computation (e.g., CMC). We mostly just test incorrect input.
+// Also, we only test the console output and return code of the commands; we
+// don't test the actual purpose of the commands (e.g., if a command was
+// supposed to write a file, we don't check that the file was written).
 
 // OSIM_CLI_PATH is a preprocessor definition that is defined when compiling
 // this executable.
@@ -59,26 +63,32 @@ inline void pclose(FILE* file) {
 #endif
 
 // Execute a system command and also grab its console output.
-// TODO set status so we can test the expected status.
 CommandOutput system_output(const std::string& command) {
     // http://stackoverflow.com/questions/478898/
     // how-to-execute-a-command-and-get-output-of-command-within-c-using-posix
     // The 2>& 1 redirects stderr to stdout.
-    std::shared_ptr<FILE> pipe(popen((command + " 2>& 1").c_str(), "r"), pclose);
-    if (!pipe) return CommandOutput(-1, "ERROR");
-    char buffer[128];
     std::string result = "";
-    while (!feof(pipe.get())) {
-        if (fgets(buffer, 128, pipe.get()) != NULL)
-            result += buffer;
+    FILE* pipe = popen((command + " 2>& 1").c_str(), "r");
+    try {
+        if (!pipe) return CommandOutput(-1, "Could not run command.");
+        char buffer[128];
+        while (!feof(pipe)) {
+            if (fgets(buffer, 128, pipe) != NULL)
+                result += buffer;
+        }
+    } catch (...) {
+        pclose(pipe);
+        throw std::runtime_error("Exception thrown while running command.");
     }
-    return CommandOutput(-1, result);
+    int returncode = pclose(pipe) / 256;
+    if (returncode != 0) returncode = EXIT_FAILURE; // TODO hack
+    return CommandOutput(returncode, result);
 }
 
-// TODO document these methods.
+// Test that the command produces exactly the expected output.
 void testCommand(const std::string& arguments,
-                 const std::string& expectedOutput,
-                 int expectedStatus = 0) {
+                 int expectedReturnCode,
+                 const std::string& expectedOutput) {
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
     const bool outputIsEqual = (out.output == expectedOutput);
@@ -86,25 +96,36 @@ void testCommand(const std::string& arguments,
         std::string msg = "When testing arguments '" + arguments +
             "' got the following output:\n" + out.output +
             "\nExpected:\n" + expectedOutput;
-
-        // TODO SimTK_TEST_FAILED(msg.c_str());
         throw std::runtime_error(msg);
-        // TODO SimTK_TEST_FAILED2("Expected:\n%s\nActual:%s",
-        // TODO         expectedOutput.c_str(), out.output.c_str());
-        // TODO std::cout << "Output: " << std::endl;
-        // TODO std::cout << out.output << std::endl;
+    }
+
+    const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
+    if (!returnCodeIsCorrect) {
+        std::string msg = "When testing arguments '" + arguments +
+            "' got return code '" + std::to_string(out.returncode) +
+            "' but expected '" + std::to_string(expectedReturnCode) + "'.";
+        throw std::runtime_error(msg);
     }
 }
 
+// Test that the command's output matches the given regular expression.
 void testCommand(const std::string& arguments,
-                 const std::regex& expectedOutput,
-                 int expectedStatus = 0) {
+                 int expectedReturnCode,
+                 const std::regex& expectedOutput) {
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
     std::smatch sm;
     if (!std::regex_match(out.output, sm, expectedOutput)) {
         std::string msg = "When testing arguments '" + arguments +
             "' got the following unexpected output:\n" + out.output;
+        throw std::runtime_error(msg);
+    }
+
+    const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
+    if (!returnCodeIsCorrect) {
+        std::string msg = "When testing arguments '" + arguments +
+            "' got return code '" + std::to_string(out.returncode) +
+            "' but expected '" + std::to_string(expectedReturnCode) + "'.";
         throw std::runtime_error(msg);
     }
 }
@@ -119,43 +140,127 @@ void testNoCommand() {
                           "((.|\n|\r)*)"
                           "(Pass -h or --help)"
                           "((.|\n|\r)*)");
-        testCommand("", output);
-        testCommand("-h", output);
-        testCommand("-help", output);
+        testCommand("", EXIT_SUCCESS, output);
+        testCommand("-h", EXIT_SUCCESS, output);
+        testCommand("-help", EXIT_SUCCESS, output);
     }
 
     // Version.
     // ========
     {
         std::regex output("(OpenSim version )(.*)(, build date )(.*)\n");
-        testCommand("-V", output);
-        testCommand("--version", output);
+        testCommand("-V", EXIT_SUCCESS, output);
+        testCommand("--version", EXIT_SUCCESS, output);
     }
 
     // Library option.
     // ===============
     // Syntax errors.
-    testCommand("-L", std::regex("(-L requires an argument)((.|\n|\r)*)"));
-    testCommand("--library",
+    testCommand("-L", EXIT_FAILURE,
+            std::regex("(-L requires an argument)((.|\n|\r)*)"));
+    testCommand("--library", EXIT_FAILURE, 
             std::regex("(--library requires an argument)((.|\n|\r)*)"));
     // Must specify a command; can't only list a library to load.
     {
         std::regex output(
             "(Arguments did not match expected patterns)((.|\n|\r)*)");
-        testCommand("-L x", output);
-        testCommand("--library y", output);
+        // All of these are otherwise valid options for specify libraries to
+        // load.
+        testCommand("-L x", EXIT_FAILURE, output);
+        testCommand("--library x", EXIT_FAILURE, output);
+        testCommand("-L=x", EXIT_FAILURE, output);
+        testCommand("--library=y", EXIT_FAILURE, output);
+        testCommand("-L x --library y -L z", EXIT_FAILURE, output);
+        testCommand("-L=x --library=y -L=z", EXIT_FAILURE, output);
     }
-    // TODO testCommand("-L x -L y --library z", output);
-    // TODO testCommand("--library y", output);
-    // TODO testCommand("-L=x", "TODO");
-    // TODO testCommand("--library=y", "TODO");
-
-    // TODO test actually loading libraries (with each subcommand).
 
     // Unrecognized command.
     // =====================
-    testCommand("bleepbloop",
+    testCommand("bleepbloop", EXIT_FAILURE, 
             "'bleepbloop' is not an opensim command. See 'opensim --help'.\n");
+}
+
+// TODO allow LoadOpenSimLibrary to take a filename extension.
+void testLoadPluginLibraries(const std::string& subcommand) {
+
+    const auto cmd = subcommand + " -h";
+
+    // Nonexistant file.
+    // =================
+    {
+        std::regex output("((.|\n|\r)*)(Failed to load library x)\n");
+        // These are all valid ways of specifying libraries.
+        testCommand("-L x " + cmd, EXIT_FAILURE, output);
+        testCommand("-Lx " + cmd, EXIT_FAILURE, output);
+        testCommand("--library x " + cmd, EXIT_FAILURE, output);
+        testCommand("--library=x " + cmd, EXIT_FAILURE, output);
+        testCommand("-L x --library y " + cmd, EXIT_FAILURE, output);
+        testCommand("-Lx --library=y -L z " + cmd, EXIT_FAILURE, output);
+    }
+
+    // Load an actual library.
+    // =======================
+    const std::string lib = MAKE_STRING(OSIM_ACTUATORS_LIB_PATH);
+    {
+        std::regex output("(Loaded library " + lib + ")((.|\n|\r)*)\n");
+        testCommand("-L " + lib + " " + cmd, EXIT_SUCCESS, output);
+        testCommand("-L" + lib + " " + cmd, EXIT_SUCCESS, output);
+        testCommand("--library " + lib + " " + cmd, EXIT_SUCCESS, output);
+        testCommand("--library=" + lib + " " + cmd, EXIT_SUCCESS, output);
+    }
+    // Load multiple libraries.
+    // ========================
+    {
+        // Well, in this case, we just load the same library multiple times.
+        testCommand("-L " + lib + " --library " + lib + " " + cmd,
+                EXIT_SUCCESS,
+                std::regex("(Loaded library " + lib + ")\n"
+                           "(Loaded library " + lib + ")((.|\n|\r)*)\n"));
+        testCommand("-L" + lib +
+                    " --library=" + lib +
+                    " -L " + lib + " " + cmd, EXIT_SUCCESS,
+                std::regex("(Loaded library " + lib + ")\n"
+                           "(Loaded library " + lib + ")\n"
+                           "(Loaded library " + lib + ")((.|\n|\r)*)\n"));
+    }
+}
+
+void testPrintXML() {
+    // Help.
+    // =====
+    {
+        auto output = std::regex("(Print a template XML file )((.|\n|\r)*)");
+        testCommand("print-xml -h", EXIT_SUCCESS, output);
+        testCommand("print-xml -help", EXIT_SUCCESS, output);
+    }
+
+    // Error messages.
+    // ===============
+    testCommand("print-xml", EXIT_FAILURE,
+            std::regex("(Arguments did not match expected patterns)"
+                       "((.|\n|\r)*)"));
+    testCommand("print-xml x y z", EXIT_FAILURE,
+            std::regex("(Unexpected argument: print-xml, x, y, z)"
+                       "((.|\n|\r)*)"));
+    testCommand("print-xml bleepbloop", EXIT_FAILURE,
+            "There is no tool or class named 'bleepbloop'.\n"
+            "Did you intend to load a plugin (with --library)?\n");
+    testCommand("print-xml bleepbloop y", EXIT_FAILURE,
+            "There is no tool or class named 'bleepbloop'.\n"
+            "Did you intend to load a plugin (with --library)?\n");
+
+    // Successful input.
+    // =================
+    testCommand("print-xml cmc", EXIT_SUCCESS,
+            "Printing 'default_CMCTool.xml'.\n");
+    testCommand("print-xml Millard2012EquilibriumMuscle", EXIT_SUCCESS,
+            "Printing 'default_Millard2012EquilibriumMuscle.xml'.\n");
+    testCommand("print-xml cmc default_cmc_setup.xml", EXIT_SUCCESS,
+            "Printing 'default_cmc_setup.xml'.\n");
+
+    // Library option.
+    // ===============
+    testLoadPluginLibraries("print-xml");
 }
 
 void testInfo() {
@@ -163,38 +268,39 @@ void testInfo() {
     // =====
     {
         auto output = std::regex("(Show description )((.|\n|\r)*)");
-        testCommand("info -h", output);
-        testCommand("info -help", output);
+        testCommand("info -h", EXIT_SUCCESS, output);
+        testCommand("info -help", EXIT_SUCCESS, output);
     }
 
     // Error messages.
     // ===============
-    testCommand("info x",
+    testCommand("info x", EXIT_FAILURE,
             "No registered class with name 'x'. "
             "Did you intend to load a plugin?\n");
-    testCommand("info x y",
+    testCommand("info x y", EXIT_FAILURE,
             "No registered class with name 'x'. "
             "Did you intend to load a plugin?\n");
-    testCommand("info Body y",
+    testCommand("info Body y", EXIT_FAILURE,
             "No property with name 'y' found in class 'Body'.\n");
 
     // Successful input.
     // =================
-    testCommand("info", std::regex("(REGISTERED CLASSES )((.|\n|\r)*)"));
-    testCommand("info PathSpring",
+    testCommand("info", EXIT_SUCCESS,
+            std::regex("(REGISTERED CLASSES )((.|\n|\r)*)"));
+    testCommand("info PathSpring", EXIT_SUCCESS,
             std::regex("\n(PROPERTIES FOR PathSpring)((.|\n|\r)*)"));
-    testCommand("info Body mass", "\nBody.mass\nThe mass of the body (kg)\n");
+    testCommand("info Body mass", EXIT_SUCCESS,
+            "\nBody.mass\nThe mass of the body (kg)\n");
 
-    // TODO passing library option.
     // Library option.
     // ===============
-    testCommand("-L x info",
-            std::regex("((.|\n|\r)*)(Failed to load library x)\n"));
+    testLoadPluginLibraries("info");
 }
 
 int main() {
     SimTK_START_TEST("testCommandLineInterface");
         SimTK_SUBTEST(testNoCommand);
+        SimTK_SUBTEST(testPrintXML);
         SimTK_SUBTEST(testInfo);
     SimTK_END_TEST();
 }

@@ -36,11 +36,13 @@ using namespace std;
 // LoadLibrary used to be a macro for dlopen but we want to transparently support
 // adding the "lib" prefix to library names when loading them, so made it a function
 static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
+    actualNameLoaded = name;
     void *lib = dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if(!lib) {
         std::string libName = OpenSim::IO::GetFileNameFromURI(name);
         if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
             libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
+            actualNameLoaded = libName;
             //std::cout << "Loading " << name << " failed, trying " << libName << " (for Linux compatibility)" << std::endl;
             lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
         }

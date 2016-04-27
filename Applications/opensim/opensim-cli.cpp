@@ -44,9 +44,12 @@ Usage:
 Options:
   -L <path>, --library <path>  Load a plugin before executing the requested
                  command. The <path> to the library can be absolute or relative
-                 to the current directory, Do NOT provide the plugin's
+                 to the current directory. Make sure to include the library's 
                  extension (e.g., .dll, .so, .dylib). You can load multiple
-                 plugins by repeating this option.
+                 plugins by repeating this option. Examples:
+                   opensim -L C:\Plugins\osimMyCustomForce.dll <command>
+                   opensim --library ../plugins/libosimMyPlugin.so <command>
+                   opensim --library=libosimMyCustomForce.dylib <command>
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 

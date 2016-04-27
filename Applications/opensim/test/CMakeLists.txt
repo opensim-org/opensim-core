@@ -8,5 +8,7 @@ OpenSimAddTests(
 
 add_dependencies(testCommandLineInterface opensim-cli)
 
-set_target_properties(testCommandLineInterface PROPERTIES
-    COMPILE_DEFINITIONS "OSIM_CLI_PATH=$<TARGET_FILE:opensim-cli>")
+# TOOD add in quotes! will not work for filepaths that have spaces.
+set_property(TARGET testCommandLineInterface APPEND PROPERTY
+    COMPILE_DEFINITIONS OSIM_CLI_PATH=$<TARGET_FILE:opensim-cli>
+                        OSIM_ACTUATORS_LIB_PATH=$<TARGET_FILE:osimActuators>)

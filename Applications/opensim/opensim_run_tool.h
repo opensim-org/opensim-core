@@ -49,8 +49,9 @@ Description:
 
 Examples:
   opensim run-tool CMC_setup.xml
-  opensim -L C:\OpenSim\Plugins\osimMyCustomActuator run-tool CMC_setup.xml
-  opensim --library ../plugins/osimMyController run-tool Forward_setup.xml
+  opensim -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
+  opensim --library ../plugins/libosimMyPlugin.so run-tool Forward_setup.xml
+  opensim --library=libosimMyCustomForce.dylib run-tool CMC_setup.xml
 )";
 
 int run_tool(int argc, const char** argv) {
