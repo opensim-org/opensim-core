@@ -24,10 +24,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-
-#include "osimCommonDLL.h"
-#include "Mtx.h"
-#include <string.h> // for memcpy in Linux
+#include "common.h"
 
 
 //=============================================================================
