@@ -43,6 +43,10 @@
 #define MAKE_STRING(a) STR(a)
 const std::string COMMAND = MAKE_STRING(OSIM_CLI_PATH);
 
+
+// Helper code.
+// ============
+
 // For packaging the return code and the console output of a system command.
 struct CommandOutput {
     CommandOutput(int returncode, std::string output)
@@ -85,41 +89,37 @@ CommandOutput system_output(const std::string& command) {
     return CommandOutput(returncode, result);
 }
 
-// Test that the command produces exactly the expected output.
-void testCommand(const std::string& arguments,
-                 int expectedReturnCode,
-                 const std::string& expectedOutput) {
-    CommandOutput out = system_output(COMMAND + " " + arguments);
-
-    const bool outputIsEqual = (out.output == expectedOutput);
+// Checks that the command produces exactly the expected output.
+void checkCommandOutput(const std::string& arguments,
+        const std::string& output,
+        const std::string& expectedOutput) {
+    const bool outputIsEqual = (output == expectedOutput);
     if (!outputIsEqual) {
         std::string msg = "When testing arguments '" + arguments +
-            "' got the following output:\n" + out.output +
+            "' got the following output:\n" + output +
             "\nExpected:\n" + expectedOutput;
-        throw std::runtime_error(msg);
-    }
-
-    const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
-    if (!returnCodeIsCorrect) {
-        std::string msg = "When testing arguments '" + arguments +
-            "' got return code '" + std::to_string(out.returncode) +
-            "' but expected '" + std::to_string(expectedReturnCode) + "'.";
         throw std::runtime_error(msg);
     }
 }
 
-// Test that the command's output matches the given regular expression.
-void testCommand(const std::string& arguments,
-                 int expectedReturnCode,
-                 const std::regex& expectedOutput) {
-    CommandOutput out = system_output(COMMAND + " " + arguments);
-
-    std::smatch sm;
-    if (!std::regex_match(out.output, sm, expectedOutput)) {
+// Checks that the command's output matches the given regular expression.
+void checkCommandOutput(const std::string& arguments,
+        const std::string& output,
+        const std::regex& expectedOutput) {
+    if (!std::regex_match(output, expectedOutput)) {
         std::string msg = "When testing arguments '" + arguments +
-            "' got the following unexpected output:\n" + out.output;
+            "' got the following unexpected output:\n" + output;
         throw std::runtime_error(msg);
     }
+}
+
+template <typename T>
+void testCommand(const std::string& arguments,
+                 int expectedReturnCode,
+                 const T& expectedOutput) {
+    CommandOutput out = system_output(COMMAND + " " + arguments);
+
+    checkCommandOutput(arguments, out.output, expectedOutput);
 
     const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
     if (!returnCodeIsCorrect) {
