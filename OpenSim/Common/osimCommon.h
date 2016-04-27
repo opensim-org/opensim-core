@@ -23,8 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+// Simbody headers.
 #include "Simbody.h"
 
+// OpenSim Common headers.
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "RegisterTypes_osimCommon.h"
@@ -33,7 +35,6 @@
 #include "ScaleSet.h"
 #include "GCVSpline.h"
 #include "IO.h"
-
 #include "Scale.h"
 #include "SimmSpline.h"
 #include "Constant.h"
@@ -42,20 +43,15 @@
 #include "LinearFunction.h"
 #include "PiecewiseConstantFunction.h"
 #include "PiecewiseLinearFunction.h"
-
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
-
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
 #include "SmoothSegmentedFunctionFactory.h"
-
 #include "DataTable.h"
 #include "TimeSeriesTable.h"
-
 #include "Reporter.h"
-
 #include "AbstractProperty.h"
 #include "Adapters.h"
 #include "Array.h"
@@ -143,7 +139,7 @@
 #include "XMLDocument.h"
 #include "XYFunctionInterface.h"
 
-
+// Standard headers.
 #include <fstream>
 #include <vector>
 #include <map>
