@@ -43,7 +43,7 @@ int main()
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");
         cout << "DoublePendulum3D passed" << endl;
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }
