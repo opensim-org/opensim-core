@@ -29,10 +29,7 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include "PropertyDbl.h"
-#include <cstdio>
-#include "SimTKmath.h"
-
+#include "common.h"
 
 
 using namespace OpenSim;
