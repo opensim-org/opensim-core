@@ -1,4 +1,5 @@
-#include "MOTFileAdapter.h"
+#include "common.h"
+
 
 namespace OpenSim {
 
