@@ -23,7 +23,7 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "MuscleActiveFiberPowerProbe.h"
+#include "../simulation.h"
 
 
 using namespace std;
