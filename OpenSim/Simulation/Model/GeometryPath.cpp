@@ -24,20 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "ConditionalPathPoint.h"
-#include "MovingPathPoint.h"
-#include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include "CoordinateSet.h"
-#include "Model.h"
+#include "../simulation.h"
 
-#include "ModelVisualizer.h"
+
 //=============================================================================
 // STATICS
 //=============================================================================
