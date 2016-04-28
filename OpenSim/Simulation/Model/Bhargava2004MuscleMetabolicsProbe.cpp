@@ -26,8 +26,9 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "Bhargava2004MuscleMetabolicsProbe.h"
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include "../simulation.h"
+
+
 //#define DEBUG_METABOLICS
 
 using namespace std;
