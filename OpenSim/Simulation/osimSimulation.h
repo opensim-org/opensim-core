@@ -177,10 +177,13 @@
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 
-// Standard headers.
+// Standard headers. It is okay to be redundant here. Include guards to the
+// rescue.
 #include <string>
 #include <cstring>
 #include <cctype>
+#include <iostream>
+#include <exception>
 
 
 #endif // _osimSimulation_h_
