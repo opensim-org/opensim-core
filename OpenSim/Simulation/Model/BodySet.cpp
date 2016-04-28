@@ -20,9 +20,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "../simulation.h"
 
-#include "BodySet.h"
-#include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
 using namespace OpenSim;
