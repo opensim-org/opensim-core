@@ -25,14 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include "ControllerSet.h"
-#include "Model.h"
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Control/TrackingController.h>
-#include "Actuator.h" 
-#include <OpenSim/Common/Set.h>
-#include "SimTKsimbody.h"
+#include "../simulation.h"
+
 
 using namespace std;
 using namespace OpenSim;
