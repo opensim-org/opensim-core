@@ -24,17 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include "MovingPathPoint.h"
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/MultiplierFunction.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Common/SimmSpline.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
