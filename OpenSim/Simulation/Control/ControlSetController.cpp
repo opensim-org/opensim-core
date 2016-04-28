@@ -29,11 +29,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Controller.h"
-#include "ControlSetController.h"
-#include "ControlLinear.h"
-#include "ControlSet.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include "../simulation.h"
 
 
 //=============================================================================
