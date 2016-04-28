@@ -24,10 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include "../simulation.h"
 
-#include "BushingForce.h"
 
 using namespace std;
 using namespace SimTK;
