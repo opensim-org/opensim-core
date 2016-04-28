@@ -20,13 +20,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "../simulation.h"
 
-#include "MarkerSet.h"
-#include "Marker.h"
-#include "Model.h"
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 using namespace std;
 using namespace OpenSim;
