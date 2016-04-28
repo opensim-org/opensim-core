@@ -185,6 +185,6 @@
 #include <iostream>
 #include <exception>
 #include <cstdio>
-
+#include <memory>
 
 #endif // _osimSimulation_h_
