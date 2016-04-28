@@ -23,10 +23,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Common/SimmSpline.h>
-#include "PrescribedForce.h"
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
