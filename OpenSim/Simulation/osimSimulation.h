@@ -184,6 +184,7 @@
 #include <cctype>
 #include <iostream>
 #include <exception>
+#include <cstdio>
 
 
 #endif // _osimSimulation_h_
