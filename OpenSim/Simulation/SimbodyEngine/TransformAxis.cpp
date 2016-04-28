@@ -25,15 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include "../simulation.h"
 
-#include "TransformAxis.h"
-#include "Joint.h"
-#include "Coordinate.h"
-#include "SimbodyEngine.h"
 
 //=============================================================================
 // USING
