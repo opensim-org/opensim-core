@@ -813,8 +813,8 @@ sudo apt-get update
 sudo apt-get --yes install git cmake cmake-curses-gui \
                            freeglut3-dev libxi-dev libxmu-dev \
                            liblapack-dev swig python-dev \
-                           openjdk-9-jdk
-export JAVA_HOME=/usr/lib/jvm/java-9-openjdk-amd64
+                           openjdk-8-jdk
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
 cd opensim_dependencies_build
