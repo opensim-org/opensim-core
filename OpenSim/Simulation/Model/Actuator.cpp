@@ -24,8 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include "Actuator.h"
+#include "../simulation.h"
 
 
 using namespace std;
