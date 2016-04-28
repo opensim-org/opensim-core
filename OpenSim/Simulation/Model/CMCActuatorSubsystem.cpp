@@ -20,8 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "../simulation.h"
-// #include <math.h>
-// #include <stdio.h>
+
 
 using namespace OpenSim;
 using namespace SimTK;
