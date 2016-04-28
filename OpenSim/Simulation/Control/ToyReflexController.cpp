@@ -26,8 +26,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ToyReflexController.h"
-#include <OpenSim/Simulation/Model/Muscle.h> 
+#include "../simulation.h"
+
 
 // This allows us to use OpenSim functions, classes, etc., without having to
 // prefix the names of those things with "OpenSim::".
