@@ -24,10 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Ligament.h"
-#include "GeometryPath.h"
-#include "PointForceDirection.h"
-#include <OpenSim/Common/SimmSpline.h>
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
