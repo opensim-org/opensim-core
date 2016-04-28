@@ -15,7 +15,7 @@
 #   @CMAKE_PROJECT_NAME@_PYTHON_WRAPPING -- Boolean indicating whether or not
 #                                           OpenSim was built to include Python
 #                                           wrapping.
-#   @CMAKE_PROJECT_NAME@_JAR_FILE -- Path to jar file..
+#   @CMAKE_PROJECT_NAME@_JAR_FILE -- Path to jar file.
 #   @CMAKE_PROJECT_NAME@_JAVA_FILES_DIR -- Directory containing the Java source
 #                                          files.
 #                                            
