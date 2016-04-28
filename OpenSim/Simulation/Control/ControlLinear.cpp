@@ -24,16 +24,8 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Signal.h>
-#include <OpenSim/Common/Property_Deprecated.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertySet.h>
-#include <OpenSim/Common/DebugUtilities.h>
-#include "ControlLinear.h"
-#include "ControlLinearNode.h"
-#include "SimTKcommon.h"
+#include "../simulation.h"
+
 
 using namespace OpenSim;
 using namespace std;
