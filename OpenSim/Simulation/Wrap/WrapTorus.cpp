@@ -24,15 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "WrapTorus.h"
-#include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include "PathWrap.h"
-#include "WrapResult.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Lmdif.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
