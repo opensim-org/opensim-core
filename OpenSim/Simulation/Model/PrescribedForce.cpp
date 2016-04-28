@@ -73,8 +73,9 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : Super(aNode)
 void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     // Base class
-    // This test for veversion number may need to change when we have a new version. 
-    if (versionNumber <= 30505) { 
+    // This test for veversion number needs to change when we have a new version number otherwise 
+    // subsequent versions will continue to trigger the conversion below. -Ayman 4/16
+    if (versionNumber != 30505) { 
         // Convert body property into a connector to PhysicalFrame with name "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
@@ -250,7 +251,6 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const FunctionSet& torqueFunctions = getTorqueFunctions();
 
     double time = state.getTime();
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     SimTK::Vector  timeAsVector(1, time);
 
     const bool hasForceFunctions  = forceFunctions.getSize()==3;
