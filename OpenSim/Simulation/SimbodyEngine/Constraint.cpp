@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Constraint.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
