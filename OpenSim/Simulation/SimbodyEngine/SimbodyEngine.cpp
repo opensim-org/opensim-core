@@ -24,16 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "SimbodyEngine.h"
-#include "Joint.h"
-#include "Coordinate.h"
+#include "../simulation.h"
 
 
 //=============================================================================
