@@ -34,6 +34,7 @@ using namespace std;
 //using namespace SimTK;
 using namespace OpenSim;
 
+namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -284,3 +285,5 @@ Array<double> Constraint::getRecordValues(const SimTK::State& state) const
 
     return values;
 };
+
+} // namespace OpenSim
