@@ -24,11 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Simbody.h"
-#include "Body.h"
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include "../simulation.h"
+
 
 //=============================================================================
 // STATICS
@@ -40,6 +37,7 @@ using SimTK::Mat33;
 using SimTK::Vec3;
 using SimTK::DecorativeGeometry;
 
+namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -419,3 +417,5 @@ Body* Body::addSlave()
 
     return slave;
 }
+
+} // namespace OpenSim
