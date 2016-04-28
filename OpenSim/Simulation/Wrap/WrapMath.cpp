@@ -28,11 +28,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <math.h>
-#include "WrapMath.h"
-#include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include "SimTKcommon.h"
+#include "../simulation.h"
 
 
 using namespace OpenSim;
