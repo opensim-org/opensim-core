@@ -93,13 +93,16 @@ public:
     // Would have been better for this to be a list property. 
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
-    /** The force applied by the PrescribedForce, this depends only on time */
+    /** The force applied by the PrescribedForce, this depends only on time.  
+    The frame in which this vector is interpreted depends on the "forceIsGlobal" property.*/
     OpenSim_DECLARE_OUTPUT(force_applied, SimTK::Vec3, getForceApplied, SimTK::Stage::Time);
 
-    /** The torque applied by the PrescribedForce, this depends only on time */
+    /** The torque applied by the PrescribedForce, this depends only on time. 
+    The frame in which this vector is interpreted depends on the "forceIsGlobal" property.*/
     OpenSim_DECLARE_OUTPUT(torque_applied, SimTK::Vec3, getTorqueApplied, SimTK::Stage::Time);
 
-    /** The point where force is applied by the PrescribedForce, this depends only on time */
+    /** The point where force is applied by the PrescribedForce, this depends only on time.
+    The frame of this vector depends on the "pointIsGlobal" property.*/
     OpenSim_DECLARE_OUTPUT(point_of_application, SimTK::Vec3, getApplicationPoint, SimTK::Stage::Time);
     //==============================================================================
 // PUBLIC METHODS

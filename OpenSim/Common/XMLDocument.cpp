@@ -54,8 +54,7 @@ using namespace std;
 // 30502 for Changing serialization of Geometry
 // 30503 for Changing serialization of Ground
 // 30505 for Changing serialization of Joint to create offset frames
-// 30506 for Changing serialization of PrescribedForce to use Connectors
-const int XMLDocument::LatestVersion = 30506;   
+const int XMLDocument::LatestVersion = 30505;   
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

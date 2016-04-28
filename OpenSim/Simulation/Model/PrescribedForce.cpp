@@ -42,13 +42,13 @@ using namespace std;
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(const PhysicalFrame* body)
+PrescribedForce::PrescribedForce(const PhysicalFrame* frame)
 {
     setNull();
     constructInfrastructure();
 
-    if (body)
-        updConnector<PhysicalFrame>("frame").setConnecteeName(body->getName());
+    if (frame)
+        updConnector<PhysicalFrame>("frame").setConnecteeName(frame->getName());
 }
 
 //_____________________________________________________________________________
@@ -73,7 +73,7 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : Super(aNode)
 void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     // Base class
-    if (versionNumber < 30506) {
+
         // Convert body property into a connector to PhysicalFrame with name "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
@@ -81,7 +81,7 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             bodyElement->getValueAs<std::string>(frame_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "frame", frame_name);
         }
-    }
+
     Super::updateFromXMLNode(aNode, versionNumber);
 
     const FunctionSet& forceFunctions  = getForceFunctions();
