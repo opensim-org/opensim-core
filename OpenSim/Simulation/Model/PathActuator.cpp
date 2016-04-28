@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "PathActuator.h"
-#include "Model.h"
-#include "PointForceDirection.h"
+#include "../simulation.h"
+
 
 using namespace OpenSim;
 using namespace std;
