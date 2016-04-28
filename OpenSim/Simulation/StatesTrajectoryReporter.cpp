@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "StatesTrajectoryReporter.h"
+#include "simulation.h"
 
 using namespace OpenSim;
 
