@@ -45,20 +45,7 @@ using namespace SimTK;
       if (swigCMemOwn) swigCMemOwn = false;
     }
   }  
-
 %}
-
-%extend OpenSim::Object {
-    static OpenSim::Array<std::string> getFunctionClassNames() {
-         OpenSim::Array<std::string> availableClassNames;
-         ArrayPtrs<OpenSim::Function> rArray;
-         Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
-         for (int i=0;i<rArray.size(); i++)
-            availableClassNames.append(rArray[i]->getConcreteClassName());
-        
-         return availableClassNames;
-    }
-}
 
 %typemap(javacode) OpenSim::MarkerData %{
   public double[] getTimeRange() { 
