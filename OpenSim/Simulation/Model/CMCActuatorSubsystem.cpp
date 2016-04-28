@@ -19,11 +19,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "CMCActuatorSubsystem.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <math.h>
-#include <stdio.h>
+#include "../simulation.h"
+// #include <math.h>
+// #include <stdio.h>
+
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
