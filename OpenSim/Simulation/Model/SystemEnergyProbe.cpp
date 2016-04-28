@@ -24,7 +24,8 @@
 //==============================================================================
 // INCLUDE
 //==============================================================================
-#include "SystemEnergyProbe.h"
+#include "../simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
