@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "PointToPointSpring.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include "../simulation.h"
+
 
 using namespace OpenSim;
 using namespace std;
