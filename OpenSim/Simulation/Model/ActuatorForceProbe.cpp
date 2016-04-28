@@ -25,9 +25,8 @@
 //=============================================================================
 // INCLUDE
 //=============================================================================
-#include "ActuatorForceProbe.h"
-#include "ForceSet.h"
-#include <OpenSim/Common/IO.h>
+#include "../simulation.h"
+
 
 using namespace std;
 using namespace SimTK;
