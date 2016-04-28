@@ -61,8 +61,8 @@ struct CommandOutput {
 inline FILE* popen(const char* command, const char* type) {
     return _popen(command, type);
 }
-inline void pclose(FILE* file) { 
-    _pclose(file); 
+inline int pclose(FILE* file) { 
+    return _pclose(file); 
 }
 #endif
 
