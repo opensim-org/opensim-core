@@ -25,13 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <fstream>
-#include "ExternalLoads.h"
-#include "Model.h"
-#include "BodySet.h"
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
-#include <OpenSim/Common/IO.h>
+#include "../simulation.h"
+
 
 using namespace std;
 using namespace OpenSim;
