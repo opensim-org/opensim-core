@@ -392,23 +392,23 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 
     // This is bad as it duplicates the code in computeForce we'll cleanup after it works!
     const double time = state.getTime();
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     const SimTK::Vector timeAsVector(1, time);
     const PhysicalFrame& frame =
         getConnector<PhysicalFrame>("frame").getConnectee();
+    const Ground& gnd = getModel().getGround();
     if (appliesForce) {
         Vec3 force = getForceApplied(state);
         if (!forceIsGlobal)
-            engine.transform(state, frame, force,
-                             getModel().getGround(), force);
+            force = frame.expressVectorInAnotherFrame(state, force, gnd);
+
         if (!pointSpecified) {
             //applyForce(*_body, force);
             for (int i=0; i<3; i++) values.append(force[i]);
         } else {
             Vec3 point = getApplicationPoint(state);
             if (pointIsGlobal)
-                engine.transformPosition(state, getModel().getGround(), point, 
-                    frame, point);
+                point = gnd.findLocationInAnotherFrame(state, point, frame);
+
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);
             for (int i=0; i<3; i++) values.append(point[i]);
@@ -417,8 +417,8 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     if (appliesTorque) {
         Vec3 torque = getTorqueApplied(state);
         if (!forceIsGlobal)
-            engine.transform(state, frame, torque,
-                             getModel().getGround(), torque);
+            torque = frame.expressVectorInAnotherFrame(state, torque, gnd);
+
         for (int i=0; i<3; i++) values.append(torque[i]);
         //applyTorque(*_body, torque);
     }
