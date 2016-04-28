@@ -46,6 +46,7 @@ set(PCH_ARGS ${CMAKE_CXX_COMPILER_ARG1}
              ${CMAKE_CXX_FLAGS} 
              ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
              ${INCLUDE_FLAGS}
+             -x c++-header
              -c ${HEADER}
              -o ${HEADER_PCH})
 separate_arguments(PCH_ARGS)
