@@ -20,11 +20,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "../simulation.h"
 
-#include <fstream>
-#include <OpenSim/Common/IO.h>
-#include "ContactMesh.h"
-#include "Model.h"
 
 namespace OpenSim {
 
