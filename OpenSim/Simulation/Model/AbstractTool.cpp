@@ -24,16 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include "AbstractTool.h"
-#include <OpenSim/Common/IO.h>
+#include "../simulation.h"
 
-#include "PrescribedForce.h"
-#include "ForceSet.h"
-#include "BodySet.h"
-#include "Model.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
+
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
