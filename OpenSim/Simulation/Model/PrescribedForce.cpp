@@ -48,7 +48,7 @@ PrescribedForce::PrescribedForce(const PhysicalFrame* frame)
     constructInfrastructure();
 
     if (frame)
-        updConnector<PhysicalFrame>("frame").setConnecteeName(frame->getName());
+        updConnector<PhysicalFrame>("frame").connect(*frame);
 }
 
 //_____________________________________________________________________________
@@ -73,7 +73,8 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : Super(aNode)
 void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     // Base class
-
+    // This test for veversion number may need to change when we have a new version. 
+    if (versionNumber <= 30505) { 
         // Convert body property into a connector to PhysicalFrame with name "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
@@ -81,7 +82,7 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             bodyElement->getValueAs<std::string>(frame_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "frame", frame_name);
         }
-
+    }
     Super::updateFromXMLNode(aNode, versionNumber);
 
     const FunctionSet& forceFunctions  = getForceFunctions();
@@ -258,14 +259,14 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 
     const PhysicalFrame& frame =
         getConnector<PhysicalFrame>("frame").getConnectee();
-
+    const Ground& gnd = getModel().getGround();
     if (hasForceFunctions) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
                    forceFunctions[1].calcValue(timeAsVector), 
                    forceFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, frame,                 force,
-                                    getModel().getGround(), force);
+            force = frame.expressVectorInAnotherFrame(state, force, gnd);
+
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
             // Apply force to a specified point on the body.
@@ -273,8 +274,8 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                engine.transformPosition(state, getModel().getGround(), point,
-                    frame,                 point);
+                point = gnd.findLocationInAnotherFrame(state, point, frame);
+
         }
         applyForceToPoint(state, frame, point, force, bodyForces);
     }
@@ -283,9 +284,9 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                     torqueFunctions[1].calcValue(timeAsVector), 
                     torqueFunctions[2].calcValue(timeAsVector));
         if (!forceIsGlobal)
-            engine.transform(state, frame,                 torque,
-                                    getModel().getGround(), torque);
-        applyTorque(state, frame, torque, bodyForces);
+            torque = frame.expressVectorInAnotherFrame(state, torque, gnd);
+
+         applyTorque(state, frame, torque, bodyForces);
     }
 }
 
