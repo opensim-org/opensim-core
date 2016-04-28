@@ -20,10 +20,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "../simulation.h"
 
-// INCLUDES
-#include "OpenSim/Simulation/Model/ModelComponent.h"
-#include "OpenSim/Simulation/Model/Model.h"
 
 using namespace SimTK;
 
