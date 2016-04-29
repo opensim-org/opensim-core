@@ -89,8 +89,12 @@ CommandOutput system_output(const std::string& command) {
         pclose(pipe);
         throw std::runtime_error("Exception thrown while running command.");
     }
-    int returncode = pclose(pipe) / 256;
-    if (returncode != 0) returncode = EXIT_FAILURE; // TODO hack
+    int returncode = pclose(pipe);
+    // I was unable to actually get the correct return code on either OSX
+    // or Windows, so we will only do a binary check for failure/success.
+    // This is fine, considering that we only use two different return
+    // codes in the command line interface. -chrisdembia
+    if (returncode != 0) returncode = EXIT_FAILURE;
     return CommandOutput(returncode, result);
 }
 
