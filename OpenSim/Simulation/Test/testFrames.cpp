@@ -369,7 +369,7 @@ void testFilterByFrameType()
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
-    for (auto& component : pendulumWFrame->getComponentList<Body>()) {
+    for (auto& component : pendulumWFrame->getComponentList<OpenSim::Body>()) {
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }

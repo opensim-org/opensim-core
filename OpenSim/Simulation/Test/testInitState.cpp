@@ -53,7 +53,7 @@ int main()
         testMemoryUsage("arm26.osim");
         testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         cout << "testInitState failed: ";
         e.print(cout); 
         return 1;
