@@ -97,9 +97,9 @@ int main(int argc, const char** argv) {
     // -----------------------------
     if (args["--library"]) {
         for (const auto& plugin : args["--library"].asStringList()) {
-            const auto& lib = LoadOpenSimLibrary(plugin, true);
+            const bool success = LoadOpenSimLibraryExact(plugin);
             // Exit if we couldn't load the library.
-            if (!lib) return EXIT_FAILURE;
+            if (!success) return EXIT_FAILURE;
         }
     }
 

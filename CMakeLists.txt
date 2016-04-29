@@ -107,7 +107,7 @@ if(WIN32)
 endif()
 option(OPENSIM_BUILD_INDIVIDUAL_APPS
     "Build/install the old command line applications (ik, id, rra, cmc, etc.)."
-    ${OPENSIM_BUILD_INDIVIDUAL_APPS})
+    ${OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT})
 mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 

@@ -222,6 +222,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     }
     // Load an actual library, without the file extension.
     // ===================================================
+    /*
     { // TODO remove this.
         const auto libnoext = lib.substr(0, lib.rfind(".")) + "\"";
         std::regex output("(Loaded library " + libnoquotes + ")"
@@ -231,6 +232,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
         testCommand("--library " + libnoext + " " + cmd, EXIT_SUCCESS, output);
         testCommand("--library=" + libnoext + " " + cmd, EXIT_SUCCESS, output);
     }
+    */
 
     // Load multiple libraries.
     // ========================
