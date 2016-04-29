@@ -238,24 +238,19 @@ void testRunTool() {
     // Error messages.
     // ===============
     testCommand("run-tool", EXIT_FAILURE,
-            std::regex("(Arguments did not match expected patterns)"
-                       "((.|\n|\r)*)"));
+            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
     testCommand("run-tool putes.xml", EXIT_FAILURE,
-            std::regex("(SimTK Exception thrown at Xml.cpp)"
-                       "((.|\n|\r)*)"
+            std::regex("(SimTK Exception thrown at Xml.cpp)" + RE_ANY +
                        "(A problem occured when trying to load "
-                            "file 'putes.xml'.)"
-                       "((.|\n|\r)*)"));
+                            "file 'putes.xml'.)" + RE_ANY));
     // We use print-xml to create a setup file that we can try to run.
     // (We are not really trying to test print-xml right now.)
     testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
             "Printing 'testruntool_cmc_setup.xml'.\n");
     // This fails because this setup file doesn't have much in it.
     testCommand("run-tool testruntool_cmc_setup.xml", EXIT_FAILURE,
-            std::regex("(Running tool default.)"
-                       "((.|\n|\r)*)"
-                       "(ERROR- A model has not been set.)"
-                       "((.|\n|\r)*)"));
+            std::regex("(Running tool default.)" + RE_ANY +
+                       "(ERROR- A model has not been set.)" + RE_ANY));
     // Now we'll try loading a valid OpenSim XML file that is *not* a Tool
     // setup file, and we get a helpful error.
     // (We are not really trying to test print-xml right now.)
