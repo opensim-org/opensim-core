@@ -16,7 +16,7 @@ OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim
     )
 
 # Include the docopt.cpp directory.
-target_include_directories(opensim-cli PUBLIC docopt)
+include_directories(docopt)
 
 if(BUILD_TESTING)
     subdirs(test)
