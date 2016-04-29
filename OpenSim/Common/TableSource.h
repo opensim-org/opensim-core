@@ -70,7 +70,7 @@ public:
     /** Type of the 'row' Output of this Component.                           */
     typedef SimTK::Vector_<ET>   Vector;
 
-    OpenSim_DECLARE_OUTPUT(row, Vector, getRowAtTime, 
+    OpenSim_DECLARE_OUTPUT(all_columns, Vector, getRowAtTime, 
                            SimTK::Stage::Time);
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
