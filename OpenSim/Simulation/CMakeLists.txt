@@ -18,13 +18,16 @@ endforeach()
 
 #################################################### PRECOMPILE HEADER -- Begin.
 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang OR
+   ${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+
 # Original header.
 set(HEADER     "${CMAKE_CURRENT_SOURCE_DIR}/osimSimulation.h")
 # Precompiled header (PCH).
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-    set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/simulation.h.pch")
+    set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/simulation.h.pch")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-    set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/simulation.h.gch")
+    set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/simulation.h.gch")
 endif()
 
 # Append necessary flags for compiling PCH.
@@ -61,7 +64,9 @@ add_custom_command(OUTPUT ${HEADER_PCH}
     COMMENT "Generating precompiled header -- simulation")
 
 set(CMAKE_CXX_FLAGS 
-    "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_SOURCE_DIR}/simulation.h")
+    "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/simulation.h")
+
+endif()
 
 #################################################### PRECOMPILE HEADER -- End.
 

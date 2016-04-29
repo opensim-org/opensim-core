@@ -12,13 +12,16 @@ endif()
 
 #################################################### PRECOMPILE HEADER -- Begin.
 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang OR
+   ${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+
 # Original header.
 set(HEADER     "${CMAKE_CURRENT_SOURCE_DIR}/osimCommon.h")
 # Precompiled header (PCH).
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-    set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/common.h.pch")
+    set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/common.h.pch")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-    set(HEADER_PCH "${CMAKE_CURRENT_SOURCE_DIR}/common.h.gch")
+    set(HEADER_PCH "${CMAKE_CURRENT_BINARY_DIR}/common.h.gch")
 endif()
 
 # Append necessary flags for compiling PCH.
@@ -55,7 +58,9 @@ add_custom_command(OUTPUT ${HEADER_PCH}
     COMMENT "Generating precompiled header -- common")
 
 set(CMAKE_CXX_FLAGS 
-    "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_SOURCE_DIR}/common.h")
+    "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/common.h")
+
+endif()
 
 #################################################### PRECOMPILE HEADER -- End.
 
