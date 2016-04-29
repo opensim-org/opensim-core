@@ -60,6 +60,8 @@ add_custom_command(OUTPUT ${HEADER_PCH}
 set(CMAKE_CXX_FLAGS 
     "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/common.h")
 
+add_definitions(-DOSIMCOMMON_EXPORTS)
+
 endif()
 
 #################################################### PRECOMPILE HEADER -- End.
