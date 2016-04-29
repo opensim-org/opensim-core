@@ -177,11 +177,7 @@ public:
     *
     * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
     */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winconsistent-missing-override"
     virtual void scale(const ScaleSet& scaleSet);
-#pragma clang diagnostic pop
-
 
 protected:
     /** @name Component Interface
