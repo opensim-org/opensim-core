@@ -1,5 +1,5 @@
-#ifndef _LoadOpenSimLibrary_h_
-#define _LoadOpenSimLibrary_h_
+#ifndef OPENSIM_LOAD_OPENSIM_LIBRARY_H_
+#define OPENSIM_LOAD_OPENSIM_LIBRARY_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  LoadOpenSimLibrary.h                       *
  * -------------------------------------------------------------------------- *
@@ -42,8 +42,12 @@ namespace OpenSim
 
 OSIMCOMMON_API OPENSIM_PORTABLE_HMODULE WINAPI LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose);
 OSIMCOMMON_API void LoadOpenSimLibrary(const std::string &aLibraryName);
+/** TODO
+ * @returns true if the library was successfully loaded; false otherwise.
+ */
+OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &aLibraryName);
 OSIMCOMMON_API void LoadOpenSimLibraries(int argc,char **argv);
 
 }
 
-#endif // __LoadOpenSimLibrary_h__
+#endif // OPENSIM_LOAD_OPENSIM_LIBRARY_H_
