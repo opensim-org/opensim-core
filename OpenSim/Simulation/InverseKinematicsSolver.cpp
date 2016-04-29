@@ -209,7 +209,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     // Setup coordinates performed by the base class
     AssemblySolver::setupGoals(s);
 
-    _markerAssemblyCondition = new SimTK::Markers();
+    _markerAssemblyCondition.reset(new SimTK::Markers());
 
     // Setup markers goals
     // Get lists of all markers by names and corresponding weights from the MarkersReference
@@ -246,7 +246,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     }
 
     // Add marker goal to the ik objective
-    _assembler->adoptAssemblyGoal(_markerAssemblyCondition);
+    _assembler->adoptAssemblyGoal(_markerAssemblyCondition.get());
     // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
     // and we can use an array of just the data for updating
     _markerAssemblyCondition->defineObservationOrder(markerNames);
