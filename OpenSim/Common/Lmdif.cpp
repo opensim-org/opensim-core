@@ -33,7 +33,7 @@
  * Passing C++ and thread-safe by Ned Phipps
  *
  *****************************************************/
-#include "common.h"
+
 
 
 void pmat(int m, int n, double y[]);

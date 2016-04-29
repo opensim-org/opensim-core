@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "simulation.h"
+
 
 using namespace std;
 using namespace OpenSim;

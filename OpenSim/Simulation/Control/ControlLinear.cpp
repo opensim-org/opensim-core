@@ -24,7 +24,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include "../simulation.h"
+
 
 
 using namespace OpenSim;

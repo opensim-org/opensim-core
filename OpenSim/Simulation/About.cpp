@@ -24,7 +24,7 @@
 /**
  * Define the standard SimTK compliant "version" and "about" routines.
  */
-#include "simulation.h"
+
 
 
 #define STR(var) #var

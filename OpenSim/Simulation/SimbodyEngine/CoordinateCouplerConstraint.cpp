@@ -24,7 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "../simulation.h"
+
 
 
 // Helper class to construct functions when user's specify a dependency as qd = f(qi)

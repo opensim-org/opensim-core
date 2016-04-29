@@ -26,7 +26,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "../simulation.h"
+
 
 
 // This allows us to use OpenSim functions, classes, etc., without having to
