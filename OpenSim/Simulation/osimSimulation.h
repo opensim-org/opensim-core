@@ -31,7 +31,6 @@
 
 // OpenSim Simulation headers.
 #include "osimSimulationDLL.h"
-
 #include "Model/AbstractTool.h"
 #include "Model/ActivationFiberLengthMuscle_Deprecated.h"
 #include "Model/ActivationFiberLengthMuscle.h"

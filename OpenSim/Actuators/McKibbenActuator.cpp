@@ -20,15 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-//==============================================================================
-// INCLUDES
-//==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "McKibbenActuator.h"
-
 using namespace OpenSim;
 using std::string;
 using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 

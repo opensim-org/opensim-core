@@ -20,9 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-#include "ZerothOrderMuscleActivationDynamics.h"
-
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;

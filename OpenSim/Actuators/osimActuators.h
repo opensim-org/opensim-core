@@ -22,25 +22,38 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "OpenSim/Simulation/osimSimulation.h"
 
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
+#include "osimActuatorsDLL.h"
+#include "ActiveForceLengthCurve.h"
 #include "BodyActuator.h"
-#include "PointToPointActuator.h"
-#include "SpringGeneralizedForce.h"
 #include "ClutchedPathSpring.h"
-
-#include "Schutte1993Muscle_Deprecated.h"
+#include "ConstantMuscleActivation.h"
+#include "CoordinateActuator.h"
 #include "Delp1990Muscle_Deprecated.h"
+#include "FiberCompressiveForceCosPennationCurve.h"
+#include "FiberCompressiveForceLengthCurve.h"
+#include "FiberForceLengthCurve.h"
+#include "FirstOrderMuscleActivationDynamics.h"
+#include "ForceVelocityCurve.h"
+#include "ForceVelocityInverseCurve.h"
+#include "McKibbenActuator.h"
+#include "Millard2012AccelerationMuscle.h"
+#include "Millard2012EquilibriumMuscle.h"
+#include "MuscleActivationDynamics.h"
+#include "MuscleFirstOrderActivationDynamicModel.h"
+#include "MuscleFixedWidthPennationModel.h"
+#include "MuscleSecondOrderActivationDynamicModel.h"
+#include "PointActuator.h"
+#include "PointToPointActuator.h"
+#include "RegisterTypes_osimActuators.h"
+#include "RigidTendonMuscle.h"
+#include "Schutte1993Muscle_Deprecated.h"
+#include "SpringGeneralizedForce.h"
+#include "TendonForceLengthCurve.h"
 #include "Thelen2003Muscle_Deprecated.h"
 #include "Thelen2003Muscle.h"
-#include "RigidTendonMuscle.h"
-#include "Millard2012EquilibriumMuscle.h"
-#include "Millard2012AccelerationMuscle.h"
-
-#include "McKibbenActuator.h"
-
-#include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
+#include "TorqueActuator.h"
+#include "ZerothOrderMuscleActivationDynamics.h"
 
 #endif // _osimActuators_h_
