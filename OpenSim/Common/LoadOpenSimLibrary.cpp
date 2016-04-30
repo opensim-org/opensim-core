@@ -32,8 +32,8 @@ using namespace std;
 #ifndef _WIN32
 // For Linux compatibility is to remap
 // LoadLibrary/GetProcAddress to dlopen/dlsym.
-static void *LoadLibrary(const std::string &name) {
-    return dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+static void *LoadLibrary(const char* name) {
+    return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 }
 
 // We want to transparently support adding the "lib" prefix to library names
@@ -151,14 +151,15 @@ OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 }
 
 OSIMCOMMON_API bool
-OpenSim::LoadOpenSimLibraryExact(const std::string &aLibraryName) {
+OpenSim::LoadOpenSimLibraryExact(const std::string& exactPath) {
     // TODO verbose flag?
-    OPENSIM_PORTABLE_HINSTANCE library = LoadLibrary(aLibraryName);
+    const auto fixedPath = IO::FixSlashesInFilePath(exactPath);
+    OPENSIM_PORTABLE_HINSTANCE library = LoadLibrary(fixedPath.c_str());
     if (library) {
-        cout << "Loaded library " << aLibraryName << endl;
+        cout << "Loaded library " << fixedPath << endl;
         return true;
     } else {
-        cout << "Failed to load library " << aLibraryName << endl;
+        cout << "Failed to load library " << fixedPath << endl;
         return false;
     }
 }
