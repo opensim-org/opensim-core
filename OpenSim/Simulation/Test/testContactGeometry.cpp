@@ -33,25 +33,9 @@
 //      3. 
 //
 //==========================================================================================================
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ContactHalfSpace.h>
-#include <OpenSim/Simulation/Model/ContactMesh.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
-#include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace SimTK;

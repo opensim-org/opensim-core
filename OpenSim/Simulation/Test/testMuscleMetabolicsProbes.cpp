@@ -45,13 +45,7 @@
 //    properties in the control of explosive movements. Biological Cybernetics
 //    69(3):195-204.
 //==============================================================================
-
-
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
-#include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>

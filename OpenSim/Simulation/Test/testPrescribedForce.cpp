@@ -33,27 +33,10 @@
 //     Add tests here 
 //
 //==========================================================================================================
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
 
 using namespace OpenSim;
 using namespace std;

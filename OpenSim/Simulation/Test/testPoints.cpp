@@ -31,10 +31,6 @@ Tests Include:
      Add tests here as Points are added to OpenSim
 
 //=============================================================================*/
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;

@@ -37,8 +37,6 @@
 //     Add tests here as Forces are added to OpenSim
 //
 //==============================================================================
-#include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
-#include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
