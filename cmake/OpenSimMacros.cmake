@@ -285,8 +285,16 @@ function(OpenSimAddApplication)
         if(WIN32)
             set(OSIMADDAPP_INSTALL_AS "${OSIMADDAPP_INSTALL_AS}.exe")
         endif()
-        install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR}
-                                           RENAME ${OSIMADDAPP_INSTALL_AS})
+        if(${CMAKE_VERSION} VERSION_LESS 3.0)
+            get_target_property(target_path opensim-cli LOCATION)
+        else()
+            # We prefer to use generator expressions, but these are only
+            # available in more recent versions of CMake.
+            set(target_path "$<TARGET_FILE:${OSIMADDAPP_NAME}>")
+        endif()
+        # RENAME does not work with install(TARGETS)
+        install(PROGRAMS "${target_path}" DESTINATION ${CMAKE_INSTALL_BINDIR}
+                                          RENAME ${OSIMADDAPP_INSTALL_AS})
     else()
         install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
     endif()
