@@ -222,6 +222,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
 
     // Load an actual library, including the file extension.
     // =====================================================
+    std::string lib = MAKE_STRING(OSIM_ACTUATORS_LIB_PATH);
 
     // "RE" is for regex, since this string is used in the regex.
     // The lib string has quotes at the beginning and end.
