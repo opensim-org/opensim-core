@@ -69,7 +69,7 @@ add_custom_target(SimulationPCH
 set(CMAKE_CXX_FLAGS 
     "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/simulation.h")
 
-add_definitions(-DOSIMSIMULATION_EXPORTS)
+# add_definitions(-DOSIMSIMULATION_EXPORTS)
 
 endif()
 
