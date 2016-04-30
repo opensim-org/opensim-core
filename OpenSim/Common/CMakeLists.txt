@@ -57,6 +57,9 @@ add_custom_command(OUTPUT ${HEADER_PCH}
     DEPENDS ${INCLUDES} ${HEADER}
     COMMENT "Generating precompiled header -- common")
 
+add_custom_target(CommonPCH
+                  DEPENDS ${HEADER_PCH})
+
 set(CMAKE_CXX_FLAGS 
     "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/common.h")
 
@@ -69,5 +72,6 @@ endif()
 OpenSimAddLibrary(KIT Common
     LINKLIBS ${Simbody_LIBRARIES} ${BTK_LIBRARIES}
     INCLUDES ${INCLUDES}
-    SOURCES ${SOURCES} ${HEADER_PCH}
+    SOURCES ${SOURCES}
     TESTDIRS "Test")
+add_dependencies(osimCommon CommonPCH)

@@ -63,6 +63,9 @@ add_custom_command(OUTPUT ${HEADER_PCH}
     DEPENDS ${HEADER}
     COMMENT "Generating precompiled header -- simulation")
 
+add_custom_target(SimulationPCH
+                  DEPENDS ${HEADER_PCH})
+
 set(CMAKE_CXX_FLAGS 
     "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/simulation.h")
 
@@ -76,6 +79,7 @@ endif()
 OpenSimAddLibrary(KIT Simulation
     LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton
     INCLUDES ${INCLUDES}
-    SOURCES ${SOURCES} ${HEADER_PCH}
+    SOURCES ${SOURCES}
     TESTDIRS SimbodyEngine Test
     INCLUDEDIRS ${SIMULATION_SUBDIRS})
+add_dependencies(osimSimulation SimulationPCH)
