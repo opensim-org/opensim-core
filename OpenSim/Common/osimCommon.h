@@ -26,6 +26,16 @@
 // Simbody headers.
 #include "Simbody.h"
 
+// Template instantiations.
+template class SimTK::Matrix_<double>;
+template class SimTK::Matrix_<SimTK::Vec3>;
+template class SimTK::MatrixView_<double>;
+template class SimTK::MatrixView_<SimTK::Vec3>;
+template class SimTK::Vector_<double>;
+template class SimTK::Vector_<SimTK::Vec3>;
+template class SimTK::RowVector_<double>;
+template class SimTK::RowVector_<SimTK::Vec3>;
+
 // OpenSim Common headers.
 #include "osimCommonDLL.h"
 #include "Object.h"
