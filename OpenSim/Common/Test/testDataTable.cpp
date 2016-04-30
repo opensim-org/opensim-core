@@ -21,9 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/TimeSeriesTable.h>
-#include <iostream>
-
 int main() {
     using namespace SimTK;
     using namespace OpenSim;

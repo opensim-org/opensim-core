@@ -20,25 +20,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyIntArray.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertySet.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
-
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKcommon.h"
-
-#include <iostream>
-#include <string>
-
 #include "SerializableObject.h"
 #include "SerializableObject2.h"
 

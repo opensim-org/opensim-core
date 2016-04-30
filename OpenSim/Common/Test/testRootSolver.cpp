@@ -20,24 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Signal.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyIntArray.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertySet.h>
-#include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "ExampleVectorFunctionUncoupledNxN.h"
 

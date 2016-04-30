@@ -20,15 +20,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/C3DFileAdapter.h"
-
-#include "OpenSim/Common/TRCFileAdapter.h"
-
-#include <vector>
-#include <unordered_map>
-#include <cstdlib>
-#include <chrono>
-
 int main() {
     using namespace OpenSim;
 
