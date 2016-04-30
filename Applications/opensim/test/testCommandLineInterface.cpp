@@ -72,11 +72,16 @@ inline int pclose(FILE* file) {
 #endif
 
 // Execute a system command and also grab its console output.
-CommandOutput system_output(const std::string& command) {
+CommandOutput system_output(std::string command) {
     // http://stackoverflow.com/questions/478898/
     // how-to-execute-a-command-and-get-output-of-command-within-c-using-posix
     // The 2>& 1 redirects stderr to stdout.
     std::string result = "";
+    #ifdef _WIN32
+        // To achieve proper quoting with cmd.exe, we must surround the
+        // entire command with quotes ("). See "cmd.exe /?" for more info.
+        command = "\"" + command + "\"";
+    #endif
     FILE* pipe = popen((command + " 2>& 1").c_str(), "r");
     try {
         if (!pipe) return CommandOutput(-1, "Could not run command.");
@@ -126,7 +131,6 @@ template <typename T>
 void testCommand(const std::string& arguments,
                  int expectedReturnCode,
                  const T& expectedOutput) {
-    std::cout << "DEBUG testing arguments " << arguments << std::endl;
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
     checkCommandOutput(arguments, out.output, expectedOutput);
@@ -145,10 +149,8 @@ void testNoCommand() {
     // =====
     {
         // Match REGISTERED CLASSES and then any amount of text and newlines.
-        // The pattern (.|\n|\r)* matches any amount of text and newlines.
         std::regex output("(OpenSim: musculoskeletal)" + RE_ANY +
-                          "(Pass -h or --help)" + RE_ANY +
-                          "((.|\n|\r)*)?");
+                          "(Pass -h or --help)" + RE_ANY);
         testCommand("", EXIT_SUCCESS, output);
         testCommand("-h", EXIT_SUCCESS, output);
         testCommand("-help", EXIT_SUCCESS, output);
@@ -189,6 +191,17 @@ void testNoCommand() {
             "'bleepbloop' is not an opensim command. See 'opensim --help'.\n");
 }
 
+// http://stackoverflow.com/questions/5343190/how-do-i-replace-all-instances-of-a-string-with-another-string
+std::string replaceString(std::string subject, const std::string& search,
+    const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+        subject.replace(pos, search.length(), replace);
+        pos += replace.length();
+    }
+    return subject;
+}
+
 // TODO allow LoadOpenSimLibrary to take a filename extension.
 void testLoadPluginLibraries(const std::string& subcommand) {
 
@@ -209,30 +222,23 @@ void testLoadPluginLibraries(const std::string& subcommand) {
 
     // Load an actual library, including the file extension.
     // =====================================================
-    const std::string lib = MAKE_STRING(OSIM_ACTUATORS_LIB_PATH);
+
+    // "RE" is for regex, since this string is used in the regex.
     // The lib string has quotes at the beginning and end.
-    const std::string libnoquotes = lib.substr(1, lib.size() - 2);
+    std::string RE_lib = lib.substr(1, lib.size() - 2);
+    // When the library name gets printed back to us, the 
+    // forward slashes are converted to backslashes. We have to
+    // escape backslash once for the C++ parser, and once for
+    // the regex., so \\\\ is really \ in the regex.
+    RE_lib = replaceString(RE_lib, "/", "\\\\");
     {
-        std::regex output("(Loaded library " + libnoquotes + ")" + 
+        std::regex output("(Loaded library " + RE_lib + ")" +
                 RE_ANY + "\n");
         testCommand("-L " + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("-L" + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("--library " + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("--library=" + lib + " " + cmd, EXIT_SUCCESS, output);
     }
-    // Load an actual library, without the file extension.
-    // ===================================================
-    /*
-    { // TODO remove this.
-        const auto libnoext = lib.substr(0, lib.rfind(".")) + "\"";
-        std::regex output("(Loaded library " + libnoquotes + ")"
-                + RE_ANY + "\n");
-        testCommand("-L " + libnoext + " " + cmd, EXIT_SUCCESS, output);
-        testCommand("-L" + libnoext + " " + cmd, EXIT_SUCCESS, output);
-        testCommand("--library " + libnoext + " " + cmd, EXIT_SUCCESS, output);
-        testCommand("--library=" + libnoext + " " + cmd, EXIT_SUCCESS, output);
-    }
-    */
 
     // Load multiple libraries.
     // ========================
@@ -240,15 +246,15 @@ void testLoadPluginLibraries(const std::string& subcommand) {
         // Well, in this case, we just load the same library multiple times.
         testCommand("-L " + lib + " --library " + lib + " " + cmd,
                 EXIT_SUCCESS,
-                std::regex("(Loaded library " + libnoquotes + ")\n"
-                           "(Loaded library " + libnoquotes + ")" +
+                std::regex("(Loaded library " + RE_lib + ")\n"
+                           "(Loaded library " + RE_lib + ")" +
                            RE_ANY + "\n"));
         testCommand("-L" + lib +
                     " --library=" + lib +
                     " -L " + lib + " " + cmd, EXIT_SUCCESS,
-                std::regex("(Loaded library " + libnoquotes + ")\n"
-                           "(Loaded library " + libnoquotes + ")\n"
-                           "(Loaded library " + libnoquotes + ")" +
+                std::regex("(Loaded library " + RE_lib + ")\n"
+                           "(Loaded library " + RE_lib + ")\n"
+                           "(Loaded library " + RE_lib + ")" +
                            RE_ANY + "\n"));
     }
 }
