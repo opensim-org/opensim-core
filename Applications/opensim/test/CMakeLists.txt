@@ -8,18 +8,17 @@ OpenSimAddTests(
 
 add_dependencies(testCommandLineInterface opensim-cli)
 
+# Set macros used by the test to access other build products.
 if(${CMAKE_VERSION} VERSION_LESS 3.0)
     get_target_property(osim_cli_path opensim-cli LOCATION)
     get_target_property(osim_actuators_lib_path osimActuators LOCATION)
-    set_property(TARGET testCommandLineInterface APPEND PROPERTY
-        COMPILE_DEFINITIONS
-            OSIM_CLI_PATH="${osim_cli_path}"
-            OSIM_ACTUATORS_LIB_PATH="${osim_actuators_lib_path}")
 else()
     # We prefer to use generator expressions, but these are only available in
     # more recent versions of CMake.
-    set_property(TARGET testCommandLineInterface APPEND PROPERTY
-        COMPILE_DEFINITIONS
-            OSIM_CLI_PATH="$<TARGET_FILE:opensim-cli>"
-            OSIM_ACTUATORS_LIB_PATH="$<TARGET_FILE:osimActuators>")
+    set(osim_cli_path "$<TARGET_FILE:opensim-cli>")
+    set(osim_actuators_lib_path "$<TARGET_FILE:osimActuators>")
 endif()
+
+set_property(TARGET testCommandLineInterface APPEND PROPERTY
+    COMPILE_DEFINITIONS OSIM_CLI_PATH="${osim_cli_path}"
+                        OSIM_ACTUATORS_LIB_PATH="${osim_actuators_lib_path}")

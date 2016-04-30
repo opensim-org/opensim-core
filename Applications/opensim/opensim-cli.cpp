@@ -61,7 +61,6 @@ Available commands:
 
   Pass -h or --help to any of these commands to learn how to use them.
 )";
-//  -L <plugin>, --library <plugin>  Load a plugin before executing the provided command.
 
 int main(int argc, const char** argv) {
 
