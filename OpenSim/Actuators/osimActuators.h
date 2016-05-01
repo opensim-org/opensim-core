@@ -22,7 +22,12 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "OpenSim/Simulation/osimSimulation.h"
+//#include "OpenSim/Simulation/osimSimulation.h"
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/DebugUtilities.h>
+#include <OpenSim/Common/SimmSpline.h>
+
+#include "OpenSim/Simulation/Model/Model.h"
 
 #include "osimActuatorsDLL.h"
 #include "ActiveForceLengthCurve.h"
