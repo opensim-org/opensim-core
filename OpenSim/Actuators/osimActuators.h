@@ -23,13 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 //#include "OpenSim/Simulation/osimSimulation.h"
-#include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
+#include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/SimmSpline.h>
 
 #include "OpenSim/Simulation/Model/Model.h"
+#include "OpenSim/Simulation/SimbodyEngine/SliderJoint.h"
 
-#include "osimActuatorsDLL.h"
 #include "ActiveForceLengthCurve.h"
 #include "BodyActuator.h"
 #include "ClutchedPathSpring.h"
@@ -56,9 +56,10 @@
 #include "Schutte1993Muscle_Deprecated.h"
 #include "SpringGeneralizedForce.h"
 #include "TendonForceLengthCurve.h"
-#include "Thelen2003Muscle_Deprecated.h"
 #include "Thelen2003Muscle.h"
+#include "Thelen2003Muscle_Deprecated.h"
 #include "TorqueActuator.h"
 #include "ZerothOrderMuscleActivationDynamics.h"
+#include "osimActuatorsDLL.h"
 
 #endif // _osimActuators_h_
