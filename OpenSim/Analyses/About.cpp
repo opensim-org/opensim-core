@@ -25,15 +25,6 @@
  * Define the standard SimTK compliant "version" and "about" routines.
  */
 
-
-#include "osimAnalysesDLL.h"
-
-
-#include <string>
-#include <cstring>
-#include <cctype>
-
-
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj,min,build)  STR(maj.min.build)
 #define MAKE_COPYRIGHT_STRING(y,a) \

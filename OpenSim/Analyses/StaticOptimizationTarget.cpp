@@ -25,19 +25,6 @@
  * Author: Frank C. Anderson 
  */
 
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <stdlib.h>
-#include <stdio.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include "StaticOptimizationTarget.h"
-#include <iostream>
-
 using namespace OpenSim;
 using namespace std;
 using SimTK::Vector;

@@ -21,17 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/ConstraintSet.h>
-#include "ForceReporter.h"
-
 using namespace OpenSim;
 using namespace std;
 
