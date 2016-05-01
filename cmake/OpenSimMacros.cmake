@@ -342,7 +342,6 @@ macro(GeneratePCH HEADERNAME KIT)
         set(CMAKE_CXX_FLAGS 
             "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/${HEADERNAME}")
 
-        #add_definitions(-DOSIMCOMMON_EXPORTS)
-
+        add_definitions(-DOSIM${KIT_CAPS}_EXPORTS)
     endif()
 endmacro()
