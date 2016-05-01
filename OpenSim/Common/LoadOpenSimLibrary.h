@@ -53,7 +53,8 @@ OSIMCOMMON_API void LoadOpenSimLibrary(const std::string &aLibraryName);
  * be made to the path is to convert forward slashes to backslashes on Windows
  * (and vice versa on UNIX).
  * @returns true if the library was successfully loaded; false otherwise. */
-OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &exactPath);
+OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &exactPath,
+                                            bool verbose = true);
 /** Used to process legacy command line arguments that specify plugin libraries
  * to load. Internally uses LoadOpenSimLibrary(const std::string&, bool) with
  * verbosity. */

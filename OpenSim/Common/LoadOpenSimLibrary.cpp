@@ -151,15 +151,19 @@ OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 }
 
 OSIMCOMMON_API bool
-OpenSim::LoadOpenSimLibraryExact(const std::string& exactPath) {
-    // TODO verbose flag?
+OpenSim::LoadOpenSimLibraryExact(const std::string& exactPath,
+                                 bool verbose) {
     const auto fixedPath = IO::FixSlashesInFilePath(exactPath);
     OPENSIM_PORTABLE_HINSTANCE library = LoadLibrary(fixedPath.c_str());
     if (library) {
-        cout << "Loaded library " << fixedPath << endl;
+        if (verbose) {
+            cout << "Loaded library " << fixedPath << endl;
+        }
         return true;
     } else {
-        cout << "Failed to load library " << fixedPath << endl;
+        if (verbose) {
+            cout << "Failed to load library " << fixedPath << endl;
+        }
         return false;
     }
 }
