@@ -55,6 +55,10 @@ public:
     OpenSim_DECLARE_PROPERTY(isDisabled, bool,
         "Flag indicating whether the force is disabled or not. Disabled means"
         " that the force is not active in subsequent dynamics realizations.");
+    //=============================================================================
+    // OUTPUTS
+    //=============================================================================
+    OpenSim_DECLARE_OUTPUT(potential_energy, double, computePotentialEnergy, SimTK::Stage::Velocity);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -217,7 +221,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     friend class ForceAdapter;
 

@@ -420,7 +420,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
         double solnErr       = SimTK::NaN;
         int iterations       = 0;
         double fiberLength   = SimTK::NaN;
-        double fiberVelocity = SimTK::NaN;
+        //double fiberVelocity = SimTK::NaN;
         double tendonForce   = SimTK::NaN;
 
         // tol is the desired tolerance in Newtons.
@@ -439,7 +439,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
         solnErr       = soln[1];
         iterations    = (int)soln[2];
         fiberLength   = soln[3];
-        fiberVelocity = soln[4];
+        //fiberVelocity = soln[4];
         tendonForce   = soln[5];
 
         switch(flag_status) {
@@ -465,7 +465,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                 setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
-                int n = sprintf(msgBuffer,
+                sprintf(msgBuffer,
                     "WARNING: No suitable initial conditions found for %s by "
                     "computeInitialFiberEquilibrium.\n"
                     "Continuing with an initial fiber force of 0 and an "
@@ -530,7 +530,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         double solnErr       = SimTK::NaN;
         int iterations       = 0;
         double fiberLength   = SimTK::NaN;
-        double fiberVelocity = 0.0;
+        //double fiberVelocity = 0.0;
         double tendonForce   = SimTK::NaN;
 
         // tol is the desired tolerance in Newtons.
@@ -552,7 +552,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         solnErr       = soln[1];
         iterations    = (int)soln[2];
         fiberLength   = soln[3];
-        fiberVelocity = soln[4];
+        //fiberVelocity = soln[4];
         tendonForce   = soln[5];
 
         switch(flag_status) {
@@ -578,7 +578,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                 setFiberLength(s, get_optimal_fiber_length());
 
                 char msgBuffer[1000];
-                int n = sprintf(msgBuffer,
+                sprintf(msgBuffer,
                     "WARNING: No suitable static solution found for %s by "
                     "computeFiberEquilibriumAtZeroVelocity().\n"
                     "Continuing with an initial fiber force of 0 and an "
@@ -676,7 +676,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
     MuscleLengthInfo& mli) const
 {
     // Get musculotendon actuator properties.
-    double maxIsoForce    = getMaxIsometricForce();
+    //double maxIsoForce    = getMaxIsometricForce();
     double optFiberLength = getOptimalFiberLength();
     double tendonSlackLen = getTendonSlackLength();
 
@@ -684,7 +684,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
         // Get muscle-specific properties.
         const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve();
         const FiberForceLengthCurve&  fpeCurve = get_FiberForceLengthCurve();
-        const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
+        //const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
         if(get_ignore_tendon_compliance()) {                //rigid tendon
             mli.fiberLength = clampFiberLength(
@@ -738,7 +738,7 @@ void Millard2012EquilibriumMuscle::
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         // Get muscle-specific properties.
-        const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve();
+        //const ActiveForceLengthCurve& falCurve = get_ActiveForceLengthCurve();
         const FiberForceLengthCurve&  fpeCurve = get_FiberForceLengthCurve();
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
@@ -958,7 +958,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double tendonSlackLen = getTendonSlackLength();
         double optFiberLen    = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
-        double penHeight      = penMdl.getParallelogramHeight();
+        //double penHeight      = penMdl.getParallelogramHeight();
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
         // Compute dynamic quantities.
@@ -1060,7 +1060,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 
         // Verify that the derivative of system energy minus work is zero within
         // a reasonable numerical tolerance.
-        double dphidt       = mvi.pennationAngularVelocity;
+        //double dphidt       = mvi.pennationAngularVelocity;
         double dFibPEdt     = p1Fm*mvi.fiberVelocity; //only conservative part
                                                       //of passive fiber force
         double dTdnPEdt     = fse*fiso*mvi.tendonVelocity;
@@ -1068,8 +1068,8 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double dmcldt       = getLengtheningSpeed(s);
         double dBoundaryWdt = mdi.tendonForce*dmcldt;
 
-        double dSysEdt = (dFibPEdt + dTdnPEdt) - dFibWdt - dBoundaryWdt;
-        double tol = sqrt(SimTK::Eps);
+        //double dSysEdt = (dFibPEdt + dTdnPEdt) - dFibWdt - dBoundaryWdt;
+        //double tol = sqrt(SimTK::Eps);
 
         // Populate the power entries.
         mdi.fiberActivePower  = dFibWdt;
@@ -1102,7 +1102,7 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
         "Millard2012EquilibriumMuscle: Muscle properties are not up-to-date");
 
-    double dummyValue = 0.0;
+    //double dummyValue = 0.0;
     if(!get_ignore_activation_dynamics()) {
         addStateVariable(STATE_ACTIVATION_NAME);
     }
@@ -1422,8 +1422,8 @@ estimateMuscleFiberState(double aActivation,
     double dml       = pathLengtheningSpeed;
     double tsl       = getTendonSlackLength();
     double ofl       = getOptimalFiberLength();
-    double ophi      = getPennationAngleAtOptimalFiberLength();
-    double penHeight = penMdl.getParallelogramHeight();
+    //double ophi      = getPennationAngleAtOptimalFiberLength();
+    //double penHeight = penMdl.getParallelogramHeight();
     double fiso      = getMaxIsometricForce();
     double vmax      = getMaxContractionVelocity();
 
@@ -1453,15 +1453,15 @@ estimateMuscleFiberState(double aActivation,
                         penMdl.calcFiberVelocity(cosphi,dml,dtl);
     double dlceN  = (staticSolution) ? 0.0 :
                         dlce/(vmax*ofl);
-    double dphi   = (staticSolution) ? 0.0 :
-                        penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
-    double dlceAT = (staticSolution) ? 0.0 :
-                        penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
-                                                            cosphi,dphi);
+    //double dphi   = (staticSolution) ? 0.0 :
+    //                    penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
+    //double dlceAT = (staticSolution) ? 0.0 :
+    //                    penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
+    //                                                        cosphi,dphi);
 
     // Internal variables for the loop
-    double dphi_d_lce   = 0.0;
-    double dtl_d_lce    = 0.0;
+    //double dphi_d_lce   = 0.0;
+    //double dtl_d_lce    = 0.0;
     double Fm           = 0.0;   // fiber force
     double FmAT         = 0.0;   // fiber force along tendon
     double Ft           = 0.0;   // tendon force
@@ -1585,9 +1585,9 @@ estimateMuscleFiberState(double aActivation,
 
                 dlce   = penMdl.calcFiberVelocity(cosphi,dml,dtl);
                 dlceN  = dlce/(vmax*ofl);
-                dphi   = penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
-                dlceAT = penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
-                                                             cosphi,dphi);
+                //dphi   = penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
+                //dlceAT = penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
+                //                                             cosphi,dphi);
             }
         }
         iter++;
@@ -1708,8 +1708,8 @@ calcFiberStateGivenBoundaryCond(double lengthMT,
     output[2] = 0;
     output[3] = 0;
 
-    double a, lt, vt, lm, vm, phi, dphidt = 0;
-    double ltN, lmN, vmN = 0;
+    double a, lt{}, vt{}, lm, vm, phi /*, dphidt = 0*/;
+    double ltN{}, lmN, vmN = 0;
 
     try {
         //1. Compute tendon length given F

@@ -160,7 +160,7 @@ protected:
     }
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class Ligament

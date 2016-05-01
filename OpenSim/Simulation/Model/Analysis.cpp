@@ -46,12 +46,12 @@ using namespace std;
  * param: aModel Model on which the analysis is to be performed.
  */
 Analysis::Analysis(Model *aModel):
+    _statesStore(NULL),
+    _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _stepInterval(_stepIntervalProp.getValueInt()),
-    _inDegrees(_inDegreesProp.getValueBool()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     
     _model = aModel;
@@ -89,12 +89,12 @@ Analysis::~Analysis()
  */
 Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     Object(aFileName, false),
-    _stepInterval(_stepIntervalProp.getValueInt()),
+    _statesStore(NULL),
     _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
@@ -138,12 +138,12 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
  */
 Analysis::Analysis(const Analysis &aAnalysis):
    Object(aAnalysis),
+   _statesStore(NULL),
+   _inDegrees(_inDegreesProp.getValueBool()),
+   _stepInterval(_stepIntervalProp.getValueInt()),
    _on(_onProp.getValueBool()),
    _startTime(_startTimeProp.getValueDbl()),
-   _endTime(_endTimeProp.getValueDbl()),
-   _stepInterval(_stepIntervalProp.getValueInt()),
-   _inDegrees(_inDegreesProp.getValueBool()),
-   _statesStore(NULL)
+   _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     *this = aAnalysis;

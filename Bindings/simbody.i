@@ -28,7 +28,7 @@ namespace SimTK {
 }
 
 // Vector and Matrix
-%include <Bindings/std.i>
+//%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
 %template(StdVectorVec3) std::vector<SimTK::Vec3>;
 namespace SimTK {
@@ -75,6 +75,7 @@ namespace SimTK {
      }
  }
 %template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
+%template(MatrixView)          SimTK::MatrixView_<double>;
 %template(Matrix)              SimTK::Matrix_<double>;
 %template(VectorBaseDouble)    SimTK::VectorBase<double>;
 %template(VectorView)          SimTK::VectorView_<double>;
@@ -126,6 +127,7 @@ namespace SimTK {
      }
  }
 %template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
+%template(MatrixViewVec3)    SimTK::MatrixView_<Vec3>;
 %template(MatrixVec3)        SimTK::Matrix_<Vec3>;
 %template(VectorBaseVec3)    SimTK::VectorBase<Vec3>;
 %template(VectorViewVec3)    SimTK::VectorView_<Vec3>;
@@ -180,12 +182,15 @@ typedef int SystemUIndex;
 typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
 
+
 namespace SimTK {
 %template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
 %template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
 
 %include <SWIGSimTK/DecorativeGeometry.h>
+
+%include <SWIGSimTK/PolygonalMesh.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;

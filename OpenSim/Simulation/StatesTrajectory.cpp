@@ -31,6 +31,10 @@ size_t StatesTrajectory::getSize() const {
     return m_states.size();
 }
 
+void StatesTrajectory::clear() {
+    m_states.clear();
+}
+
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
 
@@ -58,7 +62,7 @@ bool StatesTrajectory::isNondecreasingInTime() const {
     // An empty or size-1 trajectory necessarily has nondecreasing times.
     if (getSize() <= 1) return true;
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (get(itime).getTime() < get(itime - 1).getTime()) {
             return false;
@@ -74,7 +78,7 @@ bool StatesTrajectory::isConsistent() const {
 
     const auto& state0 = get(0);
 
-    for (int itime = 1; itime < getSize(); ++itime) {
+    for (unsigned itime = 1; itime < getSize(); ++itime) {
 
         if (!state0.isConsistent(get(itime))) {
             return false;
@@ -106,6 +110,55 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     // TODO number of constraints.
 
     return true;
+}
+
+// Hide this function from other translation units.
+namespace {
+    template <typename T>
+    std::vector<std::string> createVector(const T& strings) {
+        std::vector<std::string> vec;
+        for (int i = 0; i < strings.size(); ++i)
+            vec.push_back(strings[i]);
+        return vec;
+    }
+    template <>
+    std::vector<std::string> createVector(
+            const std::vector<std::string>& strings) {
+        return strings;
+    }
+}
+
+TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
+        const std::vector<std::string>& requestedStateVars) const {
+
+    OPENSIM_THROW_IF(!isCompatibleWith(model),
+                     StatesTrajectory::IncompatibleModel, model);
+
+    // This code is based on DelimFileAdapter::extendRead().
+    TimeSeriesTable table;
+
+    // Set the column labels as metadata.
+    std::vector<std::string> stateVars = requestedStateVars.empty() ?
+            createVector(model.getStateVariableNames()) :
+            requestedStateVars;
+    table.setColumnLabels(stateVars);
+    size_t numDepColumns = stateVars.size();
+
+    // Fill up the table with the data.
+    for (size_t itime = 0; itime < getSize(); ++itime) {
+        const auto& state = get(itime);
+        TimeSeriesTable::RowVector row(static_cast<int>(numDepColumns));
+
+        // Get each state variable's value.
+        for (unsigned icol = 0; icol < numDepColumns; ++icol) {
+            row[static_cast<int>(icol)] = 
+                model.getStateVariableValue(state, stateVars[icol]);
+        }
+
+        table.appendRow(state.getTime(), row);
+    }
+
+    return table;
 }
 
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
@@ -171,7 +224,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Check if the Storage has columns that are not states in the Model.
     // ------------------------------------------------------------------
     if (!allowExtraColumns) {
-        if (numDependentColumns > statesToFillUp.size()) {
+        if ((unsigned)numDependentColumns > statesToFillUp.size()) {
             std::vector<std::string> extraColumnNames;
             // We want the actual column names, not the state names; the two
             // might be different b/c the state names changed in v4.0.
@@ -228,4 +281,16 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const std::string& filepath) {
     return createFromStatesStorage(model, Storage(filepath));
+}
+
+StatesTrajectory::IncompatibleModel::IncompatibleModel(
+        const std::string& file, size_t line,
+        const std::string& func, const Model& model)
+        : OpenSim::Exception(file, line, func) {
+    std::ostringstream msg;
+    auto modelName = model.getName().empty() ? "<empty-name>" :
+                     model.getName();
+    msg << "The provided model '" << modelName << "' is not "
+            "compatible with the StatesTrajectory.";
+    addMessage(msg.str());
 }

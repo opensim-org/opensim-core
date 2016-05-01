@@ -62,7 +62,7 @@ BodyActuator::BodyActuator(const Body& body,
     setAuthors("Soha Pouya, Michael Sherman");
     constructInfrastructure();
 
-    updConnector<Body>("body").set_connectee_name(body.getName());
+    updConnector<Body>("body").setConnecteeName(body.getName());
 
     set_point(point); // origin
     set_point_is_global(pointIsGlobal);
@@ -85,12 +85,12 @@ void BodyActuator::constructConnectors() {
 
 void BodyActuator::setBodyName(const std::string& name)
 {
-    updConnector<Body>("body").set_connectee_name(name);
+    updConnector<Body>("body").setConnecteeName(name);
 }
 
 const std::string& BodyActuator::getBodyName() const
 {
-    return getConnector<Body>("body").get_connectee_name();
+    return getConnector<Body>("body").getConnecteeName();
 }
 
 //=============================================================================
@@ -130,7 +130,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
     
     const Body& body = getBody();
-    const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
+    // const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
 
     Vec3 pointOfApplication = get_point(); 
 

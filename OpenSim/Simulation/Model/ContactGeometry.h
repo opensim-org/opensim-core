@@ -1,5 +1,5 @@
-#ifndef __ContactGeometry_h__
-#define __ContactGeometry_h__
+#ifndef OPENSIM_CONTACT_GEOMETRY_H_
+#define OPENSIM_CONTACT_GEOMETRY_H_ 
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  ContactGeometry.h                         *
  * -------------------------------------------------------------------------- *
@@ -165,7 +165,7 @@ protected:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 //=============================================================================
 };  // END of class ContactGeometry
 //=============================================================================
@@ -173,4 +173,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactGeometry_h__
+#endif // OPENSIM_CONTACT_GEOMETRY_H_ 

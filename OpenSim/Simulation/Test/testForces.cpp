@@ -189,7 +189,6 @@ void testExpressionBasedCoordinateForce()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -387,7 +386,6 @@ void testPathSpring()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("block_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&block);
     osimModel->addJoint(&weld);
@@ -493,7 +491,6 @@ void testSpringMass()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -592,7 +589,6 @@ void testBushingForce()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -708,7 +704,6 @@ void testFunctionBasedBushingForce()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -1220,7 +1215,6 @@ void testCoordinateLimitForce()
     CoordinateSet &slider_coords = slider.upd_CoordinateSet();
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -1365,7 +1359,6 @@ void testCoordinateLimitForceRotational()
     CoordinateSet &pin_coords = pin.upd_CoordinateSet();
     pin_coords[0].setName("theta");
     pin_coords[0].setRange(positionRange);
-    pin_coords[0].setMotionType(Coordinate::Rotational);
 
     osimModel->addBody(&block);
     osimModel->addJoint(&pin);
@@ -1449,7 +1442,7 @@ void testCoordinateLimitForceRotational()
         double ediss = clf->getDissipatedEnergy(osim_state);
         // system KE + PE including strain energy in CLF
         double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
-        double EKsys = osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
+        /*double EKsys = */osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
 
         ASSERT_EQUAL(eSys/eSys0, 1.0, integ_accuracy);
 

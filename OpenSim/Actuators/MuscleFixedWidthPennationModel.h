@@ -99,11 +99,11 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)");
+        "Optimal length of the muscle fibers, in meters (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
-        "Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)");
+        "Angle between tendon and fibers at optimal fiber length, in radians (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
-        "Maximum pennation angle (radians)");
+        "Maximum pennation angle, in radians (overridden when this is a subcomponent of a Muscle)");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -327,7 +327,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;

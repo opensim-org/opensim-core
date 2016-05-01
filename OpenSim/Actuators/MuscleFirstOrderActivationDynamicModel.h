@@ -85,11 +85,11 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Activation time constant in seconds");
+        "Activation time constant, in seconds (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "Deactivation time constant in seconds");
+        "Deactivation time constant, in seconds (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "Lower bound on activation");
+        "Lower bound on activation (overridden when this is a subcomponent of a Muscle)");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -118,7 +118,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 };
 

@@ -89,9 +89,9 @@ Model::Model() : ModelComponent(),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {
     constructInfrastructure();
     setNull();
@@ -106,9 +106,9 @@ Model::Model(const string &aFileName, const bool finalize) :
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {   
     constructInfrastructure();
     setNull();
@@ -567,13 +567,23 @@ void Model::createMultibodyTree()
             IO::TrimWhitespace(name);
 
             if (name.empty()) {
-                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
+                name = js[i].getParentFrame().getName() + "_to_" + 
+                       js[i].getChildFrame().getName();
             }
 
-            // Currently we need to take a first pass at connecting the joints in 
-            // order to ask the joint for the frames that they attach to and 
-            // and determine their underlying base (physical) frames.
+            // Currently we need to take a first pass at connecting the joints
+            // in order to ask the joint for the frames that they attach to and
+            // to determine their underlying base (physical) frames.
             js[i].connect(*this);
+            // hack to make sure underlying Frame is also connected so it can 
+            // traverse to the base frame and get its name. This allows the
+            // (offset) frames to satisfy the connectors of Joint to be added
+            // to a Body, for example, and not just joint itself.
+            // TODO: try to create the multibody tree later when components
+            // can already be expected to be connected then traverse those
+            // relationships to create the multibody tree. -aseth
+            const_cast<PhysicalFrame&>(js[i].getParentFrame()).connect(*this);
+            const_cast<PhysicalFrame&>(js[i].getChildFrame()).connect(*this);
 
             // Use joints to define the underlying multibody tree
             _multibodyTree.addJoint(name,
@@ -626,7 +636,7 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
             Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
-            Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
+            //Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
             Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
             Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
 
@@ -657,7 +667,7 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getFullPathName(), child->getFullPathName());
+            Joint* free = new FreeJoint(jname, *ground, *child);
             free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
         }
@@ -1432,8 +1442,8 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     for (int i = 0; i < jointSet.getSize(); i++) {
         const OpenSim::Joint& joint = get_JointSet().get(i);
         aOStream << "joint[" << i << "] = " << joint.getName() << ".";
-        aOStream << " parent: " << joint.getParentFrameName() <<
-            ", child: " << joint.getChildFrameName() << std::endl;
+        aOStream << " parent: " << joint.getParentFrame().getName() <<
+            ", child: " << joint.getChildFrame().getName() << std::endl;
     }
 
     aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
@@ -1778,7 +1788,11 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    getControllerSet().computeControls(s, controls);
+    for (auto& controller : getComponentList<Controller>()) {
+        if (!controller.isDisabled()) {
+            controller.computeControls(s, controls);
+        }
+    }
 }
 
 
@@ -1887,7 +1901,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
 
-    delete mapColumns;
+    delete[] mapColumns;
 }
 
 /**

@@ -48,10 +48,17 @@ public:
     // Default copy constructor, destructor, copy assignment are fine.
  
     // Implementations of virtual methods.
-    Implementation* cloneVirtual() const {return new Implementation(*this);}
-    int getNumTimeDerivativesVirtual() const {return 0;}
-    Stage getDependsOnStageVirtual(int order) const
-    {   return Stage::Acceleration; }
+    Implementation* cloneVirtual() const override {
+        return new Implementation(*this);
+    }
+
+    int getNumTimeDerivativesVirtual() const override {
+        return 0;
+    }
+
+    Stage getDependsOnStageVirtual(int order) const override {   
+        return Stage::Acceleration; 
+    }
  
     void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const
         override
