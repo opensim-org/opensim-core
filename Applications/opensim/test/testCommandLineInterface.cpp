@@ -126,6 +126,8 @@ void checkCommandOutput(const std::string& arguments,
 }
 
 // Checks that the command output starts with a given string.
+// Created this because profiling indicated regexes were making the test slow;
+// ended up not being true.
 void checkCommandOutput(const std::string& arguments,
         const std::string& output,
         const StartsWith& expectedOutput) {
