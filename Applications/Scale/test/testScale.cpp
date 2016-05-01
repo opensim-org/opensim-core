@@ -103,11 +103,24 @@ void scaleGait2354()
     subject->run();
 
     // Compare ScaleSet
-    ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
+    ScaleSet stdScaleSet = ScaleSet(
+            setupFilePath+"std_subject01_scaleSet_applied.xml");
+    {
+        const ScaleSet& computedScaleSet = ScaleSet(
+                setupFilePath+"subject01_scaleSet_applied.xml");
+        ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+    }
 
-    const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
+    // See if we have any issues when calling run() twice.
+    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
+    fclose(file2Remove);
 
-    ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+    subject->run();
+    {
+        const ScaleSet& computedScaleSet = ScaleSet(
+                setupFilePath+"subject01_scaleSet_applied.xml");
+        ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
+    }
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)

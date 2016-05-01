@@ -223,7 +223,7 @@ ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
  *
  * @return Pointer to the Model that is created.
  */
-Model* ScaleTool::createModel()
+Model* ScaleTool::createModel() const
 {
     cout << "Processing subject " << getName() << endl;
 
@@ -246,7 +246,7 @@ Model* ScaleTool::createModel()
     return 0;
 }
 
-bool ScaleTool::run() {
+bool ScaleTool::run() const {
     std::unique_ptr<Model> model(createModel());
 
     if(model == nullptr) { 
