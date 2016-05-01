@@ -103,6 +103,15 @@ CommandOutput system_output(std::string command) {
     return CommandOutput(returncode, result);
 }
 
+class StartsWith {
+public:
+    StartsWith(std::string prefix) : prefix(prefix) {}
+    bool check(const std::string& str) const {
+        return std::equal(prefix.begin(), prefix.end(), str.begin());
+    }
+    const std::string prefix;
+};
+
 // Checks that the command produces exactly the expected output.
 void checkCommandOutput(const std::string& arguments,
         const std::string& output,
@@ -112,6 +121,18 @@ void checkCommandOutput(const std::string& arguments,
         std::string msg = "When testing arguments '" + arguments +
             "' got the following output:\n" + output +
             "\nExpected:\n" + expectedOutput;
+        throw std::runtime_error(msg);
+    }
+}
+
+// Checks that the command output starts with a given string.
+void checkCommandOutput(const std::string& arguments,
+        const std::string& output,
+        const StartsWith& expectedOutput) {
+    if (!expectedOutput.check(output)) {
+        std::string msg = "When testing arguments '" + arguments +
+            "' got the following output:\n" + output +
+            "\nExpected it to start with:\n" + expectedOutput.prefix;
         throw std::runtime_error(msg);
     }
 }
@@ -149,8 +170,8 @@ void testNoCommand() {
     // =====
     {
         // Match REGISTERED CLASSES and then any amount of text and newlines.
-        std::regex output("(OpenSim: musculoskeletal)" + RE_ANY +
-                          "(Pass -h or --help)" + RE_ANY);
+        std::regex output("OpenSim: musculoskeletal" + RE_ANY +
+                          "Pass -h or --help" + RE_ANY);
         testCommand("", EXIT_SUCCESS, output);
         testCommand("-h", EXIT_SUCCESS, output);
         testCommand("-help", EXIT_SUCCESS, output);
@@ -159,7 +180,7 @@ void testNoCommand() {
     // Version.
     // ========
     {
-        std::regex output("(OpenSim version )(.*)(, build date )(.*)\n");
+        std::regex output("OpenSim version (?:.*), build date (?:.*)\n");
         testCommand("-V", EXIT_SUCCESS, output);
         testCommand("--version", EXIT_SUCCESS, output);
     }
@@ -167,14 +188,12 @@ void testNoCommand() {
     // Library option.
     // ===============
     // Syntax errors.
-    testCommand("-L", EXIT_FAILURE,
-            std::regex("(-L requires an argument)" + RE_ANY));
+    testCommand("-L", EXIT_FAILURE, StartsWith("-L requires an argument"));
     testCommand("--library", EXIT_FAILURE, 
-            std::regex("(--library requires an argument)" + RE_ANY));
+            StartsWith("--library requires an argument"));
     // Must specify a command; can't only list a library to load.
     {
-        std::regex output(
-            "(Arguments did not match expected patterns)" + RE_ANY);
+        StartsWith output("Arguments did not match expected patterns");
         // All of these are otherwise valid options for specify libraries to
         // load.
         testCommand("-L x", EXIT_FAILURE, output);
@@ -202,7 +221,6 @@ std::string replaceString(std::string subject, const std::string& search,
     return subject;
 }
 
-// TODO allow LoadOpenSimLibrary to take a filename extension.
 void testLoadPluginLibraries(const std::string& subcommand) {
 
     const auto cmd = subcommand + " -h";
@@ -210,7 +228,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     // Nonexistant file.
     // =================
     {
-        std::regex output(RE_ANY + "(Failed to load library x.*)\n");
+        std::regex output(RE_ANY + "(Failed to load library x)\n");
         // These are all valid ways of specifying libraries.
         testCommand("-L x " + cmd, EXIT_FAILURE, output);
         testCommand("-Lx " + cmd, EXIT_FAILURE, output);
@@ -224,17 +242,16 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     // =====================================================
     std::string lib = MAKE_STRING(OSIM_ACTUATORS_LIB_PATH);
 
-    // "RE" is for regex, since this string is used in the regex.
-    // The lib string has quotes at the beginning and end.
-    std::string RE_lib = lib.substr(1, lib.size() - 2);
-    // When the library name gets printed back to us, the 
-    // forward slashes are converted to backslashes. We have to
-    // escape backslash once for the C++ parser, and once for
-    // the regex., so \\\\ is really \ in the regex.
-    RE_lib = replaceString(RE_lib, "/", "\\\\");
+    std::string expectLib = lib.substr(1, lib.size() - 2);
+    #ifdef _WIN32
+        // When the library name gets printed back to us, the 
+        // forward slashes are converted to backslashes. We have to
+        // escape backslash once for the C++ parser, and once for
+        // the regex., so \\\\ is really \ in the regex.
+        expectLib = replaceString(expectLib, "/", "\\\\");
+    #endif
     {
-        std::regex output("(Loaded library " + RE_lib + ")" +
-                RE_ANY + "\n");
+        StartsWith output("Loaded library " + expectLib);
         testCommand("-L " + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("-L" + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("--library " + lib + " " + cmd, EXIT_SUCCESS, output);
@@ -247,16 +264,14 @@ void testLoadPluginLibraries(const std::string& subcommand) {
         // Well, in this case, we just load the same library multiple times.
         testCommand("-L " + lib + " --library " + lib + " " + cmd,
                 EXIT_SUCCESS,
-                std::regex("(Loaded library " + RE_lib + ")\n"
-                           "(Loaded library " + RE_lib + ")" +
-                           RE_ANY + "\n"));
+                StartsWith("Loaded library " + expectLib + "\n"
+                           "Loaded library " + expectLib + "\n"));
         testCommand("-L" + lib +
                     " --library=" + lib +
                     " -L " + lib + " " + cmd, EXIT_SUCCESS,
-                std::regex("(Loaded library " + RE_lib + ")\n"
-                           "(Loaded library " + RE_lib + ")\n"
-                           "(Loaded library " + RE_lib + ")" +
-                           RE_ANY + "\n"));
+                StartsWith("Loaded library " + expectLib + "\n"
+                           "Loaded library " + expectLib + "\n"
+                           "Loaded library " + expectLib + "\n"));
     }
 }
 
@@ -264,7 +279,7 @@ void testRunTool() {
     // Help.
     // =====
     {
-        auto output = std::regex("(Run a tool )" + RE_ANY);
+        StartsWith output("Run a tool ");
         testCommand("run-tool -h", EXIT_SUCCESS, output);
         testCommand("run-tool -help", EXIT_SUCCESS, output);
     }
@@ -272,11 +287,9 @@ void testRunTool() {
     // Error messages.
     // ===============
     testCommand("run-tool", EXIT_FAILURE,
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("run-tool putes.xml", EXIT_FAILURE,
-            std::regex("(SimTK Exception thrown at Xml.cpp)" + RE_ANY +
-                       "(A problem occured when trying to load "
-                            "file 'putes.xml'.)" + RE_ANY));
+            StartsWith("SimTK Exception thrown at Xml.cpp"));
     // We use print-xml to create a setup file that we can try to run.
     // (We are not really trying to test print-xml right now.)
     testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
@@ -303,7 +316,7 @@ void testPrintXML() {
     // Help.
     // =====
     {
-        auto output = std::regex("(Print a template XML file )" + RE_ANY);
+        StartsWith output("Print a template XML file ");
         testCommand("print-xml -h", EXIT_SUCCESS, output);
         testCommand("print-xml -help", EXIT_SUCCESS, output);
     }
@@ -311,9 +324,9 @@ void testPrintXML() {
     // Error messages.
     // ===============
     testCommand("print-xml", EXIT_FAILURE,
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("print-xml x y z", EXIT_FAILURE,
-            std::regex("(Unexpected argument: print-xml, x, y, z)" + RE_ANY));
+            StartsWith("Unexpected argument: print-xml, x, y, z"));
     testCommand("print-xml bleepbloop", EXIT_FAILURE,
             "There is no tool or class named 'bleepbloop'.\n"
             "Did you intend to load a plugin (with --library)?\n");
@@ -339,7 +352,7 @@ void testInfo() {
     // Help.
     // =====
     {
-        auto output = std::regex("(Show description )" + RE_ANY);
+        StartsWith output("Show description ");
         testCommand("info -h", EXIT_SUCCESS, output);
         testCommand("info -help", EXIT_SUCCESS, output);
     }
@@ -357,10 +370,9 @@ void testInfo() {
 
     // Successful input.
     // =================
-    testCommand("info", EXIT_SUCCESS,
-            std::regex("(REGISTERED CLASSES )" + RE_ANY));
+    testCommand("info", EXIT_SUCCESS, StartsWith("REGISTERED CLASSES "));
     testCommand("info PathSpring", EXIT_SUCCESS,
-            std::regex("\n(PROPERTIES FOR PathSpring)" + RE_ANY));
+            StartsWith("\nPROPERTIES FOR PathSpring"));
     testCommand("info Body mass", EXIT_SUCCESS,
             "\nBody.mass\nThe mass of the body (kg)\n");
 
@@ -373,7 +385,7 @@ void testUpdateFile() {
     // Help.
     // =====
     {
-        auto output = std::regex("(Update an .osim, .xml )" + RE_ANY);
+        StartsWith output("Update an .osim, .xml ");
         testCommand("update-file -h", EXIT_SUCCESS, output);
         testCommand("update-file -help", EXIT_SUCCESS, output);
     }
@@ -383,13 +395,13 @@ void testUpdateFile() {
 
     // Syntax errors.
     testCommand("update-file", EXIT_FAILURE,
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("update-file x", EXIT_FAILURE, 
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("update-file x.doc", EXIT_FAILURE, 
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("update-file x.xml", EXIT_FAILURE, 
-            std::regex("(Arguments did not match expected patterns)" + RE_ANY));
+            StartsWith("Arguments did not match expected patterns"));
     testCommand("update-file x y", EXIT_FAILURE, 
             "Input file 'x' does not have an extension.\n");
     testCommand("update-file x.doc y", EXIT_FAILURE, 
@@ -397,14 +409,14 @@ void testUpdateFile() {
 
     // File does not exist.
     testCommand("update-file x.xml y", EXIT_FAILURE, 
-            std::regex("(Loading input file 'x.xml')" + RE_ANY +
-                       "(Could not make object from file 'x.xml')" + RE_ANY +
-                       "Did you intend to load a plugin (with --library)?" +
+            std::regex("(?:Loading input file 'x.xml')" + RE_ANY +
+                       "(?:Could not make object from file 'x.xml'.\n" + 
+                       "Did you intend to load a plugin (with --library)?)" +
                        RE_ANY));
     testCommand("update-file x.osim y", EXIT_FAILURE, 
-            std::regex("(Loading input file 'x.osim')" + RE_ANY +
-                       "(Could not make object from file 'x.osim')" + RE_ANY +
-                       "Did you intend to load a plugin (with --library)?" +
+            std::regex("(?:Loading input file 'x.osim')" + RE_ANY +
+                       "(?:Could not make object from file 'x.osim'.\n" +
+                       "Did you intend to load a plugin (with --library)?)" +
                        RE_ANY));
     testCommand("update-file x.sto y", EXIT_FAILURE, 
             std::regex("(Loading input file 'x.sto')" + RE_ANY +
