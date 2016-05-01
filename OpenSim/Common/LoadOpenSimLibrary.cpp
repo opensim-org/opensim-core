@@ -40,14 +40,14 @@ static void *LoadLibrary(const char* name) {
 // when loading them.
 static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
     actualNameLoaded = name;
-    void *lib = LoadLibrary(name);
+    void *lib = LoadLibrary(name.c_str());
     if(!lib) {
         std::string libName = OpenSim::IO::GetFileNameFromURI(name);
         if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
             libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
             actualNameLoaded = libName;
             //std::cout << "Loading " << name << " failed, trying " << libName << " (for Linux compatibility)" << std::endl;
-            lib = LoadLibrary(libName);
+            lib = LoadLibrary(libName.c_str());
         }
     }
     return lib;
