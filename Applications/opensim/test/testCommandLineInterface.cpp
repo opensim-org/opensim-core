@@ -246,9 +246,8 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     #ifdef _WIN32
         // When the library name gets printed back to us, the 
         // forward slashes are converted to backslashes. We have to
-        // escape backslash once for the C++ parser, and once for
-        // the regex., so \\\\ is really \ in the regex.
-        expectLib = replaceString(expectLib, "/", "\\\\");
+        // escape backslash for the C++ parser, so '\\' is actually '\'.
+        expectLib = replaceString(expectLib, "/", "\\");
     #endif
     {
         StartsWith output("Loaded library " + expectLib);
