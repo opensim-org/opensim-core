@@ -32,12 +32,8 @@
 //     Add tests here as Actuators are added to OpenSim
 //
 //=============================================================================
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/osimCommon.h>
-#include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;

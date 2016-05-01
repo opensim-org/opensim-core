@@ -29,22 +29,6 @@
 
 // Author:  Matthew Millard
 
-//==============================================================================
-// INCLUDES
-//==============================================================================
-
-#include <OpenSim/OpenSim.h>
-
-//#include <OpenSim/Common/SegmentedQuinticBezierToolkit.h>
-//#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
-
-#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
-
-#include <SimTKsimbody.h>
-#include <ctime>
-#include <string>
-#include <stdio.h>
-
 
 using namespace std;
 using namespace OpenSim;

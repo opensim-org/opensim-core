@@ -37,9 +37,6 @@
 //     Add more test cases to address specific problems with muscle models
 //
 //==============================================================================
-#include <OpenSim/Common/osimCommon.h>
-#include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
