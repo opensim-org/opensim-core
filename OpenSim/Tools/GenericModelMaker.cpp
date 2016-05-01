@@ -41,52 +41,10 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-GenericModelMaker::GenericModelMaker() :
-   _fileName(_fileNameProp.getValueStr()),
-    _markerSetFileName(_markerSetFileNameProp.getValueStr())
+GenericModelMaker::GenericModelMaker()
 {
     setNull();
-    setupProperties();
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-GenericModelMaker::~GenericModelMaker()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aGenericModelMaker GenericModelMaker to be copied.
- */
-GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker) :
-   Object(aGenericModelMaker),
-   _fileName(_fileNameProp.getValueStr()),
-    _markerSetFileName(_markerSetFileNameProp.getValueStr())
-{
-    setNull();
-    setupProperties();
-    copyData(aGenericModelMaker);
-}
-
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one GenericModelMaker to another.
- *
- * @param aGenericModelMaker GenericModelMaker to be copied.
- */
-void GenericModelMaker::copyData(const GenericModelMaker &aGenericModelMaker)
-{
-    _fileName = aGenericModelMaker._fileName;
-    _markerSetFileName = aGenericModelMaker._markerSetFileName;
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -97,49 +55,12 @@ void GenericModelMaker::setNull()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void GenericModelMaker::setupProperties()
+void GenericModelMaker::constructProperties()
 {
-    _fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
-    _fileNameProp.setName("model_file");
-    _propertySet.append(&_fileNameProp);
-
-    _markerSetFileNameProp.setComment("Set of model markers used to scale the model. "
-        "Scaling is done based on distances between model markers compared to "
-        "the same distances between the corresponding experimental markers.");
-    _markerSetFileNameProp.setName("marker_set_file");
-    _propertySet.append(&_markerSetFileNameProp);
-}
-
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
- */
-void GenericModelMaker::registerTypes()
-{
-    //Object::registerType(Marker());
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGenericModelMaker)
-{
-    // BASE CLASS
-    Object::operator=(aGenericModelMaker);
-
-    copyData(aGenericModelMaker);
-
-    return(*this);
+    // These default values are to be backwards-compatible with the previous
+    // use of PropertyStr classes, whose default value was the same.
+    constructProperty_model_file("Unassigned");
+    constructProperty_marker_set_file("Unassigned");
 }
 
 //=============================================================================
@@ -160,14 +81,17 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 
     try
     {
-        _fileName = aPathToSubject + _fileName;
+        set_model_file(aPathToSubject + get_model_file());
 
-        model = new Model(_fileName);
+        model = new Model(get_model_file());
         model->initSystem();
 
-        if (!_markerSetFileNameProp.getValueIsDefault() && _markerSetFileName !="Unassigned") {
-            cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
-            MarkerSet *markerSet = new MarkerSet(*model, aPathToSubject + _markerSetFileName);
+        if (!getProperty_marker_set_file().getValueIsDefault()
+                && get_marker_set_file() != "Unassigned") {
+            cout << "Loading marker set from '" <<
+                aPathToSubject + get_marker_set_file() +"'" << endl;
+            MarkerSet *markerSet = new MarkerSet(*model,
+                    aPathToSubject + get_marker_set_file());
             model->updateMarkerSet(*markerSet);
         }
     }

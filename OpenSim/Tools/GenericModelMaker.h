@@ -1,5 +1,5 @@
-#ifndef __GenericModelMaker_h__
-#define __GenericModelMaker_h__
+#ifndef OPENSIM_GENERIC_MODEL_MAKER_H_
+#define OPENSIM_GENERIC_MODEL_MAKER_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  GenericModelMaker.h                        *
  * -------------------------------------------------------------------------- *
@@ -25,13 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -51,7 +46,6 @@ class Model;
  * a generic musculoskeletal model.
  *
  * @author Peter Loan
- * @version 1.0
  */
 class OSIMTOOLS_API GenericModelMaker : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
@@ -59,14 +53,14 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-private:
+public:
+    OpenSim_DECLARE_PROPERTY(model_file, std::string,
+            "Model file (.osim) for the unscaled model."); 
 
-protected:
-    PropertyStr _fileNameProp;
-    std::string &_fileName;
-
-    PropertyStr _markerSetFileNameProp;
-    std::string &_markerSetFileName;
+    OpenSim_DECLARE_PROPERTY(marker_set_file, std::string,
+        "Set of model markers used to scale the model. "
+        "Scaling is done based on distances between model markers compared to "
+        "the same distances between the corresponding experimental markers.");
 
 //=============================================================================
 // METHODS
@@ -76,48 +70,37 @@ protected:
     //--------------------------------------------------------------------------
 public:
     GenericModelMaker();
-    GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
-    virtual ~GenericModelMaker();
-
-#ifndef SWIG
-    GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);
-#endif
-    void copyData(const GenericModelMaker &aGenericModelMaker);
+    virtual ~GenericModelMaker() = default;
 
     Model* processModel(const std::string& aPathToSubject="");
-
-    /* Register types to be used when reading a GenericModelMaker object from xml file. */
-    static void registerTypes();
 
     /**
      * Get file name for generic model
      */
     const std::string& getModelFileName() const
     {
-        return _fileName;
+        return get_model_file();
     }
 
     // Set model file name
-    void setModelFileName(const std::string& aFileName)
+    void setModelFileName(const std::string& fileName)
     {
-        _fileName = aFileName;
-        _fileNameProp.setValueIsDefault(false);
+        set_model_file(fileName);
     }
 
     const std::string& getMarkerSetFileName() const
     {
-        return _markerSetFileName;
+        return get_marker_set_file();
     }
 
-    void setMarkerSetFileName(const std::string& aFileName)
+    void setMarkerSetFileName(const std::string& fileName)
     {
-        _markerSetFileName = aFileName;
-        _markerSetFileNameProp.setValueIsDefault(false);
+        set_marker_set_file(fileName);
     }
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class GenericModelMaker
 //=============================================================================
@@ -125,6 +108,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __GenericModelMaker_h__
+#endif // OPENSIM_GENERIC_MODEL_MAKER_H_ 
 
 

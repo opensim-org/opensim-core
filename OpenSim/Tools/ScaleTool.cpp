@@ -188,10 +188,7 @@ void ScaleTool::setupProperties()
  */
 void ScaleTool::registerTypes()
 {
-    Object::registerType(GenericModelMaker());
-    Object::registerType(ModelScaler());
-    Object::registerType(MarkerPlacer());
-    GenericModelMaker::registerTypes();
+    // TODO remove.
     ModelScaler::registerTypes();
 }
 
