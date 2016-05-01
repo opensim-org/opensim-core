@@ -1,5 +1,5 @@
-#ifndef __ContactHalfSpace_h__
-#define __ContactHalfSpace_h__
+#ifndef OPENSIM_CONTACT_HALF_SPACE_H_
+#define OPENSIM_CONTACT_HALF_SPACE_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  ContactHalfSpace.h                        *
  * -------------------------------------------------------------------------- *
@@ -82,4 +82,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactHalfSpace_h__
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 

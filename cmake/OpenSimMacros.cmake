@@ -271,7 +271,7 @@ function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             get_filename_component(DLL_NAME ${DLL} NAME)
             set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
             add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND cmake -E copy ${DLL} ${DEST_DIR}
+                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
                                COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}")
             list(APPEND DLL_NAMES ${DLL_NAME})
         endforeach()
