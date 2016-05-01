@@ -171,7 +171,6 @@ void testNoCommand() {
     // Help.
     // =====
     {
-        // Match REGISTERED CLASSES and then any amount of text and newlines.
         std::regex output("OpenSim: musculoskeletal" + RE_ANY +
                           "Pass -h or --help" + RE_ANY);
         testCommand("", EXIT_SUCCESS, output);
