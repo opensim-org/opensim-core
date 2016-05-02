@@ -107,7 +107,7 @@ public:
     virtual void track(SimTK::State &s);
 
     /** Read access to the underlying SimTK::Assembler. */
-    SimTK::Assembler& updAssembler() { return *_assembler; }
+    const SimTK::Assembler& getAssembler() const { return *_assembler; }
 
 protected:
     /** Internal method to convert the CoordinateReferences into goals of the 
