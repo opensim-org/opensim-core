@@ -49,11 +49,9 @@ PrescribedForce::PrescribedForce()
 /**
  * Convenience constructor.
  */
-PrescribedForce::PrescribedForce(const PhysicalFrame& frame)
+PrescribedForce::PrescribedForce(const PhysicalFrame& frame):
+    PrescribedForce()
 {
-    setNull();
-    constructInfrastructure();
-
     updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
@@ -61,10 +59,9 @@ PrescribedForce::PrescribedForce(const PhysicalFrame& frame)
 /**
  * Constructor from XML file
  */
-PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : Super(aNode)
+PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) : 
+    PrescribedForce()
 {
-    setNull();
-    constructProperties();
     updateFromXMLNode(aNode);
 }
 
