@@ -37,18 +37,24 @@ using namespace std;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-// default destructor, copy constructor, copy assignment
+// default destructor
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PrescribedForce::PrescribedForce(const PhysicalFrame* frame)
+PrescribedForce::PrescribedForce()
 {
     setNull();
     constructInfrastructure();
 
-    if (frame)
-        updConnector<PhysicalFrame>("frame").connect(*frame);
+}
+
+/**
+ * Convenience constructor.
+ */
+PrescribedForce::PrescribedForce(const PhysicalFrame& frame)
+{
+    setNull();
+    constructInfrastructure();
+
+    updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
 //_____________________________________________________________________________

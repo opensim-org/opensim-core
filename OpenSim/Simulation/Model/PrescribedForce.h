@@ -107,6 +107,9 @@ public:
     //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
+    // CONSTRUCTION, default constructor
+    PrescribedForce();
+
     /**
      * Construct a PrescribedForce. By default, the force, torque, and point 
      * functions are all unspecified, meaning that it applies no force or 
@@ -115,7 +118,7 @@ public:
      *
      * @param frame     the PhysicalFrame to apply the force to
      */
-    explicit PrescribedForce(const OpenSim::PhysicalFrame* frame=0);
+    explicit PrescribedForce(const OpenSim::PhysicalFrame& frame);
     /** Construct from an XML element. **/
     explicit PrescribedForce(SimTK::Xml::Element& aNode);
 

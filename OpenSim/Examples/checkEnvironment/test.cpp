@@ -148,7 +148,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
+        PrescribedForce *prescribedForce = new PrescribedForce(*block);
         prescribedForce->setName("prescribedForce");
 
         // Specify properties of the force function to be applied to the block
