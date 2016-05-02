@@ -33,6 +33,8 @@ Converting from v3.x to v4.0
 - OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler
   must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
 - Many of the methods in ScaleTool have now been marked const.
+- We are replacing the old command line executables (`scale`, `ik`, `id`,
+  `rra`, `cmc`, etc.) with a new unified command line interface.
 
 Bug Fixes
 ---------
