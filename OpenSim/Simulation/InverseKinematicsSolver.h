@@ -128,10 +128,10 @@ protected:
         assembly solver. Subclasses can override to include other goals  
         such as point of interest matching (Marker tracking). This method is
         automatically called by assemble. */
-    virtual void setupGoals(SimTK::State &s) override;
+    void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state */
-    virtual void updateGoals(const SimTK::State &s) override;
+    void updateGoals(const SimTK::State &s) override;
 
 private:
     // The marker reference values and weightings
@@ -145,8 +145,6 @@ private:
     SimTK::Array_<SimTK::Vec3> _markerValues;
 
     std::unique_ptr<SimTK::OrientationSensors> _orientationAssemblyCondition;
-
-
 //=============================================================================
 };  // END of class InverseKinematicsSolver
 //=============================================================================

@@ -1,5 +1,5 @@
-#ifndef __AssemblySolver_h__
-#define __AssemblySolver_h__
+#ifndef OPENSIM_ASSEMBLY_SOLVER_H_
+#define OPENSIM_ASSEMBLY_SOLVER_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  AssemblySolver.h                         *
  * -------------------------------------------------------------------------- *
@@ -57,26 +57,6 @@ class Model;
  */
 class OSIMSIMULATION_API AssemblySolver: public Solver {
 OpenSim_DECLARE_CONCRETE_OBJECT(AssemblySolver, Solver);
-
-//=============================================================================
-// MEMBER VARIABLES
-//=============================================================================
-protected:
-
-    // The assembly solution accuracy
-    double _accuracy;
-
-    // Weight for built-in constraints to be satisfied
-    double _constraintWeight;
-
-    // The coordinates reference value and weighting. This is full copy rather than ref.
-    SimTK::Array_<CoordinateReference> _coordinateReferencesp;
-
-    // Underlying SimTK::Assembler that will perform the assembly
-    SimTK::Assembler *_assembler;
-
-    SimTK::Array_<SimTK::QValue*> _coordinateAssemblyConditions;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -92,7 +72,7 @@ public:
                    const SimTK::Array_<CoordinateReference> &coordinateReferences,
                    double constraintWeight = SimTK::Infinity);
 
-    virtual ~AssemblySolver();
+    virtual ~AssemblySolver() {}
 
     /** %Set the unitless accuracy of the assembly solution, which is dictates to how
         many significant digits the solution should be resolved to.*/
@@ -137,9 +117,26 @@ protected:
         is called at the end of setupGoals() and beginning of track()*/
     virtual void updateGoals(const SimTK::State &s);
 
+    SimTK::Assembler& updAssembler() { return *_assembler; }
+
+private:
+
+    // The assembly solution accuracy
+    double _accuracy;
+
+    // Weight for built-in constraints to be satisfied
+    double _constraintWeight;
+
+    // The coordinates reference value and weighting. This is full copy rather than ref.
+    SimTK::Array_<CoordinateReference> _coordinateReferencesp;
+
+    // Underlying SimTK::Assembler that will perform the assembly
+    SimTK::ResetOnCopy< std::unique_ptr<SimTK::Assembler>> _assembler;
+
+    SimTK::Array_<SimTK::QValue*> _coordinateAssemblyConditions;
 //=============================================================================
 };  // END of class AssemblySolver
 //=============================================================================
 } // namespace
 
-#endif // __AssemblySolver_h__
+#endif // OPENSIM_ASSEMBLY_SOLVER_H_
