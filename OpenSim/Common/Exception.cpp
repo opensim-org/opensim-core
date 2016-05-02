@@ -27,13 +27,7 @@
 
 
 // INCLUDES
-#include <iostream>
-#include <string>
-#include <cassert>
-#include "osimCommonDLL.h"
-#include "Exception.h"
-#include "IO.h"
-#include "Object.h"
+
 
 
 using namespace OpenSim;

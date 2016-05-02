@@ -23,12 +23,8 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include "AbstractProperty.h"
-#include "Property.h"
-#include "Object.h"
 
-#include <string>
-#include <limits>
+
 
 using namespace OpenSim;
 using namespace SimTK;

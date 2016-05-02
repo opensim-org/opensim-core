@@ -24,15 +24,6 @@
 /* 
  * Author: Matt DeMers
  */
-
-//==============================================================================
-// INCLUDES
-//==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "PointToPointActuator.h"
-
 using namespace OpenSim;
 using std::string;
 using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 

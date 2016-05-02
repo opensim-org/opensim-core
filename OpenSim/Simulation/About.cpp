@@ -26,12 +26,6 @@
  */
 
 
-#include "osimSimulationDLL.h"
-
-#include <string>
-#include <cstring>
-#include <cctype>
-
 
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj,min,build)  STR(maj.min.build)

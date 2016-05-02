@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Constraint.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+
+
 
 //=============================================================================
 // STATICS
@@ -35,6 +34,7 @@ using namespace std;
 //using namespace SimTK;
 using namespace OpenSim;
 
+namespace OpenSim {
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -285,3 +285,5 @@ Array<double> Constraint::getRecordValues(const SimTK::State& state) const
 
     return values;
 };
+
+} // namespace OpenSim

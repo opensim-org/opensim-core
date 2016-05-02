@@ -23,6 +23,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+// Simbody headers.
+#include "Simbody.h"
+
+// Template instantiations.
+template class SimTK::Matrix_<double>;
+template class SimTK::Matrix_<SimTK::Vec3>;
+template class SimTK::MatrixView_<double>;
+template class SimTK::MatrixView_<SimTK::Vec3>;
+template class SimTK::Vector_<double>;
+template class SimTK::Vector_<SimTK::Vec3>;
+template class SimTK::RowVector_<double>;
+template class SimTK::RowVector_<SimTK::Vec3>;
+
+// OpenSim Common headers.
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
@@ -30,7 +45,6 @@
 #include "ScaleSet.h"
 #include "GCVSpline.h"
 #include "IO.h"
-
 #include "Scale.h"
 #include "SimmSpline.h"
 #include "Constant.h"
@@ -39,19 +53,119 @@
 #include "LinearFunction.h"
 #include "PiecewiseConstantFunction.h"
 #include "PiecewiseLinearFunction.h"
-
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
-
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
 #include "SmoothSegmentedFunctionFactory.h"
-
 #include "DataTable.h"
 #include "TimeSeriesTable.h"
-
 #include "Reporter.h"
+#include "AbstractProperty.h"
+#include "Adapters.h"
+#include "Array.h"
+#include "ArrayPtrs.h"
+#include "C3DFileAdapter.h"
+#include "ComponentConnector.h"
+#include "Component.h"
+#include "ComponentList.h"
+#include "ComponentOutput.h"
+#include "Constant.h"
+#include "CSVFileAdapter.h"
+#include "DataAdapter.h"
+#include "DataTable.h"
+#include "DebugUtilities.h"
+#include "DelimFileAdapter.h"
+#include "Event.h"
+#include "Exception.h"
+#include "FileAdapter.h"
+#include "FunctionAdapter.h"
+#include "Function.h"
+#include "FunctionSet.h"
+#include "gcvspl.h"
+#include "GCVSpline.h"
+#include "GCVSplineSet.h"
+#include "IO.h"
+#include "LinearFunction.h"
+#include "Lmdif.h"
+#include "LoadOpenSimLibrary.h"
+#include "LogCallback.h"
+#include "LogManager.h"
+#include "MarkerData.h"
+#include "MarkerFrame.h"
+#include "MOTFileAdapter.h"
+#include "Mtx.h"
+#include "MultiplierFunction.h"
+#include "ObjectGroup.h"
+#include "Object.h"
+#include "OptimizationTarget.h"
+#include "osimCommonTemplates.h"
+#include "PiecewiseConstantFunction.h"
+#include "PiecewiseLinearFunction.h"
+#include "PolynomialFunction.h"
+#include "PropertyBoolArray.h"
+#include "PropertyBool.h"
+#include "PropertyDblArray.h"
+#include "PropertyDbl.h"
+#include "PropertyDblVec.h"
+#include "Property_Deprecated.h"
+#include "PropertyGroup.h"
+#include "Property.h"
+#include "PropertyIntArray.h"
+#include "PropertyInt.h"
+#include "PropertyObjArray.h"
+#include "PropertyObj.h"
+#include "PropertyObjPtr.h"
+#include "PropertySet.h"
+#include "PropertyStrArray.h"
+#include "PropertyStr.h"
+#include "PropertyTable.h"
+#include "PropertyTransform.h"
+#include "Reporter.h"
+#include "RootSolver.h"
+#include "Scale.h"
+#include "ScaleSet.h"
+#include "SegmentedQuinticBezierToolkit.h"
+#include "Set.h"
+#include "Signal.h"
+#include "SimmIO.h"
+#include "SimmMacros.h"
+#include "SimmSpline.h"
+#include "Sine.h"
+#include "SmoothSegmentedFunctionFactory.h"
+#include "SmoothSegmentedFunction.h"
+#include "StateVector.h"
+#include "StepFunction.h"
+#include "Storage.h"
+#include "StorageInterface.h"
+#include "TimeSeriesTable.h"
+#include "TRCFileAdapter.h"
+#include "Units.h"
+#include "ValueArrayDictionary.h"
+#include "ValueArray.h"
+#include "VectorFunction.h"
+#include "VectorFunctionUncoupledNxN.h"
+#include "XMLDocument.h"
+#include "XYFunctionInterface.h"
+
+// Standard headers.
+#include <fstream>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <string>
+#include <cstring>
+#include <cctype>
+#include <limits>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <cassert>
+#include <stdexcept>
+#include <cstdlib>
+#include <regex>
+#include <exception>
+
 
 #endif // _osimCommon_h_

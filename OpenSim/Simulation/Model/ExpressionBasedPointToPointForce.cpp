@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ExpressionBasedPointToPointForce.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
+
+
 
 using namespace OpenSim;
 using namespace std;

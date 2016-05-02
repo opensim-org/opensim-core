@@ -21,20 +21,6 @@
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "Actuation.h"
-
-
-
-
 using namespace OpenSim;
 using namespace std;
 

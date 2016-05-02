@@ -24,15 +24,6 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "osimActuatorsDLL.h"
-#include <iostream>
-#include "RegisterTypes_osimActuators.h"
-
 using namespace std;
 
 //

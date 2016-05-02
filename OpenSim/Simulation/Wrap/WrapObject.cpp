@@ -24,14 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "WrapObject.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include "WrapResult.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
+
+
 
 //=============================================================================
 // STATICS

@@ -21,8 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Reporter.h>
 
 using namespace OpenSim;
 using namespace std;

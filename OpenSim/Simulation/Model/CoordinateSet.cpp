@@ -21,10 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "CoordinateSet.h"
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/Model/Model.h>
+
 
 using namespace std;
 using namespace OpenSim;

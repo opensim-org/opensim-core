@@ -1924,7 +1924,7 @@ void testAddedFreeJointForBodyWithoutJoint()
 
     Model model;
     SimTK::Inertia inertia(SimTK::Inertia::brick(SimTK::Vec3(0.5, 0.15, 0.2)));
-    Body* block = new Body("block", 1.0, SimTK::Vec3(0.0), inertia);
+    OpenSim::Body* block = new OpenSim::Body("block", 1.0, SimTK::Vec3(0.0), inertia);
     model.addBody(block);
 
     model.initSystem();
@@ -1953,16 +1953,16 @@ void testAutomaticJointReversal()
     ground.upd_geometry(0).setColor(SimTK::Vec3(1, 1, 0));
     //Brick floor(SimTK::Vec3(1.25, 0.01, 1.0));
     //ground.addGeometry(floor);
-    auto pelvis = new Body("pelvis", 10.0, SimTK::Vec3(0), 
+    auto pelvis = new OpenSim::Body("pelvis", 10.0, SimTK::Vec3(0), 
         SimTK::Inertia::brick(SimTK::Vec3(0.1, 0.15, 0.25)));
     
-    auto thigh = new Body("thigh", femurMass.getMass(),
+    auto thigh = new OpenSim::Body("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
     
-    auto shank = new Body("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(),
+    auto shank = new OpenSim::Body("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(),
                             tibiaMass.getInertia());
     
-    auto foot = new Body("foot", footMass.getMass(), footMass.getMassCenter(),
+    auto foot = new OpenSim::Body("foot", footMass.getMass(), footMass.getMassCenter(),
                             footMass.getInertia());
     
     //pelvis.addGeometry(Brick(SimTK::Vec3(0.1, 0.15, 0.25)));
@@ -2037,8 +2037,8 @@ void testAutomaticJointReversal()
     modelConstrained.finalizeFromProperties();
 
     const Ground& cground = modelConstrained.getGround();
-    const Body& cpelvis = modelConstrained.getComponent<Body>("pelvis");
-    const Body& cfoot = modelConstrained.getComponent<Body>("foot");
+    const OpenSim::Body& cpelvis = modelConstrained.getComponent<OpenSim::Body>("pelvis");
+    const OpenSim::Body& cfoot = modelConstrained.getComponent<OpenSim::Body>("foot");
 
     // free the pelvis
     auto pelvisFree = new FreeJoint("pelvisFree", cground, zvec, zvec,
@@ -2157,7 +2157,7 @@ void testAutomaticLoopJointBreaker()
     model.addJoint(&hip);
 
     // Add OpenSim shank via a knee joint
-    Body shank("shank", tibiaMass.getMass(),
+    OpenSim::Body shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // Add the shank body to the model
@@ -2174,7 +2174,7 @@ void testAutomaticLoopJointBreaker()
     model.addJoint(&knee);
 
     // Add foot body at ankle
-    Body foot("foot", footMass.getMass(),
+    OpenSim::Body foot("foot", footMass.getMass(),
         footMass.getMassCenter(), footMass.getInertia());
 
     // Add foot

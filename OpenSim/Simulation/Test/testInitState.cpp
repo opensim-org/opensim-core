@@ -20,11 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <stdint.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -53,7 +48,7 @@ int main()
         testMemoryUsage("arm26.osim");
         testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         cout << "testInitState failed: ";
         e.print(cout); 
         return 1;

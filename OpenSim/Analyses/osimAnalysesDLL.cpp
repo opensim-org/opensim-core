@@ -21,14 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "osimAnalysesDLL.h"
-#include <iostream>
-#include "RegisterTypes_osimAnalyses.h"
-
-
 using namespace std;
 
 //

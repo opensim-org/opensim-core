@@ -24,14 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
-#include "MarkerData.h"
-#include "SimmIO.h"
-#include "SimmMacros.h"
-#include "SimTKcommon.h"
+
+
 
 //=============================================================================
 // STATICS

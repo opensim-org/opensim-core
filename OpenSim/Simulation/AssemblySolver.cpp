@@ -21,9 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "AssemblySolver.h"
-#include "Model/Model.h"
-#include <OpenSim/Common/Constant.h>
+
+
 
 using namespace std;
 using namespace SimTK;

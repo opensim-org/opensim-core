@@ -24,10 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include "FunctionBasedBushingForce.h"
+
+
 
 using namespace std;
 using namespace SimTK;

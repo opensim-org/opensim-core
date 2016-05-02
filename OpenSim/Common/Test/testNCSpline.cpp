@@ -22,13 +22,6 @@
  * -------------------------------------------------------------------------- */
 //C:\mjhmilla\Stanford\dev\SimBody\SimTKcommon\include\SimTKcommon\Testing.h
 
-#include <OpenSim/Common/Exception.h>
-//#include <OpenSim/Common/NaturalCubicSpline.h> NOT YET, SEE BELOW
-#include <Simbody.h>
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-
 using namespace SimTK;
 using namespace OpenSim;
 using namespace std;

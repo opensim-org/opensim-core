@@ -26,12 +26,6 @@
  */
 
 // INCLUDES
-#include "PropertyDbl.h"
-#include "PropertyObjArray.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "SimTKcommon.h"
-
 
 
 

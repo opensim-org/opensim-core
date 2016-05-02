@@ -1,4 +1,4 @@
-#include "C3DFileAdapter.h"
+
 
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"

@@ -27,10 +27,6 @@
 
 
 // INCLUDES
-#include "VectorFunction.h"
-#include "PropertyDbl.h"
-#include "SimTKsimbody.h"
-
 
 
 

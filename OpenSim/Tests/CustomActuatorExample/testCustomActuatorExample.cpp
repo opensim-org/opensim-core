@@ -49,7 +49,7 @@ int main()
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol, __FILE__, __LINE__, "actuator forces failed");
         cout << "actuator forces passed\n";
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }

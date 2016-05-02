@@ -26,11 +26,7 @@
  */
 
 
-#include "osimCommonDLL.h"
 
-#include <string>
-#include <cstring>
-#include <cctype>
 
 
 #define STR(var) #var

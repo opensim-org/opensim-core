@@ -24,12 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "PrescribedController.h"
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Common/PiecewiseConstantFunction.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
+
+
 
 //=============================================================================
 // STATICS
@@ -197,7 +193,7 @@ void PrescribedController::
 }
 
 // utility
-Function* PrescribedController::createFunctionFromData(const std::string& name,
+OpenSim::Function* PrescribedController::createFunctionFromData(const std::string& name,
                         const Array<double>& time, const Array<double>& data)
 {
     int method = 1;

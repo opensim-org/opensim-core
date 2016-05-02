@@ -21,8 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "BodySet.h"
-#include <OpenSim/Common/ScaleSet.h>
+
 
 using namespace std;
 using namespace OpenSim;

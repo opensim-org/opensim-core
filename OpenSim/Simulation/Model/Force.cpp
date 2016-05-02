@@ -21,10 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Force.h"
-#include "Model.h"
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/ForceAdapter.h>
 
 
 using namespace SimTK;

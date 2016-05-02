@@ -59,7 +59,7 @@ int main()
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
     }   
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }

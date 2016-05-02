@@ -30,21 +30,7 @@
 // INCLUDES
 //============================================================================
 
-#include "Object.h"
-#include "XMLDocument.h"
-#include "Exception.h"
-#include "Property_Deprecated.h"
-#include "PropertyObj.h"
-#include "PropertyDblVec.h"
-#include "PropertyTransform.h"
-#include "IO.h"
 
-#include "Simbody.h"
-
-#include <fstream>
-#include <vector>
-#include <map>
-#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;

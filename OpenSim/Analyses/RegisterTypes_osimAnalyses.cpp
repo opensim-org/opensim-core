@@ -21,13 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-#include <OpenSim/Common/Object.h>
-#include "osimAnalyses.h"   // Add headers for new Analyses in osimAnalyses.h rather than here so they are available to the API.
-#include <string>
-#include <iostream>
-#include <exception>
-
 using namespace OpenSim;
 using namespace std;
 

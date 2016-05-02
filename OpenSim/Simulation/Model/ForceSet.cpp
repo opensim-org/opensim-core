@@ -25,12 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <algorithm>
-#include "ForceSet.h"
-#include "Model.h"
-#include "Muscle.h"
-#include "SimTKsimbody.h"
+
+
 
 using namespace std;
 using namespace OpenSim;

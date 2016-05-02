@@ -21,7 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ContactSphere.h"
+
+
 using SimTK::Transform;
 
 namespace OpenSim {

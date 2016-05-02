@@ -24,8 +24,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "ActivationFiberLengthMuscle_Deprecated.h"
-#include "Model.h"
+
+
 
 using namespace std;
 using namespace OpenSim;

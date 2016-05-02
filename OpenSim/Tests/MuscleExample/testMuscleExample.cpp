@@ -45,7 +45,7 @@ int main()
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(20.0, ncols), __FILE__, __LINE__, "tugOfWar forces failed");
         cout << "tugOfWar forces passed\n";
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }

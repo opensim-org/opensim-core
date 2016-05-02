@@ -26,9 +26,8 @@
  */
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <iostream>
-#include "RegisterTypes_osimCommon.h"
+
+
 
 using namespace std;
 

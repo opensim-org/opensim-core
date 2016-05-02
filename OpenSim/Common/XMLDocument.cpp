@@ -29,11 +29,7 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
-#include <fstream>  // Ayman: remove .h per .NET 2003
-#include "osimCommonDLL.h"
-#include "XMLDocument.h"
-#include "Exception.h"
-#include "Object.h"
+
 
 
 using namespace OpenSim;

@@ -16,12 +16,14 @@ foreach(dir ${SIMULATION_SUBDIRS})
     list(APPEND INCLUDES ${INCLUDES_ONEDIR})
 endforeach()
 
-OpenSimAddLibrary(
-    KIT Simulation
-    AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
+# Generate precompiled header. This macro creates a target named 
+# 'SimulationPCH'.
+GeneratePCH(osimSimulation.h Simulation)
+
+OpenSimAddLibrary(KIT Simulation
     LINKLIBS ${Simbody_LIBRARIES} osimCommon osimLepton
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS SimbodyEngine Test
-    INCLUDEDIRS ${SIMULATION_SUBDIRS}
-    )
+    INCLUDEDIRS ${SIMULATION_SUBDIRS})
+add_dependencies(osimSimulation SimulationPCH)

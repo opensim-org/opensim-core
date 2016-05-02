@@ -20,48 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-#include <string>
-#include <iostream>
-#include <OpenSim/Common/Object.h>
-#include "RegisterTypes_osimActuators.h"
-
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "BodyActuator.h"
-#include "PointToPointActuator.h"
-#include "ClutchedPathSpring.h"
-
-#include "Thelen2003Muscle.h"
-#include "Thelen2003Muscle_Deprecated.h"
-
-#include "Schutte1993Muscle_Deprecated.h"
-#include "Delp1990Muscle_Deprecated.h"
-#include "SpringGeneralizedForce.h"
-
-#include "RigidTendonMuscle.h"
-
-#include "ActiveForceLengthCurve.h"
-#include "ForceVelocityCurve.h"
-#include "ForceVelocityInverseCurve.h"
-#include "TendonForceLengthCurve.h"
-#include "FiberForceLengthCurve.h"
-#include "FiberCompressiveForceLengthCurve.h"
-#include "FiberCompressiveForceCosPennationCurve.h"
-#include "MuscleFirstOrderActivationDynamicModel.h"
-#include "MuscleSecondOrderActivationDynamicModel.h"
-
-#include "MuscleFixedWidthPennationModel.h"
-
-#include "Millard2012EquilibriumMuscle.h"
-#include "Millard2012AccelerationMuscle.h"
-
-// Awaiting new component architecture that supports subcomponents with states.
-//#include "ConstantMuscleActivation.h"
-//#include "ZerothOrderMuscleActivationDynamics.h"
-//#include "FirstOrderMuscleActivationDynamics.h"
-
 using namespace OpenSim;
 using namespace std;
 

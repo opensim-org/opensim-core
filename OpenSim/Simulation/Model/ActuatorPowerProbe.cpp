@@ -24,8 +24,8 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "ActuatorPowerProbe.h"
-#include <OpenSim/Common/IO.h>
+
+
 
 using namespace std;
 using namespace SimTK;

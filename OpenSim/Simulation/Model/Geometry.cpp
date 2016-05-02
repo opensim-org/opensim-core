@@ -24,14 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property.h>
-#include <OpenSim/Common/Component.h>
-#include "Frame.h"
-#include "PhysicalFrame.h"
-#include "Geometry.h"
-#include "Model.h"
-#include "ModelVisualizer.h"
+
+
+
 //=============================================================================
 // STATICS
 //=============================================================================

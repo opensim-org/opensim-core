@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ContactHalfSpace.h"
+
 
 using namespace SimTK;
 

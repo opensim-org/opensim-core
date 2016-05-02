@@ -29,9 +29,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimSimulationDLL.h"
-#include <iostream>
-#include "RegisterTypes_osimSimulation.h"
+
 
 
 using namespace std;

@@ -35,7 +35,7 @@ int main()
     try {
         testExternalLoad();
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }

@@ -21,9 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "InverseDynamicsSolver.h"
-#include "Model/Model.h"
-#include <OpenSim/Common/FunctionSet.h>
+
+
 
 using namespace std;
 using namespace SimTK;

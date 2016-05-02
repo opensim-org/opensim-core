@@ -22,9 +22,8 @@
  * -------------------------------------------------------------------------- */
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <iostream>
-#include "IO.h"
-#include "LoadOpenSimLibrary.h"
+
+
 
 using namespace OpenSim;
 using namespace std;

@@ -31,10 +31,6 @@ Tests Include:
      Add tests here as Points are added to OpenSim
 
 //=============================================================================*/
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -140,7 +136,7 @@ void testStationOnOffsetFrame()
     Model pendulum;
     pendulum.setName("pendulum3D");
 
-    auto rod1 = new Body("rod1", 0.54321, SimTK::Vec3(0.1, 0.5, 0.2),
+    auto rod1 = new OpenSim::Body("rod1", 0.54321, SimTK::Vec3(0.1, 0.5, 0.2),
         SimTK::Inertia::cylinderAlongY(0.025, 0.55));
     rod1->attachGeometry(Cylinder(0.025, 0.55));
 

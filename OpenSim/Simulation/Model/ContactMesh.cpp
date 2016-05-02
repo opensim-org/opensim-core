@@ -21,10 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <fstream>
-#include <OpenSim/Common/IO.h>
-#include "ContactMesh.h"
-#include "Model.h"
+
 
 namespace OpenSim {
 

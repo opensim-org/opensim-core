@@ -20,11 +20,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/Adapters.h"
-
-#include <fstream>
-#include <cstdio>
-
 std::string getNextToken(std::istream& stream, 
                          const std::string& delims) {
     using namespace OpenSim;

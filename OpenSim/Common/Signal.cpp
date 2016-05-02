@@ -27,12 +27,8 @@
 
 
 // INCLUDES
-#include <iostream>
-#include <string>
-#include <math.h>
-#include "Signal.h"
-#include "Array.h"
-#include "SimTKsimbody.h"
+
+
 
 using namespace OpenSim;
 using namespace std;

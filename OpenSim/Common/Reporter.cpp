@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Reporter.h"
-#include <OpenSim/Common/TimeSeriesTable.h>
+
+
 
 using namespace SimTK;
 

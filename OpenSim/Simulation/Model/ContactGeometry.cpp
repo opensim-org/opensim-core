@@ -21,10 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ContactGeometry.h"
-#include "BodySet.h"
-#include "Model.h"
-#include <OpenSim/Common/ScaleSet.h>
+
 
 using SimTK::Vec3;
 using SimTK::Rotation;

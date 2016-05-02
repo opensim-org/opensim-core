@@ -24,14 +24,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Common/GCVSpline.h>
 
-#include "ExternalForce.h"
+
 
 //==============================================================================
 // USING

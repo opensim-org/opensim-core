@@ -34,7 +34,6 @@
 #endif
 
 // INCLUDES
-
 #include "osimCommonDLL.h"
 #include "XMLDocument.h"
 #include "PropertySet.h"

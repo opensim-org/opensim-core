@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "PathWrapSet.h"
+
 
 using namespace std;
 using namespace OpenSim;

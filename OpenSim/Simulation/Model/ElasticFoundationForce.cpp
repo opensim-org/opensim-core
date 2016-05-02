@@ -21,12 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ElasticFoundationForce.h"
-#include "ContactGeometry.h"
-#include "ContactGeometrySet.h"
-#include "ContactMesh.h"
-#include "Model.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+
 
 namespace OpenSim {
 

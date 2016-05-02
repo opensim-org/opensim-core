@@ -34,9 +34,7 @@
 //     Add more test cases to address specific problems with moment-arms
 //
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -120,7 +118,7 @@ int main()
         testMomentArmDefinitionForModel("CoupledCoordinatesMPPsMomentArmTest.osim", "foot_angle", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
         cout << "Multiple moving path points coupled coordinates test: PASSED\n" << endl;
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }

@@ -25,9 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "CoordinateLimitForce.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+
+
 
 using namespace OpenSim;
 using namespace std;

@@ -10,13 +10,12 @@ if(NOT WITH_BTK)
     unset(BTK_LIBRARIES)
 endif()
 
-OpenSimAddLibrary(
-    KIT Common
-    AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
+# Generate precompiled header. This macro creates a target named 'CommonPCH'.
+GeneratePCH(osimCommon.h Common)
+
+OpenSimAddLibrary(KIT Common
     LINKLIBS ${Simbody_LIBRARIES} ${BTK_LIBRARIES}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    TESTDIRS "Test"
-    )
-
-    
+    TESTDIRS "Test")
+add_dependencies(osimCommon CommonPCH)

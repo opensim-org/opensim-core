@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "WrapObjectSet.h"
+
 
 using namespace std;
 using namespace OpenSim;

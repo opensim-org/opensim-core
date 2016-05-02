@@ -20,15 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "Delp1990Muscle_Deprecated.h"
-#include <OpenSim/Common/SimmSpline.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -414,7 +405,7 @@ double Delp1990Muscle_Deprecated::computeActuation(const SimTK::State& s) const
  *
  * @return Pointer to the active force-length curve (Function).
  */
-Function* Delp1990Muscle_Deprecated::getActiveForceLengthCurve() const
+OpenSim::Function* Delp1990Muscle_Deprecated::getActiveForceLengthCurve() const
 {
     return _activeForceLengthCurve;
 }
@@ -426,7 +417,7 @@ Function* Delp1990Muscle_Deprecated::getActiveForceLengthCurve() const
  * @param aActiveForceLengthCurve Pointer to an active force-length curve (Function).
  * @return Whether active force-length curve was successfully changed.
  */
-bool Delp1990Muscle_Deprecated::setActiveForceLengthCurve(Function* aActiveForceLengthCurve)
+bool Delp1990Muscle_Deprecated::setActiveForceLengthCurve(OpenSim::Function* aActiveForceLengthCurve)
 {
     _activeForceLengthCurve = aActiveForceLengthCurve;
     return true;
@@ -438,7 +429,7 @@ bool Delp1990Muscle_Deprecated::setActiveForceLengthCurve(Function* aActiveForce
  *
  * @return Pointer to the passive force-length curve (Function).
  */
-Function* Delp1990Muscle_Deprecated::getPassiveForceLengthCurve() const
+OpenSim::Function* Delp1990Muscle_Deprecated::getPassiveForceLengthCurve() const
 {
     return _passiveForceLengthCurve;
 }
@@ -450,7 +441,7 @@ Function* Delp1990Muscle_Deprecated::getPassiveForceLengthCurve() const
  * @param aPassiveForceLengthCurve Pointer to a passive force-length curve (Function).
  * @return Whether passive force-length curve was successfully changed.
  */
-bool Delp1990Muscle_Deprecated::setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve)
+bool Delp1990Muscle_Deprecated::setPassiveForceLengthCurve(OpenSim::Function* aPassiveForceLengthCurve)
 {
     _passiveForceLengthCurve = aPassiveForceLengthCurve;
     return true;
@@ -462,7 +453,7 @@ bool Delp1990Muscle_Deprecated::setPassiveForceLengthCurve(Function* aPassiveFor
  *
  * @return Pointer to the tendon force-length curve (Function).
  */
-Function* Delp1990Muscle_Deprecated::getTendonForceLengthCurve() const
+OpenSim::Function* Delp1990Muscle_Deprecated::getTendonForceLengthCurve() const
 {
     return _tendonForceLengthCurve;
 }
@@ -474,7 +465,7 @@ Function* Delp1990Muscle_Deprecated::getTendonForceLengthCurve() const
  * @param aTendonForceLengthCurve Pointer to a tendon force-length curve (Function).
  * @return Whether tendon force-length curve was successfully changed.
  */
-bool Delp1990Muscle_Deprecated::setTendonForceLengthCurve(Function* aTendonForceLengthCurve)
+bool Delp1990Muscle_Deprecated::setTendonForceLengthCurve(OpenSim::Function* aTendonForceLengthCurve)
 {
     _tendonForceLengthCurve = aTendonForceLengthCurve;
     return true;
@@ -486,7 +477,7 @@ bool Delp1990Muscle_Deprecated::setTendonForceLengthCurve(Function* aTendonForce
  *
  * @return Pointer to the force-velocity curve (Function).
  */
-Function* Delp1990Muscle_Deprecated::getForceVelocityCurve() const
+OpenSim::Function* Delp1990Muscle_Deprecated::getForceVelocityCurve() const
 {
     return _forceVelocityCurve;
 }
@@ -498,7 +489,7 @@ Function* Delp1990Muscle_Deprecated::getForceVelocityCurve() const
  * @param aForceVelocityCurve Pointer to a force-velocity curve (Function).
  * @return Whether force-velocity curve was successfully changed.
  */
-bool Delp1990Muscle_Deprecated::setForceVelocityCurve(Function* aForceVelocityCurve)
+bool Delp1990Muscle_Deprecated::setForceVelocityCurve(OpenSim::Function* aForceVelocityCurve)
 {
     _forceVelocityCurve = aForceVelocityCurve;
     return true;

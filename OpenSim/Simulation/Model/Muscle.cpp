@@ -24,17 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Muscle.h"
 
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "ConditionalPathPoint.h"
-#include "PointForceDirection.h"
-#include "GeometryPath.h"
 
-#include "Model.h"
-
-#include <OpenSim/Common/XMLDocument.h>
 
 //=============================================================================
 // STATICS

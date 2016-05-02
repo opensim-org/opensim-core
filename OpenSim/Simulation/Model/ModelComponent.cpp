@@ -21,9 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDES
-#include "OpenSim/Simulation/Model/ModelComponent.h"
-#include "OpenSim/Simulation/Model/Model.h"
+
 
 using namespace SimTK;
 

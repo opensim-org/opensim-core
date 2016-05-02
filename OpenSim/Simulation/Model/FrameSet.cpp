@@ -21,9 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "FrameSet.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ComponentSet.h>
+
 
 using namespace std;
 using namespace OpenSim;

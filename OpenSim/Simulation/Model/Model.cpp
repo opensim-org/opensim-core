@@ -26,47 +26,7 @@
 // INCLUDES
 //=============================================================================
 
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlLinearNode.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/AssemblySolver.h>
-#include <OpenSim/Simulation/CoordinateReference.h>
 
-#include "SimTKcommon/internal/SystemGuts.h"
-
-#include "Model.h"
-
-#include "Muscle.h"
-#include "Ligament.h"
-#include "CoordinateSet.h"
-#include "FrameSet.h"
-#include "BodySet.h"
-#include "AnalysisSet.h"
-#include "ForceSet.h"
-#include "ControllerSet.h"
-#include "Analysis.h"
-#include "ForceAdapter.h"
-#include "Actuator.h"
-#include "MarkerSet.h"
-#include "ContactGeometrySet.h"
-#include "ProbeSet.h"
-#include "ComponentSet.h"
-#include <iostream>
-#include <string>
-#include <cmath>
 
 using namespace std;
 using namespace OpenSim;

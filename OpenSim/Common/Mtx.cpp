@@ -25,9 +25,6 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Mtx.h"
-#include <string.h> // for memcpy in Linux
 
 
 //=============================================================================

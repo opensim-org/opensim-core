@@ -19,15 +19,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-//==============================================================================
-// INCLUDES
-//==============================================================================
-#include "Thelen2003Muscle_Deprecated.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 //==============================================================================
 // STATICS
 //==============================================================================

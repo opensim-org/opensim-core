@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "PathPointSet.h"
+
 
 using namespace std;
 using namespace OpenSim;

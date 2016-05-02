@@ -21,27 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Force.h>
-#include <SimTKmath.h>
-#include <SimTKlapack.h>
-#include "InverseDynamics.h"
-
-
-
 using namespace OpenSim;
 using namespace std;
 

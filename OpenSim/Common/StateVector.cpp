@@ -27,9 +27,6 @@
 
 
 // INCLUDES
-#include "IO.h"
-#include "StateVector.h"
-#include "SimTKcommon.h"
 
 
 

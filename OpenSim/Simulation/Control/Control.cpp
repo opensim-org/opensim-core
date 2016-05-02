@@ -24,13 +24,6 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property_Deprecated.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include "Control.h"
-
 
 
 

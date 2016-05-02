@@ -26,8 +26,9 @@
 //=============================================================================
 // INCLUDES and STATICS
 //=============================================================================
-#include "Umberger2010MuscleMetabolicsProbe.h"
-#include <OpenSim/Simulation/Model/Muscle.h>
+
+
+
 //#define DEBUG_METABOLICS
 
 using namespace std;

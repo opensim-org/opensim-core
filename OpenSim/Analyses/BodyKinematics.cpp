@@ -21,19 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include "BodyKinematics.h"
-
-
-
 using namespace OpenSim;
 using namespace std;
 

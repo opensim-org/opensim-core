@@ -27,8 +27,7 @@
 
 
 // INCLUDES
-#include "Function.h"
-#include "PropertyDbl.h"
+
 
 
 using namespace OpenSim;

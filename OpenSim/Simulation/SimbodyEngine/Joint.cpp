@@ -24,11 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Joint.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
+
+
 
 //=============================================================================
 // STATICS

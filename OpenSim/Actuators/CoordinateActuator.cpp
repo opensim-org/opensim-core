@@ -21,16 +21,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-//==============================================================================
-// INCLUDES
-//==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-
-#include "CoordinateActuator.h"
-
 using namespace OpenSim;
 using namespace std;
 

@@ -24,12 +24,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-
-#include "BodyActuator.h"
-
 using namespace OpenSim;
 using namespace std;
 using SimTK::Vec3;
@@ -108,9 +102,9 @@ void BodyActuator::setBody(const Body& body)
 /**
 * Get the Body to which the BodyActuator is applied
 */
-const Body& BodyActuator::getBody() const
+const OpenSim::Body& BodyActuator::getBody() const
 {
-    return getConnectee<Body>("body");
+    return getConnectee<OpenSim::Body>("body");
 }
 
 //==============================================================================

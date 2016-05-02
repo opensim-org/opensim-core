@@ -21,8 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ConstraintSet.h"
-#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+
 
 using namespace std;
 using namespace OpenSim;

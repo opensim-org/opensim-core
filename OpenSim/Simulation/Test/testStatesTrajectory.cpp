@@ -21,11 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <random>
-#include <cstdio>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;

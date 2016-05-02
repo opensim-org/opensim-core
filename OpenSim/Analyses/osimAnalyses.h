@@ -22,18 +22,45 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Object.h>
 
-#include "Kinematics.h"
+#include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
+#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
+
 #include "Actuation.h"
-#include "ForceReporter.h"
-#include "PointKinematics.h"
 #include "BodyKinematics.h"
-#include "MuscleAnalysis.h"
-#include "JointReaction.h"
-#include "StaticOptimization.h"
-#include "StatesReporter.h"
+#include "ForceReporter.h"
 #include "InducedAccelerations.h"
+#include "InducedAccelerationsSolver.h"
+#include "InverseDynamics.h"
+#include "JointReaction.h"
+#include "Kinematics.h"
+#include "MuscleAnalysis.h"
+#include "PointKinematics.h"
 #include "ProbeReporter.h"
-#include "RegisterTypes_osimAnalyses.h" // to expose RegisterTypes_Analyses
+#include "RegisterTypes_osimAnalyses.h"
+#include "StatesReporter.h"
+#include "StaticOptimization.h"
+#include "StaticOptimizationTarget.h"
+#include "osimAnalysesDLL.h"
 
 #endif // _osimAnalyses_h_
