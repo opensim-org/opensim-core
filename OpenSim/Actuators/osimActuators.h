@@ -22,13 +22,23 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-//#include "OpenSim/Simulation/osimSimulation.h"
-#include <OpenSim/Common/DebugUtilities.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/SimmSpline.h>
+#include "OpenSim/Common/Constant.h"
+#include "OpenSim/Common/DebugUtilities.h"
+#include "OpenSim/Common/PiecewiseConstantFunction.h"
+#include "OpenSim/Common/SimmMacros.h"
+#include "OpenSim/Common/SimmSpline.h"
+#include "OpenSim/Common/Sine.h"
 
+#include "OpenSim/Simulation/Control/PrescribedController.h"
+#include "OpenSim/Simulation/Manager/Manager.h"
+#include "OpenSim/Simulation/Model/ActuatorPowerProbe.h"
+#include "OpenSim/Simulation/Model/JointInternalPowerProbe.h"
 #include "OpenSim/Simulation/Model/Model.h"
+#include "OpenSim/Simulation/SimbodyEngine/BallJoint.h"
+#include "OpenSim/Simulation/SimbodyEngine/FreeJoint.h"
 #include "OpenSim/Simulation/SimbodyEngine/SliderJoint.h"
+#include "OpenSim/Simulation/SimbodyEngine/WeldJoint.h"
+#include "OpenSim/Simulation/Wrap/WrapCylinder.h"
 
 #include "ActiveForceLengthCurve.h"
 #include "BodyActuator.h"
