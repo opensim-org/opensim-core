@@ -55,16 +55,6 @@ public:
         "Functions (one per control) describing the controls for actuators"
         "specified for this controller." );
 
-    /** (Optional) prescribed controls from a storage file  */
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
-        "Controls storage (.sto) file containing controls for individual "
-        "actuators in the model. Column labels must match actuator names.");
-
-    /** (Optional) interpolation method for controls in storage.  */
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
-        "Interpolate the controls file data using piecewise: '0-constant', "
-        "'1-linear', '3-cubic' or '5-quintic' functions.");
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -75,13 +65,6 @@ public:
     /** Default constructor */
     PrescribedController();
 
-    /** Convenience constructor get controls from file
-     * @param controlsFileName  string containing the controls storage (.sto) 
-     * @param interpMethodType  int 0-constant, 1-linear, 3-cubic, 5-quintic
-     *                          defaults to linear.
-     */
-    PrescribedController(const std::string& controlsFileName, 
-                         int interpMethodType = 1);
 
     /** Destructor */
     virtual ~PrescribedController();
@@ -116,16 +99,9 @@ public:
     void prescribeControlForActuator(const std::string actName,
                                      Function *prescribedFunction);
 
-protected:
-    /** Model component interface */
-    void extendConnectToModel(Model& model) override;
 private:
     // construct and initialize properties
     void constructProperties() override;
-
-    // utility
-    Function* createFunctionFromData(const std::string& name,
-        const Array<double>& time, const Array<double>& data);
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
