@@ -106,6 +106,9 @@ public:
         to track a desired trajectory of coordinate values. */
     virtual void track(SimTK::State &s);
 
+    /** Read access to the underlying SimTK::Assembler. */
+    SimTK::Assembler& updAssembler() { return *_assembler; }
+
 protected:
     /** Internal method to convert the CoordinateReferences into goals of the 
         assembly solver. Subclasses, can add and override to include other goals  
@@ -117,6 +120,7 @@ protected:
         is called at the end of setupGoals() and beginning of track()*/
     virtual void updateGoals(const SimTK::State &s);
 
+    /** Write access to the underlying SimTK::Assembler. */
     SimTK::Assembler& updAssembler() { return *_assembler; }
 
 private:
