@@ -116,9 +116,10 @@ public:
      * torque.  To specify them, call setForceFunctions(), setTorqueFunctions(),
      * and setPointFunctions().
      *
+     * @param name      the name of the PrescribedForce
      * @param frame     the PhysicalFrame to apply the force to
      */
-    explicit PrescribedForce(const OpenSim::PhysicalFrame& frame);
+    explicit PrescribedForce(const std::string name, const OpenSim::PhysicalFrame& frame);
     /** Construct from an XML element. **/
     explicit PrescribedForce(SimTK::Xml::Element& aNode);
 

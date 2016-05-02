@@ -49,9 +49,10 @@ PrescribedForce::PrescribedForce()
 /**
  * Convenience constructor.
  */
-PrescribedForce::PrescribedForce(const PhysicalFrame& frame):
+PrescribedForce::PrescribedForce(const std::string name, const PhysicalFrame& frame):
     PrescribedForce()
 {
+    setName(name);
     updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
