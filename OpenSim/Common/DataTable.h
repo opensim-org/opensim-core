@@ -40,10 +40,6 @@ namespace OpenSim {
 class InvalidRow : public Exception {
 public:
     using Exception::Exception;
-    // InvalidRow(const std::string& file,
-    //            size_t line,
-    //            const std::string& func) :
-    //     Exception(file, line, func) {}
 };
 
 class IncorrectNumColumns : public InvalidRow {
@@ -112,6 +108,11 @@ public:
 
         addMessage(msg);
     }
+};
+
+class EmptyTable : public Exception {
+public:
+    using Exception::Exception;
 };
 
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
