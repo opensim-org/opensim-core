@@ -43,13 +43,12 @@ PrescribedForce::PrescribedForce()
 {
     setNull();
     constructInfrastructure();
-
 }
 
 /**
  * Convenience constructor.
  */
-PrescribedForce::PrescribedForce(const std::string name, const PhysicalFrame& frame):
+PrescribedForce::PrescribedForce(const std::string& name, const PhysicalFrame& frame):
     PrescribedForce()
 {
     setName(name);
