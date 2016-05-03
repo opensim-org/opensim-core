@@ -70,36 +70,45 @@ macro(OpenSimAddPythonModule)
     set(_interface_file
         "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
 
-    # Assemble dependencies.
-    set(_dependencies
-        "swig/python_preliminaries.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/preliminaries.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/${OSIMSWIGPY_MODULE}.i"
-        )
-    if(NOT ${OSIMSWIGPY_MODULE} STREQUAL "simbody")
-        list(APPEND _dependencies
-            "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders_${OSIMSWIGPY_MODULE}.h")
+    # We run swig once to get dependencies and then again to actually generate
+    # the wrappers. This variable holds the parts of the swig command that
+    # are shared between both invocations.
+    set(_swig_common_args -c++ -python
+            -I${OpenSim_SOURCE_DIR}
+            -I${OpenSim_SOURCE_DIR}/Bindings/
+            -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
+            )
+
+    # Assemble dependencies. This command is run during CMake's configure step.
+    execute_process(COMMAND ${SWIG_EXECUTABLE} ${_swig_common_args}
+            -MM # List dependencies, but omit files in SWIG library.
+            ${_interface_file}
+        OUTPUT_VARIABLE _dependencies_makefile
+        RESULT_VARIABLE _successfully_got_dependencies
+            )
+    # Clean up the output, since it's in the form of a makefile
+    # (and we just want a list of file paths).
+    if(${_successfully_got_dependencies} EQUAL 0) # return code 0 is success.
+        # '^.*:' matches the first line of the makefile (the output file path).
+        # '\\\\' matches a single \ (escape for CMake, and escape for regex).
+        string(REGEX REPLACE "(^.*:|\\\\\n)" "" _dependencies
+            ${_dependencies_makefile})
+        # Replace spaces with semicolons to create a list of file paths.
+        separate_arguments(_dependencies)
+    else()
+        unset(_dependencies) # In case it has a value for previous modules.
+        # If someone ends up here, it's a bug in this CMakeLists.txt.
+        message(AUTHOR_WARNING
+            "Could not determine dependencies for SWIG module ${OSIMSWIGPY_MODULE}.")
     endif()
-    foreach(_depmodule ${OSIMSWIGPY_DEPENDS})
-        list(APPEND _dependencies
-            "swig/python_${_depmodule}.i"
-            "${OpenSim_SOURCE_DIR}/Bindings/${_depmodule}.i")
-        if(NOT ${_depmodule} STREQUAL "simbody")
-            list(APPEND _dependencies
-                "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders_${_depmodule}.h")
-        endif()
-    endforeach()
 
     # Run swig.
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
-        COMMAND ${SWIG_EXECUTABLE} -v -c++  -python
+        COMMAND ${SWIG_EXECUTABLE} ${_swig_common_args}
             #-debug-tmused # Which typemaps were used?
-            -I${OpenSim_SOURCE_DIR}
-            -I${OpenSim_SOURCE_DIR}/Bindings/
-            -I${Simbody_INCLUDE_DIR}
-            ${SWIG_FLAGS}
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_interface_file}
@@ -185,13 +194,11 @@ endmacro()
 # Build python modules (generate binding source code and compile it).
 # ===================================================================
 OpenSimAddPythonModule(MODULE simbody)
-OpenSimAddPythonModule(MODULE common DEPENDS simbody)
-OpenSimAddPythonModule(MODULE simulation DEPENDS common simbody)
-OpenSimAddPythonModule(MODULE actuators DEPENDS simulation common simbody)
-OpenSimAddPythonModule(MODULE analyses
-                       DEPENDS actuators simulation common simbody)
-OpenSimAddPythonModule(MODULE tools
-                       DEPENDS analyses actuators simulation common simbody)
+OpenSimAddPythonModule(MODULE common)
+OpenSimAddPythonModule(MODULE simulation)
+OpenSimAddPythonModule(MODULE actuators)
+OpenSimAddPythonModule(MODULE analyses)
+OpenSimAddPythonModule(MODULE tools)
 
 
 # Copy files to create complete package in the build tree.
