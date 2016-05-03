@@ -122,7 +122,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     osimModel->addJoint(&free);
 
     // Add a PrescribedForce.
-    PrescribedForce force(ball);
+    PrescribedForce force("forceOnBall", ball);
     if (forceX != NULL)
         force.setForceFunctions(forceX, forceY, forceZ);
     if (pointX != NULL)
