@@ -138,20 +138,20 @@ int main()
             numModelComponentsWithStateVariables++;
         }
         //Now test a std::iterator method
-        ComponentList<ModelComponent> allModelComps = model.getComponentList<ModelComponent>();
-        ComponentList<ModelComponent>::const_iterator skipIter = allModelComps.begin();
-        int countSkipComponent = 0;
-        while (skipIter != allModelComps.end()){
+        ComponentList<Frame> allFrames = model.getComponentList<Frame>();
+        ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
+        int countSkipFrames = 0;
+        while (skipIter != allFrames.end()){
             cout << skipIter->getConcreteClassName() << ":" << skipIter->getFullPathName() << endl;
             std::advance(skipIter, 2);
-            countSkipComponent++;
+            countSkipFrames++;
         }
 
         // TODO: Hard-coding these numbers is not ideal. As we introduce more components
         // to recompose existing components, this will need continual updating. For example,
         // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
         // and orientation offsets.
-        ASSERT(numComponents == 77); 
+        ASSERT(numComponents == 130); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
@@ -159,10 +159,9 @@ int main()
         ASSERT(numModelComponentsWithStateVariables == 10);
         // Below updated from 1 to 3 to account for offset frame and its geometry added to the Joint
         ASSERT(numJntComponents == 3);
-        // Unclear what the following tests. But given that 4 more components were added
-        // and skipIter seems to be skipping by 2 (counting every other ModelComponent),
-        // then 77 components - 35 mesh geometry - 5 frame geom = 37 now /2 = 18 
-        ASSERT(countSkipComponent == 18);
+        // Test using the iterator to skip over every other Component (Frame in this case)
+        // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
+        ASSERT(countSkipFrames == 3);
     }
     catch (Exception &ex) {
         ex.print(std::cout);
