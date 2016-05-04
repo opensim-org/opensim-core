@@ -93,7 +93,11 @@ public:
     /** Convenience load markers from a file */
     MarkersReference(const std::string& markerFileName,
                      Units modelUnits=Units(Units::Meters));
-    /** Form a Reference from Marker data (taking ownership) and weights */
+    /** Form a Reference from MarkerData and corresponding marker weights. Note
+        The MarkersReference take ownership of the pointer to the MarkerData. 
+        The marker weights are used to initialize the weightings of the markers
+        provided by the Reference. Marker weights are associated to markers by
+        name.*/
     MarkersReference(MarkerData* markerData,
         const Set<MarkerWeight>* markerWeightSet=nullptr);
 
@@ -132,7 +136,9 @@ public:
     double getSamplingFrequency() {return _markerData->getDataRate(); }
     Set<MarkerWeight> &updMarkerWeightSet() {return upd_marker_weights(); }
     /** %Set the marker weights from a set of MarkerWeights. As of OpenSim 4.0
-        the input set is treated as const and a copy of the Set is made. */
+        the input set is const and a copy of the Set is used internally. 
+        Therefore, subsequent changes to the Set of MarkerWeights will have
+        no effect on the marker weights associated with this Reference. */
     void setMarkerWeightSet(const Set<MarkerWeight>& markerWeights);
     void setDefaultWeight(double weight) { set_default_weight(weight); }
 
