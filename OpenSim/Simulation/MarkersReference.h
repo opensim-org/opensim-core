@@ -131,8 +131,10 @@ public:
     //--------------------------------------------------------------------------
     double getSamplingFrequency() {return _markerData->getDataRate(); }
     Set<MarkerWeight> &updMarkerWeightSet() {return upd_marker_weights(); }
+    /** %Set the marker weights from a set of MarkerWeights. As of OpenSim 4.0
+        the input set is treated as const and a copy of the Set is made. */
     void setMarkerWeightSet(const Set<MarkerWeight>& markerWeights);
-    void setDefaultWeight(double weight) { upd_default_weight() = weight; }
+    void setDefaultWeight(double weight) { set_default_weight(weight); }
 
 private:
     void constructProperties();
