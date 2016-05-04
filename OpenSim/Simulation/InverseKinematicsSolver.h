@@ -142,7 +142,7 @@ private:
 
     // Markers collectively form a single assembly condition for the SimTK::Assembler
     // and the memory is managed by the Assembler
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Markers>> _markerAssemblyCondition;
+    SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver
