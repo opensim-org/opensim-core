@@ -239,14 +239,13 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
     cout << endl << "Step 3: Placing markers on model" << endl;
 
-    /* Load the static pose marker file, and average all the
-     * frames in the user-specified time range.
-     */
-    std::unique_ptr<MarkerData> staticPose(
-        new MarkerData(aPathToSubject + _markerFileName) );
     if (_timeRange.getSize()<2) 
         throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
 
+    /* Load the static pose marker file, and average all the
+    * frames in the user-specified time range.
+    */
+    MarkerData* staticPose = new MarkerData(aPathToSubject + _markerFileName);
     staticPose->averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
     staticPose->convertToUnits(aModel->getLengthUnits());
 
@@ -261,7 +260,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
-    MarkersReference markersReference(staticPose.release(), &markerWeightSet);
+    // MarkersReference takes ownership of marker data (staticPose)
+    MarkersReference markersReference(staticPose, &markerWeightSet);
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // Load the coordinate data
