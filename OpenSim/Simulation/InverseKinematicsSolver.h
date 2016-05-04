@@ -137,14 +137,13 @@ private:
     // The marker reference values and weightings
     MarkersReference &_markersReference;
 
-    // Markers collectively form a single assembly condition for the SimTK::Assembler
-    // and the memory is managed by the Assembler
-    SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
-
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
 
-    std::unique_ptr<SimTK::OrientationSensors> _orientationAssemblyCondition;
+    // Markers collectively form a single assembly condition for the SimTK::Assembler
+    // and the memory is managed by the Assembler
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Markers>> _markerAssemblyCondition;
+
 //=============================================================================
 };  // END of class InverseKinematicsSolver
 //=============================================================================

@@ -240,7 +240,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     }
 
     // Add marker goal to the ik objective
-    updAssembler().adoptAssemblyGoal(_markerAssemblyCondition.get());
+    updAssembler().adoptAssemblyGoal(_markerAssemblyCondition.release());
     // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
     // and we can use an array of just the data for updating
     _markerAssemblyCondition->defineObservationOrder(markerNames);
