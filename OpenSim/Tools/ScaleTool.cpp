@@ -230,7 +230,7 @@ Model* ScaleTool::createModel() const
     /* Make the generic model. */
     if (!_genericModelMakerProp.getValueIsDefault())
     {
-        Model *model = _genericModelMaker.processModel(_pathToSubject);
+        Model *model = getGenericModelMaker().processModel(_pathToSubject);
         if (!model)
         {
             cout << "===ERROR===: Unable to load generic model." << endl;
@@ -255,7 +255,7 @@ bool ScaleTool::run() const {
 
     if (!isDefaultModelScaler() && getModelScaler().getApply())
     {
-        ModelScaler& scaler = getModelScaler();
+        const ModelScaler& scaler = getModelScaler();
         if(!scaler.processModel(model.get(), getPathToSubject(), getSubjectMass())) {
             return false;
         }
@@ -267,7 +267,7 @@ bool ScaleTool::run() const {
 
     if (!isDefaultMarkerPlacer())
     {
-        MarkerPlacer& placer = getMarkerPlacer();
+        const MarkerPlacer& placer = getMarkerPlacer();
         if(!placer.processModel(model.get(), getPathToSubject())) {
             return false;
         }

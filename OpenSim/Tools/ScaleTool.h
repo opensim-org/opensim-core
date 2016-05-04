@@ -103,20 +103,14 @@ public:
 
     Model* createModel() const;
     /* Query the subject for different parameters */
-    GenericModelMaker& getGenericModelMaker() const
-    {
-        return _genericModelMaker;
-    }
+    const GenericModelMaker& getGenericModelMaker() const
+    { return _genericModelMaker; }
 
-    ModelScaler& getModelScaler() const
-    {
-        return _modelScaler;
-    }
+    const ModelScaler& getModelScaler() const
+    { return _modelScaler; }
 
-    MarkerPlacer& getMarkerPlacer() const
-    {
-        return _markerPlacer;
-    }
+    const MarkerPlacer& getMarkerPlacer() const
+    { return _markerPlacer; }
 
     /** Run the scale tool. This first runs the ModelScaler, then runs the
      * MarkerPlacer. This is the method called by the command line `scale`

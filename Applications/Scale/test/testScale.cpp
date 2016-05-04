@@ -156,7 +156,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
 
     if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
-        MarkerPlacer& placer = subject->getMarkerPlacer();
+        const MarkerPlacer& placer = subject->getMarkerPlacer();
         if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
             throw Exception("testScale failed to place markers");
     }
@@ -188,7 +188,7 @@ void scaleModelWithLigament()
 
     // Keep track of the folder containing setup file, will be used to locate results to compare against
     setupFilePath = scaleTool->getPathToSubject();
-    ModelScaler& scaler = scaleTool->getModelScaler();
+    const ModelScaler& scaler = scaleTool->getModelScaler();
     const std::string& scaledModelFile = scaler.getOutputModelFileName();
     const std::string& std_scaledModelFile = "std_toyLigamentModelScaled.osim";
 
