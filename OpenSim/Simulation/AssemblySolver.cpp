@@ -242,7 +242,6 @@ void AssemblySolver::assemble(SimTK::State &state)
     to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)
 {
-
     // move the target locations or angles, etc... just do not change number of goals
     // and their type (constrained vs. weighted)
 
@@ -284,5 +283,22 @@ void AssemblySolver::track(SimTK::State &s)
         throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
+
+const SimTK::Assembler& AssemblySolver::getAssembler() const
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::getAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
+SimTK::Assembler& AssemblySolver::updAssembler()
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::updAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
 
 } // end of namespace OpenSim
