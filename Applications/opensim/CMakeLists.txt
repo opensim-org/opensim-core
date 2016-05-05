@@ -8,6 +8,7 @@ OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim
             opensim_print_xml.h
             opensim_info.h
             opensim_update_file.h
+            parse_arguments.h
             docopt/docopt.h
             docopt/docopt.cpp
             docopt/docopt_private.h

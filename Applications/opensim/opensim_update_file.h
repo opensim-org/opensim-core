@@ -23,6 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <iostream>
+
+#include <docopt.h>
+#include "parse_arguments.h"
+
+#include <OpenSim/OpenSim.h>
+
 static const char HELP_UPDATE_FILE[] =
 R"(Update an .osim, .xml (e.g., setup) or .sto file to this version's format.
 
@@ -49,7 +56,7 @@ int update_file(int argc, const char** argv) {
 
     using namespace OpenSim;
 
-    std::map<std::string, docopt::value> args = docopt::docopt(
+    std::map<std::string, docopt::value> args = OpenSim::parse_arguments(
             HELP_UPDATE_FILE, { argv + 1, argv + argc },
             true); // show help if requested
 

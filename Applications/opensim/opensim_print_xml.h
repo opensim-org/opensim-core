@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include <docopt.h>
+#include "parse_arguments.h"
 
 #include <OpenSim/OpenSim.h>
 
@@ -59,7 +60,7 @@ int print_xml(int argc, const char** argv) {
 
     using namespace OpenSim;
 
-    std::map<std::string, docopt::value> args = docopt::docopt(
+    std::map<std::string, docopt::value> args = OpenSim::parse_arguments(
             HELP_PRINT_XML, { argv + 1, argv + argc },
             true); // show help if requested
 

@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include <docopt.h>
+#include "parse_arguments.h"
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
@@ -86,7 +87,7 @@ int main(int argc, const char** argv) {
 
     // Parse the arguments.
     // --------------------
-    std::map<std::string, docopt::value> args = docopt::docopt(
+    std::map<std::string, docopt::value> args = OpenSim::parse_arguments(
             HELP, { argv + 1, argv + argc },
             true, // show help if requested
             "OpenSim " + GetVersionAndDate(),
