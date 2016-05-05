@@ -1,5 +1,5 @@
-#ifndef __WrapObject_h__
-#define __WrapObject_h__
+#ifndef OPENSIM_WRAP_OBJECT_H_
+#define OPENSIM_WRAP_OBJECT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapObject.h                           *
  * -------------------------------------------------------------------------- *
@@ -26,9 +26,7 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
 
 #ifdef SWIG
@@ -58,11 +56,22 @@ class PhysicalFrame;
  */
 class OSIMSIMULATION_API WrapObject : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
-
-//=============================================================================
-// DATA
-//=============================================================================
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(xyz_body_rotation, SimTK::Vec3,
+        "Body-fixed Euler angle sequence for the orientation of the WrapObject");
+
+    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
+        "Translation of the WrapObject.");
+
+    OpenSim_DECLARE_PROPERTY(display_preference, int,
+        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
+        "Display Color");
+
     enum WrapQuadrant
     {
         allQuadrants,
@@ -84,12 +93,6 @@ public:
 
 protected:
 
-    PropertyDblArray _xyzBodyRotationProp;
-    Array<double>& _xyzBodyRotation;
-
-    PropertyDblVec3 _translationProp;
-    SimTK::Vec3 & _translation;
-
     PropertyBool _activeProp;
     bool& _active;
 
@@ -108,17 +111,7 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    /** Display Preference to apply to the contact geometry.  **/
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    /** Display Color to apply to the contact geometry.  **/
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color");
 
     WrapObject();
     WrapObject(const WrapObject& aWrapObject);
@@ -133,8 +126,7 @@ public:
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody);
 
     PhysicalFrame& getBody() const { return *_body; }
-    const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
-    const double* getTranslation() const { return &_translation[0]; }
+
     bool getActive() const { return _active; }
     bool getActiveUseDefault() const { return _activeProp.getValueIsDefault(); }
     const char* getQuadrantName() const { return _quadrantName.c_str(); }
@@ -165,6 +157,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapObject_h__
+#endif // OPENSIM_WRAP_OBJECT_H_
 
 

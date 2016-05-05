@@ -49,8 +49,6 @@ using SimTK::Vec3;
  */
 WrapObject::WrapObject() :
     Component(),
-   _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
     _quadrantName(_quadrantNameProp.getValueStr())
 {
@@ -75,8 +73,6 @@ WrapObject::~WrapObject()
  */
 WrapObject::WrapObject(const WrapObject& aWrapObject) :
     Component(aWrapObject),
-   _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
     _quadrantName(_quadrantNameProp.getValueStr())
 {
@@ -104,17 +100,6 @@ void WrapObject::setNull()
  */
 void WrapObject::setupProperties()
 {
-    const double defaultRotations[] = {0.0, 0.0, 0.0};
-    _xyzBodyRotationProp.setName("xyz_body_rotation");
-    _xyzBodyRotationProp.setValue(3, defaultRotations);
-    _propertySet.append(&_xyzBodyRotationProp);
-
-    const SimTK::Vec3 defaultTranslations(0.0);
-    _translationProp.setName("translation");
-    _translationProp.setValue(defaultTranslations);
-    //_translationProp.setAllowableListSize(3);
-    _propertySet.append(&_translationProp);
-
     _activeProp.setName("active");
     _activeProp.setValue(true);
     _propertySet.append(&_activeProp);
@@ -126,6 +111,11 @@ void WrapObject::setupProperties()
 
 void WrapObject::constructProperties()
 {
+    const Vec3 defaultRotation(0.0);
+    constructProperty_xyz_body_rotation(defaultRotation);
+    const SimTK::Vec3 defaultTranslations(0.0);
+    constructProperty_translation(defaultTranslations);
+
     constructProperty_display_preference(1);
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
     defaultColor[0] = 0.0; 
@@ -141,8 +131,8 @@ void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
     setupQuadrant();
 
     SimTK::Rotation rot;
-    rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
-    _pose.set(rot, _translation);
+    rot.setRotationToBodyFixedXYZ(get_xyz_body_rotation());
+    _pose.set(rot, get_translation());
 }
 
 //_____________________________________________________________________________
@@ -157,7 +147,7 @@ void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
 {
    for (int i=0; i<3; i++)
-      _translation[i] *= aScaleFactors[i];
+      upd_translation()[i] *= aScaleFactors[i];
 }
 
 //_____________________________________________________________________________
@@ -188,8 +178,8 @@ void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) cons
  */
 void WrapObject::copyData(const WrapObject& aWrapObject)
 {
-    _xyzBodyRotation = aWrapObject._xyzBodyRotation;
-    _translation = aWrapObject._translation;
+    upd_xyz_body_rotation() = aWrapObject.get_xyz_body_rotation();
+    upd_translation() = aWrapObject.get_translation();
     _active = aWrapObject._active;
     _quadrantName = aWrapObject._quadrantName;
     _quadrant = aWrapObject._quadrant;
