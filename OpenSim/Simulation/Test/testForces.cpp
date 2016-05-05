@@ -173,10 +173,10 @@ void testExpressionBasedCoordinateForce()
     double dh = mass*gravity_vec(1)/stiffness;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("SpringMass");
+    Model osimModel{};
+    osimModel.setName("SpringMass");
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
     ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -190,25 +190,25 @@ void testExpressionBasedCoordinateForce()
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
 
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&slider);
+    osimModel.addBody(&ball);
+    osimModel.addJoint(&slider);
 
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
     // ode for basic mass-spring-dampener system
     ExpressionBasedCoordinateForce spring("ball_h", "-10*q-5*qdot");
 
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    osimModel.addAnalysis(reporter);
 
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
 
     // move ball to initial conditions
     slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
     // Compute the force at the specified times.
@@ -217,7 +217,7 @@ void testExpressionBasedCoordinateForce()
     double nsteps = 10;
     double dt = final_t/nsteps;
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-7);
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
@@ -225,9 +225,9 @@ void testExpressionBasedCoordinateForce()
     for(int i = 1; i <=nsteps; i++){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
-        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
         
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
@@ -251,9 +251,9 @@ void testExpressionBasedCoordinateForce()
 
     ASSERT(*copyOfSpring == spring);
 
-    osimModel->print("ExpressionBasedCoordinateForceModel.osim");
+    osimModel.print("ExpressionBasedCoordinateForceModel.osim");
 
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 }
 
 void testExpressionBasedPointToPointForce()
