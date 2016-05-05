@@ -361,10 +361,10 @@ void testPathSpring()
     double start_h = 0.5;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("PathSpring");
+    Model osimModel{};
+    osimModel.setName("PathSpring");
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();;
     OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
     block.attachMeshGeometry("box.vtp");
@@ -387,13 +387,13 @@ void testPathSpring()
     slider_coords[0].setName("block_h");
     slider_coords[0].setRange(positionRange);
 
-    osimModel->addBody(&block);
-    osimModel->addJoint(&weld);
+    osimModel.addBody(&block);
+    osimModel.addJoint(&weld);
 
-    osimModel->addBody(&pulleyBody);
-    osimModel->addJoint(&slider);
+    osimModel.addBody(&pulleyBody);
+    osimModel.addJoint(&slider);
 
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
     PathSpring spring("spring", restlength, stiffness, dissipation);
     spring.updGeometryPath().appendNewPathPoint("origin", block, Vec3(-0.1, 0.0 ,0.0));
@@ -410,23 +410,23 @@ void testPathSpring()
 
     // BUG in defining wrapping API requires that the Force containing the GeometryPath be
     // connected to the model before the wrap can be added
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-    //osimModel->setUseVisualizer(true);
-    SimTK::State& osim_state = osimModel->initSystem();
+    //osimModel.setUseVisualizer(true);
+    SimTK::State& osim_state = osimModel.initSystem();
 
     slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 10.0;
@@ -435,14 +435,14 @@ void testPathSpring()
     manager.integrate(osim_state);
 
     // tension should only be velocity dependent
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
 
     // Now check that the force reported by spring
     double model_force = spring.getTension(osim_state);
 
     // get acceleration of the block
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-    double hddot = osimModel->getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
+    double hddot = osimModel.getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
 
     // the tension should be half the weight of the block
     double analytical_force = -0.5*(gravity_vec(1)-hddot)*mass;
@@ -457,7 +457,7 @@ void testPathSpring()
     PathSpring *copyOfSpring = spring.clone();
     ASSERT(*copyOfSpring == spring);
     
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 }
 
 void testSpringMass()
