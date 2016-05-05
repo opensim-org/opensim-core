@@ -1199,7 +1199,7 @@ void testCoordinateLimitForce()
     double ball_radius = 0.25;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
+    auto osimModel = std::unique_ptr<Model>{new Model};
     osimModel->setName("CoordinateLimitForceTest");
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
@@ -1243,18 +1243,17 @@ void testCoordinateLimitForce()
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");
 
     // check copy
-    Model *copyModel = osimModel->clone();
+    auto copyModel = std::unique_ptr<Model>{osimModel->clone()};
 
     ASSERT(*copyModel == *loadedModel,
         "Clone of CoordinateLimitForceTest failed to be equivalent to original.");
 
     copyModel->print("cloneCoordinateLimitForceTest.osim");
-    delete osimModel;
 
-    osimModel = copyModel;
+    osimModel = std::move(copyModel);
     
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
+    ForceReporter* reporter = new ForceReporter(osimModel.get());
     osimModel->addAnalysis(reporter);
 
     SimTK::State& osim_state = osimModel->initSystem();
