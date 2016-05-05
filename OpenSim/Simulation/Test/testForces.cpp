@@ -1341,10 +1341,10 @@ void testCoordinateLimitForceRotational()
     double edge = 0.2;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("RotationalCoordinateLimitForceTest");
+    Model osimModel{};
+    osimModel.setName("RotationalCoordinateLimitForceTest");
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();;
     OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(edge,edge,edge));
     block.attachMeshGeometry("box.vtp");
     block.scale(Vec3(edge), false);
@@ -1359,10 +1359,10 @@ void testCoordinateLimitForceRotational()
     pin_coords[0].setName("theta");
     pin_coords[0].setRange(positionRange);
 
-    osimModel->addBody(&block);
-    osimModel->addJoint(&pin);
+    osimModel.addBody(&block);
+    osimModel.addJoint(&pin);
 
-    osimModel->setGravity(Vec3(0));
+    osimModel.setGravity(Vec3(0));
 
     // Define the parameters of the Coordinate Limit Force
     // For rotational coordinates, these are in Nm/degree
@@ -1373,27 +1373,27 @@ void testCoordinateLimitForceRotational()
     CoordinateLimitForce limitForce("theta", positionRange[1],  K_upper, 
              positionRange[0], K_lower,  damping, trans, true);
 
-    osimModel->addForce(&limitForce);
+    osimModel.addForce(&limitForce);
 
     // BAD: have to set memoryOwner to false or program will crash when this test is complete.
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
 
     // Start 2 degrees beyond the upper limit
     double start_q = SimTK_DEGREE_TO_RADIAN*positionRange[1] + SimTK::Pi/90;
     double start_v = 0.0;
-    const Coordinate &coord = osimModel->getCoordinateSet()[0];
+    const Coordinate &coord = osimModel.getCoordinateSet()[0];
     coord.setValue(osim_state, start_q);
     coord.setSpeedValue(osim_state, start_v);
 
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration );
 
-    CoordinateLimitForce *clf = dynamic_cast<CoordinateLimitForce *>(&osimModel->getForceSet()[0]);
+    CoordinateLimitForce *clf = dynamic_cast<CoordinateLimitForce *>(&osimModel.getForceSet()[0]);
 
     //Now check that the force reported by spring
     Array<double> model_force = clf->getRecordValues(osim_state);
@@ -1408,7 +1408,7 @@ void testCoordinateLimitForceRotational()
     //Now test lower bound
     start_q = SimTK_DEGREE_TO_RADIAN*positionRange[0] - SimTK::Pi/90;
     coord.setValue(osim_state, start_q);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration );
     model_force = clf->getRecordValues(osim_state);
 
     ASSERT_EQUAL(model_force[0]/(2*K_lower), 1.0, integ_accuracy);
@@ -1419,14 +1419,14 @@ void testCoordinateLimitForceRotational()
     ASSERT(clfPE < constSpringPE);
 
     // total system energy prior to simulation
-    double eSys0 = osimModel->getMultibodySystem().calcEnergy(osim_state);
+    double eSys0 = osimModel.getMultibodySystem().calcEnergy(osim_state);
 
     //==========================================================================
     // Perform a simulation an monitor energy conservation
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-8);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 1.0;
@@ -1436,12 +1436,12 @@ void testCoordinateLimitForceRotational()
     for(int i = 1; i <=nsteps; i++){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         double ediss = clf->getDissipatedEnergy(osim_state);
         // system KE + PE including strain energy in CLF
-        double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
-        /*double EKsys = */osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
+        double eSys = osimModel.getMultibodySystem().calcEnergy(osim_state)+ ediss;
+        /*double EKsys = */osimModel.getMultibodySystem().calcKineticEnergy(osim_state);
 
         ASSERT_EQUAL(eSys/eSys0, 1.0, integ_accuracy);
 
