@@ -792,14 +792,14 @@ void testExpressionBasedBushingForceTranslational()
     double dh = mass*gravity_vec(1)/stiffness;
     
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("ExpressionBasedBushingTranslationTest");
-    osimModel->setGravity(gravity_vec);
+    Model osimModel{};
+    osimModel.setName("ExpressionBasedBushingTranslationTest");
+    osimModel.setGravity(gravity_vec);
 
     // Create ball body and attach it to ground
     // with a vertical slider
 
-    const Ground& ground = osimModel->getGround();
+    const Ground& ground = osimModel.getGround();
 
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball.attachMeshGeometry("sphere.vtp");
@@ -813,8 +813,8 @@ void testExpressionBasedBushingForceTranslational()
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
     
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&sliderY);
+    osimModel.addBody(&ball);
+    osimModel.addJoint(&sliderY);
     
     // Create base body and attach it to ground with a weld
 
@@ -823,8 +823,8 @@ void testExpressionBasedBushingForceTranslational()
     base.scale(Vec3(ball_radius), false);
     
     WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    osimModel->addBody(&base);
-    osimModel->addJoint(&weld);
+    osimModel.addBody(&base);
+    osimModel.addJoint(&weld);
     
     // create an ExpressionBasedBushingForce that represents an
     // uncoupled, linear bushing between the ball body and welded base body
@@ -840,25 +840,25 @@ void testExpressionBasedBushingForceTranslational()
     
     spring.setName("translational_linear_bushing");
     
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
     
-    osimModel->print("ExpressionBasedBushingForceTranslationalModel.osim");
+    osimModel.print("ExpressionBasedBushingForceTranslationalModel.osim");
     
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
     
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
     
     // set the initial height of the ball on slider
     slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
     
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
     
     double final_t = 2.0;
@@ -868,9 +868,9 @@ void testExpressionBasedBushingForceTranslational()
     for(int i = 1; i <=nsteps; ++i){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
-        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
         
         // compute the height based on the analytic solution for 1-D spring-mass
         // system with zero-velocity at initial offset.
@@ -892,7 +892,7 @@ void testExpressionBasedBushingForceTranslational()
         manager.setInitialTime(dt*i);
     }
     
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
     
     manager.getStateStorage().print("expression_based_bushing_translational_model_states.sto");
     
