@@ -268,10 +268,10 @@ void testExpressionBasedPointToPointForce()
     Vec3 p2(rand.getValue(), rand.getValue(), rand.getValue());
 
     // Setup OpenSim model
-    Model *model = new Model;
-    model->setName("ExpressionBasedPointToPointForce");
+    Model model{};
+    model.setName("ExpressionBasedPointToPointForce");
     //OpenSim bodies
-    const Ground& ground = model->getGround();
+    const Ground& ground = model.getGround();
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
     ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -279,8 +279,8 @@ void testExpressionBasedPointToPointForce()
     // define body's joint
     FreeJoint free("free", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
     
-    model->addBody(&ball);
-    model->addJoint(&free);
+    model.addBody(&ball);
+    model.addJoint(&free);
 
     string expression("2/(d^2)-3.0*(d-0.2)*(1+0.0123456789*ddot)");
 
@@ -288,16 +288,16 @@ void testExpressionBasedPointToPointForce()
         new ExpressionBasedPointToPointForce("ground", p1, "ball", p2, expression);
     p2pForce->setName("P2PTestForce");
 
-    model->addForce(p2pForce);
+    model.addForce(p2pForce);
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(model);
-    model->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&model);
+    model.addAnalysis(reporter);
 
-    //model->setUseVisualizer(true);
-    SimTK::State& state = model->initSystem();
+    //model.setUseVisualizer(true);
+    SimTK::State& state = model.initSystem();
 
-    model->print("ExpressionBasedPointToPointForceModel.osim");
+    model.print("ExpressionBasedPointToPointForceModel.osim");
 
     Vector& q = state.updQ();
     Vector& u = state.updU();
@@ -310,9 +310,9 @@ void testExpressionBasedPointToPointForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(*model,  integrator);
+    Manager manager(model,  integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 1.0;
@@ -323,14 +323,14 @@ void testExpressionBasedPointToPointForce()
     //manager.getStateStorage().print("testExpressionBasedPointToPointForce.sto");
 
     // force is only velocity dependent but is only compute in Dynamics
-    model->getMultibodySystem().realize(state, Stage::Dynamics);
+    model.getMultibodySystem().realize(state, Stage::Dynamics);
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
     
     // Save the forces
     //reporter->getForceStorage().print("path_spring_forces.mot");
-    double d = model->getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
+    double d = model.getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
     const MobilizedBody& b1 = ground.getMobilizedBody();
     const MobilizedBody& b2 = ball.getMobilizedBody();
 
@@ -347,7 +347,7 @@ void testExpressionBasedPointToPointForce()
     ExpressionBasedPointToPointForce *copyOfP2pForce = p2pForce->clone();
     ASSERT(*copyOfP2pForce == *p2pForce);
 
-    model->disownAllComponents();
+    model.disownAllComponents();
 }
 
 void testPathSpring()
