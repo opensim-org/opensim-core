@@ -1237,15 +1237,15 @@ void testCoordinateLimitForce()
     osimModel->print("CoordinateLimitForceTest.osim");
 
     // Check serialization and deserialization
-    Model* loadedModel = new Model("CoordinateLimitForceTest.osim");
+    Model loadedModel{"CoordinateLimitForceTest.osim"};
 
-    ASSERT(*loadedModel == *osimModel,
+    ASSERT(loadedModel == *osimModel,
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");
 
     // check copy
     auto copyModel = std::unique_ptr<Model>{osimModel->clone()};
 
-    ASSERT(*copyModel == *loadedModel,
+    ASSERT(*copyModel == loadedModel,
         "Clone of CoordinateLimitForceTest failed to be equivalent to original.");
 
     copyModel->print("cloneCoordinateLimitForceTest.osim");
