@@ -201,7 +201,7 @@ void testExpressionBasedCoordinateForce()
     osimModel.addForce(&spring);
 
     // Create the force reporter
-    ForceReporter reporter{osimModel};
+    ForceReporter reporter{&osimModel};
     osimModel.addAnalysis(&reporter);
 
     SimTK::State& osim_state = osimModel.initSystem();
@@ -219,7 +219,7 @@ void testExpressionBasedCoordinateForce()
 
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-7);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
 
     for(int i = 1; i <=nsteps; i++){
