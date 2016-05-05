@@ -10,8 +10,9 @@ add_dependencies(testCommandLineInterface opensim-cli)
 
 # Set macros used by the test to access other build products.
 if(${CMAKE_VERSION} VERSION_LESS 3.0)
-    get_target_property(osim_cli_path opensim-cli LOCATION)
-    get_target_property(osim_actuators_lib_path osimActuators LOCATION)
+    get_target_property(osim_cli_path opensim-cli LOCATION_${CMAKE_BUILD_TYPE})
+    get_target_property(osim_actuators_lib_path osimActuators
+        LOCATION_${CMAKE_BUILD_TYPE})
 else()
     # We prefer to use generator expressions, but these are only available in
     # more recent versions of CMake.
