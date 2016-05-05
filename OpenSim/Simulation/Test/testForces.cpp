@@ -687,10 +687,10 @@ void testFunctionBasedBushingForce()
     double dh = mass*gravity_vec(1)/stiffness;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("FunctionBasedBushingTest");
+    Model osimModel{};
+    osimModel.setName("FunctionBasedBushingTest");
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -705,39 +705,39 @@ void testFunctionBasedBushingForce()
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
 
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&slider);
+    osimModel.addBody(&ball);
+    osimModel.addJoint(&slider);
 
     Vec3 rotStiffness(0);
     Vec3 transStiffness(stiffness);
     Vec3 rotDamping(0);
     Vec3 transDamping(0);
 
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
     FunctionBasedBushingForce spring("linear_bushing",
                     "ground", Vec3(0), Vec3(0), 
                     "ball", Vec3(0), Vec3(0),
                     transStiffness, rotStiffness, transDamping, rotDamping);
 
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
 
-    osimModel->print("FunctionBasedBushingForceModel.osim");
+    osimModel.print("FunctionBasedBushingForceModel.osim");
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
 
     slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 2.0;
@@ -747,9 +747,9 @@ void testFunctionBasedBushingForce()
     for(int i = 1; i <=nsteps; i++){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
-        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -765,7 +765,7 @@ void testFunctionBasedBushingForce()
         manager.setInitialTime(dt*i);
     }
 
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 
     manager.getStateStorage().print("function_based_bushing_model_states.sto");
 
