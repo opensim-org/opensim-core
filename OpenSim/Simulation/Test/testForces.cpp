@@ -915,9 +915,9 @@ void testExpressionBasedBushingForceRotational()
     double ball_radius = 0.25;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("ExpressionBasedBushingRotationalTest");
-    const Ground& ground = osimModel->getGround();
+    Model osimModel{};
+    osimModel.setName("ExpressionBasedBushingRotationalTest");
+    const Ground& ground = osimModel.getGround();
 
     // Create base body and attach it to ground with a weld
 
@@ -925,8 +925,8 @@ void testExpressionBasedBushingForceRotational()
         mass*SimTK::Inertia::sphere(ball_radius));
 
     WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
-    osimModel->addBody(&base);
-    osimModel->addJoint(&weld);
+    osimModel.addBody(&base);
+    osimModel.addJoint(&weld);
 
     // Create ball body and attach it to ground
     // with a pin joint
@@ -943,8 +943,8 @@ void testExpressionBasedBushingForceRotational()
     pin_coords[0].setName("ball_theta");
     pin_coords[0].setRange(thetaRange);
 
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&pin);
+    osimModel.addBody(&ball);
+    osimModel.addJoint(&pin);
 
     
 
@@ -962,25 +962,25 @@ void testExpressionBasedBushingForceRotational()
 
     spring.setName("rotational_linear_bushing");
 
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
 
-    osimModel->print("ExpressionBasedBushingForceRotationalModel.osim");
+    osimModel.print("ExpressionBasedBushingForceRotationalModel.osim");
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
 
     // set the initial pin joint angle
     pin_coords[0].setValue(osim_state, start_theta);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position);
 
     //=========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
     integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel, integrator);
+    Manager manager(osimModel, integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 2.0;
@@ -994,7 +994,7 @@ void testExpressionBasedBushingForceRotational()
     for (int i = 1; i <= nsteps; ++i) {
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         // compute the current rotation about the y axis
         double simulated_theta = pin_coords[0].getValue(osim_state);
@@ -1020,7 +1020,7 @@ void testExpressionBasedBushingForceRotational()
         manager.setInitialTime(dt*i);
     }
 
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 
     manager.getStateStorage().print("expression_based_bushing_rotational_model_states.sto");
 
