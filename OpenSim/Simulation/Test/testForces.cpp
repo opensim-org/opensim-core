@@ -475,10 +475,10 @@ void testSpringMass()
     double dh = mass*gravity_vec(1)/stiffness;
 
     // Setup OpenSim model
-    Model *osimModel = new Model;
-    osimModel->setName("SpringMass");
+    Model osimModel{};
+    osimModel.setName("SpringMass");
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
     ball.attachMeshGeometry("sphere.vtp");
     ball.scale(Vec3(ball_radius), false);
@@ -492,37 +492,37 @@ void testSpringMass()
     slider_coords[0].setName("ball_h");
     slider_coords[0].setRange(positionRange);
 
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&slider);
+    osimModel.addBody(&ball);
+    osimModel.addJoint(&slider);
 
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
-    PointToPointSpring spring(osimModel->updGround(), 
+    PointToPointSpring spring(osimModel.updGround(), 
         Vec3(0.,restlength,0.), 
         ball, 
         Vec3(0.), 
         stiffness, 
         restlength);
 
-    osimModel->addForce(&spring);
+    osimModel.addForce(&spring);
 
-    //osimModel->print("SpringMassModel.osim");
+    //osimModel.print("SpringMassModel.osim");
 
     // Create the force reporter
-    ForceReporter* reporter = new ForceReporter(osimModel);
-    osimModel->addAnalysis(reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-    SimTK::State& osim_state = osimModel->initSystem();
+    SimTK::State& osim_state = osimModel.initSystem();
 
     slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
     // Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-7);
-    Manager manager(*osimModel,  integrator);
+    Manager manager(osimModel,  integrator);
     manager.setInitialTime(0.0);
 
     double final_t = 2.0;
@@ -532,9 +532,9 @@ void testSpringMass()
     for(int i = 1; i <=nsteps; i++){
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+        osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
-        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
@@ -551,7 +551,7 @@ void testSpringMass()
     }
 
     // Save the forces
-    osimModel->disownAllComponents();
+    osimModel.disownAllComponents();
 
     // Before exiting lets see if copying the spring works
     PointToPointSpring *copyOfSpring = spring.clone();
