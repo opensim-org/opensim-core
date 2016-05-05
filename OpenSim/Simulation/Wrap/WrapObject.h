@@ -25,7 +25,7 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDblArray.h>
@@ -56,8 +56,8 @@ class PhysicalFrame;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapObject : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Object);
+class OSIMSIMULATION_API WrapObject : public Component {
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
 
 //=============================================================================
 // DATA

@@ -48,7 +48,7 @@ using SimTK::Vec3;
  * Default constructor.
  */
 WrapObject::WrapObject() :
-    Object(),
+    Component(),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
@@ -74,7 +74,7 @@ WrapObject::~WrapObject()
  * @param aWrapObject WrapObject to be copied.
  */
 WrapObject::WrapObject(const WrapObject& aWrapObject) :
-    Object(aWrapObject),
+    Component(aWrapObject),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblVec()),
     _active(_activeProp.getValueBool()),
