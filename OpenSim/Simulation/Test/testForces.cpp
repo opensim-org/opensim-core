@@ -201,8 +201,8 @@ void testExpressionBasedCoordinateForce()
     osimModel.addForce(&spring);
 
     // Create the force reporter
-    ForceReporter reporter{&osimModel};
-    osimModel.addAnalysis(&reporter);
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
     SimTK::State& osim_state = osimModel.initSystem();
 
