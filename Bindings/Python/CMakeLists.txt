@@ -78,41 +78,26 @@ macro(OpenSimAddPythonModule)
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
             ${SWIG_FLAGS}
+            ${_interface_file}
             )
 
-    # Assemble dependencies. This command is run during CMake's configure step.
-    execute_process(COMMAND ${SWIG_EXECUTABLE} ${_swig_common_args}
-            -MM # List dependencies, but omit files in SWIG library.
-            ${_interface_file}
-        OUTPUT_VARIABLE _dependencies_makefile
-        RESULT_VARIABLE _successfully_got_dependencies
-            )
-    # Clean up the output, since it's in the form of a makefile
-    # (and we just want a list of file paths).
-    if(${_successfully_got_dependencies} EQUAL 0) # return code 0 is success.
-        # '^.*:' matches the first line of the makefile (the output file path).
-        # '\\\\' matches a single \ (escape for CMake, and escape for regex).
-        string(REGEX REPLACE "(^.*:|\\\\\n)" "" _dependencies
-            ${_dependencies_makefile})
-        # Replace spaces with semicolons to create a list of file paths.
-        separate_arguments(_dependencies)
-    else()
-        unset(_dependencies) # In case it has a value for previous modules.
-        # If someone ends up here, it's a bug in this CMakeLists.txt.
-        message(AUTHOR_WARNING
-            "Could not determine dependencies for SWIG module ${OSIMSWIGPY_MODULE}.")
-    endif()
+    # Assemble dependencies. This macro runs a command during CMake's
+    # configure step and fills the first argument with a list of the
+    # dependencies.
+    OpenSimFindSwigFileDependencies(_${OSIMSWIGPY_MODULE}_dependencies
+        ${OSIMSWIGPY_MODULE} "${_swig_common_args}")
 
     # Run swig.
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
-        COMMAND ${SWIG_EXECUTABLE} ${_swig_common_args}
+        COMMAND ${SWIG_EXECUTABLE}
             #-debug-tmused # Which typemaps were used?
+            -v # verbose
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
-            ${_interface_file}
-        DEPENDS ${_interface_file} ${_dependencies}
+            ${_swig_common_args}
+        DEPENDS ${_${OSIMSWIGPY_MODULE}_dependencies}
             COMMENT "Generating python bindings source code with SWIG: ${OSIMSWIGPY_MODULE} module."
         )
 
