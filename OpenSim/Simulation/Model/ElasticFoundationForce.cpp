@@ -71,7 +71,7 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
                 throw (Exception(errorMessage.c_str()));
             }
             ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            contacts.addBody(set, geom.getBody().getMobilizedBody(),
+            contacts.addBody(set, geom.getFrame().getMobilizedBody(),
                     geom.createSimTKContactGeometry(),
                     geom.getTransform());
             if (dynamic_cast<ContactMesh*>(&geom) != NULL)
@@ -123,59 +123,70 @@ void ElasticFoundationForce::setTransitionVelocity(double velocity)
  */
 double ElasticFoundationForce::getStiffness()  { 
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     return get_contact_parameters().get(0).getStiffness(); 
 };
 void ElasticFoundationForce::setStiffness(double stiffness) {
-        if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
-        upd_contact_parameters()[0].setStiffness(stiffness); 
+    if (get_contact_parameters().getSize()==0)
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
+    upd_contact_parameters()[0].setStiffness(stiffness); 
 };
 double ElasticFoundationForce::getDissipation()   { 
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     return get_contact_parameters().get(0).getDissipation(); 
 };
 void ElasticFoundationForce::setDissipation(double dissipation) {
-        if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
-        upd_contact_parameters()[0].setDissipation(dissipation); 
+    if (get_contact_parameters().getSize()==0)
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
+    upd_contact_parameters()[0].setDissipation(dissipation); 
 };
 double ElasticFoundationForce::getStaticFriction()  { 
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     return get_contact_parameters().get(0).getStaticFriction(); 
 };
 void ElasticFoundationForce::setStaticFriction(double friction) {
-        if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
-        upd_contact_parameters()[0].setStaticFriction(friction); 
+    if (get_contact_parameters().getSize()==0)
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
+    upd_contact_parameters()[0].setStaticFriction(friction); 
 };
 double ElasticFoundationForce::getDynamicFriction()   { 
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     return get_contact_parameters().get(0).getDynamicFriction(); 
 };
 void ElasticFoundationForce::setDynamicFriction(double friction) {
-        if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
-        upd_contact_parameters()[0].setDynamicFriction(friction); 
+    if (get_contact_parameters().getSize()==0)
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
+    upd_contact_parameters()[0].setDynamicFriction(friction); 
 };
 double ElasticFoundationForce::getViscousFriction()   { 
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     return get_contact_parameters().get(0).getViscousFriction(); 
 };
 void ElasticFoundationForce::setViscousFriction(double friction) {
-        if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
-        upd_contact_parameters()[0].setViscousFriction(friction); 
+    if (get_contact_parameters().getSize()==0)
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
+    upd_contact_parameters()[0].setViscousFriction(friction); 
 };
 
 void ElasticFoundationForce::addGeometry(const std::string& name)
 {
     if (get_contact_parameters().getSize()==0)
-            updContactParametersSet().adoptAndAppend(new ElasticFoundationForce::ContactParameters());
+        updContactParametersSet().adoptAndAppend(
+                new ElasticFoundationForce::ContactParameters());
     upd_contact_parameters()[0].addGeometry(name);
 }
 
@@ -308,14 +319,15 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            std::string bodyName = geom.getBodyName();
-            labels.append(getName()+"."+bodyName+".force.X");
-            labels.append(getName()+"."+bodyName+".force.Y");
-            labels.append(getName()+"."+bodyName+".force.Z");
-            labels.append(getName()+"."+bodyName+".torque.X");
-            labels.append(getName()+"."+bodyName+".torque.Y");
-            labels.append(getName()+"."+bodyName+".torque.Z");
+            ContactGeometry& geom =
+                _model->updContactGeometrySet().get(params.getGeometry()[j]);
+            std::string frameName = geom.getFrameName();
+            labels.append(getName()+"."+frameName+".force.X");
+            labels.append(getName()+"."+frameName+".force.Y");
+            labels.append(getName()+"."+frameName+".force.Z");
+            labels.append(getName()+"."+frameName+".torque.X");
+            labels.append(getName()+"."+frameName+".torque.Y");
+            labels.append(getName()+"."+frameName+".torque.Z");
         }
     }
 
@@ -339,17 +351,21 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
     SimTK::Vector mobilityForces(0);
 
     //get the net force added to the system contributed by the Spring
-    simtkForce.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
+    simtkForce.calcForceContribution(state, bodyForces, particleForces,
+                                     mobilityForces);
 
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
+            const ContactGeometry& geom =
+                _model->getContactGeometrySet().get(params.getGeometry()[j]);
     
-            SimTK::Vec3 forces = bodyForces(geom.getBody().getMobilizedBodyIndex())[1];
-            SimTK::Vec3 torques = bodyForces(geom.getBody().getMobilizedBodyIndex())[0];
+            const auto& mbi = geom.getFrame().getMobilizedBodyIndex();
+            const auto& thisBodyForce = bodyForces(mbi);
+            SimTK::Vec3 forces = thisBodyForce[1];
+            SimTK::Vec3 torques = thisBodyForce[0];
 
             values.append(3, &forces[0]);
             values.append(3, &torques[0]);

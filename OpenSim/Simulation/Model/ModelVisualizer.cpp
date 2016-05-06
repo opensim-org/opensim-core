@@ -196,9 +196,8 @@ void DefaultGeometry::generateDecorations
         const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const PhysicalFrame& body = contactGeometries.get(i).getBody();
-            const Transform& X_GB = 
-                matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
+            const PhysicalFrame& body = contactGeometries.get(i).getFrame();
+            const auto& X_GB = body.getMobilizedBody().getBodyTransform(state);
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;

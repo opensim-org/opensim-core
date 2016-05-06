@@ -47,14 +47,12 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    // TODO OpenSim_DECLARE_PROPERTY(body_name, std::string,
-    // TODO     "Body name to connect the contact geometry to");
 
-    // TODO OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-    // TODO     "Location of geometry center in the body frame");
+    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+        "Location of geometry center in the body frame");
 
-    // TODO OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-    // TODO     "Orientation of geometry in the body frame");
+    OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
+        "Orientation of geometry in the body frame");
 
     OpenSim_DECLARE_PROPERTY(display_preference, int,
         "0:Hide 1:Wire 3:Flat 4:Shaded");
@@ -77,6 +75,8 @@ public:
      * location and orientation, and add that frame as a subcomponent of this
      * component with the name `frame.getName() + "_offset"`.
      *
+     * TODO explain this, that it's kinda deprecated.
+     *
      * @param location     the location of the geometry expressed in `frame`
      * @param orientation  the orientation of the geometry expressed in `frame`
      *                     as XYZ body-fixed Euler angles.
@@ -88,58 +88,36 @@ public:
 
 
     // ACCESSORS
-    // TODO /**
-    // TODO  * Get the location of the geometry within the Body it is attached to.
-    // TODO  */
-    // TODO const SimTK::Vec3& getLocation() const;
-    // TODO /**
-    // TODO  * %Set the location of the geometry within the Body it is attached to.
-    // TODO  */
-    // TODO void setLocation(const SimTK::Vec3& location);
-    // TODO /**
-    // TODO  * Get the orientation of the geometry within the Body it is attached to.
-    // TODO  */
-    // TODO const SimTK::Vec3& getOrientation() const;
-    // TODO /**
-    // TODO  * %Set the orientation of the geometry within the Body it is attached to.
-    // TODO  */
-    // TODO void setOrientation(const SimTK::Vec3& orientation);
-#ifndef SWIG
-    /**
-     * Get the PhysicalFrame this geometry is attached to.
+    /** Get the location of the geometry within the frame it is attached to.  */
+    const SimTK::Vec3& getLocation() const;
+    /** %Set the location of the geometry within the frame it is attached to. */
+    void setLocation(const SimTK::Vec3& location);
+    /** Get the orientation of the geometry within the frame it is attached to.
      */
+    const SimTK::Vec3& getOrientation() const;
+    /** %Set the orientation of the geometry within the frame it is attached to.
+     */
+    void setOrientation(const SimTK::Vec3& orientation);
+#ifndef SWIG
+    /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
 #endif
-    /**
-     * %Set the PhysicalFrame this geometry is attached to.
-     */
+    /** %Set the PhysicalFrame this geometry is attached to. */
     void setFrame(PhysicalFrame& body);
-    /**
-     * Get the path name of the PhysicalFrame this geometry is attached to.
-     */
+    /** Get the path name of the PhysicalFrame this geometry is attached to. */
     const std::string& getFrameName() const;
-    /**
-     * %Set the path name (relative or absolute) of the PhysicalFrame this
-     * geometry is attached to.
-     */
+    /** %Set the path name (relative or absolute) of the PhysicalFrame this
+     * geometry is attached to. */
     void setFrameName(const std::string& name);
-    /**
-     * Get the display_preference of this geometry.
-     */
+    /** Get the display_preference of this geometry. */
     const int getDisplayPreference();
-    /**
-     * %Set the display_preference of this geometry.
-     */
+    /** %Set the display_preference of this geometry. */
     void setDisplayPreference(const int dispPref);
-    /**
-     * Create a new SimTK::ContactGeometry based on this object.
-     */
+    /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
-    /**
-     * Get a Transform representing the position and orientation of the geometry
-     * within the Body it is attached to (*not* the "frame" that the geometry
-     * is connected to).
-     */
+    /** Get a Transform representing the position and orientation of the
+     * geometry within the Body it is attached to (*not* the "frame" that the
+     * geometry is connected to). */
     // TODO rename to findTransform (for consistency).
     SimTK::Transform getTransform() const;
 
@@ -153,18 +131,6 @@ public:
     // Override this method if geometry changes/deforms
     virtual void updateGeometry() {};
 
-    /**
-     * TODO
-     * Returns a heap-allocated %ContactGeometry that contains a
-     * PhysicalOffsetFrame as a subcomponent named `frame.getName() + "_offset".
-     * This new frame's parent is `frame` and it is offset by the given
-     * `location` and `orientation`.
-     */
-    static void setFrameWithOffset(const SimTK::Vec3& location,
-                                   const SimTK::Vec3& orientation,
-                                   PhysicalFrame& frame,
-                                   ContactGeometry& geom); // TODO const
-
     /** @name Deprecated */
     // @{
 #ifndef SWIG
@@ -174,11 +140,6 @@ public:
     DEPRECATED_14("use getFrame() instead")
     const PhysicalFrame& getBody() const;
 #endif
-    // TODO /** <b>(Deprecated)</b> Use updFrame() instead.
-    // TODO  * Get a writeable reference to the Body this geometry is attached to.
-    // TODO  */
-    // TODO DEPRECATED_14("use updFrame() instead")
-    // TODO OpenSim::PhysicalFrame& updBody();
     /** <b>(Deprecated)</b> Use setFrame() instead.
      * %Set the Body this geometry is attached to.
      */
@@ -197,8 +158,6 @@ public:
     // @}
 
 protected:
-    // ModelComponent interface
-    // TODO void extendConnectToModel(Model& aModel) override;
 
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
         override;
@@ -214,7 +173,6 @@ private:
 //=============================================================================
 
 protected:
-    // TODO SimTK::ReferencePtr<PhysicalFrame> _body;
 
 //=============================================================================
 };  // END of class ContactGeometry
