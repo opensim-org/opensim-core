@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -45,11 +45,15 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
-    PhysicalFrame& frame) : ContactGeometry()
+ContactGeometry::ContactGeometry(const PhysicalFrame& frame) :
+    ContactGeometry()
 {
     setFrame(frame);
+}
 
+ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
+    const PhysicalFrame& frame) : ContactGeometry(frame)
+{
     set_location(location);
     set_orientation(orientation);
 }
@@ -59,11 +63,6 @@ void ContactGeometry::setNull()
     setAuthors("Peter Eastman");
 }
 
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
 void ContactGeometry::constructProperties()
 {
     constructProperty_location(Vec3(0));
@@ -81,26 +80,18 @@ void ContactGeometry::constructConnectors()
 }
 
 const Vec3& ContactGeometry::getLocation() const
-{
-    return get_location();
-}
+{ return get_location(); }
 
 void ContactGeometry::setLocation(const Vec3& location)
-{
-    set_location(location);
-}
+{ set_location(location); }
 
 const Vec3& ContactGeometry::getOrientation() const
-{
-    return get_orientation();
-}
+{ return get_orientation(); }
 
 void ContactGeometry::setOrientation(const Vec3& orientation)
-{
-    set_orientation(orientation);
-}
+{ set_orientation(orientation); }
 
-SimTK::Transform ContactGeometry::getTransform() const
+SimTK::Transform ContactGeometry::findTransformInBaseFrame() const
 {
     // B: base
     // F: frame specified in the connector for this object.
@@ -116,16 +107,17 @@ SimTK::Transform ContactGeometry::getTransform() const
     return X_BF * X_FP;
 }
 
+SimTK::Transform ContactGeometry::getTransform() const
+{ return findTransformInBaseFrame(); }
+
 const PhysicalFrame& ContactGeometry::getFrame() const
 {
     return getConnector<PhysicalFrame>("frame").getConnectee();
 }
 
-void ContactGeometry::setFrame(PhysicalFrame& frame)
+void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    // TODO connect()
-    updConnector<PhysicalFrame>("frame").setConnecteeName(
-            frame.getRelativePathName(*this));
+    updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
 const std::string& ContactGeometry::getFrameName() const
@@ -139,19 +131,15 @@ void ContactGeometry::setFrameName(const std::string& name)
 }
 
 const int ContactGeometry::getDisplayPreference()
-{
-    return get_display_preference();
-}
+{ return get_display_preference(); }
 
 void ContactGeometry::setDisplayPreference(const int dispPref)
-{
-    set_display_preference(dispPref);
-}
+{ set_display_preference(dispPref); }
 
 const PhysicalFrame& ContactGeometry::getBody() const
 { return getFrame(); }
 
-void ContactGeometry::setBody(PhysicalFrame& frame)
+void ContactGeometry::setBody(const PhysicalFrame& frame)
 { setFrame(frame); }
 
 const std::string& ContactGeometry::getBodyName() const

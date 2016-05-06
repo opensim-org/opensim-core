@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,7 +35,8 @@ class ScaleSet;
 
 /** This class represents the physical shape of an object for use in contact
  * modeling.  It is an abstract class, with subclasses for particular geometric
- * representations.
+ * representations. The geometry is attached to a PhysicalFrame, which is
+ * specified using a Connector name "frame".
  *
  * @author Peter Eastman
  */
@@ -49,10 +50,10 @@ public:
 //=============================================================================
 
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "Location of geometry center in the body frame");
+        "Location of geometry center in the PhysicalFrame.");
 
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-        "Orientation of geometry in the body frame");
+        "Orientation of geometry in the PhysicalFrame.");
 
     OpenSim_DECLARE_PROPERTY(display_preference, int,
         "0:Hide 1:Wire 3:Flat 4:Shaded");
@@ -68,58 +69,55 @@ public:
     /** Construct an empty ContactGeometry. */
     ContactGeometry();
 
-    // TODO add constructor that just takes a frame.
+    /** This constructor connects this ContactGeometry to the provided `frame`,
+     * and uses the default location and orientation (both `Vec3(0)`).
+     *
+     * @param frame        the PhysicalFrame this geometry is attached to;
+     */
+    ContactGeometry(const PhysicalFrame& frame);
+
     /**
-     * Backwards-compatible convenience constructor. This constructor will
-     * create a new intermediate PhysicalOffsetFrame using the provided
-     * location and orientation, and add that frame as a subcomponent of this
-     * component with the name `frame.getName() + "_offset"`.
-     *
-     * TODO explain this, that it's kinda deprecated.
-     *
      * @param location     the location of the geometry expressed in `frame`
      * @param orientation  the orientation of the geometry expressed in `frame`
      *                     as XYZ body-fixed Euler angles.
-     * @param frame        the PhysicalFrame this geometry is attached to
+     * @param frame        the PhysicalFrame this geometry is attached to;
+     *                     this constructor connects this ContactGeometry to
+     *                     the provided `frame`
      */
     ContactGeometry(const SimTK::Vec3& location,
                     const SimTK::Vec3& orientation,
-                    PhysicalFrame& frame); // TODO this arg must be const.
+                    const PhysicalFrame& frame);
 
 
     // ACCESSORS
-    /** Get the location of the geometry within the frame it is attached to.  */
-    const SimTK::Vec3& getLocation() const;
-    /** %Set the location of the geometry within the frame it is attached to. */
-    void setLocation(const SimTK::Vec3& location);
-    /** Get the orientation of the geometry within the frame it is attached to.
-     */
-    const SimTK::Vec3& getOrientation() const;
-    /** %Set the orientation of the geometry within the frame it is attached to.
-     */
-    void setOrientation(const SimTK::Vec3& orientation);
 #ifndef SWIG
     /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
 #endif
     /** %Set the PhysicalFrame this geometry is attached to. */
-    void setFrame(PhysicalFrame& body);
+    void setFrame(const PhysicalFrame& body);
     /** Get the path name of the PhysicalFrame this geometry is attached to. */
     const std::string& getFrameName() const;
     /** %Set the path name (relative or absolute) of the PhysicalFrame this
      * geometry is attached to. */
     void setFrameName(const std::string& name);
+
     /** Get the display_preference of this geometry. */
     const int getDisplayPreference();
     /** %Set the display_preference of this geometry. */
     void setDisplayPreference(const int dispPref);
+
     /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
+
     /** Get a Transform representing the position and orientation of the
-     * geometry within the Body it is attached to (*not* the "frame" that the
-     * geometry is connected to). */
-    // TODO rename to findTransform (for consistency).
-    SimTK::Transform getTransform() const;
+     * geometry within the Body (or base frame) it is attached to (*not* the
+     * "frame" that the geometry is connected to). If `B` is the base or Body
+     * frame, `F` is the frame that this geometry is connected to, and `P` is
+     * the (imaginary) frame that is defined (relative to `F`) by the location
+     * and orientation properties of this class, then this returns
+     * `X_BF * X_FP`. */
+    SimTK::Transform findTransformInBaseFrame() const;
 
     /**
     * Scale a ContactGeometry based on XYZ scale factors for the bodies.
@@ -133,28 +131,56 @@ public:
 
     /** @name Deprecated */
     // @{
+    /** <b>(Deprecated)</b> Use get_location() instead. */
+    DEPRECATED_14("use get_location() instead")
+    const SimTK::Vec3& getLocation() const;
+
+    /** <b>(Deprecated)</b> Use set_location() instead. */
+    DEPRECATED_14("use set_location() instead")
+    void setLocation(const SimTK::Vec3& location);
+
+    /** <b>(Deprecated)</b> Use get_orientation() instead. */
+    DEPRECATED_14("use get_orientation() instead")
+    const SimTK::Vec3& getOrientation() const;
+
+    /** <b>(Deprecated)</b> Use set_orientation() instead. */
+    DEPRECATED_14("use set_orientation() instead")
+    void setOrientation(const SimTK::Vec3& orientation);
+
 #ifndef SWIG
     /** <b>(Deprecated)</b> Use getFrame() instead.
-     * Get the Body this geometry is attached to.
-     */
+     * Get the Body this geometry is attached to. */
     DEPRECATED_14("use getFrame() instead")
     const PhysicalFrame& getBody() const;
 #endif
+
     /** <b>(Deprecated)</b> Use setFrame() instead.
-     * %Set the Body this geometry is attached to.
-     */
+     * %Set the Body this geometry is attached to. */
     DEPRECATED_14("use setFrame() instead")
-    void setBody(PhysicalFrame& body);
+    void setBody(const PhysicalFrame& body);
+
     /** <b>(Deprecated)</b> Use getFrameName() instead.
-     * Get the name of the Body this geometry is attached to.
-     */
+     * Get the name of the Body this geometry is attached to. */
     DEPRECATED_14("use getFrameName() instead")
     const std::string& getBodyName() const;
+
     /** <b>(Deprecated)</b> Use setFrameName() instead.
-     * %Set the name of the Body this geometry is attached to.
-     */
+     * %Set the name of the Body this geometry is attached to. */
     DEPRECATED_14("use setFrameName() instead")
     void setBodyName(const std::string& name);
+
+    /** <b>(Deprecated) Use findTransformInBaseFrame() instead, which does the
+     * same thing.
+     *
+     * Get a Transform representing the position and orientation of the
+     * geometry within the Body (or base frame) it is attached to (*not* the
+     * "frame" that the geometry is connected to). If `B` is the base or Body
+     * frame, `F` is the frame that this geometry is connected to, and `P` is
+     * the (imaginary) frame that is defined (relative to `F`) by the location
+     * and orientation properties of this class, then this returns
+     * `X_BF * X_FP`. */
+    DEPRECATED_14("use findTransformInBaseFrame() instead")
+    SimTK::Transform getTransform() const;
     // @}
 
 protected:

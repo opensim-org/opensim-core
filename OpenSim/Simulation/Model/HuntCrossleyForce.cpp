@@ -77,7 +77,8 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
             ContactGeometry& geom = _model->updContactGeometrySet().get(
                     params.getGeometry()[j]);
             contacts.addBody(set, geom.getFrame().getMobilizedBody(),
-                    geom.createSimTKContactGeometry(), geom.getTransform());
+                    geom.createSimTKContactGeometry(),
+                    geom.findTransformInBaseFrame());
             force.setBodyParameters(
                     SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1),
                     params.getStiffness(), params.getDissipation(),

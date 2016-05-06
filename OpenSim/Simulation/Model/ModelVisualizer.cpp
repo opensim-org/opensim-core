@@ -196,8 +196,8 @@ void DefaultGeometry::generateDecorations
         const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const PhysicalFrame& body = contactGeometries.get(i).getFrame();
-            const auto& X_GB = body.getMobilizedBody().getBodyTransform(state);
+            const PhysicalFrame& frame = contactGeometries.get(i).getFrame();
+            const auto& X_GB = frame.getMobilizedBody().getBodyTransform(state);
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
@@ -206,7 +206,7 @@ void DefaultGeometry::generateDecorations
                 ContactSphere* sphere = 
                     dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
                 if (sphere != NULL) {
-                    Transform X_GW = X_GB*sphere->getTransform();
+                    Transform X_GW = X_GB*sphere->findTransformInBaseFrame();
                     geometry.push_back(
                         DecorativeSphere(sphere->getRadius())
                             .setTransform(X_GW).setResolution(_dispContactResolution)
