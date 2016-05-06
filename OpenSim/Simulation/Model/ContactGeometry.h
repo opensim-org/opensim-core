@@ -169,8 +169,8 @@ public:
     DEPRECATED_14("use setFrameName() instead")
     void setBodyName(const std::string& name);
 
-    /** <b>(Deprecated) Use findTransformInBaseFrame() instead, which does the
-     * same thing.
+    /** <b>(Deprecated)</b> Use findTransformInBaseFrame() instead, which does
+     * the same thing.
      *
      * Get a Transform representing the position and orientation of the
      * geometry within the Body (or base frame) it is attached to (*not* the
