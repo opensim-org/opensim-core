@@ -380,7 +380,7 @@ void testPathSpring()
                              mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
     OpenSim::Body block("block", mass ,Vec3(0), 
                         mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
-    block.attachGeometry(Brick{0.2, 0.1, 0.1});
+    block.attachGeometry(Brick{Vec3{0.2, 0.1, 0.1}});
     block.scale(Vec3(0.2, 0.1, 0.1), false);
     
     WrapCylinder* pulley = new WrapCylinder();
@@ -1422,7 +1422,7 @@ void testCoordinateLimitForceRotational()
     OpenSim::Body block("block", 
                         mass ,Vec3(0), 
                         mass*SimTK::Inertia::brick(edge,edge,edge));
-    block.attachGeometry(Brick{edge,edge,edge});
+    block.attachGeometry(Brick{Vec3{edge,edge,edge}});
     block.scale(Vec3(edge), false);
 
     // Add joints
@@ -1556,7 +1556,7 @@ void testExternalForce()
     OpenSim::Body tower("tower", 
                         mass, Vec3(0), 
                         mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
-    tower.attachGeometry(Brick{0.1, 1.0, 0.2});
+    tower.attachGeometry(Brick{Vec3{0.1, 1.0, 0.2}});
     tower.scale(Vec3(0.1, 1.0, 0.2));
 
     // Add joint connecting the tower to the ground and associate joint to 
@@ -1712,7 +1712,7 @@ void testExternalForce()
     // describe the applied external force
     OpenSim::Body sensor("sensor", 1 ,Vec3(0), 
                          SimTK::Inertia::brick(0.1, 0.1, 0.1));
-    sensor.attachGeometry(Brick{0.1, 0.1, 0.1});
+    sensor.attachGeometry(Brick{Vec3{0.1, 0.1, 0.1}});
     sensor.scale(Vec3(0.02, 0.1, 0.01));
 
     // locate joint at 0.3m above tower COM
