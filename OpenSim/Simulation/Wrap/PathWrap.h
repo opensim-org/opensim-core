@@ -136,7 +136,7 @@ public:
     void resetPreviousWrap();
 
 private:
-    void constructProperties();
+    void constructProperties() override;
     void setNull();
 //=============================================================================
 };  // END of class PathWrap
