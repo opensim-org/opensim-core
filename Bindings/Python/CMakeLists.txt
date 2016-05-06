@@ -114,19 +114,22 @@ macro(OpenSimAddPythonModule)
     # Used for specifying dependencies for PythonBindings.
     list(APPEND OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS ${_libname})
 
+    # We purposefully wrap deprecated functions, so no need to see such
+    # warnings.
     if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
             ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         # Turn off optimization for SWIG wrapper code. Optimization slows down
-        # compiling and also requires lots of memory. Also, there's not much to gain
-        # from an optimized wrapper file. 
+        # compiling and also requires lots of memory. Also, there's not much to
+        # gain from an optimized wrapper file. 
         # Note that the last optimization flag is what counts for GCC. So an -O0
         # later on the command line overrides a previous -O2.
-        set(_COMPILE_FLAGS "-O0")
-    
-        set_source_files_properties("${_output_cxx_file}"
-            PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
+        set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
+    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+        # TODO disable optimization on Windows.
+        set(_COMPILE_FLAGS "/wd4996")
     endif()
-    # TODO disable optimization on Windows.
+    set_source_files_properties("${_output_cxx_file}"
+        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
     
     include_directories(${OpenSim_SOURCE_DIR} 
                         ${OpenSim_SOURCE_DIR}/Vendors 
