@@ -178,7 +178,7 @@ void testExpressionBasedCoordinateForce()
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -277,7 +277,7 @@ void testExpressionBasedPointToPointForce()
     const Ground& ground = model.getGround();
     OpenSim::Body ball("ball", 
                        mass, Vec3(0), mass*SimTK::Inertia::sphere(ball_radius));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{ball_radius});
     ball.scale(Vec3(ball_radius), false);
 
     // define body's joint
@@ -380,7 +380,7 @@ void testPathSpring()
                              mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
     OpenSim::Body block("block", mass ,Vec3(0), 
                         mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
-    block.attachGeometry(Sphere{0.5});
+    block.attachGeometry(Brick{0.2, 0.1, 0.1});
     block.scale(Vec3(0.2, 0.1, 0.1), false);
     
     WrapCylinder* pulley = new WrapCylinder();
@@ -503,7 +503,7 @@ void testSpringMass()
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass ,Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -605,7 +605,7 @@ void testBushingForce()
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -724,7 +724,7 @@ void testFunctionBasedBushingForce()
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -836,7 +836,7 @@ void testExpressionBasedBushingForceTranslational()
     const Ground& ground = osimModel.getGround();
 
     OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
     
     SliderJoint sliderY("slider", 
@@ -856,7 +856,7 @@ void testExpressionBasedBushingForceTranslational()
 
     OpenSim::Body base("base_body", 
                        mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    base.attachGeometry(Sphere{0.5});
+    base.attachGeometry(Sphere{0.1});
     base.scale(Vec3(ball_radius), false);
     
     WeldJoint weld("weld", ground, Vec3(0), Vec3(0), base, Vec3(0), Vec3(0));
@@ -1265,7 +1265,7 @@ void testCoordinateLimitForce()
     const Ground& ground = osimModel->getGround();;
     OpenSim::Body ball("ball", 
                        mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(Sphere{0.5});
+    ball.attachGeometry(Sphere{0.1});
     ball.scale(Vec3(ball_radius), false);
 
     // Add joints
@@ -1422,7 +1422,7 @@ void testCoordinateLimitForceRotational()
     OpenSim::Body block("block", 
                         mass ,Vec3(0), 
                         mass*SimTK::Inertia::brick(edge,edge,edge));
-    block.attachGeometry(Sphere{0.5});
+    block.attachGeometry(Brick{edge,edge,edge});
     block.scale(Vec3(edge), false);
 
     // Add joints
@@ -1556,7 +1556,7 @@ void testExternalForce()
     OpenSim::Body tower("tower", 
                         mass, Vec3(0), 
                         mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
-    tower.attachGeometry(Sphere{0.5});
+    tower.attachGeometry(Brick{0.1, 1.0, 0.2});
     tower.scale(Vec3(0.1, 1.0, 0.2));
 
     // Add joint connecting the tower to the ground and associate joint to 
@@ -1712,7 +1712,7 @@ void testExternalForce()
     // describe the applied external force
     OpenSim::Body sensor("sensor", 1 ,Vec3(0), 
                          SimTK::Inertia::brick(0.1, 0.1, 0.1));
-    sensor.attachGeometry(Sphere{0.5});
+    sensor.attachGeometry(Brick{0.1, 0.1, 0.1});
     sensor.scale(Vec3(0.02, 0.1, 0.01));
 
     // locate joint at 0.3m above tower COM
