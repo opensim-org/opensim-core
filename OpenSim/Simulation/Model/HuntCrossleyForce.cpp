@@ -329,7 +329,7 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
         {
             const ContactGeometry& geom =
                 _model->getContactGeometrySet().get(params.getGeometry()[j]);
-            std::string frameName = geom.getFrameName();
+            std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
             labels.append(getName()+"."+frameName+".force.Z");

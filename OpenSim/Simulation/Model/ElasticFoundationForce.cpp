@@ -321,7 +321,7 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
         {
             ContactGeometry& geom =
                 _model->updContactGeometrySet().get(params.getGeometry()[j]);
-            std::string frameName = geom.getFrameName();
+            std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
             labels.append(getName()+"."+frameName+".force.Z");

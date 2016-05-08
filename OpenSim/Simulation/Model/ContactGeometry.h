@@ -90,17 +90,10 @@ public:
 
 
     // ACCESSORS
-#ifndef SWIG
     /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
-#endif
     /** %Set the PhysicalFrame this geometry is attached to. */
     void setFrame(const PhysicalFrame& body);
-    /** Get the path name of the PhysicalFrame this geometry is attached to. */
-    const std::string& getFrameName() const;
-    /** %Set the path name (relative or absolute) of the PhysicalFrame this
-     * geometry is attached to. */
-    void setFrameName(const std::string& name);
 
     /** Get the display_preference of this geometry. */
     const int getDisplayPreference();
@@ -111,12 +104,12 @@ public:
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
 
     /** Get a Transform representing the position and orientation of the
-     * geometry within the Body (or base frame) it is attached to (*not* the
-     * "frame" that the geometry is connected to). If `B` is the base or Body
-     * frame, `F` is the frame that this geometry is connected to, and `P` is
-     * the (imaginary) frame that is defined (relative to `F`) by the location
-     * and orientation properties of this class, then this returns
-     * `X_BF * X_FP`. */
+     * geometry within the base Frame (e.g., a Body or Ground) it is attached
+     * to (*not* the "frame" that the geometry is connected to). If `B` is the
+     * base or Body Frame, `F` is the PhysicalFrame that this geometry is
+     * connected to, and `P` is the frame that is defined (relative to `F`) by
+     * the location and orientation properties of this class, then this returns
+     * `X_BP = X_BF * X_FP`. */
     SimTK::Transform findTransformInBaseFrame() const;
 
     /**
@@ -147,38 +140,26 @@ public:
     DEPRECATED_14("use set_orientation() instead")
     void setOrientation(const SimTK::Vec3& orientation);
 
-#ifndef SWIG
     /** <b>(Deprecated)</b> Use getFrame() instead.
      * Get the Body this geometry is attached to. */
     DEPRECATED_14("use getFrame() instead")
     const PhysicalFrame& getBody() const;
-#endif
 
     /** <b>(Deprecated)</b> Use setFrame() instead.
      * %Set the Body this geometry is attached to. */
     DEPRECATED_14("use setFrame() instead")
     void setBody(const PhysicalFrame& body);
 
-    /** <b>(Deprecated)</b> Use getFrameName() instead.
-     * Get the name of the Body this geometry is attached to. */
-    DEPRECATED_14("use getFrameName() instead")
-    const std::string& getBodyName() const;
-
-    /** <b>(Deprecated)</b> Use setFrameName() instead.
-     * %Set the name of the Body this geometry is attached to. */
-    DEPRECATED_14("use setFrameName() instead")
-    void setBodyName(const std::string& name);
-
     /** <b>(Deprecated)</b> Use findTransformInBaseFrame() instead, which does
      * the same thing.
      *
      * Get a Transform representing the position and orientation of the
-     * geometry within the Body (or base frame) it is attached to (*not* the
-     * "frame" that the geometry is connected to). If `B` is the base or Body
-     * frame, `F` is the frame that this geometry is connected to, and `P` is
-     * the (imaginary) frame that is defined (relative to `F`) by the location
-     * and orientation properties of this class, then this returns
-     * `X_BF * X_FP`. */
+     * geometry within the base Frame (e.g., a Body or Ground) it is attached
+     * to (*not* the "frame" that the geometry is connected to). If `B` is the
+     * base or Body Frame, `F` is the PhysicalFrame that this geometry is
+     * connected to, and `P` is the frame that is defined (relative to `F`) by
+     * the location and orientation properties of this class, then this returns
+     * `X_BP = X_BF * X_FP`. */
     DEPRECATED_14("use findTransformInBaseFrame() instead")
     SimTK::Transform getTransform() const;
     // @}

@@ -93,10 +93,11 @@ void ContactGeometry::setOrientation(const Vec3& orientation)
 
 SimTK::Transform ContactGeometry::findTransformInBaseFrame() const
 {
-    // B: base
-    // F: frame specified in the connector for this object.
-    // P: the (imaginary) frame that is defined (relative to F) by the location
-    //    and orientation properties.
+    // B: base Frame (Body)
+    // F: PhysicalFrame specified in the connector for this object.
+    // P: the frame that is defined (relative to F) by the location
+    //    and orientation properties. Note: this frame does not have a
+    //    corresponding Frame object.
     const auto& X_BF = getFrame().findTransformInBaseFrame();
     SimTK::Transform X_FP(
             SimTK::Rotation(SimTK::BodyRotationSequence,
@@ -120,16 +121,6 @@ void ContactGeometry::setFrame(const PhysicalFrame& frame)
     updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
-const std::string& ContactGeometry::getFrameName() const
-{
-    return getConnector<PhysicalFrame>("frame").getConnecteeName();
-}
-
-void ContactGeometry::setFrameName(const std::string& name)
-{
-    updConnector<PhysicalFrame>("frame").setConnecteeName(name);
-}
-
 const int ContactGeometry::getDisplayPreference()
 { return get_display_preference(); }
 
@@ -141,12 +132,6 @@ const PhysicalFrame& ContactGeometry::getBody() const
 
 void ContactGeometry::setBody(const PhysicalFrame& frame)
 { setFrame(frame); }
-
-const std::string& ContactGeometry::getBodyName() const
-{ return getFrameName(); }
-
-void ContactGeometry::setBodyName(const std::string& name)
-{ setFrameName(name); }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)
 {
