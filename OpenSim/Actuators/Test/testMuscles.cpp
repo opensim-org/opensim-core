@@ -301,7 +301,8 @@ void simulateMuscle(
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
-    PrescribedController * muscleController = new PrescribedController();
+    std::unique_ptr<PrescribedController> 
+        muscleController{new PrescribedController{}};
     if(control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 
@@ -309,7 +310,7 @@ void simulateMuscle(
         muscleController->prescribeControlForActuator("muscle",control->clone());
 
         // Add the control set controller to the model
-        model.addController(muscleController);
+        model.addController(muscleController.release());
     }
 
     // Set names for muscles / joints.
