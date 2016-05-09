@@ -1282,12 +1282,16 @@ TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     if(!getDescription().empty())
         table.addTableMetaData("description", getDescription());
 
-    table.setColumnLabels(_columnLabels.get(), 
+    // Exclude the first column label. It is 'time'. Time is a separate column
+    // in TimeSeriesTable and column label is optional.
+    table.setColumnLabels(_columnLabels.get() + 1, 
                           _columnLabels.get() + _columnLabels.getSize());
 
     for(unsigned i = 0; i < _storage.getSize(); ++i) {
         const auto& row = getStateVector(i)->getData();
         const auto time = getStateVector(i)->getTime();
+        // Exclude the first column. It is 'time'. Time is a separate column in
+        // TimeSeriesTable.
         table.appendRow(time, row.get(), row.get() + row.getSize());
     }
 
