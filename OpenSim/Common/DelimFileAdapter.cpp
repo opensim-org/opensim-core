@@ -19,20 +19,6 @@ DelimFileAdapter::clone() const {
     return new DelimFileAdapter{*this};
 }
 
-TimeSeriesTable
-DelimFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(_table);
-    return static_cast<TimeSeriesTable&>(*abs_table);
-}
-
-void 
-DelimFileAdapter::write(const TimeSeriesTable& table, 
-                        const std::string& fileName) const {
-    InputTables tables{};
-    tables.emplace(_table, &table);
-    extendWrite(tables, fileName);
-}
-
 DelimFileAdapter::OutputTables
 DelimFileAdapter::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(fileName.empty(),
