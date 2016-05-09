@@ -195,6 +195,11 @@ public:
         return value.get();
     }
 
+    /** Get table metadata keys.                                              */
+    std::vector<std::string> getTableMetaDataKeys() const {
+        return _tableMetaData.getKeys();
+    }
+
     /** Get metadata associated with the table.                               */
     const TableMetaData& getTableMetaData() const {
         return _tableMetaData;
