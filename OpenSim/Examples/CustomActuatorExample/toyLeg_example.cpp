@@ -223,10 +223,10 @@ int main()
         // Save results
         auto controlTable = osimModel.getControlTable();
         MOTFileAdapter::write(controlTable, "SpringActuatedLeg_controls.mot");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        MOTFileAdapter::write(statesTable, "SpringActuatedLeg_states.mot");
 
         forces->getForceStorage().print("actuator_forces.mot");
         
