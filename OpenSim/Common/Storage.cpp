@@ -1273,6 +1273,28 @@ OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& i
     }
     return found;
 }
+
+TimeSeriesTable Storage::getAsTimeSeriesTable() const {
+    TimeSeriesTable table{};
+
+    table.addTableMetaData("version", LatestVersion);
+    table.addTableMetaData("inDegrees", std::string{_inDegrees ? "yes" : "no"});
+    if(!getDescription().empty())
+        table.addTableMetaData("description", getDescription());
+
+    table.setColumnLabels(_columnLabels.get(), 
+                          _columnLabels.get() + _columnLabels.getSize());
+
+    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+        const auto& row = getStateVector(i)->getData();
+        const auto time = getStateVector(i)->getTime();
+        table.appendRow(time, row.get(), row.get() + row.getSize());
+    }
+
+    return table;
+}
+
+
 //=============================================================================
 // RESET
 //=============================================================================
