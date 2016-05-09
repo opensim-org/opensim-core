@@ -1817,6 +1817,11 @@ void Model::storeControls( const SimTK::State& s, int step ) {
 void Model::printControlStorage(const string& fileName ) const {
     get_ControllerSet().printControlStorage(fileName);
 }
+
+TimeSeriesTable Model::getControlTable() const {
+    return get_ControllerSet().getControlTable();
+}
+
 bool Model::getAllControllersEnabled() const{
   return( _allControllersEnabled );
 }
