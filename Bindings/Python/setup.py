@@ -4,8 +4,11 @@ import os
 
 from setuptools import setup
 
+# This provides the variable `__version__`.
+execfile('opensim/version.py')
+
 setup(name='opensim',
-      version='@OPENSIM_VERSION@',
+      version=__version__,
       description='OpenSim Simulation Framework',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
