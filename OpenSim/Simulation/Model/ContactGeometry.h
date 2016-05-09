@@ -74,7 +74,7 @@ public:
      *
      * @param frame        the PhysicalFrame this geometry is attached to;
      */
-    ContactGeometry(const PhysicalFrame& frame);
+    explicit ContactGeometry(const PhysicalFrame& frame);
 
     /**
      * @param location     the location of the geometry expressed in `frame`
