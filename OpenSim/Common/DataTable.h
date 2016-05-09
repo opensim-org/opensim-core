@@ -191,8 +191,16 @@ public:
     template<typename Value>
     Value getTableMetaData(const std::string& key) const {
         const auto& absValue = _tableMetaData.getValueForKey(key);
-        const auto& value = dynamic_cast<const SimTK::Value<Value>&>(absValue);
-        return value.get();
+        try {
+            const auto& value = 
+                dynamic_cast<const SimTK::Value<Value>&>(absValue);
+            return value.get();
+        } catch (const std::bad_cast&) {
+            OPENSIM_THROW(InvalidTemplateArgument,
+                          "The value stored as Table MetaData for key '" + key +
+                          "' is not of type that is provided as template "
+                          "argument.");
+        }
     }
 
     /** Get table metadata keys.                                              */
