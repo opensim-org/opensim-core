@@ -34,6 +34,7 @@
 #include "PistonActuator.h"
 #include "ControllableSpring.h"
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/MOTFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -220,7 +221,9 @@ int main()
         manager.integrate(si);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
+        auto controlTable = osimModel.getControlTable();
+        MOTFileAdapter{}.write(controlTable, 
+                               "dtSpringActuatedLeg_controls.mot");
         Storage statesDegrees(manager.getStateStorage());
         osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
         //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
