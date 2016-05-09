@@ -490,7 +490,7 @@ public:
         RowVector row{static_cast<int>(std::distance(begin, end))};
         int ind{0};
         for(auto it = begin; it != end; ++it)
-            row[ind] = *it;
+            row[ind++] = *it;
 
         appendRow(indRow, row);
     }
