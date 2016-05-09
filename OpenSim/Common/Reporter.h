@@ -258,7 +258,8 @@ inline void TableReporter_<SimTK::Vector, SimTK::Real>::
         const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
     }
 
-    const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), ~result);
+    const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), 
+                                                    result.getAsRowVector());
 }
 
 /** @name Commonly used concrete TableReporters */
