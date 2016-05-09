@@ -978,6 +978,16 @@ void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
     scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
     rStorage.setInDegrees(true);
 }
+
+void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
+    constexpr double PI{3.141592653589793};
+    constexpr double RAD_TO_DEG{180 / PI};
+
+    table.updMatrix() *= RAD_TO_DEG;
+    table.removeTableMetaDataKey("inDegrees");
+    table.addTableMetaData("inDegrees", std::string{"yes"});
+}
+
 //_____________________________________________________________________________
 /**
  * Convert an array of Q/U values from degrees to radians. The sizes of the
