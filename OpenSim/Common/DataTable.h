@@ -460,6 +460,39 @@ public:
     /// column.
     /// @{
 
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param container Sequence container holding the elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename Container>
+    void appendRow(const ETX& indRow, const Container& container) {
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param begin Iterator representing the beginning of the row to be appended.
+    \param end Iterator representing one past the end of the row to be appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename RowIter>
+    void appendRow(const ETX& indRow, RowIter begin, RowIter end) {
+        RowVector row{static_cast<int>(std::distance(begin, end))};
+        int ind{0};
+        for(auto it = begin; it != end; ++it)
+            row[ind] = *it;
+
+        appendRow(indRow, row);
+    }
+
     /** Append row to the DataTable_.                                         
 
     \throws IncorrectNumColumns If the row added is invalid. Validity of the 
