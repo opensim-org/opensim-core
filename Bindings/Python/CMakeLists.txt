@@ -203,12 +203,15 @@ OpenSimAddPythonModule(MODULE tools
 # Note: some of the commands to do this copying (for the swig-generated py
 # files) appear above.
 
-# Configure setup.py
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
-    "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY)
+# Configure version.py.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in
+    "${CMAKE_CURRENT_BINARY_DIR}/version.py" @ONLY)
 
-# Copy the configured setup.py for each build configuration.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/setup.py" ".")
+# Copy the configured version.py for each build configuration.
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/version.py" opensim)
+
+# Copy setup.py for each build configuration.
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 
 # __init__.py.
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)

@@ -73,10 +73,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
-    // aModel will be NULL when objects are being registered.
-    if (&aModel == NULL)
-        return;
-
     // Name the path points based on the current path
     // (i.e., the set of currently active points is numbered
     // 1, 2, 3, ...).
@@ -510,7 +506,7 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
     newPoint->setBody(aBody);
     Vec3& location = newPoint->getLocation();
     placeNewPathPoint(s, location, aIndex, aBody);
-    newPoint->connectToModelAndPath(getModel(), *this);
+    newPoint->connectToModelAndPath(updModel(), *this);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.
@@ -540,7 +536,7 @@ appendNewPathPoint(const std::string& proposedName,
     PathPoint* newPoint = new PathPoint();
     newPoint->setBody(aBody);
     newPoint->setName(proposedName);
-    for (int i=0; i<3; i++) newPoint->setLocationCoord(i, aPositionOnBody[i]);
+    newPoint->set_location(aPositionOnBody);
     upd_PathPointSet().adoptAndAppend(newPoint);
 
     return newPoint;
@@ -729,7 +725,7 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
     PathWrap* newWrap = new PathWrap();
     newWrap->setWrapObject(aWrapObject);
     newWrap->setMethod(PathWrap::hybrid);
-    newWrap->connectToModelAndPath(getModel(), *this);
+    newWrap->connectToModelAndPath(updModel(), *this);
     upd_PathWrapSet().adoptAndAppend(newWrap);
 }
 
@@ -992,7 +988,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 
             // First remove this object's wrapping points from the current path.
             for (int j = 0; j <path.getSize(); j++) {
-                if( path.get(j) == &ws.getWrapPoint(0)) {
+                if( path.get(j) == &ws.getWrapPoint1()) {
                     path.remove(j); // remove the first wrap point
                     path.remove(j); // remove the second wrap point
                     break;
@@ -1115,16 +1111,16 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 }
 
                 // Deallocate previous wrapping points if necessary.
-                ws.getWrapPoint(1).getWrapPath().setSize(0);
+                ws.updWrapPoint2().getWrapPath().setSize(0);
 
                 if (best_wrap.wrap_pts.getSize() == 0) {
                     ws.resetPreviousWrap();
-                    ws.getWrapPoint(1).getWrapPath().setSize(0);
+                    ws.updWrapPoint2().getWrapPath().setSize(0);
                 } else {
                     // If wrapping did occur, copy wrap info into the PathStruct.
-                    ws.getWrapPoint(0).getWrapPath().setSize(0);
+                    ws.updWrapPoint1().getWrapPath().setSize(0);
 
-                    Array<SimTK::Vec3>& wrapPath = ws.getWrapPoint(1).getWrapPath();
+                    Array<SimTK::Vec3>& wrapPath = ws.updWrapPoint2().getWrapPath();
                     wrapPath = best_wrap.wrap_pts;
 
                     // In OpenSim, all conversion to/from the wrap object's 
@@ -1137,17 +1133,17 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                     //            ms->ground_segment);
                     // }
 
-                    ws.getWrapPoint(0).setWrapLength(0.0);
-                    ws.getWrapPoint(1).setWrapLength(best_wrap.wrap_path_length);
-                    ws.getWrapPoint(0).setBody(wo->getBody());
-                    ws.getWrapPoint(1).setBody(wo->getBody());
+                    ws.updWrapPoint1().setWrapLength(0.0);
+                    ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
+                    ws.updWrapPoint1().setBody(wo->getBody());
+                    ws.updWrapPoint2().setBody(wo->getBody());
 
-                    ws.getWrapPoint(0).setLocation(s,best_wrap.r1);
-                    ws.getWrapPoint(1).setLocation(s,best_wrap.r2);
+                    ws.updWrapPoint1().setLocation(s,best_wrap.r1);
+                    ws.updWrapPoint2().setLocation(s,best_wrap.r2);
 
                     // Now insert the two new wrapping points into mp[] array.
-                    path.insert(best_wrap.endPoint, &ws.getWrapPoint(0));
-                    path.insert(best_wrap.endPoint + 1, &ws.getWrapPoint(1));
+                    path.insert(best_wrap.endPoint, &ws.updWrapPoint1());
+                    path.insert(best_wrap.endPoint + 1, &ws.updWrapPoint2());
                 }
             }
         }
@@ -1172,7 +1168,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 // remove wrap object 0 from the list of path points
                 PathWrap& ws = get_PathWrapSet().get(0);
                 for (int j = 0; j < path.getSize(); j++) {
-                    if (path.get(j) == &ws.getWrapPoint(0)) {
+                    if (path.get(j) == &ws.updWrapPoint1()) {
                         path.remove(j); // remove the first wrap point
                         path.remove(j); // remove the second wrap point
                         break;
@@ -1308,4 +1304,16 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s) const
     }
 
     markCacheVariableValid(s, "current_display_path");
+}
+
+void GeometryPath::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
+        if (upd_PathWrapSet()[i].getName().empty()) {
+            std::stringstream label;
+            label << "pathwrap_" << i;
+            upd_PathWrapSet()[i].setName(label.str());
+        }
+    }
 }

@@ -193,7 +193,7 @@ void scaleModelWithLigament()
     ScaleTool* scaleTool;
     Model* model;
 
-    // Truncate old model if any
+    // Remove old model if any
     FILE* file2Remove = IO::OpenFile(setupFilePath + "toyLigamentModelScaled.osim", "w");
     fclose(file2Remove);
 
@@ -223,6 +223,16 @@ void scaleModelWithLigament()
     Model comp(scaledModelFile);
     Model std(std_scaledModelFile);
 
+    std.print("std_toyLigamentModelScaled_latest.osim");
+    comp.print("comp_toyLigamentModelScaled_latest.osim");
+
+    // the latest model will not match the standard because the naming convention has
+    // been updated to store path names and connecting a model results in connectors
+    // storing relative paths so that collections of components are more portable.
+    // The models must be equivalent after being connected.
+    comp.setup();
+    std.setup();
+
     ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
     ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
 
@@ -236,16 +246,6 @@ void scaleModelWithLigament()
         ASSERT(*its == *itc, __FILE__, __LINE__,
             "Scaled ligament " + its->getName() + " did not match standard.");
     }
-
-    std.print("std_toyLigamentModelScaled_latest.osim");
-    comp.print("comp_toyLigamentModelScaled_latest.osim");
-
-    // the latest model will not match the standard because the naming convention has
-    // been updated to store path names and connecting a model results in connectors
-    // storing relative paths so that collections of components are more portable.
-    // The models must be equivalent after being connected.
-    comp.setup();
-    std.setup();
 
     //Finally make sure we didn't incorrectly scale anything else in the model
     ASSERT(std == comp);
