@@ -189,8 +189,10 @@ public:
 
     \throws KeyNotFound If the key provided is not found in table metadata.   */
     template<typename Value>
-    Value getTableMetaData(const std::string& key) {
-        return _tableMetaData.getValueForKey(key).getValue<Value>();
+    Value getTableMetaData(const std::string& key) const {
+        const auto& absValue = _tableMetaData.getValueForKey(key);
+        const auto& value = dynamic_cast<const SimTK::Value<Value>&>(absValue);
+        return value.get();
     }
 
     /** Get metadata associated with the table.                               */
