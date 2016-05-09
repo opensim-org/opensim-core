@@ -203,6 +203,12 @@ public:
         }
     }
 
+    /** Remove key-value pair associated with the given key from table 
+    metadata.                                                                 */
+    void removeTableMetaDataKey(const std::string& key) {
+        _tableMetaData.removeValueForKey(key);
+    }
+
     /** Get table metadata keys.                                              */
     std::vector<std::string> getTableMetaDataKeys() const {
         return _tableMetaData.getKeys();
