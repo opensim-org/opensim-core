@@ -115,6 +115,19 @@ public:
     using Exception::Exception;
 };
 
+class KeyExists : public Exception {
+public:
+    KeyExists(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& key) :
+        Exception(file, line, func) {
+        std::string msg = "Key '" + key + "' not found.";
+
+        addMessage(msg);
+    }
+};
+
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. DataTable_ represents a matrix and an additional column. The 
@@ -154,6 +167,31 @@ public:
 
     /// @name MetaData accessors/mutators.
     /// @{
+
+    /** Add key-value pair to the table metadata.
+
+    \tparam Value Type of the value. This need not be specified explicitly in
+                  most cases. It will be deduced automatically.
+
+    \throws KeyExists If the key provided already exists in table metadata.   */
+    template<typename Value>
+    void addTableMetaData(const std::string& key, const Value& value) {
+        OPENSIM_THROW_IF(!_tableMetaData.setValueForKey(key, value),
+                         KeyExists,
+                         key);
+    }
+
+    /** Get table metadata for a given key.
+
+    \tparam Value Type of the value to be retrieved. For example if the metadata
+                  contains key-value pair ("sample-rate", 200), this could be
+                  specified as 'unsigned'.
+
+    \throws KeyNotFound If the key provided is not found in table metadata.   */
+    template<typename Value>
+    Value getTableMetaData(const std::string& key) {
+        return _tableMetaData.getValueForKey(key).getValue<Value>();
+    }
 
     /** Get metadata associated with the table.                               */
     const TableMetaData& getTableMetaData() const {
