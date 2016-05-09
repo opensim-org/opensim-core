@@ -39,6 +39,14 @@ public:
     ~MOTFileAdapter()                                = default;
 
     MOTFileAdapter* clone() const override;
+
+    /** Read a MOT file.                                                      */
+    static
+    TimeSeriesTable read(const std::string& fileName);
+
+    /** Write a MOT file.                                                     */
+    static
+    void write(const TimeSeriesTable& table, const std::string& fileName);
 };
 
 }
