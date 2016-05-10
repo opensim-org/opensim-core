@@ -492,6 +492,14 @@ public:
     row added is decided by the derived class.                                */
     template<typename Container>
     void appendRow(const ETX& indRow, const Container& container) {
+        using Value = decltype(*(container.begin()));
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The 'container' specified does not provide an iterator "
+                      "which when dereferenced provides elements that "
+                      "are of same type as elements of this table.");
+
         appendRow(indRow, container.begin(), container.end());
     }
 
@@ -506,6 +514,13 @@ public:
     row added is decided by the derived class.                                */
     template<typename RowIter>
     void appendRow(const ETX& indRow, RowIter begin, RowIter end) {
+        using Value = decltype(*begin);
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The iterator 'begin' provided does not provide elements"
+                      " that are of same type as elements of this table.");
+
         RowVector row{static_cast<int>(std::distance(begin, end))};
         int ind{0};
         for(auto it = begin; it != end; ++it)
