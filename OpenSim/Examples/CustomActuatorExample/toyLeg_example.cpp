@@ -221,8 +221,8 @@ int main()
         manager.integrate(si);
 
         // Save results
-        auto controlTable = osimModel.getControlTable();
-        MOTFileAdapter::write(controlTable, "SpringActuatedLeg_controls.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        MOTFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.mot");
 
         auto statesTable = manager.getStatesTable();
         osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
