@@ -32,6 +32,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/MOTFileAdapter.h"
 
 #include <ctime>    // for clock()
 
@@ -336,11 +337,11 @@ int main()
         // SAVE THE RESULTS TO FILE //
         //////////////////////////////
         // Save the model states from forward integration
-        Storage statesDegrees(manager.getStateStorage());
-        statesDegrees.print("tugOfWar_states.sto");
+        auto statesTable = manager.getStatesTable();
+        MOTFileAdapter::write(statesTable, "TugOfWar_states.mot");
 
-        // Save the forces
-        reporter->getForceStorage().print("tugOfWar_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        MOTFileAdapter::write(forcesTable, "TugOfWar_forces.mot");
     }
     catch (const std::exception& ex)
     {
