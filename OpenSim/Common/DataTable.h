@@ -453,6 +453,13 @@ whole can contain metadata.
 \tparam ETY Type of each element of the column holding independent data.      */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
+    static_assert(!std::is_reference<ETY>::value,
+                  "Template argument ETY cannot be a 'reference'.");
+    static_assert(!std::is_pointer<ETY>::value,
+                  "Template argument ETY cannot be a 'pointer'.");
+    static_assert(!std::is_const<ETY>::value && !std::is_volatile<ETY>::value,
+                  "Template argument ETY cannot be 'const' or 'volatile'.");
+
 public:
     /** Type of each row of matrix holding dependent data.                    */
     typedef SimTK::RowVector_<ETY>     RowVector;
