@@ -1818,7 +1818,7 @@ void Model::printControlStorage(const string& fileName ) const {
     get_ControllerSet().printControlStorage(fileName);
 }
 
-TimeSeriesTable Model::getControlTable() const {
+TimeSeriesTable Model::getControlsTable() const {
     return get_ControllerSet().getControlTable();
 }
 
