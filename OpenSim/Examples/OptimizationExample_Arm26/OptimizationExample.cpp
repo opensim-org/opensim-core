@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/MOTFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -208,7 +209,9 @@ int main()
         manager.setFinalTime(finalTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
         manager.integrate(si);
-        manager.getStateStorage().print("Arm26_optimized_states.sto");
+
+        auto statesTable = manager.getStatesTable();
+        MOTFileAdapter::write(statesTable, "Arm26_optimized_states.mot");
     }
     catch (const std::exception& ex)
     {
