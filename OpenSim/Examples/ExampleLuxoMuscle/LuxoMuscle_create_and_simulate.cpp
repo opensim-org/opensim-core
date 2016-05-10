@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/MOTFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -266,11 +267,12 @@ int main()
         luxo.print("Luxo_Myo.osim");
         
         // Save the model states from forward integration
-        Storage statesDegrees(manager.getStateStorage());
-        statesDegrees.print("luxo_states.sto");
-        
+        auto statesTable = manager.getStatesTable();
+        MOTFileAdapter::write(statesTable, "luxo_states.mot");
+
         // Save the forces
-        reporter->getForceStorage().print("luxo_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        MOTFileAdapter::write(forcesTable, "luxo_forces.mot");
         
         std::cout << "OpenSim example completed successfully.\n";
         // enter anything in the command prompt to quit
