@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/MOTFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -93,12 +94,15 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         
         // Store and print the  results of the first step.
         if( stepCount == 1){ 
-            manager.getStateStorage().print("Arm26_noActivation_states.sto");
+            auto statesTable = manager.getStatesTable();
+            MOTFileAdapter::write(statesTable, "Arm26_noActivation_states.sto");
         }
         // Use an if statement to only store and print the results of an 
         //  optimization step if it is better than a previous result.
         else if( f < bestSoFar){
-            manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
+            auto statesTable = manager.getStatesTable();
+            MOTFileAdapter::write(statesTable, "Arm26_bestSoFar_states.sto");
+
             bestSoFar = f;
             cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
         }           
