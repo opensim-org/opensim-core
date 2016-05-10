@@ -507,6 +507,20 @@ public:
 
     \param indRow Entry for the independent column corresponding to the row to
                   be appended.
+    \param container std::initializer_list containing elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    void appendRow(const ETX& indRow, 
+                   const std::initializer_list<ETY>& container) {
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
     \param begin Iterator representing the beginning of the row to be appended.
     \param end Iterator representing one past the end of the row to be appended.
 
