@@ -78,7 +78,9 @@ WrapObject::WrapObject(const WrapObject& aWrapObject) :
 {
     setNull();
     setupProperties();
-    //constructProperties();
+    copyProperty_color(aWrapObject);
+    copyProperty_translation(aWrapObject);
+    copyProperty_xyz_body_rotation(aWrapObject);
     copyData(aWrapObject);
 }
 
@@ -178,8 +180,6 @@ void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) cons
  */
 void WrapObject::copyData(const WrapObject& aWrapObject)
 {
-    upd_xyz_body_rotation() = aWrapObject.get_xyz_body_rotation();
-    upd_translation() = aWrapObject.get_translation();
     _active = aWrapObject._active;
     _quadrantName = aWrapObject._quadrantName;
     _quadrant = aWrapObject._quadrant;
