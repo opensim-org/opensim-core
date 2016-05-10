@@ -216,14 +216,15 @@ int main()
         manager.integrate(si);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        MOTFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.mot");
 
-        forces->getForceStorage().print("actuator_forces.mot");
-        
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        MOTFileAdapter::write(statesTable, "SpringActuatedLeg_states.mot");
+
+        auto forcesTable = forces->getForcesTable();
+        MOTFileAdapter::write(forcesTable, "SpringActuatedLeg_forces.mot");
     }
     catch (const std::exception& ex)
     {
