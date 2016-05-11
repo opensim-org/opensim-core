@@ -103,7 +103,7 @@ int main()
         try {
             deserializedModel.finalizeFromProperties();
         }
-        // Ignore the validity of the property values
+        //Ignore the validity of the property values
         // TODO this should specifically handle "InvalidPropertyValue" exceptions
         // once we have that in place.
         catch (const std::exception&) {
