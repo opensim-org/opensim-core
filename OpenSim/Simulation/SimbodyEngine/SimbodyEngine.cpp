@@ -1022,10 +1022,11 @@ void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
 }
 
 void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
-    constexpr double PI{3.141592653589793};
-    constexpr double RAD_TO_DEG{180 / PI};
+    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "yes",
+                     Exception,
+                     "Columns of the table provided are already in degrees.");
 
-    table.updMatrix() *= RAD_TO_DEG;
+    scaleRotationalDofColumns(table, SimTK_RADIAN_TO_DEGREE);
     table.removeTableMetaDataKey("inDegrees");
     table.addTableMetaData("inDegrees", std::string{"yes"});
 }
