@@ -146,8 +146,8 @@ void WrapObject::extendFinalizeFromProperties()
         _wrapSign = 0;
     } else {
         // quadrant was specified incorrectly in wrap object definition; 
-        string errorMessage = "Error: quadrant for wrap object " + getName() +
-            " was specified incorrectly.";
+        string errorMessage = "Error: quadrant '" + _quadrantName + "' for wrap object "
+            + getName() + " was specified incorrectly.";
         throw Exception(errorMessage);
     }
 }
