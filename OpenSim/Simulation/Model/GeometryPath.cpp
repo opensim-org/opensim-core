@@ -995,8 +995,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 }
             }
 
-
-            if (wo->getActive()) {
+            if (wo->get_active()) {
                 // startPoint and endPoint in wrapStruct represent the 
                 // user-defined starting and ending points in the array of path 
                 // points that should be considered for wrapping. These indices 
