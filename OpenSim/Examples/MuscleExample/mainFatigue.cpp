@@ -235,10 +235,10 @@ int main()
         // Save the simulation results
         // Save the states
         auto statesTable = manager.getStatesTable();
-        MOTFileAdapter::write(statesTable, "TugOfWar_fatigue_states.mot");
+        MOTFileAdapter::write(statesTable, "tugOfWar_fatigue_states.mot");
 
         auto forcesTable = reporter->getForcesTable();
-        MOTFileAdapter::write(forcesTable, "TugOfWar_fatigue_forces.mot");
+        MOTFileAdapter::write(forcesTable, "tugOfWar_fatigue_forces.mot");
 
         // Save the muscle analysis results
         IO::makeDir("MuscleAnalysisResults");
