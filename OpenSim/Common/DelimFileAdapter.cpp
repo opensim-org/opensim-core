@@ -132,8 +132,12 @@ DelimFileAdapter::extendWrite(const InputTables& absTables,
                       getTableMetaData().
                       getValueForKey("header").
                       getValue<std::string>() << "\n";
-    } catch(KeyNotFound&) {
-        for(const auto& key : table->getTableMetaDataKeys())
+    } catch(KeyNotFound&) { 
+        // No operation. Continue with other keys in table metadata.
+    }
+    // Write rest of the key-value pairs and end the header.
+    for(const auto& key : table->getTableMetaDataKeys()) {
+        if(key != "header")
             out_stream << key << "=" 
                        << table->getTableMetaData<std::string>(key) << "\n";
     }
