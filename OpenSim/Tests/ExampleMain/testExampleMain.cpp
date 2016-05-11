@@ -35,17 +35,27 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_states.sto"), standard1("std_tugOfWar_states.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.1, 16), __FILE__, __LINE__, "tugOfWar states failed");
+        Storage result1("tugOfWar_states.mot"), 
+                standard1("std_tugOfWar_states.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
+                                       Array<double>(0.1, 16), 
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar states failed");
         cout << "tugOfWar states passed\n";
 
-        Storage result3("tugOfWar_forces.mot"), standard3("std_tugOfWar_forces.mot");
+        Storage result3("tugOfWar_forces.mot"), 
+                standard3("std_tugOfWar_forces.mot");
         
         Array<double> tols(1.0, 20);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 
-        CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, tols, __FILE__, __LINE__, "tugOfWar forces failed");
+        CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, 
+                                       tols, 
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar forces failed");
         cout << "tugOfWar forces passed\n";
     }
     catch (const Exception& e) {
