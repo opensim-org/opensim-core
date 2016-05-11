@@ -253,6 +253,30 @@ public:
     /// @name Column-labels related accessors/mutators.
     /// Following functions operate on column labels of dependent columns only
     /// excluding the independent column.
+    /// Following are examples on using setColumnLabels(). If you have a 
+    /// sequence of strings, you can pretty much call setColumnLabels() on it.
+    /// \code
+    /// // Simplest way to set column labels is to provide them directly to
+    /// // setColumnLabels.
+    /// table.setColumnLabels({"col1", "col2", "col3"});
+    /// \endcode
+    /// \code
+    /// // if you have a sequence container like std::vector or std::list of 
+    /// // std::string holding column labels, pass the container directly to
+    /// // setColumnLabels.
+    /// std::list<std::string> columnLabels{"col1", "col2", "col3"};
+    /// table.setColumnLabels(columnLabels);
+    /// \endcode
+    /// \code
+    /// // If you have a sequence container like std::vector or std::list of 
+    /// // std::string holding column labels but you want to use only a subset
+    /// // of them to set column labels of the table, use iterators like below.
+    /// std::vector<std::string> columnLabels{"col-not-used1", 
+    ///                                       "col1", "col2", "col3", 
+    ///                                       "col-not-used2"};
+    /// table.setColumnLabels(columnLabels.begin() + 1, 
+    ///                       columnLabels.end() - 1);
+    /// \endcode
     /// @{
 
     /** Get column labels.                                                    
