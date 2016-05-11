@@ -102,7 +102,8 @@ public:
     virtual void scale(const SimTK::Vec3& aScaleFactors);
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
-    const PhysicalFrame& getBody() const;
+    const PhysicalFrame& getFrame() const;
+    void setFrame(const PhysicalFrame& frame);
 
     bool getActiveUseDefault() const { 
         return getProperty_active().getValueIsDefault();
@@ -143,13 +144,17 @@ public:
 private:
     void constructProperties();
     void constructConnectors();
+   
+   /* Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
+    * based on the name of the quadrant. finalizeFromProperties() should be 
+    * called whenever the quadrant property changes. */
     void extendFinalizeFromProperties();
 
 protected:
 
     WrapQuadrant _quadrant{ WrapQuadrant::allQuadrants };
-    int _wrapAxis;
-    int _wrapSign;
+    int _wrapAxis{ 0 };
+    int _wrapSign{ 1 };
 
     SimTK::Transform _pose;
 //=============================================================================

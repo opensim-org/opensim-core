@@ -80,10 +80,16 @@ void WrapObject::constructConnectors()
     constructConnector<PhysicalFrame>("frame");
 }
 
-const PhysicalFrame& WrapObject::getBody() const
+const PhysicalFrame& WrapObject::getFrame() const
 {
     return getConnector<PhysicalFrame>("frame").getConnectee();
 }
+
+void WrapObject::setFrame(const PhysicalFrame& frame)
+{
+    return updConnector<PhysicalFrame>("frame").connect(frame);
+}
+
 
 /*
  * Scale the wrap object by aScaleFactors. This base class method scales
@@ -99,11 +105,7 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
       upd_translation()[i] *= aScaleFactors[i];
 }
 
-/*
- * Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
- * based on the name of the quadrant. This should be called in 
- * connectToModelAndBody() and whenever the quadrant name changes.
- */
+
 void WrapObject::extendFinalizeFromProperties()
 {
     SimTK::Rotation rot;
@@ -164,10 +166,10 @@ int WrapObject::wrapPathSegment(const SimTK::State& s,
     // Convert the path points from the frames of the bodies they are attached
     // to, to the frame of the wrap object's body
     pt1 = aPoint1.getBody()
-        .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
+        .findLocationInAnotherFrame(s, aPoint1.getLocation(), getFrame());
     
     pt2 = aPoint2.getBody()
-        .findLocationInAnotherFrame(s, aPoint2.getLocation(), getBody());
+        .findLocationInAnotherFrame(s, aPoint2.getLocation(), getFrame());
 
     // Convert the path points from the frame of the wrap object's body
     // into the frame of the wrap object

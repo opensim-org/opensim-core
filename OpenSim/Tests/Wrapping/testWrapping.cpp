@@ -503,7 +503,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             const WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
-            obs.bodyName = wrapObj->getBody().getName();
+            obs.bodyName = wrapObj->getFrame().getName();
             obs.X_BS = wrapObj->getTransform();
             obs.isVia = false;
             // initially assume inactive
