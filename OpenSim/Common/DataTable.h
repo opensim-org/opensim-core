@@ -510,6 +510,69 @@ public:
     /// @name Row accessors/mutators.
     /// Following get/upd functions operate on matrix and not the independent
     /// column.
+    /// The function appendRow() is pretty flexible and it is possible to 
+    /// append a row with any sequence of elements. Following are some examples:
+    /// \code
+    /// // Easiest way to append a row is to provide the list of elements 
+    /// // directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {0.3, 0.4, 0.5, 0.6}); // 4 elements of type double.
+    /// // For a table with elements of type SimTK::Vec3, this could like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {{0.31, 0.32, 0.33},
+    ///                  {0.41, 0.42, 0.43},
+    ///                  {0.51, 0.52, 0.53},
+    ///                  {0.61, 0.62, 0.63}}); // 4 elements of SimTK::Vec3.
+    /// \endcode
+    /// \code
+    /// // It is possible to append a sequence container like std::vector or 
+    /// // std::list by providing it directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   // 4 elements of
+    ///                              {0.61, 0.62, 0.63}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // A SimTK::RowVector can be provided to appendRow as well.
+    /// // For a table with elements of type double, this could look like below.
+    /// SimTK::RowVector row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// SimTK::RowVector_<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                                    {0.41, 0.42, 0.43},
+    ///                                    {0.51, 0.52, 0.53},  // 4 elements of
+    ///                                    {0.61, 0.62, 0.63}}); // SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // It is possible to be use a pair of iterators to append a row as well.
+    /// // This could arise in situations where you might want to append a row
+    /// // using a subset of elements in a sequence.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element (0.4).
+    ///                 row.end() - 1);  // End at last but one (0.7).
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   
+    ///                              {0.61, 0.62, 0.63},
+    ///                              {0.71, 0.72, 0.73},   // 6 elements of
+    ///                              {0.81, 0.82, 0.83}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element.
+    ///                 row.end() - 1); // End at last but one.
+    /// \endcode
     /// @{
 
     /** Append row to the DataTable_.
