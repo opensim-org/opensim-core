@@ -338,10 +338,10 @@ int main()
         //////////////////////////////
         // Save the model states from forward integration
         auto statesTable = manager.getStatesTable();
-        MOTFileAdapter::write(statesTable, "TugOfWar_states.mot");
+        MOTFileAdapter::write(statesTable, "tugOfWar_states.mot");
 
         auto forcesTable = reporter->getForcesTable();
-        MOTFileAdapter::write(forcesTable, "TugOfWar_forces.mot");
+        MOTFileAdapter::write(forcesTable, "tugOfWar_forces.mot");
     }
     catch (const std::exception& ex)
     {
