@@ -1277,8 +1277,11 @@ OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& i
 TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     TimeSeriesTable table{};
 
+    table.addTableMetaData("header", getName());
     table.addTableMetaData("version", std::to_string(LatestVersion));
     table.addTableMetaData("inDegrees", std::string{_inDegrees ? "yes" : "no"});
+    table.addTableMetaData("nRows", std::to_string(_storage.getSize()));
+    table.addTableMetaData("nColumns", std::to_string(_columnLabels.getSize()));
     if(!getDescription().empty())
         table.addTableMetaData("description", getDescription());
 
