@@ -214,7 +214,7 @@ void simulateMuscle(
         Vec3(0),
                         ballMass*SimTK::Inertia::sphere(ballRadius));
 
-    ball->attachGeometry(Sphere{ballRadius});
+    ball->attachGeometry(Sphere(ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 
