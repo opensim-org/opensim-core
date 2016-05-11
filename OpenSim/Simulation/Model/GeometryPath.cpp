@@ -84,7 +84,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     for (int i = 0; i < get_PathPointSet().getSize(); i++){
         upd_PathPointSet().get(i).connectToModelAndPath(aModel, *this);
     }
-
 }
 
 //_____________________________________________________________________________

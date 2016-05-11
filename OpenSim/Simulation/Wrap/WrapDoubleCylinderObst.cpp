@@ -119,8 +119,6 @@ void WrapDoubleCylinderObst::setNull()
 */
 void WrapDoubleCylinderObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
 
     _radiusUcylProp.setName("radiusUcyl");  _radiusUcylProp.setValue(-1.0);     _propertySet.append(&_radiusUcylProp);
     _radiusVcylProp.setName("radiusVcyl");  _radiusVcylProp.setValue(-1.0);     _propertySet.append(&_radiusVcylProp);
@@ -217,9 +215,6 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
 */
 void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapDoubleCylinderObst);
-
     _radiusUcyl = aWrapDoubleCylinderObst._radiusUcyl;
     _radiusVcyl = aWrapDoubleCylinderObst._radiusVcyl;
     _wrapUcylDirectionName = aWrapDoubleCylinderObst._wrapUcylDirectionName;

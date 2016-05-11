@@ -100,40 +100,49 @@ public:
     // Use default copy and assignment operator
 
     virtual void scale(const SimTK::Vec3& aScaleFactors);
-    virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody);
+    virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
-    PhysicalFrame& getBody() const { return *_body; }
+    const PhysicalFrame& getBody() const;
 
-    bool getActiveUseDefault() const { return getProperty_active().getValueIsDefault(); }
+    bool getActiveUseDefault() const { 
+        return getProperty_active().getValueIsDefault();
+    }
     bool getQuadrantNameUseDefault() const {
         return getProperty_quadrant().getValueIsDefault();
     }
     const SimTK::Transform& getTransform() const { return _pose; }
     virtual const char* getWrapTypeName() const = 0;
-    virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
+
+    // TODO: total SIMM hack!
+    virtual std::string getDimensionsString() const { return ""; }
 
 //=============================================================================
 // WRAPPING
 //=============================================================================
 /**
 * Calculate the wrapping of one path segment over one wrap object.
-*
+* @param state   The State of the model
 * @param aPoint1 The first path point
 * @param aPoint2 The second path point
 * @param aPathWrap An object holding the parameters for this path/wrap-object pairing
 * @param aWrapResult The result of the wrapping (tangent points, etc.)
 * @return The status, as a WrapAction enum
 */
-    int wrapPathSegment( const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult) const;
+    int wrapPathSegment( const SimTK::State& state, 
+                         PathPoint& aPoint1, PathPoint& aPoint2,
+                         const PathWrap& aPathWrap,
+                         WrapResult& aWrapResult) const;
 
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
+    virtual int wrapLine(const SimTK::State& state,
+                         SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+                         const PathWrap& aPathWrap,
+                         WrapResult& aWrapResult, bool& aFlag) const = 0;
 
     virtual void updateGeometry() {};
 
 private:
     void constructProperties();
+    void constructConnectors();
     void extendFinalizeFromProperties();
 
 protected:
@@ -141,8 +150,6 @@ protected:
     WrapQuadrant _quadrant{ WrapQuadrant::allQuadrants };
     int _wrapAxis;
     int _wrapSign;
-
-    SimTK::ReferencePtr<PhysicalFrame> _body;
 
     SimTK::Transform _pose;
 //=============================================================================

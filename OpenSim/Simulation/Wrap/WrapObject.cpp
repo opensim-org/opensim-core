@@ -48,7 +48,7 @@ using SimTK::Vec3;
  */
 WrapObject::WrapObject() : ModelComponent()
 {
-    constructProperties();
+    constructInfrastructure();
 }
 
 /*
@@ -66,6 +66,8 @@ void WrapObject::constructProperties()
     const SimTK::Vec3 defaultTranslations(0.0);
     constructProperty_translation(defaultTranslations);
 
+    constructProperty_quadrant("Unassigned");
+
     constructProperty_display_preference(1);
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
     defaultColor[0] = 0.0; 
@@ -73,10 +75,14 @@ void WrapObject::constructProperties()
     constructProperty_color(defaultColor);
 }
 
-void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapObject::constructConnectors()
 {
-   _body = &aBody;
-   _model = &aModel;
+    constructConnector<PhysicalFrame>("frame");
+}
+
+const PhysicalFrame& WrapObject::getBody() const
+{
+    return getConnector<PhysicalFrame>("frame").getConnectee();
 }
 
 /*
@@ -145,8 +151,10 @@ void WrapObject::extendFinalizeFromProperties()
 }
 
 
-int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-                                          const PathWrap& aPathWrap, WrapResult& aWrapResult) const
+int WrapObject::wrapPathSegment(const SimTK::State& s, 
+                                PathPoint& aPoint1, PathPoint& aPoint2,
+                                const PathWrap& aPathWrap, 
+                                WrapResult& aWrapResult) const
 {
    int return_code = noWrap;
     bool p_flag;

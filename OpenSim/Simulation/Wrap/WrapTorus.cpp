@@ -184,9 +184,6 @@ void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
  */
 void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapTorus);
-
     _innerRadius = aWrapTorus._innerRadius;
     _outerRadius = aWrapTorus._outerRadius;
 }
@@ -286,7 +283,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
 
     cyl.setRadius(_innerRadius);
     cyl.setLength(CYL_LENGTH);
-    cyl.setQuadrantName("+x");
+    cyl.set_quadrant("+x");
 
     closestPt *= -1;
 

@@ -177,9 +177,6 @@ void WrapCylinder::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapCylinder);
-
     _radius = aWrapCylinder._radius;
     _length = aWrapCylinder._length;
 }
