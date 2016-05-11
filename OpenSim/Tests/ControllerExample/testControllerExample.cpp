@@ -35,8 +35,13 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_controls.sto"), standard1("std_tugOfWar_controls.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.01, 2), __FILE__, __LINE__, "tugOfWar controls failed");
+        Storage result1("tugOfWar_controls.mot"), 
+                standard1("std_tugOfWar_controls.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
+                                       Array<double>(0.01, 2), 
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar controls failed");
         cout << "tugOfWar controls passed\n" << endl;
 
         Array<double> tols(0.01, 16);
@@ -46,8 +51,13 @@ int main()
         // activations within 2%
         tols[12] = tols[14] = 0.02;
 
-        Storage result2("tugOfWar_states.sto"), standard2("std_tugOfWar_states.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, tols, __FILE__, __LINE__, "tugOfWar states failed");
+        Storage result2("tugOfWar_states.mot"), 
+                standard2("std_tugOfWar_states.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
+                                       tols, 
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar states failed");
         cout << "tugOfWar states passed\n" << endl;
     }
     catch (const std::exception& e) {
