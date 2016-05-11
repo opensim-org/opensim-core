@@ -195,6 +195,7 @@ public:
 
 private:
     void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
+    void scaleRotationalDofColumns(TimeSeriesTable& table, double factor) const;
 
 
 private:
