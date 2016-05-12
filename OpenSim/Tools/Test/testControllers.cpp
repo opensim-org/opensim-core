@@ -370,7 +370,9 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     
     //************* Rerun with a PrescribedController ***********************/
 
-    PrescribedController prescribed(outfileName, 1);
+    PrescribedController prescribed();
+    // TODO
+    // Convert Storage std_controls to set of Functions and map to actuators
 
     // add the controller to the model
     osimModel.addController(&prescribed);

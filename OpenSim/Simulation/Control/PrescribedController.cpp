@@ -53,7 +53,7 @@ PrescribedController::PrescribedController() :
     Controller()
 {
     setNull();
-    constructProperties();
+    constructInfrastructure();
 }
 
 /*
@@ -118,4 +118,25 @@ void PrescribedController::
     if(index < 0 )
         throw Exception("PrescribedController does not have "+actName+" in its list of actuators to control.");
     prescribeControlForActuator(index, prescribedFunction);
+}
+
+void PrescribedController::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+    auto& columnOutput = updOutput("control");
+    columnOutput.clearChannels();
+    for (int i = 0; i< getActuatorSet().getSize(); i++)
+        columnOutput.addChannel(getActuatorSet().get(i).getName());
+}
+
+
+SimTK::Vector PrescribedController::
+getControlAtTime(const SimTK::State& s, const std::string& actName) const {
+    SimTK::Vector actControls(1, 0.0);
+    SimTK::Vector time(1, s.getTime());
+    // Add in code to actually get the control!
+    int index = getProperty_actuator_list().findIndex(actName);
+    if (index < 0)
+        throw Exception("PrescribedController does not have " + actName + " in its list of actuators to control.");
+    actControls[0] = get_ControlFunctions()[index].calcValue(time);
+    return actControls;
 }

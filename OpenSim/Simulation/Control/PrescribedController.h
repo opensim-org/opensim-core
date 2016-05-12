@@ -11,8 +11,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -39,7 +39,7 @@ class Function;
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
- * @author  Ajay Seth
+ * @authors  Ajay Seth, Ayman Habib
  */
 //=============================================================================
 
@@ -54,6 +54,10 @@ public:
     OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
         "Functions (one per control) describing the controls for actuators"
         "specified for this controller." );
+    /** Output is a list of "control" outputs, available at stage "Time" 
+    (can depend only on time) and obtained by calling  getControlAtTime */
+    OpenSim_DECLARE_LIST_OUTPUT(control, SimTK::Vector, getControlAtTime,
+        SimTK::Stage::Time);
 
 //=============================================================================
 // METHODS
@@ -98,6 +102,17 @@ public:
      */
     void prescribeControlForActuator(const std::string actName,
                                      Function *prescribedFunction);
+
+    /**
+     * Return a List output with one vector of control values per Actuator. Size of the List/Vector
+     * is the same as the number of Actuators controlle dby this controller, each entry is a Vector of 
+     * size 1 in case of Scalar control*/
+    SimTK::Vector getControlAtTime(const SimTK::State& s, const std::string& actuatorName) const;
+
+    /**
+     * Populate channels of "control" output, one per actuator
+     */
+    void extendFinalizeFromProperties() override;
 
 private:
     // construct and initialize properties
