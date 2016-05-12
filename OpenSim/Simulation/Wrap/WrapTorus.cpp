@@ -281,8 +281,8 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
     SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-    cyl.setRadius(_innerRadius);
-    cyl.setLength(CYL_LENGTH);
+    cyl.set_radius(_innerRadius);
+    cyl.set_length(CYL_LENGTH);
     cyl.set_quadrant("+x");
 
     closestPt *= -1;

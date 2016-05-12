@@ -155,8 +155,8 @@ void DefaultGeometry::generateDecorations
                     if (cylinder != NULL) {
                         Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
                         geometry.push_back(
-                            DecorativeCylinder(cylinder->getRadius(), 
-                                               cylinder->getLength()/2)
+                            DecorativeCylinder(cylinder->get_radius(), 
+                                               cylinder->get_length()/2)
                                 .setTransform(X_GW).setResolution(_dispWrapResolution)
                                 .setColor(color).setOpacity(_dispWrapOpacity));
                     }

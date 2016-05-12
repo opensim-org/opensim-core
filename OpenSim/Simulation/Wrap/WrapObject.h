@@ -141,14 +141,15 @@ public:
 
     virtual void updateGeometry() {};
 
+protected:
+   /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
+     * based on the name of the quadrant. finalizeFromProperties() should be
+     * called whenever the quadrant property changes. */
+    void extendFinalizeFromProperties();
+
 private:
     void constructProperties();
     void constructConnectors();
-   
-   /* Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
-    * based on the name of the quadrant. finalizeFromProperties() should be 
-    * called whenever the quadrant property changes. */
-    void extendFinalizeFromProperties();
 
 protected:
 
