@@ -371,8 +371,8 @@ void testPathSpring()
     block.scale(Vec3(0.2, 0.1, 0.1), false);
     
     WrapCylinder* pulley = new WrapCylinder();
-    pulley->setRadius(0.1);
-    pulley->setLength(0.05);
+    pulley->set_radius(0.1);
+    pulley->set_length(0.05);
 
     // Add the wrap object to the body, which takes ownership of it
     pulleyBody.addWrapObject(pulley);

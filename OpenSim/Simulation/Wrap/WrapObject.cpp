@@ -90,7 +90,6 @@ void WrapObject::setFrame(const PhysicalFrame& frame)
     return updConnector<PhysicalFrame>("frame").connect(frame);
 }
 
-
 /*
  * Scale the wrap object by aScaleFactors. This base class method scales
  * only the _translation property, which is a local member. The derived classes
@@ -104,7 +103,6 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
    for (int i=0; i<3; i++)
       upd_translation()[i] *= aScaleFactors[i];
 }
-
 
 void WrapObject::extendFinalizeFromProperties()
 {
@@ -151,7 +149,6 @@ void WrapObject::extendFinalizeFromProperties()
         throw Exception(errorMessage);
     }
 }
-
 
 int WrapObject::wrapPathSegment(const SimTK::State& s, 
                                 PathPoint& aPoint1, PathPoint& aPoint2,
