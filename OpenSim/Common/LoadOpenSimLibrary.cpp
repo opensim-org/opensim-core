@@ -103,7 +103,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
     // mode and a debug library is specified, we'll first try loading the debug library,
     // and then try loading the release library.
     bool tryDebugThenRelease = false;
-#ifndef NDEBUG
+#ifdef _DEBUG
     if(!hasDebugSuffix) {
         if(verbose) cout << "Will try loading debug library first" << endl;
         tryDebugThenRelease = true;
