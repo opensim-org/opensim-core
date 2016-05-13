@@ -47,10 +47,7 @@ Options:
                  command. The <path> to the library can be absolute or relative
                  to the current directory. Make sure to include the library's 
                  extension (e.g., .dll, .so, .dylib). You can load multiple
-                 plugins by repeating this option. Examples:
-                   opensim -L C:\Plugins\osimMyCustomForce.dll <command>
-                   opensim --library ../plugins/libosimMyPlugin.so <command>
-                   opensim --library=libosimMyCustomForce.dylib <command>
+                 plugins by repeating this option.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -61,6 +58,12 @@ Available commands:
   update-file  Update an .xml file (.osim or setup) to this version's format.
 
   Pass -h or --help to any of these commands to learn how to use them.
+
+Examples:
+  opensim -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
+  opensim --library ../plugins/libosimMyPlugin.so print-xml cmc
+  opensim --library=libosimMyCustomForce.dylib info Model gravity
+
 )";
 
 int main(int argc, const char** argv) {
