@@ -32,7 +32,7 @@ environment:
       NUGET_PACKAGE_ID_SUFFIX: "-x64"
       JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27-x64"
-      OPENSIM_TESTS_TO_EXCLUDE: "testCommandLineInterface"
+      OPENSIM_TESTS_TO_EXCLUDE: "nothingToExclude" # "testCommandLineInterface"
 
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
