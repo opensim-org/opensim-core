@@ -139,8 +139,9 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
     # We replace VERSION with the correct version once we know it (in
     # Bindings/Python/CMakeLists.txt).
-    set(OPENSIM_INSTALL_PYTHONDIR
-        "${CMAKE_INSTALL_LIBDIR}/pythonVERSION/site-packages")
+    # The _LIBDIR variable might contain something like x86-64-linux-gnu on
+    # some systems, but for python, we really just want lib/, no matter what.
+    set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
     # share/java, as expected on Ubuntu/Debian (apt-get).
     set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
     # Don't want to put source files in share/java.
