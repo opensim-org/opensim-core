@@ -30,30 +30,38 @@ using namespace OpenSim;
 using namespace std;
 
 #ifndef _WIN32
-// Current solution for Linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
-// using macros.  Also use macros for portable handles.
-//
-// LoadLibrary used to be a macro for dlopen but we want to transparently support
-// adding the "lib" prefix to library names when loading them, so made it a function
+// For Linux compatibility is to remap
+// LoadLibrary/GetProcAddress to dlopen/dlsym.
+static void *LoadLibrary(const char* name) {
+    return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
+}
+
+// We want to transparently support adding the "lib" prefix to library names
+// when loading them.
 static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
-    void *lib = dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    actualNameLoaded = name;
+    void *lib = LoadLibrary(name.c_str());
     if(!lib) {
         std::string libName = OpenSim::IO::GetFileNameFromURI(name);
         if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
             libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
+            actualNameLoaded = libName;
             //std::cout << "Loading " << name << " failed, trying " << libName << " (for Linux compatibility)" << std::endl;
-            lib = dlopen(libName.c_str(), RTLD_LAZY | RTLD_GLOBAL); 
+            lib = LoadLibrary(libName.c_str());
         }
     }
     return lib;
 }
 #define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
+
 #else
+
 HINSTANCE LoadLibrary(const std::string &name, std::string &actualNameLoaded) {
     actualNameLoaded = name;
     return LoadLibrary(name.c_str());
 }
 #define LoadLibraryError()
+
 #endif
 
 //_____________________________________________________________________________
@@ -79,11 +87,13 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 {
     string libraryExtension;
 #ifdef __linux__
-    libraryExtension=".so";
+    libraryExtension = ".so";
+#elif defined(__APPLE__)
+    libraryExtension = ".dylib";
 #endif
     string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
     string actualLibFileName = fixedLibFileName + libraryExtension;
-    static const string debugSuffix="_d";
+    static const string debugSuffix = "_d";
     bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,(int)debugSuffix.size())==debugSuffix);
     string actualNameLoaded;
 
@@ -93,7 +103,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
     // mode and a debug library is specified, we'll first try loading the debug library,
     // and then try loading the release library.
     bool tryDebugThenRelease = false;
-#ifdef _DEBUG
+#ifndef NDEBUG
     if(!hasDebugSuffix) {
         if(verbose) cout << "Will try loading debug library first" << endl;
         tryDebugThenRelease = true;
@@ -138,6 +148,24 @@ OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 {
     OPENSIM_PORTABLE_HINSTANCE library = LoadOpenSimLibrary(aLibraryName.c_str(), false);
     if(!library) { cout<<"ERROR- library "<<aLibraryName<<" could not be loaded.\n\n"; }
+}
+
+OSIMCOMMON_API bool
+OpenSim::LoadOpenSimLibraryExact(const std::string& exactPath,
+                                 bool verbose) {
+    const auto fixedPath = IO::FixSlashesInFilePath(exactPath);
+    OPENSIM_PORTABLE_HINSTANCE library = LoadLibrary(fixedPath.c_str());
+    if (library) {
+        if (verbose) {
+            cout << "Loaded library " << fixedPath << endl;
+        }
+        return true;
+    } else {
+        if (verbose) {
+            cout << "Failed to load library " << fixedPath << endl;
+        }
+        return false;
+    }
 }
 
 //_____________________________________________________________________________
