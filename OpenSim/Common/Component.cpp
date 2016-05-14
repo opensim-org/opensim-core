@@ -743,8 +743,22 @@ const Component::StateVariable* Component::
 // its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
-    Array<std::string> names = getStateVariablesNamesAddedByComponent();
+    Array<std::string> stateNames = getStateVariablesNamesAddedByComponent();
 
+    for (int i = 0; i < stateNames.size(); ++i) {
+        stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
+    }
+
+    for (auto& comp : getComponentList<Component>()) {
+        const std::string& pathName = comp.getFullPathName();// *this);
+        Array<std::string> subStateNames = 
+            comp.getStateVariablesNamesAddedByComponent();
+        for (int i = 0; i < subStateNames.size(); ++i) {
+            stateNames.append(pathName + "/" + subStateNames[i]);
+        }
+    }
+
+/*
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
         Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
@@ -788,8 +802,8 @@ Array<std::string> Component::getStateVariableNames() const
             names.append(prefix + subnames[j]);
         }
     }
-
-    return names;
+*/
+    return stateNames;
 }
 
 // Get the value of a state variable allocated by this Component.
@@ -1172,15 +1186,14 @@ getStateVariablesNamesAddedByComponent() const
 //------------------------------------------------------------------------------
 // This is the base class implementation of a virtual method that can be
 // overridden by derived model components, but they *must* invoke
-// Super::extendRealizeTopology() as the first line in the overriding method so that
-// this code is executed before theirs.
+// Super::extendRealizeTopology() as the first line in the overriding method so
+// that this code is executed before theirs.
 // This method is invoked from the ComponentMeasure associated with this
 // Component.
 // Note that subcomponent realize() methods will be invoked by their own
 // ComponentMeasures, so we do not need to forward to subcomponents here.
 void Component::extendRealizeTopology(SimTK::State& s) const
 {
-
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
     
     Component *mutableThis = const_cast<Component*>(this);
