@@ -148,8 +148,8 @@ protected:
     void extendFinalizeFromProperties();
 
 private:
-    void constructProperties();
-    void constructConnectors();
+    void constructProperties() override;
+    void constructConnectors() override;
 
 protected:
 
