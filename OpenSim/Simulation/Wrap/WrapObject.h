@@ -63,11 +63,11 @@ public:
         "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color");
+        "Display Color as RGB with each being any value on [0, 1]");
 
     OpenSim_DECLARE_PROPERTY(quadrant, std::string,
-        "The quadrant over which the wrap object is active.");
-
+        "The name of quadrant over which the wrap object is active. "
+        "For example, '+x' or '-y' to set the sidedness of the wrapping.");
 
     enum WrapQuadrant
     {
