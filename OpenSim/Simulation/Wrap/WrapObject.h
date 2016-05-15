@@ -149,7 +149,8 @@ protected:
 
 private:
     void constructProperties() override;
-    void constructConnectors() override;
+
+    SimTK::ReferencePtr<const PhysicalFrame> _frame;
 
 protected:
 

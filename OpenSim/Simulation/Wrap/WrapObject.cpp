@@ -75,19 +75,14 @@ void WrapObject::constructProperties()
     constructProperty_color(defaultColor);
 }
 
-void WrapObject::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("frame");
-}
-
 const PhysicalFrame& WrapObject::getFrame() const
 {
-    return getConnector<PhysicalFrame>("frame").getConnectee();
+    return _frame.getRef();
 }
 
 void WrapObject::setFrame(const PhysicalFrame& frame)
 {
-    return updConnector<PhysicalFrame>("frame").connect(frame);
+    _frame.reset(&frame);
 }
 
 /*
