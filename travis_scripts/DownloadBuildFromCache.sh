@@ -21,7 +21,7 @@ if [ "$CURRBRANCH" == "master" ]; then
   cd $CURR_DIR
   return
 fi
-if $(git log -n1 --format="%B" | grep --quiet '[make clean]'); then
+if $(git log -n1 --format="%B" | grep --quiet '\[make clean\]'); then
   echo "---- Not downloading cache. Make clean."
   cd $CURR_DIR
   return
