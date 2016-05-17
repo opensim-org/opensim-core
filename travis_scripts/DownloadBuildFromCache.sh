@@ -13,6 +13,7 @@ if [ "${BUILD_DIR:0:1}" != "/" ]; then
   BUILD_DIR=${CURR_DIR}/${BUILD_DIR}
 fi
 
+if [ ! -d $BUILD_DIR ]; then mkdir $BUILD_DIR; fi
 cd $SOURCE_DIR
 CURRBRANCH=$(git reflog | tail -n2 | head -n1 | sed 's/.*checkout: moving from \([^ ]*\) to.*/\1/')
 if [ "$CURRBRANCH" == "master" ]; then 
@@ -45,7 +46,6 @@ TARBALL=${BUILD_DIRNAME}.tar.gz
 LETTERS='a b c d e f g h i j k l m n o p q r s t u v w x y z'
 URL="https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
 echo "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
-if [ ! -d $BUILD_DIR ]; then mkdir $BUILD_DIR; fi
 cd ${BUILD_DIR}/..
 for i in $LETTERS; do 
   piece=${TARBALL}a$i 
