@@ -209,10 +209,7 @@ int main()
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
 
-
-        auto& outputForMuscle1= muscleController->getOutput("control").getChannel("muscle1");
-
-        // Define non-zero (defaults are 0) states for the free joint
+         // Define non-zero (defaults are 0) states for the free joint
         CoordinateSet& modelCoordinateSet = osimModel.updCoordinateSet();
         modelCoordinateSet[3].setValue(si, distance); // set x-translation value
         modelCoordinateSet[5].setValue(si, 0.0); // set z-translation value
