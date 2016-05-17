@@ -49,7 +49,7 @@ const static double refControls[ARM26_DESIGN_SPACE_DIM]
 int main()
 {
     try {
-        Storage result("Arm26_optimized_states.mot"),
+        Storage result("Arm26_optimized_states.sto"),
                 standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
                                        Array<double>(0.01, 16),
