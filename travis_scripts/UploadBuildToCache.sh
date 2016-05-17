@@ -18,23 +18,12 @@ if [ "$PROJECT" == "opensim-core" ]; then
   # Make sure the branch is master.
   CURRBRANCH=$(git reflog | tail -n2 | head -n1 | sed 's/.*checkout: moving from \([^ ]*\) to.*/\1/')
   if [ "$CURRBRANCH" != "master" ]; then
-    # Cache branch base in master if it does not exist and if the user instructs so.
-    if $(git log -n1 --format="%B" | grep --quiet '[cache master]'); then
-      BRANCHTIP=$(git log -n1 --format='%H')
-      git fetch --quiet origin master:master
-      BRANCHBASE=$(git merge-base master ${BRANCHTIP})
-      git checkout --quiet $BRANCHBASE
-      cd $BUILD_DIR
-      make -j$NPROC
-    else 
       echo "---- Not caching build directory. Current branch (${CURRBRANCH}) is not master."
       cd $CURR_DIR
       return
-    fi
   fi
 fi
 
-cd $SOURCE_DIR
 MASTERTIP=$(git log -n1 --format="%H")
 if [[ "$CC" == *gcc* ]]; then export COMPILER=gcc; fi
 if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
