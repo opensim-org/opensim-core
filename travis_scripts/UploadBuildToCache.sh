@@ -23,7 +23,7 @@ if [ "$PROJECT" == "opensim-core" ]; then
       BRANCHTIP=$(git log -n1 --format='%H')
       git fetch --quiet origin master:master
       BRANCHBASE=$(git merge-base master ${BRANCHTIP})
-      git checkout $BRANCHBASE
+      git checkout --quiet $BRANCHBASE
       cd $BUILD_DIR
       make -j$NPROC
     else 
