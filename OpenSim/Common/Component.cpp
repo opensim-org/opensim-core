@@ -743,8 +743,9 @@ const Component::StateVariable* Component::
 // its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
-    Array<std::string> stateNames = getStateVariablesNamesAddedByComponent();
+    Array<std::string> names = getStateVariablesNamesAddedByComponent();
 
+/** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
         stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
     }
@@ -757,8 +758,8 @@ Array<std::string> Component::getStateVariableNames() const
             stateNames.append(pathName + "/" + subStateNames[i]);
         }
     }
+*/
 
-/*
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
         Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
@@ -802,8 +803,8 @@ Array<std::string> Component::getStateVariableNames() const
             names.append(prefix + subnames[j]);
         }
     }
-*/
-    return stateNames;
+
+    return names;
 }
 
 // Get the value of a state variable allocated by this Component.
