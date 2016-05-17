@@ -39,7 +39,7 @@ MASTERTIP=$(git log -n1 --format="%H")
 if [[ "$CC" == *gcc* ]]; then export COMPILER=gcc; fi
 if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
 PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
-URL="https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${BRANCHTIP}"
+URL="https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
 BUILD_DIRNAME=$(basename $BUILD_DIR)
 TARBALL=${BUILD_DIRNAME}.tar.gz
 if curl --head --fail --silent --location ${URL}/${TARBALL}aa -o /dev/null; then
