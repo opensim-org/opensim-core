@@ -21,7 +21,6 @@ if [ "$PROJECT" == "opensim-core" ]; then
     # Cache branch base in master if it does not exist and if the user instructs so.
     if $(git log -n1 --format="%B" | grep --quiet '[cache master]'); then
       BRANCHTIP=$(git log -n1 --format='%H')
-      git fetch --quiet --unshallow
       git fetch --quiet origin master:master
       BRANCHBASE=$(git merge-base master ${BRANCHTIP})
       git checkout $BRANCHBASE
