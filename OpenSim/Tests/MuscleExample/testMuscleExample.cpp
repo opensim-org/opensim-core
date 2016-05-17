@@ -35,7 +35,7 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_fatigue_states.mot"), 
+        Storage result1("tugOfWar_fatigue_states.sto"), 
                 standard1("std_tugOfWar_fatigue_states.sto");
         int ncols = result1.getColumnLabels().getSize();
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
@@ -45,7 +45,7 @@ int main()
                                        "tugOfWar fatigue states failed");
         cout << "tugOfWar fatigue states passed\n";
 
-        Storage result2("tugOfWar_fatigue_forces.mot"), 
+        Storage result2("tugOfWar_fatigue_forces.sto"), 
                 standard2("std_tugOfWar_forces.mot");
         ncols = result2.getColumnLabels().getSize();
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
