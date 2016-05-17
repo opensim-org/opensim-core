@@ -31,7 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
-#include "OpenSim/Common/MOTFileAdapter.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -211,7 +211,7 @@ int main()
         manager.integrate(si);
 
         auto statesTable = manager.getStatesTable();
-        MOTFileAdapter::write(statesTable, "Arm26_optimized_states.mot");
+        STOFileAdapter::write(statesTable, "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

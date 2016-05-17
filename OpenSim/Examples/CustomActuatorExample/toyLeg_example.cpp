@@ -34,7 +34,7 @@
 #include "PistonActuator.h"
 #include "ControllableSpring.h"
 #include <OpenSim/OpenSim.h>
-#include "OpenSim/Common/MOTFileAdapter.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -222,15 +222,15 @@ int main()
 
         // Save results
         auto controlsTable = osimModel.getControlsTable();
-        MOTFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.mot");
+        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
         auto statesTable = manager.getStatesTable();
         osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
-        MOTFileAdapter::write(statesTable, 
-                              "SpringActuatedLeg_states_degrees.mot");
+        STOFileAdapter::write(statesTable, 
+                              "SpringActuatedLeg_states_degrees.sto");
 
         auto forcesTable = forces->getForcesTable();
-        MOTFileAdapter::write(forcesTable, "actuator_forces.mot");
+        STOFileAdapter::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)
     {

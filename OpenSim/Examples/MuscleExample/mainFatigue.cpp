@@ -32,7 +32,7 @@
 #include <OpenSim/OpenSim.h>
 #include "FatigableMuscle.h"
 #include <OpenSim/Common/IO.h>
-#include "OpenSim/Common/MOTFileAdapter.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -235,10 +235,10 @@ int main()
         // Save the simulation results
         // Save the states
         auto statesTable = manager.getStatesTable();
-        MOTFileAdapter::write(statesTable, "tugOfWar_fatigue_states.mot");
+        STOFileAdapter::write(statesTable, "tugOfWar_fatigue_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        MOTFileAdapter::write(forcesTable, "tugOfWar_fatigue_forces.mot");
+        STOFileAdapter::write(forcesTable, "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results
         IO::makeDir("MuscleAnalysisResults");
