@@ -881,12 +881,6 @@ SimTK::Vector Component::
 {
     int nsv = getNumStateVariables();
 
-    bool uninitialized = (_allStateVariables.size() != nsv) ||
-                            _statesAssociatedSystem.empty();
-
-    bool inconsistent = _statesAssociatedSystem.empty() ? true :
-        !getSystem().isSameSystem(_statesAssociatedSystem.getRef());
-
     if (!isObjectUpToDateWithProperties()) {
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
