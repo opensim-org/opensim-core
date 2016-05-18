@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  MOTFileAdapter.h                        *
+ *                          OpenSim:  STOFileAdapter.h                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -19,36 +19,36 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_MOT_FILE_ADAPTER_H_
-#define OPENSIM_MOT_FILE_ADAPTER_H_
+#ifndef OPENSIM_STO_FILE_ADAPTER_H_
+#define OPENSIM_STO_FILE_ADAPTER_H_
 
 #include "DelimFileAdapter.h"
 
 
 namespace OpenSim {
 
-/** MOTFileAdapter is a DelimFileAdapter that presets the delimiters 
-appropriately for MOT files.                                                  */
-class OSIMCOMMON_API MOTFileAdapter : public DelimFileAdapter {
+/** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
+appropriately for STO files.                                                  */
+class OSIMCOMMON_API STOFileAdapter : public DelimFileAdapter {
 public:
-    MOTFileAdapter();
-    MOTFileAdapter(const MOTFileAdapter&)            = default;
-    MOTFileAdapter(MOTFileAdapter&&)                 = default;
-    MOTFileAdapter& operator=(const MOTFileAdapter&) = default;
-    MOTFileAdapter& operator=(MOTFileAdapter&&)      = default;
-    ~MOTFileAdapter()                                = default;
+    STOFileAdapter();
+    STOFileAdapter(const STOFileAdapter&)            = default;
+    STOFileAdapter(STOFileAdapter&&)                 = default;
+    STOFileAdapter& operator=(const STOFileAdapter&) = default;
+    STOFileAdapter& operator=(STOFileAdapter&&)      = default;
+    ~STOFileAdapter()                                = default;
 
-    MOTFileAdapter* clone() const override;
+    STOFileAdapter* clone() const override;
 
-    /** Read a MOT file.                                                      */
+    /** Read a STO file.                                                      */
     static
     TimeSeriesTable read(const std::string& fileName);
 
-    /** Write a MOT file.                                                     */
+    /** Write a STO file.                                                     */
     static
     void write(const TimeSeriesTable& table, const std::string& fileName);
 };
 
 }
 
-#endif // OPENSIM_MOT_FILE_ADAPTER_H_
+#endif // OPENSIM_STO_FILE_ADAPTER_H_

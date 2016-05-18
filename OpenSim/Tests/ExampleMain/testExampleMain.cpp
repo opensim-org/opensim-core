@@ -35,7 +35,7 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_states.mot"), 
+        Storage result1("tugOfWar_states.sto"), 
                 standard1("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
                                        Array<double>(0.1, 16), 
@@ -44,7 +44,7 @@ int main()
                                        "tugOfWar states failed");
         cout << "tugOfWar states passed\n";
 
-        Storage result3("tugOfWar_forces.mot"), 
+        Storage result3("tugOfWar_forces.sto"), 
                 standard3("std_tugOfWar_forces.mot");
         
         Array<double> tols(1.0, 20);

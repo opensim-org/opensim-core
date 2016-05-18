@@ -35,7 +35,7 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_controls.mot"), 
+        Storage result1("tugOfWar_controls.sto"), 
                 standard1("std_tugOfWar_controls.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
                                        Array<double>(0.01, 2), 
@@ -51,7 +51,7 @@ int main()
         // activations within 2%
         tols[12] = tols[14] = 0.02;
 
-        Storage result2("tugOfWar_states.mot"), 
+        Storage result2("tugOfWar_states.sto"), 
                 standard2("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
                                        tols, 
