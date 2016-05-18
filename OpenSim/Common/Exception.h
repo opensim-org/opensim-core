@@ -218,6 +218,19 @@ public:
     }
 };
 
+class InvalidTemplateArgument : public Exception {
+public:
+    InvalidTemplateArgument(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const std::string& msg) :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Template argument. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
 class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,

@@ -108,7 +108,7 @@
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
-%shared_ptr(OpenSim::MOTFileAdapter)
+%shared_ptr(OpenSim::STOFileAdapter)
 %shared_ptr(OpenSim::CSVFileAdapter)
 %shared_ptr(OpenSim::TRCFileAdapter)
 %shared_ptr(OpenSim::C3DFileAdapter)
@@ -120,6 +120,6 @@
 %include <OpenSim/Common/FileAdapter.h>
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
-%include <OpenSim/Common/MOTFileAdapter.h>
+%include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
