@@ -34,7 +34,7 @@
 
 // Include OpenSim and functions
 #include <OpenSim/OpenSim.h>
-#include "OpenSim/Common/MOTFileAdapter.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 
 // This allows us to use OpenSim functions, classes, etc., without having to
 // prefix the names of those things with "OpenSim::".
@@ -287,10 +287,10 @@ int main()
 
         // Save the simulation results.
         auto controlsTable = osimModel.getControlsTable();
-        MOTFileAdapter::write(controlsTable, "tugOfWar_controls.mot");
+        STOFileAdapter::write(controlsTable, "tugOfWar_controls.sto");
 
         auto statesTable = manager.getStatesTable();
-        MOTFileAdapter::write(statesTable, "tugOfWar_states.mot");
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {
         
