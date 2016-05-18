@@ -151,9 +151,6 @@ void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
  */
 void WrapSphere::copyData(const WrapSphere& aWrapSphere)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphere);
-
     _radius = aWrapSphere._radius;
 }
 

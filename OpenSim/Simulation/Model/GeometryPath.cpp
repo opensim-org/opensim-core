@@ -84,7 +84,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     for (int i = 0; i < get_PathPointSet().getSize(); i++){
         upd_PathPointSet().get(i).connectToModelAndPath(aModel, *this);
     }
-
 }
 
 //_____________________________________________________________________________
@@ -995,8 +994,7 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
                 }
             }
 
-
-            if (wo->getActive()) {
+            if (wo->get_active()) {
                 // startPoint and endPoint in wrapStruct represent the 
                 // user-defined starting and ending points in the array of path 
                 // points that should be considered for wrapping. These indices 
@@ -1135,8 +1133,8 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 
                     ws.updWrapPoint1().setWrapLength(0.0);
                     ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
-                    ws.updWrapPoint1().setBody(wo->getBody());
-                    ws.updWrapPoint2().setBody(wo->getBody());
+                    ws.updWrapPoint1().setBody(wo->getFrame());
+                    ws.updWrapPoint2().setBody(wo->getFrame());
 
                     ws.updWrapPoint1().setLocation(s,best_wrap.r1);
                     ws.updWrapPoint2().setLocation(s,best_wrap.r2);
@@ -1199,10 +1197,10 @@ calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
     const Vec3& p1 = pt1->getLocation();
     const Vec3& p2 = pt2->getLocation();
     double wrap_length = getModel().getSimbodyEngine()
-        .calcDistance(s, pt1->getBody(), p1, wo.getBody(), wr.r1);
+        .calcDistance(s, pt1->getBody(), p1, wo.getFrame(), wr.r1);
     wrap_length += wr.wrap_path_length;
     wrap_length += getModel().getSimbodyEngine()
-        .calcDistance(s, wo.getBody(), wr.r2, pt2->getBody(), p2);
+        .calcDistance(s, wo.getFrame(), wr.r2, pt2->getBody(), p2);
 
     return wrap_length - straight_length; // return absolute diff, not relative
 }

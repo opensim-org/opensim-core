@@ -151,7 +151,7 @@ int main()
         // to recompose existing components, this will need continual updating. For example,
         // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
         // and orientation offsets.
-        ASSERT(numComponents == 130); 
+        ASSERT(numComponents == 134); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
