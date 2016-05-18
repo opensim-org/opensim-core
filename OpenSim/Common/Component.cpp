@@ -880,8 +880,18 @@ SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
     int nsv = getNumStateVariables();
-
-    if (!isObjectUpToDateWithProperties()) {
+    // Consider the list of all StateVariables to be valid if all of 
+    // the following are true:
+    // 1. Component is up-to-date with its Properties
+    // 2. a System has been associated with the list of StateVariables
+    // 3. The list of all StateVariables is correctly sized (initialized)
+    // 4. The System associated with the StateVariables is the current System
+    bool valid = isObjectUpToDateWithProperties() &&   // 1.
+                _statesAssociatedSystem.empty()  &&     // 2.
+                _allStateVariables.size() == nsv &&     // 3.
+                getSystem().isSameSystem(_statesAssociatedSystem.getRef());// 4.
+    // if the StateVariables are invalid (see above) rebuild the list 
+    if (!valid) {
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
         _allStateVariables.resize(nsv);
