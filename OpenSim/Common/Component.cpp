@@ -880,11 +880,25 @@ SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
     int nsv = getNumStateVariables();
-    Array<std::string> names = getStateVariableNames();
+
+    bool uninitialized = (_allStateVariables.size() != nsv) ||
+                            _statesAssociatedSystem.empty();
+
+    bool inconsistent = _statesAssociatedSystem.empty() ? true :
+        !getSystem().isSameSystem(_statesAssociatedSystem.getRef());
+
+    if (!isObjectUpToDateWithProperties()) {
+        _statesAssociatedSystem.reset(&getSystem());
+        _allStateVariables.clear();
+        _allStateVariables.resize(nsv);
+        Array<std::string> names = getStateVariableNames();
+        for (int i = 0; i < nsv; ++i)
+            _allStateVariables[i].reset(findStateVariable(names[i]));
+    }
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        stateVariableValues[i]=getStateVariableValue(state, names[i]);
+        stateVariableValues[i]= _allStateVariables[i]->getValue(state);
     }
 
     return stateVariableValues;
@@ -897,7 +911,8 @@ void Component::
 {
     int nsv = getNumStateVariables();
     SimTK_ASSERT(values.size() == nsv, 
-        "Component::setStateVariableValues() number values does not match number of state variables."); 
+        "Component::setStateVariableValues() number values does not match the "
+        "number of state variables."); 
     Array<std::string> names = getStateVariableNames();
 
     Vector stateVariableValues(nsv, SimTK::NaN);

@@ -2272,8 +2272,8 @@ private:
     // bookkeeping of component variables (state variables and cache entries) with 
     // their index in the computational system. The earliest time we have a valid 
     // index is when we ask the system to allocate the resources and that only
-    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the Component
-    // in any way that would effect its behavior- that is why it it const!
+    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the
+    // Component in any way that would effect its behavior- that is why it it const!
     // The setting of the variable indices is not in the public interface and is 
     // not polymorphic.
 
@@ -2287,6 +2287,12 @@ private:
     // Map names of cache entries of the Component to their individual 
     // cache information.
     mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
+
+    // Array of all state variables for fast access during simulation
+    mutable SimTK::Array_<SimTK::ReferencePtr<const StateVariable> > _allStateVariables;
+    // A handle the System associated with the above state variables
+    mutable SimTK::ReferencePtr<const SimTK::System> _statesAssociatedSystem;
+
 //==============================================================================
 };  // END of class Component
 //==============================================================================
