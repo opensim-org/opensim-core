@@ -174,9 +174,6 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapEllipsoid);
-
     _dimensions = aWrapEllipsoid._dimensions;
 }
 

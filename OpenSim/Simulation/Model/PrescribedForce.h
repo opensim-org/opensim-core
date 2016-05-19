@@ -34,7 +34,7 @@ class Model;
 class FunctionSet;
 class Storage;
 
-/** This applies to a body a force and/or torque that is fully specified as a 
+/** This applies to a PhysicalFrame a force and/or torque that is specified as a 
 function of time. It is defined by three sets of functions, all of which are 
 optional:
 
@@ -44,8 +44,7 @@ optional:
 
   - Three functions that specify the (x,y,z) components of a point location at 
     which the force should be applied. If these functions are not provided, the 
-    force is applied at the body's origin (not necessarily the body's center 
-    of mass).
+    force is applied at the frame's origin.
 
   - Three functions that specify the (x,y,z) components of a pure torque 
     vector to apply. This is in addition to any torque resulting from the 
@@ -60,10 +59,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** "body" property is a string containing the name of the body to which
-    the force will be applied. **/
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
-        "Name of the body the force is applied to.");
     /** "pointIsGlobal" property is a flag indicating whether the point
     calculated by the Functions in pointFunctions are returned in the global
     frame rather than in the body frame which is the default. **/
@@ -94,22 +89,37 @@ public:
     /** These are three functions providing the x,y,z measure numbers of the
     torque vector being applied to the body. The coordinate frame in which
     this vector is interpreted depends on the "torqueIsGlobal" property. **/
+
     // Would have been better for this to be a list property. 
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
+    /** The force applied by the PrescribedForce, this depends only on time.  
+    The frame in which this vector is interpreted depends on the "forceIsGlobal" property.*/
+    OpenSim_DECLARE_OUTPUT(force_applied, SimTK::Vec3, getForceApplied, SimTK::Stage::Time);
 
-//==============================================================================
+    /** The torque applied by the PrescribedForce, this depends only on time. 
+    The frame in which this vector is interpreted depends on the "forceIsGlobal" property.*/
+    OpenSim_DECLARE_OUTPUT(torque_applied, SimTK::Vec3, getTorqueApplied, SimTK::Stage::Time);
+
+    /** The point where force is applied by the PrescribedForce, this depends only on time.
+    The frame of this vector depends on the "pointIsGlobal" property.*/
+    OpenSim_DECLARE_OUTPUT(point_of_application, SimTK::Vec3, getApplicationPoint, SimTK::Stage::Time);
+    //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
+    // CONSTRUCTION, default constructor
+    PrescribedForce();
+
     /**
      * Construct a PrescribedForce. By default, the force, torque, and point 
      * functions are all unspecified, meaning that it applies no force or 
      * torque.  To specify them, call setForceFunctions(), setTorqueFunctions(),
      * and setPointFunctions().
      *
-     * @param body     the body to apply the force to
+     * @param name      the name of the PrescribedForce
+     * @param frame     the PhysicalFrame to apply the force to
      */
-    explicit PrescribedForce(OpenSim::Body* body=0);
+    explicit PrescribedForce(const std::string& name, const OpenSim::PhysicalFrame& frame);
     /** Construct from an XML element. **/
     explicit PrescribedForce(SimTK::Xml::Element& aNode);
 
@@ -118,8 +128,11 @@ public:
     /** Copy in properties from XML. **/
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
-    void setBodyName(const std::string& aBodyName) { set_body(aBodyName); }
-    const std::string& getBodyName() const { return get_body(); }
+    void setFrameName(const std::string& aBodyName);
+    const std::string& getFrameName() const;
+    /** Backward compatibility pre 4.0 **/
+    void setBodyName(const std::string& aBodyName) { setFrameName(aBodyName); }
+    const std::string& getBodyName() const { return getFrameName(); }
 
     /**
      * %Set the functions which specify the force to apply.  By default the 
@@ -212,8 +225,10 @@ public:
     void setPointIsInGlobalFrame(bool isGlobal)
     {   set_pointIsGlobal(isGlobal); }
 
-    /** Get the body that the prescribed force is acting upon. **/
-    const OpenSim::Body& getBody() const {assert(_body); return *_body; }
+    /** Get the frame that the prescribed force is acting upon. **/
+    const OpenSim::PhysicalFrame& getFrame() const {
+        return getConnector<PhysicalFrame>("frame").getConnectee();
+    }
 
     /** Convenience method to evaluate the prescribed force functions at
     an arbitrary time. Returns zero if there aren't three functions defined. **/
@@ -236,11 +251,20 @@ public:
      * getRecordLabels() and should return same size Array.
      */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
+    /** Methods to support outputs */
+    SimTK::Vec3 getForceApplied(const SimTK::State& state) const {
+        return getForceAtTime(state.getTime());
+    }
 
+    SimTK::Vec3 getTorqueApplied(const SimTK::State& state) const {
+        return getTorqueAtTime(state.getTime());
+    }
 
+    SimTK::Vec3 getApplicationPoint(const SimTK::State& state) const {
+        return getPointAtTime(state.getTime());
+    }
 protected:
-    /** ModelComponent interface. **/ 
-    void extendConnectToModel(Model& model) override;
+
     /** Force interface. **/
     void computeForce
        (const SimTK::State&                state, 
@@ -251,11 +275,10 @@ protected:
 // DATA
 //==============================================================================
 private:
-    OpenSim::Body *_body; // a shallow reference; don't delete
-
-private:
     void setNull();
     void constructProperties() override;
+    /** Construct PrescribedForce's connectors */
+    void constructConnectors() override;
 
 //=============================================================================
 };  // END of class PrescribedForce

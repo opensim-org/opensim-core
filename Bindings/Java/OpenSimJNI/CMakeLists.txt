@@ -6,32 +6,30 @@ find_package(JNI 1.6 REQUIRED)
 
 function(OpenSimGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
+
+    set(_swig_common_args -c++ -java
+            -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+            -I${OpenSim_SOURCE_DIR}
+            -I${OpenSim_SOURCE_DIR}/Bindings
+            -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
+            ${INPUT_INTERFACE_FILE}
+            )
+
+    OpenSimFindSwigFileDependencies(_${NAME}_dependencies ${NAME}
+        "${_swig_common_args}"
+        )
+
     add_custom_command(
         # This target actually creates a lot more (all the produced .java files)
         # but we will just use these two files as a proxy for all of those.
         OUTPUT ${OUTPUT_CXX_FILE} ${OUTPUT_H_FILE}
-        COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-                -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-                -I${OpenSim_SOURCE_DIR}
-                -I${OpenSim_SOURCE_DIR}/Bindings
-                -I${Simbody_INCLUDE_DIR}
-                ${SWIG_FLAGS}
-                -o ${OUTPUT_CXX_FILE}
-                -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-                ${INPUT_INTERFACE_FILE}
-        DEPENDS ${INPUT_INTERFACE_FILE}
-        "${CMAKE_SOURCE_DIR}/Bindings/preliminaries.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/simbody.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/common.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/simulation.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/actuators.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/analyses.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/tools.i"
-        "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_common.h"
-        "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_simulation.h"
-        "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_actuators.h"
-        "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_analyses.h"
-        "${CMAKE_SOURCE_DIR}/Bindings/OpenSimHeaders_tools.h"
+        COMMAND ${SWIG_EXECUTABLE}
+            -v # verbose
+            -o ${OUTPUT_CXX_FILE}
+            -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+            ${_swig_common_args}
+        DEPENDS ${_${NAME}_dependencies}
         COMMENT "Generating Java bindings source code with SWIG: ${NAME}")
 endfunction()
 
@@ -98,8 +96,11 @@ install(TARGETS osim${KIT}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
+# Don't install .class files.
 install(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
-    DESTINATION "${OPENSIM_INSTALL_JAVASRCDIR}/${SWIG_JAVA_PACKAGE_PATH}")
+    DESTINATION "${OPENSIM_INSTALL_JAVASRCDIR}/${SWIG_JAVA_PACKAGE_PATH}"
+    PATTERN "*.class" EXCLUDE
+    )
 
 if(BUILD_TESTING)
     subdirs(Test)

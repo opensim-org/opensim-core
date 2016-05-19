@@ -156,7 +156,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
 
     if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
-        MarkerPlacer& placer = subject->getMarkerPlacer();
+        const MarkerPlacer& placer = subject->getMarkerPlacer();
         if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
             throw Exception("testScale failed to place markers");
     }
@@ -178,7 +178,7 @@ void scaleModelWithLigament()
 
     std::string setupFilePath("");
 
-    // Truncate old model if any
+    // Remove old model if any
     FILE* file2Remove = IO::OpenFile(setupFilePath + "toyLigamentModelScaled.osim", "w");
     fclose(file2Remove);
 
@@ -188,7 +188,7 @@ void scaleModelWithLigament()
 
     // Keep track of the folder containing setup file, will be used to locate results to compare against
     setupFilePath = scaleTool->getPathToSubject();
-    ModelScaler& scaler = scaleTool->getModelScaler();
+    const ModelScaler& scaler = scaleTool->getModelScaler();
     const std::string& scaledModelFile = scaler.getOutputModelFileName();
     const std::string& std_scaledModelFile = "std_toyLigamentModelScaled.osim";
 
@@ -197,6 +197,16 @@ void scaleModelWithLigament()
 
     Model comp(scaledModelFile);
     Model std(std_scaledModelFile);
+
+    std.print("std_toyLigamentModelScaled_latest.osim");
+    comp.print("comp_toyLigamentModelScaled_latest.osim");
+
+    // the latest model will not match the standard because the naming convention has
+    // been updated to store path names and connecting a model results in connectors
+    // storing relative paths so that collections of components are more portable.
+    // The models must be equivalent after being connected.
+    comp.setup();
+    std.setup();
 
     ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
     ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
@@ -211,16 +221,6 @@ void scaleModelWithLigament()
         ASSERT(*its == *itc, __FILE__, __LINE__,
             "Scaled ligament " + its->getName() + " did not match standard.");
     }
-
-    std.print("std_toyLigamentModelScaled_latest.osim");
-    comp.print("comp_toyLigamentModelScaled_latest.osim");
-
-    // the latest model will not match the standard because the naming convention has
-    // been updated to store path names and connecting a model results in connectors
-    // storing relative paths so that collections of components are more portable.
-    // The models must be equivalent after being connected.
-    comp.setup();
-    std.setup();
 
     //Finally make sure we didn't incorrectly scale anything else in the model
     ASSERT(std == comp);

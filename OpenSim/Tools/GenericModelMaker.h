@@ -84,7 +84,7 @@ public:
 #endif
     void copyData(const GenericModelMaker &aGenericModelMaker);
 
-    Model* processModel(const std::string& aPathToSubject="");
+    Model* processModel(const std::string& aPathToSubject="") const;
 
     /* Register types to be used when reading a GenericModelMaker object from xml file. */
     static void registerTypes();

@@ -34,6 +34,7 @@
 
 // Include OpenSim and functions
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 // This allows us to use OpenSim functions, classes, etc., without having to
 // prefix the names of those things with "OpenSim::".
@@ -317,8 +318,11 @@ int main()
         manager.integrate( si );
 
         // Save the simulation results.
-        osimModel.printControlStorage( "tugOfWar_controls.sto" );
-        manager.getStateStorage().print( "tugOfWar_states.sto" );
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "tugOfWar_controls.sto");
+
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {
         

@@ -780,8 +780,6 @@ protected:
 //--------------------------------------------------------------------------
 private:
     void setNull();
-    void setupProperties();
-    void init();
 
     // Functions to support deserialization. 
     void generateXMLDocument();

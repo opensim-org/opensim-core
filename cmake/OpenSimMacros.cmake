@@ -334,7 +334,7 @@ function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             get_filename_component(DLL_NAME ${DLL} NAME)
             set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
             add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND cmake -E copy ${DLL} ${DEST_DIR}
+                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
                                COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}")
             list(APPEND DLL_NAMES ${DLL_NAME})
         endforeach()
@@ -342,3 +342,49 @@ function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
         install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
     endif()
 endfunction()
+
+
+# Discover the file dependencies for an invocation of swig, for use with the
+# DEPENDS field of an add_custom_command().
+#
+# OSIMSWIGDEP_RETURNVAL  is filled with a list of the dependencies.
+# OSIMSWIGDEP_MODULE     is the name of the module (just for messages).
+# OSIMSWIGDEP_INVOCATION is the SWIG command to use to check for dependencies.
+#                        We append `-MM` to this, which asks SWIG for the
+#                        dependencies.
+macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
+                                      OSIMSWIGDEP_MODULE
+                                      OSIMSWIGDEP_INVOCATION)
+    # We must use a macro instead of a function in order to return a value.
+
+    # Assemble dependencies. This command is run during CMake's configure step.
+    message(STATUS
+        "Discovering dependencies for SWIG module ${OSIMSWIGDEP_MODULE}.")
+    execute_process(COMMAND ${SWIG_EXECUTABLE}
+            -MM # List dependencies, but omit files in SWIG library.
+            ${OSIMSWIGDEP_INVOCATION}
+        OUTPUT_VARIABLE _dependencies_makefile
+        RESULT_VARIABLE _successfully_got_dependencies
+            )
+    # Clean up the output, since it's in the form of a makefile
+    # (and we just want a list of file paths).
+    if(${_successfully_got_dependencies} EQUAL 0) # return code 0 is success.
+        # '^.*:' matches the first line of the makefile (the output file path).
+        # '\\\\' matches a single \ (escape for CMake, and escape for regex).
+        string(REGEX REPLACE "(^.*:|\\\\\n)" "" ${OSIMSWIGDEP_RETURNVAL}
+            ${_dependencies_makefile})
+        # Replace spaces with semicolons to create a list of file paths.
+        separate_arguments(${OSIMSWIGDEP_RETURNVAL})
+    else()
+        # In case the variable has a value for previous modules.
+        unset(${OSIMSWIGDEP_RETURNVAL})
+        # If someone ends up here, it's a bug in this CMakeLists.txt.
+        message(AUTHOR_WARNING
+            "Could not determine dependencies for SWIG module ${OSIMSWIGDEP_MODULE}.")
+    endif()
+
+    unset(_dependencies_makefile)
+    unset(_successfully_got_dependencies)
+
+endmacro()
+
