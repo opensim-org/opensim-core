@@ -19,8 +19,8 @@ class TestDataAdapter(unittest.TestCase):
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 
-    def test_MOTFileAdapter(self):
-        adapter = osim.MOTFileAdapter()
+    def test_STOFileAdapter(self):
+        adapter = osim.STOFileAdapter()
         table = adapter.read(os.path.join(test_dir, 'subject02_grf_HiFreq.mot'))
         assert table.getNumRows()    == 439
         assert table.getNumColumns() == 18

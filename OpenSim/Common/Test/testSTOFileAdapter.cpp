@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  testMOTFileAdapter.cpp                *
+ *                            OpenSim:  testSTOFileAdapter.cpp                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -98,7 +98,7 @@ int main() {
     std::string tmpfile{"testmotfileadapter.mot"};
 
     for(const auto& filename : filenames) {
-        MOTFileAdapter motfileadapter{};
+        STOFileAdapter motfileadapter{};
         auto table = motfileadapter.read(filename);
         motfileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);

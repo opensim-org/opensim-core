@@ -115,6 +115,19 @@ public:
     using Exception::Exception;
 };
 
+class KeyExists : public Exception {
+public:
+    KeyExists(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& key) :
+        Exception(file, line, func) {
+        std::string msg = "Key '" + key + "' not found.";
+
+        addMessage(msg);
+    }
+};
+
 /** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
 storage of DataTable_ templated on different types to be stored in a container 
 like std::vector. DataTable_ represents a matrix and an additional column. The 
@@ -155,6 +168,52 @@ public:
     /// @name MetaData accessors/mutators.
     /// @{
 
+    /** Add key-value pair to the table metadata.
+
+    \tparam Value Type of the value. This need not be specified explicitly in
+                  most cases. It will be deduced automatically.
+
+    \throws KeyExists If the key provided already exists in table metadata.   */
+    template<typename Value>
+    void addTableMetaData(const std::string& key, const Value& value) {
+        OPENSIM_THROW_IF(!_tableMetaData.setValueForKey(key, value),
+                         KeyExists,
+                         key);
+    }
+
+    /** Get table metadata for a given key.
+
+    \tparam Value Type of the value to be retrieved. For example if the metadata
+                  contains key-value pair ("sample-rate", 200), this could be
+                  specified as 'unsigned'.
+
+    \throws KeyNotFound If the key provided is not found in table metadata.   */
+    template<typename Value>
+    Value getTableMetaData(const std::string& key) const {
+        const auto& absValue = _tableMetaData.getValueForKey(key);
+        try {
+            const auto& value = 
+                dynamic_cast<const SimTK::Value<Value>&>(absValue);
+            return value.get();
+        } catch (const std::bad_cast&) {
+            OPENSIM_THROW(InvalidTemplateArgument,
+                          "The value stored as Table MetaData for key '" + key +
+                          "' is not of type that is provided as template "
+                          "argument.");
+        }
+    }
+
+    /** Remove key-value pair associated with the given key from table 
+    metadata.                                                                 */
+    void removeTableMetaDataKey(const std::string& key) {
+        _tableMetaData.removeValueForKey(key);
+    }
+
+    /** Get table metadata keys.                                              */
+    std::vector<std::string> getTableMetaDataKeys() const {
+        return _tableMetaData.getKeys();
+    }
+
     /** Get metadata associated with the table.                               */
     const TableMetaData& getTableMetaData() const {
         return _tableMetaData;
@@ -194,6 +253,30 @@ public:
     /// @name Column-labels related accessors/mutators.
     /// Following functions operate on column labels of dependent columns only
     /// excluding the independent column.
+    /// Following are examples on using setColumnLabels(). If you have a 
+    /// sequence of strings, you can pretty much call setColumnLabels() on it.
+    /// \code
+    /// // Simplest way to set column labels is to provide them directly to
+    /// // setColumnLabels.
+    /// table.setColumnLabels({"col1", "col2", "col3"});
+    /// \endcode
+    /// \code
+    /// // if you have a sequence container like std::vector or std::list of 
+    /// // std::string holding column labels, pass the container directly to
+    /// // setColumnLabels.
+    /// std::list<std::string> columnLabels{"col1", "col2", "col3"};
+    /// table.setColumnLabels(columnLabels);
+    /// \endcode
+    /// \code
+    /// // If you have a sequence container like std::vector or std::list of 
+    /// // std::string holding column labels but you want to use only a subset
+    /// // of them to set column labels of the table, use iterators like below.
+    /// std::vector<std::string> columnLabels{"col-not-used1", 
+    ///                                       "col1", "col2", "col3", 
+    ///                                       "col-not-used2"};
+    /// table.setColumnLabels(columnLabels.begin() + 1, 
+    ///                       columnLabels.end() - 1);
+    /// \endcode
     /// @{
 
     /** Get column labels.                                                    
@@ -394,6 +477,13 @@ whole can contain metadata.
 \tparam ETY Type of each element of the column holding independent data.      */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
+    static_assert(!std::is_reference<ETY>::value,
+                  "Template argument ETY cannot be a 'reference'.");
+    static_assert(!std::is_pointer<ETY>::value,
+                  "Template argument ETY cannot be a 'pointer'.");
+    static_assert(!std::is_const<ETY>::value && !std::is_volatile<ETY>::value,
+                  "Template argument ETY cannot be 'const' or 'volatile'.");
+
 public:
     /** Type of each row of matrix holding dependent data.                    */
     typedef SimTK::RowVector_<ETY>     RowVector;
@@ -420,7 +510,132 @@ public:
     /// @name Row accessors/mutators.
     /// Following get/upd functions operate on matrix and not the independent
     /// column.
+    /// The function appendRow() is pretty flexible and it is possible to 
+    /// append a row with any sequence of elements. Following are some examples:
+    /// \code
+    /// // Easiest way to append a row is to provide the list of elements 
+    /// // directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {0.3, 0.4, 0.5, 0.6}); // 4 elements of type double.
+    /// // For a table with elements of type SimTK::Vec3, this could like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {{0.31, 0.32, 0.33},
+    ///                  {0.41, 0.42, 0.43},
+    ///                  {0.51, 0.52, 0.53},
+    ///                  {0.61, 0.62, 0.63}}); // 4 elements of SimTK::Vec3.
+    /// \endcode
+    /// \code
+    /// // It is possible to append a sequence container like std::vector or 
+    /// // std::list by providing it directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   // 4 elements of
+    ///                              {0.61, 0.62, 0.63}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // A SimTK::RowVector can be provided to appendRow as well.
+    /// // For a table with elements of type double, this could look like below.
+    /// SimTK::RowVector row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// SimTK::RowVector_<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                                    {0.41, 0.42, 0.43},
+    ///                                    {0.51, 0.52, 0.53},  // 4 elements of
+    ///                                    {0.61, 0.62, 0.63}}); // SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // It is possible to be use a pair of iterators to append a row as well.
+    /// // This could arise in situations where you might want to append a row
+    /// // using a subset of elements in a sequence.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element (0.4).
+    ///                 row.end() - 1);  // End at last but one (0.7).
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   
+    ///                              {0.61, 0.62, 0.63},
+    ///                              {0.71, 0.72, 0.73},   // 6 elements of
+    ///                              {0.81, 0.82, 0.83}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element.
+    ///                 row.end() - 1); // End at last but one.
+    /// \endcode
     /// @{
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param container Sequence container holding the elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename Container>
+    void appendRow(const ETX& indRow, const Container& container) {
+        using Value = decltype(*(container.begin()));
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The 'container' specified does not provide an iterator "
+                      "which when dereferenced provides elements that "
+                      "are of same type as elements of this table.");
+
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param container std::initializer_list containing elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    void appendRow(const ETX& indRow, 
+                   const std::initializer_list<ETY>& container) {
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param begin Iterator representing the beginning of the row to be appended.
+    \param end Iterator representing one past the end of the row to be appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename RowIter>
+    void appendRow(const ETX& indRow, RowIter begin, RowIter end) {
+        using Value = decltype(*begin);
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The iterator 'begin' provided does not provide elements"
+                      " that are of same type as elements of this table.");
+
+        RowVector row{static_cast<int>(std::distance(begin, end))};
+        int ind{0};
+        for(auto it = begin; it != end; ++it)
+            row[ind++] = *it;
+
+        appendRow(indRow, row);
+    }
 
     /** Append row to the DataTable_.                                         
 

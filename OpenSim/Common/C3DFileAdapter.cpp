@@ -44,8 +44,8 @@ C3DFileAdapter::clone() const {
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName) const {
-    auto abstables = extendRead(fileName);
+C3DFileAdapter::read(const std::string& fileName) {
+    auto abstables = C3DFileAdapter{}.extendRead(fileName);
     auto marker_table = 
         std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
     auto force_table = 
@@ -58,7 +58,7 @@ C3DFileAdapter::read(const std::string& fileName) const {
 
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
-                      const std::string& fileName) const {
+                      const std::string& fileName) {
     throw Exception{"Writing C3D not supported yet."};
 }
 

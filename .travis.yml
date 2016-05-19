@@ -142,7 +142,10 @@ before_install:
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF
   - make -j8
-
+  
+  # Force some cleanup of homebrew cache so we do not exceed availabe disk space
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; rm -rf "`brew cache`"; fi
+  
 install:
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
   # Configure OpenSim.

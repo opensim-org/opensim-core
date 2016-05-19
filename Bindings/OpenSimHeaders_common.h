@@ -49,7 +49,7 @@
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/TRCFileAdapter.h>
 #include <OpenSim/Common/DelimFileAdapter.h>
-#include <OpenSim/Common/MOTFileAdapter.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
 

@@ -117,9 +117,6 @@ void WrapCylinderObst::initCircleWrapPts()
 */
 void WrapCylinderObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
-
     _radiusProp.setName("radius");
     _radiusProp.setValue(-1.0);
     _propertySet.append(&_radiusProp);
@@ -178,9 +175,6 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
 */
 void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapCylinderObst);
-
     _radius = aWrapCylinderObst._radius;
     _length = aWrapCylinderObst._length;
     _wrapDirectionName = aWrapCylinderObst._wrapDirectionName;

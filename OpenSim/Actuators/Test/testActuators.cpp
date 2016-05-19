@@ -379,8 +379,8 @@ void testClutchedPathSpring()
     //double dh = mass*gravity_vec(1)/stiffness;
     
     WrapCylinder* pulley = new WrapCylinder();
-    pulley->setRadius(0.1);
-    pulley->setLength(0.05);
+    pulley->set_radius(0.1);
+    pulley->set_length(0.05);
 
     // Add the wrap object to the body, which takes ownership of it
     pulleyBody->addWrapObject(pulley);
