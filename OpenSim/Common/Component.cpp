@@ -887,8 +887,8 @@ SimTK::Vector Component::
     // 3. The list of all StateVariables is correctly sized (initialized)
     // 4. The System associated with the StateVariables is the current System
     bool valid = isObjectUpToDateWithProperties() &&   // 1.
-                _statesAssociatedSystem.empty()  &&     // 2.
-                _allStateVariables.size() == nsv &&     // 3.
+                !_statesAssociatedSystem.empty()  &&   // 2.
+                _allStateVariables.size() == nsv &&    // 3.
                 getSystem().isSameSystem(_statesAssociatedSystem.getRef());// 4.
     // if the StateVariables are invalid (see above) rebuild the list 
     if (!valid) {
