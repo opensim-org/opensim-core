@@ -91,25 +91,15 @@ const Vec3& ContactGeometry::getOrientation() const
 void ContactGeometry::setOrientation(const Vec3& orientation)
 { set_orientation(orientation); }
 
-SimTK::Transform ContactGeometry::findTransformInBaseFrame() const
+SimTK::Transform ContactGeometry::getTransform() const
 {
-    // B: base Frame (Body)
-    // F: PhysicalFrame specified in the connector for this object.
-    // P: the frame that is defined (relative to F) by the location
-    //    and orientation properties. Note: this frame does not have a
-    //    corresponding Frame object.
-    const auto& X_BF = getFrame().findTransformInBaseFrame();
-    SimTK::Transform X_FP(
+    return SimTK::Transform(
             SimTK::Rotation(SimTK::BodyRotationSequence,
                 get_orientation()[0], SimTK::XAxis,
                 get_orientation()[1], SimTK::YAxis,
                 get_orientation()[2], SimTK::ZAxis),
             get_location());
-    return X_BF * X_FP;
 }
-
-SimTK::Transform ContactGeometry::getTransform() const
-{ return findTransformInBaseFrame(); }
 
 const PhysicalFrame& ContactGeometry::getFrame() const
 {

@@ -104,13 +104,21 @@ public:
     virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
 
     /** Get a Transform representing the position and orientation of the
-     * geometry within the base Frame (e.g., a Body or Ground) it is attached
-     * to (*not* the "frame" that the geometry is connected to). If `B` is the
-     * base or Body Frame, `F` is the PhysicalFrame that this geometry is
-     * connected to, and `P` is the frame that is defined (relative to `F`) by
-     * the location and orientation properties of this class, then this returns
-     * `X_BP = X_BF * X_FP`. */
-    SimTK::Transform findTransformInBaseFrame() const;
+     * geometry relative to the PhysicalFrame `F` to which this geometry is
+     * connected.
+     *
+     * If you want the transform of this geometry relative to the Body (or
+     * Ground) `B` in which this geometry is fixed, you can use the following
+     * code:
+     * @code{.cpp}
+     * const auto& X_BF = geom.getFrame().findTransformInBaseFrame();
+     * const auto X_FP = geom.getTransform();
+     * const auto X_BP = X_BF * X_FP;
+     * @endcode
+     *
+     * Prior to OpenSim 4.0, there wwas no intermediate PhysicalFrame `F`, so
+     * this method essentially returned `X_BP`. */
+    SimTK::Transform getTransform() const;
 
     /**
     * Scale a ContactGeometry based on XYZ scale factors for the bodies.
@@ -149,19 +157,6 @@ public:
      * %Set the Body this geometry is attached to. */
     DEPRECATED_14("use setFrame() instead")
     void setBody(const PhysicalFrame& body);
-
-    /** <b>(Deprecated)</b> Use findTransformInBaseFrame() instead, which does
-     * the same thing.
-     *
-     * Get a Transform representing the position and orientation of the
-     * geometry within the base Frame (e.g., a Body or Ground) it is attached
-     * to (*not* the "frame" that the geometry is connected to). If `B` is the
-     * base or Body Frame, `F` is the PhysicalFrame that this geometry is
-     * connected to, and `P` is the frame that is defined (relative to `F`) by
-     * the location and orientation properties of this class, then this returns
-     * `X_BP = X_BF * X_FP`. */
-    DEPRECATED_14("use findTransformInBaseFrame() instead")
-    SimTK::Transform getTransform() const;
     // @}
 
 protected:

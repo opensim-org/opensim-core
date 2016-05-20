@@ -86,8 +86,15 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
-                           .setTransform(findTransformInBaseFrame())
+                           .setTransform(X_BP)
                            .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
                            .setBodyId(getFrame().getMobilizedBodyIndex())
                            .setColor(SimTK::Vec3(0,1,0))

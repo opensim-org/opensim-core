@@ -76,9 +76,16 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
             }
             ContactGeometry& geom = _model->updContactGeometrySet().get(
                     params.getGeometry()[j]);
+
+            // B: base Frame (Body or Ground)
+            // F: PhysicalFrame that this ContactGeometry is connected to
+            // P: the frame defined (relative to F) by the location and
+            //    orientation properties.
+            const auto& X_BF = geom.getFrame().findTransformInBaseFrame();
+            const auto& X_FP = geom.getTransform();
+            const auto X_BP = X_BF * X_FP;
             contacts.addBody(set, geom.getFrame().getMobilizedBody(),
-                    geom.createSimTKContactGeometry(),
-                    geom.findTransformInBaseFrame());
+                    geom.createSimTKContactGeometry(), X_BP);
             force.setBodyParameters(
                     SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1),
                     params.getStiffness(), params.getDissipation(),
