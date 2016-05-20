@@ -1,5 +1,5 @@
-#ifndef __WrapCylinder_h__
-#define __WrapCylinder_h__
+#ifndef OPENSIM_WRAP_CYLINDER_H_
+#define OPENSIM_WRAP_CYLINDER_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  WrapCylinder.h                          *
  * -------------------------------------------------------------------------- *
@@ -25,18 +25,10 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "WrapObject.h"
 
 namespace OpenSim {
 
-class Body;
-class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 
@@ -50,52 +42,35 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapCylinder : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinder, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _radiusProp;
-    double& _radius;
-
-    PropertyDbl _lengthProp;
-    double& _length;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapCylinder();
-    WrapCylinder(const WrapCylinder& aWrapCylinder);
     virtual ~WrapCylinder();
-
-#ifndef SWIG
-    WrapCylinder& operator=(const WrapCylinder& aWrapCylinder);
-#endif
-   void copyData(const WrapCylinder& aWrapCylinder);
-
-    double getRadius() const { return _radius; }
-    void setRadius(double aRadius) { _radius = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     void scale(const SimTK::Vec3& aScaleFactors) override;
 
-    void connectToModelAndBody(Model& aModel, OpenSim::PhysicalFrame& aBody) override;
 #ifndef SWIG
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
+
 protected:
-    void setupProperties();
+    void extendFinalizeFromProperties();
 
 private:
-    void setNull();
+    void constructProperties();
+
     void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,WrapResult& aWrapResult) const;
     void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
@@ -120,6 +95,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_CYLINDER_H_
 
 

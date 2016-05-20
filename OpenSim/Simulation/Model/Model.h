@@ -738,6 +738,7 @@ public:
     bool isControlled() const;
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage(const std::string& fileName ) const;
+    TimeSeriesTable getControlsTable() const;
     const ControllerSet& getControllerSet() const;
     ControllerSet& updControllerSet();
     bool getAllControllersEnabled() const;

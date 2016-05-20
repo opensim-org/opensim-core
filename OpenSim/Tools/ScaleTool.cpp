@@ -223,14 +223,14 @@ ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
  *
  * @return Pointer to the Model that is created.
  */
-Model* ScaleTool::createModel()
+Model* ScaleTool::createModel() const
 {
     cout << "Processing subject " << getName() << endl;
 
     /* Make the generic model. */
     if (!_genericModelMakerProp.getValueIsDefault())
     {
-        Model *model = _genericModelMaker.processModel(_pathToSubject);
+        Model *model = getGenericModelMaker().processModel(_pathToSubject);
         if (!model)
         {
             cout << "===ERROR===: Unable to load generic model." << endl;
@@ -244,4 +244,37 @@ Model* ScaleTool::createModel()
         cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
     }
     return 0;
+}
+
+bool ScaleTool::run() const {
+    std::unique_ptr<Model> model(createModel());
+
+    if(model == nullptr) { 
+        throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+    }
+
+    if (!isDefaultModelScaler() && getModelScaler().getApply())
+    {
+        const ModelScaler& scaler = getModelScaler();
+        if(!scaler.processModel(model.get(), getPathToSubject(), getSubjectMass())) {
+            return false;
+        }
+    }
+    else
+    {
+        cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
+    }
+
+    if (!isDefaultMarkerPlacer())
+    {
+        const MarkerPlacer& placer = getMarkerPlacer();
+        if(!placer.processModel(model.get(), getPathToSubject())) {
+            return false;
+        }
+    }
+    else
+    {
+        cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
+    }
+    return true;
 }

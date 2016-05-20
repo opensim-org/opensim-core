@@ -45,9 +45,11 @@ public:
 
     C3DFileAdapter* clone() const override;
     
-    Tables read(const std::string& fileName) const;
+    static
+    Tables read(const std::string& fileName);
 
-    void write(const Tables& markerTable, const std::string& fileName) const;
+    static
+    void write(const Tables& markerTable, const std::string& fileName);
 
     static const std::string _markers;
     static const std::string _forces;

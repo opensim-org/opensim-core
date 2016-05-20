@@ -136,12 +136,16 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
     # Location of the opensim python package in the installation.
-    # On Ubuntu/Debian (apt-get), might want lib/python2.7/dist-packages
-    set(OPENSIM_INSTALL_PYTHONDIR "${CMAKE_INSTALL_DOCDIR}/python")
-    # On Ubuntu/Debian (apt-get), might want share/java
-    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DOCDIR}/Java")
-    # On Ubuntu/Debian (apt-get), might want share/doc/OpenSim/java
-    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
+    # We replace VERSION with the correct version once we know it (in
+    # Bindings/Python/CMakeLists.txt).
+    # The _LIBDIR variable might contain something like x86-64-linux-gnu on
+    # some systems, but for python, we really just want lib/, no matter what.
+    set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    # share/java, as expected on Ubuntu/Debian (apt-get).
+    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+    # Don't want to put source files in share/java.
+    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_CPPEXDIR "${CMAKE_INSTALL_DOCDIR}/APIExamples")
     set(OPENSIM_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
 
@@ -613,8 +617,9 @@ add_custom_target(RUN_TESTS_PARALLEL
                                    )
 
 
-# Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
-set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
+# Create buildinfo.txt file and place under sdk to include product version,
+# platform and compiler for troubleshooting purposes
+set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/OpenSim_buildinfo.txt)
 # message("version file="${VERSION_FILE_PATH})
 file(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
