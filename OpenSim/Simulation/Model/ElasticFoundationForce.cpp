@@ -70,14 +70,26 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
                 std::string errorMessage = "Invalid ContactGeometry (" + params.getGeometry()[j] + ") specified in ElasticFoundationForce" + getName();
                 throw (Exception(errorMessage.c_str()));
             }
-            ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
+            ContactGeometry& geom = _model->updContactGeometrySet().get(
+                    params.getGeometry()[j]);
+
+            // B: base Frame (Body or Ground)
+            // F: PhysicalFrame that this ContactGeometry is connected to
+            // P: the frame defined (relative to F) by the location and
+            //    orientation properties.
+            const auto& X_BF = geom.getFrame().findTransformInBaseFrame();
+            const auto& X_FP = geom.getTransform();
+            const auto X_BP = X_BF * X_FP;
             contacts.addBody(set, geom.getFrame().getMobilizedBody(),
-                    geom.createSimTKContactGeometry(),
-                    geom.findTransformInBaseFrame());
-            if (dynamic_cast<ContactMesh*>(&geom) != NULL)
-                force.setBodyParameters(SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), 
-                    params.getStiffness(), params.getDissipation(),
-                    params.getStaticFriction(), params.getDynamicFriction(), params.getViscousFriction());
+                    geom.createSimTKContactGeometry(), X_BP);
+            if (dynamic_cast<ContactMesh*>(&geom) != NULL) {
+                force.setBodyParameters(
+                        SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), 
+                        params.getStiffness(), params.getDissipation(),
+                        params.getStaticFriction(),
+                        params.getDynamicFriction(),
+                        params.getViscousFriction());
+            }
         }
     }
 
