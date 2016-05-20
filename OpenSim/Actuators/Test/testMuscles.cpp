@@ -233,7 +233,6 @@ void simulateMuscle(
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.attachMeshGeometry("box.vtp");
     //ground.updDisplayer()->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
 
     OpenSim::Body * ball = new OpenSim::Body("ball", 
@@ -241,7 +240,7 @@ void simulateMuscle(
                         Vec3(0),  
                         ballMass*SimTK::Inertia::sphere(ballRadius));
     
-    ball->attachMeshGeometry("sphere.vtp");
+    ball->attachGeometry(Sphere(ballRadius));
     //ball->updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
@@ -301,7 +300,8 @@ void simulateMuscle(
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
-    PrescribedController * muscleController = new PrescribedController();
+    std::unique_ptr<PrescribedController> 
+        muscleController{new PrescribedController{}};
     if(control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 
@@ -309,7 +309,7 @@ void simulateMuscle(
         muscleController->prescribeControlForActuator("muscle",control->clone());
 
         // Add the control set controller to the model
-        model.addController(muscleController);
+        model.addController(muscleController.release());
     }
 
     // Set names for muscles / joints.

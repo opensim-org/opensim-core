@@ -72,11 +72,6 @@ AssemblySolver::AssemblySolver
     }
 }
 
-AssemblySolver::~AssemblySolver()
-{
-    delete _assembler;
-}
-
 /* Internal method to convert the CoordinateReferences into goals of the 
    assembly solver. Subclasses, override and call base to include other goals  
    such as point of interest matching (Marker tracking). This method is
@@ -84,8 +79,7 @@ AssemblySolver::~AssemblySolver()
 void AssemblySolver::setupGoals(SimTK::State &s)
 {
     // wipe-out the previous SimTK::Assembler
-    delete _assembler;
-    _assembler = new SimTK::Assembler(getModel().getMultibodySystem());
+    _assembler.reset(new SimTK::Assembler(getModel().getMultibodySystem()));
     _assembler->setAccuracy(_accuracy);
 
     // Define weights on constraints. Note can be specified SimTK::Infinity to strictly enforce constraint
@@ -145,7 +139,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
         throw Exception("AsemblySolver::setupGoals() has a mismatch between number of references and goals.");
 }
 
-/** Once a set of coordinates has been specified its target value can
+/* Once a set of coordinates has been specified its target value can
     be updated directly */
 void AssemblySolver::updateCoordinateReference(const std::string &coordName, double value, double weight)
 {
@@ -163,7 +157,7 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 }
 
 
-/** Internal method to update the time, reference values and/or their 
+/* Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state. */
 void AssemblySolver::updateGoals(const SimTK::State &s)
 {
@@ -177,7 +171,7 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
 }
 
 //______________________________________________________________________________
-/**
+/*
  * Assemble the model such that it satisfies configuration goals and constraints
  * The input state is used to initialize the assembly and then is updated to 
  * return the resulting assembled configuration.
@@ -240,7 +234,7 @@ void AssemblySolver::assemble(SimTK::State &state)
     }
 }
 
-/** Obtain a model configuration that meets the assembly conditions  
+/* Obtain a model configuration that meets the assembly conditions  
     (desired values and constraints) given a state that satisfies or
     is close to satisfying the constraints. Note there can be no change
     in the number of constraints or desired coordinates. Desired
@@ -248,7 +242,6 @@ void AssemblySolver::assemble(SimTK::State &state)
     to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)
 {
-
     // move the target locations or angles, etc... just do not change number of goals
     // and their type (constrained vs. weighted)
 
@@ -290,5 +283,22 @@ void AssemblySolver::track(SimTK::State &s)
         throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
+
+const SimTK::Assembler& AssemblySolver::getAssembler() const
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::getAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
+SimTK::Assembler& AssemblySolver::updAssembler()
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::updAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
 
 } // end of namespace OpenSim

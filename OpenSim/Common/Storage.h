@@ -33,6 +33,7 @@
 #include "Units.h"
 #include "SimTKcommon.h"
 #include "StorageInterface.h"
+#include "TimeSeriesTable.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
 //=============================================================================
@@ -192,6 +193,10 @@ public:
     void setDataColumn(int aStateIndex,const Array<double> &aData);
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
+
+    /** Get a TimeSeriesTable out of the Storage.                             */
+    TimeSeriesTable getAsTimeSeriesTable() const;
+
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
         It is desirable to access the block as a single entity provided an identifier that is common 

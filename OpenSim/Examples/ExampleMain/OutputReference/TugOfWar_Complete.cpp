@@ -32,6 +32,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 #include <ctime>    // for clock()
 
@@ -238,8 +239,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function
@@ -336,11 +336,11 @@ int main()
         // SAVE THE RESULTS TO FILE //
         //////////////////////////////
         // Save the model states from forward integration
-        Storage statesDegrees(manager.getStateStorage());
-        statesDegrees.print("tugOfWar_states.sto");
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
 
-        // Save the forces
-        reporter->getForceStorage().print("tugOfWar_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
     }
     catch (const std::exception& ex)
     {

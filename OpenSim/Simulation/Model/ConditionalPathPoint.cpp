@@ -243,7 +243,7 @@ bool ConditionalPathPoint::isActive(const SimTK::State& s) const
  *
  * @param aModel model containing this ConditionalPathPoint.
  */
-void ConditionalPathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
+void ConditionalPathPoint::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
 {
     // base class
     Super::connectToModelAndPath(aModel, aPath);
