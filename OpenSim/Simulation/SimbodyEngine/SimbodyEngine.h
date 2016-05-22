@@ -175,6 +175,7 @@ public:
 
 
     void convertRadiansToDegrees(Storage &rStorage) const;
+    void convertRadiansToDegrees(TimeSeriesTable& table) const;
     void convertDegreesToRadians(Storage &rStorage) const;
     void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
     void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
@@ -194,6 +195,7 @@ public:
 
 private:
     void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
+    void scaleRotationalDofColumns(TimeSeriesTable& table, double factor) const;
 
 
 private:

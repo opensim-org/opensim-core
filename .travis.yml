@@ -140,6 +140,10 @@ before_install:
   # Cache BTK build directory.
   #######################################################################################################################
   - source UploadBuildToCache.sh BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+  
+  # Force some cleanup of homebrew cache so we do not exceed availabe disk space
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; rm -rf "`brew cache`"; fi
+  
 
 install:
   #######################################################################################################################

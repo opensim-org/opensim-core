@@ -92,9 +92,9 @@ void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
         if (wo) {
             _wrapObject = wo;
-            updWrapPoint1().setBody(wo->getBody());
+            updWrapPoint1().setBody(wo->getFrame());
             updWrapPoint1().setWrapObject(wo);
-            updWrapPoint2().setBody(wo->getBody());
+            updWrapPoint2().setBody(wo->getFrame());
             updWrapPoint2().setWrapObject(wo);
             break;
         }
