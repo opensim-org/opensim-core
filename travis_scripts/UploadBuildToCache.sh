@@ -62,4 +62,3 @@ echo
 echo '---- Cleaning up.'
 rm ${TARBALL}*
 cd $CURR_DIR
-
