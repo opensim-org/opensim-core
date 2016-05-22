@@ -13,6 +13,12 @@ if [ "${BUILD_DIR:0:1}" != "/" ]; then
   BUILD_DIR=${CURR_DIR}/${BUILD_DIR}
 fi
 
+if ! $USE_CACHE; then
+  echo "---- Not downloading cache. Caching disabled."
+  cd $CURR_DIR
+  return
+fi
+
 cd $BUILD_DIR
 # Extract the commit-id of the dependency.
 BRANCHTIP=$(grep -r 'COMMAND .*git.*checkout ' tmp/*gitclone.cmake | sed 's/.* checkout \([0-9a-z]\{40\}\)/\1/')

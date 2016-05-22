@@ -14,6 +14,11 @@ if [ "${BUILD_DIR:0:1}" != "/" ]; then
 fi
 
 if [ ! -d $BUILD_DIR ]; then mkdir $BUILD_DIR; fi
+if ! $USE_CACHE; then
+  echo "---- Not downloading cache. Caching disabled."
+  cd $CURR_DIR
+  return
+fi
 cd $SOURCE_DIR
 CURRBRANCH=$(git reflog | tail -n2 | head -n1 | sed 's/.*checkout: moving from \([^ ]*\) to.*/\1/')
 if [ "$CURRBRANCH" == "master" ]; then 

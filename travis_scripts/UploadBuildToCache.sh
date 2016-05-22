@@ -13,6 +13,12 @@ if [ "${BUILD_DIR:0:1}" != "/" ]; then
   BUILD_DIR=${CURR_DIR}/${BUILD_DIR}
 fi
 
+if ! $USE_CACHE; then
+  echo "---- Not uploading cache. Caching disabled."
+  cd $CURR_DIR
+  return
+fi
+
 cd $SOURCE_DIR
 if [ "$PROJECT" == "opensim-core" ]; then
   # Make sure the branch is master.
