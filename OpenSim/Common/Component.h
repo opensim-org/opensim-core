@@ -400,14 +400,14 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-    * Add a Component to this component's property list.
-    * This component takes ownership of the added component.
-    * 
-    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
-    * methods are also renamed. For the time being remain consistent. -aseth 
+    * Add a Component (as an addition) to this component.
+    * This component takes ownership of the addition and it will be
+    * serialized as part of this component.
+    * If the addition is already owned by this component, an Exception
+    * is thrown.
     *
     * @throws ComponentAlreadyPartOfOwnershipTree  */
-    void addComponent(Component* comp);
+    void addComponent(Component* addition);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is 
@@ -1168,6 +1168,22 @@ protected:
     You should consider this ordering when designing a %Component.  **/ 
 
     ///@{
+
+    /** Perform any secondary operations, e.g. to investigate the addition or 
+    inserting it into a particular internal list (for grouping), after adding
+    an addition (Component) to this component.
+
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+    void MyComponent::extendAddComponent() {
+    Super::extendAddComponent(); // invoke parent class method
+    // ... your code goes here
+    // ... initialize any internal data structures
+    }
+        @endcode   */
+    virtual void extendAddComponent(Component* addition) {};
+
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component

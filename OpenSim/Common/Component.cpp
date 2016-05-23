@@ -127,7 +127,8 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_components();
 }
 
-void Component::addComponent(Component* comp) {
+void Component::addComponent(Component* addition)
+{
     //get to the root Component
     const Component* root = this;
     while (root->hasParent()) {
@@ -136,14 +137,18 @@ void Component::addComponent(Component* comp) {
 
     auto components = root->getComponentList<Component>();
     for (auto& c : components) {
-        if (comp == &c) {
+        if (addition == &c) {
             OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                comp->getName(), getName());
+                addition->getName(), getName());
         }
     }
 
-    updProperty_components().adoptAndAppendValue(comp);
+    updProperty_components().adoptAndAppendValue(addition);
     finalizeFromProperties();
+
+    // allow the concrete Component perform secondary operations
+    // in response to the inclusion of the addition
+    extendAddComponent(addition);
 }
 
 void Component::finalizeFromProperties()
