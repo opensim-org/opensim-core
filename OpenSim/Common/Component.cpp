@@ -880,16 +880,27 @@ SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
     int nsv = getNumStateVariables();
+
     // Consider the list of all StateVariables to be valid if all of 
-    // the following are true:
+    // the following conditions are true:
     // 1. Component is up-to-date with its Properties
     // 2. a System has been associated with the list of StateVariables
     // 3. The list of all StateVariables is correctly sized (initialized)
     // 4. The System associated with the StateVariables is the current System
-    bool valid = isObjectUpToDateWithProperties() &&   // 1.
-                !_statesAssociatedSystem.empty()  &&   // 2.
-                _allStateVariables.size() == nsv &&    // 3.
-                getSystem().isSameSystem(_statesAssociatedSystem.getRef());// 4.
+    // TODO: Enable the isObjectUpToDateWithProperties() check when computing
+    // the path of the GeomtryPath does not involve updating its PathPointSet.
+    // This change dirties the GeometryPath which is aproperty of a Muscle which
+    // is property of the Model. Therefore, during integration the Model is not 
+    // up-to-date and this causes a rebuilding of the cached StateVariables list.
+    // See GeometryPath::computePath() for the corresponding TODO that must be
+    // addressed before we can re-enable the isObjectUpToDateWithProperties
+    // check.
+    // It has been verified that the adding Components will invalidate the state
+    // variables associated with the Model and force the list to be rebuilt.
+    bool valid = //isObjectUpToDateWithProperties() &&                    // 1.
+                !_statesAssociatedSystem.empty()  &&                      // 2.
+                _allStateVariables.size() == nsv &&                       // 3.
+                getSystem().isSameSystem(_statesAssociatedSystem.getRef());//4.
     // if the StateVariables are invalid (see above) rebuild the list 
     if (!valid) {
         _statesAssociatedSystem.reset(&getSystem());
