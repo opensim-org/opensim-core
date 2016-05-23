@@ -20,7 +20,7 @@ if ! $USE_CACHE; then
   return
 fi
 if ! $TRAVIS_PULL_REQUEST; then 
-  echo "---- Not downloading cache. Current branch is master."
+  echo "---- Not downloading cache. This is master build."
   cd $CURR_DIR
   return
 fi

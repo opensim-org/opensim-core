@@ -21,10 +21,8 @@ fi
 
 cd $SOURCE_DIR
 if [ "$PROJECT" == "opensim-core" ]; then
-  # Make sure the branch is master.
-  CURRBRANCH=$(git reflog | tail -n2 | head -n1 | sed 's/.*checkout: moving from \([^ ]*\) to.*/\1/')
-  if [ "$CURRBRANCH" != "master" ]; then
-      echo "---- Not caching build directory. Current branch (${CURRBRANCH}) is not master."
+  if $TRAVIS_PULL_REQUEST; then
+      echo "---- Not caching build directory. This is not master build."
       cd $CURR_DIR
       return
   fi
