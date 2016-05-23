@@ -19,7 +19,7 @@ if ! $USE_CACHE; then
   cd $CURR_DIR
   return
 fi
-if ! $TRAVIS_PULL_REQUEST; then 
+if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then 
   echo "---- Not downloading cache. This is master build."
   cd $CURR_DIR
   return

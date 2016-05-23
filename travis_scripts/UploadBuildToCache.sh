@@ -21,7 +21,7 @@ fi
 
 cd $SOURCE_DIR
 if [ "$PROJECT" == "opensim-core" ]; then
-  if $TRAVIS_PULL_REQUEST; then
+  if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       echo "---- Not caching build directory. This is not master build."
       cd $CURR_DIR
       return
