@@ -19,13 +19,12 @@ if ! $USE_CACHE; then
   cd $CURR_DIR
   return
 fi
-cd $SOURCE_DIR
-CURRBRANCH=$(git reflog | tail -n2 | head -n1 | sed 's/.*checkout: moving from \([^ ]*\) to.*/\1/')
-if [ "$CURRBRANCH" == "master" ]; then 
+if ! $TRAVIS_PULL_REQUEST; then 
   echo "---- Not downloading cache. Current branch is master."
   cd $CURR_DIR
   return
 fi
+cd $SOURCE_DIR
 if $(git log -n1 --format="%B" | grep --quiet '\[ci make clean\]'); then
   echo "---- Not downloading cache. Make clean."
   cd $CURR_DIR
