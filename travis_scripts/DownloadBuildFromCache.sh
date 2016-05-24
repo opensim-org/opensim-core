@@ -37,8 +37,8 @@ if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
 PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
 
 BRANCHTIP=$(git log -n1 --format='%H')
-echo $(git merge-base origin/master $BRANCHTIP)
 git fetch --quiet --unshallow
+echo $(git merge-base origin/master $BRANCHTIP)
 git fetch --quiet origin master:master
 BRANCHBASE=$(git merge-base master ${BRANCHTIP})
 echo $BRANCHBASE
