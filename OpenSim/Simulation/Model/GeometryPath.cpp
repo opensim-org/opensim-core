@@ -907,17 +907,11 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         end   = currentPath[i+1];
 
         // Find the positions and velocities in the inertial frame.
-        posStartInertial =
-            start->getBody().getTransformInGround(s)*start->getLocation();
+        posStartInertial = start->getLocationInGround(s);
+        posEndInertial = end->getLocationInGround(s);
 
-        posEndInertial =
-            end->getBody().getTransformInGround(s)*end->getLocation();
-
-        velStartInertial = start->getBody().getMobilizedBody()
-            .findStationVelocityInGround(s, start->getLocation());
-
-        velEndInertial = end->getBody().getMobilizedBody()
-            .findStationVelocityInGround(s, end->getLocation());
+        velStartInertial = start->getVelocityInGround(s);
+        velEndInertial = end->getVelocityInGround(s);
 
         // The points might be moving in their local bodies' reference frames
         // (MovingPathPoints and possibly PathWrapPoints) so find their
@@ -925,11 +919,8 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         start->getVelocity(s, velStartLocal);
         end->getVelocity(s, velEndLocal);
 
-        velStartMoving = start->getBody()
-            .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
-
-        velEndMoving = end->getBody()
-            .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
+        velStartMoving = start->getBody().getTransformInGround(s).R()*velStartLocal;
+        velEndMoving = end->getBody().getTransformInGround(s).R()*velEndLocal;
 
         // Calculate the relative positions and velocities.
         posRelative = posEndInertial - posStartInertial;
@@ -941,9 +932,7 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 
         // Dot the relative velocity with the unit vector from start to end,
         // and add this speed to the running total.
-        speed += (velRelative[0] * posRelative[0] +
-                  velRelative[1] * posRelative[1] +
-                  velRelative[2] * posRelative[2]);
+        speed += ~velRelative * posRelative;
     }
 
     setLengtheningSpeed(s, speed);
