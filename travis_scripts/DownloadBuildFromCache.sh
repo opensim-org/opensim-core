@@ -37,9 +37,11 @@ if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
 PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
 
 BRANCHTIP=$(git log -n1 --format='%H')
+echo $(git merge-base origin/master $BRANCHTIP)
 git fetch --quiet --unshallow
 git fetch --quiet origin master:master
 BRANCHBASE=$(git merge-base master ${BRANCHTIP})
+echo $BRANCHBASE
 # Set timestamp of all files back.
 find . -name '*' | while read f; do touch -m -t"199001010101" $f; done
 # Touch the files that this branch has modified after its birth.
