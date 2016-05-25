@@ -28,7 +28,8 @@ echo $CACHED_VERSIONS
 echo "--- Retrieving list of used versions."
 cd $SOURCE_DIR
 git fetch -q origin master:master
-BRANCHES=$(git ls-remote --heads origin | sed 's/.*\trefs\/heads\///') 
+BRANCHES=$(git ls-remote --heads origin | sed 's/.*\trefs\/heads\///')
+echo $BRANCHES
 for b in $BRANCHES; do 
   git fetch -q origin $b:$b 
   BRANCHBASE=$(git merge-base master $b)
