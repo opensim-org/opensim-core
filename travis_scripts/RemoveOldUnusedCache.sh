@@ -21,9 +21,10 @@ if [[ "$CC" == *gcc* ]]; then export COMPILER=gcc; fi
 if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
 PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
 URL="https://api.bintray.com/packages/opensim/${PROJECT}/${PACKAGENAME}"
-if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install jq; fi
+if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install jq; fi
 CACHED_VERSIONS=$(curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/"//g')
 
+echo $CACHED_VERSIONS
 echo "--- Retrieving list of used versions."
 cd $SOURCE_DIR
 git fetch -q origin master:master
