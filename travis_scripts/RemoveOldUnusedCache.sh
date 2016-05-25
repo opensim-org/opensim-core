@@ -28,6 +28,8 @@ CACHED_VERSIONS=$(curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/
 echo "---- Retrieving list of currently used versions."
 cd $SOURCE_DIR
 git fetch -q origin master:master
+# Following line includes master. This is to make sure we keep cache for latest commit
+# on master.
 BRANCHES=$(git ls-remote --heads origin | sed 's/.*refs\/heads\///')
 for b in $BRANCHES; do 
   git fetch -q origin $b:$b 
