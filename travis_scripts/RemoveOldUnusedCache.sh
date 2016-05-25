@@ -26,7 +26,7 @@ CACHED_VERSIONS=$(curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/
 cd $SOURCE_DIR
 git fetch -q origin master:master
 BRANCHES=$(git ls-remote --heads origin | sed 's/.*\trefs\/heads\///') 
-for b in BRANCHES; do 
+for b in $BRANCHES; do 
   git fetch -q origin $b:$b 
   BRANCHBASE=$(git merge-base master $b)
   CACHED_VERSIONS="${CACHED_VERSIONS/ $BRANCHBASE/}"
