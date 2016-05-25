@@ -38,10 +38,8 @@ PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
 
 BRANCHTIP=$(git log -n1 --format='%H')
 git fetch --quiet --unshallow
-echo $(git merge-base origin/master $BRANCHTIP)
 git fetch --quiet origin master:master
 BRANCHBASE=$(git merge-base master ${BRANCHTIP})
-echo $BRANCHBASE
 # Set timestamp of all files back.
 find . -name '*' | while read f; do touch -m -t"199001010101" $f; done
 # Touch the files that this branch has modified after its birth.
@@ -55,7 +53,7 @@ echo "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
 cd ${BUILD_DIR}/..
 for i in $LETTERS; do 
   piece=${TARBALL}a$i 
-  curl -s -L $URL/$piece -o $piece
+  curl --silent --location $URL/$piece -o $piece
   if [ $(wc -c < $piece) -lt 100 ]; then 
     rm $piece 
     break 
