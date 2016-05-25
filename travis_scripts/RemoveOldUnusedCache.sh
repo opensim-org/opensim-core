@@ -21,15 +21,17 @@ if [[ "$CC" == *gcc* ]]; then export COMPILER=gcc; fi
 if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
 PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
 URL="https://api.bintray.com/packages/opensim/${PROJECT}/${PACKAGENAME}"
+if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install jq; fi
 CACHED_VERSIONS=$(curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/"//g')
 
+echo "--- Retrieving list of used versions."
 cd $SOURCE_DIR
 git fetch -q origin master:master
 BRANCHES=$(git ls-remote --heads origin | sed 's/.*\trefs\/heads\///') 
 for b in $BRANCHES; do 
   git fetch -q origin $b:$b 
   BRANCHBASE=$(git merge-base master $b)
-  CACHED_VERSIONS="${CACHED_VERSIONS/ $BRANCHBASE/}"
+  CACHED_VERSIONS="${CACHED_VERSIONS/$BRANCHBASE/}"
 done
 echo $CACHED_VERSIONS
 
