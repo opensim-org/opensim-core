@@ -925,14 +925,22 @@ void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
     int nsv = getNumStateVariables();
-    SimTK_ASSERT(values.size() == nsv, 
-        "Component::setStateVariableValues() number values does not match the "
-        "number of state variables."); 
-    Array<std::string> names = getStateVariableNames();
+    bool valid = //isObjectUpToDateWithProperties() &&                    // 1.
+        !_statesAssociatedSystem.empty() &&                      // 2.
+        _allStateVariables.size() == nsv &&                       // 3.
+        getSystem().isSameSystem(_statesAssociatedSystem.getRef());//4.
+    // if the StateVariables are invalid (see above) rebuild the list 
+    if (!valid) {
+        _statesAssociatedSystem.reset(&getSystem());
+        _allStateVariables.clear();
+        _allStateVariables.resize(nsv);
+        Array<std::string> names = getStateVariableNames();
+        for (int i = 0; i < nsv; ++i)
+            _allStateVariables[i].reset(findStateVariable(names[i]));
+    }
 
-    Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        setStateVariableValue(state, names[i], values[i]);
+        _allStateVariables[i]->setValue(state, values[i]);
     }
 }
 
