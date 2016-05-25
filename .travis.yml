@@ -170,6 +170,11 @@ install:
   # Cache OpenSim build directory if current branch is master.
   #######################################################################################################################
   - source UploadBuildToCache.sh opensim-core $TRAVIS_BUILD_DIR ~/opensim-core-build
+
+  #######################################################################################################################
+  # Cache OpenSim build directory if current branch is master.
+  #######################################################################################################################
+  - source RemoveOldUnusedCache.sh opensim-core $TRAVIS_BUILD_DIR
   - cd ~/opensim-core-build
 
 script:
