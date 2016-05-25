@@ -613,6 +613,20 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     SimTK::Vector stateData;
     stateData.resize(numOpenSimStates);
 
+    const Array<std::string>& stateNames = aStatesStore.getColumnLabels();
+    Array<std::string> modelStateNames = aModel.getStateVariableNames();
+
+    int nsData = stateNames.size() - 1;  //-1 since time is a column
+    Array<int> dataToModel(-1, nsData);
+    for (int k = 0; k < nsData; ++k) {
+        for (int j = 0; j < modelStateNames.size(); ++j) {
+            if (stateNames[k+1] == modelStateNames[j]) { //+1 skip "time"
+                dataToModel[k] = j;
+            }
+        }
+    }
+
+    SimTK::Vector stateValues = aModel.getStateVariableValues(s);
     for(int i=iInitial;i<=iFinal;i++) {
         // tPrev = t;
         aStatesStore.getTime(i,s.updTime()); // time
@@ -622,11 +636,11 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         aStatesStore.getData(i,numOpenSimStates,&stateData[0]); // states
         // Get data into local Vector and assign to State using common utility
         // to handle internal (non-OpenSim) states that may exist
-        Array<std::string> stateNames = aStatesStore.getColumnLabels();
-        for (int j=0; j<stateData.size(); ++j){
-            // storage labels included time at index 0 so +1 to skip
-            aModel.setStateVariableValue(s, stateNames[j+1], stateData[j]);
+
+        for (int k=0; k < nsData; ++k) {
+            stateValues[dataToModel[k]] = stateData[k];
         }
+        aModel.setStateVariableValues(s, stateValues);
        
         // Adjust configuration to match constraints and other goals
         aModel.assemble(s);
