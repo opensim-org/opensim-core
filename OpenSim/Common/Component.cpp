@@ -925,6 +925,11 @@ void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
     int nsv = getNumStateVariables();
+
+    SimTK_ASSERT(values.size() == nsv,
+        "Component::setStateVariableValues() number values does not match the "
+        "number of state variables.");
+
     bool valid = //isObjectUpToDateWithProperties() &&                    // 1.
         !_statesAssociatedSystem.empty() &&                      // 2.
         _allStateVariables.size() == nsv &&                       // 3.
