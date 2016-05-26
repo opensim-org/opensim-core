@@ -5,13 +5,10 @@ SOURCE_DIR=$2
 BUILD_DIR=$3
 
 CURR_DIR=$(pwd)
+
 # Turn relative paths into absolute paths.
-if [ "${SOURCE_DIR:0:1}" != "/" ]; then
-  SOURCE_DIR=${CURR_DIR}/${SOURCE_DIR}
-fi
-if [ "${BUILD_DIR:0:1}" != "/" ]; then
-  BUILD_DIR=${CURR_DIR}/${BUILD_DIR}
-fi
+SOURCE_DIR=$(realpath $SOURCE_DIR)
+BUILD_DIR=$(realpath $BUILD_DIR)
 
 if [ ! -d $BUILD_DIR ]; then mkdir $BUILD_DIR; fi
 if ! $USE_CACHE; then

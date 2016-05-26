@@ -5,10 +5,9 @@ PROJECT=$1
 SOURCE_DIR=$2
 
 CURR_DIR=$(pwd)
+
 # Turn relative paths into absolute paths.
-if [ "${SOURCE_DIR:0:1}" != "/" ]; then
-  SOURCE_DIR=${CURR_DIR}/${SOURCE_DIR}
-fi
+SOURCE_DIR=$(realpath $SOURCE_DIR)
 
 if ! $USE_CACHE; then
   echo "---- Caching disabled."
