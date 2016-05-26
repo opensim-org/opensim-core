@@ -1205,8 +1205,6 @@ calcLengthAfterPathComputation(const SimTK::State& s,
 {
     double length = 0.0;
 
-    const SimbodyEngine& engine = _model->getSimbodyEngine();
-
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
         const PathPoint* p1 = currentPath[i];
         const PathPoint* p2 = currentPath[i+1];
@@ -1222,8 +1220,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
             if (smwp)
                 length += smwp->getWrapLength();
         } else {
-            length += engine.calcDistance(s, p1->getBody(), p1->getLocation(), 
-                                             p2->getBody(), p2->getLocation());
+            length += (p1->getLocationInGround(s) - p2->getLocationInGround(s)).norm();;
         }
     }
 
