@@ -623,9 +623,13 @@ private:
  * };
  * @endcode
  *
- * This macro requires that you have included the header that defines type `T`,
- * as shown in the example above. We currently do not support declaring
- * connectors if `T` is only forward-declared.
+ * @note This macro requires that you have included the header that defines
+ * type `T`, as shown in the example above. We currently do not support
+ * declaring connectors if `T` is only forward-declared.
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Connector will
+ * not get copied properly if you create a custom copy constructor.
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector
@@ -691,7 +695,7 @@ private:
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This is an %OpenSim Connector.                                    */ \
+    /** This is an %OpenSim Connector.                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
