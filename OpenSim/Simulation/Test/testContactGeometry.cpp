@@ -21,18 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testJoints builds OpenSim models using the OpenSim API and builds an equivalent
-//  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivalent (norm-err
-//  less than 10x integration error tolerance)
+//==============================================================================
 //
 //  Tests Include:
 //      1. Analytical contact sphere-plane geometry 
 //      2. Mesh-based sphere on analytical plane geometry
-//      3. 
+//      3. Intermediate frames are handled correctly.
 //
-//==========================================================================================================
+//==============================================================================
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
@@ -47,9 +43,12 @@
 #include <OpenSim/Simulation/Model/ContactMesh.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 
@@ -57,7 +56,7 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-//==========================================================================================================
+//==============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-5;
 const static double duration = 1.0;
@@ -66,14 +65,18 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 const static double mass = 1.0;
 const static double radius = 0.10;
 const static double height = 1.0;
-const static string mesh_files[] = {"sphere_10cm_radius.obj", "sphere_10cm_radius.stl", "sphere_10cm_radius.vtp" };
+const static string mesh_files[] = {"sphere_10cm_radius.obj",
+                                    "sphere_10cm_radius.stl",
+                                    "sphere_10cm_radius.vtp"};
 //"10_5_cm_sphere_47700.obj";
 
-//==========================================================================================================
+//==============================================================================
 
 int testBouncingBall(bool useMesh, const std::string mesh_filename="");
 int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2);
 void compareHertzAndMeshContactResults();
+template <typename ContactType> // e.g., HuntCrossley.
+void testIntermediateFrames();
 
 int main()
 {
@@ -91,6 +94,9 @@ int main()
         testBallToBallContact(true, false, true);
         testBallToBallContact(true, true, true); 
         compareHertzAndMeshContactResults();
+
+        testIntermediateFrames<OpenSim::HuntCrossleyForce>();
+        testIntermediateFrames<OpenSim::ElasticFoundationForce>();
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -100,9 +106,9 @@ int main()
     return 0;
 }
 
-//==========================================================================================================
+//==============================================================================
 // Test Cases
-//==========================================================================================================
+//==============================================================================
 int testBouncingBall(bool useMesh, const std::string mesh_filename)
 {
     // Setup OpenSim model
@@ -124,11 +130,15 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     osimModel->addJoint(&free);
 
     // Create ContactGeometry.
-    ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
+    ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0),
+                                                   Vec3(0, 0, -0.5*SimTK_PI),
+                                                   ground,
+                                                   "ground");
     osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
     if (useMesh){
-        geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0), ball, "ball");
+        geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0),
+                                   ball, "ball");
     }
     else
         geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
@@ -138,7 +148,9 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     if (useMesh)
     {
         // Add an ElasticFoundationForce.
-        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
+        auto* contactParams =
+            new OpenSim::ElasticFoundationForce::ContactParameters(
+                    1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::ElasticFoundationForce(contactParams);
@@ -147,7 +159,9 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     else
     {
         // Add a HuntCrossleyForce.
-        OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 1e-5, 0.0, 0.0, 0.0);
+        auto* contactParams =
+            new OpenSim::HuntCrossleyForce::ContactParameters(
+                    1.0e6, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::HuntCrossleyForce(contactParams);
@@ -169,7 +183,7 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     //Initial system energy is all potential
     double Etot_orig = mass*(-gravity_vec[1])*height;
 
-    //==========================================================================================================
+    //==========================================================================
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
@@ -187,8 +201,10 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos, vel;
 
-        osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
-        osimModel->updSimbodyEngine().getVelocity(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), vel);
+        osimModel->updSimbodyEngine().getPosition(osim_state,
+                osimModel->getBodySet().get("ball"), Vec3(0), pos);
+        osimModel->updSimbodyEngine().getVelocity(osim_state,
+                osimModel->getBodySet().get("ball"), Vec3(0), vel);
 
         double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 
@@ -196,7 +212,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         // contact absorbs and returns energy so make sure not in contact
         if (pos[1] > 2*radius)
         {
-            ASSERT_EQUAL(Etot_orig, Etot, 1e-2, __FILE__, __LINE__, "Bouncing ball on plane Failed: energy was not conserved.");
+            ASSERT_EQUAL(Etot_orig, Etot, 1e-2, __FILE__, __LINE__,
+                    "Bouncing ball on plane Failed: energy was not conserved.");
         }
         else
         {
@@ -262,16 +279,12 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     OpenSim::Force* force;
 
     std::string prefix;
-    if (useElasticFoundation){
-        
-    }
-    else{
-        
-    }
     if (useElasticFoundation)
     {
         // Add an ElasticFoundationForce.
-        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/(2*radius), 0.001, 0.0, 0.0, 0.0);
+        auto* contactParams =
+            new OpenSim::ElasticFoundationForce::ContactParameters(
+                    1.0e6/(2*radius), 0.001, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::ElasticFoundationForce(contactParams);
@@ -283,7 +296,9 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     else
     {
         // Add a Hertz HuntCrossleyForce.
-        OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        auto* contactParams =
+            new OpenSim::HuntCrossleyForce::ContactParameters(
+                    1.0e6, 0.001, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::HuntCrossleyForce(contactParams);
@@ -308,7 +323,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
-    //==========================================================================================================
+    //==========================================================================
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
@@ -339,16 +354,206 @@ void compareHertzAndMeshContactResults()
 
     int nforces = hertz.getColumnLabels().getSize()-1;
 
-    // Hertz theory and ElasticFoundation will not be the same, but they should yield similar results, to withing
+    // Hertz theory and ElasticFoundation will not be the same, but they should
+    // yield similar results, to withing
     Array<double> rms_tols_1(12, nforces);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1, __FILE__, __LINE__, "ElasticFoundation FAILED to Match Hertz Contact ");
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
+            __FILE__, __LINE__,
+            "ElasticFoundation FAILED to Match Hertz Contact ");
 
-    // ElasticFoundation on mesh to mesh and mesh to non-mesh should be virtually identical
+    // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
+    // virtually identical
     Array<double> rms_tols_2(0.5, nforces);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2, __FILE__, __LINE__, "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
+            __FILE__, __LINE__,
+            "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
-    // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be identical
+    // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
+    // identical
     Array<double> rms_tols_3(integ_accuracy, nforces);
-    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3, __FILE__, __LINE__, "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
+    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
+            __FILE__, __LINE__,
+            "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
 
 }
+
+
+// In version 4.0, we introduced intermediate PhysicalFrames to
+// ContactGeometry. The test below ensures that the intermediate frames (as
+// well as the ContactGeometry's location property) are acccounted for by
+// comparing results for equivalent systems, some of which use an intermediate
+// frame.
+// The system is a point mass situated 1 meter along a massless bar that is
+// attached to ground by a hinge (an inverted pendulum). The contact sphere is
+// 1 meter up and 0.5 meters to the right of the mass.
+//
+//                                      0.5 m
+//                                     -----(geom)
+//                                     |
+//                                     |
+//                                     | 1 m
+//                             1 m     |
+//                  (hinge)----------(mass)
+// 
+// The pendulum starts at 27 degrees and then the bar drops down and hits the
+// ground.
+
+// Add contact geometry and contact force components to the model.
+template <typename ContactType>
+void addContactComponents(Model& model, PhysicalFrame& frame, Vec3 loc);
+
+// Specialize for Hunt-Crossley.
+template<>
+void addContactComponents<OpenSim::HuntCrossleyForce>(Model& model,
+        PhysicalFrame& frame, Vec3 loc) {
+    auto* geometry = new ContactSphere(radius, loc, frame, "ball");
+    model.addContactGeometry(geometry);
+
+    // Force.
+    auto* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
+            1.0e6, 1e-5, 0.0, 0.0, 0.0);
+    contactParams->addGeometry("ball");
+    contactParams->addGeometry("ground");
+    auto* force = new OpenSim::HuntCrossleyForce(contactParams);
+    model.addForce(force);
+}
+
+// Specialize for Elastic Foundation.
+template<>
+void addContactComponents<OpenSim::ElasticFoundationForce>(Model& model,
+        PhysicalFrame& frame, Vec3 loc) {
+    auto* geometry = new ContactMesh(mesh_files[0], loc, Vec3(0),
+                                     frame, "ball");
+    model.addContactGeometry(geometry);
+
+    // Force.
+    auto* contactParams =
+        new OpenSim::ElasticFoundationForce::ContactParameters(
+            1.0e6, 1e-5, 0.0, 0.0, 0.0);
+    contactParams->addGeometry("ball");
+    contactParams->addGeometry("ground");
+    auto* force = new OpenSim::ElasticFoundationForce(contactParams);
+    model.addForce(force);
+}
+
+Model createBaseModel() {
+    Model model;
+
+    // Bodies and Joint.
+    Ground& ground = model.updGround();
+    auto* point = new OpenSim::Body("point", mass, Vec3(0), Inertia(1.0));
+    auto* hinge = new OpenSim::PinJoint("hinge",
+                               ground, Vec3(0), Vec3(0),
+                               *point, Vec3(-1, 0, 0), Vec3(0));
+    model.addBody(point);
+    model.addJoint(hinge);
+
+    // ContactGeometry.
+    auto* floor = new ContactHalfSpace(Vec3(0),
+                                       Vec3(0, 0, -0.5 * SimTK::Pi),
+                                       ground, "ground");
+    model.addContactGeometry(floor);
+
+    return model;
+}
+
+template <typename ContactType>
+void testIntermediateFrames() {
+
+    // Simulate the given model for one second and return the final state.
+    auto simulate = [](Model& model) -> SimTK::State {
+        // Initialize and set state.
+        SimTK::State& state = model.initSystem();
+        const auto& hinge = model.getJointSet().get("hinge");
+        const auto& coord = hinge.get_CoordinateSet()[0];
+        coord.setValue(state, 0.15 * SimTK::Pi);
+
+        // Integrate.
+        RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+        integrator.setAccuracy(integ_accuracy);
+        Manager manager(model, integrator);
+        manager.setFinalTime(1.0);
+        manager.integrate(state);
+
+        return state;
+    };
+
+    // Obtain result from using a weld joint and another body to achieve the
+    // "intermediate frame."
+    SimTK::State stateWeld;
+    {
+        Model model = createBaseModel();
+        const auto& point = model.getBodySet().get("point");
+        auto* massless = new OpenSim::Body("massless", 0, Vec3(0), Inertia(0.0));
+        auto* weld = new OpenSim::WeldJoint("weld",
+                                   point, Vec3(0), Vec3(0),
+                                   // body is up 1m in the y direction.
+                                   *massless, Vec3(0, -1, 0), Vec3(0));
+        model.addBody(massless);
+        model.addJoint(weld);
+        addContactComponents<ContactType>(model, *massless, Vec3(0.5, 0, 0));
+        stateWeld = simulate(model);
+
+        // Make sure this model actually bounced; otherwise, the test is not
+        // meaningful.
+        SimTK_TEST(model.calcMassCenterVelocity(stateWeld)[1] > 0);
+    }
+
+    // Y offset accomplished with PhysicalOffsetFrame, X offset accomplished
+    // with ContactGeometry's location property.
+    SimTK::State stateIntermedFrameY;
+    {
+        Model model = createBaseModel();
+        auto* frame = new PhysicalOffsetFrame("intermed",
+                model.updBodySet().get("point"),
+                // Frame is up 1m in the y direction.
+                SimTK::Transform(Vec3(0, 1, 0)));
+        model.addFrame(frame);
+
+        addContactComponents<ContactType>(model, *frame, Vec3(0.5, 0, 0));
+        stateIntermedFrameY = simulate(model);
+
+        // Make sure this model actually bounced; otherwise, the test is not
+        // meaningful.
+        SimTK_TEST(model.calcMassCenterVelocity(stateIntermedFrameY)[1] > 0);
+    }
+
+    // The X and Y offsets are both accomplished with the PhysicalOffsetFrame.
+    SimTK::State stateIntermedFrameXY;
+    {
+        Model model = createBaseModel();
+        auto* frame = new PhysicalOffsetFrame("intermed",
+                model.updBodySet().get("point"),
+                // Frame is up 1m in the y direction.
+                SimTK::Transform(Vec3(0.5, 1, 0)));
+        model.addFrame(frame);
+
+        addContactComponents<ContactType>(model, *frame, Vec3(0, 0, 0));
+        stateIntermedFrameXY = simulate(model);
+
+        // Make sure this model actually bounced; otherwise, the test is not
+        // meaningful.
+        SimTK_TEST(model.calcMassCenterVelocity(stateIntermedFrameXY)[1] > 0);
+    }
+
+    SimTK_TEST_EQ_TOL(stateWeld.getY(), stateIntermedFrameY.getY(), 1e-10);
+    SimTK_TEST_EQ_TOL(stateWeld.getY(), stateIntermedFrameXY.getY(), 1e-10);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
