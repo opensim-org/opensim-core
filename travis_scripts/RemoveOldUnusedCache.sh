@@ -16,6 +16,12 @@ if ! $USE_CACHE; then
   return
 fi
 
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then 
+  echo "---- Skipping cache cleanup. This is master build."
+  cd $CURR_DIR
+  return
+fi
+
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install jq; fi
 
 echo "---- Retrieving list of versions on cache."
