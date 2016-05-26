@@ -16,8 +16,8 @@ if ! $USE_CACHE; then
   return
 fi
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then 
-  echo "---- Skipping cache cleanup. This is master build."
+if [ "$TRAVIS_PULL_REQUEST" != "false" ] || [ "$TRAVIS_BRANCH" != "master" ]; then 
+  echo "---- Skipping cache cleanup. This is not master build."
   cd $CURR_DIR
   return
 fi
