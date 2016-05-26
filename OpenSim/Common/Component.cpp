@@ -874,13 +874,9 @@ void Component::
     throw Exception(msg.str(),__FILE__,__LINE__);
 }
 
-// Get all values of the state variables allocated by this Component. Includes
-// state variables allocated by its subcomponents.
-SimTK::Vector Component::
-    getStateVariableValues(const SimTK::State& state) const
+bool Component::isAllStatesVariablesListValid() const
 {
     int nsv = getNumStateVariables();
-
     // Consider the list of all StateVariables to be valid if all of 
     // the following conditions are true:
     // 1. Component is up-to-date with its Properties
@@ -897,12 +893,23 @@ SimTK::Vector Component::
     // check.
     // It has been verified that the adding Components will invalidate the state
     // variables associated with the Model and force the list to be rebuilt.
-    bool valid = //isObjectUpToDateWithProperties() &&                    // 1.
-                !_statesAssociatedSystem.empty()  &&                      // 2.
-                _allStateVariables.size() == nsv &&                       // 3.
-                getSystem().isSameSystem(_statesAssociatedSystem.getRef());//4.
-    // if the StateVariables are invalid (see above) rebuild the list 
-    if (!valid) {
+    bool valid = //isObjectUpToDateWithProperties() &&                  // 1.
+        !_statesAssociatedSystem.empty() &&                             // 2.
+        _allStateVariables.size() == nsv &&                             // 3.
+        getSystem().isSameSystem(_statesAssociatedSystem.getRef());     // 4.
+
+    return valid;
+}
+
+
+// Get all values of the state variables allocated by this Component. Includes
+// state variables allocated by its subcomponents.
+SimTK::Vector Component::
+    getStateVariableValues(const SimTK::State& state) const
+{
+    int nsv = getNumStateVariables();
+    // if the StateVariables are invalid (see above) rebuild the list
+    if (!isAllStatesVariablesListValid()) {
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
         _allStateVariables.resize(nsv);
@@ -925,12 +932,13 @@ void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
     int nsv = getNumStateVariables();
-    bool valid = //isObjectUpToDateWithProperties() &&                    // 1.
-        !_statesAssociatedSystem.empty() &&                      // 2.
-        _allStateVariables.size() == nsv &&                       // 3.
-        getSystem().isSameSystem(_statesAssociatedSystem.getRef());//4.
+
+    SimTK_ASSERT(values.size() == nsv,
+        "Component::setStateVariableValues() number values does not match the "
+        "number of state variables.");
+
     // if the StateVariables are invalid (see above) rebuild the list 
-    if (!valid) {
+    if (!isAllStatesVariablesListValid()) {
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
         _allStateVariables.resize(nsv);

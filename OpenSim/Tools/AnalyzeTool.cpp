@@ -613,6 +613,14 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     SimTK::Vector stateData;
     stateData.resize(numOpenSimStates);
 
+    // There is no guarantee that the order in which a model had written out
+    // its states will be the same order in which the states will be created,
+    // allocated and listed in any future recreation of the model and its
+    // system. Therefore, it is imperative that we ensure that the state
+    // values being read in are reordered according to the model's order.
+    // The model's order is given by its getStateVariableNames() so we can 
+    // compare to the column labels of the storage and construct a dataToModel
+    // mapping.
     const Array<std::string>& stateNames = aStatesStore.getColumnLabels();
     Array<std::string> modelStateNames = aModel.getStateVariableNames();
 
@@ -626,7 +634,14 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         }
     }
 
+    // It is possible that there are internal states or that future modeling
+    // choices add state variables that are not known to the modeler/user.
+    // In which case we rely on the model to supply reasonable defaults and
+    // assume all the important/necessary state values for running an analysis
+    // are provided by the Storage. Here we initialize the state values to their
+    // model defaults.
     SimTK::Vector stateValues = aModel.getStateVariableValues(s);
+
     for(int i=iInitial;i<=iFinal;i++) {
         // tPrev = t;
         aStatesStore.getTime(i,s.updTime()); // time
