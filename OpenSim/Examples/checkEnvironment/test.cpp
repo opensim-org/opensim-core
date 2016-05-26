@@ -148,8 +148,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function

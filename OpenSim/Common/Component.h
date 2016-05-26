@@ -493,7 +493,9 @@ public:
 
     /**
      * Get the names of "continuous" state variables maintained by the Component
-     * and its subcomponents
+     * and its subcomponents. Note that states are defined when the system is 
+     * created. Make sure to call initSystem on the top  level Component
+     * (e.g. Model)
      */
     Array<std::string> getStateVariableNames() const;
 
@@ -2100,7 +2102,7 @@ protected:
         const int& getVarIndex() const { return varIndex; }
         // return the index of the subsystem used to make resource allocations 
         const SimTK::SubsystemIndex& getSubsysIndex() const { return subsysIndex; }
-        // return the index of the subsystem used to make resource allocations 
+        // return the index in the global list of continuous state variables, Y 
         const SimTK::SystemYIndex& getSystemYIndex() const { return sysYIndex; }
 
         bool isHidden() const { return hidden; }
@@ -2108,8 +2110,7 @@ protected:
         void show()  { hidden = false; }
 
         void setVarIndex(int index) { varIndex = index; }
-        void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix)
-        {
+        void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix) {
             subsysIndex = sbsysix;
         }
 
@@ -2131,7 +2132,7 @@ protected:
         // The local variable index in the subsystem also provided at creation
         // (e.g. can be QIndex, UIndex, or Zindex type)
         int  varIndex;
-        // Once allocated a state will in the system will have a global index
+        // Once allocated a state in the system will have a global index
         // and that can be stored here as well
         SimTK::SystemYIndex sysYIndex;
 
@@ -2302,6 +2303,12 @@ private:
     // Map names of cache entries of the Component to their individual 
     // cache information.
     mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
+
+    // Array of all state variables for fast access during simulation
+    mutable SimTK::Array_<SimTK::ReferencePtr<const StateVariable> > _allStateVariables;
+    // A handle the System associated with the above state variables
+    mutable SimTK::ReferencePtr<const SimTK::System> _statesAssociatedSystem;
+
 //==============================================================================
 };  // END of class Component
 //==============================================================================

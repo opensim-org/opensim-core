@@ -903,14 +903,14 @@ void SimbodySimmModel::writeWrapObjects(OpenSim::Body& aBody, ofstream& aStream)
         aStream << "segment " << aBody.getName() << endl;
         aStream << wo.getDimensionsString() << endl;
         if (!wo.getQuadrantNameUseDefault())
-            aStream << "quadrant " << wo.getQuadrantName() << endl;
+            aStream << "quadrant " << wo.get_quadrant() << endl;
         if (!wo.getActiveUseDefault())
-            aStream << "active " << (wo.getActive() ? "yes" : "no") << endl;
-        aStream << "translation " << wo.getTranslation()[0] << " " <<
-            wo.getTranslation()[1] << " " << wo.getTranslation()[2] << endl;
-        aStream << "xyz_body_rotation " << wo.getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
+            aStream << "active " << (wo.get_active() ? "yes" : "no") << endl;
+        aStream << "translation " << wo.get_translation()[0] << " " <<
+            wo.get_translation()[1] << " " << wo.get_translation()[2] << endl;
+        aStream << "xyz_body_rotation " << wo.get_xyz_body_rotation()[0] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[1] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
         aStream << "endwrapobject" << endl << endl;
     }
 }

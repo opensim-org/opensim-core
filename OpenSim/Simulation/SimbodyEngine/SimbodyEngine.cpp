@@ -950,6 +950,48 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
         }
     }
 }
+
+void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
+                                              double factor) const {
+    int ncols = table.getNumColumns();
+    if(ncols == 0)
+        throw Exception("SimbodyEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",
+                             __FILE__,__LINE__);
+
+    // Loop through the coordinates in the model. For each one that is rotational,
+    // see if it has a corresponding column of data. If it does, multiply that
+    // column by the given scaling factor.
+    std::string shortName = "";
+    std::string prefix = "";
+    int index = -1;
+    const CoordinateSet& coordinateSet = _model->getCoordinateSet();
+    
+    // first column is time, so skip
+    for (int i = 0; i < ncols; i++) {
+        const std::string& name = table.getColumnLabel(i);
+        index = coordinateSet.getIndex(name);
+        if (index < 0){
+            std::string::size_type back = name.rfind("/");
+            prefix = name.substr(0, back);
+            shortName = name.substr(back+1, name.length()-back);
+            index = coordinateSet.getIndex(shortName);
+            // This is a necessary hack to use new component naming,
+            // but SimbodyEngine will be deprecated and so will this code- aseth
+            if (index < 0){ // could be a speed then trim off _u
+                back = prefix.rfind("/");
+                shortName = prefix.substr(back+1, prefix.length()-back);
+                index = coordinateSet.getIndex(shortName);
+            }
+        }
+        if (index >= 0){
+            const Coordinate& coord = coordinateSet.get(index);
+            if (coord.getMotionType() == Coordinate::Rotational) {
+                // assumes first data column is 0 whereas labels has time as 0
+                table.updDependentColumnAtIndex(i) *= SimTK_RADIAN_TO_DEGREE;
+            }
+        }
+    }
+}
 //_____________________________________________________________________________
 /**
  * Convert the rotational generalized coordinates or speeds from units of
@@ -978,6 +1020,17 @@ void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
     scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
     rStorage.setInDegrees(true);
 }
+
+void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
+    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "yes",
+                     Exception,
+                     "Columns of the table provided are already in degrees.");
+
+    scaleRotationalDofColumns(table, SimTK_RADIAN_TO_DEGREE);
+    table.removeTableMetaDataKey("inDegrees");
+    table.addTableMetaData("inDegrees", std::string{"yes"});
+}
+
 //_____________________________________________________________________________
 /**
  * Convert an array of Q/U values from degrees to radians. The sizes of the

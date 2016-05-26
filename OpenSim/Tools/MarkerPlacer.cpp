@@ -121,7 +121,6 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
     _outputMotionFileName = aMarkerPlacer._outputMotionFileName;
     _maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
     _printResultFiles = aMarkerPlacer._printResultFiles;
-    _outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -135,7 +134,6 @@ void MarkerPlacer::setNull()
 
     _printResultFiles = true;
     _moveModelMarkers = true;
-    _outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -233,26 +231,27 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
-{
+bool MarkerPlacer::processModel(Model* aModel,
+        const string& aPathToSubject) const {
+
     if(!getApply()) return false;
 
     cout << endl << "Step 3: Placing markers on model" << endl;
 
-    /* Load the static pose marker file, and average all the
-     * frames in the user-specified time range.
-     */
-    MarkerData staticPose(aPathToSubject + _markerFileName);
     if (_timeRange.getSize()<2) 
         throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
 
-    staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
-    staticPose.convertToUnits(aModel->getLengthUnits());
+    /* Load the static pose marker file, and average all the
+    * frames in the user-specified time range.
+    */
+    MarkerData* staticPose = new MarkerData(aPathToSubject + _markerFileName);
+    staticPose->averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
+    staticPose->convertToUnits(aModel->getLengthUnits());
 
     /* Delete any markers from the model that are not in the static
      * pose marker file.
      */
-    aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
+    aModel->deleteUnusedMarkers(staticPose->getMarkerNames());
 
     // Construct the system and get the working state when done changing the model
     SimTK::State& s = aModel->initSystem();
@@ -260,6 +259,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
+    // MarkersReference takes ownership of marker data (staticPose)
     MarkersReference markersReference(staticPose, &markerWeightSet);
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
@@ -335,21 +335,19 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
      * with the measured markers in the static pose. The model is already in
      * the proper configuration so the coordinates do not need to be changed.
      */
-    if(_moveModelMarkers) moveModelMarkersToPose(s, *aModel, staticPose);
+    if(_moveModelMarkers) moveModelMarkersToPose(s, *aModel, *staticPose);
 
-    if (_outputStorage!= NULL){
-        delete _outputStorage;
-    }
+    _outputStorage.reset();
     // Make a storage file containing the solved states and markers for display in GUI.
     Storage motionData;
     StatesReporter statesReporter(aModel);
     statesReporter.begin(s);
     
-    _outputStorage = new Storage(statesReporter.updStatesStorage());
+    _outputStorage.reset(new Storage(statesReporter.updStatesStorage()));
     _outputStorage->setName("static pose");
     //_outputStorage->print("statesReporterOutput.sto");
     Storage markerStorage;
-    staticPose.makeRdStorage(*_outputStorage);
+    staticPose->makeRdStorage(*_outputStorage);
     _outputStorage->getStateVector(0)->setTime(s.getTime());
     statesReporter.updStatesStorage().addToRdStorage(*_outputStorage, s.getTime(), s.getTime());
     //_outputStorage->print("statesReporterOutputWithMarkers.sto");
@@ -386,7 +384,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
+        MarkerData& aPose) const
 {
     aPose.averageFrames(0.01);
     const MarkerFrame &frame = aPose.getFrame(0);
@@ -427,7 +426,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
     cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
 }
 
-Storage *MarkerPlacer::getOutputStorage() 
+Storage* MarkerPlacer::getOutputStorage() 
 {
-    return _outputStorage; ;
+    return _outputStorage.get();
 }

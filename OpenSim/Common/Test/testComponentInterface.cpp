@@ -23,6 +23,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/TableSource.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -1040,6 +1041,86 @@ void testInputConnecteeNames() {
     // TODO test invalid names as well.
 }
 
+template<typename RowVec>
+void assertEqual(const RowVec& a, const RowVec& b) {
+    assert(a.nrow() == b.nrow());
+    assert(a.ncol() == b.ncol());
+    for(int i = 0; i < a.ncol(); ++i)
+        ASSERT_EQUAL(a[i], b[i], 1e-10);
+}
+
+void testTableSource() {
+    using namespace OpenSim;
+    using namespace SimTK;
+
+    TimeSeriesTable table{};
+    table.setColumnLabels({"0", "1", "2", "3"});
+    SimTK::RowVector_<double> row{4, double{0}};
+    for(unsigned i = 0; i < 4; ++i)
+        table.appendRow(0.00 + 0.25 * i, row + i);
+
+    std::cout << "Contents of the table :" << std::endl;
+    std::cout << table << std::endl;
+
+    auto tableSource = new TableSource{table};
+
+    auto tableReporter = new TableReporter_<double, double>{};
+
+    // Define the Simbody system
+    MultibodySystem system;
+
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    theWorld.add(tableSource);
+    theWorld.add(tableReporter);
+
+    tableReporter->updInput("inputs").connect(tableSource->getOutput("column"));
+
+    theWorld.finalizeFromProperties();
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    const auto& report = tableReporter->getReport();
+
+    State s = system.realizeTopology();
+
+    s.setTime(0);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(0)  , report.getRowAtIndex(0));
+
+    s.setTime(0.1);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 0.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(1));
+
+    s.setTime(0.25);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(1)  , report.getRowAtIndex(2));
+
+    s.setTime(0.4);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 1.6};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(3));
+
+    s.setTime(0.5);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(2)  , report.getRowAtIndex(4));
+
+    s.setTime(0.6);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 2.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(5));
+
+    s.setTime(0.75);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(3)  , report.getRowAtIndex(6));
+
+    std::cout << "Report: " << std::endl;
+    std::cout << report << std::endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1055,6 +1136,7 @@ int main() {
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputConnecteeNames);
+        SimTK_SUBTEST(testTableSource);
     SimTK_END_TEST();
 }
 

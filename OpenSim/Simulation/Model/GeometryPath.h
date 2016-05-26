@@ -206,6 +206,8 @@ protected:
             SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
             override;
 
+    void extendFinalizeFromProperties() override;
+
 private:
 
     void computePath(const SimTK::State& s ) const;

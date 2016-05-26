@@ -95,9 +95,6 @@ void WrapSphereObst::setNull()
 */
 void WrapSphereObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
-
     _radiusProp.setName("radius");
     _radiusProp.setValue(-1.0);
     _propertySet.append(&_radiusProp);
@@ -139,9 +136,6 @@ void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 void WrapSphereObst::copyData(const WrapSphereObst& aWrapSphereObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphereObst);
-
     _radius = aWrapSphereObst._radius;
     _length = aWrapSphereObst._length;
 }

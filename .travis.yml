@@ -28,13 +28,11 @@ env:
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
     - SWIG_VER=3.0.6
-    - USE_CCACHE=1
-    - CCACHE_COMPRESS=1
-    # for Clang to work with ccache.
-    - CCACHE_CPP2=1
+    - PATH="$PATH:$TRAVIS_BUILD_DIR/travis_scripts"
+    - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
+    - USE_CACHE=true
 
-cache:
-  - directories: $HOME/.ccache
+cache: false
 
 addons:
   # Dependencies on linux.
@@ -62,7 +60,6 @@ addons:
       - sshpass
 
 before_install:
-
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
   # GREP returns 0 (true) if there are any matches, and
@@ -87,17 +84,6 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/libblas.so ~/lib/libblas.so.3; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/lib; fi
 
-  ## Set up ccache.
-  # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
-  # Put /usr/lib/ccache on the path.
-  - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  # For some reason the Travis CI clang compiler toolchain installation does not
-  # have a symlink in the ccache symlinks directory, so workaround it
-  - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
-  # Without the following lines, ccache causes clang to not print in color.
-  - if [[ $CC = clang* ]]; then export CC="$CC -fcolor-diagnostics"; fi;
-  - if [[ $CXX = clang* ]]; then export CXX="$CXX -fcolor-diagnostics"; fi;
-  
   ## Doxygen.
   # Need a doxygen that is more recent than that available through apt-get.
   - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
@@ -131,26 +117,67 @@ before_install:
   ## On OSX, we know that testInitState fails; exclude it.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward|testWrapping"; fi
+  
+  ## Set compiler flags.
+  - export CXX_FLAGS="-Werror"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - BTK_SOURCE_DIR="${TRAVIS_BUILD_DIR}/dependencies/BTK"
+  - BTK_BUILD_DIR="${OPENSIM_DEPENDENCIES_BUILD_DIR}/BTK"
+  - source DownloadDepBuildFromCache.sh BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+
   - make -j8
+  
+  #######################################################################################################################
+  # Cache BTK build directory.
+  #######################################################################################################################
+  - source UploadBuildToCache.sh BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+  
+  # Force some cleanup of homebrew cache so we do not exceed availabe disk space
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; rm -rf "`brew cache`"; fi
+  
 
 install:
-  - mkdir ~/opensim-core-build && cd ~/opensim-core-build
-  # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - source DownloadBuildFromCache.sh opensim-core $TRAVIS_BUILD_DIR ~/opensim-core-build
 
+  #######################################################################################################################
+  # Configure OpenSim.
+  #######################################################################################################################
+  - cd ~/opensim-core-build
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+
+  #######################################################################################################################
   # Build OpenSim.
+  #######################################################################################################################
+  - BUILD_START_TIMESTAMP=$(date +%s)
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
+  #######################################################################################################################
+  # Cache OpenSim build directory if current branch is master.
+  #######################################################################################################################
+  - source UploadBuildToCache.sh opensim-core $TRAVIS_BUILD_DIR ~/opensim-core-build
+  - cd ~/opensim-core-build
+
 script:
+  #######################################################################################################################
+  # Find tests to exclude. Add them to TESTS_TO_EXCLUDE.
+  #######################################################################################################################
+  - source FindTestsToExclude.sh
+
   # Test OpenSim.
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
@@ -170,7 +197,7 @@ script:
   # Add OpenSim libraries to library path.
   - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
   # Go to the python wrapping package directory.
-  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/share/doc/OpenSim/python; fi
+  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
@@ -198,14 +225,6 @@ script:
   # The "shutdown" command shuts down the ssh environment.
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
   
-  # Maximum size of cache is 100 MB.
-  # TODO 100 MB is not big enough. Using default limit of 1 GB for now.
-  #- ccache --max-size 100M
-
-before_cache:
-  # Show cache statistics.
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
-
 before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.

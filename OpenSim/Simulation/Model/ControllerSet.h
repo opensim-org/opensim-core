@@ -25,6 +25,7 @@
 
 
 // INCLUDES
+#include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
@@ -83,6 +84,7 @@ public:
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage( const std::string& fileName) const;
+    TimeSeriesTable getControlTable() const;
     void setActuators(Set<Actuator>& actuators);
 
     void setDesiredStates( Storage* yStore); 

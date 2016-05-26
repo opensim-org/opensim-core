@@ -26,7 +26,9 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 namespace OpenSim {
