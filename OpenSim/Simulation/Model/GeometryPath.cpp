@@ -1179,17 +1179,11 @@ calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
     const PathPoint* pt1 = path.get(wr.startPoint);
     const PathPoint* pt2 = path.get(wr.endPoint);
 
-    double straight_length = getModel().getSimbodyEngine()
-        .calcDistance(s, pt1->getBody(), pt1->getLocation(),
-                         pt2->getBody(), pt2->getLocation());
+    double straight_length = pt1->calcDistanceBetween(s, *pt2);
 
-    const Vec3& p1 = pt1->getLocation();
-    const Vec3& p2 = pt2->getLocation();
-    double wrap_length = getModel().getSimbodyEngine()
-        .calcDistance(s, pt1->getBody(), p1, wo.getFrame(), wr.r1);
+    double wrap_length = pt1->calcDistanceBetween(s, wo.getFrame(), wr.r1);
     wrap_length += wr.wrap_path_length;
-    wrap_length += getModel().getSimbodyEngine()
-        .calcDistance(s, wo.getFrame(), wr.r2, pt2->getBody(), p2);
+    wrap_length += pt2->calcDistanceBetween(s, wo.getFrame(), wr.r2);
 
     return wrap_length - straight_length; // return absolute diff, not relative
 }
@@ -1220,7 +1214,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
             if (smwp)
                 length += smwp->getWrapLength();
         } else {
-            length += (p1->getLocationInGround(s) - p2->getLocationInGround(s)).norm();;
+            length += p1->calcDistanceBetween(s, *p2);
         }
     }
 

@@ -29,6 +29,7 @@
 
 namespace OpenSim {
 
+class Frame;
 //=============================================================================
 //=============================================================================
 /**
@@ -91,6 +92,27 @@ public:
 
     // End of Point's Spatial Kinematics
     ///@}
+
+    /** Calculate the distance between this Point and some other Point
+    @param state      The current State of the model.
+    @param other      The other Point to which we want to get the distance between.
+    @return distance  The distance (positive scalar). */
+    double calcDistanceBetween(const SimTK::State& state, const Point& other) const;
+
+    /** Calculate the distance between this Point and some other described as a
+    location in some other frame.
+    @param state      The current State of the model.
+    @param frame      The other frame in which the location is defined.
+    @param location   The location in the other frame.
+    @return distance  The distance (positive scalar). */
+    double calcDistanceBetween(const SimTK::State& state, const Frame& frame,
+        const SimTK::Vec3& location) const;
+    /** Calculate the speed of motion between this Point and some other Point.
+    A positive speed is growing apart and negative speed is coming closer.
+    @param state      The current State of the model.
+    @param other      The other Point to which we want to get the speed between.
+    @return distance  The speed between the Points (scalar). */
+    double calcSpeedBetween(const SimTK::State& state, const Point& other) const;
 
 protected:
     /** @name Point Extension methods.
