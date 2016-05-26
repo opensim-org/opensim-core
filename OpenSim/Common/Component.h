@@ -1790,7 +1790,6 @@ protected:
      * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_CONNECTOR
-     *  - #OpenSim_DECLARE_CONNECTOR_FD
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE

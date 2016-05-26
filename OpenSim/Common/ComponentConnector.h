@@ -608,24 +608,24 @@ private:
 /// near where you declare @ref Property properties.
 /// @{
 /** Create a socket for this component's dependence on another component.
- *  You must specify the type of the component that can be connected to this
- *  connector. The comment should describe how the connected component
- *  (connectee) is used by this component.
+ * You must specify the type of the component that can be connected to this
+ * connector. The comment should describe how the connected component
+ * (connectee) is used by this component.
  *
- *  Here's an example for using this macro:
- *  @code{.cpp}
- *  #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
- *  class MyComponent : public Component {
- *  public:
- *      OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
- *              "To locate this component.");
- *      ...
- *  };
- *  @endcode
+ * Here's an example for using this macro:
+ * @code{.cpp}
+ * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * @endcode
  *
  * This macro requires that you have included the header that defines type `T`,
- * as shown in the example above. If you are unable to include that header, use
- * OpenSim_DECLARE_CONNECTOR_FD.
+ * as shown in the example above. We currently do not support declaring
+ * connectors if `T` is only forward-declared.
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector
@@ -644,7 +644,8 @@ private:
     };                                                                      \
     /** @endcond                                                         */
 
-/** Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
  * when are you unable to include the header that defines type `T`. This might
  * be the case if you have a circular dependency between your class and `T`.
  * In such cases, you must:
@@ -654,32 +655,34 @@ private:
  *  -# call #OpenSim_DEFINE_CONNECTOR_FD in your class's .cpp file (notice the
  *      difference: DEFINE vs DECLARE).
  *
- *  MyComponent.h:
- *  @code{.cpp}
- *  namespace OpenSim {
- *  class PhysicalOffsetFrame;
- *  class MyComponent : public Component {
- *  OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
- *  public:
- *      OpenSim_DECLARE_CONNECTOR_FD(parent, PhysicalOffsetFrame,
- *              "To locate this component.");
- *      ...
- *  };
- *  }
- *  @endcode
+ * MyComponent.h:
+ * @code{.cpp}
+ * namespace OpenSim {
+ * class PhysicalOffsetFrame;
+ * class MyComponent : public Component {
+ * OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR_FD(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * }
+ * @endcode
  *
- *  MyComponent.cpp:
- *  @code{.cpp}
- *  #include "MyComponent.h"
- *  OpenSim_DEFINE_CONNECTOR_FD(parent, OpenSim::MyComponent);
- *  ...
- *  @endcode
+ * MyComponent.cpp:
+ * @code{.cpp}
+ * #include "MyComponent.h"
+ * OpenSim_DEFINE_CONNECTOR_FD(parent, OpenSim::MyComponent);
+ * ...
+ * @endcode
  *
- *  You can also look at the OpenSim::Geometry source code for an example.
+ * You can also look at the OpenSim::Geometry source code for an example.
  *
- *  @note Do NOT forget to call OpenSim_DEFINE_CONNECTOR_FD in your .cpp file!
+ * @note Do NOT forget to call OpenSim_DEFINE_CONNECTOR_FD in your .cpp file!
  *
- *  The "FD" in the name of this macro stands for "forward-declared."
+ * The "FD" in the name of this macro stands for "forward-declared."
+ *
+ * @warning This macro is experimental and may be removed in future versions.
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector
@@ -688,8 +691,7 @@ private:
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This connector was generated with the                            */ \
-    /** #OpenSim_DECLARE_CONNECTOR_FD macro.                             */ \
+    /** This is an %OpenSim Connector.                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -703,11 +705,14 @@ private:
     typedef T _connector_##cname##_type;                                    \
     /** @endcond                                                         */
 
-/** When specifying a Connector to a forward-declared type (using
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* When specifying a Connector to a forward-declared type (using
  * OpenSim_DECLARE_CONNECTOR_FD in the class definition), you must call this
  * macro in your .cpp file.  The arguments are the name of the connector (the
  * same one provided to OpenSim_DECLARE_CONNECTOR_FD) and the class in which
  * the connector exists. See #OpenSim_DECLARE_CONNECTOR_FD for an example.
+ *
+ * @warning This macro is experimental and may be removed in future versions.
  *
  * @see #OpenSim_DECLARE_CONNECTOR_FD
  * @relates OpenSim::Connector
