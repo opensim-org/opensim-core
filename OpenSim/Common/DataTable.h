@@ -80,23 +80,38 @@ public:
 
     \param filename Name of the file. File should contain only one table. For
                     example, trc, csv & sto files contain one table whereas a 
-                    c3d file can contain more than.                           
+                    c3d file can contain more than.
+    \param tablename Name of the table in file to construct this DataTable_
+                     from. For example, a c3d file contains tables named
+                     'markers' and 'forces'.
 
-    \throws InvalidArgument If the input file contains more than one table.   
+    \throws InvalidArgument If the input file contains more than one table and
+                            tablename was not specified.   
     \throws InvalidArgument If the input file contains a table that is not of
                             this DataTable_ type.                             */
-    DataTable_(const std::string& filename) {
+    DataTable_(const std::string& filename,
+               const std::string& tablename) {
         auto absTables = FileAdapter::readFile(filename);
 
-        OPENSIM_THROW_IF(absTables.size() > 1,
+        OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
                          InvalidArgument,
                          "File '" + filename + 
-                         "' contains more than one table.");
+                         "' contains more than one table and tablename not"
+                         " specified.");
 
-        auto* absTable = (absTables.cbegin()->second).get();
-        DataTable_* table{};
-
-        table = dynamic_cast<DataTable_*>(absTable);
+        AbstractDataTable* absTable{};
+        if(tablename.empty()) {
+            absTable = (absTables.cbegin()->second).get();
+        } else {
+            try {
+                absTable = absTables.at(tablename).get();
+            } catch (const std::out_of_range&) {
+                OPENSIM_THROW(InvalidArgument,
+                              "File '" + filename + "' contains no table named "
+                              "'" + tablename + "'.");
+            }
+        }
+        auto table = dynamic_cast<DataTable_*>(absTable);
         OPENSIM_THROW_IF(table == nullptr,
                          InvalidArgument,
                          "DataTable cannot be created from file '" + filename +
