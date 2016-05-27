@@ -84,7 +84,7 @@ public:
 
     \throws InvalidArgument If the input file contains more than one table.   
     \throws InvalidArgument If the input file contains a table that is not of
-                            this DataTable_ type..                            */
+                            this DataTable_ type.                             */
     DataTable_(const std::string& filename) {
         auto absTables = FileAdapter::readFile(filename);
 
@@ -95,13 +95,13 @@ public:
 
         auto* absTable = (absTables.cbegin()->second).get();
         DataTable_* table{};
-        try {
-            table = dynamic_cast<DataTable_*>(absTable);
-        } catch (const std::bad_cast&) {
-            OPENSIM_THROW(InvalidArgument,
-                          "DataTable cannot be created from file '" + filename +
-                          "'. Type mismatch.");
-        }
+
+        table = dynamic_cast<DataTable_*>(absTable);
+        OPENSIM_THROW_IF(table == nullptr,
+                         InvalidArgument,
+                         "DataTable cannot be created from file '" + filename +
+                         "'. Type mismatch.");
+
         *this = std::move(*table);
     }
 

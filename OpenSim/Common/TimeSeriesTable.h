@@ -123,6 +123,35 @@ public:
                          TimeColumnNotIncreasing);
     }
 
+    /** Construct TimeSeriesTable_ from a file.                           
+    
+    \param filename Name of the file. File should contain only one table. For
+                    example, trc, csv & sto files contain one table whereas a 
+                    c3d file can contain more than.                           
+
+    \throws InvalidArgument If the input file contains more than one table.   
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this TimeSeriesTable_ type.                       */
+    TimeSeriesTable_(const std::string& filename) {
+        auto absTables = FileAdapter::readFile(filename);
+
+        OPENSIM_THROW_IF(absTables.size() > 1,
+                         InvalidArgument,
+                         "File '" + filename + 
+                         "' contains more than one table.");
+
+        auto* absTable = (absTables.cbegin()->second).get();
+        TimeSeriesTable_* table{};
+
+        table = dynamic_cast<TimeSeriesTable_*>(absTable);
+        OPENSIM_THROW_IF(table == nullptr,
+                         InvalidArgument,
+                         "DataTable cannot be created from file '" + filename +
+                         "'. Type mismatch.");
+
+        *this = std::move(*table);
+    }
+
 protected:
     /** Validate the given row. 
 
