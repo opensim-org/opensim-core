@@ -919,8 +919,11 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         start->getVelocity(s, velStartLocal);
         end->getVelocity(s, velEndLocal);
 
-        velStartMoving = start->getBody().getTransformInGround(s).R()*velStartLocal;
-        velEndMoving = end->getBody().getTransformInGround(s).R()*velEndLocal;
+        velStartMoving = start->getBody()
+            .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
+
+        velEndMoving = end->getBody()
+            .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
 
         // Calculate the relative positions and velocities.
         posRelative = posEndInertial - posStartInertial;

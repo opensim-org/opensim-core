@@ -121,7 +121,6 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
     _outputMotionFileName = aMarkerPlacer._outputMotionFileName;
     _maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
     _printResultFiles = aMarkerPlacer._printResultFiles;
-    _outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -135,7 +134,6 @@ void MarkerPlacer::setNull()
 
     _printResultFiles = true;
     _moveModelMarkers = true;
-    _outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -233,8 +231,9 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
-{
+bool MarkerPlacer::processModel(Model* aModel,
+        const string& aPathToSubject) const {
+
     if(!getApply()) return false;
 
     cout << endl << "Step 3: Placing markers on model" << endl;
@@ -338,15 +337,13 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
      */
     if(_moveModelMarkers) moveModelMarkersToPose(s, *aModel, *staticPose);
 
-    if (_outputStorage!= NULL){
-        delete _outputStorage;
-    }
+    _outputStorage.reset();
     // Make a storage file containing the solved states and markers for display in GUI.
     Storage motionData;
     StatesReporter statesReporter(aModel);
     statesReporter.begin(s);
     
-    _outputStorage = new Storage(statesReporter.updStatesStorage());
+    _outputStorage.reset(new Storage(statesReporter.updStatesStorage()));
     _outputStorage->setName("static pose");
     //_outputStorage->print("statesReporterOutput.sto");
     Storage markerStorage;
@@ -387,7 +384,8 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
+        MarkerData& aPose) const
 {
     aPose.averageFrames(0.01);
     const MarkerFrame &frame = aPose.getFrame(0);
@@ -428,7 +426,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
     cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
 }
 
-Storage *MarkerPlacer::getOutputStorage() 
+Storage* MarkerPlacer::getOutputStorage() 
 {
-    return _outputStorage; ;
+    return _outputStorage.get();
 }
