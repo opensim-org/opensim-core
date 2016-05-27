@@ -28,88 +28,65 @@
 #include <unordered_map>
 #include <cstdlib>
 #include <chrono>
+#include <thread>
+
+
+void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
+                    const OpenSim::TimeSeriesTableVec3& table2) {
+    assert(table1.getColumnLabels() == table2.getColumnLabels());
+    assert(table1.getIndependentColumn() == table2.getIndependentColumn());
+    assert(table1.getMatrix() == table2.getMatrix());
+}
+
+
+void test(const std::string filename) {
+    using namespace OpenSim;
+    auto tables = C3DFileAdapter::read(filename);
+
+    auto& marker_table = tables.at("markers");
+    auto&  force_table = tables.at("markers");
+
+    {
+        using namespace OpenSim;
+        using MT = TimeSeriesTableVec3;
+        using FT = TimeSeriesTableVec3;
+
+        MT marker_table1{filename, "markers"};
+        FT  force_table1{filename, "forces"};
+
+        compare_tables(*marker_table, marker_table1);
+        compare_tables( *force_table,  force_table1);
+    }
+
+    if(marker_table->getNumRows() != 0) {
+        marker_table->updTableMetaData().setValueForKey("Units", 
+                                                        std::string{"mm"});
+        TRCFileAdapter trc_adapter{};
+        trc_adapter.write(*marker_table, filename + ".markers.trc");
+    }
+
+    if(force_table->getNumRows() != 0) {
+        force_table->updTableMetaData().setValueForKey("Units", 
+                                                       std::string{"mm"});
+        TRCFileAdapter trc_adapter{};
+        trc_adapter.write(*force_table, filename + ".forces.trc");
+    }
+}
 
 int main() {
-    using namespace OpenSim;
-
     std::vector<std::string> filenames{};
+    filenames.push_back("jogging.c3d");
+    filenames.push_back("singleLeglanding_2.c3d");
     filenames.push_back("aStaticTrial_2.c3d");
     filenames.push_back("aStaticTrial.c3d");
     filenames.push_back("doubleLegLanding.c3d");
-    filenames.push_back("jogging.c3d");
     filenames.push_back("sideCutting.c3d");
-    filenames.push_back("singleLeglanding_2.c3d");
     filenames.push_back("singleLegLanding.c3d");
-    filenames.push_back("treadMillRunning.c3d");
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
 
     for(const auto& filename : filenames) {
-        C3DFileAdapter c3d_adapter{};
-        auto tables = c3d_adapter.read(filename);
-
-        auto& marker_table = tables.at("markers");
-        auto&  force_table = tables.at("markers");
-
-        if(marker_table->getNumRows() != 0) {
-            marker_table->updTableMetaData().setValueForKey("Units", 
-                                                            std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(*marker_table, filename + ".markers.trc");
-        }
-
-        if(force_table->getNumRows() != 0) {
-            force_table->updTableMetaData().setValueForKey("Units", 
-                                                           std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(*force_table, filename + ".forces.trc");
-        }
-    }
-
-    for(const auto& filename : filenames) {
-        auto tables = FileAdapter::readFile(filename);
-
-        using MT = TimeSeriesTableVec3;
-        using FT = TimeSeriesTableVec3;
-
-        auto marker_table = dynamic_cast<MT*>(tables.at("markers").get());
-        auto  force_table = dynamic_cast<FT*>(tables.at("forces").get());
-
-        if(marker_table->getNumRows() != 0) {
-            marker_table->updTableMetaData().setValueForKey("Units", 
-                                                            std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(*marker_table, filename + ".markers.trc");
-        }
-
-        if(force_table->getNumRows() != 0) {
-            force_table->updTableMetaData().setValueForKey("Units", 
-                                                           std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(*force_table, filename + ".forces.trc");
-        }
-    }
-
-    for(const auto& filename : filenames) {
-        using MT = TimeSeriesTableVec3;
-        using FT = TimeSeriesTableVec3;
-
-        MT marker_table{filename, "markers"};
-        FT  force_table{filename, "forces"};
-
-        if(marker_table.getNumRows() != 0) {
-            marker_table.updTableMetaData().setValueForKey("Units", 
-                                                            std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(marker_table, filename + ".markers.trc");
-        }
-
-        if(force_table.getNumRows() != 0) {
-            force_table.updTableMetaData().setValueForKey("Units", 
-                                                           std::string{"mm"});
-            TRCFileAdapter trc_adapter{};
-            trc_adapter.write(force_table, filename + ".forces.trc");
-        }
+        test(filename);
     }
 
     return 0;
