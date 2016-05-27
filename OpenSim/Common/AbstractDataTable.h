@@ -141,7 +141,7 @@ metadata. AbstractDataTable offers:
 
 This class is abstract and cannot be used directly. Create instances of 
 DataTable_ instead. See DataTable_ for details on usage.                     */
-class AbstractDataTable {
+class OSIMCOMMON_API AbstractDataTable {
 public:
     typedef ValueArrayDictionary TableMetaData;
     typedef ValueArrayDictionary DependentsMetaData;
