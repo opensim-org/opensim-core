@@ -33,9 +33,22 @@
 
 void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
                     const OpenSim::TimeSeriesTableVec3& table2) {
-    assert(table1.getColumnLabels() == table2.getColumnLabels());
-    assert(table1.getIndependentColumn() == table2.getIndependentColumn());
-    assert(table1.getMatrix() == table2.getMatrix());
+    using namespace OpenSim;
+    OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
+                     Exception,
+                     "Column labels are not the same for tables.");
+    OPENSIM_THROW_IF(table1.getIndependentColumn() != 
+                     table2.getIndependentColumn(),
+                     Exception,
+                     "Independent columns are not the same for tables.");
+    const auto& matrix1 = table1.getMatrix();
+    const auto& matrix2 = table2.getMatrix();
+    for(int r = 0; r < matrix1.nrow(); ++r)
+        for(int c = 0; c < matrix1.ncol(); ++c)
+            OPENSIM_THROW_IF(matrix1.getElt(r, c) != 
+                             matrix2.getElt(r, c),
+                             Exception,
+                             "Matrices are not the same for tables.");
 }
 
 
@@ -44,7 +57,7 @@ void test(const std::string filename) {
     auto tables = C3DFileAdapter::read(filename);
 
     auto& marker_table = tables.at("markers");
-    auto&  force_table = tables.at("markers");
+    auto&  force_table = tables.at("forces");
 
     {
         using namespace OpenSim;
