@@ -29,6 +29,7 @@ This file defines the  DataTable_ class, which is used by OpenSim to provide an
 in-memory container for data access and manipulation.                         */
 
 #include "AbstractDataTable.h"
+#include "FileAdapter.h"
 
 namespace OpenSim {
 
@@ -73,6 +74,35 @@ public:
 
     std::shared_ptr<AbstractDataTable> clone() const override {
         return std::shared_ptr<AbstractDataTable>{new DataTable_{*this}};
+    }
+
+    /** Construct DataTable_ from a file.                                     
+
+    \param filename Name of the file. File should contain only one table. For
+                    example, trc, csv & sto files contain one table whereas a 
+                    c3d file can contain more than.                           
+
+    \throws InvalidArgument If the input file contains more than one table.   
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this DataTable_ type..                            */
+    DataTable_(const std::string& filename) {
+        auto absTables = FileAdapter::readFile(filename);
+
+        OPENSIM_THROW_IF(absTables.size() > 1,
+                         InvalidArgument,
+                         "File '" + filename + 
+                         "' contains more than one table.");
+
+        auto* absTable = (absTables.cbegin()->second).get();
+        DataTable_* table{};
+        try {
+            table = dynamic_cast<DataTable_*>(absTable);
+        } catch (const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "DataTable cannot be created from file '" + filename +
+                          "'. Type mismatch.");
+        }
+        *this = std::move(*table);
     }
 
     /// @name Row accessors/mutators.
