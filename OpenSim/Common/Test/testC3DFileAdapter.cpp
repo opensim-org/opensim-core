@@ -21,34 +21,41 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/C3DFileAdapter.h"
-
 #include "OpenSim/Common/TRCFileAdapter.h"
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 #include <vector>
 #include <unordered_map>
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#include <cmath>
 
+template<typename> class shrik;
 
 void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
                     const OpenSim::TimeSeriesTableVec3& table2) {
     using namespace OpenSim;
-    OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
-                     Exception,
-                     "Column labels are not the same for tables.");
-    OPENSIM_THROW_IF(table1.getIndependentColumn() != 
-                     table2.getIndependentColumn(),
-                     Exception,
-                     "Independent columns are not the same for tables.");
+    try {
+        OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
+                         Exception,
+                         "Column labels are not the same for tables.");
+        OPENSIM_THROW_IF(table1.getIndependentColumn() != 
+                         table2.getIndependentColumn(),
+                         Exception,
+                         "Independent columns are not the same for tables.");
+    } catch (const OpenSim::KeyNotFound&) {}
+
     const auto& matrix1 = table1.getMatrix();
     const auto& matrix2 = table2.getMatrix();
     for(int r = 0; r < matrix1.nrow(); ++r)
-        for(int c = 0; c < matrix1.ncol(); ++c)
-            OPENSIM_THROW_IF(matrix1.getElt(r, c) != 
-                             matrix2.getElt(r, c),
-                             Exception,
-                             "Matrices are not the same for tables.");
+        for(int c = 0; c < matrix1.ncol(); ++c) {
+            auto elt1 = matrix1.getElt(r, c); 
+            auto elt2 = matrix2.getElt(r, c);
+            ASSERT_EQUAL(elt1[0], elt2[0], 1e-6);
+            ASSERT_EQUAL(elt1[1], elt2[1], 1e-6);
+            ASSERT_EQUAL(elt1[2], elt2[2], 1e-6);
+        }
 }
 
 
