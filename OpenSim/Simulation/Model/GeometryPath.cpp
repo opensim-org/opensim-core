@@ -364,11 +364,11 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
                 // get the mobilized body the coordinate is couple to.
                 const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppo->getXCoordinate()->getBodyIndex());
+                    matter.getMobilizedBody(mppo->getXCoordinate().getBodyIndex());
 
                 // apply the generalized (mobility) force to the coordinate's body
                 mpbod.applyOneMobilityForce(s, 
-                    mppo->getXCoordinate()->getMobilizerQIndex(), 
+                    mppo->getXCoordinate().getMobilizerQIndex(), 
                     fo, mobilityForces);
             }
 
@@ -382,10 +382,10 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
                 // get the mobilized body the coordinate is couple to.
                 const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppf->getXCoordinate()->getBodyIndex());
+                    matter.getMobilizedBody(mppf->getXCoordinate().getBodyIndex());
 
                 mpbod.applyOneMobilityForce(s, 
-                    mppf->getXCoordinate()->getMobilizerQIndex(), 
+                    mppf->getXCoordinate().getMobilizerQIndex(), 
                     ff, mobilityForces);
             }
             
@@ -815,7 +815,7 @@ void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
             {
                 Vec3 scaleFactors(1.0);
                 aScale.getScaleFactors(scaleFactors);
-                upd_PathPointSet().get(i).scale(s, scaleFactors);
+                upd_PathPointSet().get(i).scale(scaleFactors);
             }
         }
     }
@@ -859,17 +859,8 @@ void GeometryPath::computePath(const SimTK::State& s) const
         updCacheVariableValue<Array<PathPoint*> >(s, "current_path");
     currentPath.setSize(0);
 
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // TODO: This is a bug. Here we are going to modify moving path point
-    // locations *in the property* which means they are out of sync with 
-    // the supplied state. These updates should be done in the state cache.
-    GeometryPath * mutableThis = const_cast<GeometryPath*>(this);
-
     // Add the active fixed and moving via points to the path.
     for (int i = 0; i < get_PathPointSet().getSize(); i++) {
-        // If this is a moving path point, update its location *in the
-        // PathPointSet property* (BAD).
-        mutableThis->upd_PathPointSet()[i].update(s);
         if (get_PathPointSet()[i].isActive(s))
             currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
@@ -899,6 +890,7 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     double speed = 0.0;
+    double speed2 = 0.0;
 
     //const SimbodyEngine& engine = _model->getSimbodyEngine()
     
@@ -936,6 +928,9 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
         // Dot the relative velocity with the unit vector from start to end,
         // and add this speed to the running total.
         speed += ~velRelative * posRelative;
+        speed2 += start->calcSpeedBetween(s, *end);
+
+        //SimTK_TEST_EQ_TOL(speed2, speed, 1e-6);
     }
 
     setLengtheningSpeed(s, speed);

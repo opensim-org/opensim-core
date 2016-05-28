@@ -129,7 +129,7 @@ public:
 
     GeometryPath* getPath() const { return _path.get(); }
 
-    virtual void scale(const SimTK::State& s, const SimTK::Vec3& scaleFactors) {
+    virtual void scale(const SimTK::Vec3& scaleFactors) {
         for (int i = 0; i < 3; i++)
             upd_location()[i] *= scaleFactors[i];
     }
@@ -138,7 +138,6 @@ public:
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
     virtual void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
-    virtual void update(const SimTK::State& s) { }
 
     // get the relative velocity of the path point with respect to the body
     // it is connected to.
