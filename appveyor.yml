@@ -55,7 +55,7 @@ nuget:
 install:
 
   ## Use Chocolatey to install SWIG.
-  - choco install swig --version 3.0.6 --yes --limitoutput
+  - choco install swig --version 3.0.6 --yes | out-null
   
   ## Install python-nose for python testing.
   - "%PYTHON_DIR%\\Scripts\\pip install nose"
