@@ -107,19 +107,19 @@ void MovingPathPoint::setZCoordinate(const Coordinate& coordinate)
     updConnector<Coordinate>("z_coordinate").connect(coordinate);
 }
 
-
-void MovingPathPoint::extendFinalizeFromProperties()
+void MovingPathPoint::extendConnectToModel(Model& model)
 {
+    Super::extendConnectToModel(model);
     // Hang on to references to the Coordinates instead of
     // finding the connector each time we need a Coordinate value
     if (getConnector<Coordinate>("x_coordinate").isConnected()) {
-        _xCoordinate.reset(&getXCoordinate());
+        _xCoordinate.reset(&getConnectee<Coordinate>("x_coordinate"));
     }
     if (getConnector<Coordinate>("y_coordinate").isConnected()) {
-        _yCoordinate.reset(&getYCoordinate());
+        _yCoordinate.reset(&getConnectee<Coordinate>("y_coordinate"));
     }
     if (getConnector<Coordinate>("z_coordinate").isConnected()) {
-        _zCoordinate.reset(&getZCoordinate());
+        _zCoordinate.reset(&getConnectee<Coordinate>("z_coordinate"));
     }
 }
 

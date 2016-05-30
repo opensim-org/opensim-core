@@ -101,7 +101,7 @@ public:
 private:
     void constructProperties() override;
     void constructConnectors() override;
-    void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
 
     SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const override;
     SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const override;
