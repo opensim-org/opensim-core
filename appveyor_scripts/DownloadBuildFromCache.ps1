@@ -6,9 +6,9 @@ if(! $USE_CACHE) {
   return
 }
 
-Write-Host $APPVEYOR_PULL_REQUEST_NUMBER
-Write-Host $APPVEYOR_REPO_BRANCH
-Write-Host $APPVEYOR_REPO_COMMIT
-Write-Host $APPVEYOR_REPO_COMMIT_MESSAGE
-Write-Host $Platform
-Write-Host $Configuration
+Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
+Write-Host $env:APPVEYOR_REPO_BRANCH
+Write-Host $env:APPVEYOR_REPO_COMMIT
+Write-Host $env:APPVEYOR_REPO_COMMIT_MESSAGE
+Write-Host $env:Platform
+Write-Host $env:Configuration
