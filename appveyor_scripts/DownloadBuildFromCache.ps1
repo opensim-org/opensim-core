@@ -12,6 +12,11 @@ if($env:APPVEYOR_REPO_BRANCH -eq "master") {
   return
 }
 
+if($env:APPVEYOR_REPO_COMMIT_MESSAGE -match "\[make clean\]") { 
+  Write-Host "---- Not downloading cache. Make clean." 
+  return
+}
+
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
 Write-Host $env:APPVEYOR_REPO_BRANCH
 Write-Host $env:APPVEYOR_REPO_COMMIT
