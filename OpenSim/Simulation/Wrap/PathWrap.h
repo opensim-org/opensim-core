@@ -23,12 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
 #include "PathWrapPoint.h"
 #include "WrapResult.h"
 
@@ -41,8 +37,8 @@
 
 namespace OpenSim {
 
+class Model;
 class WrapObject;
-class SimbodyEngine;
 class GeometryPath;
 
 //=============================================================================
@@ -55,8 +51,8 @@ class GeometryPath;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrap : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Component);
+class OSIMSIMULATION_API PathWrap : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, ModelComponent);
 public:
     //==============================================================================
     // PROPERTIES
@@ -82,7 +78,7 @@ protected:
     WrapMethod _method;
 
     const WrapObject* _wrapObject;
-    GeometryPath* _path;
+    const GeometryPath* _path;
 
     WrapResult _previousWrap;  // results from previous wrapping
 
@@ -102,7 +98,6 @@ public:
     ~PathWrap();
 
 #ifndef SWIG
-    void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
     void setStartPoint( const SimTK::State& s, int aIndex);
     void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
@@ -125,11 +120,9 @@ public:
         return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
     }
 
-
     WrapMethod getMethod() const { return _method; }
     void setMethod(WrapMethod aMethod);
     const std::string& getMethodName() const { return get_method(); }
-    GeometryPath* getPath() const { return _path; }
 
     const WrapResult& getPreviousWrap() const { return _previousWrap; }
     void setPreviousWrap(const WrapResult& aWrapResult);
@@ -137,6 +130,7 @@ public:
 
 private:
     void constructProperties() override;
+    void extendConnectToModel(Model& model) override;
     void setNull();
 //=============================================================================
 };  // END of class PathWrap

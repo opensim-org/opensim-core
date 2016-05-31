@@ -43,7 +43,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-PathWrap::PathWrap() : Component()
+PathWrap::PathWrap() : ModelComponent()
 {
     setNull();
     constructProperties();
@@ -82,11 +82,12 @@ void PathWrap::constructProperties()
 }
 
 
-void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
+void PathWrap::extendConnectToModel(Model& model)
 {
-    _path = &aPath;
+    _path = dynamic_cast<const GeometryPath*>(&getParent());
 
-    ComponentList<PhysicalFrame> bodiesList = aModel.getComponentList<PhysicalFrame>();
+    ComponentList<PhysicalFrame> bodiesList = 
+        model.getComponentList<PhysicalFrame>();
     for (ComponentList<PhysicalFrame>::const_iterator it = bodiesList.begin();
             it != bodiesList.end(); ++it) {
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
@@ -102,8 +103,8 @@ void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
 
     // connectToModelAndPath() must be called after setBody() because it requires
     // that _bodyName already be assigned.
-    updWrapPoint1().connectToModelAndPath(aModel, aPath);
-    updWrapPoint2().connectToModelAndPath(aModel, aPath);
+    updWrapPoint1().connectToModelAndPath(model, *_path);
+    updWrapPoint2().connectToModelAndPath(model, *_path);
 
     if (get_method() == "hybrid" || get_method() == "Hybrid" || get_method() == "HYBRID")
         _method = hybrid;
