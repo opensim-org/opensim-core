@@ -56,7 +56,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Station);
 //=============================================================================
 protected:
     // the path that owns this path point
-    SimTK::ReferencePtr<GeometryPath> _path; 
+    SimTK::ReferencePtr<const GeometryPath> _path; 
 
 //=============================================================================
 // METHODS
@@ -66,12 +66,6 @@ protected:
     //--------------------------------------------------------------------------
 public:
     PathPoint() : Station() {}
-
-    virtual void init(const PathPoint& point) {
-        *this = point;
-        copyData(point);
-    }
-   void copyData(const PathPoint &aPoint);
 
 #ifndef SWIG
     const SimTK::Vec3& getLocation() const { return get_location(); }
@@ -127,8 +121,6 @@ public:
     const PhysicalFrame& getBody() const { return getParentFrame(); }
     const std::string& getBodyName() const { return getParentFrame().getName(); }
 
-    GeometryPath* getPath() const { return _path.get(); }
-
     virtual void scale(const SimTK::Vec3& scaleFactors) {
         for (int i = 0; i < 3; i++)
             upd_location()[i] *= scaleFactors[i];
@@ -137,7 +129,7 @@ public:
     virtual const WrapObject* getWrapObject() const { return NULL; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
-    virtual void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
+    virtual void connectToModelAndPath(Model& aModel, const GeometryPath& aPath);
 
     // get the relative velocity of the path point with respect to the body
     // it is connected to.
@@ -151,9 +143,6 @@ public:
 
     virtual void updateGeometry() {}
 
-    // Utility
-    static PathPoint* makePathPointOfType(PathPoint* aPoint,
-        const std::string& aNewTypeName);
 
     static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 

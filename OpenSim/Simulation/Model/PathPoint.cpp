@@ -46,45 +46,13 @@ using SimTK::Transform;
 //_____________________________________________________________________________
 
 
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/* Copy data members from one PathPoint to another.
- *
- * @param aPoint PathPoint to be copied.
- */
-void PathPoint::copyData(const PathPoint &aPoint)
-{
-    _path = aPoint._path;
-}
-
 /* TODO: All Points should be Components that use Connectors
 * and extendConnect(). This must go away! -aseth
 */
-void PathPoint::connectToModelAndPath(Model& model, GeometryPath& path)
+void PathPoint::connectToModelAndPath(Model& model, const GeometryPath& path)
 {
     Super::connectToModel(model);
     _path = &path;
-}
-
-
-PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewTypeName)
-{
-    PathPoint* newPoint = NULL;
-    cout << "PathPoint::makePathPointOfType()" << endl;
-    if (aPoint != NULL) {
-        Object* newObject = Object::newInstanceOfType(aNewTypeName);
-        if (newObject) {
-            newPoint = dynamic_cast<PathPoint*>(newObject);
-            if (newPoint) {
-                // Copy the contents from aPoint.
-                newPoint->init(*aPoint);
-            }
-        }
-    }
-
-    return newPoint;
 }
 
 void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
