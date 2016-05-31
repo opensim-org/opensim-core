@@ -62,6 +62,8 @@ addons:
 before_install:
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
+  # Stop build if comment contains [skip travis].
+  - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi
   # GREP returns 0 (true) if there are any matches, and
   # we don't want any matches. If there are matches,
   # print a helpful message, and make the test fail by using "false".
