@@ -181,7 +181,7 @@ int main()
         // Set the individual muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
-
+        
         // Add the muscle controller to the model
         osimModel.addController(muscleController);
 
@@ -208,7 +208,7 @@ int main()
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
 
-        // Define non-zero (defaults are 0) states for the free joint
+         // Define non-zero (defaults are 0) states for the free joint
         CoordinateSet& modelCoordinateSet = osimModel.updCoordinateSet();
         modelCoordinateSet[3].setValue(si, distance); // set x-translation value
         modelCoordinateSet[5].setValue(si, 0.0); // set z-translation value
