@@ -25,6 +25,13 @@ if($env:CMAKE_GENERATOR -like "*Win64") {
 }
 $PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 
+Set-Location $env:OPENSIM_SOURCE_DIR
+$BRANCHTIP = $env:APPVEYOR_REPO_COMMIT
+git fetch --quiet --unshallow
+git fetch --quiet origin master:master
+$BRANCHBASE = (git merge-base master $BRANCHTIP)
+
+Write-Host $BRANCHBASE
 Write-Host $PACKAGE_NAME
 
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
