@@ -53,7 +53,8 @@ nuget:
   account_feed: true
 
 install:
-
+  - Set-Location $OPENSIM_SOURCE_DIR
+  - .\appveyor_scripts\DownloadBuildFromCache.ps1
   ## Use Chocolatey to install SWIG.
   - choco install swig --version 3.0.6 --yes > $null
   
