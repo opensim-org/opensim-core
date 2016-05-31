@@ -25,7 +25,7 @@ if($env:CMAKE_GENERATOR -like "*Win64") {
 }
 $PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 
-Write-Host $PACAKGE_NAME
+Write-Host $PACKAGE_NAME
 
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
 Write-Host $env:APPVEYOR_REPO_BRANCH
