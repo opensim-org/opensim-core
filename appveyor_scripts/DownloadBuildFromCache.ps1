@@ -1,13 +1,13 @@
 $CURR_DIR = (pwd)
 
-New-Item -Path . -Name build -ItemType Directory -Force
+New-Item -Path . -Name build -ItemType Directory -Force | Out-Null
 
 if(! $USE_CACHE) {
   Write-Host "---- Not downloading cache. Caching disabled."
   return
 }
 
-if($env:APPVEYOR_REPO_BRANCH -eq "build_cache_dev_branch") {
+if($env:APPVEYOR_REPO_BRANCH -eq "master") {
   Write-Host "---- Not downloading cache. This is master build."
   return
 }
