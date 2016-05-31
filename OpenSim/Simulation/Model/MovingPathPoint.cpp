@@ -153,9 +153,12 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             yCoord->getValueAs<std::string>(yCoord_name);
         if (zCoord != aNode.element_end())
             zCoord->getValueAs<std::string>(zCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", "x_coordinate", xCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", "y_coordinate", yCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", "z_coordinate", zCoord_name);
+        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
+            "x_coordinate", xCoord_name);
+        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
+            "y_coordinate", yCoord_name);
+        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
+            "z_coordinate", zCoord_name);
     }
 
     // Call base class now assuming _node has been corrected for current version
