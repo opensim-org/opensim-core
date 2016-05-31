@@ -329,8 +329,8 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.
-            po = bo->findStationLocationInGround(s, start->getLocation());
-            pf = bf->findStationLocationInGround(s, end->getLocation());
+            po = start->getLocationInGround(s);
+            pf = end->getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
             dir = (pf - po);
@@ -346,18 +346,37 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             else{
                 dir = dir.normalize();
             }
-        
+
             force = tension*dir;
 
+            const MovingPathPoint* mppo =
+                dynamic_cast<MovingPathPoint *>(start);
+
+            // do the same for the end point of this segment of the path
+            const MovingPathPoint* mppf =
+                dynamic_cast<MovingPathPoint *>(end);
+
             // add in the tension point forces to body forces
-            bo->applyForceToBodyPoint(s, start->getLocation(), force, 
-                bodyForces);
-            bf->applyForceToBodyPoint(s, end->getLocation(), -force,
-                bodyForces);
+            if (mppo) {// moving path point location is a function of the state
+                bo->applyForceToBodyPoint(s, mppo->getLocation(s), force,
+                    bodyForces);
+            }
+            else {
+                bo->applyForceToBodyPoint(s, start->getLocation(), force,
+                    bodyForces);
+            }
 
-            const MovingPathPoint* mppo = 
-                    dynamic_cast<MovingPathPoint *>(start);
+            if (mppf) {// moving path point location is a function of the state
+                bf->applyForceToBodyPoint(s, mppf->getLocation(s), -force,
+                    bodyForces);
+            }
+            else {
+                bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+                    bodyForces);
+            }
 
+            // Now account for the work being done by virtue of the moving
+            // path point motion relative to the body it is on
             if(mppo){
                 // torque (genforce) contribution due to relative movement 
                 // of a via point w.r.t. the body it is connected to.
@@ -373,10 +392,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
                     mppo->getXCoordinate().getMobilizerQIndex(), 
                     fo, mobilityForces);
             }
-
-            // do the same for the end point of this segment of the path
-            const MovingPathPoint* mppf = 
-                    dynamic_cast<MovingPathPoint *>(end);
 
             if(mppf){
                 dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
@@ -726,8 +741,8 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
     PathWrap* newWrap = new PathWrap();
     newWrap->setWrapObject(aWrapObject);
     newWrap->setMethod(PathWrap::hybrid);
-    newWrap->connectToModelAndPath(updModel(), *this);
     upd_PathWrapSet().adoptAndAppend(newWrap);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -921,8 +936,10 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 
         // Calculate the relative positions and velocities.
         posRelative = posEndInertial - posStartInertial;
-        velRelative =   (velEndInertial + velEndMoving) 
-                      - (velStartInertial + velStartMoving);
+        //velRelative =   (velEndInertial + velEndMoving) 
+        //              - (velStartInertial + velStartMoving);
+        velRelative = end->getVelocityInGround(s) - 
+                      start->getVelocityInGround(s);
 
         // Normalize the vector from start to end.
         posRelative = posRelative.normalize();
@@ -1245,17 +1262,7 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s) const
 {
     Array<PathPoint*>& currentDisplayPath = 
         updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-    // Clear the current display path. Delete all path points
-    // that have a NULL path pointer. This means that they were
-    // created by an earlier call to updateDisplayPath() and are
-    // not part of the _currentPath.
-/*
-    for (int i=0; i<currentDisplayPath.getSize(); i++) {
-        PathPoint* mp = currentDisplayPath.get(i);
-        if (!mp->getPath())
-            ;
-    }
-*/
+
     currentDisplayPath.setSize(0);
 
     const Array<PathPoint*>& currentPath =  

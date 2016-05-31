@@ -199,8 +199,9 @@ SimTK::Vec3 MovingPathPoint::getVelocity(const SimTK::State& s) const
 
     if (!_zCoordinate.empty()){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-        vInF[2] = get_z_location().calcDerivative(derivComponents, SimTK::Vector(1, _zCoordinate->getValue(s)))*
-            _zCoordinate->getSpeedValue(s);
+        vInF[2] = get_z_location().calcDerivative(
+            derivComponents, SimTK::Vector(1, _zCoordinate->getValue(s)))*
+                _zCoordinate->getSpeedValue(s);
     }
     else
         vInF[2] = 0.0;
