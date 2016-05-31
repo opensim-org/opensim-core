@@ -48,6 +48,7 @@ init:
   # The CMake variable JAVA_HOME tells CMake where to look for Java.
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
+  - ps: $USE_CACHE = $TRUE
 
 nuget:
   account_feed: true
