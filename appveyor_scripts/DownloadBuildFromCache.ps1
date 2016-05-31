@@ -17,6 +17,16 @@ if($env:APPVEYOR_REPO_COMMIT_MESSAGE -match "\[make clean\]") {
   return
 }
 
+Write-Host '---- Checking for availability of cached build directory on Bintray.'
+if($env:CMAKE_GENERATOR -like "*Win64") {
+  $COMPILER = "msvc_win64"  
+} else {
+  $COMPILER = "msvc_win32"
+}
+$PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
+
+Write-Host $PACAKGE_NAME
+
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
 Write-Host $env:APPVEYOR_REPO_BRANCH
 Write-Host $env:APPVEYOR_REPO_COMMIT
