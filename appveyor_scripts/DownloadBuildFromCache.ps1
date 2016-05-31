@@ -7,8 +7,9 @@ if(! $USE_CACHE) {
   return
 }
 
-if($env:APPVEYOR_REPO_BRANCH -eq "master") {
+if($env:APPVEYOR_REPO_BRANCH -eq "build_cache_dev_branch") {
   Write-Host "---- Not downloading cache. This is master build."
+  return
 }
 
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
