@@ -89,6 +89,11 @@ build_script:
   - cmake --build . --target SimbodyFiles --config Release
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
+  ############################################################################################################
+  # Cache OpenSim build directory if current branch is master.
+  ############################################################################################################
+  - ps: ./appveyor_scripts/UploadBuildToCache.ps1
+  
 test_script:
   ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
