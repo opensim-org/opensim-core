@@ -23,6 +23,7 @@
 #define OPENSIM_TRC_FILE_ADAPTER_H_
 
 #include "FileAdapter.h"
+#include "TimeSeriesTable.h"
 
 namespace OpenSim {
 
