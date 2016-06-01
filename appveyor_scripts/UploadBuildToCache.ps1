@@ -40,7 +40,7 @@ $LETTERS.ForEach({
   if($BYTESREAD -eq 0) {
     break
   } else {
-    $PIECE = [System.IO.File]::OpenWrite("./" + $ZIP + "_$_")
+    $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$_")
     $PIECE.Write($BUFFER, 0, $BYTESREAD)
     $PIECE.Close()
   }
