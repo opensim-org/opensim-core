@@ -1,6 +1,6 @@
 $CURR_DIR = (pwd)
 
-New-Item -Path . -Name $env:OPENSIM_BUILD_DIR -ItemType Directory -Force | Out-Null
+New-Item -Path $env:OPENSIM_BUILD_DIR -ItemType Directory -Force | Out-Null
 
 if(! $USE_CACHE) {
   Write-Host "---- Not downloading cache. Caching disabled."
