@@ -53,8 +53,6 @@ nuget:
   account_feed: true
 
 install:
-  - cd %OPENSIM_SOURCE_DIR%
-  - ps: .\appveyor_scripts\DownloadBuildFromCache.ps1
   ## Use Chocolatey to install SWIG.
   - choco install swig --version 3.0.6 --yes > $null
   
@@ -75,7 +73,12 @@ build_script:
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
-  - mkdir %OPENSIM_BUILD_DIR%
+
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - ps: .\appveyor_scripts\DownloadBuildFromCache.ps1
+
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
   # for some reason.
@@ -91,9 +94,9 @@ build_script:
   - cmake --build . --target SimbodyFiles --config Release
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
-  ############################################################################################################
+  #######################################################################################################################
   # Cache OpenSim build directory if current branch is master.
-  ############################################################################################################
+  #######################################################################################################################
   - ps: ./appveyor_scripts/UploadBuildToCache.ps1
   
 test_script:
