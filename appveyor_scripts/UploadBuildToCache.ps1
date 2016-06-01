@@ -40,14 +40,14 @@ $LETTERS.ForEach({
   if($BYTESREAD -eq 0) {
     break
   } else {
-    $PIECE = [System.IO.File]::OpenWrite($ZIP + "_$_")
+    $PIECE = [System.IO.File]::OpenWrite("./" + $ZIP + "_$_")
     $PIECE.Write($BUFFER, 0, $BYTESREAD)
     $PIECE.Close()
   }
 })
 Remove-Item $ZIP
 
-$URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
+$URL = "https://api.bintray.com/content/opensim/opensim-core/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
 PIECES=$(ls ${TARBALL}a*)
 for piece in $PIECES; do 
   echo "---- Uploading piece ${piece} to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
