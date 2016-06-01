@@ -5,12 +5,18 @@ if(! $USE_CACHE) {
   return
 }
 
-if($env:APPVEYOR_REPO_BRANCH -neq "master") {
-  Write-Host "---- Not uploading cache. This is not master build."
-  return
-}
+#if($env:APPVEYOR_REPO_BRANCH -neq "master") {
+#  Write-Host "---- Not uploading cache. This is not master build."
+#  return
+#}
+Set-Location $env:OPENSIM_SOURCE_DIR
+git fetch origin master:master
+git checkout master
+Set-Location $env:OPENSIM_BUILD_DIR
+cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
 
-$MASTERTIP = $env:APPVEYOR_REPO_COMMIT
+$MASTERTIP = (git log -n1 --format="%H")
+# $MASTERTIP = $env:APPVEYOR_REPO_COMMIT
 if($env:CMAKE_GENERATOR -like "*Win64") {
   $COMPILER = "msvc_win64"  
 } else {
