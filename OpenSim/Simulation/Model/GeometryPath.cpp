@@ -881,55 +881,12 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     if (isCacheVariableValid(s, "speed"))
         return;
 
-    SimTK::Vec3 posRelative, velRelative;
-    SimTK::Vec3 posStartInertial, posEndInertial, 
-                velStartInertial, velEndInertial;
-    SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
-    PathPoint *start, *end;
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     double speed = 0.0;
-    double speed2 = 0.0;
     
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
-        start = currentPath[i];
-        end   = currentPath[i+1];
-
-        // Find the positions and velocities in the inertial frame.
-        posStartInertial = start->getLocationInGround(s);
-        posEndInertial = end->getLocationInGround(s);
-
-        velStartInertial = start->getVelocityInGround(s);
-        velEndInertial = end->getVelocityInGround(s);
-
-        // The points might be moving in their local bodies' reference frames
-        // (MovingPathPoints and possibly PathWrapPoints) so find their
-        // local velocities and transform them to the inertial frame.
-        start->getVelocity(s, velStartLocal);
-        end->getVelocity(s, velEndLocal);
-
-        velStartMoving = start->getBody()
-            .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
-
-        velEndMoving = end->getBody()
-            .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
-
-        // Calculate the relative positions and velocities.
-        posRelative = posEndInertial - posStartInertial;
-        //velRelative =   (velEndInertial + velEndMoving) 
-        //              - (velStartInertial + velStartMoving);
-        velRelative = end->getVelocityInGround(s) - 
-                      start->getVelocityInGround(s);
-
-        // Normalize the vector from start to end.
-        posRelative = posRelative.normalize();
-
-        // Dot the relative velocity with the unit vector from start to end,
-        // and add this speed to the running total.
-        speed += ~velRelative * posRelative;
-        speed2 += start->calcSpeedBetween(s, *end);
-
-        //SimTK_TEST_EQ_TOL(speed2, speed, 1e-6);
+        speed += currentPath[i]->calcSpeedBetween(s, *currentPath[i+1]);
     }
 
     setLengtheningSpeed(s, speed);
@@ -1119,8 +1076,6 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 
                     ws.updWrapPoint1().setWrapLength(0.0);
                     ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
-                    ws.updWrapPoint1().setBody(wo->getFrame());
-                    ws.updWrapPoint2().setBody(wo->getFrame());
 
                     ws.updWrapPoint1().setLocation(s,best_wrap.r1);
                     ws.updWrapPoint2().setLocation(s,best_wrap.r2);
