@@ -62,9 +62,9 @@ public:
     OpenSim_DECLARE_PROPERTY(method, std::string,
         "The wrapping method used to solve the path around the wrap object.");
 
-    // Range should not be exposed as far as one can tell, since al instances are
-    // -1, -1 which is the default value, which means the PathWrap is overwriting
-    // anyways.
+    // TODO Range should not be exposed as far as one can tell, since all instances
+    // are (-1, -1), which is the default value, and that means the PathWrap is
+    // ignoring/overwriting this property anyways.
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, int, 2,
         "The range of indices to use to compute the path over the wrap object.")
 
@@ -73,19 +73,6 @@ public:
         midpoint,
         axial
     };
-
-protected:
-    WrapMethod _method;
-
-    const WrapObject* _wrapObject;
-    const GeometryPath* _path;
-
-    WrapResult _previousWrap;  // results from previous wrapping
-
-    MemberSubcomponentIndex _wrapPoint1Ix {
-        constructSubcomponent<PathWrapPoint>("pwpt1") };
-    MemberSubcomponentIndex _wrapPoint2Ix {
-        constructSubcomponent<PathWrapPoint>("pwpt2") };
 
 //=============================================================================
 // METHODS
@@ -132,6 +119,19 @@ private:
     void constructProperties() override;
     void extendConnectToModel(Model& model) override;
     void setNull();
+
+private:
+    WrapMethod _method;
+
+    const WrapObject* _wrapObject;
+    const GeometryPath* _path;
+
+    WrapResult _previousWrap;  // results from previous wrapping
+
+    MemberSubcomponentIndex _wrapPoint1Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt1") };
+    MemberSubcomponentIndex _wrapPoint2Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt2") };
 //=============================================================================
 };  // END of class PathWrap
 //=============================================================================
