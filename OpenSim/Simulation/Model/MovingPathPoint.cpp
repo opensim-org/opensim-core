@@ -165,12 +165,39 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-//_____________________________________________________________________________
-/**
- * Get the velocity of the point in the body's local reference frame.
- *
- * @param aVelocity The velocity.
- */
+SimTK::Vec3 MovingPathPoint::getLocation(const SimTK::State& s) const
+{
+    SimTK::Vec3 pInF(0);
+    if (!_xCoordinate.empty()) {
+        const double xval = SimTK::clamp(_xCoordinate->getRangeMin(),
+            _xCoordinate->getValue(s),
+            _xCoordinate->getRangeMax());
+        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, xval));
+    }
+    else // assume a Constant
+        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, 0.0));
+
+    if (!_yCoordinate.empty()) {
+        const double yval = SimTK::clamp(_yCoordinate->getRangeMin(),
+            _yCoordinate->getValue(s),
+            _yCoordinate->getRangeMax());
+        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, yval));
+    }
+    else // type == Constant
+        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, 0.0));
+
+    if (_zCoordinate) {
+        const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
+            _zCoordinate->getValue(s),
+            _zCoordinate->getRangeMax());
+        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, zval));
+    }
+    else // type == Constant
+        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, 0.0));
+
+    return pInF;
+}
+
 
 SimTK::Vec3 MovingPathPoint::getVelocity(const SimTK::State& s) const
 {
@@ -288,38 +315,7 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
     updateGeometry();
 }
 
-SimTK::Vec3 MovingPathPoint::getLocation(const SimTK::State& s) const
-{
-    SimTK::Vec3 pInF(0);
-    if (!_xCoordinate.empty()) {
-        const double xval = SimTK::clamp(_xCoordinate->getRangeMin(),
-            _xCoordinate->getValue(s),
-            _xCoordinate->getRangeMax());
-        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, xval));
-    }
-    else // assume a Constant
-        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, 0.0));
 
-    if (!_yCoordinate.empty()) {
-        const double yval = SimTK::clamp(_yCoordinate->getRangeMin(),
-            _yCoordinate->getValue(s),
-            _yCoordinate->getRangeMax());
-        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, yval));
-    }
-    else // type == Constant
-        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, 0.0));
-
-    if (_zCoordinate) {
-        const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
-            _zCoordinate->getValue(s),
-            _zCoordinate->getRangeMax());
-        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, zval));
-    }
-    else // type == Constant
-        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, 0.0));
-
-    return pInF;
-}
 
 
 SimTK::Vec3 MovingPathPoint::calcLocationInGround(const SimTK::State& s) const
@@ -339,12 +335,13 @@ SimTK::Vec3 MovingPathPoint::calcVelocityInGround(const SimTK::State& s) const
 
 
     // The velocity of the station in ground is a function of its frame's
-    // linear (vF = V_GF[1]) and angular (omegaF = A_GF[0]) velocity, such that
+    // linear (vF = V_GF[1]) and angular (omegaF = V_GF[0]) velocity, such that
     // velocity of the station: v = vF + omegaF x r
     return V_GF[1] + V_GF[0] % r + v;
 }
 SimTK::Vec3 MovingPathPoint::calcAccelerationInGround(const SimTK::State& state) const
 {
-    OPENSIM_THROW(Exception, "MovingPathPoint::calcAccelerationInGround not implemented.");
+    //TODO: Enable Exception or Implement the method and add accompanying test.
+    //OPENSIM_THROW(Exception, "MovingPathPoint::calcAccelerationInGround not implemented.");
     return Vec3(SimTK::NaN);
 }
