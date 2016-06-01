@@ -28,9 +28,11 @@ $PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 Write-Host "source dir: " + $env:OPENSIM_SOURCE_DIR
 Set-Location $env:OPENSIM_SOURCE_DIR
 $BRANCHTIP = $env:APPVEYOR_REPO_COMMIT
-git fetch --quiet --unshallow
-git fetch --quiet origin master:master
 $BRANCHBASE = (git merge-base master $BRANCHTIP)
+
+# Set the timestamps of all files back.
+$timestamp = Get-Date -Year 1990 -Month 01 -Day 01 -Hour 01 -Minute 01 -Second 01
+Get-ChildItem -Recurse | ForEach-Object { $_.LastWriteTime = $timestamp }
 
 Write-Host $BRANCHBASE
 Write-Host $PACKAGE_NAME
