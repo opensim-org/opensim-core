@@ -40,19 +40,25 @@ using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Transform;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-
-
-/* TODO: All Points should be Components that use Connectors
-* and extendConnect(). This must go away! -aseth
-*/
-void PathPoint::connectToModelAndPath(Model& model, const GeometryPath& path)
+void PathPoint::
+changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
 {
-    Super::connectToModel(model);
-    _path = &path;
+    if (!hasParent()) {
+        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+            " change the body on PathPoint which was not assigned to a body.");
+    }
+    // if it is already assigned to aBody, do nothing
+    const PhysicalFrame& currentFrame = getParentFrame();
+
+    if (currentFrame == body)
+        return;
+
+    // Preserve location means to switch bodies without changing
+    // the location of the point in the inertial reference frame.
+    upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
+
+    // now assign this point's body to point to aBody
+    setParentFrame(body);
 }
 
 void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
