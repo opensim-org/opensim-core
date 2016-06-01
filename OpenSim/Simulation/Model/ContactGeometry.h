@@ -53,7 +53,8 @@ public:
         "Location of geometry center in the PhysicalFrame.");
 
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-        "Orientation of geometry in the PhysicalFrame.");
+        "Orientation of geometry in the PhysicalFrame "
+        "(body-fixed XYZ Euler angles).");
 
     OpenSim_DECLARE_PROPERTY(display_preference, int,
         "0:Hide 1:Wire 3:Flat 4:Shaded");

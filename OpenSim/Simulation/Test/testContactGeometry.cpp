@@ -380,40 +380,58 @@ void compareHertzAndMeshContactResults()
 
 // In version 4.0, we introduced intermediate PhysicalFrames to
 // ContactGeometry. The test below ensures that the intermediate frames (as
-// well as the ContactGeometry's location property) are acccounted for by
-// comparing results for equivalent systems, some of which use an intermediate
-// frame.
-// The system is a point mass situated 1 meter along a massless bar that is
-// attached to ground by a hinge (an inverted pendulum). The contact sphere is
-// 1 meter up and 0.5 meters to the right of the mass.
+// well as the ContactGeometry's location and orientation properties) are
+// acccounted for by comparing results for equivalent systems, some of which
+// use an intermediate offset frame.
+// The system is a point mass situated 1 meter along a link that is attached to
+// ground by a hinge. The contact ball (sphere or mesh) is 1 meter up and 0.5
+// meters to the right of the mass (in the frame of the link). The ball bounces
+// on a platform, whose orientation is horizontal (or, 90 degrees clockwise
+// from its "default" orientation, which is vertical).
 //
-//                                      0.5 m
-//                                     -----(geom)
-//                                     |
-//                                     |
-//                                     | 1 m
-//                             1 m     |
+//                                       0.5 m
+//                    .                -----(ball)
+//                    .   (platform)   |
+//                    . 90deg.-`       |
+//                    .   .-`          | 1 m
+//                    ..-`     1 m     |
 //                  (hinge)----------(mass)
-// 
-// The pendulum starts at 27 degrees and then the bar drops down and hits the
-// ground.
+//                        
+// The link starts at an incline of 27 degrees and then the link drops down and
+// hits the platform.
+// We test three equivalent systems that specify the transforms for the
+// platform and ball geomtries in different ways:
+//    1. Only using WeldJoints and massless bodies.
+//    2. Using a mix of PhysicalOffsetFrames and the geometry's location and
+//       orientation properties.
+//    3. Only using PhysicalOffsetFrames.
 
 // Add contact geometry and contact force components to the model.
 template <typename ContactType>
-void addContactComponents(Model& model, PhysicalFrame& frame, Vec3 loc);
+void addContactComponents(Model& model,
+        PhysicalFrame& frameForBall, Vec3 locForBall,
+        PhysicalFrame& frameForPlatform, Vec3 orientationForPlatform);
 
 // Specialize for Hunt-Crossley.
 template<>
 void addContactComponents<OpenSim::HuntCrossleyForce>(Model& model,
-        PhysicalFrame& frame, Vec3 loc) {
-    auto* geometry = new ContactSphere(radius, loc, frame, "ball");
+        PhysicalFrame& frameForBall, Vec3 locForBall,
+        PhysicalFrame& frameForPlatform, Vec3 orientationForPlatform) {
+
+    // ContactGeometry.
+    // By default, x > 0 is inside the half space.
+    auto* floor = new ContactHalfSpace(Vec3(0), orientationForPlatform,
+            frameForPlatform, "platform");
+    auto* geometry = new ContactSphere(radius, locForBall,
+                                       frameForBall, "ball");
+    model.addContactGeometry(floor);
     model.addContactGeometry(geometry);
 
     // Force.
     auto* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
             1.0e6, 1e-5, 0.0, 0.0, 0.0);
     contactParams->addGeometry("ball");
-    contactParams->addGeometry("ground");
+    contactParams->addGeometry("platform");
     auto* force = new OpenSim::HuntCrossleyForce(contactParams);
     model.addForce(force);
 }
@@ -421,9 +439,16 @@ void addContactComponents<OpenSim::HuntCrossleyForce>(Model& model,
 // Specialize for Elastic Foundation.
 template<>
 void addContactComponents<OpenSim::ElasticFoundationForce>(Model& model,
-        PhysicalFrame& frame, Vec3 loc) {
-    auto* geometry = new ContactMesh(mesh_files[0], loc, Vec3(0),
-                                     frame, "ball");
+        PhysicalFrame& frameForBall, Vec3 locForBall,
+        PhysicalFrame& frameForPlatform, Vec3 orientationForPlatform) {
+
+    // ContactGeometry.
+    // By default, x > 0 is inside the half space.
+    auto* floor = new ContactHalfSpace(Vec3(0), orientationForPlatform,
+            frameForPlatform, "platform");
+    auto* geometry = new ContactMesh(mesh_files[0], locForBall, Vec3(0),
+                                     frameForBall, "ball");
+    model.addContactGeometry(floor);
     model.addContactGeometry(geometry);
 
     // Force.
@@ -431,28 +456,24 @@ void addContactComponents<OpenSim::ElasticFoundationForce>(Model& model,
         new OpenSim::ElasticFoundationForce::ContactParameters(
             1.0e6, 1e-5, 0.0, 0.0, 0.0);
     contactParams->addGeometry("ball");
-    contactParams->addGeometry("ground");
+    contactParams->addGeometry("platform");
     auto* force = new OpenSim::ElasticFoundationForce(contactParams);
     model.addForce(force);
 }
 
 Model createBaseModel() {
     Model model;
+    // For debugging: model.setUseVisualizer(true);
 
-    // Bodies and Joint.
+    // Body and Joint.
     Ground& ground = model.updGround();
     auto* point = new OpenSim::Body("point", mass, Vec3(0), Inertia(1.0));
     auto* hinge = new OpenSim::PinJoint("hinge",
                                ground, Vec3(0), Vec3(0),
                                *point, Vec3(-1, 0, 0), Vec3(0));
+
     model.addBody(point);
     model.addJoint(hinge);
-
-    // ContactGeometry.
-    auto* floor = new ContactHalfSpace(Vec3(0),
-                                       Vec3(0, 0, -0.5 * SimTK::Pi),
-                                       ground, "ground");
-    model.addContactGeometry(floor);
 
     return model;
 }
@@ -478,20 +499,37 @@ void testIntermediateFrames() {
         return state;
     };
 
-    // Obtain result from using a weld joint and another body to achieve the
-    // "intermediate frame."
+    const Real deg90 = 0.5 * SimTK::Pi;
+    const Real deg45 = 0.25 * SimTK::Pi;
+
+    // Achieve transforms with weld joints and massless bodies.
     SimTK::State stateWeld;
     {
         Model model = createBaseModel();
+
+        // Scaffolding for the ball.
         const auto& point = model.getBodySet().get("point");
-        auto* massless = new OpenSim::Body("massless", 0, Vec3(0), Inertia(0.0));
-        auto* weld = new OpenSim::WeldJoint("weld",
+        auto* linkOffset = new OpenSim::Body("link_offset",
+                                             0, Vec3(0), Inertia(0.0));
+        auto* linkWeld = new OpenSim::WeldJoint("link_weld",
                                    point, Vec3(0), Vec3(0),
-                                   // body is up 1m in the y direction.
-                                   *massless, Vec3(0, -1, 0), Vec3(0));
-        model.addBody(massless);
-        model.addJoint(weld);
-        addContactComponents<ContactType>(model, *massless, Vec3(0.5, 0, 0));
+                                   // Body is 0.5m to the right and 1m up.
+                                   *linkOffset, Vec3(-0.5, -1, 0), Vec3(0));
+        model.addBody(linkOffset);
+        model.addJoint(linkWeld);
+
+        // Scaffolding for the platform.
+        auto* platformOffset = new OpenSim::Body("platform_offset",
+                                                 0, Vec3(0), Inertia(0));
+        auto* platformWeld = new OpenSim::WeldJoint("platform_weld",
+                                   model.getGround(), Vec3(0), Vec3(0),
+                                   *platformOffset, Vec3(0), Vec3(0));
+        model.addBody(platformOffset);
+        model.addJoint(platformWeld);
+
+        addContactComponents<ContactType>(model,
+                *linkOffset, Vec3(0),
+                *platformOffset, Vec3(0, 0, -deg90));
         stateWeld = simulate(model);
 
         // Make sure this model actually bounced; otherwise, the test is not
@@ -499,18 +537,28 @@ void testIntermediateFrames() {
         SimTK_TEST(model.calcMassCenterVelocity(stateWeld)[1] > 0);
     }
 
-    // Y offset accomplished with PhysicalOffsetFrame, X offset accomplished
-    // with ContactGeometry's location property.
+    // Achieve transforms with a mix of PhysicalOffsetFrames and
+    // ContactGeometry's location and orientation properties.
     SimTK::State stateIntermedFrameY;
     {
         Model model = createBaseModel();
-        auto* frame = new PhysicalOffsetFrame("intermed",
+
+        // Scaffolding for the ball.
+        auto* linkOffset = new PhysicalOffsetFrame("link_offset",
                 model.updBodySet().get("point"),
                 // Frame is up 1m in the y direction.
                 SimTK::Transform(Vec3(0, 1, 0)));
-        model.addFrame(frame);
+        model.addFrame(linkOffset);
 
-        addContactComponents<ContactType>(model, *frame, Vec3(0.5, 0, 0));
+        // Scaffolding for the platform.
+        auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
+                model.getGround(),
+                SimTK::Transform(SimTK::Rotation(-deg45, SimTK::ZAxis)));
+        model.addFrame(platformOffset);
+
+        addContactComponents<ContactType>(model,
+                *linkOffset, Vec3(0.5, 0, 0),
+                *platformOffset, Vec3(0, 0, -deg45));
         stateIntermedFrameY = simulate(model);
 
         // Make sure this model actually bounced; otherwise, the test is not
@@ -518,17 +566,26 @@ void testIntermediateFrames() {
         SimTK_TEST(model.calcMassCenterVelocity(stateIntermedFrameY)[1] > 0);
     }
 
-    // The X and Y offsets are both accomplished with the PhysicalOffsetFrame.
+    // Achieve transforms soleley with PhysicalOffsetFrames.
     SimTK::State stateIntermedFrameXY;
     {
         Model model = createBaseModel();
-        auto* frame = new PhysicalOffsetFrame("intermed",
-                model.updBodySet().get("point"),
-                // Frame is up 1m in the y direction.
-                SimTK::Transform(Vec3(0.5, 1, 0)));
-        model.addFrame(frame);
 
-        addContactComponents<ContactType>(model, *frame, Vec3(0, 0, 0));
+        // Scaffolding for the ball.
+        auto* linkOffset = new PhysicalOffsetFrame("link_offset",
+                model.updBodySet().get("point"),
+                // Frame is 0.5m to the right and 1m up.
+                SimTK::Transform(Vec3(0.5, 1, 0)));
+        model.addFrame(linkOffset);
+
+        // Scaffolding for the platform.
+        auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
+                model.getGround(),
+                SimTK::Transform(SimTK::Rotation(-deg90, SimTK::ZAxis)));
+        model.addFrame(platformOffset);
+
+        addContactComponents<ContactType>(model, *linkOffset, Vec3(0),
+                                                 *platformOffset, Vec3(0));
         stateIntermedFrameXY = simulate(model);
 
         // Make sure this model actually bounced; otherwise, the test is not
