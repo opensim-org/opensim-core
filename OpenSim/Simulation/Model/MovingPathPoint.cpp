@@ -79,6 +79,19 @@ void MovingPathPoint::constructConnectors()
     constructConnector<Coordinate>("z_coordinate");
 }
 
+bool MovingPathPoint::hasXCoordinate() const
+{
+    return getConnector<Coordinate>("x_coordinate").isConnected();
+}
+bool MovingPathPoint::hasYCoordinate() const
+{
+    return getConnector<Coordinate>("y_coordinate").isConnected();
+}
+bool MovingPathPoint::hasZCoordinate() const
+{
+    return getConnector<Coordinate>("z_coordinate").isConnected();
+}
+
 const Coordinate& MovingPathPoint::getXCoordinate() const
 {
     return _xCoordinate.getRef();

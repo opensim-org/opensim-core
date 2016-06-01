@@ -78,6 +78,10 @@ public:
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
+    bool hasXCoordinate() const;
+    bool hasYCoordinate() const;
+    bool hasZCoordinate() const;
+
     const Coordinate& getXCoordinate() const;
     const Coordinate& getYCoordinate() const;
     const Coordinate& getZCoordinate() const;

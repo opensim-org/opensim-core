@@ -110,6 +110,17 @@ void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
     updConnector<Coordinate>("coordinate").connect(coordinate);
 }
 
+bool ConditionalPathPoint::hasCoordinate() const
+{
+    return getConnector<Coordinate>("coordinate").isConnected();
+}
+
+const Coordinate& ConditionalPathPoint::getCoordinate() const
+{
+    return getConnectee<Coordinate>("coordinate");
+}
+
+
 //_____________________________________________________________________________
 /**
  * Set the range min.
