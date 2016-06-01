@@ -37,6 +37,7 @@ Get-ChildItem -Recurse | ForEach-Object { $_.LastWriteTime = $timestamp }
 # Touch the files that this branch has modified after its birth.
 $CHANGED_FILES = (git diff --name-only $BRANCHBASE build_cache_dev_branch)
 $CHANGED_FILES | ForEach-Object { 
+  Write-Host $_
   $file = Get-Item $_
   $file.LastWriteTime = Get-Date 
 }
