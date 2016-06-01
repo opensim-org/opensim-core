@@ -37,14 +37,17 @@ Get-ChildItem -Recurse | ForEach-Object { $_.LastWriteTime = $timestamp }
 # Touch the files that this branch has modified after its birth.
 $CHANGED_FILES = (git diff --name-only $BRANCHBASE build_cache_dev_branch)
 $CHANGED_FILES | ForEach-Object { 
-  Write-Host $_
   $file = Get-Item $_
   $file.LastWriteTime = Get-Date 
 }
 
+$BUILD_DIRNAME = (get-item $env:OPENSIM_BUILD_DIR).name
+
+Write-Host $BUILD_DIRNAME
+
+
 Write-Host $BRANCHBASE
 Write-Host $PACKAGE_NAME
-
 Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
 Write-Host $env:APPVEYOR_REPO_BRANCH
 Write-Host $env:APPVEYOR_REPO_COMMIT
