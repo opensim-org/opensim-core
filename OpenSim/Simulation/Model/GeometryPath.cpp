@@ -25,9 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
@@ -36,7 +33,6 @@
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include "CoordinateSet.h"
 #include "Model.h"
-
 #include "ModelVisualizer.h"
 //=============================================================================
 // STATICS
@@ -77,15 +73,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     // (i.e., the set of currently active points is numbered
     // 1, 2, 3, ...).
     namePathPoints(0);
-
-    /**
-    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
-        upd_PathWrapSet().get(i).connectToModelAndPath(aModel, *this);
-
-    for (int i = 0; i < get_PathPointSet().getSize(); i++){
-        upd_PathPointSet().get(i).connectToModelAndPath(aModel, *this);
-    }
-    */
 }
 
 //_____________________________________________________________________________
@@ -243,9 +230,6 @@ getPointForceDirections(const SimTK::State& s,
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     int np = currentPath.getSize();
-
-    //const SimbodyEngine& engine = _model->getSimbodyEngine();
- 
     rPFDs->ensureCapacity(np);
     
     for (i = 0; i < np; i++) {
@@ -522,7 +506,6 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
     newPoint->setBody(aBody);
     Vec3& location = newPoint->getLocation();
     placeNewPathPoint(s, location, aIndex, aBody);
-    newPoint->connectToModelAndPath(updModel(), *this);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.
@@ -540,7 +523,6 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
         if (endPoint != -1 && aIndex <= endPoint)
             get_PathWrapSet().get(i).setEndPoint(s,endPoint + 1);
     }
-
 
     return newPoint;
 }
@@ -908,8 +890,6 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 
     double speed = 0.0;
     double speed2 = 0.0;
-
-    //const SimbodyEngine& engine = _model->getSimbodyEngine()
     
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
         start = currentPath[i];

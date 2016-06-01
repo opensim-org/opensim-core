@@ -101,11 +101,6 @@ void PathWrap::extendConnectToModel(Model& model)
         }
     }
 
-    // connectToModelAndPath() must be called after setBody() because it requires
-    // that _bodyName already be assigned.
-    updWrapPoint1().connectToModelAndPath(model, *_path);
-    updWrapPoint2().connectToModelAndPath(model, *_path);
-
     if (get_method() == "hybrid" || get_method() == "Hybrid" || get_method() == "HYBRID")
         _method = hybrid;
     else if (get_method() == "midpoint" || get_method() == "Midpoint" || get_method() == "MIDPOINT")
