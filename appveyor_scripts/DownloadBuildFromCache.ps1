@@ -28,6 +28,7 @@ $PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 Write-Host "source dir: " + $env:OPENSIM_SOURCE_DIR
 Set-Location $env:OPENSIM_SOURCE_DIR
 $BRANCHTIP = $env:APPVEYOR_REPO_COMMIT
+git fetch --quiet origin master:master
 $BRANCHBASE = (git merge-base master $BRANCHTIP)
 
 # Set the timestamps of all files back.
