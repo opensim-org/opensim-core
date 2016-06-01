@@ -47,17 +47,17 @@ $LETTERS.ForEach({
 })
 Remove-Item $ZIP
 
+$PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
+$CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
 $URL = "https://api.bintray.com/content/opensim/opensim-core/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
-PIECES=$(ls ${TARBALL}a*)
-for piece in $PIECES; do 
-  echo "---- Uploading piece ${piece} to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
-  curl --upload-file $piece -u$BINTRAY_CREDS ${URL}/${piece}
-  echo 
-done
-URL="https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/publish"
-echo '---- Publishing uploaded build directory.'
-curl --request POST -u$BINTRAY_CREDS $URL
-echo
-echo '---- Cleaning up.'
-rm ${TARBALL}*
-cd $CURR_DIR
+(Get-Item "${ZIP}_*").ForEach({
+  Write-Host "---- Uploading piece $_ to opensim/opensim-core/${PACKAGENAME}/${MASTERTIP}"
+  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
+})
+
+$URL = "https://api.bintray.com/content/opensim/opensim-core/${PACKAGENAME}/${MASTERTIP}/publish"
+Write-Host '---- Publishing uploaded build directory.'
+Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
+Write-Host '---- Cleaning up.'
+Remove-Item ${ZIP}*
+Set-Location $CURR_DIR
