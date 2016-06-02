@@ -52,7 +52,7 @@ $BUFFER = New-Object byte[] 200mb
 $LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 $LETTERS.ForEach({
   $BYTESREAD = $FILESTREAM.Read($BUFFER, 0, $BUFFER.Length)
-  Write-Host $_ "hey"
+  Write-Host $_ + $BYTESREAD
   if($BYTESREAD -eq 0) {
     break
   } else {
