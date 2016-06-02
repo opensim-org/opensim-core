@@ -64,6 +64,7 @@ Remove-Item "$ZIP"
 $PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
 $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
+Get-Item "${ZIP}_*"
 (Get-Item "${ZIP}_*").ForEach({
   Write-Host "---- Uploading piece $_ to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
 #  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
