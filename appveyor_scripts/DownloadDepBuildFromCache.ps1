@@ -14,7 +14,41 @@ Set-Location $BUILD_DIR
 $BRANCHTIP = (Select-String -Pattern 'COMMAND .*git.*checkout ([0-9a-z]{40})' -Path .\tmp\*gitclone.cmake).Matches.Groups[1].Value
 $SOURCEURL = (Select-String -Pattern 'COMMAND .*git.*clone .*("https://.*git")' -Path .\tmp\*gitclone.cmake).Matches.Groups[1].Value
 Set-Location $SOURCE_DIR/..
-git clone $SOURCEURL (Get-Item $SOURCE_DIR).Name
+git clone --quiet $SOURCEURL (Get-Item $SOURCE_DIR).Name
+Set-Location $SOURCE_DIR
+git checkout --quiet $BRANCHTIP
 
-Write-Host $BRANCHTIP
-Write-Host $SOURCEURL
+Write-Host '---- Checking for availability of cached build directory on Bintray.'
+if($env:CMAKE_GENERATOR -like "*Win64") {
+  $COMPILER = "msvc_win64"  
+} else {
+  $COMPILER = "msvc_win32"
+}
+$PACKAGENAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
+
+# Set the timestamps of all files back.
+$timestamp = Get-Date -Year 1990 -Month 01 -Day 01 -Hour 01 -Minute 01 -Second 01
+Get-ChildItem -Recurse | ForEach-Object { $_.LastWriteTime = $timestamp }
+
+$ZIP = (Get-Item $BUILD_DIR).Name + ".zip"
+$LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+$URL = "https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${BRANCHTIP}"
+Write-Host "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHTIP}"
+Set-Location ${BUILD_DIR}/..
+ForEach($LETTER in $LETTERS) {
+  $PIECE = $ZIP + "_" + $LETTER
+  try {
+    Invoke-WebRequest $URL/$PIECE -OutFile $PIECE
+  } catch {
+    break
+  }
+  Write-Host "---- Downloaded piece $PIECE."
+}
+
+if(-not (Test-Path "${ZIP}_a")) {
+  Write-Host "---- Cache not found."
+  Set-Location $CURR_DIR
+  return
+}
+
+Write-Host '---- Joining the pieces downloaded.'
