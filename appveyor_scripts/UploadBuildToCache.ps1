@@ -28,7 +28,7 @@ if($env:CMAKE_GENERATOR -like "*Win64") {
 } else {
   $COMPILER = "msvc_win32"
 }
-$PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
+$PACKAGENAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 $URL="https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
 $BUILD_DIRNAME = (get-item $BUILD_DIR).name
 $ZIP = $BUILD_DIRNAME + ".zip"
@@ -66,16 +66,13 @@ $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PA
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
 $PIECES = Get-Item "${ZIP}_*"
 ForEach($PIECE in $PIECES) {
-  Write-Host $PROJECT
-  Write-Host $PACKAGENAME
-  Write-Host $MASTERTIP
   Write-Host "---- Uploading piece $PIECE to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
-#  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
+  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
 }
 
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/publish"
 Write-Host '---- Publishing uploaded build directory.'
-#Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
+Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
 Write-Host '---- Cleaning up.'
 Remove-Item ${ZIP}*
 Set-Location $CURR_DIR
