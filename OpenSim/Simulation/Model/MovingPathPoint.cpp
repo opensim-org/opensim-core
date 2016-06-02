@@ -366,6 +366,10 @@ SimTK::Vec3 MovingPathPoint::calcVelocityInGround(const SimTK::State& s) const
 SimTK::Vec3 MovingPathPoint::calcAccelerationInGround(const SimTK::State& state) const
 {
     //TODO: Enable Exception or Implement the method and add accompanying test.
+    //      Exception is disabled because testComponents automatically verifies that
+    //      Outputs are functional. My preference is to implement the method
     //OPENSIM_THROW(Exception, "MovingPathPoint::calcAccelerationInGround not implemented.");
+    std::cerr << "MovingPathPoint::calcAccelerationInGround() not implemented. "
+        << "It returns NaN" << std::endl;
     return Vec3(SimTK::NaN);
 }
