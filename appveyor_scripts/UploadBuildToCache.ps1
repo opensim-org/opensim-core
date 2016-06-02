@@ -54,8 +54,10 @@ $LETTERS.ForEach({
   $BYTESREAD = $FILESTREAM.Read($BUFFER, 0, $BUFFER.Length)
   Write-Host $_ + $BYTESREAD
   if($BYTESREAD -eq 0) {
+    Write-Host "break"
     break
   } else {
+    Write-Host "write"
     $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$_")
     $PIECE.Write($BUFFER, 0, $BYTESREAD)
     $PIECE.Close()
