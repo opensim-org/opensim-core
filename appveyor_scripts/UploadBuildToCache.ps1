@@ -63,6 +63,7 @@ $LETTERS.ForEach({
     $PIECE.Close()
   }
 })
+Write-Host "Remove-Item"
 Remove-Item (Get-Item $ZIP)
 
 $PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
