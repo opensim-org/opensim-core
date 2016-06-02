@@ -36,6 +36,7 @@ $ZIP = $BUILD_DIRNAME + ".zip"
 try {
   if ( (Invoke-WebRequest -Method Head "${URL}/${ZIP}_a").StatusCode -eq 200 ) {
     Write-Host "---- Already cached: ${PROJECT}."
+    Set-Location $CURR_DIR
     return
   }
 } catch {}
