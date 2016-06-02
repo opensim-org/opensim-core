@@ -10,7 +10,7 @@ if(! $USE_CACHE) {
 }
 
 Set-Location $SOURCE_DIR
-if($PROJECT -eq "opensim-core" -and $env:APPVEYOR_REPO_BRANCH -neq "master") {
+if($PROJECT -eq "opensim-core" -and $env:APPVEYOR_REPO_BRANCH -ne "master") {
   Write-Host "---- Not uploading cache. This is not master build."
   Set-Location $CURR_DIR
   return
