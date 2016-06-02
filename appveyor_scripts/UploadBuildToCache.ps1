@@ -47,35 +47,31 @@ Add-Type -AssemblyName "System.IO.Compression.FileSystem"
 
 Write-Host '---- Splitting zip into smaller pieces for upload.'
 $FILESTREAM = [System.IO.File]::OpenRead((Get-Item $ZIP))
-$FILESTREAM
 $BUFFER = New-Object byte[] 200mb
 $LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 ForEach($LETTER in $LETTERS) {
   $BYTESREAD = $FILESTREAM.Read($BUFFER, 0, $BUFFER.Length)
-  Write-Host $_ + $BYTESREAD
   if($BYTESREAD -eq 0) {
-    Write-Host "break "
     break
   }
-  Write-Host "write "
   $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$LETTER")
   $PIECE.Write($BUFFER, 0, $BYTESREAD)
   $PIECE.Close()
 }
-Write-Host "Remove-Item"
-Remove-Item (Get-Item $ZIP)
+$FILESTREAM.close()
+Remove-Item "$ZIP"
 
 $PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
 $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
 (Get-Item "${ZIP}_*").ForEach({
   Write-Host "---- Uploading piece $_ to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
-  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
+#  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
 })
 
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/publish"
 Write-Host '---- Publishing uploaded build directory.'
-Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
+#Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
 Write-Host '---- Cleaning up.'
 Remove-Item ${ZIP}*
 Set-Location $CURR_DIR
