@@ -58,13 +58,16 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_OPTIONAL_PROPERTY(x_location, Function,
-        "Function defining the x component of the point's location.");
+        "Function defining the x component of the point's location expressed "
+        "in the Frame of the Point.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(y_location, Function,
-        "Function defining the y component of the point's location.");
+        "Function defining the y component of the point's location expressed "
+        "in the Frame of the Point.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(z_location, Function,
-        "Function defining the z component of the point's location.");
+        "Function defining the z component of the point's location expressed "
+        "in the Frame of the Point.");
 
 //=============================================================================
 // METHODS
@@ -93,9 +96,11 @@ public:
     // Override methods from PathPoint.
     bool isActive(const SimTK::State& s) const override { return true; }
 
-    // Get the local location of the MovingPathPoint in its Frame
+    /** Get the local location of the MovingPathPoint in its Frame */
     SimTK::Vec3 getLocation(const SimTK::State& s) const;
-    // Get the local velocity of the MovingPathPoint in its Frame
+    /** Get the local velocity of the MovingPathPoint w.r.t to and 
+        expressed in its Frame. To get the velocity of the point w.r.t.
+        and expressed in Ground, call getVelocityInGround(). */
     SimTK::Vec3 getVelocity(const SimTK::State& s) const;
 
     SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
