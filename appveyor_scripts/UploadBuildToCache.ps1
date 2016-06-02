@@ -1,3 +1,5 @@
+Set-PSDebug -Trace 1
+
 $PROJECT = $args[0]
 $SOURCE_DIR = $args[1]
 $BUILD_DIR = $args[2]
