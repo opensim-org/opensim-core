@@ -68,8 +68,7 @@ $PIECES = Get-Item "${ZIP}_*"
 ForEach($PIECE in $PIECES) {
   $PIECENAME = $PIECE.name
   Write-Host "---- Uploading piece $PIECENAME to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
-  Write-Host $URL/$PIECENAME
-  #Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $PIECE $URL/$PIECENAME | Out-Null
+  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $PIECE $URL/$PIECENAME | Out-Null
 }
 
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/publish"
