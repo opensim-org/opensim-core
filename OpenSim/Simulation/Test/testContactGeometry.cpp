@@ -390,12 +390,16 @@ void compareHertzAndMeshContactResults()
 // from its "default" orientation, which is vertical).
 //
 //                                       0.5 m
-//                    .                -----(ball)
-//                    .   (platform)   |
-//                    . 90deg.-`       |
-//                    .   .-`          | 1 m
-//                    ..-`     1 m     |
-//                  (hinge)----------(mass)
+//                                     -----(ball)
+//                                     |
+//                                     |
+//                                     | 1 m
+//                             1 m     |
+//          ________(hinge)----------(mass)_______________________
+//                     ^                      (platform half-space)
+//                     |                       must be rotated 90 deg.
+//                  origin                     clockwise to achieve the
+//                                             horizontal orientation
 //                        
 // The link starts at an incline of 27 degrees and then the link drops down and
 // hits the platform.
