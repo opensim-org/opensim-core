@@ -42,7 +42,8 @@ try {
 
 Set-Location $BUILD_DIR/..
 Write-Host '---- Compressing build directory into a zip.'
-Compress-Archive -Path $BUILD_DIRNAME -DestinationPath $ZIP
+Add-Type -AssemblyName "System.IO.Compression.FileSystem"
+[System.IO.Compression.ZipFile]::CreateFromDirectory((Get-Item "opensim_build"), "$BUILD_DIR/$ZIP")
 Write-Host '---- Splitting zip into smaller pieces for upload.'
 $FILESTREAM = [System.IO.File]::OpenRead((Get-Item $ZIP))
 $BUFFER = New-Object byte[] 200mb
