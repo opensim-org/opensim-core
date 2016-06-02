@@ -134,6 +134,19 @@ void MovingPathPoint::extendConnectToModel(Model& model)
     if (getConnector<Coordinate>("z_coordinate").isConnected()) {
         _zCoordinate.reset(&getConnectee<Coordinate>("z_coordinate"));
     }
+
+    // As OpenSim 3.2 we correct for the Work along a Coordinate due to
+    // the generalized force that enforces the "gearing" that moves the point
+    // under tension. The work is attributed to a single Coordinate, so 
+    // we temporarily do not support independent components.
+    // TODO: If the coordinates are different then, getdPointdQ() should return a 
+    // 3x3 of partials or return a Vec3 w.r.t one coordinate at a time, where the
+    // specific Coordinate is an argument. 
+    OPENSIM_THROW_IF(!((_xCoordinate == _yCoordinate) && (_xCoordinate == _zCoordinate)),
+        Exception,
+        "MovingPathPoint:: Components of the path point location "
+        "must depend on the same Coordinate. Condition: "
+        "x_coordinate == y_coordinate == z_coordinate  FAILED.");
 }
 
 //_____________________________________________________________________________
@@ -327,8 +340,6 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
 
     updateGeometry();
 }
-
-
 
 
 SimTK::Vec3 MovingPathPoint::calcLocationInGround(const SimTK::State& s) const
