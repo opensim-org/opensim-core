@@ -164,7 +164,7 @@ int main()
 
         // create a controller to control the piston and spring actuators
         // the prescribed controller sets the controls as functions of time
-        PrescribedController *legController = new PrescribedController();
+        FunctionBasedController *legController = new FunctionBasedController();
         // give the legController control over all (two) model actuators
         legController->setActuators(osimModel.updActuators());
 

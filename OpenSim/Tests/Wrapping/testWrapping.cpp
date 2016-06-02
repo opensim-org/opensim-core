@@ -316,8 +316,8 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
 
     double initialTime = 0;
 
-    // Create a prescribed controller that simply applies a function of the force
-    PrescribedController actuatorController;
+    // Create a controller that simply applies a function of the force
+    FunctionBasedController actuatorController;
     actuatorController.setActuators(osimModel.updActuators());
     for (int i=0; i<actuatorController.getActuatorSet().getSize(); i++) {
         actuatorController.prescribeControlForActuator(i, new Constant(activation));
@@ -325,7 +325,7 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
-    osimModel.disownAllComponents(); // because PrescribedController is on stack
+    osimModel.disownAllComponents(); // because FunctionBasedController is on stack
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();

@@ -1,9 +1,9 @@
-#ifndef OPENSIM_PRESCRIBED_CONTROLLER_H_
-#define OPENSIM_PRESCRIBED_CONTROLLER_H_
+#ifndef OPENSIM_FUNCTION_BASED_CONTROLLER_H_
+#define OPENSIM_FUNCTION_BASED_CONTROLLER_H_
 
 
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  PrescribedController.h                      *
+ *                      OpenSim:  FunctionBasedController.h                   *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -36,15 +36,15 @@ class Function;
 //=============================================================================
 //=============================================================================
 /**
- * PrescribedController is a concrete Controller that specifies functions that 
+ * FunctionBasedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
  * @authors  Ajay Seth, Ayman Habib
  */
 //=============================================================================
 
-class OSIMSIMULATION_API PrescribedController : public Controller {
-OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
+class OSIMSIMULATION_API FunctionBasedController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedController, Controller);
 
 //=============================================================================
 // DATA
@@ -59,16 +59,6 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(control, SimTK::Vector, getControlAtTime,
         SimTK::Stage::Time);
 
-    /** (Optional) prescribed controls from a storage file  */
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
-        "Controls storage (.sto) file containing controls for individual "
-        "actuators in the model. Column labels must match actuator names.");
-
-    /** (Optional) interpolation method for controls in storage.  */
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
-        "Interpolate the controls file data using piecewise: '0-constant', "
-        "'1-linear', '3-cubic' or '5-quintic' functions.");
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -77,18 +67,11 @@ public:
     //--------------------------------------------------------------------------
 public:
     /** Default constructor */
-    PrescribedController();
+    FunctionBasedController();
 
-    /** Convenience constructor get controls from file
-     * @param controlsFileName  string containing the controls storage (.sto) 
-     * @param interpMethodType  int 0-constant, 1-linear, 3-cubic, 5-quintic
-     *                          defaults to linear.
-     */
-    PrescribedController(const std::string& controlsFileName, 
-                         int interpMethodType = 1);
 
     /** Destructor */
-    virtual ~PrescribedController();
+    virtual ~FunctionBasedController();
 
     //--------------------------------------------------------------------------
     // CONTROL
@@ -120,27 +103,31 @@ public:
     void prescribeControlForActuator(const std::string actName,
                                      Function *prescribedFunction);
 
-protected:
-    /** Model component interface */
-    void extendConnectToModel(Model& model) override;
+    /**
+     * Return a List output with one vector of control values per Actuator. Size of the List/Vector
+     * is the same as the number of Actuators controlled by this controller, each entry is a Vector of 
+     * size 1 in case of Scalar control*/
+    SimTK::Vector getControlAtTime(const SimTK::State& s, const std::string& actuatorName) const;
+
+    /**
+     * Populate channels of "control" output, one per actuator
+     */
+    void extendFinalizeFromProperties() override;
+
 private:
     // construct and initialize properties
     void constructProperties() override;
-
-    // utility
-    Function* createFunctionFromData(const std::string& name,
-        const Array<double>& time, const Array<double>& data);
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
 
 //=============================================================================
-};  // END of class PrescribedController
+};  // END of class FunctionBasedController
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PRESCRIBED_CONTROLLER_H_
+#endif // OPENSIM_FUNCTION_BASED_CONTROLLER_H_
 
 

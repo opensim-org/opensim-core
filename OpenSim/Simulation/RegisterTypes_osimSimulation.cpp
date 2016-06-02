@@ -85,6 +85,7 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+#include "Control/FunctionBasedController.h"
 #include "Control/ToyReflexController.h"
 
 #include "Wrap/PathWrap.h"
@@ -247,7 +248,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ExpressionBasedBushingForce() );
 
     Object::registerType( ControlSetController() );
-    Object::registerType( PrescribedController() );
+    Object::registerType(FunctionBasedController());
+    Object::registerType(PrescribedController());
     Object::registerType( ToyReflexController() );
 
     Object::registerType( PathActuator() );

@@ -70,7 +70,7 @@ int main() {
     muscle->addNewPathPoint("point2", *link2, Vec3(0, 0.7, 0));
 
     // A controller that specifies the excitation of the biceps muscle.
-    PrescribedController* brain = new PrescribedController();
+    FunctionBasedController* brain = new FunctionBasedController();
     brain->addActuator(*muscle);
     // Muscle excitation is 0.3 for the first 0.5 seconds, and 1.0 thereafter.
     brain->prescribeControlForActuator("biceps",

@@ -39,7 +39,7 @@ using namespace OpenSim;
 using namespace std;
 
 void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool disabled);
+void testFunctionBasedControllerOnBlock(bool disabled);
 void testCorrectionControllerOnBlock();
 void testPrescribedControllerFromFile(const std::string& modelFile,
                                       const std::string& actuatorsFile,
@@ -50,16 +50,15 @@ int main()
     try {
         cout << "Testing ControlSetController" << endl; 
         testControlSetControllerOnBlock();
-        cout << "Testing PrescribedController" << endl; 
-        testPrescribedControllerOnBlock(false);
-        testPrescribedControllerOnBlock(true);
+        cout << "Testing FunctionBasedController" << endl; 
+        testFunctionBasedControllerOnBlock(false);
+        testFunctionBasedControllerOnBlock(true);
         cout << "Testing CorrectionController" << endl; 
         testCorrectionControllerOnBlock();
-        /*
         cout << "Testing PrescribedController from File" << endl;
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
-        */
+        
     }   
     catch (const Exception& e) {
         e.print(cerr);
@@ -165,7 +164,7 @@ void testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
-void testPrescribedControllerOnBlock(bool disabled)
+void testFunctionBasedControllerOnBlock(bool disabled)
 {
     using namespace SimTK;
 
@@ -208,9 +207,9 @@ void testPrescribedControllerOnBlock(bool disabled)
     // Define the initial and final control values
     double controlForce = 100;
 
-    // Create a prescribed controller that simply applies a function of the force
-    PrescribedController actuatorController;
-    actuatorController.setName("testPrescribedController");
+    // Create a function based controller that simply applies a function of the force
+    FunctionBasedController actuatorController;
+    actuatorController.setName("testFunctionBasedController");
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
     actuatorController.setDisabled(disabled);
@@ -218,8 +217,8 @@ void testPrescribedControllerOnBlock(bool disabled)
     // add the controller to the model
     osimModel.addController(&actuatorController);
 
-    osimModel.print("blockWithPrescribedController.osim");
-    Model modelfileFromFile("blockWithPrescribedController.osim");
+    osimModel.print("blockWithFunctionBasedController.osim");
+    Model modelfileFromFile("blockWithFunctionBasedController.osim");
 
     // Verify that serialization and then deserialization is correct
     ASSERT(osimModel == modelfileFromFile);
@@ -251,7 +250,7 @@ void testPrescribedControllerOnBlock(bool disabled)
     si.getQ().dump("Final position:");
 
     double expected = disabled ? 0 : 0.5*(controlForce/blockMass)*finalTime*finalTime;
-    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
+    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "FunctionBasedController failed to produce the expected motion of block.");
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
@@ -375,8 +374,6 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     
     
     //************* Rerun with a PrescribedController *******************
-    /* Disable that test for now since PRescribedController has no file input
-     Functionality is already tested in in the no-file section.
     PrescribedController prescribed();
     // TODO
     // Convert Storage std_controls to set of Functions and map to actuators
@@ -418,6 +415,6 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
         Array<double>(0.01, nstates), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'controls failed");
-     */
+
     osimModel.disownAllComponents();
 }

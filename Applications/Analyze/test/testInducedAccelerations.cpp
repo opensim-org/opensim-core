@@ -25,7 +25,7 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/Control/FunctionBasedController.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/InducedAccelerationsSolver.h>
@@ -80,8 +80,8 @@ void testDoublePendulumWithSolver()
 
     Model pendulum("double_pendulum.osim", true);
     
-    PrescribedController* controller=
-        new PrescribedController();
+    FunctionBasedController* controller=
+        new FunctionBasedController();
 
     controller->setActuators(pendulum.getActuators());
     controller->prescribeControlForActuator("Torq1", new Constant(torq1));

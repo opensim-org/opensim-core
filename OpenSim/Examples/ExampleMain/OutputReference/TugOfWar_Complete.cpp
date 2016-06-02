@@ -257,9 +257,9 @@ int main()
         ///////////////////////////////////
         // DEFINE CONTROLS FOR THE MODEL //
         ///////////////////////////////////
-        // Create a prescribed controller that simply applies controls as function of time
+        // Create a controller that simply applies controls as function of time
         // For muscles, controls are normalized motor-neuron excitations
-        PrescribedController *muscleController = new PrescribedController();
+        FunctionBasedController *muscleController = new FunctionBasedController();
         muscleController->setActuators(osimModel.updActuators());
         // Define linear functions for the control values for the two muscles
         Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles

@@ -301,8 +301,8 @@ void simulateMuscle(
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
-    std::unique_ptr<PrescribedController> 
-        muscleController{new PrescribedController{}};
+    std::unique_ptr<FunctionBasedController>
+        muscleController{new FunctionBasedController{}};
     if(control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 

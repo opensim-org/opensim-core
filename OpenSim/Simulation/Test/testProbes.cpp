@@ -274,9 +274,9 @@ void simulateMuscle(
 
     model.addForce(aMuscle);
 
-    // Create a prescribed controller that simply 
+    // Create a function based controller that simply 
     //applies controls as function of time
-    PrescribedController * muscleController = new PrescribedController();
+    FunctionBasedController * muscleController = new FunctionBasedController();
     if (control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 

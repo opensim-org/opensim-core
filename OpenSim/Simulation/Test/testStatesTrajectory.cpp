@@ -149,7 +149,7 @@ void createStateStorageFile() {
 
     // Randomly assign muscle excitations to create interesting activation
     // histories.
-    auto* controller = new PrescribedController();
+    auto* controller = new FunctionBasedController();
     // For consistent results, use same seed each time.
     std::default_random_engine generator(0); 
     // Uniform distribution between 0.1 and 0.9.

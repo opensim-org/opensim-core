@@ -163,7 +163,7 @@ int main()
         // Create a prescribed controller that simply supplies controls as 
         // a function of time.
         // For muscles, controls are normalized motor-neuron excitations
-        PrescribedController *muscleController = new PrescribedController();
+        FunctionBasedController *muscleController = new FunctionBasedController();
         muscleController->setActuators(osimModel.updActuators());
     
         // Set the prescribed muscle controller to use the same muscle control function for each muscle

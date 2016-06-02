@@ -127,7 +127,7 @@ void testMcKibbenActuator()
     model->addJoint(ballToGround);
     model->addForce(actuator);
 
-    PrescribedController* controller =  new PrescribedController();
+    FunctionBasedController* controller =  new FunctionBasedController();
     controller->addActuator(*actuator);
     controller->prescribeControlForActuator("mckibben", new Constant(pressure));
 
@@ -272,7 +272,7 @@ void testTorqueActuator()
     model->addForce(actuator);
 
     // Create and add a controller to control the actuator
-    PrescribedController* controller =  new PrescribedController();
+    FunctionBasedController* controller =  new FunctionBasedController();
     controller->addActuator(*actuator);
     // Apply torque about torqueAxis
     controller->prescribeControlForActuator("torque", new Constant(torqueMag));
@@ -423,7 +423,7 @@ void testClutchedPathSpring()
     // connected to the model before the wrap can be added
     model->addForce(spring);
 
-    PrescribedController* controller = new PrescribedController();
+    FunctionBasedController* controller = new FunctionBasedController();
     controller->addActuator(*spring);
     
     // Control greater than 1 or less than 0 should be treated as 1 and 0 respectively.
