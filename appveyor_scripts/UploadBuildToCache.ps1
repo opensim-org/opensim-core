@@ -11,7 +11,7 @@ if(! $USE_CACHE) {
 #}
 Set-Location $env:OPENSIM_SOURCE_DIR
 git fetch origin master:master
-git checkout master
+git checkout (git merge-base master build_cache_dev_branch)
 Set-Location $env:OPENSIM_BUILD_DIR
 cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
 
