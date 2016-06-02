@@ -63,7 +63,7 @@ $LETTERS.ForEach({
     $PIECE.Close()
   }
 })
-Remove-Item $ZIP
+Remove-Item (Get-Item $ZIP)
 
 $PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
 $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
