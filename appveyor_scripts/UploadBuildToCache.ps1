@@ -50,18 +50,18 @@ $FILESTREAM = [System.IO.File]::OpenRead((Get-Item $ZIP))
 $FILESTREAM
 $BUFFER = New-Object byte[] 200mb
 $LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
-$LETTERS.ForEach({
+ForEach($LETTER in $LETTERS) {
   $BYTESREAD = $FILESTREAM.Read($BUFFER, 0, $BUFFER.Length)
   Write-Host $_ + $BYTESREAD
   if($BYTESREAD -eq 0) {
     Write-Host "break"
-    continue
+    break
   }
   Write-Host "write"
-  $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$_")
+  $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$LETTER")
   $PIECE.Write($BUFFER, 0, $BYTESREAD)
   $PIECE.Close()
-})
+}
 Write-Host "Remove-Item"
 Remove-Item (Get-Item $ZIP)
 
