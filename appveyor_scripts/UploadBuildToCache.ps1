@@ -55,7 +55,7 @@ $LETTERS.ForEach({
   Write-Host $_ + $BYTESREAD
   if($BYTESREAD -eq 0) {
     Write-Host "break"
-    break
+    continue
   }
   Write-Host "write"
   $PIECE = [System.IO.File]::OpenWrite((Get-Item $ZIP).FullName + "_$_")
