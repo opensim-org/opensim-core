@@ -54,6 +54,7 @@ nuget:
   account_feed: true
 
 install:
+  - ps: $PSVersionTable
   ## Use Chocolatey to install SWIG.
   - choco install swig --version 3.0.6 --yes > $null
   
