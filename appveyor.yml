@@ -79,7 +79,7 @@ build_script:
   # Cache OpenSim build directory if current branch is master.
   #######################################################################################################################
   - ps: $BTK_SOURCE_DIR = "$env:OPENSIM_DEPENDENCIES_SOURCE_DIR/BTK"
-  - ps: $BTK_BUILD_DIR = "$:env:OPENSIM_DEPENDENCIES_BUILD_DIR/BTK"
+  - ps: $BTK_BUILD_DIR = "$env:OPENSIM_DEPENDENCIES_BUILD_DIR/BTK"
   - ps: UploadBuildToCache.ps1 BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
 
   #######################################################################################################################
