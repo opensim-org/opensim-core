@@ -47,6 +47,7 @@ init:
   # The CMake variable JAVA_HOME tells CMake where to look for Java.
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
+  - set PATH=%OPENSIM_SOURCE_DIR%\appveyor_scripts;%PATH%
   - ps: $USE_CACHE = $TRUE
 
 nuget:
@@ -77,7 +78,7 @@ build_script:
   #######################################################################################################################
   # Download the cached build directory, if one exists.
   #######################################################################################################################
-  - ps: $env:OPENSIM_SOURCE_DIR\appveyor_scripts\DownloadBuildFromCache.ps1
+  - ps: DownloadBuildFromCache.ps1
 
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
@@ -86,7 +87,7 @@ build_script:
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   - cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON 
 
-  - ps: $env:OPENSIM_SOURCE_DIR/appveyor_scripts/UploadBuildToCache.ps1
+  - ps: UploadBuildToCache.ps1
 
   # Build.
   # Hack to avoid error MSB3191: Unable to create directory "C:\projects\opensim_build\Release\"
@@ -97,7 +98,7 @@ build_script:
   #######################################################################################################################
   # Cache OpenSim build directory if current branch is master.
   #######################################################################################################################
-  - ps: $env:OPENSIM_SOURCE_DIR/appveyor_scripts/UploadBuildToCache.ps1
+  - ps: UploadBuildToCache.ps1
   
 test_script:
   ## Run tests.
