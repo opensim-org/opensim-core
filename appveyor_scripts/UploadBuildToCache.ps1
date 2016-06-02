@@ -66,6 +66,9 @@ $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PA
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
 $PIECES = Get-Item "${ZIP}_*"
 ForEach($PIECE in $PIECES) {
+  Write-Host $PROJECT
+  Write-Host $PACKAGENAME
+  Write-Host $MASTERTIP
   Write-Host "---- Uploading piece $PIECE to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
 #  Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $_ $URL/$_ | Out-Null
 }
