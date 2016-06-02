@@ -54,10 +54,10 @@ nuget:
 
 install:
   ## Use Chocolatey to install SWIG.
-  - choco install swig --version 3.0.6 --yes | Out-Null
+  - choco install swig --version 3.0.6 --yes > $null
   
   ## Install python-nose for python testing.
-  - "%PYTHON_DIR%\\Scripts\\pip install nose" | Out-Null
+  - "%PYTHON_DIR%\\Scripts\\pip install nose" > $null
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -65,7 +65,7 @@ install:
   # chrisdembia once uploaded a simbody 3.5.0 nupkg.
   # Output directory must match how Simbody was packaged, otherwise
   # SimbodyConfig.cmake will have all the wrong paths.
-  - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\ | Out-NUll
+  - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\ > $null
 
 build_script:
   ## Superbuild dependencies. 
