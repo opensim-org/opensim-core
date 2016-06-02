@@ -66,9 +66,10 @@ $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PA
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/${PACKAGENAME}/${MASTERTIP}"
 $PIECES = Get-Item "${ZIP}_*"
 ForEach($PIECE in $PIECES) {
-  Write-Host "---- Uploading piece $PIECE.name to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
-  Write-Host $URL/$PIECE.name
-  #Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $PIECE $URL/$PIECE.name | Out-Null
+  $PIECENAME = $PIECE.name
+  Write-Host "---- Uploading piece $PIECENAME to opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}"
+  Write-Host $URL/$PIECENAME
+  #Invoke-WebRequest -Credential $CREDS -Method PUT -InFile $PIECE $URL/$PIECENAME | Out-Null
 }
 
 $URL = "https://api.bintray.com/content/opensim/${PROJECT}/${PACKAGENAME}/${MASTERTIP}/publish"
