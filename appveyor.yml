@@ -57,7 +57,7 @@ install:
   - choco install swig --version 3.0.6 --yes > $null
   
   ## Install python-nose for python testing.
-  - "%PYTHON_DIR%\\Scripts\\pip install nose"
+  - "%PYTHON_DIR%\\Scripts\\pip --quiet install nose"
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
