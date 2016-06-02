@@ -73,13 +73,19 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF 
+  
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - ps: $BTK_SOURCE_DIR = "$env:OPENSIM_DEPENDENCIES_SOURCE_DIR/BTK"
+  - ps: $BTK_BUILD_DIR = "$env:OPENSIM_DEPENDENCIES_BUILD_DIR/BTK"
+  - ps: DownloadDepBuildFromCache.ps1 BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+  
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   
   #######################################################################################################################
   # Cache OpenSim build directory if current branch is master.
   #######################################################################################################################
-  - ps: $BTK_SOURCE_DIR = "$env:OPENSIM_DEPENDENCIES_SOURCE_DIR/BTK"
-  - ps: $BTK_BUILD_DIR = "$env:OPENSIM_DEPENDENCIES_BUILD_DIR/BTK"
   - ps: UploadBuildToCache.ps1 BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
 
   #######################################################################################################################
