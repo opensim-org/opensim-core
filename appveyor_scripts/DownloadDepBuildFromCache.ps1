@@ -64,14 +64,12 @@ ForEach($LETTER in $LETTERS) {
   $BYTESREAD = $PIECE.Read($BUFFER, 0, $BUFFER.Length)
   $FILESTREAM.Write($BUFFER, 0, $BYTESREAD)
   $PIECE.Close()
-  Remove-Item $ZIP + "_$LETTER"
+  Remove-Item "${ZIP}_${LETTER}"
 }
 $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
-Write-Host $ZIP
-Write-Host (Get-Location).Path
 [System.IO.Compression.ZipFile]::ExtractToDirectory("$ZIP", (Get-Location).Path)
 
 Write-Host "---- Cleaning up."
