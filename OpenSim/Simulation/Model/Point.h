@@ -107,11 +107,13 @@ public:
     @return distance  The distance (positive scalar). */
     double calcDistanceBetween(const SimTK::State& state, const Frame& frame,
         const SimTK::Vec3& location) const;
-    /** Calculate the speed of motion between this Point and some other Point.
-    A positive speed is growing apart and negative speed is coming closer.
+
+    /** Calculate the relative speed between this Point and some other Point.
+    It is the derivative of the distance with respect to time.
+    A positive speed is growing the distance and negative is coming closer.
     @param state      The current State of the model.
     @param other      The other Point to which we want to get the speed between.
-    @return distance  The speed between the Points (scalar). */
+    @return speed     The speed (distance time derivative) which is a scalar. */
     double calcSpeedBetween(const SimTK::State& state, const Point& other) const;
 
 protected:

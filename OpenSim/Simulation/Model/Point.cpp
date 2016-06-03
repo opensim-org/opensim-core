@@ -129,9 +129,9 @@ double Point::calcDistanceBetween(const SimTK::State& s,
 
 double Point::calcSpeedBetween(const SimTK::State& s, const Point& o) const
 {
-    auto r = getLocationInGround(s) - o.getLocationInGround(s);
-    double d = r.norm();
-    auto v = getVelocityInGround(s) - o.getVelocityInGround(s);
+    const auto r = getLocationInGround(s) - o.getLocationInGround(s);
+    const double d = r.norm();
+    const auto v = getVelocityInGround(s) - o.getVelocityInGround(s);
     if (d < SimTK::Eps) // avoid divide by zero
         return v.norm();
     else // speed is the projection of relative velocity, v, onto the 

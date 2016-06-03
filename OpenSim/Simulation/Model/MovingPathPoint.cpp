@@ -352,10 +352,10 @@ SimTK::Vec3 MovingPathPoint::calcVelocityInGround(const SimTK::State& s) const
     // compute the local position vector of the station in its reference frame
     // expressed in ground
     const auto& R_GF = getParentFrame().getTransformInGround(s).R();
-    Vec3 r = R_GF*getLocation(s);
+    const Vec3 r = R_GF*getLocation(s);
 
     const SimTK::SpatialVec& V_GF = getParentFrame().getVelocityInGround(s);
-    Vec3 v = R_GF*getVelocity(s);
+    const Vec3 v = R_GF*getVelocity(s);
 
 
     // The velocity of the station in ground is a function of its frame's
