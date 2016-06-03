@@ -70,7 +70,9 @@ $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$ZIP", ".")
+Write-Host $ZIP
+Write-Host (Get-Location).Path
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$ZIP", (Get-Location).Path)
 
 Write-Host "---- Cleaning up."
 Remove-Item $ZIP
