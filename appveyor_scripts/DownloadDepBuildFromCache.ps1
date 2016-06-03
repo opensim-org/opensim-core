@@ -69,3 +69,9 @@ ForEach($LETTER in $LETTERS) {
 $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
+Add-Type -AssemblyName "System.IO.Compression.FileSystem"
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$ZIP", Get-Location)
+
+Write-Host "---- Cleaning up."
+Remove-Item $ZIP
+Set-Location $CURR_DIR
