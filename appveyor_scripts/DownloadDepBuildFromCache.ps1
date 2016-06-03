@@ -52,3 +52,20 @@ if(-not (Test-Path "${ZIP}_a")) {
 }
 
 Write-Host '---- Joining the pieces downloaded.'
+$ZIP = (Get-Location).Path + $ZIP
+$FILESTREAM = [System.IO.File]::OpenWrite($ZIP)
+$BUFFER = New-Object byte[] 200mb
+ForEach($LETTER in $LETTERS) {
+  try {
+    $PIECE = [System.IO.File]::OpenRead($ZIP + "_$LETTER")
+  } catch {
+    break
+  }
+  $PIECE.Read($BUFFER, 0, $BYTESREAD)
+  $FILESTREAM.Write($BUFFER, 0, $BUFFER.Length)
+  $PIECE.Close()
+  Remove-Item $ZIP + "_$LETTER"
+}
+$FILESTREAM.close()
+
+Write-Host "---- Decompressing zip."
