@@ -61,8 +61,8 @@ ForEach($LETTER in $LETTERS) {
   } catch {
     break
   }
-  $PIECE.Read($BUFFER, 0, $BYTESREAD)
-  $FILESTREAM.Write($BUFFER, 0, $BUFFER.Length)
+  $BYTESREAD = $PIECE.Read($BUFFER, 0, $BUFFER.Length)
+  $FILESTREAM.Write($BUFFER, 0, $BYTESREAD)
   $PIECE.Close()
   Remove-Item $ZIP + "_$LETTER"
 }
