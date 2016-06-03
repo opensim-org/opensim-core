@@ -52,7 +52,7 @@ if(-not (Test-Path "${ZIP}_a")) {
 }
 
 Write-Host '---- Joining the pieces downloaded.'
-$ZIP = (Get-Location).Path + $ZIP
+$ZIP = (Get-Location).Path + "/" + $ZIP
 $FILESTREAM = [System.IO.File]::OpenWrite($ZIP)
 $BUFFER = New-Object byte[] 200mb
 ForEach($LETTER in $LETTERS) {
