@@ -147,6 +147,14 @@ void MovingPathPoint::extendConnectToModel(Model& model)
         "MovingPathPoint:: Components of the path point location "
         "must depend on the same Coordinate. Condition: "
         "x_coordinate == y_coordinate == z_coordinate  FAILED.");
+
+    // Overwrite any setting of a MovingPathPoint's location property.
+    // MovingPathPoint should NOT derive from Station.
+    // TODO: We should not have Path specific Points of any kind. They should
+    // be "path" Points by virtue of being subcomponents of a GeometryPath.
+    // Set it to NaN so it blows up if we attempt to use a MovingPathPoint
+    // as a Station.
+    set_location(SimTK::Vec3(SimTK::NaN));
 }
 
 //_____________________________________________________________________________
