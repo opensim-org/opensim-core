@@ -69,7 +69,8 @@ ForEach($LETTER in $LETTERS) {
 $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
-unzip -q $ZIP
+choco install --yes unzip > $null
+unzip -q "$ZIP"
 
 Write-Host "---- Cleaning up."
 Remove-Item $ZIP
