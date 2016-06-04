@@ -69,8 +69,8 @@ ForEach($LETTER in $LETTERS) {
 $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
-Add-Type -AssemblyName "System.IO.Compression.FileSystem"
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$ZIP", (Get-Location).Path)
+choco install --yes zip unzip > $null
+unzip -q $ZIP
 
 Write-Host "---- Cleaning up."
 Remove-Item $ZIP
