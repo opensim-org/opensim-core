@@ -91,7 +91,7 @@ build_script:
   #######################################################################################################################
   # Download the cached build directory, if one exists.
   #######################################################################################################################
-  - ps: DownloadBuildFromCache.ps1
+  - ps: DownloadBuildFromCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $:env:OPENSIM_BUILD_DIR
 
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
