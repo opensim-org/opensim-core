@@ -1,6 +1,12 @@
-$CURR_DIR = (pwd)
+$PROJECT = $args[0]
+$SOURCE_DIR = $args[1]
+$BUILD_DIR = $args[2]
 
-New-Item -Path $env:OPENSIM_BUILD_DIR -ItemType Directory -Force | Out-Null
+$CURR_DIR = (Get-Location)
+
+if(-not (Test-Path "$BUILD_DIR")) {
+  New-Item -Path $BUILD_DIR -ItemType Directory -Force | Out-Null
+}
 
 if(! $USE_CACHE) {
   Write-Host "---- Not downloading cache. Caching disabled."
@@ -36,21 +42,34 @@ Get-ChildItem -Recurse | ForEach-Object { $_.LastWriteTime = $timestamp }
 
 # Touch the files that this branch has modified after its birth.
 $CHANGED_FILES = (git diff --name-only $BRANCHBASE build_cache_dev_branch)
-$CHANGED_FILES | ForEach-Object { 
-  $file = Get-Item $_
-  $file.LastWriteTime = Get-Date 
+ForEach($FILE in $CHANGED_FILES) {
+  (Get-Item $FILE).LastWriteTime = Get-Date 
 }
 
-$BUILD_DIRNAME = (get-item $env:OPENSIM_BUILD_DIR).name
-
-Write-Host $BUILD_DIRNAME
-
-
-Write-Host $BRANCHBASE
-Write-Host $PACKAGE_NAME
-Write-Host $env:APPVEYOR_PULL_REQUEST_NUMBER
-Write-Host $env:APPVEYOR_REPO_BRANCH
-Write-Host $env:APPVEYOR_REPO_COMMIT
-Write-Host $env:APPVEYOR_REPO_COMMIT_MESSAGE
-Write-Host $env:Platform
-Write-Host $env:Configuration
+$BUILD_DIRNAME = (get-item $BUILD_DIR).name
+$ZIP = $BUILD_DIRNAME + ".zip"
+$LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+$URL = "https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
+echo "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
+cd ${BUILD_DIR}/..
+for i in $LETTERS; do 
+  piece=${TARBALL}a$i 
+  curl -s -L $URL/$piece -o $piece
+  if [ $(wc -c < $piece) -lt 100 ]; then 
+    rm $piece 
+    break 
+  else 
+    echo "---- Downloaded piece $piece"
+  fi 
+done
+if [ ! -f ${TARBALL}aa ]; then 
+  echo '---- Cache not found.'
+  return
+fi
+echo '---- Joining the pieces downloaded.'
+cat ${TARBALL}* > ${TARBALL}
+echo '---- Decompressing tarball.'
+tar -xzf ${TARBALL}
+echo '---- Cleaning up.'
+rm -f ${TARBALL}*
+cd $CURR_DIR
