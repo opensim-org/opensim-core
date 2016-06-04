@@ -54,6 +54,8 @@ nuget:
   account_feed: true
 
 install:
+  - choco install --yes zip unzip > $null
+
   ## Use Chocolatey to install SWIG.
   - choco install swig --version 3.0.6 --yes > $null
   
