@@ -43,6 +43,7 @@ try {
 
 Set-Location $BUILD_DIR/..
 Write-Host '---- Compressing build directory into a zip.'
+choco install --yes zip > $null
 zip -q -r $ZIP $BUILD_DIRNAME
 
 Write-Host '---- Splitting zip into smaller pieces for upload.'
