@@ -50,26 +50,46 @@ $BUILD_DIRNAME = (get-item $BUILD_DIR).name
 $ZIP = $BUILD_DIRNAME + ".zip"
 $LETTERS = 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 $URL = "https://dl.bintray.com/opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
-echo "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
-cd ${BUILD_DIR}/..
-for i in $LETTERS; do 
-  piece=${TARBALL}a$i 
-  curl -s -L $URL/$piece -o $piece
-  if [ $(wc -c < $piece) -lt 100 ]; then 
-    rm $piece 
-    break 
-  else 
-    echo "---- Downloaded piece $piece"
-  fi 
-done
-if [ ! -f ${TARBALL}aa ]; then 
-  echo '---- Cache not found.'
+Write-Host "---- Looking for opensim/${PROJECT}/${PACKAGENAME}/${BRANCHBASE}"
+Set-Location ${BUILD_DIR}/..
+ForEach($LETTER in $LETTERS) {
+  $PIECE = $ZIP + "_" + $LETTER
+  try {
+    Invoke-WebRequest $URL/$PIECE -OutFile $PIECE
+  } catch {
+    break
+  }
+  Write-Host "---- Downloaded piece $PIECE."
+}
+
+if(-not (Test-Path "${ZIP}_a")) {
+  Write-Host "---- Cache not found."
+  Set-Location $CURR_DIR
   return
-fi
-echo '---- Joining the pieces downloaded.'
-cat ${TARBALL}* > ${TARBALL}
-echo '---- Decompressing tarball.'
-tar -xzf ${TARBALL}
-echo '---- Cleaning up.'
-rm -f ${TARBALL}*
-cd $CURR_DIR
+}
+
+Write-Host '---- Joining the pieces downloaded.'
+$ZIP = (Get-Location).Path + "/" + $ZIP
+$FILESTREAM = [System.IO.File]::OpenWrite($ZIP)
+$BUFFER = New-Object byte[] 200mb
+ForEach($LETTER in $LETTERS) {
+  try {
+    $PIECE = [System.IO.File]::OpenRead($ZIP + "_$LETTER")
+  } catch {
+    break
+  }
+  $BYTESREAD = $PIECE.Read($BUFFER, 0, $BUFFER.Length)
+  $FILESTREAM.Write($BUFFER, 0, $BYTESREAD)
+  $PIECE.Close()
+  Remove-Item "${ZIP}_${LETTER}"
+}
+$FILESTREAM.close()
+
+Write-Host "---- Decompressing zip."
+choco install --yes unzip > $null
+Remove-Item -Recurse $BUILD_DIR
+unzip -q "$ZIP"
+
+Write-Host "---- Cleaning up."
+Remove-Item $ZIP
+Set-Location $CURR_DIR
