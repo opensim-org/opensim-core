@@ -70,8 +70,8 @@ $FILESTREAM.close()
 
 Write-Host "---- Decompressing zip."
 choco install --yes unzip > $null
-Write-Host $ZIP
-unzip "$ZIP"
+Remove-Item -Recurse $BUILD_DIR
+unzip -q "$ZIP"
 
 Write-Host "---- Cleaning up."
 Remove-Item $ZIP
