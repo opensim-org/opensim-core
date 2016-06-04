@@ -43,8 +43,8 @@ try {
 
 Set-Location $BUILD_DIR/..
 Write-Host '---- Compressing build directory into a zip.'
-Add-Type -AssemblyName "System.IO.Compression.FileSystem"
-[System.IO.Compression.ZipFile]::CreateFromDirectory($BUILD_DIR, "$BUILD_DIR/../$ZIP")
+choco install --yes zip unzip > $null
+zip -q -r $ZIP $BUILD_DIRNAME
 
 Write-Host '---- Splitting zip into smaller pieces for upload.'
 $FILESTREAM = [System.IO.File]::OpenRead((Get-Item $ZIP))
