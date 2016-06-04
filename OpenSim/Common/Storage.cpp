@@ -1290,7 +1290,7 @@ TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     table.setColumnLabels(_columnLabels.get() + 1, 
                           _columnLabels.get() + _columnLabels.getSize());
 
-    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
         const auto& row = getStateVector(i)->getData();
         const auto time = getStateVector(i)->getTime();
         // Exclude the first column. It is 'time'. Time is a separate column in

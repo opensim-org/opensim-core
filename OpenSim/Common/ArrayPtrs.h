@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
+ * Contributer(s): Dimitar Stanev                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -57,6 +58,11 @@
  * @author Frank C. Anderson
  */
 namespace OpenSim { 
+
+/**
+* Forward declaration of custom iterator
+*/
+template<class T, bool> class ArrayPtrsIterator;
 
 template<class T> class ArrayPtrs
 {
@@ -131,6 +137,40 @@ ArrayPtrs(const ArrayPtrs<T> &aArray)
     *this = aArray;
 }
 
+//_____________________________________________________________________________
+
+/**
+* Shorthand for a regular iterator (non-const)
+*/
+typedef ArrayPtrsIterator<T, false> iterator;
+
+/**
+* Shorthand for a constant iterator (const_iterator)
+*/
+typedef ArrayPtrsIterator<T, true> const_iterator;
+
+/**
+* Regular and constant iterator begin end methods.
+*/
+iterator begin()
+{
+    return iterator(_array);
+}
+
+iterator end()
+{
+    return iterator(_array + getSize());
+}
+
+const_iterator begin() const
+{
+    return const_iterator(_array);
+}
+
+const_iterator end() const
+{
+    return const_iterator(_array + getSize());
+}
 
 private:
 //_____________________________________________________________________________
@@ -1023,6 +1063,121 @@ int searchBinary(const T &aObject,bool aFindFirst=false,
 
 //=============================================================================
 };  // END of class ArrayPtrs
+
+
+//=============================================================================
+// Custom Iterator
+//=============================================================================
+//_____________________________________________________________________________
+
+/**
+* Inner class that describes a const_iterator and 'regular' iterator at the same time,
+* depending on the boolean template parameter (default: true - a const_iterator)
+*
+* With some modifications from:
+* http://www.sj-vs.net/c-implementing-const_iterator-and-non-const-iterator-without-code-duplication/
+*
+* @author Dimitar Stanev
+*/
+template<class T, bool is_const_iterator = true>
+class ArrayPtrsIterator : public std::iterator<std::forward_iterator_tag, T>
+{
+    /**
+    * For const_iterator:   define ArrayPointerType to be a   pointer to a const pointer to T
+    * For regular iterator: define ArrayPointerType to be a   T**
+    */
+    typedef typename std::conditional<is_const_iterator, T* const *, T**>::type ArrayPointerType;
+
+    /**
+    * For const_iterator:   define PointerType to be a   const T*
+    * For regular iterator: define PointerType to be a   T*
+    */
+    typedef typename std::conditional<is_const_iterator, const T*, T*>::type PointerType;
+
+    /**
+    * For const_iterator:   define ReferenceType to be a   const T&
+    * For iterator:         define ReferenceType to be a   T&
+    */
+    typedef typename std::conditional<is_const_iterator, const T&, T&>::type ReferenceType;
+
+public:
+
+    /**
+    * Regular constructor: set up your iterator.
+    */
+    ArrayPtrsIterator(ArrayPointerType ptr)
+        : pointer(ptr)
+    {
+    }
+
+    /**
+    * Copy constructor. Allows for implicit conversion from a regular iterator to
+    * a const_iterator.
+    */
+    ArrayPtrsIterator(const ArrayPtrsIterator<T, false>& rhs)
+        : pointer(rhs.pointer)
+    {
+    }
+
+    /**
+    * Equals comparison operator.
+    */
+    bool operator==(const ArrayPtrsIterator& rhs) const
+    {
+        return pointer == rhs.ponter;
+    }
+
+    /**
+    * Not-equals comparison operator.
+    */
+    bool operator!=(const ArrayPtrsIterator& rhs) const
+    {
+        return pointer != rhs.pointer;
+    }
+
+    /**
+    * Dereference operator.
+    *
+    * @return the value of the element this iterator is currently pointing at
+    */
+    ReferenceType operator*()
+    {
+        return **pointer;
+    }
+
+    PointerType operator->()
+    {
+        return *pointer;
+    }
+
+    /**
+    * Prefix increment operator (e.g., ++it).
+    */
+    ArrayPtrsIterator& operator++()
+    {
+        pointer++;
+        return *this;
+    }
+
+    /**
+    * Postfix increment operator (e.g., it++).
+    */
+    ArrayPtrsIterator operator++(int)
+    {
+        const ArrayPtrsIterator old(*this);
+        ++(*this);
+        return old;
+    }
+
+    /**
+    * Make ArrayPtrsIterator<true> a friend class of ArrayPtrsIterator<false>
+    * so the copy constructor can access the private member variables.
+    */
+    friend class ArrayPtrsIterator<T, true>;
+    
+private:
+    ArrayPointerType pointer;
+}; // end of nested class ArrayPtrsIterator
 
 }; //namespace
 //=============================================================================

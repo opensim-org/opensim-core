@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
+ * Contributer(s): Dimitar Stanev                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -124,6 +125,43 @@ Set(const Set<T> &aSet) :
     _objectGroups = aSet._objectGroups;
 }
 
+////_____________________________________________________________________________
+
+/**
+* Shorthand for a regular iterator (non-const). Typedefined in order to be used as
+* Set<T>::iterator and not ArrayPtrs<T>::iterator.
+*/
+typedef ArrayPtrsIterator<T, false> iterator;
+
+/**
+* Shorthand for a constant iterator (const_iterator). Typedefined in order to be used as
+* Set<T>::const_iterator and not ArrayPtrs<T>::const_iterator.
+*/
+typedef ArrayPtrsIterator<T, true> const_iterator;
+
+/**
+* Regular and constant iterator begin end methods. Aggregate call to ArrayPtrs corresponding
+* methods.
+*/
+iterator begin()
+{
+    return _objects.begin();
+}
+
+iterator end()
+{
+    return _objects.end();
+}
+
+const_iterator begin() const
+{
+    return _objects.begin();
+}
+
+const_iterator end() const
+{
+    return _objects.end();
+}
 
 private:
 //=============================================================================
