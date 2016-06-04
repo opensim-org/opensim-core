@@ -5,7 +5,7 @@ $BUILD_DIR = $args[2]
 $CURR_DIR = (Get-Location)
 
 if(! $USE_CACHE) {
-  Write-Host "---- Not uploading cache. Caching disabled."
+  Write-Host "---- Not Downloading cache. Caching disabled."
   return
 }
 
