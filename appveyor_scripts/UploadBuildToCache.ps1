@@ -79,3 +79,4 @@ Invoke-WebRequest -Credential $CREDS -Method POST $URL | Out-Null
 Write-Host '---- Cleaning up.'
 Remove-Item ${ZIP}*
 Set-Location $CURR_DIR
+exit
