@@ -29,7 +29,7 @@ if($env:CMAKE_GENERATOR -like "*Win64") {
 } else {
   $COMPILER = "msvc_win32"
 }
-$PACKAGE_NAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
+$PACKAGENAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 
 Set-Location $env:OPENSIM_SOURCE_DIR
 $BRANCHTIP = $env:APPVEYOR_REPO_COMMIT
