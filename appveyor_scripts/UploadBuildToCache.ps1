@@ -12,10 +12,11 @@ if(! $USE_CACHE) {
 Set-Location $SOURCE_DIR
 if($PROJECT -eq "opensim-core" -and $env:APPVEYOR_REPO_BRANCH -ne "master") {
 Set-Location $SOURCE_DIR
-git fetch origin master:master
-git checkout (git merge-base master build_cache_dev_branch)
+git fetch --quiet origin master:master
+git checkout --quiet (git merge-base master build_cache_dev_branch)
 Set-Location $BUILD_DIR
 cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
+Set-Location $SOURCE_DIR
 
 #  Write-Host "---- Not uploading cache. This is not master build."
 #  Set-Location $CURR_DIR
