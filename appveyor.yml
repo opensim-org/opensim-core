@@ -88,11 +88,6 @@ build_script:
   #######################################################################################################################
   - ps: UploadBuildToCache.ps1 BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
 
-  #######################################################################################################################
-  # Download the cached build directory, if one exists.
-  #######################################################################################################################
-  - ps: DownloadBuildFromCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
-
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
   # for some reason.
@@ -100,7 +95,10 @@ build_script:
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   - cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON 
 
-  - ps: UploadBuildToCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - ps: DownloadBuildFromCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
 
   # Build.
   # Hack to avoid error MSB3191: Unable to create directory "C:\projects\opensim_build\Release\"
