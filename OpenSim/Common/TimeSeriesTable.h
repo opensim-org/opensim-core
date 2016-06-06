@@ -125,9 +125,7 @@ public:
 
     /** Construct TimeSeriesTable_ from a file.                           
     
-    \param filename Name of the file. File should contain only one table. For
-                    example, trc, csv & sto files contain one table whereas a 
-                    c3d file can contain more than.
+    \param filename Name of the file.
     \param tablename Name of the table in file to construct this 
                      TimeSeriesTable_ from. For example, a c3d file contains 
                      tables named 'markers' and 'forces'.
