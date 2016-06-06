@@ -93,16 +93,19 @@ build_script:
   #######################################################################################################################
   - ps: DownloadBuildFromCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
 
-  ## Configure and build OpenSim.
-  # Must create separate build dir, otherwise can't read test files
-  # for some reason.
+  #######################################################################################################################
+  # Configure OpenSim.
+  #######################################################################################################################
   - cd %OPENSIM_BUILD_DIR%
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   - cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON 
 
-  # Build.
+  #######################################################################################################################
+  # Build OpenSim.
+  #######################################################################################################################
   # Hack to avoid error MSB3191: Unable to create directory "C:\projects\opensim_build\Release\"
   # which may result from parallel jobs trying to create this directory.
+  - ps: $BUILD_START_TIMESTAMP = (Get-Date)
   - cmake --build . --target SimbodyFiles --config Release
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
@@ -112,8 +115,9 @@ build_script:
   - ps: UploadBuildToCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
   
 test_script:
+  - ps: FindTestsToExclude.ps1
   ## Run tests.
-  - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
+  - ctest --parallel 4 --build-config Release --output-on-failure --exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
