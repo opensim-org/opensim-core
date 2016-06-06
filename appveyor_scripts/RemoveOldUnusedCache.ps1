@@ -21,24 +21,29 @@ if($env:CMAKE_GENERATOR -like "*Win64") {
 }
 $PACKAGENAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
 $URL = "https://api.bintray.com/packages/opensim/${PROJECT}/${PACKAGENAME}"
-$CACHED_VERSIONS = (curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/"//g')
+choco install --yes jq > $null
+$PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -AsPlainText -Force
+$CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
+$CACHED_VERSIONS = ((Invoke-WebRequest -Credential $CREDS $URL).Content | jq --raw-output .versions[])
+[System.Collections.ArrayList]$CACHED_VERSIONS = ($CACHED_VERSIONS.split())
 
-echo "---- Retrieving list of currently used versions."
-cd $SOURCE_DIR
-git fetch -q origin master:master
+Write-Host "---- Retrieving list of currently used versions."
+Set-Location $SOURCE_DIR
+git fetch --quiet origin master:master
 # Following line includes master. This is to make sure we keep cache for latest commit
 # on master.
-BRANCHES=$(git ls-remote --heads origin | sed 's/.*refs\/heads\///')
-for b in $BRANCHES; do 
-  git fetch -q origin $b:$b 
-  BRANCHBASE=$(git merge-base master $b)
-  CACHED_VERSIONS="${CACHED_VERSIONS/$BRANCHBASE/}"
-done
+$BRANCHES = (git ls-remote --heads origin | Select-String -Pattern '.*refs/heads/(.*)')
+ForEach($BRANCH in $BRANCHES) {
+  $BRANCHNAME = $BRANCH.Matches.Groups[1].Value
+  git fetch --quiet origin ${BRANCHNAME}:${BRANCHNAME}
+  $BRANCHBASE = (git merge-base master $BRANCHNAME)
+  $CACHED_VERSIONS.Remove("$BRANCHBASE")
+}
 
-URL="$URL/versions"
-for v in $CACHED_VERSIONS; do
-  echo "---- Deleting cache for version $v."
-  curl --silent -X DELETE -u$BINTRAY_CREDS ${URL}/${v}
-  echo
-done
-cd $CURR_DIR
+$URL = "$URL/versions"
+ForEach($VERSION in $CACHED_VERSIONS) {
+  Write-Host "---- Deleting cache for version $VERSION."
+  Invoke-WebRequest -Credential $CREDS -Method DELETE $URL/$VERSION | Out-Null
+}
+
+Set-Location $CURR_DIR
