@@ -7,7 +7,7 @@ ForEach($TEST in $TESTS) {
   $TESTEXE = (Get-ChildItem -Recurse -Include "${TESTNAME}.exe")
   if($TESTEXE -and 
      $TESTEXE.LastWriteTime -lt $BUILD_START_TIMESTAMP) {
-    $env:OPENSIM_EXCLUDE_TESTS = "${env:OPENSIM_TESTS_TO_EXCLUDE}|$TESTNAME"
+    $env:OPENSIM_TESTS_TO_EXCLUDE = "${env:OPENSIM_TESTS_TO_EXCLUDE}|$TESTNAME"
     Write-Host "---- Excluding test $TESTNAME"
     $COUNTER = $COUNTER + 1
   }
