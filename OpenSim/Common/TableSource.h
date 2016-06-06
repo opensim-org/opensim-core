@@ -68,6 +68,9 @@ public:
     OpenSim_DECLARE_PROPERTY(filename, std::string,
                              "Path to the file to populate the TableSource_ "
                              "with.");
+    OpenSim_DECLARE_PROPERTY(tablename, std::string,
+                             "Name of the table in the file to populate the "
+                             "TableSource_ with. Ex. 'markers', 'forces'.");
 
     /** Type of the TimeSeriesTable_ this Component will hold.                */
     typedef TimeSeriesTable_<ET> Table;
