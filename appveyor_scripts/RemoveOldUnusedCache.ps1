@@ -10,7 +10,7 @@ if(! $USE_CACHE) {
 
 if($env:APPVEYOR_REPO_BRANCH -ne "master") {
   Write-Host "---- Skipping cache cleanup. This is not master build."
-  # return
+  return
 }
 
 Write-Host "---- Retrieving list of versions on cache."
@@ -26,7 +26,6 @@ $PASSWORD = ConvertTo-SecureString "440061321dba00a68210b482261154ea58d03f00" -A
 $CREDS = New-Object System.Management.Automation.PSCredential("klshrinidhi", $PASSWORD)
 $CACHED_VERSIONS = ((Invoke-WebRequest -Credential $CREDS $URL).Content | jq --raw-output .versions[])
 [System.Collections.ArrayList]$CACHED_VERSIONS = ($CACHED_VERSIONS.split())
-$CACHED_VERSIONS
 
 Write-Host "---- Retrieving list of currently used versions."
 Set-Location $SOURCE_DIR
@@ -40,7 +39,7 @@ ForEach($BRANCH in $BRANCHES) {
   $BRANCHBASE = (git merge-base master $BRANCHNAME)
   $CACHED_VERSIONS.Remove("$BRANCHBASE")
 }
-$CACHED_VERSIONS
+
 $URL = "$URL/versions"
 ForEach($VERSION in $CACHED_VERSIONS) {
   Write-Host "---- Deleting cache for version $VERSION."
