@@ -4,6 +4,7 @@ $TESTS = (ctest --show-only | Select-String -Pattern 'Test +#[0-9]+: (.*)')
 $COUNTER = 0
 ForEach($TEST in $TESTS) {
   $TESTEXE = (Get-ChildItem -Recurse -Include "${TEST}.exe")
+  Write-Host $TEST --- $TESTEXE.LastWriteTime
   if($TESTEXE -and 
      $TESTEXE.LastWriteTime -lt $BUILD_START_TIMESTAMP) {
     $env:OPENSIM_EXCLUDE_TESTS = "${env:OPENSIM_EXCLUDE_TESTS}|$TEST"
@@ -12,5 +13,5 @@ ForEach($TEST in $TESTS) {
   }
 }
 if($COUNTER -eq 0) {
-  Write-Host "No tests found to exclude."
+  Write-Host "---- No tests found to exclude."
 }
