@@ -10,7 +10,7 @@ if(! $USE_CACHE) {
 
 if($env:APPVEYOR_REPO_BRANCH -ne "master") {
   Write-Host "---- Skipping cache cleanup. This is not master build."
-  return
+  # return
 }
 
 Write-Host "---- Retrieving list of versions on cache."
