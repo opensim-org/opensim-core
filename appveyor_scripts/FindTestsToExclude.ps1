@@ -1,15 +1,16 @@
 Write-Host '---- Finding tests to exclude.'
-MINS_SINCE_BUILD_START=$(( (($(date +%s) - $BUILD_START_TIMESTAMP) / 60) + 1 ))
-ALLTESTS=$(ctest --show-only | grep '#' | sed 's/^.*: //')
-COUNTER=0
-for test in $ALLTESTS; do
-  findres=$(find . -name "*$test" -mmin +$MINS_SINCE_BUILD_START)
-  if [ "$findres" != "" ]; then
-    TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|$test"
-    echo "---- Excluding test $test."
-    COUNTER=$(($COUNTER + 1))
-  fi
-done
-if [[ $COUNTER == 0 ]]; then
-  echo "---- No tests found to exclude."
-fi
+
+$TESTS = (ctest --show-only | Select-String -Pattern 'Test +#[0-9]+: (.*)')
+$COUNTER = 0
+ForEach($TEST in $TESTS) {
+  $TESTEXE = (Get-ChildItem -Recurse -Include "${TEST}.exe")
+  if($TESTEXE -and 
+     $TESTEXE.LastWriteTime -lt $BUILD_START_TIMESTAMP) {
+    $env:OPENSIM_EXCLUDE_TESTS = "${env:OPENSIM_EXCLUDE_TESTS}|$TEST"
+    Write-Host "---- Excluding test $TEST"
+    $COUNTER = $COUNTER + 1
+  }
+}
+if($COUNTER -eq 0) {
+  Write-Host "No tests found to exclude."
+}
