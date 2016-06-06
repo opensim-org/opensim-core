@@ -114,6 +114,24 @@ public:
             columnOutput.addChannel(columnLabel);
     }
 
+    /** Replace the existing TimeSeriesTable_ this TableSource_ currently holds
+    with the one read from the file.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to populate the TableSource
+                     with. Ex. 'markers', 'forces'.
+
+    \throws KeyNotFound If table provided does not have column-labels.        */
+    void setTable(const std::string& filename,
+                  const std::string& tablename) {
+        OPENSIM_THROW_IF(get_filename() != filename,
+                         InvalidArgument,
+                         "Property 'filename' is set. Cannot read another file"
+                         " now.");
+
+        setTable(TimeSeriesTable{filename, tablename});
+    }
+
     /// @}
 
 protected:
