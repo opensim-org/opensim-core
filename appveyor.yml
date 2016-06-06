@@ -114,8 +114,17 @@ build_script:
   #######################################################################################################################
   - ps: UploadBuildToCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR $env:OPENSIM_BUILD_DIR
   
+  #######################################################################################################################
+  # Remove unused cache.
+  #######################################################################################################################
+  - ps: RemoveOldUnusedCache.ps1 opensim-core $env:OPENSIM_SOURCE_DIR
+
 test_script:
+  #######################################################################################################################
+  # Find tests to exclude. Add them to %OPENSIM_TESTS_TO_EXCLUDE%.
+  #######################################################################################################################
   - ps: FindTestsToExclude.ps1
+  
   ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure --exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
