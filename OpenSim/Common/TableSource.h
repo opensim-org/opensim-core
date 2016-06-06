@@ -65,6 +65,10 @@ class TableSource_ : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
+    OpenSim_DECLARE_PROPERTY(filename, std::string,
+                             "Path to the file to populate the TableSource_ "
+                             "with.");
+
     /** Type of the TimeSeriesTable_ this Component will hold.                */
     typedef TimeSeriesTable_<ET> Table;
     /** Type of the 'row' Output of this Component.                           */
@@ -189,6 +193,8 @@ protected:
 
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
+
+
         auto& columnOutput = updOutput("column");
         for(const auto& columnLabel : _table.getColumnLabels())
             columnOutput.addChannel(columnLabel);
