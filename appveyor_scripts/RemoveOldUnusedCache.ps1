@@ -3,37 +3,25 @@ $SOURCE_DIR = $args[1]
 
 $CURR_DIR = (Get-Location)
 
-
-# Arguments
-PROJECT=$1
-SOURCE_DIR=$2
-
-CURR_DIR=$(pwd)
-# Turn relative paths into absolute paths.
-if [ "${SOURCE_DIR:0:1}" != "/" ]; then
-  SOURCE_DIR=${CURR_DIR}/${SOURCE_DIR}
-fi
-
-if ! $USE_CACHE; then
-  echo "---- Caching disabled."
-  cd $CURR_DIR
+if(! $USE_CACHE) {
+  Write-Host "---- Caching disabled."
   return
-fi
+}
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] || [ "$TRAVIS_BRANCH" != "master" ]; then 
-  echo "---- Skipping cache cleanup. This is not master build."
-  cd $CURR_DIR
+if($env:APPVEYOR_REPO_BRANCH -ne "master") {
+  Write-Host "---- Skipping cache cleanup. This is not master build."
   return
-fi
+}
 
-if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install jq; fi
-
-echo "---- Retrieving list of versions on cache."
-if [[ "$CC" == *gcc* ]]; then export COMPILER=gcc; fi
-if [[ "$CC" == *clang* ]]; then export COMPILER=clang; fi
-PACKAGENAME="${MACHTYPE}_${COMPILER}_${BTYPE}"
-URL="https://api.bintray.com/packages/opensim/${PROJECT}/${PACKAGENAME}"
-CACHED_VERSIONS=$(curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/"//g')
+Write-Host "---- Retrieving list of versions on cache."
+if($env:CMAKE_GENERATOR -like "*Win64") {
+  $COMPILER = "msvc_win64"  
+} else {
+  $COMPILER = "msvc_win32"
+}
+$PACKAGENAME = $env:Platform + "_" + $COMPILER + "_" + "Release"
+$URL = "https://api.bintray.com/packages/opensim/${PROJECT}/${PACKAGENAME}"
+$CACHED_VERSIONS = (curl --silent -u$BINTRAY_CREDS $URL | jq .versions[] | sed 's/"//g')
 
 echo "---- Retrieving list of currently used versions."
 cd $SOURCE_DIR
