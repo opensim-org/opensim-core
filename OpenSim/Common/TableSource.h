@@ -222,13 +222,14 @@ private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
 
+        if(!get_filename().empty())
+            setTable(get_filename(), get_tablename());
 
         auto& columnOutput = updOutput("column");
         for(const auto& columnLabel : _table.getColumnLabels())
             columnOutput.addChannel(columnLabel);
     }
 
-private:
     Table _table;
 }; // class TableSource_
 
