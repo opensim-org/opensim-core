@@ -90,8 +90,9 @@ public:
     
     /** Construct the TableSource_ by giving it a TimeSeriesTable_ to hold.   */
     TableSource_(const Table& table) : 
-        _table{table} 
-    {}
+        _table{table} {
+        constructProperties();
+    }
 
     /// \name Get/Set underlying TimeSeriesTable_
     /// @{
@@ -210,6 +211,12 @@ protected:
                        (nextRow - prevRow) + prevRow;
             return row.getAsVector();
         }
+    }
+
+private:
+    void constructProperties() override {
+        constructProperty_filename("");
+        constructProperty_tablename("");
     }
 
     void extendFinalizeFromProperties() override {
