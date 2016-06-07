@@ -4,7 +4,7 @@
 language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
-sudo: false
+sudo: false 
     
 matrix:
   include:
@@ -30,7 +30,7 @@ env:
     - SWIG_VER=3.0.6
     - PATH="$PATH:$TRAVIS_BUILD_DIR/travis_scripts"
     - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
-    - USE_CACHE=true
+    - USE_CACHE=false
 
 cache: false
 
@@ -41,7 +41,7 @@ addons:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
       # for clang
-      - llvm-toolchain-precise-3.5
+      # - llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
@@ -49,7 +49,7 @@ addons:
       # For Simbody.
       - liblapack-dev
       - g++-4.9
-      - clang-3.5
+      # - clang-3.5
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -60,6 +60,13 @@ addons:
       - sshpass
 
 before_install:
+  # Temporarily use gcc for every configuration on Travis until LLVM is back up and running.
+  # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="gcc-4.9"; export CXX="g++-4.9"; fi
+  - cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+  - tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
+
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
   # GREP returns 0 (true) if there are any matches, and
@@ -74,7 +81,7 @@ before_install:
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
+  # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
   
   ## Temporary hack to find libblas and liblapack.
   # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
@@ -123,6 +130,10 @@ before_install:
   - export CXX_FLAGS="-Werror"
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
 
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
+  - echo $CC 
+  - echo $CXX 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
@@ -182,6 +193,7 @@ script:
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
   #- if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
+  - export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:~/opensim-core-build"
   - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
