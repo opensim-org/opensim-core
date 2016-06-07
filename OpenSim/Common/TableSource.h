@@ -153,6 +153,8 @@ public:
                          " now.");
 
         setTable(TimeSeriesTable_<ET>{filename, tablename});
+        // Update property filename.
+        set_filename(filename);
     }
 
     /// @}
