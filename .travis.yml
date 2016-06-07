@@ -60,6 +60,14 @@ addons:
       - sshpass
 
 before_install:
+  ###########################################################################################################
+  # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
+  - cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+  - tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
+  ###########################################################################################################
+  
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
   # GREP returns 0 (true) if there are any matches, and
@@ -74,7 +82,9 @@ before_install:
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
+
+  # Temporary fix until llvm.org/apt is up again. See above.
+  # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
   
   ## Temporary hack to find libblas and liblapack.
   # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
