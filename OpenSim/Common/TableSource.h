@@ -82,7 +82,10 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
 
-    TableSource_()                               = default;
+    TableSource_() {
+        constructProperties();
+    }
+
     TableSource_(const TableSource_&)            = default;
     TableSource_(TableSource_&&)                 = default;
     TableSource_& operator=(const TableSource_&) = default;
