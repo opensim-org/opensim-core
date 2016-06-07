@@ -124,6 +124,10 @@ public:
 
     \throws KeyNotFound If table provided does not have column-labels.        */
     void setTable(const Table& table) {
+        OPENSIM_THROW_IF(!get_filename().empty(),
+                         InvalidCall,
+                         "Property 'filename' is set. Cannot set Table now.");
+
         _table = table;
         auto& columnOutput = updOutput("column");
         columnOutput.clearChannels();
