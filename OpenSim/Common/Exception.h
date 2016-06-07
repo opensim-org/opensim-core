@@ -218,6 +218,19 @@ public:
     }
 };
 
+class InvalidCall : public Exception {
+public:
+    InvalidCall(const std::string& file,
+                size_t line,
+                const std::string& func,
+                const std::string& msg = "") :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Argument. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
 class InvalidTemplateArgument : public Exception {
 public:
     InvalidTemplateArgument(const std::string& file,
