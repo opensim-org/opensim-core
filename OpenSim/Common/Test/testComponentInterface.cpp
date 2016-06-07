@@ -1054,6 +1054,21 @@ void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
 
+    {
+    const std::string src_file{"TestTableSource.osim"};
+    TheWorld model{src_file};
+    const auto& tablesource = 
+        model.getComponent<TableSourceVec3>("tablesource");
+    model.print("TestTableSourceResult.osim");
+    // Read the model file again to verify serialization.
+    TheWorld model_copy{"TestTableSourceResult.osim"};
+    const auto& tablesource_copy = 
+        model_copy.getComponent<TableSourceVec3>("tablesource");
+    OPENSIM_THROW_IF(tablesource_copy.get_filename() !=
+                     tablesource.get_filename(),
+                     OpenSim::Exception);
+    }
+
     TimeSeriesTable table{};
     table.setColumnLabels({"0", "1", "2", "3"});
     SimTK::RowVector_<double> row{4, double{0}};
