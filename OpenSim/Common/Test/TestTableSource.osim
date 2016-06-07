@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="30500">
+	<TheWorld name="TestTableSource">
+          <components>
+            <TableSource__Vec3_ name="tablesource">
+              <filename>aStaticTrial_2.c3d</filename>
+              <tablename>markers</tablename>
+            </TableSource__Vec3_>
+          </components>
+	</TheWorld>
+</OpenSimDocument>
+
