@@ -185,6 +185,7 @@ script:
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
   #- if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
+  - export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:~/opensim-core-build"
   - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
