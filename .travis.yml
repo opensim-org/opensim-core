@@ -80,7 +80,7 @@ before_install:
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
+  # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
   
   ## Temporary hack to find libblas and liblapack.
   # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
