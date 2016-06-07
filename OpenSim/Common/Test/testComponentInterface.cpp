@@ -1127,6 +1127,7 @@ int main() {
     //Register new types for testing deserialization
     Object::registerType(Foo());
     Object::registerType(Bar());
+    Object::registerType(TheWorld());
     // Register connector objects that are in use
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
