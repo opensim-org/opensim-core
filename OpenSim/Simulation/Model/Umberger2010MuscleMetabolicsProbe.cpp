@@ -825,7 +825,7 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
 // Set muscle mass
 //--------------------------------------------------------------------------
 void Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter::
-setMuscleMass()    
+setMuscleMass()
 { 
     if (get_use_provided_muscle_mass())
         _muscMass = get_provided_muscle_mass();
