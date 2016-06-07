@@ -49,7 +49,7 @@ addons:
       # For Simbody.
       - liblapack-dev
       - g++-4.9
-      - clang-3.5
+      # - clang-3.5
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -63,8 +63,8 @@ before_install:
   # Temporarily use gcc for every configuration on Travis until LLVM is back up and running.
   # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="gcc-4.9"; export CXX="g++-4.9"; fi
   - cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="~/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang" ]]; then export CXX="~/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
@@ -129,6 +129,8 @@ before_install:
   - export CXX_FLAGS="-Werror"
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
 
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
   - echo $CC
   - echo $CXX
   # Run superbuild to download, configure, build and install dependencies.
