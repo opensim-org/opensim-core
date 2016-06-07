@@ -67,7 +67,9 @@ class TableSource_ : public Component {
 public:
     OpenSim_DECLARE_PROPERTY(filename, std::string,
                              "Path to the file to populate the TableSource_ "
-                             "with.");
+                             "with. The path is relative to the working "
+                             "directory, not relative to the directory "
+                             "containing the model file.");
     OpenSim_DECLARE_PROPERTY(tablename, std::string,
                              "Name of the table in the file to populate the "
                              "TableSource_ with. Ex. 'markers', 'forces'.");
