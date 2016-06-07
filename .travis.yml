@@ -132,8 +132,8 @@ before_install:
 
   - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
   - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
-  - echo $CC
-  - echo $CXX
+  - echo $CC 
+  - echo $CXX 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
