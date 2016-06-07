@@ -135,9 +135,6 @@ public:
             columnOutput.addChannel(columnLabel);
     }
 
-    /// @}
-
-protected:
     /** Replace the existing TimeSeriesTable_ this TableSource_ currently holds
     with the one read from the file.
 
@@ -148,8 +145,7 @@ protected:
     \throws KeyNotFound If table provided does not have column-labels.        */
     void setTable(const std::string& filename,
                   const std::string& tablename = "") {
-        OPENSIM_THROW_IF(!get_filename().empty() && 
-                         get_filename() != filename,
+        OPENSIM_THROW_IF(!get_filename().empty(),
                          InvalidArgument,
                          "Property 'filename' is set. Cannot read another file"
                          " now.");
@@ -157,6 +153,9 @@ protected:
         setTable(TimeSeriesTable_<ET>{filename, tablename});
     }
 
+    /// @}
+
+protected:
     /** Retrieve value of a column at a given time(implicit in the State 
     provided). Linear interpolation is performed if the TimeSeriesTable_ does
     not contain an entry for the time mentioned by the state.
