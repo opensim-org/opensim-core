@@ -92,7 +92,7 @@ public:
     TableSource_& operator=(TableSource_&&)      = default;
     
     /** Construct the TableSource_ by giving it a TimeSeriesTable_ to hold.   */
-    TableSource_(const Table& table) : 
+    TableSource_(const Table& table) :
         _table{table} {
         constructProperties();
     }
@@ -131,6 +131,9 @@ public:
             columnOutput.addChannel(columnLabel);
     }
 
+    /// @}
+
+protected:
     /** Replace the existing TimeSeriesTable_ this TableSource_ currently holds
     with the one read from the file.
 
