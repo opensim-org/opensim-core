@@ -62,6 +62,9 @@ addons:
 before_install:
   # Temporarily use gcc for every configuration on Travis until LLVM is back up and running.
   # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="gcc-4.9"; export CXX="g++-4.9"; fi
+  - cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="~/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang" ]]; then export CXX="~/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
 
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
