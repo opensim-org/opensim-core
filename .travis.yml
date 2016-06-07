@@ -41,7 +41,7 @@ addons:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
       # for clang
-      - llvm-toolchain-precise-3.5
+      # - llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
@@ -60,6 +60,9 @@ addons:
       - sshpass
 
 before_install:
+  # Temporarily use gcc for every configuration on Travis until LLVM is back up and running.
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CC" = "clang" ]]; then export CC="gcc-4.9"; export CXX="g++-4.9"; fi
+
   ## Ensure that there are no tabs in source code.
   - cd $TRAVIS_BUILD_DIR
   # GREP returns 0 (true) if there are any matches, and
