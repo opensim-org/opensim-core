@@ -44,6 +44,7 @@
 #include "ObjectGroup.h"
 
 #include "Reporter.h"
+#include "TableSource.h"
 
 #include <string>
 #include <iostream>
@@ -89,6 +90,8 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType(PolynomialFunction());
     Object::registerType( ObjectGroup() );
     
+    Object::registerType( TableSource() );
+    Object::registerType( TableSourceVec3() );
     Object::registerType( TableReporter() );
     Object::registerType( TableReporterVec3() );
     Object::registerType( TableReporterVector() );
