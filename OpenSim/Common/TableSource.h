@@ -121,7 +121,7 @@ public:
         return _table;
     }
 
-    /** Replace the existing TimeSeriesTable_ this TableSource_ currently 
+    /** Replace the existing TimeSeriesTable_ that this TableSource_ currently 
     holds. This operation is not allowed if TableSource_ already contains a
     value for the property `filename`. In such cases, update the property using 
     `upd_filename()` to empty string and call `setTable()` with filename.
