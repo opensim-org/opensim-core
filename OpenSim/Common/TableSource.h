@@ -122,7 +122,9 @@ public:
     }
 
     /** Replace the existing TimeSeriesTable_ this TableSource_ currently 
-    holds.                                                                    
+    holds. This operation is not allowed if TableSource_ already contains a
+    value for the property `filename`. In such cases, update the property using 
+    `upd_filename()` to empty string and call `setTable()` with filename.
 
     \throws KeyNotFound If table provided does not have column-labels.        */
     void setTable(const Table& table) {
@@ -138,7 +140,10 @@ public:
     }
 
     /** Replace the existing TimeSeriesTable_ this TableSource_ currently holds
-    with the one read from the file.
+    with the one read from the file. This operation is not allowed if 
+    TableSource_ already contains a value for the property 'filename'. In such
+    cases, update the property using 'upd_filename()' to empty string and call
+    this function.
 
     \param filename Name of the file.
     \param tablename Name of the table in the file to populate the TableSource
