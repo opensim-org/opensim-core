@@ -126,7 +126,11 @@ public:
     value for the property `filename`. In such cases, update the property using 
     `upd_filename()` to empty string and call `setTable()` with filename.
 
-    \throws KeyNotFound If table provided does not have column-labels.        */
+    Exceptions thrown include the ones thrown by TimeSeriesTable_ constructor
+    that takes a filename and tablename.
+
+    \throws InvalidCall If property `filename` is set. This call is not allowed
+                        if `filename` property is set.                        */
     void setTable(const Table& table) {
         OPENSIM_THROW_IF(!get_filename().empty(),
                          InvalidCall,
