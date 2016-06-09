@@ -27,7 +27,7 @@
 #include "osimCommonDLL.h"
 #include "SimTKcommon.h"
 #include "Exception.h"
-#include "TimeSeriesTable.h"
+#include "AbstractDataTable.h"
 
 // Standard headers.
 #include <string>

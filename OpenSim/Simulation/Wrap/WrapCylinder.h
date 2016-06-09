@@ -66,10 +66,10 @@ public:
 #endif
 
 protected:
-    void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties() override;
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
     void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,WrapResult& aWrapResult) const;
