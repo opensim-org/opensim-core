@@ -81,9 +81,24 @@ set_target_properties(osim${KIT} PROPERTIES
    FOLDER "Bindings"
 )
 
+# Compiler flags.
+# We purposefully wrap deprecated functions, so no need to see such warnings.
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    set(COMPILE_FLAGS "-Wno-deprecated-declarations")
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+    set(COMPILE_FLAGS "/wd4996")
+endif()
+set_source_files_properties(
+        ${SWIG_JAVA_SIMBODY_CXX_FILE}
+        ${SWIG_JAVA_COMMON_CXX_FILE}
+        ${SWIG_JAVA_SIMULATION_CXX_FILE}
+        ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
+
 if(${OPENSIM_USE_INSTALL_RPATH})
     set_target_properties(osim${KIT} PROPERTIES
-        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
+        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
         )
 endif()
 
