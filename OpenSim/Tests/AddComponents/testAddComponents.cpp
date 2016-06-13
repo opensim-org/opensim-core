@@ -172,8 +172,8 @@ void addComponentsToModel(Model& osimModel)
     jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
 
     // Add the block and joint to the model
-    osimModel.addBody(block);
-    osimModel.addJoint(blockToGround);
+    osimModel.addComponent(block);
+    osimModel.addComponent(blockToGround);
 
     /////////////////////////////////////////////
     // DEFINE CONSTRAINTS IMPOSED ON THE MODEL //
