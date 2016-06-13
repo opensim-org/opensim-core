@@ -544,57 +544,48 @@ void Model::createMultibodyTree()
     // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(ground.getName(), 0, false, &ground);
 
-    if (getBodySet().getSize()>0)
-    {
-        BodySet& bs = updBodySet();
-        for (int i = 0; i<bs.getSize(); ++i) {
-            _multibodyTree.addBody(bs[i].getName(),
-                bs[i].getMass(),
-                false,
-                &bs[i]);
-        }
+    auto& bodies = getComponentList<Body>();
+    for (auto& body : bodies) {
+        _multibodyTree.addBody( body.getName(), body.getMass(), false,
+                                const_cast<Body*>(&body) );
     }
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    if (getJointSet().getSize()>0)
-    {
-        JointSet &js = updJointSet();
+    auto& joints = getComponentList<Joint>();
+    for (auto& joint : joints) {
+        std::string name = joint.getName();
+        IO::TrimWhitespace(name);
 
-        int nj = js.getSize();
-        for (int i = 0; i<nj; ++i) {
-            std::string name = js[i].getName();
-            IO::TrimWhitespace(name);
-
-            if (name.empty()) {
-                name = js[i].getParentFrame().getName() + "_to_" + 
-                       js[i].getChildFrame().getName();
-            }
-
-            // Currently we need to take a first pass at connecting the joints
-            // in order to ask the joint for the frames that they attach to and
-            // to determine their underlying base (physical) frames.
-            js[i].connect(*this);
-            // hack to make sure underlying Frame is also connected so it can 
-            // traverse to the base frame and get its name. This allows the
-            // (offset) frames to satisfy the connectors of Joint to be added
-            // to a Body, for example, and not just joint itself.
-            // TODO: try to create the multibody tree later when components
-            // can already be expected to be connected then traverse those
-            // relationships to create the multibody tree. -aseth
-            const_cast<PhysicalFrame&>(js[i].getParentFrame()).connect(*this);
-            const_cast<PhysicalFrame&>(js[i].getChildFrame()).connect(*this);
-
-            // Use joints to define the underlying multibody tree
-            _multibodyTree.addJoint(name,
-                js[i].getConcreteClassName(),
-                // Multibody tree builder only cares about bodies not intermediate
-                // frames that joints actually connect to.
-                js[i].getParentFrame().findBaseFrame().getName(),
-                js[i].getChildFrame().findBaseFrame().getName(),
-                false,
-                &js[i]);
+        if (name.empty()) {
+            name = joint.getParentFrame().getName() + "_to_" +
+                    joint.getChildFrame().getName();
         }
+
+        // Currently we need to take a first pass at connecting the joints
+        // in order to ask the joint for the frames that they attach to and
+        // to determine their underlying base (physical) frames.
+        auto& mutableJoint = const_cast<Joint&>(joint);
+        mutableJoint.connect(*this);
+        // hack to make sure underlying Frame is also connected so it can 
+        // traverse to the base frame and get its name. This allows the
+        // (offset) frames to satisfy the connectors of Joint to be added
+        // to a Body, for example, and not just joint itself.
+        // TODO: try to create the multibody tree later when components
+        // can already be expected to be connected then traverse those
+        // relationships to create the multibody tree. -aseth
+        const_cast<PhysicalFrame&>(joint.getParentFrame()).connect(*this);
+        const_cast<PhysicalFrame&>(joint.getChildFrame()).connect(*this);
+
+        // Use joints to define the underlying multibody tree
+        _multibodyTree.addJoint(name,
+            joint.getConcreteClassName(),
+            // Multibody tree builder only cares about bodies not intermediate
+            // frames that joints actually connect to.
+            joint.getParentFrame().findBaseFrame().getName(),
+            joint.getChildFrame().findBaseFrame().getName(),
+            false,
+            &mutableJoint);
     }
 }
 
@@ -741,9 +732,6 @@ void Model::extendConnectToModel(Model &model)
 
     // Reorder coordinates in order of the underlying mobilities
     updCoordinateSet().populate(*this);
-    updFrameSet().invokeConnectToModel(*this);
-    updMarkerSet().invokeConnectToModel(*this);
-    updContactGeometrySet().invokeConnectToModel(*this);
     updForceSet().setupGroups();
     updControllerSet().setActuators(updActuators());
 
@@ -758,6 +746,8 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Model *mutableThis = const_cast<Model *>(this);
 
+    // Ensure Ground is added before all other Components
+    getGround().addToSystem(system);
     //Analyses are not Components so add them after legit 
     //Components have been wired-up correctly.
     mutableThis->updAnalysisSet().setModel(*mutableThis);
