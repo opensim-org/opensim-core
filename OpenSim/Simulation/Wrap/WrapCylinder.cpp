@@ -805,7 +805,8 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
 // Implement generateDecorations by WrapCylinder to replace the previous out of place implementation 
 // in ModelVisualizer
 void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
     
     if (hints.get_show_wrap_geometry()) {
         const Vec3 color(SimTK::Cyan);

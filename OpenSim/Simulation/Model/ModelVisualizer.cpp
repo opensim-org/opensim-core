@@ -136,46 +136,6 @@ void DefaultGeometry::generateDecorations
     const ModelDisplayHints&      hints  = _model.getDisplayHints();
 
 
-    // Display wrap objects.
-    if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Red);
-        Transform ztoy;
-        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
-        const BodySet& bodies = _model.getBodySet();
-        for (int i = 0; i < bodies.getSize(); i++) {
-            const OpenSim::Body& body = bodies[i];
-            const Transform& X_GB =
-                body.getMobilizedBody().getBodyTransform(state);
-            const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
-            for (int j = 0; j < wrapObjects.getSize(); j++) {
-                const string type = wrapObjects[j].getConcreteClassName();
-                if (type == "WrapEllipsoid") {
-                    const WrapEllipsoid* ellipsoid = 
-                        dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
-                    if (ellipsoid != NULL) {
-                        Transform X_GW = X_GB*ellipsoid->getTransform();
-                        geometry.push_back(
-                            DecorativeEllipsoid(ellipsoid->getRadii())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-                else if (type == "WrapSphere") {
-                    const WrapSphere* sphere = 
-                        dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
-                    if (sphere != NULL) {
-                        Transform X_GW = X_GB*sphere->getTransform();
-                        geometry.push_back(
-                            DecorativeSphere(sphere->getRadius())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-            }
-        }
-    }
-
-
     // Display contact geometry objects.
     if (hints.get_show_contact_geometry()) {
         const Vec3 color(SimTK::Green);

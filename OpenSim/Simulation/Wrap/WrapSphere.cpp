@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "SimTKsimbody.h"
 #include "WrapSphere.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
@@ -32,6 +33,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include "OpenSim/Simulation/Model/ModelDisplayHints.h"
 
 //=============================================================================
 // STATICS
@@ -593,6 +595,19 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 // Implement generateDecorations by WrapSphere to replace the previous out of place implementation 
 // in ModelVisualizer
 void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
-    int x = 0;
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+    if (hints.get_show_wrap_geometry()) {
+        const Vec3 color(SimTK::Cyan);
+        SimTK::Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
+        const SimTK::Transform& X_GB = getFrame().getMobilizedBody().getBodyTransform(state);
+        SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
+        appendToThis.push_back(
+            SimTK::DecorativeSphere(getRadius())
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(0.5));
+    }
+
+
 }
