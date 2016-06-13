@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "SimTKsimbody.h"
 #include "WrapCylinder.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
@@ -32,7 +33,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
-
+#include "OpenSim/Simulation/Model/ModelDisplayHints.h"
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -799,4 +800,23 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
     }
 
     return did_adust;
+}
+
+// Implement generateDecorations by WrapCylinder to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+    
+    if (hints.get_show_wrap_geometry()) {
+        const Vec3 color(SimTK::Cyan);
+        SimTK::Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
+        const SimTK::Transform& X_GB = getFrame().getMobilizedBody().getBodyTransform(state);
+        SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
+        appendToThis.push_back(
+            SimTK::DecorativeCylinder(get_radius(),
+                get_length() / 2)
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(0.5));
+    }
 }

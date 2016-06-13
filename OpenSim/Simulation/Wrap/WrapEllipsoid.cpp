@@ -1294,3 +1294,9 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 
     return sqrt(dx*dx + dy*dy);
 }
+// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+    int x = 0;
+}

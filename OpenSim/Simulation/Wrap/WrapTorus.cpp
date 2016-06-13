@@ -513,3 +513,11 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 
    resid[0] = c2 + 2.0 * u - 2.0 * cb->r * (2.0 * c4 * u + 2.0 * c3) / sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 }
+
+
+// Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+    int x = 0;
+}

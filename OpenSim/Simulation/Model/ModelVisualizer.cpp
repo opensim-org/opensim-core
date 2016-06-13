@@ -138,7 +138,7 @@ void DefaultGeometry::generateDecorations
 
     // Display wrap objects.
     if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
+        const Vec3 color(SimTK::Red);
         Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
         const BodySet& bodies = _model.getBodySet();
@@ -149,19 +149,7 @@ void DefaultGeometry::generateDecorations
             const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
             for (int j = 0; j < wrapObjects.getSize(); j++) {
                 const string type = wrapObjects[j].getConcreteClassName();
-                if (type == "WrapCylinder") {
-                    const WrapCylinder* cylinder = 
-                        dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
-                    if (cylinder != NULL) {
-                        Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
-                        geometry.push_back(
-                            DecorativeCylinder(cylinder->get_radius(), 
-                                               cylinder->get_length()/2)
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-                else if (type == "WrapEllipsoid") {
+                if (type == "WrapEllipsoid") {
                     const WrapEllipsoid* ellipsoid = 
                         dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
                     if (ellipsoid != NULL) {

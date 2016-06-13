@@ -589,3 +589,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
    return return_code;
 }
+
+// Implement generateDecorations by WrapSphere to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+    int x = 0;
+}
