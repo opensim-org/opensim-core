@@ -113,6 +113,12 @@ int main() {
         compareFiles(filename, tmpfile);
     }
 
+    for(const auto& filename : filenames) {
+        TimeSeriesTableVec3 table{filename};
+        TRCFileAdapter::write(table, tmpfile);
+        compareFiles(filename, tmpfile);
+    }
+
     std::remove(tmpfile.c_str());
 
     return 0;
