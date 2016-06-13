@@ -134,7 +134,7 @@ public:
         "Gain used in converting muscle activation into a"
         " control signal (units depend on the device)");
 
-    OpenSim_DECLARE_CONNECTOR(actuator, Actuator,
+    OpenSim_DECLARE_CONNECTOR(actuator, ScalarActuator,
         "The ScalarActuator for which we're computing a control signal.");
 
     OpenSim_DECLARE_OUTPUT( myo_control, double, computeControl, 
