@@ -33,6 +33,7 @@
 //==============================================================================
 #include <OpenSim/OpenSim.h>
 #include "OpenSim/Common/STOFileAdapter.h"
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 #include <ctime>    // for clock()
 
@@ -70,22 +71,25 @@ void addComponentsToModel(Model& osimModel)
     Ground& ground = osimModel.updGround();
     // Create Frames to attach Geometry to
     // Left brick
-    OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
+    OpenSim::PhysicalFrame* leftAnchorFrame = 
+        new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
     leftAnchorFrame->setName("LeftAnchor");
     osimModel.addComponent(leftAnchorFrame);
     // Right brick
-    OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
+    OpenSim::PhysicalFrame* rightAnchorFrame = 
+        new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
     rightAnchorFrame->setName("RightAnchor");
     osimModel.addComponent(rightAnchorFrame);
     // Cylinder
-    OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
+    OpenSim::PhysicalFrame* cylFrame = 
+        new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
     cylFrame->setName("CylAnchor");
     osimModel.addComponent(cylFrame);
     // Ellipsoid
-    OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
+    OpenSim::PhysicalFrame* ellipsoidFrame = 
+        new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
     ellipsoidFrame->setName("EllipsoidAnchor");
     osimModel.addComponent(ellipsoidFrame);
-
 
     // Add display geometry to the ground to visualize in the Visualizer and GUI
     // add a checkered floor
@@ -98,8 +102,7 @@ void addComponentsToModel(Model& osimModel)
     rightAnchorGeometry.upd_Appearance().set_opacity(0.5);
 
     // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
-    // transform anchors to be placed at the two extremes of the sliding block (to come)
-
+    // transform anchors to be placed at the two extremes of the sliding block
     // scale the anchors
     leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
     rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
@@ -111,7 +114,8 @@ void addComponentsToModel(Model& osimModel)
 
     Cylinder cylGeometry(0.2, .3);
     cylGeometry.setFrameName("CylAnchor");
-    cylGeometry.upd_Appearance().set_representation(VisualRepresentation::DrawWireframe);
+    cylGeometry.upd_Appearance()
+        .set_representation(VisualRepresentation::DrawWireframe);
     ground.addGeometry(cylGeometry);
 
     Ellipsoid ellipsoidGeometry(0.2, .7, .5);
@@ -121,10 +125,12 @@ void addComponentsToModel(Model& osimModel)
 
     // BLOCK BODY
     Vec3 blockMassCenter(0);
-    Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+    Inertia blockInertia = 
+        blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
     // Create a new block body with the specified properties
-    OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
+    OpenSim::Body *block = 
+        new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
     block->attachMeshGeometry("block.vtp");
@@ -134,11 +140,16 @@ void addComponentsToModel(Model& osimModel)
 
     // FREE JOINT
 
-    // Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground frames
-    Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
-    FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
+    // Create a new free joint with 6 degrees-of-freedom (coordinates) between
+    // the block and ground frames
+    Vec3 locationInParent(0, blockSideLength / 2, 0),
+        orientationInParent(0), locationInBody(0), orientationInBody(0);
+    FreeJoint *blockToGround =
+        new FreeJoint("blockToGround", ground, locationInParent, orientationInParent,
+                                       *block, locationInBody, orientationInBody);
 
-    // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground frames
+    // Get a reference to the coordinate set (6 degrees-of-freedom) between 
+    // the block and ground frames
     CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
     // Set the angle and position ranges for the coordinate set
@@ -160,7 +171,7 @@ void addComponentsToModel(Model& osimModel)
     double h_start = blockMass*gravity[1] / (stiffness*blockSideLength*blockSideLength);
     jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
 
-                                                    // Add the block and joint to the model
+    // Add the block and joint to the model
     osimModel.addBody(block);
     osimModel.addJoint(blockToGround);
 
@@ -184,9 +195,14 @@ void addComponentsToModel(Model& osimModel)
 
     // MUSCLE FORCES
     // Create two new muscles with identical properties
-    double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0;
-    Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1", maxIsometricForce, optimalFiberLength, tendonSlackLength, pennationAngle);
-    Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2", maxIsometricForce, optimalFiberLength, tendonSlackLength, pennationAngle);
+    double maxIsometricForce = 1000.0, optimalFiberLength = 0.25,
+        tendonSlackLength = 0.1, pennationAngle = 0.0;
+    Thelen2003Muscle *muscle1 =
+        new Thelen2003Muscle("muscle1",
+            maxIsometricForce, optimalFiberLength, tendonSlackLength, pennationAngle);
+    Thelen2003Muscle *muscle2 =
+        new Thelen2003Muscle("muscle2",
+            maxIsometricForce, optimalFiberLength, tendonSlackLength, pennationAngle);
 
     // Specify the paths for the two muscles
     // Path for muscle 1
@@ -203,7 +219,8 @@ void addComponentsToModel(Model& osimModel)
     // CONTACT FORCE
     // Define contact geometry
     // Create new floor contact halfspace
-    ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
+    ContactHalfSpace *floor =
+        new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
     // Create new cube contact mesh
     OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockMesh.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
 
@@ -274,7 +291,33 @@ void addComponentsToModel(Model& osimModel)
     muscle2->setDefaultFiberLength(optimalFiberLength);
     muscle1->setDefaultFiberLength(optimalFiberLength);
 
+}
 
+void compareResultsToStandard() {
+    try {
+        Storage result1("tugOfWar_states.sto"),
+            standard1("std_tugOfWar_states.sto");
+
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
+            Array<double>(0.02, 16), __FILE__, __LINE__,
+            "testAddComponents::tugOfWar states failed");
+        cout << "testAddComponents::tugOfWar states passed\n";
+
+        Storage result2("tugOfWar_forces.sto"),
+            standard2("std_tugOfWar_forces.mot");
+
+        Array<double> tols(1.0, 20);
+        // 10N is 1% of the muscles maximum isometric force
+        tols[0] = tols[1] = 10;
+
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
+            tols, __FILE__, __LINE__,
+            "testAddComponents::tugOfWar forces failed");
+        cout << "testAddComponents::tugOfWar forces passed\n";
+    }
+    catch (const OpenSim::Exception& e) {
+        e.print(cerr);
+    }
 }
 
 
@@ -305,7 +348,6 @@ int main()
         //////////////////////////
         // PERFORM A SIMULATION //
         //////////////////////////
-
         // set use visualizer to true to visualize the simulation live
         osimModel.setUseVisualizer(false);
 
@@ -316,7 +358,6 @@ int main()
 
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
-
 
         // Create the integrator for integrating system dynamics
         SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -343,21 +384,21 @@ int main()
 
         auto forcesTable = reporter->getForcesTable();
         STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
+
+        compareResultsToStandard();
     }
-    catch (const std::exception& ex)
-    {
+    catch (const std::exception& ex) {
         cerr << ex.what() << endl;
         return 1;
     }
-    catch (...)
-    {
+    catch (...) {
         cerr << "UNRECOGNIZED EXCEPTION" << endl;
         return 1;
     }
 
     cout << "main() routine time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
-    cout << "OpenSim example completed successfully." << endl;
+    cout << "OpenSim testAddComponents completed successfully." << endl;
 
     return 0;
 }
