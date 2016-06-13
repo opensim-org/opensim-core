@@ -13,12 +13,25 @@ file(GLOB TEST_FILES
     *.obj *.osim *.xml *.sto *.mot)
 
 #
-# Copy files to run dir
+# Copy example files to run dir
 #
 foreach(dataFile ${TEST_FILES})
     file(COPY ${dataFile} DESTINATION ${TEST_DIR})
 endforeach(dataFile) 
 
+# Copy the standard answer for example main
+set(TEST_EXAMPLE_DIR ${OpenSim_SOURCE_DIR}/OpenSim/Tests/ExampleMain)
+file(GLOB STD_TEST_FILES 
+    ${TEST_EXAMPLE_DIR}/*.sto 
+    ${TEST_EXAMPLE_DIR}/*.mot)
+    
+#
+# Copy standard test results to the run dir
+#
+foreach(dataFile ${STD_TEST_FILES})
+    file(COPY ${dataFile} DESTINATION ${TEST_DIR})
+endforeach(dataFile)     
+    
 #
 # Testing
 #
