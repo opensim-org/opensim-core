@@ -23,7 +23,7 @@
 #define OPENSIM_DELIM_FILE_ADAPTER_H_
 
 #include "FileAdapter.h"
-
+#include "TimeSeriesTable.h"
 
 namespace OpenSim {
 
