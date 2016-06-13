@@ -150,11 +150,6 @@
 			</objects>
 			<groups />
 		</BodySet>
-		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.-->
-		<FrameSet>
-			<objects />
-			<groups />
-		</FrameSet>
 		<!--List of joints that connect the bodies.-->
 		<JointSet>
 			<objects>

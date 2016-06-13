@@ -223,7 +223,8 @@ void scaleModelWithLigament()
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    ASSERT(std == comp);
+    ASSERT(std == comp, __FILE__, __LINE__, 
+            "Standard model failed to match scaled.");
 }
 
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
