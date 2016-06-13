@@ -145,6 +145,49 @@ public:
         setTable_impl(table);
     }
 
+    /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
+    This operation is not allowed if the TableSource_ already contains a value
+    for the property 'filename'. In such cases, update the property 'filename'
+    using `upd_filename()` to empty string and call this function. Property
+    'filename' is updated as a result of this operation.
+
+    \throws InvalidCall If property `filename` is set. This call is not allowed
+                        if `filename` property is set.                        
+    \throws KeyNotFound If table provided does not have column labels.        */
+    void setTable(const std::string& filename) {
+        OPENSIM_THROW_IF(!get_filename().empty(),
+                         InvalidCall,
+                         "Property 'filename' is set. Cannot set Table now.");
+
+        setTable_impl(TimeSeriesTable_<ET>{filename});
+        set_filename(filename);
+    }
+
+    /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
+    This operation is not allowed if the TableSource_ already contains a value
+    for the property 'filename'. In such cases, update the property 'filename'
+    using `upd_filename()` to empty string and call this function. Properties
+    'filename' and 'tablename' are updated as a result of this operation.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to construct the 
+                     TimeSeriesTable_ from. For example, a c3d file contains 
+                     tables named 'markers' and 'forces'.
+
+    \throws InvalidCall If property `filename` is set. This call is not allowed
+                        if `filename` property is set.                        
+    \throws KeyNotFound If table provided does not have column labels.        */
+    void setTable(const std::string& filename,
+                  const std::string& tablename) {
+        OPENSIM_THROW_IF(!get_filename().empty(),
+                         InvalidCall,
+                         "Property 'filename' is set. Cannot set Table now.");
+
+        setTable_impl(TimeSeriesTable_<ET>{filename, tablename});
+        set_filename(filename);
+        set_tablename(tablename);
+    }
+
     /// @}
 
 protected:
