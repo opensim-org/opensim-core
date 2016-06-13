@@ -187,7 +187,7 @@ void addComponentsToModel(Model& osimModel)
             pointOnGround, *block, pointOnBlock, constantDistance);
 
     // Add the new point on a line constraint to the model
-    osimModel.addConstraint(constDist);
+    osimModel.addComponent(constDist);
 
     ///////////////////////////////////////
     // DEFINE FORCES ACTING ON THE MODEL //
