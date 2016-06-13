@@ -72,7 +72,7 @@ public:
                              "containing the model file.");
     OpenSim_DECLARE_PROPERTY(tablename, std::string,
                              "Name of the table in the file to populate the "
-                             "TableSource_ with. Ex. 'markers', 'forces'.");
+                             "TableSource with. Ex. 'markers', 'forces'.");
 
     /** Type of the TimeSeriesTable_ this Component will hold.                */
     typedef TimeSeriesTable_<ET> Table;
@@ -130,44 +130,31 @@ public:
     }
 
     /** Replace the existing TimeSeriesTable_ that this TableSource_ currently 
-    holds. This operation is not allowed if TableSource_ already contains a
-    value for the property `filename`. In such cases, update the property
-    'filename' using `upd_filename()` to empty string and call this function.
+    holds. The properties 'filename' and 'tablename' are reset to empty strings
+    as a result of this operation.
 
-    \throws InvalidCall If property `filename` is set. This call is not allowed
-                        if `filename` property is set.                        
     \throws KeyNotFound If table provided does not have column labels.        */
     void setTable(const Table& table) {
-        OPENSIM_THROW_IF(!get_filename().empty(),
-                         InvalidCall,
-                         "Property 'filename' is set. Cannot set Table now.");
-
         setTable_impl(table);
+        set_filename("");
+        set_tablename("");
     }
 
     /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
-    This operation is not allowed if the TableSource_ already contains a value
-    for the property 'filename'. In such cases, update the property 'filename'
-    using `upd_filename()` to empty string and call this function. Property
-    'filename' is updated as a result of this operation.
+    Property 'filename' is reset to the value provided. Property 'tablename' is
+    reset to the empty string as a result of this operation.
 
     \throws InvalidCall If property `filename` is set. This call is not allowed
                         if `filename` property is set.                        
     \throws KeyNotFound If table provided does not have column labels.        */
     void setTable(const std::string& filename) {
-        OPENSIM_THROW_IF(!get_filename().empty(),
-                         InvalidCall,
-                         "Property 'filename' is set. Cannot set Table now.");
-
         setTable_impl(TimeSeriesTable_<ET>{filename});
         set_filename(filename);
+        set_tablename("");
     }
 
     /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
-    This operation is not allowed if the TableSource_ already contains a value
-    for the property 'filename'. In such cases, update the property 'filename'
-    using `upd_filename()` to empty string and call this function. Properties
-    'filename' and 'tablename' are updated as a result of this operation.
+    Properties 'filename' and 'tablename' are reset to the values provided.
 
     \param filename Name of the file.
     \param tablename Name of the table in the file to construct the 
@@ -179,10 +166,6 @@ public:
     \throws KeyNotFound If table provided does not have column labels.        */
     void setTable(const std::string& filename,
                   const std::string& tablename) {
-        OPENSIM_THROW_IF(!get_filename().empty(),
-                         InvalidCall,
-                         "Property 'filename' is set. Cannot set Table now.");
-
         setTable_impl(TimeSeriesTable_<ET>{filename, tablename});
         set_filename(filename);
         set_tablename(tablename);
@@ -191,25 +174,6 @@ public:
     /// @}
 
 protected:
-    /** Replace the existing TimeSeriesTable_ this TableSource_ currently holds
-    with the table `tablename` read from the file `filename`. `filename` and 
-    `tablename` are properties of TableSource_. In order to update the table
-    from a file, update the properties using `upd_filename()` and 
-    `upd_tablename()` and call this function.
-
-    Exceptions thrown include the ones thrown by TimeSeriesTable_ constructor
-    that takes a filename and tablename.
-
-    \throws InvalidCall If the property 'filename' is empty.
-    \throws KeyNotFound If table provided does not have column-labels.        */
-    void setTable() {
-        OPENSIM_THROW_IF(get_filename().empty(),
-                         InvalidCall,
-                         "Property 'filename' is empty.");
-
-        setTable_impl(TimeSeriesTable_<ET>{get_filename(), get_tablename()});
-    }
-
     void setTable_impl(const Table& table) {
         _table = table;
         auto& columnOutput = updOutput("column");
@@ -305,7 +269,8 @@ private:
         Super::extendFinalizeFromProperties();
 
         if(!get_filename().empty())
-            setTable();
+            setTable_impl(TimeSeriesTable_<ET>{get_filename(),
+                                               get_tablename()});
 
         auto& columnOutput = updOutput("column");
         for(const auto& columnLabel : _table.getColumnLabels())
