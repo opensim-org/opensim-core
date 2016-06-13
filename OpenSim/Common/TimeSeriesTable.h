@@ -123,10 +123,20 @@ public:
                          TimeColumnNotIncreasing);
     }
 
-    /** Construct TimeSeriesTable_ from a file.                           
-    
+    /** Construct TimeSeriesTable_ from a file.
+
     \param filename Name of the file.
-    \param tablename Name of the table in file to construct this 
+
+    \throws InvalidArgument If the input file contains more than one table.
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this TimeSeriesTable_ type.                       */
+    TimeSeriesTable_(const std::string& filename) : 
+        TimeSeriesTable_{filename, ""} {}
+
+    /** Construct TimeSeriesTable_ from a file.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to construct this 
                      TimeSeriesTable_ from. For example, a c3d file contains 
                      tables named 'markers' and 'forces'.
 
@@ -135,7 +145,7 @@ public:
     \throws InvalidArgument If the input file contains a table that is not of
                             this TimeSeriesTable_ type.                       */
     TimeSeriesTable_(const std::string& filename, 
-                     const std::string& tablename = "") {
+                     const std::string& tablename) {
         auto absTables = FileAdapter::readFile(filename);
 
         OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
