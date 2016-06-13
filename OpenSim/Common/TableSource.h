@@ -104,10 +104,8 @@ public:
     \param filename Name of the file.
 
     \throws KeyNotFound If table provided does not have column-labels.        */
-    TableSource_(const std::string& filename) {
-        constructProperties();
-        setTable(filename);
-    }
+    TableSource_(const std::string& filename) :
+        TableSource_{filename, ""}{}
 
     /** Construct the TableSource_ from a file.
 
