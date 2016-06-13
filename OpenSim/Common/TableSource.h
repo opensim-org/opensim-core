@@ -102,6 +102,16 @@ public:
     /** Construct the TableSource_ from a file.
 
     \param filename Name of the file.
+
+    \throws KeyNotFound If table provided does not have column-labels.        */
+    TableSource_(const std::string& filename) {
+        constructProperties();
+        setTable(filename);
+    }
+
+    /** Construct the TableSource_ from a file.
+
+    \param filename Name of the file.
     \param tablename Name of the table in the file to populate the TableSource
                      with. Ex. 'markers', 'forces'.
 
