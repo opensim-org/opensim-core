@@ -93,6 +93,7 @@
         $self->setColumnLabels(columnLabels);
     }
 }
+%include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTable)           OpenSim::DataTable_<double, double>;
