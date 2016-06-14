@@ -1,134 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30505">
-    <Model name="bouncing_leg">
-        <!--The model's ground reference frame.-->
-        <Ground name="ground">
-            <!--List of Geometry that is attached to this Model Component.-->
-            <geometry>
-                <FrameGeometry name="ground_frame_geometry">
-                    <!--List of connectors (structural dependencies) that this component has.-->
-                    <connectors>
-                        <Connector_Frame_ name="frame">
-                            <!--Name of the component this Connector should be connected to.-->
-                            <connectee_name>ground</connectee_name>
-                        </Connector_Frame_>
-                    </connectors>
-                    <!--Default appearance for this Geometry-->
-                    <Appearance>
-                        <!--Flag indicating whether the associated Geometry is visible or hidden.-->
-                        <visible>false</visible>
-                    </Appearance>
-                </FrameGeometry>
-            </geometry>
-            <!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
-            <WrapObjectSet>
-                <objects />
-                <groups />
-            </WrapObjectSet>
-        </Ground>
-        <!--Acceleration due to gravity, expressed in ground.-->
-        <gravity>0 -9.8066499999999994 0</gravity>
-        <!--Credits (e.g., model author names) associated with the model.-->
-        <credits>Author: Matt DeMers License: Creative Commons (CCBY 3.0). You are free to distribute, remix, tweak, and build upon this work, even commercially, as long as you credit us for the original creation. http://creativecommons.org/licenses/by/3.0/</credits>
-        <!--Publications and references associated with the model.-->
-        <publications>Unassigned</publications>
-        <!--Units for all lengths.-->
-        <length_units>m</length_units>
-        <!--Units for all forces.-->
-        <force_units>N</force_units>
-        <FrameSet>
-            <objects>
-			    <PhysicalOffsetFrame name="thigh_attachment">
-                    <connectors>
-                        <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/bouncing_leg/link1</connectee_name>
-                        </Connector_PhysicalFrame_>
-                    </connectors>
-                    <geometry>
-                        <FrameGeometry name="frame_geometry">
-                            <connectors>
-                                <Connector_Frame_ name="frame">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_Frame_>
-                            </connectors>
-                            <scale_factors>0.1 0.1 0.1</scale_factors>
-                            <Appearance>
-                                <visible>false</visible>
-								<color> 0.9 0.9 0.1 </color>
-                            </Appearance>
-                        </FrameGeometry>
-                    </geometry>
-                    <translation>0.05 0.35 0</translation>
-                </PhysicalOffsetFrame>
-                <PhysicalOffsetFrame name="thigh_attachment2">
-                    <connectors>
-                        <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/bouncing_leg/link1</connectee_name>
-                        </Connector_PhysicalFrame_>
-                    </connectors>
-                    <geometry>
-                        <FrameGeometry name="frame_geometry">
-                            <connectors>
-                                <Connector_Frame_ name="frame">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_Frame_>
-                            </connectors>
-                            <scale_factors>0.1 0.1 0.1</scale_factors>
-                            <Appearance>
-                                <visible>false</visible>
-								<color> 0.9 0.1 0.9 </color>
-                            </Appearance>
-                        </FrameGeometry>
-                    </geometry>
-                    <translation>0.05 0.25 0</translation>
-                </PhysicalOffsetFrame>
-                <PhysicalOffsetFrame name="shank_attachment">
-                    <connectors>
-                        <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/bouncing_leg/link2</connectee_name>
-                        </Connector_PhysicalFrame_>
-                    </connectors>
-                    <geometry>
-                        <FrameGeometry name="frame_geometry">
-                            <connectors>
-                                <Connector_Frame_ name="frame">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_Frame_>
-                            </connectors>
-                            <scale_factors>0.1 0.1 0.1</scale_factors>
-                            <Appearance>
-                                <visible>false</visible>
-								<color> 0.9 0.9 0.1 </color>
-                            </Appearance>
-                        </FrameGeometry>
-                    </geometry>
-                    <translation>0.00 0.65 0</translation>
-                </PhysicalOffsetFrame>
-                <PhysicalOffsetFrame name="shank_attachment2">
-                    <connectors>
-                        <Connector_PhysicalFrame_ name="parent">
-                            <connectee_name>/bouncing_leg/link2</connectee_name>
-                        </Connector_PhysicalFrame_>
-                    </connectors>
-                    <geometry>
-                        <FrameGeometry name="frame_geometry">
-                            <connectors>
-                                <Connector_Frame_ name="frame">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_Frame_>
-                            </connectors>
-                            <scale_factors>0.1 0.1 0.1</scale_factors>
-                            <Appearance>
-                                <visible>false</visible>
-								<color> 0.9 0.1 0.9 </color>
-                            </Appearance>
-                        </FrameGeometry>
-                    </geometry>
-                    <translation>0.035 0.25 0</translation>
-                </PhysicalOffsetFrame>
-
-				</objects>
-        </FrameSet>
+<OpenSimDocument Version="30506">
+	<Model name="bouncing_leg">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--List of Geometry that is attached to this Model Component.-->
+			<geometry>
+				<FrameGeometry name="ground_frame_geometry">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_Frame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>../</connectee_name>
+						</Connector_Frame_>
+					</connectors>
+					<!--Default appearance for this Geometry-->
+					<Appearance>
+						<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+						<visible>false</visible>
+					</Appearance>
+				</FrameGeometry>
+			</geometry>
+			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+			<WrapObjectSet>
+				<objects />
+				<groups />
+			</WrapObjectSet>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8066499999999994 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
+		<credits>Author: Matt DeMers License: Creative Commons (CCBY 3.0). You are free to distribute, remix, tweak, and build upon this work, even commercially, as long as you credit us for the original creation. http://creativecommons.org/licenses/by/3.0/</credits>
+		<!--Publications and references associated with the model.-->
+		<publications>Unassigned</publications>
+		<!--Units for all lengths.-->
+		<length_units>m</length_units>
+		<!--Units for all forces.-->
+		<force_units>N</force_units>
 		<!--List of bodies that make up this model.-->
 		<BodySet>
 			<objects>
@@ -150,9 +57,10 @@
 								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
 								<opacity>1</opacity>
 								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-								<color>0.8 0.2 0.2</color>
+								<color>0.80000000000000004 0.20000000000000001 0.20000000000000001</color>
 							</Appearance>
-                            <half_lengths>0.1 0.1 0.1 </half_lengths>
+							<!--Half lengths in X, Y, Z respectively.-->
+							<half_lengths>0.10000000000000001 0.10000000000000001 0.10000000000000001</half_lengths>
 						</Brick>
 						<FrameGeometry name="block_frame_geometry">
 							<!--List of connectors (structural dependencies) that this component has.-->
@@ -179,40 +87,46 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.55 0.55 0.55 0 0 0</inertia>
+					<inertia>0.55000000000000004 0.55000000000000004 0.55000000000000004 0 0 0</inertia>
 				</Body>
 				<Body name="link1">
-                    <components>
-                        <PhysicalOffsetFrame name="geom_offset">
-                            <connectors>
-                                <Connector_PhysicalFrame_ name="parent">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_PhysicalFrame_>
-                            </connectors>
-                            <translation>0 0.25 0</translation>
-                            <geometry>
-                                <Brick name="geom_1">
-                                    <!--List of connectors (structural dependencies) that this component has.-->
-                                    <connectors>
-                                        <Connector_Frame_ name="frame">
-                                            <!--Name of the component this Connector should be connected to.-->
-                                            <connectee_name>../</connectee_name>
-                                        </Connector_Frame_>
-                                    </connectors>
-                                    <!--Scale factors in X, Y, Z directions respectively.-->
-                                    <scale_factors>1 1 1</scale_factors>
-                                    <!--Default appearance for this Geometry-->
-                                    <Appearance>
-                                        <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
-                                        <opacity>1</opacity>
-                                        <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-                                        <color>0.8 0.2 0.2</color>
-                                    </Appearance>
-                                    <half_lengths>0.035 0.25 0.035</half_lengths>
-                                </Brick>
-                            </geometry>
-                        </PhysicalOffsetFrame>
-                    </components>
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="geom_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--List of Geometry that is attached to this Model Component.-->
+							<geometry>
+								<Brick name="geom_1">
+									<!--List of connectors (structural dependencies) that this component has.-->
+									<connectors>
+										<Connector_Frame_ name="frame">
+											<!--Name of the component this Connector should be connected to.-->
+											<connectee_name>../</connectee_name>
+										</Connector_Frame_>
+									</connectors>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Default appearance for this Geometry-->
+									<Appearance>
+										<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+										<opacity>1</opacity>
+										<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+										<color>0.80000000000000004 0.20000000000000001 0.20000000000000001</color>
+									</Appearance>
+									<!--Half lengths in X, Y, Z respectively.-->
+									<half_lengths>0.035000000000000003 0.25 0.035000000000000003</half_lengths>
+								</Brick>
+							</geometry>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+						</PhysicalOffsetFrame>
+					</components>
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<FrameGeometry name="link1_frame_geometry">
@@ -220,7 +134,7 @@
 							<connectors>
 								<Connector_Frame_ name="frame">
 									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>link1</connectee_name>
+									<connectee_name>../</connectee_name>
 								</Connector_Frame_>
 							</connectors>
 							<!--Default appearance for this Geometry-->
@@ -232,13 +146,16 @@
 					</geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
-                        <objects>
-                            <WrapCylinder name="patella">
-                                <quadrant>x</quadrant>
-                                <radius>0.08</radius>
-                                <active>true</active>
-                            </WrapCylinder>
-                        </objects>
+						<objects>
+							<WrapCylinder name="patella">
+								<!--Whether or not the WrapObject is considered active in computing paths-->
+								<active>true</active>
+								<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+								<quadrant>x</quadrant>
+								<!--The radius of the cylinder.-->
+								<radius>0.080000000000000002</radius>
+							</WrapCylinder>
+						</objects>
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
@@ -246,40 +163,46 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>8.333e-05 8.0e-06 8.333e-05 0 0 0</inertia>
+					<inertia>8.3330000000000003e-05 7.9999999999999996e-06 8.3330000000000003e-05 0 0 0</inertia>
 				</Body>
 				<Body name="link2">
-                    <components>
-                        <PhysicalOffsetFrame name="geom_offset">
-                            <connectors>
-                                <Connector_PhysicalFrame_ name="parent">
-                                    <connectee_name>../</connectee_name>
-                                </Connector_PhysicalFrame_>
-                            </connectors>
-                            <translation>0 0.25 0</translation>
-                            <geometry>
-                                <Brick name="geom_1">
-                                    <!--List of connectors (structural dependencies) that this component has.-->
-                                    <connectors>
-                                        <Connector_Frame_ name="frame">
-                                            <!--Name of the component this Connector should be connected to.-->
-                                            <connectee_name>../</connectee_name>
-                                        </Connector_Frame_>
-                                    </connectors>
-                                    <!--Scale factors in X, Y, Z directions respectively.-->
-                                    <scale_factors>1 1 1</scale_factors>
-                                    <!--Default appearance for this Geometry-->
-                                    <Appearance>
-                                        <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
-                                        <opacity>1</opacity>
-                                        <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-                                        <color>0.8 0.2 0.2</color>
-                                    </Appearance>
-                                    <half_lengths>0.035 0.25 0.035</half_lengths>
-                                </Brick>
-                            </geometry>
-                        </PhysicalOffsetFrame>
-                    </components>
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="geom_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--List of Geometry that is attached to this Model Component.-->
+							<geometry>
+								<Brick name="geom_1">
+									<!--List of connectors (structural dependencies) that this component has.-->
+									<connectors>
+										<Connector_Frame_ name="frame">
+											<!--Name of the component this Connector should be connected to.-->
+											<connectee_name>../</connectee_name>
+										</Connector_Frame_>
+									</connectors>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Default appearance for this Geometry-->
+									<Appearance>
+										<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+										<opacity>1</opacity>
+										<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+										<color>0.80000000000000004 0.20000000000000001 0.20000000000000001</color>
+									</Appearance>
+									<!--Half lengths in X, Y, Z respectively.-->
+									<half_lengths>0.035000000000000003 0.25 0.035000000000000003</half_lengths>
+								</Brick>
+							</geometry>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+						</PhysicalOffsetFrame>
+					</components>
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<FrameGeometry name="link2_frame_geometry">
@@ -287,7 +210,7 @@
 							<connectors>
 								<Connector_Frame_ name="frame">
 									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>link2</connectee_name>
+									<connectee_name>../</connectee_name>
 								</Connector_Frame_>
 							</connectors>
 							<!--Default appearance for this Geometry-->
@@ -307,11 +230,144 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0 0.25 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>8.333e-05 8.0e-06 8.333e-05 0 0 0</inertia>
+					<inertia>8.3330000000000003e-05 7.9999999999999996e-06 8.3330000000000003e-05 0 0 0</inertia>
 				</Body>
 			</objects>
 			<groups />
 		</BodySet>
+		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are built-in and not included in this list.-->
+		<FrameSet>
+			<objects>
+				<PhysicalOffsetFrame name="thigh_attachment">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>/bouncing_leg/link1</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<FrameGeometry name="frame_geometry">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.10000000000000001 0.10000000000000001 0.10000000000000001</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+								<visible>false</visible>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.90000000000000002 0.90000000000000002 0.10000000000000001</color>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0.050000000000000003 0.34999999999999998 0</translation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="thigh_attachment2">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>/bouncing_leg/link1</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<FrameGeometry name="frame_geometry">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.10000000000000001 0.10000000000000001 0.10000000000000001</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+								<visible>false</visible>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.90000000000000002 0.10000000000000001 0.90000000000000002</color>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0.050000000000000003 0.25 0</translation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="shank_attachment">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>/bouncing_leg/link2</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<FrameGeometry name="frame_geometry">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.10000000000000001 0.10000000000000001 0.10000000000000001</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+								<visible>false</visible>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.90000000000000002 0.90000000000000002 0.10000000000000001</color>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.65000000000000002 0</translation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="shank_attachment2">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>/bouncing_leg/link2</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List of Geometry that is attached to this Model Component.-->
+					<geometry>
+						<FrameGeometry name="frame_geometry">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>../</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.10000000000000001 0.10000000000000001 0.10000000000000001</scale_factors>
+							<!--Default appearance for this Geometry-->
+							<Appearance>
+								<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+								<visible>false</visible>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.90000000000000002 0.10000000000000001 0.90000000000000002</color>
+							</Appearance>
+						</FrameGeometry>
+					</geometry>
+					<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0.035000000000000003 0.25 0</translation>
+				</PhysicalOffsetFrame>
+			</objects>
+		</FrameSet>
 		<!--List of joints that connect the bodies.-->
 		<JointSet>
 			<objects>
@@ -331,8 +387,6 @@
 					<CoordinateSet>
 						<objects>
 							<Coordinate name="xRotation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
 								<default_value>0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
@@ -349,8 +403,6 @@
 								<prescribed>false</prescribed>
 							</Coordinate>
 							<Coordinate name="yRotation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
 								<default_value>0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
@@ -367,10 +419,8 @@
 								<prescribed>false</prescribed>
 							</Coordinate>
 							<Coordinate name="zRotation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.0</default_value>
+								<default_value>0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -385,10 +435,8 @@
 								<prescribed>false</prescribed>
 							</Coordinate>
 							<Coordinate name="xTranslation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>translational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.0</default_value>
+								<default_value>0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -403,10 +451,8 @@
 								<prescribed>false</prescribed>
 							</Coordinate>
 							<Coordinate name="yTranslation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>translational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>1.0</default_value>
+								<default_value>1</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -421,8 +467,6 @@
 								<prescribed>false</prescribed>
 							</Coordinate>
 							<Coordinate name="zTranslation">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>translational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
 								<default_value>0</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
@@ -460,10 +504,8 @@
 					<CoordinateSet>
 						<objects>
 							<Coordinate name="pin1_rot">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-								<default_value>0.35</default_value>
+								<default_value>0.34999999999999998</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 								<default_speed_value>0</default_speed_value>
 								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -534,8 +576,6 @@
 					<CoordinateSet>
 						<objects>
 							<Coordinate name="pin2_rot">
-								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-								<motion_type>rotational</motion_type>
 								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
 								<default_value>-0.75</default_value>
 								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
@@ -596,19 +636,21 @@
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
 		<ControllerSet>
-            <objects>
-                <PrescribedController name="vastus_control">
-                    <actuator_list>vastus</actuator_list>
-                    <FunctionSet name="ControlFunctions">
-                        <objects>
-                            <PiecewiseConstantFunction name="vastus">
-                                <x>0 2 3.9</x>
-                                <y>0.3 1.0 0.1</y>
-                            </PiecewiseConstantFunction>
-                        </objects>
-                    </FunctionSet>
-                </PrescribedController>
-            </objects>
+			<objects>
+				<PrescribedController name="vastus_control">
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will control all the actuators in the model-->
+					<actuator_list>vastus</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<FunctionSet name="ControlFunctions">
+						<objects>
+							<PiecewiseConstantFunction name="vastus">
+								<x> 0 2 3.9</x>
+								<y> 0.3 1 0.1</y>
+							</PiecewiseConstantFunction>
+						</objects>
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
 			<groups />
 		</ControllerSet>
 		<!--Constraints in the model.-->
@@ -662,35 +704,59 @@
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet>
 			<objects>
-                <Thelen2003Muscle name="vastus">
-                    <max_isometric_force>4000</max_isometric_force>
-                    <optimal_fiber_length>0.55</optimal_fiber_length>
-                    <tendon_slack_length>0.25</tendon_slack_length>
-                    <default_activation>0.3</default_activation>
-                    <GeometryPath>
-                        <PathPointSet>
-                            <objects>
-                                <PathPoint name="vastus_p1">
-                                    <location>0.03 0.35 0 </location>
-                                    <body>link1</body>
-                                </PathPoint>
-                                <PathPoint name="vastus_p2">
-                                    <location>0.03 0.40 0 </location>
-                                    <body>link2</body>
-                                </PathPoint>
-                            </objects>
-                        </PathPointSet>
-                        <PathWrapSet>
-                            <objects>
-                                <PathWrap>
-                                    <wrap_object>patella</wrap_object>
-                                    <method>hybrid</method>
-                                    <range>-1 -1</range>
-                                </PathWrap>
-                            </objects>
-                        </PathWrapSet>
-                    </GeometryPath>
-                </Thelen2003Muscle>
+				<Thelen2003Muscle name="vastus">
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="vastus_p1">
+									<!--List of connectors (structural dependencies) that this component has.-->
+									<connectors>
+										<Connector_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Connector should be connected to.-->
+											<connectee_name>link1</connectee_name>
+										</Connector_PhysicalFrame_>
+									</connectors>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.029999999999999999 0.34999999999999998 0</location>
+								</PathPoint>
+								<PathPoint name="vastus_p2">
+									<!--List of connectors (structural dependencies) that this component has.-->
+									<connectors>
+										<Connector_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Connector should be connected to.-->
+											<connectee_name>link2</connectee_name>
+										</Connector_PhysicalFrame_>
+									</connectors>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.029999999999999999 0.40000000000000002 0</location>
+								</PathPoint>
+							</objects>
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap name="pathwrap_0">
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>patella</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+							</objects>
+						</PathWrapSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>4000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.55000000000000004</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.25</tendon_slack_length>
+					<!--Assumed activation level if none is assigned.-->
+					<default_activation>0.29999999999999999</default_activation>
+				</Thelen2003Muscle>
 				<HuntCrossleyForce name="foot_contact_force">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
@@ -760,25 +826,35 @@
 		<ContactGeometrySet>
 			<objects>
 				<ContactHalfSpace name="platform">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>ground</body_name>
-					<!--Location of geometry center in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>ground</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 -1.5707963300000001</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<!--0:Hide 1:Wire 3:Flat 4:Shaded-->
 					<display_preference>0</display_preference>
 				</ContactHalfSpace>
 				<ContactSphere name="heel">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>link2</body_name>
-					<!--Location of geometry center in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>link2</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+					<!--0:Hide 1:Wire 3:Flat 4:Shaded-->
 					<display_preference>4</display_preference>
-					<radius>0.100000000000000003</radius>
+					<radius>0.10000000000000001</radius>
 				</ContactSphere>
 			</objects>
 			<groups />
