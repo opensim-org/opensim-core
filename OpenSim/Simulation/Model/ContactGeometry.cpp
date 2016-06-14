@@ -40,7 +40,7 @@ using SimTK::Rotation;
 ContactGeometry::ContactGeometry() : ModelComponent()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,11 +72,6 @@ void ContactGeometry::constructProperties()
     Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
     defaultColor[0] = 0.0; 
     constructProperty_color(defaultColor);
-}
-
-void ContactGeometry::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("frame");
 }
 
 const Vec3& ContactGeometry::getLocation() const

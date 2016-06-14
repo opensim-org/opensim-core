@@ -36,7 +36,7 @@ class ScaleSet;
 /** This class represents the physical shape of an object for use in contact
  * modeling.  It is an abstract class, with subclasses for particular geometric
  * representations. The geometry is attached to a PhysicalFrame, which is
- * specified using a Connector name "frame".
+ * specified using a Connector named "frame".
  *
  * @author Peter Eastman
  */
@@ -61,6 +61,9 @@ public:
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
         "Display Color to apply to the contact geometry.");
+
+    OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
+        "The frame to which this goemetry is attached.");
 
 //=============================================================================
 // METHODS
