@@ -59,7 +59,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,7 +72,7 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
         Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setLineBodyByName(lineBody.getName());
     setFollowerBodyByName(followerBody.getName());

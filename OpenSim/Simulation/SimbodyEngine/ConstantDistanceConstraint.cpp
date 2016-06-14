@@ -61,7 +61,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /*
@@ -73,7 +73,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(
     const double& distance) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());

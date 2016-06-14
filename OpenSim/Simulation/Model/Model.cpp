@@ -93,7 +93,7 @@ Model::Model() : ModelComponent(),
     _useVisualizer(false),
     _allControllersEnabled(true)
 {
-    constructInfrastructure();
+    constructProperties();
     setNull();
     finalizeFromProperties();
 }
@@ -110,7 +110,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _useVisualizer(false),
     _allControllersEnabled(true)
 {   
-    constructInfrastructure();
+    constructProperties();
     setNull();
     updateFromXMLDocument();
 

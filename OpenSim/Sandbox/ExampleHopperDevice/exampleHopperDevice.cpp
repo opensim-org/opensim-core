@@ -101,6 +101,8 @@ public:
 
     // TODO: gain property
 
+    // TODO: actuator connector
+
     // TODO: myo_control output
 
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
@@ -108,7 +110,7 @@ public:
             "proportional to.");
 
     PropMyoController() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double computeControl(const SimTK::State& s) const {
@@ -129,14 +131,7 @@ public:
     }
 
 private:
-
     // TODO constructProperties()
-
-    void constructConnectors() override {
-        // The ScalarActuator for which we're computing a control signal.
-        // TODO
-        
-    }
 }; // end of PropMyoController
 
 /* A Generator is a component with no Inputs and only Outputs. This
@@ -152,7 +147,7 @@ public:
     OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
 
     SignalGenerator() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double getSignal(const SimTK::State& s) const {

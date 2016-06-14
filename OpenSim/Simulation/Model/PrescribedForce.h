@@ -281,8 +281,6 @@ protected:
 private:
     void setNull();
     void constructProperties();
-    /** Construct PrescribedForce's connectors */
-    void constructConnectors() override;
 
 //=============================================================================
 };  // END of class PrescribedForce

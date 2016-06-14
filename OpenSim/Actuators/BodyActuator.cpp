@@ -47,7 +47,7 @@ using SimTK::Vec3;
 BodyActuator::BodyActuator()
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
 }
 //_____________________________________________________________________________
@@ -60,7 +60,7 @@ BodyActuator::BodyActuator(const Body& body,
                            bool spatialForceIsGlobal)
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
     updConnector<Body>("body").setConnecteeName(body.getName());
 

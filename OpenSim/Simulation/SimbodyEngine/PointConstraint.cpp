@@ -59,7 +59,7 @@ PointConstraint::PointConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 PointConstraint::PointConstraint(const PhysicalFrame& body1, 
@@ -68,7 +68,7 @@ PointConstraint::PointConstraint(const PhysicalFrame& body1,
                                  const SimTK::Vec3& locationBody2) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());

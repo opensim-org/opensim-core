@@ -144,7 +144,7 @@ void Actuator::addInControls(const Vector& actuatorControls, Vector& modelContro
 /** Default constructor */
 ScalarActuator::ScalarActuator()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 /**

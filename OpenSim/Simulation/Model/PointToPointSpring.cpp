@@ -39,7 +39,7 @@ using namespace std;
 PointToPointSpring::PointToPointSpring()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
@@ -49,7 +49,7 @@ PointToPointSpring::
                        double stiffness, double restlength )
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     // Set properties to the passed-in values.
     setBody1(body1);

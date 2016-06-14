@@ -229,7 +229,7 @@ void Millard2012AccelerationMuscle::extendFinalizeFromProperties()
 Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()            
 {    
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
     //       MuscleFixedWidthPennationModel have been made into properties.
@@ -242,7 +242,7 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
                   double aPennationAngle)
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setName(aName);    
     setMaxIsometricForce(aMaxIsometricForce);

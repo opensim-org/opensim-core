@@ -259,7 +259,7 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors

@@ -42,7 +42,7 @@ using namespace std;
 PrescribedForce::PrescribedForce()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /**

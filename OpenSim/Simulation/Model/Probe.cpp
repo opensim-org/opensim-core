@@ -103,7 +103,7 @@ namespace OpenSim {
 Probe::Probe()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________

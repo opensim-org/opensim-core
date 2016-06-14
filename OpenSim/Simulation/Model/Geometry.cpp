@@ -43,7 +43,7 @@ OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 void Geometry::setFrameName(const std::string& name)

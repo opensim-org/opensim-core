@@ -34,20 +34,20 @@ namespace OpenSim {
 //==============================================================================
 ModelComponent::ModelComponent() : Component()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
 :   Component(fileName, updFromXMLNode)
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
 :   Component(element)
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 void ModelComponent::constructProperties()

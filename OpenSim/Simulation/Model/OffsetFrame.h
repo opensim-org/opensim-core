@@ -197,7 +197,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame() : C()
 {
     setNull();
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors
