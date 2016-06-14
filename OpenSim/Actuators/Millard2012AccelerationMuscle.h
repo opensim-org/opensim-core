@@ -771,7 +771,7 @@ private:
     void setNull();
 
     //constructs all of the properties required to use this class
-    void constructProperties() override;
+    void constructProperties();
     
     /*Builds all of the components that are necessary to use this 
     muscle model in simulation*/

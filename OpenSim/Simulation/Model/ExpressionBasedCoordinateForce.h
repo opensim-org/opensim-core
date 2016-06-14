@@ -124,7 +124,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram _forceProg;

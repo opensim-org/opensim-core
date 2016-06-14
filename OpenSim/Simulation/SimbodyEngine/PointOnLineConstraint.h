@@ -86,7 +86,7 @@ protected:
 
 private:
     /** Construct PointConstraint's properties */
-    void constructProperties() override;
+    void constructProperties();
     void setNull();
 
 

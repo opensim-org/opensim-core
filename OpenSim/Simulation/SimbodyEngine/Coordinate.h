@@ -309,7 +309,7 @@ private:
     mutable bool _lockedWarningGiven;
 
     // PRIVATE METHODS implementing the Component interface
-    void constructProperties() override;
+    void constructProperties();
     void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 

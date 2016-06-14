@@ -280,7 +280,7 @@ protected:
 //==============================================================================
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
     /** Construct PrescribedForce's connectors */
     void constructConnectors() override;
 

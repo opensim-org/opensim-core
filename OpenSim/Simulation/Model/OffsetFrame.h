@@ -181,7 +181,7 @@ protected:
 private:
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // the Offset transform in its parent frame
     SimTK::Transform _offsetTransform;

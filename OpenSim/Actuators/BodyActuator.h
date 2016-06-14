@@ -139,7 +139,7 @@ private:
     //--------------------------------------------------------------------------
     /** Construct the infrastructure of the BodyActuator component.
     Begin with its properties. */
-    void constructProperties() override;
+    void constructProperties();
 
     //--------------------------------------------------------------------------
     // Implement Force interface

@@ -231,7 +231,7 @@ private:
 protected:
 
     /* Component Construction Interface */
-    void constructProperties() override;
+    void constructProperties();
 
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()

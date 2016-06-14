@@ -134,7 +134,7 @@ public:
 // PRIVATE
 //==============================================================================
 private:
-    void constructProperties() override;
+    void constructProperties();
 
     //--------------------------------------------------------------------------
     // Implement Force interface

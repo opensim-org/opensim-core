@@ -201,7 +201,7 @@ private:
         calcAccelerationInGround(const SimTK::State& state) const override;
 
     /* Component construction interface */
-    void constructProperties() override;
+    void constructProperties();
 
     /* Utility to convert Geometry version 3.2 to recent 4.0 format */
     void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,

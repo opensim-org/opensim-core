@@ -148,7 +148,7 @@ protected:
     void extendFinalizeFromProperties();
 
 private:
-    void constructProperties() override;
+    void constructProperties();
 
     SimTK::ReferencePtr<const PhysicalFrame> _frame;
 

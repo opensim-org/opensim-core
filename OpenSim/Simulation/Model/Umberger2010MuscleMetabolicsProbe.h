@@ -433,7 +433,7 @@ private:
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 
     //--------------------------------------------------------------------------

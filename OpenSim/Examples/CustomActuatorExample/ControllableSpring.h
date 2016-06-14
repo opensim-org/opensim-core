@@ -78,7 +78,7 @@ virtual ~ControllableSpring() {};
 
 /* define private utilities to be used by the constructors. */
 private:
-void constructProperties() override {
+void constructProperties() {
     constructProperty_rest_length(1.0);
 }
 

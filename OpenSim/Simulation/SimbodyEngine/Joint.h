@@ -483,7 +483,7 @@ private:
 
     /** Construct the infrastructure of the Joint component.
         Begin with its properties. */
-    void constructProperties() override;
+    void constructProperties();
 
     /** Utility method for accessing the number of mobilities provided by
         an underlying MobilizedBody */

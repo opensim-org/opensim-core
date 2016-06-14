@@ -171,7 +171,7 @@ protected:
 private:
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     SimTK::Mat66 _dampingMatrix{ 0.0 };
 

@@ -165,7 +165,7 @@ protected:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 //=============================================================================
 };  // END of class ContactGeometry
 //=============================================================================

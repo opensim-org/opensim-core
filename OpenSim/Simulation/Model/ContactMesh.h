@@ -94,7 +94,7 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
     void extendFinalizeFromProperties() override;
     /**
      * Load the mesh from disk.

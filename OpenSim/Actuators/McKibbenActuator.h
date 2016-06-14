@@ -99,7 +99,7 @@ protected:
     VisibleObject _displayer; */
 
 private:
-    void constructProperties() override;
+    void constructProperties();
 
     //--------------------------------------------------------------------------
     // Implement Force interface

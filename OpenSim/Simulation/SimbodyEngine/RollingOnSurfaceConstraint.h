@@ -173,7 +173,7 @@ protected:
 private:
     void setNull();
     /** Construct RollingOnSurfaceConstraint's properties */
-    void constructProperties() override;
+    void constructProperties();
 
     // References to the PhysicalFrames on the 
     SimTK::ReferencePtr<const PhysicalFrame> _rollingFrame;

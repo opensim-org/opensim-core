@@ -105,7 +105,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 //==============================================================================
 };  // END of class MuscleActiveFiberPowerProbe

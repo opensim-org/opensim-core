@@ -451,7 +451,7 @@ private:
         Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 
     //--------------------------------------------------------------------------
