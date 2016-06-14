@@ -93,6 +93,10 @@ public:
     // Would have been better for this to be a list property. 
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
+
+    OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
+            "The frame onto which this force is applied.");
+
     /** The force applied by the PrescribedForce, this depends only on time.  
     The frame in which this vector is interpreted depends on the "forceIsGlobal" property.*/
     OpenSim_DECLARE_OUTPUT(force_applied, SimTK::Vec3, getForceApplied, SimTK::Stage::Time);

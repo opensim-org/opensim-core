@@ -123,13 +123,6 @@ void PrescribedForce::constructProperties()
     constructProperty_torqueFunctions(FunctionSet());
 }
 
-
-void PrescribedForce::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("frame");
-}
-
-
 void PrescribedForce::setFrameName(const std::string& frameName) {
     updConnector<PhysicalFrame>("frame").setConnecteeName(frameName);
 }

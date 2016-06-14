@@ -233,11 +233,6 @@ private:
         constructProperty_inertia(inertia);
     }
 
-    void constructOutputs() override {
-
-
-    }
-
     // Keep indices and reference to the world
     mutable MobilizedBodyIndex bindex;
     ReferencePtr<TheWorld> world;
