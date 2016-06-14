@@ -124,7 +124,7 @@ Joint::Joint(const std::string &name,
     // Joint contains them as subcomponents and the path name associated with 
     // them will not be valid. This a temporary fix to set the name once the
     // added frames have been included as subcomponents which occurs during
-    // finaliFromProperties() above.
+    // finalizeFromProperties() above.
     static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
     static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
 

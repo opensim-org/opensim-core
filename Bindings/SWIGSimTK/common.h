@@ -235,13 +235,61 @@ extern "C" {
 #include <limits>
 #include <typeinfo>
 
-/* Transition macros for C++11 support. VC10 and VC11 have partial support for
-C++11, early VC's do not. Currently we're assuming no support from gcc. */
+// TODO
+// /* Transition macros for C++11 support. VC10 and VC11 have partial support for
+// C++11, early VC's do not. Currently we're assuming no support from gcc. */
+// #ifndef SWIG
+//     #define OVERRIDE_11 override
+//     #define FINAL_11 final
+// #else /* Swigging */
+//     // TODO Remove when moving to SWIG 3.
+//     #define OVERRIDE_11  
+//     #define FINAL_11
+//     #undef override
+//     #define override
+//     #undef final
+//     #define final
+// #endif
+
+/* Be very careful with this macro -- don't use it unless you have measured
+a performance improvement. You can end up with serious code bloat if you 
+override the compiler's judgement about when to inline, and that can cause
+cache misses which ultimately reduce performance. */
+#ifdef _MSC_VER
+    #define SimTK_FORCE_INLINE __forceinline
+#else
+    #define SimTK_FORCE_INLINE __attribute__((always_inline)) inline
+#endif
+
+/* Microsoft added noexcept in VS2015 */
+#if defined(_MSC_VER) && _MSC_VER < 1900
+    #define NOEXCEPT_11 throw()
+#else
+    #define NOEXCEPT_11 noexcept
+#endif
+
+/* C++14 introduces a standard way to mark deprecated declarations. Before
+that we can use non-standard compiler hacks. */
+#ifndef SWIG
+    #if __cplusplus >= 201402L
+        /* C++14 */
+        #define DEPRECATED_14(MSG) [[deprecated(MSG)]]
+    #elif _MSC_VER
+        /* VC++ just says warning C4996 so add "DEPRECATED" to the message. */
+        #define DEPRECATED_14(MSG) __declspec(deprecated("DEPRECATED: " MSG))
+    #else /* gcc or clang */
+        #define DEPRECATED_14(MSG) __attribute__((deprecated(MSG)))
+    #endif
+#else /* Swigging */
+    #define DEPRECATED_14(MSG)
+#endif
+
+/* These macros are deprecated, leftover from before C++11 was available. 
+Don't use them. Sorry, can't use the DEPRECATED_14 macro here! */
 #ifndef SWIG
     #define OVERRIDE_11 override
     #define FINAL_11 final
-#else /* Swigging */
-    // TODO Remove when moving to SWIG 3.
+#else
     #define OVERRIDE_11  
     #define FINAL_11
     #undef override
