@@ -38,7 +38,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(radius, double, "Radius of the sphere.");
+    OpenSim_DECLARE_PROPERTY(radius, double,
+            "Radius of the sphere (default: 0).");
 
 //=============================================================================
 // METHODS
