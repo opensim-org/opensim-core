@@ -60,6 +60,10 @@ addons:
       - sshpass
 
 before_install:
+  - cd $TRAVIS_BUILD_DIR
+  # Stop build if comment contains [skip travis].
+  - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
+  
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
   - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
@@ -69,16 +73,13 @@ before_install:
   ###########################################################################################################
   
   ## Ensure that there are no tabs in source code.
-  - cd $TRAVIS_BUILD_DIR
-  # Stop build if comment contains [skip travis].
-  - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
-  
   # GREP returns 0 (true) if there are any matches, and
   # we don't want any matches. If there are matches,
   # print a helpful message, and make the test fail by using "false".
   # The GREP command here checks for any tab characters in the the files
   # that match the specified pattern. GREP does not pick up explicit tabs
   # (e.g., literally a \t in a source file).
+  - cd $TRAVIS_BUILD_DIR
   - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
 
   ## Set up environment variables.
