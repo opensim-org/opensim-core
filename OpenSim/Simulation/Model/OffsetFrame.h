@@ -76,8 +76,7 @@ public:
 //==============================================================================
 // CONNECTORS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(parent, C,
-    "The parent frame to this frame.");
+    OpenSim_DECLARE_CONNECTOR(parent, C, "The parent frame to this frame.");
 
 //=============================================================================
 // PUBLIC METHODS

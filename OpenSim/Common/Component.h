@@ -1806,17 +1806,6 @@ protected:
         _connectorsTable[name] = ix;
         return ix;
     }
-    /*
-    template <typename T>
-    int constructConnector(const std::string& name);
-    int ix = updProperty_connectors().adoptAndAppendValue(
-         Connector<T>::TypeHelper::create(name, *this));
-        // TODO new Connector<T>(name, SimTK::Stage::Topology));
-    //add pointer to connectorsTable so we can access connectors easily by name
-    _connectorsTable[name] = ix;
-    return ix;
-}
-*/
     
     /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
@@ -2263,8 +2252,12 @@ private:
     // cache information.
     mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
 
+    // Check that the list of _allStateVariables is valid
+    bool isAllStatesVariablesListValid() const;
+
     // Array of all state variables for fast access during simulation
-    mutable SimTK::Array_<SimTK::ReferencePtr<const StateVariable> > _allStateVariables;
+    mutable SimTK::Array_<SimTK::ReferencePtr<const StateVariable> > 
+                                                            _allStateVariables;
     // A handle the System associated with the above state variables
     mutable SimTK::ReferencePtr<const SimTK::System> _statesAssociatedSystem;
 

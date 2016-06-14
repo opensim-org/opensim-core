@@ -546,7 +546,8 @@ public:
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::getAs(): Property " + prop.getName() 
-            + " was not of type TODO");
+            + " was not of type "
+            + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
     /** Downcast the given AbstractProperty to a writable concrete
@@ -558,7 +559,8 @@ public:
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::updAs(): Property " + prop.getName() 
-            + " was not of type TODO");
+            + " was not of type "
+            + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
 protected:

@@ -147,8 +147,8 @@ void Frame::attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scal
 SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
         const Frame& otherFrame) const
 {
-    SimTK::Transform X_GF = getTransformInGround(state);
-    SimTK::Transform X_GA = otherFrame.getTransformInGround(state);
+    const SimTK::Transform& X_GF = getTransformInGround(state);
+    const SimTK::Transform& X_GA = otherFrame.getTransformInGround(state);
     // return the transform, X_AF that expresses quantities in F into A
     return ~X_GA*X_GF;
 }
@@ -156,15 +156,13 @@ SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
 SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state,
                                 const SimTK::Vec3& vec, const Frame& frame) const
 {
-    SimTK::Transform X_AF = findTransformBetween(state, frame);
-    return X_AF.R()*vec;
+    return findTransformBetween(state, frame).R()*vec;
 }
 
 SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
-    SimTK::Transform X_AF = findTransformBetween(state, otherFrame);
-    return X_AF*point;
+    return findTransformBetween(state, otherFrame)*point;
 }
 
 const Frame& Frame::findBaseFrame() const

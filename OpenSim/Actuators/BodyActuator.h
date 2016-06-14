@@ -26,10 +26,9 @@
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
-// TODO 
+
 namespace OpenSim {
 
-// TODO class Body;
 class Model;
 
 //=============================================================================

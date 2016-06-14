@@ -145,7 +145,7 @@ protected:
    /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
      * based on the name of the quadrant. finalizeFromProperties() should be
      * called whenever the quadrant property changes. */
-    void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties() override;
 
 private:
     void constructProperties();
