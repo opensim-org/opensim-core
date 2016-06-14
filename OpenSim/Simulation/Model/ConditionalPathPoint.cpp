@@ -26,11 +26,6 @@
 //=============================================================================
 #include "ConditionalPathPoint.h"
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 //=============================================================================
@@ -59,7 +54,7 @@ ConditionalPathPoint::~ConditionalPathPoint()
 {}
 
 //_____________________________________________________________________________
-/**
+/*
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
@@ -84,7 +79,7 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Connect properties to local pointers.
  */
 void ConditionalPathPoint::constructProperties()
@@ -120,10 +115,8 @@ const Coordinate& ConditionalPathPoint::getCoordinate() const
 
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the range min.
- *
- * @param aRange range min to change to.
  */
 void ConditionalPathPoint::setRangeMin(double minVal)
 {
@@ -131,10 +124,8 @@ void ConditionalPathPoint::setRangeMin(double minVal)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the range max.
- *
- * @param aRange range max to change to.
  */
 void ConditionalPathPoint::setRangeMax(double maxVal)
 {
@@ -142,11 +133,9 @@ void ConditionalPathPoint::setRangeMax(double maxVal)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Determine if this point is active by checking the value of the
  * coordinate that it is linked to.
- *
- * @return Whether or not this point is active.
  */
 bool ConditionalPathPoint::isActive(const SimTK::State& s) const
 {
