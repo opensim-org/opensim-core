@@ -266,6 +266,11 @@ public:
     using Exception::Exception;
 };
 
+class NotImplementedYet : public Exception {
+public:
+    using Exception::Exception;
+};
+
 }; //namespace
 //=============================================================================
 //=============================================================================

@@ -519,5 +519,5 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 // in ModelVisualizer
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
-    int x = 0;
+    OPENSIM_THROW(NotImplementedYet, "WrapTorus::generateDecorations not implemented yet");
 }
