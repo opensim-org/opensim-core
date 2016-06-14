@@ -56,10 +56,6 @@ class OSIMSIMULATION_API RollingOnSurfaceConstraint
 :   public UnilateralConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint, 
                                 UnilateralConstraint);
-
-//=============================================================================
-// DATA
-//=============================================================================
 public:
     OpenSim_DECLARE_PROPERTY(surface_normal, SimTK::Vec3,
         "Surface normal direction in the surface body.");
@@ -70,6 +66,14 @@ public:
     OpenSim_DECLARE_PROPERTY(contact_radius, double,
         "A guess at the area of contact approximated by a circle of radius.");
 
+    OpenSim_DECLARE_CONNECTOR(rolling_body, PhysicalFrame,
+        "A frame fixed to the rolling body.");
+    OpenSim_DECLARE_CONNECTOR(surface_body, PhysicalFrame,
+        "A frame fixed to the surface body.");
+
+//=============================================================================
+// DATA
+//=============================================================================
 private:
 
     /** Get the indices of underlying constraints to access from Simbody */
@@ -153,17 +157,14 @@ protected:
     /** Extend ModelComponent interface */
     void extendConnectToModel(Model& aModel) override;
 
-    /**
-     * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
-     */
+    /** Create the SimTK::Constraints: which implements this
+     * RollingOnSurfaceConstraint. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    /**
-     * Populate the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
-     */
+    /** Populate the SimTK::State: with defaults for the
+     * RollingOnSurfaceConstraint. */
     void extendInitStateFromProperties(SimTK::State& state) const override;
-    /**
-     * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
-     */
+    /** Given an existing SimTK::State set defaults for the
+     * RollingOnSurfaceConstraint. */
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
     /** Updating XML formating to latest revision */
@@ -173,8 +174,6 @@ private:
     void setNull();
     /** Construct RollingOnSurfaceConstraint's properties */
     void constructProperties() override;
-    /** Construct RollingOnSurfaceConstraint's connectors */
-    void constructConnectors() override;
 
     // References to the PhysicalFrames on the 
     SimTK::ReferencePtr<const PhysicalFrame> _rollingFrame;

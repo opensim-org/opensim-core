@@ -81,8 +81,8 @@ PhysicalOffsetFrames to connect to and add them to the Joint.
 // Define a Pin joint between ground and platform with offsets.
 PinJoint* platformToGround = new PinJoint("PlatformToGround",
                                           "groundOffset", "platformOffset");
-platformToGround.append_frames(new PhysicalOffsetFrame("groundOffset", ...));
-platformToGround.append_frames(new PhysicalOffsetFrame("platformOffset", ...));
+platformToGround->append_frames(new PhysicalOffsetFrame("groundOffset", ...));
+platformToGround->append_frames(new PhysicalOffsetFrame("platformOffset", ...));
 \endcode
 
 
@@ -110,6 +110,14 @@ public:
         "are often used to offset the connection from a Body's origin to another "
         "location of interest (e.g. the joint center). That offset can be added "
         "to the Joint. When the joint is delete so are the Frames in this list.");
+
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+        "The parent frame for the joint.");
+    OpenSim_DECLARE_CONNECTOR(child_frame, PhysicalFrame,
+        "The child frame for the joint.");
 
 //=============================================================================
 // OUTPUTS
@@ -476,10 +484,6 @@ private:
     /** Construct the infrastructure of the Joint component.
         Begin with its properties. */
     void constructProperties() override;
-
-    /** Next define its structural dependencies on other components.
-        These will be the parent and child frames of the Joint.*/
-    void constructConnectors() override;
 
     /** Utility method for accessing the number of mobilities provided by
         an underlying MobilizedBody */
