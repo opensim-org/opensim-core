@@ -69,7 +69,7 @@ protected:
     void extendFinalizeFromProperties() override;
 
 private:
-    void constructProperties() override;
+    void constructProperties();
 
     void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,WrapResult& aWrapResult) const;
