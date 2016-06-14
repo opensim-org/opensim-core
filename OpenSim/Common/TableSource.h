@@ -65,6 +65,15 @@ class TableSource_ : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(TableSource_, ET, Component);
 
 public:
+    OpenSim_DECLARE_PROPERTY(filename, std::string,
+                             "Path to the file to populate the TableSource_ "
+                             "with. The path is relative to the working "
+                             "directory, not relative to the directory "
+                             "containing the model file.");
+    OpenSim_DECLARE_PROPERTY(tablename, std::string,
+                             "Name of the table in the file to populate the "
+                             "TableSource with. Ex. 'markers', 'forces'.");
+
     /** Type of the TimeSeriesTable_ this Component will hold.                */
     typedef TimeSeriesTable_<ET> Table;
     /** Type of the 'row' Output of this Component.                           */
@@ -75,16 +84,41 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(column, ET, getColumnAtTime, 
                                 SimTK::Stage::Time);
 
-    TableSource_()                               = default;
+    TableSource_() {
+        constructProperties();
+    }
+
     TableSource_(const TableSource_&)            = default;
     TableSource_(TableSource_&&)                 = default;
     TableSource_& operator=(const TableSource_&) = default;
     TableSource_& operator=(TableSource_&&)      = default;
     
     /** Construct the TableSource_ by giving it a TimeSeriesTable_ to hold.   */
-    TableSource_(const Table& table) : 
-        _table{table} 
-    {}
+    TableSource_(const Table& table) :
+        _table{table} {
+        constructProperties();
+    }
+
+    /** Construct the TableSource_ from a file.
+
+    \param filename Name of the file.
+
+    \throws KeyNotFound If table provided does not have column-labels.        */
+    TableSource_(const std::string& filename) :
+        TableSource_{filename, ""}{}
+
+    /** Construct the TableSource_ from a file.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to populate the TableSource
+                     with. Ex. 'markers', 'forces'.
+
+    \throws KeyNotFound If table provided does not have column-labels.        */
+    TableSource_(const std::string& filename,
+                 const std::string& tablename) {
+        constructProperties();
+        setTable(filename, tablename);
+    }
 
     /// \name Get/Set underlying TimeSeriesTable_
     /// @{
@@ -95,11 +129,52 @@ public:
         return _table;
     }
 
-    /** Replace the existing TimeSeriesTable_ this TableSource_ currently 
-    holds.                                                                    
+    /** Replace the existing TimeSeriesTable_ that this TableSource_ currently 
+    holds. The properties 'filename' and 'tablename' are reset to empty strings
+    as a result of this operation.
 
-    \throws KeyNotFound If table provided does not have column-labels.        */
+    \throws KeyNotFound If table provided does not have column labels.        */
     void setTable(const Table& table) {
+        setTable_impl(table);
+        set_filename("");
+        set_tablename("");
+    }
+
+    /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
+    Property 'filename' is reset to the value provided. Property 'tablename' is
+    reset to the empty string as a result of this operation.
+
+    \throws InvalidCall If property `filename` is set. This call is not allowed
+                        if `filename` property is set.                        
+    \throws KeyNotFound If table provided does not have column labels.        */
+    void setTable(const std::string& filename) {
+        setTable_impl(TimeSeriesTable_<ET>{filename});
+        set_filename(filename);
+        set_tablename("");
+    }
+
+    /** Replace the TimeSeriesTable_ that this TableSource_ currently holds. 
+    Properties 'filename' and 'tablename' are reset to the values provided.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to construct the 
+                     TimeSeriesTable_ from. For example, a c3d file contains 
+                     tables named 'markers' and 'forces'.
+
+    \throws InvalidCall If property `filename` is set. This call is not allowed
+                        if `filename` property is set.                        
+    \throws KeyNotFound If table provided does not have column labels.        */
+    void setTable(const std::string& filename,
+                  const std::string& tablename) {
+        setTable_impl(TimeSeriesTable_<ET>{filename, tablename});
+        set_filename(filename);
+        set_tablename(tablename);
+    }
+
+    /// @}
+
+protected:
+    void setTable_impl(const Table& table) {
         _table = table;
         auto& columnOutput = updOutput("column");
         columnOutput.clearChannels();
@@ -107,9 +182,6 @@ public:
             columnOutput.addChannel(columnLabel);
     }
 
-    /// @}
-
-protected:
     /** Retrieve value of a column at a given time(implicit in the State 
     provided). Linear interpolation is performed if the TimeSeriesTable_ does
     not contain an entry for the time mentioned by the state.
@@ -187,14 +259,24 @@ protected:
         }
     }
 
+private:
+    void constructProperties() override {
+        constructProperty_filename("");
+        constructProperty_tablename("");
+    }
+
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
+
+        if(!get_filename().empty())
+            setTable_impl(TimeSeriesTable_<ET>{get_filename(),
+                                               get_tablename()});
+
         auto& columnOutput = updOutput("column");
         for(const auto& columnLabel : _table.getColumnLabels())
             columnOutput.addChannel(columnLabel);
     }
 
-private:
     Table _table;
 }; // class TableSource_
 
