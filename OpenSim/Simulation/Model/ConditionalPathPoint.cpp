@@ -100,10 +100,8 @@ void ConditionalPathPoint::constructConnectors()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the coordinate that this point is linked to.
- *
- * @return Whether or not this point is active.
  */
 void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
 {
