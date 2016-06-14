@@ -29,8 +29,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/MultiplierFunction.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 
@@ -45,7 +43,7 @@ using SimTK::Vec3;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 MovingPathPoint::MovingPathPoint() : PathPoint()
@@ -54,7 +52,7 @@ MovingPathPoint::MovingPathPoint() : PathPoint()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Destructor.
  */
 MovingPathPoint::~MovingPathPoint()
@@ -62,7 +60,7 @@ MovingPathPoint::~MovingPathPoint()
 }
 
 //_____________________________________________________________________________
-/**
+/*
 * Connect properties to local pointers.
 */
 void MovingPathPoint::constructProperties()
@@ -158,7 +156,7 @@ void MovingPathPoint::extendConnectToModel(Model& model)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Override default implementation by Object to intercept and fix the XML node
  * underneath the MovingPathPoint to match the current version.
  */
@@ -220,7 +218,7 @@ SimTK::Vec3 MovingPathPoint::getLocation(const SimTK::State& s) const
     else // type == Constant
         pInF[1] = get_y_location().calcValue(SimTK::Vector(1, 0.0));
 
-    if (_zCoordinate) {
+    if (!_zCoordinate.empty()) {
         const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
             _zCoordinate->getValue(s),
             _zCoordinate->getRangeMax());
@@ -271,12 +269,9 @@ SimTK::Vec3 MovingPathPoint::getVelocity(const SimTK::State& s) const
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Get the velocity of the point in the body's local reference frame.
- *
- * @param aVelocity The velocity.
  */
-
 SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
 {
     SimTK::Vec3 dPdq_B(0);
@@ -284,17 +279,17 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
     std::vector<int> derivComponents;
     derivComponents.push_back(0);
 
-    if (_xCoordinate){
+    if (!_xCoordinate.empty()){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
         dPdq_B[0] = get_x_location().calcDerivative(derivComponents, 
             SimTK::Vector(1, _xCoordinate->getValue(s)));
     }
-    if (_yCoordinate){
+    if (!_yCoordinate.empty()){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
         dPdq_B[1] = get_y_location().calcDerivative(derivComponents,
             SimTK::Vector(1, _yCoordinate->getValue(s)));
     }
-    if (_zCoordinate){
+    if (!_zCoordinate.empty()){
         //Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
         dPdq_B[2] = get_z_location().calcDerivative(derivComponents,
             SimTK::Vector(1, _zCoordinate->getValue(s)));
@@ -306,7 +301,7 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
 
 void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
 {
-    if (_xCoordinate) {
+    if (!_xCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
@@ -320,7 +315,7 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         }
     }
 
-    if (_yCoordinate) {
+    if (!_yCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
@@ -334,7 +329,7 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         }
     }
 
-    if (_zCoordinate) {
+    if (!_zCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
@@ -371,6 +366,7 @@ SimTK::Vec3 MovingPathPoint::calcVelocityInGround(const SimTK::State& s) const
     // velocity of the station: v = vF + omegaF x r
     return V_GF[1] + V_GF[0] % r + v;
 }
+
 SimTK::Vec3 MovingPathPoint::calcAccelerationInGround(const SimTK::State& state) const
 {
     //TODO: Enable Exception or Implement the method and add accompanying test.
