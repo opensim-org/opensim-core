@@ -103,25 +103,37 @@ void Controller::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
+    // make sure controller does not take ownership
+    _actuatorSet.setMemoryOwner(false);
+    _actuatorSet.setSize(0);
+
     if (getProperty_actuator_list().size() > 0){
+        auto actuators = model.getComponentList<Actuator>();
         if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
-            setActuators(model.getActuators());
-            // setup actuators to ensure actuators added by controllers are also setup properly
-            // TODO: Adopt the controls (discrete state variables) of the Actuator
+            for (auto& actuator : actuators) {
+                addActuator(actuator);
+            }
             return;
         }
         else{
-            Set<Actuator> actuatorsByName;
+            bool found = false;
             for (int i = 0; i < getProperty_actuator_list().size(); i++){
-                if (model.updActuators().contains(get_actuator_list(i)))
-                    actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
-                else
-                    cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
+                for (auto& actuator : actuators) {
+                    if (get_actuator_list(i) == actuator.getName()) {
+                        addActuator(actuator);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    cerr << "WARN: Controller::connectToModel : Actuator "
+                        << get_actuator_list(i) <<
+                        " was not found and will be ignored." << endl;
+                }
             }
-            actuatorsByName.setMemoryOwner(false);
-            setActuators(actuatorsByName);
         }
     }
+
 }
 
 /**
@@ -130,19 +142,20 @@ void Controller::extendConnectToModel(Model& model)
 void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
+
 }
 
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
+    // make sure controller does assume ownership
+    _actuatorSet.setMemoryOwner(false);
     //Rebuild consistent set of actuator lists
     _actuatorSet.setSize(0);
     updProperty_actuator_list().clear();
     for (int i = 0; i< actuators.getSize(); i++){
         addActuator(actuators[i]);
     }
-    // make sure controller does not take ownership
-    _actuatorSet.setMemoryOwner(false);
 }
 
 
