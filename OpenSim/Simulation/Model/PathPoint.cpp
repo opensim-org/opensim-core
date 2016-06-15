@@ -25,12 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathPoint.h"
-#include "BodySet.h"
-#include "Model.h"
-#include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 
 //=============================================================================
 // STATICS
@@ -47,7 +41,7 @@ changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
         throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
             " change the body on PathPoint which was not assigned to a body.");
     }
-    // if it is already assigned to aBody, do nothing
+    // if it is already assigned to body, do nothing
     const PhysicalFrame& currentFrame = getParentFrame();
 
     if (currentFrame == body)
