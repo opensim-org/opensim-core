@@ -99,7 +99,7 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Tool:
@@ -108,7 +108,7 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Tool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -173,7 +173,7 @@ void ForwardTool::setupProperties()
                  "The first column contains the time.  The rest of the columns contain the states in the order "
                  "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
                  "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
-                 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
+                 "one of the time stamps in this file, interpolation is NOT used because it is usually necessary to "
                  "being a simulation from an exact set of states.  Instead, the closest earlier set of states is used. "
                  "Having a states file that contains the entire trajectory of a simulations allows for corrective "
                  "springs for perturbation analysis to be added.";
@@ -212,7 +212,7 @@ operator=(const ForwardTool &aTool)
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     // BASIC INPUT
     _statesFileName = aTool._statesFileName;
     _useSpecifiedDt = aTool._useSpecifiedDt;
@@ -251,7 +251,7 @@ bool ForwardTool::run()
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
     IO::chDir(directoryOfSetupFile);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
 
     // Re create the system with forces above and Realize the topology
@@ -489,7 +489,7 @@ SigmaDn(double tau,double to,double t)
 /**
  *  Set the current integration manager
  *
- * @param m   pointer to itegration manager  
+ * @param m   pointer to integration manager  
  */
 
 void ForwardTool::setManager( Manager& m ) {

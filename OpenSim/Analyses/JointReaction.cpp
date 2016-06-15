@@ -104,7 +104,7 @@ JointReaction::JointReaction(const std::string &aFileName):
     */
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -257,7 +257,7 @@ void JointReaction::setupReactionList()
     }
     int numJointNames = _jointNames.getSize();
     /* check that the _onBody Array and _inFrame Array are either the same length as 
-    *  the _jointNames Array or are of lenght 1.  If not, set lengths to default of 1 and 
+    *  the _jointNames Array or are of length 1.  If not, set lengths to default of 1 and 
     *  set the values so that all reactions will be reported on the child body, expressed  
     *  in the ground frame.*/
     if (_onBody.getSize() == 1);
@@ -576,9 +576,8 @@ record(const SimTK::State& s)
         const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
         
         // find the point of application of the joint load on the child
-        const Vec3& childLocation = joint.getLocationInChild();
-        // and find it's current location in the ground reference frame
-        Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis)*childLocation;
+        // in the ground reference frame
+        Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
         // set the point of application to the joint location in the child body
         Vec3 pointOfApplication(0,0,0);
         
@@ -588,20 +587,18 @@ record(const SimTK::State& s)
             /*Take reaction load from child and apply on parent*/
             force = -force;
             moment = -moment;
-            const Vec3& parentLocation = joint.getLocationInParent();
-            Vec3 parentLocationInGlobal = joint.getParentFrame()
-                .getGroundTransform(s_analysis)*parentLocation;
+            Vec3 parentLocationInGlobal = joint.getParentFrame().getTransformInGround(s_analysis).p();
 
             // define vector from the mobilizer location on the child to the location on the parent
             Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
-            // find equivalent moment if the load is shifted to the parent loaction
+            // find equivalent moment if the load is shifted to the parent location
             moment -= translation % force;
 
             // reset the point of application to the joint location in the parent expressed in ground
             pointOfApplication = parentLocationInGlobal;
         }
         else{
-            // set the point of application to the joint laction in the child expressed in ground
+            // set the point of application to the joint location in the child expressed in ground
             pointOfApplication = childLocationInGlobal;
         }
         /* express loads in the desired reference frame*/
@@ -635,7 +632,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
  * @param s reference to the current state
  *

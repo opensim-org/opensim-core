@@ -121,7 +121,7 @@ void ConditionalPathPoint::init(const PathPoint& aPoint)
         if (path) {
             ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
             if (comp) {
-                CoordinateSet coords = comp->getModel().getCoordinateSet();
+                const CoordinateSet& coords = comp->getModel().getCoordinateSet();
                 if (coords.getSize() > 0) {
                     int index = 0;
                     _coordinateName = coords.get(index).getName();
@@ -243,7 +243,7 @@ bool ConditionalPathPoint::isActive(const SimTK::State& s) const
  *
  * @param aModel model containing this ConditionalPathPoint.
  */
-void ConditionalPathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
+void ConditionalPathPoint::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
 {
     // base class
     Super::connectToModelAndPath(aModel, aPath);

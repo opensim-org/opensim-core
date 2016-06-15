@@ -68,7 +68,7 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     // Beyond the const Component get the index so we can access the SimTK::Force later
     Actuator* mutableThis = const_cast<Actuator *>(this);
 
-    // Model is in charge of creating the shared cache for all all actuator controls
+    // Model is in charge of creating the shared cache for all actuator controls
     // but it does so based on the size and order in its _defaultControls
     // Actuator has the opportunity here to add slots for its control and record
     // the index into the shared cache Vector.
@@ -157,12 +157,6 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
-void ScalarActuator::constructOutputs() 
-{
-    constructOutput<double>("actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
-    constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
-}
-
 // Create the underlying computational system component(s) that support the
 // ScalarActuator model component
 void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -221,7 +215,7 @@ void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
     setModelingOption(s, "override_actuation", int(flag));
 }
 
-bool ScalarActuator::isActuationOverriden(const SimTK::State& s) const
+bool ScalarActuator::isActuationOverridden(const SimTK::State& s) const
 {
     return (getModelingOption(s, "override_actuation") > 0);
 }

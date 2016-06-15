@@ -108,7 +108,7 @@ class Model;
  *        accessed by file at the end of a simulation. Probes, on the other
  *        hand, are ModelComponents and therefore can be accessed at any time
  *        during a simulation from the API, and can also be used to compute
- *        model values that are fed back into ths system through via custom
+ *        model values that are fed back into the system via custom
  *        designed Controllers. Note that Probe values can also be reported to
  *        file at the end of a simulation by attaching a ProbeReporter analysis
  *        to the simulation.
@@ -140,6 +140,12 @@ public:
     OpenSim_DECLARE_PROPERTY(gain, double,
         "Constant gain to scale the probe output by.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(probe_outputs, SimTK::Vector, getProbeOutputs,
+            SimTK::Stage::Report);
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -156,22 +162,22 @@ public:
 
     /** Returns true if the Probe is disabled or false if the probe is enabled. */
     bool isDisabled() const;
-    /** Set the Probe as disabled (true) or enabled (false). */
+    /** %Set the Probe as disabled (true) or enabled (false). */
     void setDisabled(bool isDisabled);
 
     /** Return the operation being performed on the probe value. */
     std::string getOperation() const;
-    /** Set the operation being performed on the probe value. */
+    /** %Set the operation being performed on the probe value. */
     void setOperation(std::string probe_operation);
 
     /** Return the initial conditions (when the probe_operation is set to 'integrate'). */
     SimTK::Vector getInitialConditions() const;
-    /** Set the initial conditions (when the probe_operation is set to 'integrate'). */
+    /** %Set the initial conditions (when the probe_operation is set to 'integrate'). */
     void setInitialConditions(SimTK::Vector initial_conditions_for_integration);
 
     /** Return the gain to apply to the probe output. */
     double getGain() const;
-    /** Set the gain to apply to the probe output. */
+    /** %Set the gain to apply to the probe output. */
     void setGain(double gain);
     
 
@@ -224,7 +230,6 @@ protected:
 private:
     void setNull();
     void constructProperties() override;
-    void constructOutputs() override;
 
 
 //=============================================================================

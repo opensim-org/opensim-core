@@ -45,6 +45,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -205,7 +206,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
 {
     int i;
    ofstream out;
-    int functionIndex = 1;
+   //int functionIndex = 1;
 
    out.open(aFileName.c_str());
    out.setf(ios::fixed);
@@ -448,10 +449,16 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
     // adding the non-zero components to the SimbodySimmJoint.
     if (parentJointAdded == false) {
         int rotationsSoFar = 0;
-        SimTK::Vec3 location;
-        SimTK::Vec3 orientation;
-        location = joint.getLocationInParent();
-        orientation = joint.getOrientationInParent();
+        SimTK::Vec3 location(0);
+        SimTK::Vec3 orientation(0);
+        const PhysicalOffsetFrame* offset =
+            dynamic_cast<const PhysicalOffsetFrame*>(&joint.getParentFrame());
+        if (offset) {
+            location = offset->get_translation();
+            orientation = offset->get_orientation();
+        }
+
+
         if (NOT_EQUAL_WITHIN_ERROR(location[0], 0.0))
             ssj->addConstantDof("tx", NULL, location[0]);
         if (NOT_EQUAL_WITHIN_ERROR(location[1], 0.0))
@@ -540,11 +547,17 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
  */
 bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 {
-    SimTK::Vec3 location;
-    SimTK::Vec3 orientation;
-
-    location = aJoint.getLocationInChild();
-    orientation= aJoint.getOrientationInChild();
+    SimTK::Vec3 location(0);
+    SimTK::Vec3 orientation(0);
+    const PhysicalOffsetFrame* offset =
+        dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getChildFrame());
+    if (offset) {
+        location = offset->get_translation();
+        orientation = offset->get_orientation();
+    }
+    else {
+        return false;
+    }
 
     double sum = location.scalarNormSqr();
    if (NOT_EQUAL_WITHIN_ERROR(sum, 0.0))
@@ -573,11 +586,15 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
     if (aJoint.getConcreteClassName()=="WeldJoint")
         return false;
 
-    SimTK::Vec3 location;
-    SimTK::Vec3 orientation;
+    SimTK::Vec3 location(0);
+    SimTK::Vec3 orientation(0);
 
-    location = aJoint.getLocationInParent();
-    orientation = aJoint.getOrientationInParent();
+    const PhysicalOffsetFrame* offset =
+        dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getParentFrame());
+    if (offset) {
+        location = offset->get_translation();
+        orientation = offset->get_orientation();
+    }
 
     bool translationsUsed[] = {false, false, false}, translationsDone = false;
     int numTranslations = 0, numRotations = 0;
@@ -705,35 +722,49 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
  */
 bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName, string& rChildName)
 {
-   SimTK::Vec3 location;
-   SimTK::Vec3 orientation;
+   SimTK::Vec3 location(0);
+   SimTK::Vec3 orientation(0);
     bool parentJointAdded = false;
 
    if (isParentJointNeeded(aJoint)) {
-       location = aJoint.getLocationInParent();
-       orientation = aJoint.getOrientationInParent();
-      string bodyName = aJoint.getChildFrameName() + "_pjc";
+       const PhysicalOffsetFrame* offset =
+           dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getParentFrame());
+       if (offset) {
+           location = offset->get_translation();
+           orientation = offset->get_orientation();
+       }
+
+      string bodyName = aJoint.getChildFrame().getName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
-      makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentFrameName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_pjc", 
+          aJoint.getParentFrame().getName(), bodyName, location, orientation);
       rParentName = bodyName;
         parentJointAdded = true;
    } else {
-      rParentName = aJoint.getParentFrameName();
+      rParentName = aJoint.getParentFrame().getName();
         parentJointAdded = false;
    }
 
+   location = 0;
+   orientation = 0;
+
    if (isChildJointNeeded(aJoint)) {
-       location = aJoint.getLocationInChild();
-       orientation = aJoint.getOrientationInChild();
-       string bodyName = aJoint.getChildFrameName() + "_jcc";
+       const PhysicalOffsetFrame* offset =
+           dynamic_cast<const PhysicalOffsetFrame*>(&aJoint.getChildFrame());
+       if (offset) {
+           location = offset->get_translation();
+           orientation = offset->get_orientation();
+       }
+       string bodyName = aJoint.getChildFrame().getName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       // This joint is specified in the reverse direction.
-      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getChildFrameName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_jcc",
+          aJoint.getChildFrame().getName(), bodyName, location, orientation);
       rChildName = bodyName;
    } else {
-       rChildName = aJoint.getChildFrameName();
+       rChildName = aJoint.getChildFrame().getName();
    }
 
     return parentJointAdded;
@@ -872,14 +903,14 @@ void SimbodySimmModel::writeWrapObjects(OpenSim::Body& aBody, ofstream& aStream)
         aStream << "segment " << aBody.getName() << endl;
         aStream << wo.getDimensionsString() << endl;
         if (!wo.getQuadrantNameUseDefault())
-            aStream << "quadrant " << wo.getQuadrantName() << endl;
+            aStream << "quadrant " << wo.get_quadrant() << endl;
         if (!wo.getActiveUseDefault())
-            aStream << "active " << (wo.getActive() ? "yes" : "no") << endl;
-        aStream << "translation " << wo.getTranslation()[0] << " " <<
-            wo.getTranslation()[1] << " " << wo.getTranslation()[2] << endl;
-        aStream << "xyz_body_rotation " << wo.getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
+            aStream << "active " << (wo.get_active() ? "yes" : "no") << endl;
+        aStream << "translation " << wo.get_translation()[0] << " " <<
+            wo.get_translation()[1] << " " << wo.get_translation()[2] << endl;
+        aStream << "xyz_body_rotation " << wo.get_xyz_body_rotation()[0] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[1] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
         aStream << "endwrapobject" << endl << endl;
     }
 }

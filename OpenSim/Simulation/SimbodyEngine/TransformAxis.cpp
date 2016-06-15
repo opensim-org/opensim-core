@@ -40,7 +40,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using SimTK::Vec3; using SimTK::State; using SimTK::Vector; using SimTK::Xml;
+using SimTK::Vec3; using SimTK::State; using SimTK::Vector;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -62,7 +62,7 @@ TransformAxis::TransformAxis(const Array<string>& coordNames,
     setAxis(axis);
 }
 // Constructor from XML node.
-TransformAxis::TransformAxis(Xml::Element& aNode) {
+TransformAxis::TransformAxis(SimTK::Xml::Element& aNode) {
     setNull();
     constructProperties();
     updateFromXMLNode(aNode);
@@ -86,13 +86,12 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     int nc = coordNames.size();
     const CoordinateSet& coords = _joint->getCoordinateSet();
 
-    // If a Function has been assigned then we have to insist that any 
-    // specified coordinates actually exist in this joint.
-    // TODO: (sherm 20120418) Why do we allow unrecognized coordinate names
-    // if there is no Function?
-
-    if (!hasFunction())
-        return; // no need to check
+    if (!hasFunction()) {
+        SimTK_ASSERT2_ALWAYS(coordNames.size() == 0,
+            "CustomJoint (%s) %s axis has no function but has coordinates.",
+            _joint->getName().c_str(), getName().c_str());
+        return;
+    }
 
     for(int i=0; i< nc; ++i) {
         if (!coords.contains(coordNames[i])) {
@@ -183,7 +182,7 @@ void TransformAxis::setFunction(const OpenSim::Function& func)
 
 
 void TransformAxis::updateFromXMLNode
-   (Xml::Element& node, int versionNumber)
+   (SimTK::Xml::Element& node, int versionNumber)
 {
     // Version before refactoring spatialTransform.
     // TODO: this is handled in CustomJoint's updateFromXMLNode() method

@@ -35,7 +35,7 @@ namespace OpenSim {
  * This class extends a Millard2012EquilibriumMuscle by including three 
  * additional states to model the fatigue and recovery of muscle fibers. 
  * The equations for these states are (loosely) based on the following paper:
- * Liu, Jing Z., Brown, Robert, Yue, Guang H., "A Dynamical Model of Muscle
+ * Liu, Jing Z., Brown, Robert W., Yue, Guang H., "A Dynamical Model of Muscle
  * Activation, Fatigue, and Recovery," Biophysical Journal, Vol. 82, Issue 5,
  * pp. 2344-2359, 2002.
  *
@@ -154,7 +154,7 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 private:
     /** construct the new properties and set their default values */
-    void constructProperties();
+    void constructProperties() override;
 
 //=============================================================================
 };  // END of class FatigableMuscle

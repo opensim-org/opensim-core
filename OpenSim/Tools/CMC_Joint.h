@@ -92,7 +92,7 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    virtual void setModel(Model& aModel);
+    virtual void setModel(Model& aModel) override;
     void setCoordinateName(const std::string &aName);
     std::string getCoordinateName() const;
     double getLimit() const;
@@ -100,15 +100,15 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeErrors(const SimTK::State& s, double aT);
-    virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
-    virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF);
-    virtual void computeAccelerations(const SimTK::State& s );
+    void computeErrors(const SimTK::State& s, double aT) override;
+    void computeDesiredAccelerations(const SimTK::State& s, double aT) override;
+    void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF) override;
+    void computeAccelerations(const SimTK::State& s ) override;
 
     //--------------------------------------------------------------------------
     // XML
     //--------------------------------------------------------------------------
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 
 //=============================================================================

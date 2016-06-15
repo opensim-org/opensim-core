@@ -174,9 +174,6 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapEllipsoid);
-
     _dimensions = aWrapEllipsoid._dimensions;
 }
 
@@ -329,7 +326,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     if (fabs(ppm) < 0.0001)
     {
-        // vector p1m and p2m are colinear
+        // vector p1m and p2m are collinear
         aFlag = false;
         aWrapResult.wrap_path_length = 0.0;
 
@@ -435,7 +432,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
             // This can create an sv->c1 vector that points roughly 180-degrees
             // opposite to the fan solution's sv->c1 vector.  This creates problems
             // when interpolating between the Frans and fan solutions because the
-            // interpolated c1 can become colinear to the muscle line during
+            // interpolated c1 can become collinear to the muscle line during
             // interpolation.  Therefore we detect Frans-solution sv points near
             // the ends of r1->r2 here, and fade out the Frans result for them.
 
@@ -1198,7 +1195,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     double u2 = u*u, v2 = v*v;
     double a2u2 = a2*u2, b2v2 = b2*v2;
     double dx, dy, xda, ydb;
-    int i, which;
+    int i/*, which*/;
     double t, P, Q, P2, Q2, f, fp;
 
     bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
@@ -1260,15 +1257,15 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     // initial guess
     if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
     {
-        which = 0;
+        //which = 0;
         t = 0.0;
     }
     else
     {
         double max = a;
 
-        which = 1;
-
+        //which = 1;
+        
         if ( b > max )
             max = b;
 

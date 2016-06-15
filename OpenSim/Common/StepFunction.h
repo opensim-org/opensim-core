@@ -37,11 +37,11 @@ namespace OpenSim {
  * A class for representing a StepFunction.
  *
  *          {   start_value,    t <= start_time 
- * f(t) =   {   S-plolynomial(t), start_time < t < end_time
+ * f(t) =   {   S-polynomial(t), start_time < t < end_time
  *          {   end_value,      t >= end_time
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -94,28 +94,28 @@ public:
     // SET AND GET Coefficients
     //--------------------------------------------------------------------------
 public:
-    /** Set step transition start time */
+    /** %Set step transition start time */
     void setStartTime(double time)
         { _startTime = time; };
     /** Get step transition time */
     double getStartTime() const
         { return _startTime; };
 
-    /** Set step transition end time */
+    /** %Set step transition end time */
     void setEndTime(double time)
         { _endTime = time; };
     /** Get step transition time */
     double getEndTime() const
         { return _endTime; };
 
-    /** Set start value before step */
+    /** %Set start value before step */
     void setStartValue(double start)
         { _startValue = start; };
     /** Get start value before step */
     double getStartValue() const
         { return _startValue; };
 
-    /** Set end value before step */
+    /** %Set end value before step */
     void setEndValue(double end)
         { _endValue = end; };
     /** Get end value before step */
@@ -125,7 +125,7 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 
 //=============================================================================
 };  // END class StepFunction

@@ -56,7 +56,7 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try{// performance with multiple muscles and wrapping in upper-exremity
+    try{// performance with multiple muscles and wrapping in upper-extremity
         simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);}
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
@@ -87,7 +87,7 @@ int main_new()
 
     for (unsigned int i = 0; i < tests.size(); ++i) {
         cout << "testing " << tests[i].filename << " for " << tests[i].duration << " s" << endl;
-        try { // performance with cylnder wrapping
+        try { // performance with cylinder wrapping
             simulateModelWithPassiveMuscles(tests[i].filename, tests[i].duration);
             simulateModelWithCables(tests[i].filename, tests[i].duration);
 
@@ -144,7 +144,7 @@ public:
 
     const CablePath& getCablePath() const {return path;}
 
-    // Must be at stage Velocity. Evalutes tension if necessary.
+    // Must be at stage Velocity. Evaluates tension if necessary.
     Real getTension(const State& state) const {
         ensureTensionCalculated(state);
         return Value<Real>::downcast(forces.getCacheEntry(state, tensionx));
@@ -503,7 +503,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             const WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
-            obs.bodyName = wrapObj->getBody().getName();
+            obs.bodyName = wrapObj->getFrame().getName();
             obs.X_BS = wrapObj->getTransform();
             obs.isVia = false;
             // initially assume inactive
@@ -648,8 +648,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     MultibodySystem& system = osimModel.updMultibodySystem();
     GeneralForceSubsystem& forceSubsystem = osimModel.updForceSubsystem();
-    const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
-    const SimbodyEngine& engine = osimModel.getSimbodyEngine();
+    // const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
+    // const SimbodyEngine& engine = osimModel.getSimbodyEngine();
 
     // add cable system
     CableTrackerSubsystem cables(system);
@@ -692,7 +692,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 const WrapCylinder* wrapCyl = dynamic_cast<const WrapCylinder*>(oi.wrapObjectPtr);
                 if (wrapCyl != 0) {
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->getRadius())); // along y
+                        oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->get_radius())); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else

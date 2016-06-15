@@ -58,7 +58,7 @@ class Model;
  * This defines the abstract ModelComponent class, which is used to specify 
  * components of a musculoskeletal model and the elements they add to the 
  * underlying computational SimTK::System (MultibodySystem). A ModelComponent is 
- * an OpenSim::Component and therefore has the capabilities to add nececessry
+ * an OpenSim::Component and therefore has the capabilities to add necessary
  * system resources to the System and to manage access to those resources (@see
  * Component)
  *
@@ -99,7 +99,7 @@ public:
     /** Construct ModelComponent from a specific node in an XML document. **/
     explicit ModelComponent(SimTK::Xml::Element& aNode);
 
-    // compiler default copy costructor and assignment operator
+    // compiler default copy constructor and assignment operator
 
     /** Destructor is virtual to allow concrete model component cleanup. **/
     virtual ~ModelComponent() {}
@@ -128,7 +128,7 @@ public:
      */
     void addGeometry(OpenSim::Geometry& aGeometry);
 
-    void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties() override;
 protected:
 template <class T> friend class ModelComponentSet;
 
@@ -228,6 +228,10 @@ private:
         _model = NULL;
     }
 protected:
+
+    /* Component Construction Interface */
+    void constructProperties() override;
+
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!

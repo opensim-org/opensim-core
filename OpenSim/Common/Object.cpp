@@ -48,7 +48,6 @@
 
 using namespace OpenSim;
 using namespace std;
-using SimTK::Xml;
 using SimTK::Vec3;
 using SimTK::Transform;
 
@@ -146,7 +145,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Object:
@@ -155,7 +154,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Object(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -201,8 +200,7 @@ Object::Object(SimTK::Xml::Element& aNode)
  * @return Reference to this object.
  * @see updateXMLNode()
  */
-Object& Object::
-operator=(const Object& source)
+Object& Object::operator=(const Object& source)
 {
     if (&source != this) {
         _name           = source._name;
@@ -225,50 +223,19 @@ operator=(const Object& source)
 /**
  * Set all non-static member variables to their null or default values.
  */
-void Object::
-setNull()
+void Object::setNull()
 {
     _propertySet.clear();
     _propertyTable.clear();
     _objectIsUpToDate = false;
 
-    _name           = "";
-    _description    = "";
-    _authors        = "";
-    _references     = "";
+    _name = "";
+    _description = "";
+    _authors = "";
+    _references = "";
 
-    _document       = NULL;
-    _inlined        = true;
-
-    // In case there are properties allocated at the Object base class level,
-    // they need to be reallocated now. Derived objects will get a chance to
-    // do this later.
-    setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.  This involves both generating
- * the properties and connecting them to the local pointers used to access
- * the serialized member variables.
- */
-void Object::
-setupProperties()
-{
-
-    // CURRENTLY THERE ARE NO SERIALIZED MEMBERS IN Object
-
-}
-
-//_____________________________________________________________________________
-/**
- * Perform any initializations that should occur upon instantiation.
- */
-void Object::
-init()
-{
-
-    // CURRENTLY THERE ARE NO INITIALIZATIONS NEEDED.
-
+    _document = NULL;
+    _inlined = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -277,8 +244,7 @@ init()
 // Compare the base class mundane data members, and the properties. Concrete
 // Objects should override this but they must make sure to invoke the base
 // operator.
-bool Object::
-operator==(const Object& other) const
+bool Object::operator==(const Object& other) const
 {
     if (getConcreteClassName()  != other.getConcreteClassName()) return false;
     if (getName()               != other.getName())         return false;
@@ -460,7 +426,7 @@ getPropertyByName(const std::string& name) const {
 
     throw Exception("Property '" + name + "' not present in Object "
                     + getName());
-    return *p; //NOTREACHED
+    return *p; //NOT REACHED
 }
 
 AbstractProperty& Object::
@@ -478,7 +444,7 @@ updPropertyByName(const std::string& name) {
 
     throw Exception("Property '" + name + "' not present in Object "
                     + getName());
-    return *p; //NOTREACHED
+    return *p; //NOT REACHED
 }
 
 //=============================================================================
@@ -997,7 +963,7 @@ try {
 
     } catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
         throw(ex);
     }
 
@@ -1178,7 +1144,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
             //UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name); BoolArray Handling on Write
             stringValue = "";
             {
-                int n = prop->getArraySize();
+                //int n = prop->getArraySize();
                 const Array<bool> &valueBs = prop->getValueArray<bool>();
                 for (int i=0; i<valueBs.size(); ++i) 
                     stringValue += (valueBs[i]?"true ":"false ");
@@ -1210,7 +1176,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 
         // Obj
         case(Property_Deprecated::Obj) : {
-            PropertyObj *propObj = (PropertyObj*)prop;
+            //PropertyObj *propObj = (PropertyObj*)prop;
             const Object &object = prop->getValueObj();
             object.updateXMLNode(myObjectElement);
             break; }
@@ -1384,7 +1350,7 @@ print(const string &aFileName) const
         updateXMLNode(e);
     } catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
         IO::chDir(savedCwd);
         throw(ex);
     }

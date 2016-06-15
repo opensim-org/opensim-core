@@ -268,7 +268,7 @@ void FiberForceLengthCurve::printMuscleCurveToCSVFile(const std::string& path)
 // NO LONGER IN USE. calcCurvinessOfBestFit fits to Thelen's 2003 paper curve,
 // which is not the best source of data (Winter's in-vivo data is). This routine
 // is very expensive (takes about 0.5 s to complete in Release mode on a fast
-// machine). This computational expense adds up to some very noticable delays
+// machine). This computational expense adds up to some very noticeable delays
 // when used in a model that has 10-100 muscles.
 double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
                                                      double k,    double ftoe,
@@ -289,7 +289,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     double prevErr  = 0;
     double errStart = err;
     double errMin   = 0;
-    double solMin   = 0;
+    // double solMin   = 0;
 
     bool flag_improvement = false;
     bool flag_Newton      = false;

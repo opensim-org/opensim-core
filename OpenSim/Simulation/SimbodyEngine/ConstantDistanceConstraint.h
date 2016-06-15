@@ -23,15 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "Constraint.h"
-#include "Body.h"
 
 namespace OpenSim {
 
@@ -71,7 +65,7 @@ public:
     * Convenience Constructor.
     *
     * @param body1          first PhysicalFrame connected by the constraint
-    * @param locationBody1  point fixed on body1 where the contraint is applied
+    * @param locationBody1  point fixed on body1 where the constraint is applied
     * @param body2          second PhysicalFrame connected by the constraint
     * @param locationBody2: point fixed on body2 where the constraint is applied
     * @param distance       nonzero fixed distance between the points
@@ -84,7 +78,7 @@ public:
     virtual ~ConstantDistanceConstraint();
 
     /** The Physical frames that the constraint is connected to are
-        acessible after connectToModel() has been called on the Model. */
+        accessible after connectToModel() has been called on the Model. */
     const PhysicalFrame& getBody1() const;
     const PhysicalFrame& getBody2() const;
     //SET 

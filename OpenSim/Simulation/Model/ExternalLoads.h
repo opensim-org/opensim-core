@@ -39,15 +39,15 @@ class Model;
 /**
  * A convenience class for managing ExternaForce(s) to be applied to a model.
  * This includes creating instances and manipulating the data source
- * of inividual ExternalForces so that they satsify conditions imposed
+ * of individual ExternalForces so that they satisfy conditions imposed
  * by particular Tools. For example, ForwardTool, CMC/RRA, achieve better
  * tracking (slower divergence) if the ground reaction forces are applied
  * to a point that is expressed in the foot frame according to "ideal"
- * kinematics. ExternalLoads provides convenience methdods to perform this
+ * kinematics. ExternalLoads provides convenience methods to perform this
  * "mapping" which is beyond the scope of an individual ExternalForce, but is
  * too much detail to have each Tool implement.
  *
- * An indiviudal ExternalForce has a property for its data source name, but 
+ * An individual ExternalForce has a property for its data source name, but 
  * under the management of ExternalLoads, the data source identified by
  * ExternalLoads is used to set the data source on each ExternalForce. 
  * If multiple data sources are required for different groups of external forces
@@ -67,7 +67,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ExternalLoads,
 //=============================================================================
 protected:
     /** Data source for all forces in this ExternalLoads, where individual 
-     *  external forces identify which subsets of the data they will acceess.*/
+     *  external forces identify which subsets of the data they will access.*/
     PropertyStr _dataFileNameProp;
     std::string &_dataFileName;
     /** Name of the file containing the model kinematics corresponding to the
@@ -102,7 +102,7 @@ public:
     void copyData(const ExternalLoads &otherExternalLoads);
 
     /** Override of the default implementation to account for versioning. */
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     // Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.

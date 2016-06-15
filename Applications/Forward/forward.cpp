@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     }
 
     /*
-      ISSUE: need to explicitly laod the library osimActuators.
+      ISSUE: need to explicitly load the library osimActuators.
     */
     LoadOpenSimLibrary("osimActuators");
 
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
     ForwardTool forward(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = forward.getModel();
+    // Model& model = forward.getModel();
 
     cout<<"-----------------------------------------------------------------------"<<endl;
 

@@ -170,9 +170,9 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
     Array<string> groupNames;
     modelForces.getGroupNames(groupNames);
 
-    /* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
+    /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
     for(int i=0; i<forcesByNameOrGroup.getSize(); i++){
-        //Check for kewords first starting with ALL
+        //Check for keywords first starting with ALL
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ALL"){
             for(int i=0; i<modelForces.getSize(); i++){
                 modelForces[i].setDisabled(s, true);
@@ -228,17 +228,18 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpretted 
+    // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
     try {
         _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        aModel.finalizeFromProperties();
     }
      catch (const Exception& ex) {
         // Important to catch exceptions here so we can restore current working directory...
-        // And then we can rethrow the exception
+        // And then we can re-throw the exception
          cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
              << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
         if(getDocument()) IO::chDir(savedCwd);
@@ -251,7 +252,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     
     const Storage *loadKinematicsForPointTransformation = NULL;
     
-    //If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
+    //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
         loadKinematicsForPointTransformation = loadKinematics;
     }

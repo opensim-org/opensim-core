@@ -45,7 +45,7 @@ public:
     CompoundFunction(const SimTK::Function *cf, double scale) : f1(cf), scale(scale) {
     }
 
-    double calcValue(const SimTK::Vector& x) const {
+    double calcValue(const SimTK::Vector& x) const override {
         SimTK::Vector xf(1);
         xf[0] = x[0];
         return scale*f1->calcValue(xf)-x[1];
@@ -55,7 +55,7 @@ public:
         return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x); 
     }
 
-    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const {
+    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const override {
         if (derivComponents.size() == 1){
             if (derivComponents[0]==0){
                 SimTK::Vector x1(1);
@@ -75,10 +75,10 @@ public:
         return 0;
     }
 
-    int getArgumentSize() const {
+    int getArgumentSize() const override {
         return 2;
     }
-    int getMaxDerivativeOrder() const {
+    int getMaxDerivativeOrder() const override {
         return 2;
     }
 
@@ -258,7 +258,7 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
         double scaleFactor = 1.0;
         // Get appropriate scale factors from parent body
         Vec3 bodyScaleFactors(1.0); 
-        const string& parentName = depCoordinate.getJoint().getParentFrameName();
+        const string& parentName = depCoordinate.getJoint().getParentFrame().getName();
 
         // Cycle through the scale set to get the appropriate factors
         for (int i=0; i<aScaleSet.getSize(); i++) {
@@ -275,15 +275,10 @@ void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
         // We can handle non-uniform scaling along transform axes of custom joints ONLY at this time
         const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
         // Simplifies things if we have uniform scaling so check first
-        // TODO: Non-uniform scaling below has not been exercised! - ASeth
+
         if(joint) {
             if (bodyScaleFactors[0] != bodyScaleFactors[1] ||  bodyScaleFactors[0] != bodyScaleFactors[2] ) {
-                // Get the coordinate axis defined on the parent body
-                const Vec3& xyzEuler = joint->getOrientationInParent();
-                Rotation orientInParent(BodyRotationSequence,xyzEuler[0],XAxis,xyzEuler[1],YAxis,xyzEuler[2],ZAxis);
-
-                Vec3 axis;
-
+                // TODO: Non-uniform scaling remains undefined! - ASeth
                 throw(Exception("Non-uniform scaling of CoordinateCoupler constraints not implemented."));
             }
         }

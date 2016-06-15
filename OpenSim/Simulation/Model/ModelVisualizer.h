@@ -50,7 +50,7 @@ public:
         _dispContactResolution = 2.0;
     }
      void generateDecorations(const SimTK::State& state, 
-                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
+                             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
     double getDispMarkerOpacity() {return _dispMarkerOpacity;}
@@ -187,10 +187,10 @@ public:
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
-    bool findGeometryFile(const Model& model,
-                          const std::string&          geoFile,
-                          bool&                       isAbsolute,
-                          SimTK::Array_<std::string>& attempts) const;
+    static bool findGeometryFile(const Model& model,
+                            const std::string&          geoFile,
+                            bool&                       isAbsolute,
+                            SimTK::Array_<std::string>& attempts);
     /**@}**/
 
 

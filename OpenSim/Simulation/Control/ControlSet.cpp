@@ -970,7 +970,7 @@ constructStorage(int aN,double aT1,double aT2,bool aForModelControls)
 /**
  * Map a control-set parameter to a control.
  *
- * In the control set, the paramters for each of the controls are
+ * In the control set, the parameters for each of the controls are
  * concatenated into an array.  Since there is not a one-to-one
  * correspondence between control-set parameters and controls (i.e., a
  * particular control may have many parameters), it is necessary
@@ -994,7 +994,7 @@ mapParameterToControl(int aIndex) const
 /**
  * Map a control-set parameter to a parameter of a particular control.
  *
- * In the control set, the paramters for each of the controls are
+ * In the control set, the parameters for each of the controls are
  * concatenated into an array.  Since there is not a one-to-one
  * correspondence between control-set parameters and controls (i.e., a
  * particular control may have many parameters), it is necessary
@@ -1016,7 +1016,7 @@ mapParameterToParameter(int aIndex) const
 }
 //_____________________________________________________________________________
 /**
- * Generate the maps relating a parmeter in the control set to a control
+ * Generate the maps relating a parameter in the control set to a control
  * and a parameter of a control.
  *
  * This method should be called any time there is a change in the number or
@@ -1062,9 +1062,8 @@ ControlSet::ExtractControl(const Storage& storage,int index)
 
     // VALUE
     int nValues = nTimes;
-    int rValue;
     double *values = NULL;
-    rValue = storage.getDataColumn(index,values);
+    storage.getDataColumn(index,values);
 
     // CONSTRUCT LINEAR CONTROL NODE
     ControlLinear *control = new ControlLinear;

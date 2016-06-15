@@ -125,34 +125,11 @@ int main(int argc,char **argv)
 
 
     try {
-        // Construct model and read parameters file
-        ScaleTool* subject = new ScaleTool(inName);
-        Model* model = subject->createModel();
-
-        if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
-
-        if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
-        {
-            ModelScaler& scaler = subject->getModelScaler();
-            if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
-        }
-        else
-        {
-            cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
-        }
-        
-        if (!subject->isDefaultMarkerPlacer())
-        {
-            MarkerPlacer& placer = subject->getMarkerPlacer();
-            if(!placer.processModel(model, subject->getPathToSubject())) return 1;
-        }
-        else
-        {
-            cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
-        }
-
-        delete model;
-        delete subject;
+        // Run the tool.
+        std::unique_ptr<ScaleTool> subject(new ScaleTool(inName));
+        const bool success = subject->run();
+        if (success) return EXIT_SUCCESS;
+        else return EXIT_FAILURE;
     }
     catch(const Exception& x) {
         x.print(cout);

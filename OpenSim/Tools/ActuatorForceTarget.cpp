@@ -49,7 +49,7 @@ using SimTK::Matrix;
 #define USE_LAPACK_DIRECT_SOLVE
 
 //==============================================================================
-// DESTRUCTOR & CONSTRUCTIOR(S)
+// DESTRUCTOR & CONSTRUCTOR(S)
 //==============================================================================
 //______________________________________________________________________________
 /**
@@ -127,9 +127,9 @@ prepareToOptimize(SimTK::State& s, double *x)
     // in cases where we're tracking states
     _saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
-    int nu = _controller->getModel().getNumSpeeds();
+    // int nu = _controller->getModel().getNumSpeeds();
     int nf = _controller->getActuatorSet().getSize();
-    int ny = _controller->getModel().getNumStateVariables();
+    // int ny = _controller->getModel().getNumStateVariables();
     int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
     _accelPerformanceMatrix.resize(nacc,nf);

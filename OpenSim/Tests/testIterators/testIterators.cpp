@@ -42,7 +42,7 @@ public:
     ~ComponentWithStateVariables() {
         //std::cout << "ComponentWithStateVariables destructed" << std::endl;
     }
-    ComponentWithStateVariables* clone() const {
+    ComponentWithStateVariables* clone() const override {
         return new ComponentWithStateVariables(*this);
     }
 };
@@ -54,14 +54,15 @@ int main()
         std::string filename = "arm26.osim";
 
         Model model(filename);
-        model.initSystem();
+        model.dumpSubcomponents();
+
         ComponentList<Component> componentsList = model.getComponentList();
         std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
         int numComponents = 0;
         for (ComponentList<Component>::const_iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
-                std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+                std::cout << "Iterator is at: " << it->getFullPathName() << " <" << it->getConcreteClassName() << ">" << std::endl;
                 numComponents++;
         }
         
@@ -95,17 +96,18 @@ int main()
         int numGeomPaths = 0;
         ComponentList<GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
         for (const GeometryPath& gpath : geomPathList) {
+            (void)gpath; // Suppress unused variable warning.
             numGeomPaths++;
         }
         const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);
-        // cycle thru components under shoulderJnt should return the Joint itself and the Coordinate
+        // cycle through components under shoulderJnt should return the Joint itself and the Coordinate
         int numJntComponents = 0;
         ComponentList<Component> jComponentsList = shoulderJnt.getComponentList();
         std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
         for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
             it != jComponentsList.end();
             ++it) {
-            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getName() << std::endl;
+            std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getFullPathName() << std::endl;
             numJntComponents++;
         }
         cout << "Num all components = " << numComponents << std::endl;
@@ -115,39 +117,51 @@ int main()
         // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
         // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
         // Would that account for internal (split-bodies etc.?)
+
+        // To test states we must have added the components to the system
+        // which is done when the model creates and initializes the system
+        SimTK::State state = model.initSystem();
+
         int numJointsWithStateVariables = 0;
         ComponentList<Joint> jointsWithStates = model.getComponentList<Joint>();
         ComponentWithStateVariables myFilter;
         jointsWithStates.setFilter(myFilter); 
         for (const Joint& comp : jointsWithStates) {
-            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
             numJointsWithStateVariables++;
         }
         int numModelComponentsWithStateVariables = 0;
         ComponentList<ModelComponent> comps = model.getComponentList<ModelComponent>();
         comps.setFilter(myFilter);
         for (const ModelComponent& comp : comps) {
-            cout << comp.getConcreteClassName() << ":" << comp.getName() << endl;
+            cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
             numModelComponentsWithStateVariables++;
         }
         //Now test a std::iterator method
-        ComponentList<ModelComponent> allModelComps = model.getComponentList<ModelComponent>();
-        ComponentList<ModelComponent>::const_iterator skipIter = allModelComps.begin();
-        int countSkipComponent = 0;
-        while (skipIter != allModelComps.end()){
-            cout << skipIter->getConcreteClassName() << ":" << skipIter->getName() << endl;
+        ComponentList<Frame> allFrames = model.getComponentList<Frame>();
+        ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
+        int countSkipFrames = 0;
+        while (skipIter != allFrames.end()){
+            cout << skipIter->getConcreteClassName() << ":" << skipIter->getFullPathName() << endl;
             std::advance(skipIter, 2);
-            countSkipComponent++;
+            countSkipFrames++;
         }
 
-        ASSERT(numComponents == 73); 
+        // TODO: Hard-coding these numbers is not ideal. As we introduce more components
+        // to recompose existing components, this will need continual updating. For example,
+        // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
+        // and orientation offsets.
+        ASSERT(numComponents == 134); 
         ASSERT(numBodies == model.getNumBodies());
         ASSERT(numBodiesPost == numBodies);
         ASSERT(numMuscles == model.getMuscles().getSize());
         ASSERT(numJointsWithStateVariables == 2);
         ASSERT(numModelComponentsWithStateVariables == 10);
-        ASSERT(numJntComponents == 1);
-        ASSERT(countSkipComponent == 17);
+        // Below updated from 1 to 3 to account for offset frame and its geometry added to the Joint
+        ASSERT(numJntComponents == 3);
+        // Test using the iterator to skip over every other Component (Frame in this case)
+        // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
+        ASSERT(countSkipFrames == 3);
     }
     catch (Exception &ex) {
         ex.print(std::cout);

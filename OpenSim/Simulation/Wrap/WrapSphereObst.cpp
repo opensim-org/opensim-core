@@ -95,9 +95,6 @@ void WrapSphereObst::setNull()
 */
 void WrapSphereObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
-
     _radiusProp.setName("radius");
     _radiusProp.setValue(-1.0);
     _propertySet.append(&_radiusProp);
@@ -139,9 +136,6 @@ void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 void WrapSphereObst::copyData(const WrapSphereObst& aWrapSphereObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphereObst);
-
     _radius = aWrapSphereObst._radius;
     _length = aWrapSphereObst._length;
 }
@@ -221,14 +215,14 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     SimTK::Vec3 aXvec = aPointP;                aXvec = aXvec.normalize();  // X = P
     SimTK::Vec3 aZvec = aPointP % aPointS;
     if(aZvec.norm()<=1.e-7) {
-        printf("WrapSphereObst: P and S are colinear with sphere center (no unique solution)\n");
+        printf("WrapSphereObst: P and S are collinear with sphere center (no unique solution)\n");
         return insideRadius;
     }                                           aZvec = aZvec.normalize();  // Z = P x S
     SimTK::Vec3 aYvec = aZvec % aXvec;          aYvec = aYvec.normalize();  // Y = Z x X
     
     // Compute displacements of P and S from sphere center within wrap coordinate system
-    double Px=aPointP.norm(), Py=0.0, Pz=0.0,               dP=Px*Px+Py*Py,  rootP=dP-R*R;
-    double Sx=~aPointS*aXvec, Sy=~aPointS*aYvec, Sz=0.0,    dS=Sx*Sx+Sy*Sy,  rootS=dS-R*R;
+    double Px=aPointP.norm(), Py=0.0, /*Pz=0.0,*/               dP=Px*Px+Py*Py,  rootP=dP-R*R;
+    double Sx=~aPointS*aXvec, Sy=~aPointS*aYvec, /*Sz=0.0,*/    dS=Sx*Sx+Sy*Sy,  rootS=dS-R*R;
 
     // Check P and S against sphere, and compute x and y components of wrap points Q and T
     if( rootP<0.0 || rootS<0.0 ) return insideRadius;   // One of P or S lies within the sphere
@@ -240,8 +234,8 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
     if( R*(Qx*Ty-Qy*Tx) < 0.0 ) return noWrap;
 
     // Compute respective wrapping segment lengths
-    double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
-    double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
+    //double PQ = sqrt( (Qx-Px)*(Qx-Px) + (Qy-Py)*(Qy-Py) );
+    //double TS = sqrt( (Tx-Sx)*(Tx-Sx) + (Ty-Sy)*(Ty-Sy) );
     double QT = R*acos( 1.0 - 0.5*( (Qx-Tx)*(Qx-Tx) + (Qy-Ty)*(Qy-Ty) )/(R*R) );
     if(QT<0.0) QT=-QT;
     

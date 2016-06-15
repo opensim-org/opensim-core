@@ -66,9 +66,9 @@ Analysis(aModel),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     // NULL
     setNull();
@@ -102,9 +102,9 @@ Analysis(aFileName, false),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -121,7 +121,7 @@ _pointName(_pointNameProp.getValueStr())
     */
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -132,9 +132,9 @@ Analysis(aPointKinematics),
 _body(aPointKinematics._body),
 _relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -500,7 +500,7 @@ getPositionStorage()
  * Set the capacity increments of all storage instances.
  *
  * @param aIncrement Increment by which storage capacities will be increased
- * when storage capcities run out.
+ * when storage capacities run out.
  */
 void PointKinematics::
 setStorageCapacityIncrements(int aIncrement)
@@ -561,9 +561,9 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -594,7 +594,7 @@ begin( SimTK::State& s)
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -619,7 +619,7 @@ step(const SimTK::State& s, int stepNumber)
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *

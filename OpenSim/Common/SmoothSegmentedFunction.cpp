@@ -32,7 +32,7 @@ using namespace SimTK;
 using namespace OpenSim;
 using namespace std;
 
-static bool DEBUG=false;
+//static bool DEBUG=false;
 static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
@@ -79,7 +79,7 @@ static int NUM_SAMPLE_PTS = 100;
        Spline cost      m*100*(?    ?       ?     ?         ? )
 
        Total:           ~typically > 100,000's mult, additions, assignments
-                                   > 40,000 comparisions 
+                                   > 40,000 comparisons 
                                    > 3000 divisions
 
        =========================================================================

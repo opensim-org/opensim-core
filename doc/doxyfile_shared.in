@@ -539,7 +539,7 @@ GENERATE_DEPRECATEDLIST= YES
 # documentation can be controlled using \showinitializer or \hideinitializer 
 # command in the documentation regardless of this setting.
 
-MAX_INITIALIZER_LINES  = 30
+MAX_INITIALIZER_LINES  = 1
 
 # Set the SHOW_USED_FILES tag to NO to disable the list of files generated 
 # at the bottom of the documentation of classes and structs. If set to YES the 
@@ -747,7 +747,8 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Wrap/* \
                          */Utilities/* \
                          */Models/* \
-                         */Applications/*
+                         */Applications/* \
+                         */Sandbox/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -1562,6 +1563,12 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
+                         OpenSim_DECLARE_OUTPUT \
+                         OpenSim_DECLARE_LIST_OUTPUT \
+                         OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \
+                         OpenSim_DECLARE_INPUT \
+                         OpenSim_DECLARE_LIST_INPUT \
+                         SWIG_DECLARE_EXCEPTION
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then 
 # doxygen's preprocessor will remove all references to function-like macros 

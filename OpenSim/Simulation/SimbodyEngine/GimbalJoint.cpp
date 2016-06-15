@@ -36,49 +36,12 @@ using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-GimbalJoint::~GimbalJoint()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-GimbalJoint::GimbalJoint() : Joint()
-{
-    setAuthors("Tim Dorn, Ajay Seth");
-    constructCoordinates();
-}
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-GimbalJoint::GimbalJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-            Joint(name, parent, locationInParent,orientationInParent,
-                    child, locationInChild, orientationInChild, reverse)
-{
-    setAuthors("Tim Dorn, Ajay Seth");
-    constructCoordinates();
-}
-
-//=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
 void GimbalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Gimbal>(system);
 }
 
@@ -98,7 +61,7 @@ void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 
-    GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
+    //GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
 

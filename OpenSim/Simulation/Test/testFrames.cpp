@@ -28,7 +28,6 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
-    5. Station on a PhysicalFrame computations 
       
      Add tests here as Frames are added to OpenSim
 
@@ -46,7 +45,6 @@ void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
-void testStationOnFrame();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -92,11 +90,6 @@ int main()
         failures.push_back("testFilterByFrameType");
     }
 
-    try { testStationOnFrame(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; failures.push_back("testStationOnFrame");
-    }
-
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -113,13 +106,13 @@ int main()
 
 void testBody()
 {
-    cout << "Running testBody" << endl;
+    cout << "\nRunning testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     SimTK::State& s = pendulum->initSystem();
 
-    const SimTK::DefaultSystemSubsystem& dsys =
+    /*const SimTK::DefaultSystemSubsystem& dsys =*/
         pendulum->getSystem().getDefaultSubsystem();
 
     std::clock_t now = std::clock();
@@ -132,11 +125,11 @@ void testBody()
         const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
         coord.setValue(s, radAngle);
 
-        const SimTK::Transform& xform = rod1.getGroundTransform(s);
+        const SimTK::Transform& xform = rod1.getTransformInGround(s);
 
         now = std::clock();
         for (int i = 0; i < 1000; ++i){
-            const SimTK::Transform& xform1 = rod1.getGroundTransform(s);
+            /*const SimTK::Transform& xform1 = */rod1.getTransformInGround(s);
         }
         after = std::clock();
         lookup_time += (after-now);
@@ -146,7 +139,7 @@ void testBody()
         ASSERT_EQUAL(p_known, xform.p(), SimTK::Vec3(SimTK::Eps),
             __FILE__, __LINE__,
             "testBody(): incorrect rod1 location in ground.");
-        // The rotation part is a pure bodyfixed Z-rotation by radAngle.
+        // The rotation part is a pure body-fixed Z-rotation by radAngle.
         SimTK::Vec3 angles = xform.R().convertRotationToBodyFixedXYZ();
         SimTK::Vec3 angs_known(0, 0, radAngle);
         ASSERT_EQUAL(angs_known, angles, SimTK::Vec3(SimTK::Eps), 
@@ -160,7 +153,7 @@ void testPhysicalOffsetFrameOnBody()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testOffsetFrameOnBody" << endl;
+    cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -176,8 +169,8 @@ void testPhysicalOffsetFrameOnBody()
     pendulum->addFrame(offsetFrame);
 
     SimTK::State& s = pendulum->initSystem();
-    const SimTK::Transform& X_GR = rod1.getGroundTransform(s);
-    const SimTK::Transform& X_GO = offsetFrame->getGroundTransform(s);
+    const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
+    const SimTK::Transform& X_GO = offsetFrame->getTransformInGround(s);
 
     // Compute the offset transform based on frames expressed in ground
     SimTK::Transform X_RO_2 = ~X_GR*X_GO;
@@ -234,7 +227,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     
@@ -249,6 +242,11 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
+    // Hack since clone does not copy internal ownership (parent) references
+    // TODO: should be removed when Component cloning preserves ownership
+    // relationships.
+    secondFrame->finalizeFromProperties();
+
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));
@@ -261,8 +259,8 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     const Frame& base = secondFrame->findBaseFrame();
     SimTK::Transform XinBase = secondFrame->findTransformInBaseFrame();
 
-    const SimTK::Transform& X_GR = rod1.getGroundTransform(s);
-    const SimTK::Transform& X_GO = secondFrame->getGroundTransform(s);
+    const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
+    const SimTK::Transform& X_GO = secondFrame->getTransformInGround(s);
 
     SimTK::Vec3 angs_known = XinBase.R().convertRotationToBodyFixedXYZ();
 
@@ -297,7 +295,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPhysicalOffsetFrameOnBodySerialize" << endl;
+    cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -310,7 +308,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
     pendulum->addFrame(offsetFrame);
 
     SimTK::State& s1 = pendulum->initSystem();
-    const SimTK::Transform& X_GO_1 = offsetFrame->getGroundTransform(s1);
+    const SimTK::Transform& X_GO_1 = offsetFrame->getTransformInGround(s1);
     pendulum->print("double_pendulum_extraFrame.osim");
     // now read the model from file
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
@@ -321,7 +319,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
         dynamic_cast<const PhysicalFrame&>(pendulumWFrame->getComponent("myExtraFrame"));
     ASSERT(*offsetFrame == myExtraFrame);
 
-    const SimTK::Transform& X_GO_2 = myExtraFrame.getGroundTransform(s2);
+    const SimTK::Transform& X_GO_2 = myExtraFrame.getTransformInGround(s2);
     ASSERT_EQUAL(X_GO_2.p(), X_GO_1.p(), tolerance, __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect expression of offset in ground.");
     ASSERT_EQUAL(X_GO_2.R().convertRotationToBodyFixedXYZ(), 
@@ -349,7 +347,6 @@ void testFilterByFrameType()
 
     // add OffsetFrame to the model
     pendulumWFrame->addFrame(anOffset);
-    pendulumWFrame->initSystem();
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
@@ -357,8 +354,9 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(7, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 7 Frames in the model.");
+
+    ASSERT_EQUAL(9, i, 0, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 9 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -366,7 +364,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(6, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(8, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find 6 PhysicalFrames.");
 
     i = 0;
@@ -387,40 +385,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(3, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
-}
-
-
-void testStationOnFrame()
-{
-    SimTK::Vec3 tolerance(SimTK::Eps);
-
-    cout << "Running testStationOnFrame" << endl;
-
-    Model* pendulum = new Model("double_pendulum.osim");
-    // Get "rod1" frame
-    const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
-    const SimTK::Vec3& com = rod1.get_mass_center();
-    // Create station aligned with rod1 com in rod1_frame
-    Station* myStation = new Station();
-    myStation->set_location(com);
-    myStation->updConnector<PhysicalFrame>("reference_frame")
-        .set_connectee_name("rod1");
-    pendulum->addModelComponent(myStation);
-    // myStation should coinicde with com location of rod1 in ground
-    SimTK::State& s = pendulum->initSystem();
-    for (double ang = 0; ang <= 90.0; ang += 10.){
-        double radAngle = SimTK::convertDegreesToRadians(ang);
-        const Coordinate& coord = pendulum->getCoordinateSet().get("q1");
-        coord.setValue(s, radAngle);
-
-        SimTK::Vec3 comInGround = 
-            myStation->findLocationInFrame(s, pendulum->getGround());
-        SimTK::Vec3 comBySimbody = 
-            rod1.getMobilizedBody().findStationLocationInGround(s, com);
-        ASSERT_EQUAL(comInGround, comBySimbody, tolerance, __FILE__, __LINE__,
-            "testStationOnFrame(): failed to resolve station position in ground.");
-    }
 }
 

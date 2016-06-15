@@ -144,13 +144,9 @@ void PathActuator::addNewPathPoint(
          const std::string& proposedName, 
          PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
-    // Create new PathPoint
+    // Create new PathPoint already appended to the PathPointSet for the path
     PathPoint* newPathPoint = updGeometryPath()
         .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
-    // Set offset/position on owner body
-    newPathPoint->setName(proposedName);
-    for (int i=0; i<3; i++) // Use interface that does not depend on state
-        newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
 }
 
 //=============================================================================
@@ -163,9 +159,6 @@ void PathActuator::addNewPathPoint(
  */
 double PathActuator::computeActuation( const SimTK::State& s ) const
 {
-    if(!_model)
-        return 0.0;
-
     // FORCE
     return( getControl(s) * get_optimal_force() );
 }
@@ -189,12 +182,12 @@ void PathActuator::computeForce( const SimTK::State& s,
     // compute path's lengthening speed if necessary
     double speed = path.getLengtheningSpeed(s);
 
-    // the lengthening speed of this actutor is the "speed" of the actuator 
+    // the lengthening speed of this actuator is the "speed" of the actuator 
     // used to compute power
     setSpeed(s, speed);
 
     double force =0;
-    if( isActuationOverriden(s) ) {
+    if( isActuationOverridden(s) ) {
         force = computeOverrideActuation(s);
     } else {
         force = computeActuation(s);
@@ -227,9 +220,6 @@ void PathActuator::extendFinalizeFromProperties()
 {
     GeometryPath &path = updGeometryPath();
 
-    clearComponents();
-    addComponent(&path);
-
     // Set owner here in case errors happen later so we can put useful message about responsible party.
     path.setOwner(this);
 
@@ -244,9 +234,9 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 {
     Super::extendRealizeDynamics(state); // Mandatory first line
 
-    // if this force is disabled OR it is being overidden (not computing dynamics)
+    // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverriden(state)){
+    if (!isDisabled(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);
@@ -266,26 +256,6 @@ SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
 }
 
-
-//=============================================================================
-// XML
-//=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- *
- * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
- * a few methods in this class to ensure that variable members have been
- * set in a consistent manner.
- */
-void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    updGeometryPath().setOwner(this);
-    Super::updateFromXMLNode(aNode, versionNumber);
-}   
 
 //=============================================================================
 // SCALING

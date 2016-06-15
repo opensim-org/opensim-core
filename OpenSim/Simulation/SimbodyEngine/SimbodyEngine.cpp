@@ -346,19 +346,19 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
 void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForces, Vector_<Vec3>& rTorques) const
 {
     // get the number of mobilized bodies in the underlying SimbodyMatterSubsystem
-    int nmb = _model->getMatterSubsystem().getNumBodies();
+    //int nmb = _model->getMatterSubsystem().getNumBodies();
     
     // get the number of bodies in the OpenSim model
     int nj = _model->getNumJoints();
 
-    int nf = rForces.size();
-    int ntorq = rTorques.size();
+    //int nf = rForces.size();
+    //int ntorq = rTorques.size();
 
     // there may be more mobilized bodies than joint exposed in the OpenSim model
     // since joints and other components may use (massless) bodies internally
-    assert(nmb >= nj);
-    assert(nj == nf);
-    assert(nf == ntorq);
+    assert(_model->getMatterSubsystem().getNumBodies() >= nj);
+    assert(nj == rForces.size());
+    assert(rForces.size() == rTorques.size());
 
     SimTK::Vector_<SpatialVec> reactionForces(nj);
 
@@ -480,7 +480,7 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
  */
 void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const
 {
-    const Body* bFrom = (const Body*)&aBodyFrom;
+    //const Body* bFrom = (const Body*)&aBodyFrom;
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
     // the output vector.
@@ -792,7 +792,7 @@ bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFi
  * for deleting the memory associated with this storage.
  * @param rUComplete Storage containing all the u's.  The generalized speeds
  * are obtained by spline fitting the q's and differentiating the splines.
- * When a u is constrained, its value is altered to be consisten with the
+ * When a u is constrained, its value is altered to be consistent with the
  * constraint.  The caller is responsible for deleting the memory
  * associated with this storage.
  */
@@ -944,8 +944,50 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
         if (index >= 0){
             const Coordinate& coord = coordinateSet.get(index);
             if (coord.getMotionType() == Coordinate::Rotational) {
-                // assumes first data colum is 0 whereas labels has time as 0
+                // assumes first data column is 0 whereas labels has time as 0
                 rStorage.multiplyColumn(i-1, factor);
+            }
+        }
+    }
+}
+
+void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
+                                              double factor) const {
+    int ncols = table.getNumColumns();
+    if(ncols == 0)
+        throw Exception("SimbodyEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",
+                             __FILE__,__LINE__);
+
+    // Loop through the coordinates in the model. For each one that is rotational,
+    // see if it has a corresponding column of data. If it does, multiply that
+    // column by the given scaling factor.
+    std::string shortName = "";
+    std::string prefix = "";
+    int index = -1;
+    const CoordinateSet& coordinateSet = _model->getCoordinateSet();
+    
+    // first column is time, so skip
+    for (int i = 0; i < ncols; i++) {
+        const std::string& name = table.getColumnLabel(i);
+        index = coordinateSet.getIndex(name);
+        if (index < 0){
+            std::string::size_type back = name.rfind("/");
+            prefix = name.substr(0, back);
+            shortName = name.substr(back+1, name.length()-back);
+            index = coordinateSet.getIndex(shortName);
+            // This is a necessary hack to use new component naming,
+            // but SimbodyEngine will be deprecated and so will this code- aseth
+            if (index < 0){ // could be a speed then trim off _u
+                back = prefix.rfind("/");
+                shortName = prefix.substr(back+1, prefix.length()-back);
+                index = coordinateSet.getIndex(shortName);
+            }
+        }
+        if (index >= 0){
+            const Coordinate& coord = coordinateSet.get(index);
+            if (coord.getMotionType() == Coordinate::Rotational) {
+                // assumes first data column is 0 whereas labels has time as 0
+                table.updDependentColumnAtIndex(i) *= SimTK_RADIAN_TO_DEGREE;
             }
         }
     }
@@ -978,6 +1020,17 @@ void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
     scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
     rStorage.setInDegrees(true);
 }
+
+void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
+    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "yes",
+                     Exception,
+                     "Columns of the table provided are already in degrees.");
+
+    scaleRotationalDofColumns(table, SimTK_RADIAN_TO_DEGREE);
+    table.removeTableMetaDataKey("inDegrees");
+    table.addTableMetaData("inDegrees", std::string{"yes"});
+}
+
 //_____________________________________________________________________________
 /**
  * Convert an array of Q/U values from degrees to radians. The sizes of the

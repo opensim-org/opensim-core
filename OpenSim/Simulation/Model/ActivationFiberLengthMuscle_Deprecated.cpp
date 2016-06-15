@@ -89,7 +89,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
 //_____________________________________________________________________________
 /**
- * allocate and initialize the SimTK state for this acuator.
+ * allocate and initialize the SimTK state for this actuator.
  */
  void ActivationFiberLengthMuscle_Deprecated::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -396,7 +396,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 {
     Super::computeForce(s, bodyForces, generalizedForces);
 
-    if (isActuationOverriden(s)) {
+    if (isActuationOverridden(s)) {
         // Also define the state derivatives, since realize acceleration will
         // ask for muscle derivatives, which will be integrated
         // in the case the force is being overridden, the states aren't being used
@@ -417,7 +417,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
  */
 void ActivationFiberLengthMuscle_Deprecated::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
-    double force = computeIsometricForce(s, getActivation(s));
+    /*double force = */computeIsometricForce(s, getActivation(s));
 
     //cout<<getName()<<": isometric force = "<<force<<endl;
     //cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
@@ -433,7 +433,7 @@ double ActivationFiberLengthMuscle_Deprecated::
     const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
     const double &maxContractionVelocity = get_max_contraction_velocity();
 
-    double normalizedLength = getFiberLength(s) / optimalFiberLength;
+    //double normalizedLength = getFiberLength(s) / optimalFiberLength;
     double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
     double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
@@ -441,7 +441,7 @@ double ActivationFiberLengthMuscle_Deprecated::
 }
 
 //==============================================================================
-// GENERIC NORMALIZED FORCE-LENGTH-VELOCIY PROPERTIES
+// GENERIC NORMALIZED FORCE-LENGTH-VELOCITY PROPERTIES
 //==============================================================================
 //_____________________________________________________________________________
 /**

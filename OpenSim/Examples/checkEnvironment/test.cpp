@@ -54,9 +54,9 @@ int main()
         Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
-        ground.addMeshGeometry("ground.vtp");
-        ground.addMeshGeometry("anchor1.vtp");
-        ground.addMeshGeometry("anchor2.vtp");
+        ground.attachMeshGeometry("ground.vtp");
+        ground.attachMeshGeometry("anchor1.vtp");
+        ground.attachMeshGeometry("anchor2.vtp");
 
         // BLOCK BODY
 
@@ -69,8 +69,7 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->addGeometry(brick);
+        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // FREE JOINT
 
@@ -124,7 +123,7 @@ int main()
         ///////////////////////////////////////
 
         // GRAVITY
-        // Obtaine the default acceleration due to gravity
+        // Obtain the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
     
 
@@ -149,8 +148,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function
@@ -180,7 +178,7 @@ int main()
         // muscle2 control has slope of 0.95 starting 0.05 at t = 0
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
         
-        // Set the indiviudal muscle control functions for the prescribed muscle controller
+        // Set the individual muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 
@@ -225,8 +223,8 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        double mfv1 = muscle1->getFiberVelocity(si);
-        double mfv2 = muscle2->getFiberVelocity(si);
+        // double mfv1 = muscle1->getFiberVelocity(si);
+        // double mfv2 = muscle2->getFiberVelocity(si);
 
         // Create the force reporter for obtaining the forces applied to the model
         // during a forward simulation

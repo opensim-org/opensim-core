@@ -107,9 +107,9 @@ public:
 #ifndef SWIG
     MovingPathPoint& operator=(const MovingPathPoint &aPoint);
 #endif
-   void copyData(const MovingPathPoint &aPoint);
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
-    virtual void init(const PathPoint& aPoint);
+    void copyData(const MovingPathPoint &aPoint);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+    void init(const PathPoint& aPoint) override;
 
     const Coordinate* getXCoordinate() const { return _xCoordinate; }
     const Coordinate* getYCoordinate() const { return _yCoordinate; }
@@ -121,7 +121,7 @@ public:
 
     // Override methods from PathPoint.
     bool isActive(const SimTK::State& s) const override { return true; }
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+    void connectToModelAndPath(Model& aModel, GeometryPath& aPath) 
                                                                 override;
     void update(const SimTK::State& s) override;
     void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
@@ -139,7 +139,7 @@ public:
     void setYFunction( const SimTK::State& s, Function& aFunction);
     void setZFunction( const SimTK::State& s, Function& aFunction);
 #endif
-   virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
+   void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors) override;
 
 private:
     void setNull();

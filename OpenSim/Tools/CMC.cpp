@@ -71,13 +71,13 @@ public:
         _controller( controller ) {
     }
 
-    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const {
+    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const override {
         terminate = false;
         _controller->computeControls( s, _controller->updControlSet() );
         _controller->setTargetTime(s.getTime() + _controller->getTargetDT());
     }
 
-    Real getNextEventTime( const State& s, bool includeCurrent) const {
+    Real getNextEventTime( const State& s, bool includeCurrent) const override {
 
         if( _controller->getCheckTargetTime() ) {
             return( _controller->getTargetTime() );
@@ -98,9 +98,9 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
-    _f(0.0),
-    _controlSet()
+    _controlSet(),
+    _paramList(-1),
+    _f(0.0)
 {
     setNull();
     setupProperties();
@@ -120,7 +120,7 @@ CMC::CMC(const CMC &aController) :
 
 //_____________________________________________________________________________
 /**
- * Contructor
+ * Constructor
  *
  * @param aModel Model that is to be controlled.
  * @param aTaskSet Set of tracking tasks.
@@ -348,7 +348,7 @@ getDT() const
  * target time of the controller.  If an integrator is taking time steps
  * prior to the target time, the controls should not have to be computed again.
  *
- * @param aTargetTime Time in the furture for which the controls have been
+ * @param aTargetTime Time in the future for which the controls have been
  * computed.
  * @see getCheckTargetTime()
  */
@@ -365,7 +365,7 @@ setTargetTime(double aTargetTime)
  * calculated.  If an integrator is taking time steps prior to the target
  * time, the controls should not have to be computed again.
  *
- * @return Time in the furture for which the controls have been
+ * @return Time in the future for which the controls have been
  * computed.
  * @see getCheckTargetTime()
  */
@@ -509,7 +509,7 @@ getStressTermWeightStorage() const
  *
  * The caller should send in an initial guess.  The Qs and Us are set
  * based on the desired trajectories.  The actuator states are set by
- * sovling for a desired set of actuator forces, and then letting the states
+ * solving for a desired set of actuator forces, and then letting the states
  * come to equilibrium for those forces.
  *
  * @param rTI Initial time in normalized time.  Note this is changed to
@@ -758,7 +758,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         cout<<"\nUCorrections:"<<uCorrection << endl;
     }
 
-    // reailize to Veclocity because some tasks (eg. CMC_Point) need to be
+    // realize to Velocity because some tasks (eg. CMC_Point) need to be
     // at velocity to compute errors
     _model->getMultibodySystem().realize(s, Stage::Velocity );
 
@@ -1024,8 +1024,8 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     Array<double> x0(0.0,size),x1(0.0,size),x2(0.0,size);
 
     // SET TIMES
-    double t0,t1,t2;
-    t2 = s.getTime();
+    double t0,t1/*,t2*/;
+    // t2 = s.getTime();
     t1 = s.getTime() - aDT;
     t0 = t1 - aDT;
 
@@ -1080,10 +1080,10 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 
-    double *val = &controls[0];
+    // double *val = &controls[0];
 }
 
-// for any post XML deserialization intialization
+// for any post XML deserialization initialization
 void CMC::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);

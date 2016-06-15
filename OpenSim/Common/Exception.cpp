@@ -33,8 +33,7 @@
 #include "osimCommonDLL.h"
 #include "Exception.h"
 #include "IO.h"
-
-
+#include "Object.h"
 
 
 using namespace OpenSim;
@@ -65,6 +64,54 @@ exception()
 //  print(cout);
 //  assert(false);
 //#endif
+}
+
+Exception::Exception(const std::string& file,
+                     size_t line,
+                     const std::string& func) {
+    addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
+               "\tIn function '" + func + "'");
+}
+
+Exception::Exception(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     const std::string& msg)
+    : Exception{file, line, func} {
+    addMessage(msg);
+}
+
+Exception::Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj) 
+    : Exception{file, line, func} {
+    std::string className = obj.getConcreteClassName();
+    std::string objName = obj.getName();
+    if (objName.empty()) objName = "<no-name>";
+    addMessage("\tIn object '" + objName + "' of type " + className + ".");
+}
+
+Exception::Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj,
+                     const std::string& msg) 
+    : Exception{file, line, func, obj} {
+    addMessage(msg);
+}
+
+void
+Exception::addMessage(const std::string& msg) {
+    if(_msg.length() == 0)
+        _msg = msg;
+    else
+        _msg = msg + "\n" + _msg;
+}
+
+const char*
+Exception::what() const noexcept {
+    return getMessage();
 }
 
 //-----------------------------------------------------------------------------

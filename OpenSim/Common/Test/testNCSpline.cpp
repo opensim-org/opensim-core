@@ -163,11 +163,11 @@ SimTK::Vector getAnalyticFunction(double x,int fcnType){
 *   b.  The first derivatives are continuous at the knot points
 *       -Error between the value of the first derivative at the knot point, and
 *        what a linear extrapolation would predict just to the left and right of 
-*        the knot point. (should be zero, within a tolerace affected by the step size in xD)
+*        the knot point. (should be zero, within a tolerance affected by the step size in xD)
 *   c.  The second derivatives are continuous at the knots points
 *       -Error between the value of the numerically calculated derivative at the knot point, and
 *        what a linear extrapolation would predict just to the left and right of 
-*        the knot point. (should be zero, within a tolerace affected by the step size in xD)
+*        the knot point. (should be zero, within a tolerance affected by the step size in xD)
 *   d.  The second derivative is zero at the end points.
 *       -Numerically calculated extrapolation of the 2nd derivative should be zero 
 *        at the end points within some tolerance
@@ -198,21 +198,21 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
     //1. Evaluate the spline at the knots, the mid points and then a dense sample
     ///////////////////////////////////////////
         SimTK::Vector tmpV1(1);
-        double xVal=0;
+        // double xVal=0;
         for(int i=0;i<size;i++){
-            xVal = xK(i);
+            // xVal = xK(i);
             tmpV1(0)=xK(i);
             ysp_K(i,0) = sp->calcValue(tmpV1);
             ysp_K(i,1) = sp->calcDerivative(derOrder,tmpV1);
         }           
         for(int i=0;i<size-1;i++){
-            xVal = xM(i);
+            // xVal = xM(i);
             tmpV1(0) = xM(i);
             ysp_M(i,0) = sp->calcValue(tmpV1);
             ysp_M(i,1) = sp->calcDerivative(derOrder,tmpV1);
         }
         for(int i=0;i<sizeD;i++){
-            xVal = xD(i);
+            // xVal = xD(i);
             tmpV1(0) = xD(i);
             ysp_D(i,0) = sp->calcValue(tmpV1);
             ysp_D(i,1) = sp->calcDerivative(derOrder,tmpV1);
@@ -325,7 +325,7 @@ int main() {
     /////////////////////////////
     //Configuration Variables
     ////////////////////////////
-        bool printData = false;     //Set to true to print the knot, mid knot, and 
+        // bool printData = false;     //Set to true to print the knot, mid knot, and 
                                     //dense vector values, first derivatives, and 
                                     //second derivatives (for the splines) for analysis
                                     //outside of this script.
@@ -333,7 +333,7 @@ int main() {
                             //to initialize and test the various spline classes
         const int size =6;          //Number of knot points
         const int sizeDK = 10000;       //Number of points per knot in the densely sampled vector
-        int sizeD=sizeDK*(size-1);  //Number of points in a densly sampled interpolation
+        int sizeD=sizeDK*(size-1);  //Number of points in a densely sampled interpolation
 
         //Domain vector variables
         double xmin,xmax,deltaX,deltaD;

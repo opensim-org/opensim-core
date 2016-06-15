@@ -43,7 +43,7 @@ class WrapResult;
  * A class implementing a sphere obstacle for muscle wrapping, based on the
  * algorithm presented in Garner & Pandy (2000).
  *
- * @author Brian Garner, derivded from Peter Loan
+ * @author Brian Garner, derived from Peter Loan
  * @version 0.1
  */
 class OSIMSIMULATION_API WrapSphereObst : public WrapObject {
@@ -80,13 +80,13 @@ public:
     double getLength() const { return _length; }
     void setLength(double aLength) { _length = aLength; }
 
-    virtual const char* getWrapTypeName() const;
-    virtual std::string getDimensionsString() const;
-    virtual void scale(const SimTK::Vec3& aScaleFactors) { }
+    const char* getWrapTypeName() const override;
+    std::string getDimensionsString() const override;
+    void scale(const SimTK::Vec3& aScaleFactors) override { }
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 #ifndef SWIG
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
 protected:
     void setupProperties();

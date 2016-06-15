@@ -57,18 +57,18 @@ public:
      *
      * @param radius       the radius of the sphere
      * @param location     the location of the center of the sphere within the Body it is attached to
-     * @param body         the Body this sphere is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      */
-    ContactSphere(double radius, const SimTK::Vec3& location, Body& body);
+    ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& frame);
     /**
      * Construct a ContactSphere.
      *
      * @param radius       the radius of the sphere
      * @param location     the location of the center of the sphere within the Body it is attached to
-     * @param body         the Body this sphere is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      * @param name         the name of this object
      */
-    ContactSphere(double radius, const SimTK::Vec3& location, Body& body, const std::string& name);
+    ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& frame, const std::string& name);
     ContactSphere(const ContactSphere& geom);
 
     #ifndef SWIG
@@ -84,7 +84,7 @@ public:
     void copyData(const ContactSphere& source) {
         _radius = source._radius;
     }
-    SimTK::ContactGeometry createSimTKContactGeometry();
+    SimTK::ContactGeometry createSimTKContactGeometry() override;
 
     // ACCESSORS
     /**
@@ -92,7 +92,7 @@ public:
      */
     double getRadius() const;
     /**
-     * Set the radius of the sphere.
+     * %Set the radius of the sphere.
      */
     void setRadius(double radius);
 private:

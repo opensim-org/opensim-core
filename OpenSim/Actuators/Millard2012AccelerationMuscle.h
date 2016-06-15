@@ -61,7 +61,7 @@ acceleration musculo-tendon model that has several advantages over
 equilibrium musculo-tendon models: it is possible to simulate 0 activation, it 
 requires fewer integrator steps to simulate, and physiological active 
 force-length (with a minimum value of 0) and force velocity (with true 
-asymptotes at the maximum shortening and lengthening velocites) 
+asymptotes at the maximum shortening and lengthening velocities) 
 curves can be employed.
 
 \image html fig_Millard2012AccelerationMuscle.png
@@ -306,7 +306,7 @@ public:
 
     //Should this be serialized at all? Normally an update to the left hand
     //point of the active force length curve should be accompanied by an update
-    //to the engagment point of this curve. I bet many users might miss this
+    //to the engagement point of this curve. I bet many users might miss this
     //subtlety 
     OpenSim_DECLARE_UNNAMED_PROPERTY(
                                 FiberCompressiveForceLengthCurve,
@@ -599,7 +599,7 @@ public:
     @param s the state of the system
     @param activation the desired activation level
     */
-    void setActivation(SimTK::State& s, double activation) const;
+    void setActivation(SimTK::State& s, double activation) const override;
 
     /**
     @param s the state of the system
@@ -658,7 +658,7 @@ protected:
     @param s the state of the model
     @param aScaleSet the scale set
     */
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
     
     /**
     @param s the state of the model
@@ -668,7 +668,7 @@ protected:
 
 
 //==============================================================================
-//Muscle Inferface requirements
+//Muscle Interface requirements
 //==============================================================================
 
     /**calculate muscle's position related values such fiber and tendon lengths,
@@ -733,7 +733,7 @@ protected:
 //==============================================================================
 
     /**
-    Set the derivative of an actuator state, specified by name
+    %Set the derivative of an actuator state, specified by name
     @param s the state    
     @param aStateName The name of the state to set.
     @param aValue The value to set the state to.
@@ -770,7 +770,7 @@ private:
     //sets this class to null
     void setNull();
 
-    //constructs all of the properties required to use this calss
+    //constructs all of the properties required to use this class
     void constructProperties() override;
     
     /*Builds all of the components that are necessary to use this 
@@ -779,7 +779,7 @@ private:
 
     /*Checks to make sure that none of the muscle model's properties have
     changed, and if any have changed then rebuild muscle model.*/
-    void extendFinalizeFromProperties();
+    void extendFinalizeFromProperties() override;
 
     /*       
     @param ami A struct that holds all of the necessary quantities to compute
@@ -957,7 +957,7 @@ private:
     struct AccelerationMuscleInfo {   
         //Kinematic Quantities
         double lce;             //fiber length (m)
-        double dlce_dt;         //fiber lengtening velocity (m/s)
+        double dlce_dt;         //fiber lengthening velocity (m/s)
         double lceAT;           //fiber length along the tendon (m)
         double dlceAT_dlce;     //change in fiber length along the tendon with
                                 //a small change in fiber length (m/m)
@@ -1001,7 +1001,7 @@ private:
 
         //Partial derivative of the elastic multipliers 
         // w.r.t. their input variable
-        double dfse_dtl;    //d(tendon force length multipler) d(tendonLength) 
+        double dfse_dtl;    //d(tendon force length multiplier) d(tendonLength) 
 
         double dfal_dlce;   //d(fiber active force length multiplier)
                             //d(fiberLength)
@@ -1059,8 +1059,8 @@ private:
             phi(SimTK::NaN),
             cosphi(SimTK::NaN),
             sinphi(SimTK::NaN),
-            dphi_dlce(SimTK::NaN),
             dphi_dt(SimTK::NaN),
+            dphi_dlce(SimTK::NaN),
             d_dphidt_dlce(SimTK::NaN),
             tl(SimTK::NaN),
             dtl_dt(SimTK::NaN),

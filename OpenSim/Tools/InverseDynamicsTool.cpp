@@ -210,9 +210,9 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
     Array<string> groupNames;
     modelJoints.getGroupNames(groupNames);
 
-    /* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
+    /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
     for(int i=0; i<jointNames.getSize();  ++i){
-        //Check for kewords first starting with ALL
+        //Check for keywords first starting with ALL
         if(IO::Uppercase(jointNames[i]) == "ALL"){
             for(int j=0; j<modelJoints.getSize(); ++j){
                 joints.adoptAndAppend(&modelJoints[j]);
@@ -302,8 +302,8 @@ bool InverseDynamicsTool::run()
 
         }
 
-        bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
-        // Initialize the the model's underlying computational system and get its default state.
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
+        // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
         // Exclude user-specified forces from the dynamics for this analysis
@@ -430,7 +430,7 @@ bool InverseDynamicsTool::loadCoordinateValues()
 {
     if (_coordinateValues!= NULL) // Coordinates has been set from GUI
         return true;
-    // Try constructing cooridnates from specified file
+    // Try constructing coordinates from specified file
     if(_coordinatesFileName != "" && _coordinatesFileName != "Unassigned"){
             _coordinateValues = new Storage(_coordinatesFileName);
             _coordinateValues->setName(_coordinatesFileName);
@@ -496,7 +496,7 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
                 if (iterAnalysis!= iterObjects->element_end()){
                     // move children to top level
                     Xml::element_iterator p = iterAnalysis->element_begin();
-                    //std::vector<std::string> deprectaed({"on", "in_degrees", "step_interval"});
+                    //std::vector<std::string> deprecated({"on", "in_degrees", "step_interval"});
                     for (; p!= iterAnalysis->element_end(); ++p) {
                         // skip <on>, <step_interval>, <in_degrees>
                         if (p->getElementTag()=="on" ||

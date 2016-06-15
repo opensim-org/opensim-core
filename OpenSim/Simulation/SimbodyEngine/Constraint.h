@@ -70,7 +70,7 @@ public:
                                       SimTK::Vector& mobilityForces) const;
 
     /** 
-     * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
+     * Methods to query a Constraint forces (defaults to the Lagrange multipliers) applied
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
      */
@@ -105,7 +105,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     /** ID for the constraint in Simbody. */
     SimTK::ResetOnCopy<SimTK::ConstraintIndex> _index;

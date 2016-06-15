@@ -58,7 +58,7 @@ public:
     // PROPERTIES
     //==============================================================================
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
-    of the PhysicalFrame. This is an itermediate solution as we integrate Frames 
+    of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
     Connectors to the PhysicalFrames they attach to. This must be addressed prior
     to OpenSim 4.0 release. - aseth
@@ -98,7 +98,7 @@ public:
 
     The MobilizedBodyIndex is necessary to access the underlying MobilizedBody
     in the System. It allows access to physical quantities (e.g. forces)
-    associated with invidual PhysicalFrames. For examples, the underlying
+    associated with individual PhysicalFrames. For examples, the underlying
     MultibodySystem's net body forces are represented as a Vector of spatial
     forces (torque and force on each body) and it is indexed by the 
     MobilizedBodyIndex.
@@ -133,12 +133,12 @@ public:
 
     /** Scale PhysicalFrame related dimensions according to predetermined 
         ScaleFactors */
-    void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::Vec3& scaleFactors);
 
     /** @name DEPRECATED API */
 
     ///@{
-    /** Deprecated methods for inermediate integration of Frames */
+    /** Deprecated methods for intermediate integration of Frames */
     /** Get the named wrap object, if it exists.
     *
     * @param aName Name of the wrap object.
@@ -154,11 +154,7 @@ public:
     ///@} 
 
 protected:
-    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
-
-    /** @name Advanced: PhysicalFrame Devloper Interface
+    /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
     /**
@@ -182,13 +178,43 @@ protected:
     /** @name Component Extension methods.
     PhysicalFrame extension of Component interface. */
     /**@{**/
-    void extendConnectToModel(Model& aModel) override;
+    /// Associate a FrameGeometry (visualization) with the this PhysicalFrame
+    void extendFinalizeFromProperties() override;
+    /// Connect bound WrapObjects
+    void extendConnectToModel(Model& model) override;
     /**@}**/
 
+    /** Override to account for version updates in the XML format. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
 private:
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override;
+
+    /** The spatial velocity {omega; v} for this PhysicalFrame in ground. */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override;
+    /** The spatial acceleration {alpha; a} for this PhysicalFrame in ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override;
 
     /* Component construction interface */
     void constructProperties() override;
+
+    /* Utility to convert Geometry version 3.2 to recent 4.0 format */
+    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
+        const SimTK::Vec3& outerScaleFactors,
+        const SimTK::Vec6& outerTransform,
+        SimTK::Xml::Element& geomSetElement) const;
+
+    /* Utility to construct a PhysicalOffsetFrame from properties of an
+       offset transform. */
+    void createFrameForXform(const SimTK::Xml::element_iterator&,
+        const std::string& frameName,
+        const SimTK::Vec6& localXform, const std::string& bodyName) const;
+
 
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
@@ -207,7 +233,7 @@ private:
     // counter-part in the underlying system
     friend class Joint;
 
-    //==========================================================================
+    //=========================================================================
 };  // END of class PhysicalFrame
 
 //=============================================================================

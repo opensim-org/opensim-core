@@ -88,7 +88,7 @@ public:
     //--------------------------------------------------------------------------
     // Get & Set
     //--------------------------------------------------------------------------
-    /** Set the 'point' property that determines where the force vector should
+    /** %Set the 'point' property that determines where the force vector should
     be applied. The default is the origin of the body Vec3(0). **/
     void setPoint(SimTK::Vec3& point)
     {set_point(point);}
@@ -97,7 +97,7 @@ public:
     {return get_point();}
 
 
-    /** Set the 'point_is_global' property that determines whether the point is  
+    /** %Set the 'point_is_global' property that determines whether the point is  
     specified in inertial coordinates or in the body's local coordinates. **/
     void setPointForceIsGlobal(bool isGlobal)
     {set_point_is_global(isGlobal); }
@@ -106,7 +106,7 @@ public:
     {return get_point_is_global();  }
 
 
-    /** Set the 'spatial_force_is_global' property that determines how to 
+    /** %Set the 'spatial_force_is_global' property that determines how to 
     interpret the 'axis' vector; if not global (Ground frame) it is in body's  
     frame. **/
     void setSpatialForceIsGlobal(bool isGlobal)
@@ -116,12 +116,12 @@ public:
     {return get_spatial_force_is_global();}
 
 
-    /* Set the body to which this actuator applies spatial forces. */
+    /* %Set the body to which this actuator applies spatial forces. */
     void setBody(const Body& body);
     const Body& getBody() const;
 
 
-    /* Set the body name to which this actuator applies spatial forces. */
+    /* %Set the body name to which this actuator applies spatial forces. */
     void setBodyName(const std::string& name);
     const std::string& getBodyName() const;
 

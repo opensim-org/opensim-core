@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -49,7 +50,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
+           OptimizerSystem(numParameters), 
+           numControls(numParameters), 
+           si(s),
+           osimModel(aModel)
        {
            // Create the integrator for the simulation.
            p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
@@ -57,7 +61,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            p_manager = new Manager(osimModel, *p_integrator);
        }
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
+    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
         // make a copy of the initial states
         State s = si;
@@ -205,7 +209,9 @@ int main()
         manager.setFinalTime(finalTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
         manager.integrate(si);
-        manager.getStateStorage().print("Arm26_optimized_states.sto");
+
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

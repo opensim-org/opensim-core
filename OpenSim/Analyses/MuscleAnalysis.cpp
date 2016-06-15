@@ -54,12 +54,12 @@ using namespace std;
 MuscleAnalysis::~MuscleAnalysis()
 {
     // Individual storages where added to the Analysis' _storageList
-    // which takes ownerwhip of the Storage objects and deletes them.
+    // which takes ownership of the Storage objects and deletes them.
 }
 //_____________________________________________________________________________
 /**
  * Construct a MuscleAnalysis object for recording the MuscleAnalysis of
- * a model's generalized coodinates during a simulation.
+ * a model's generalized coordinates during a simulation.
  *
  * @param aModel Model for which the MuscleAnalysis are to be recorded.
  */
@@ -183,7 +183,7 @@ void MuscleAnalysis::constructDescription()
     char descrip[1024];
 
     strcpy(descrip,"\nThis analysis gathers basic information about muscles ");
-    strcat(descrip,"during a simulation (e.g., forces, tendon lenghts,"
+    strcat(descrip,"during a simulation (e.g., forces, tendon lengths,"
         " moment arms, etc).");
 
     strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
@@ -211,7 +211,7 @@ void MuscleAnalysis::allocateStorageObjects()
     _muscleArray.setMemoryOwner(false);
     _muscleArray.setSize(0);
 
-    // FOR MOMENT ARMS AND MOMEMTS
+    // FOR MOMENT ARMS AND MOMENTS
     if(_computeMoments) {
         const CoordinateSet& qSet = _model->getCoordinateSet();
         _coordinateList = _coordinateListProp.getValueStrArray();
@@ -474,7 +474,7 @@ setCoordinates(OpenSim::Array<std::string>& aCoordinates)
  * Set the capacity increments of all storage instances.
  *
  * @param aIncrement Increment by which storage capacities will be increased
- * when storage capcities run out.
+ * when storage capacities run out.
  */
 void MuscleAnalysis::
 setStorageCapacityIncrements(int aIncrement)
@@ -658,7 +658,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
             maStore = _momentArmStorageArray[i]->momentArmStore;
             mStore = _momentArmStorageArray[i]->momentStore;
            
-            bool locked = q->getLocked(s);
+            // bool locked = q->getLocked(s);
 
             _model->getMultibodySystem().realize(s, s.getSystemStage());
             // LOOP OVER MUSCLES
@@ -677,9 +677,9 @@ int MuscleAnalysis::record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration 
+ * This method is meant to be called at the beginning of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -704,7 +704,7 @@ int MuscleAnalysis::begin(SimTK::State& s )
 
     // RECORD
     int status = 0;
-    // Make sure cooridnates are not locked
+    // Make sure coordinates are not locked
     if (_computeMoments){
     // LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
         Coordinate *q = NULL;
@@ -727,7 +727,7 @@ int MuscleAnalysis::begin(SimTK::State& s )
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -739,7 +739,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
 {
     if(!proceed(stepNumber)) return 0;
 
-    int status = record(s);
+    /*int status = */record(s);
 
     return 0;
 }
@@ -750,7 +750,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
  *
  * This method is meant to be called at the end of an integration
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -772,7 +772,7 @@ int MuscleAnalysis::end(SimTK::State& s )
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *

@@ -72,10 +72,10 @@ Manager::~Manager()
 Manager::Manager(Model& model):
        _model(&model),
        _integ(NULL),               
-       _controllerSet(&model.updControllerSet() ),
        _stateStore(NULL),
        _performAnalyses(true),
-       _writeToStorage(true)
+       _writeToStorage(true),
+       _controllerSet(&model.updControllerSet() )
 {
     setNull();
 
@@ -419,11 +419,11 @@ getTimeArray()
 }
 //_____________________________________________________________________________
 /**
- * Get the integration step (index) that occured prior to or at 
+ * Get the integration step (index) that occurred prior to or at 
  * a specified time.
  *
  * @param aTime Time of the integration step.
- * @return Step that occured prior to or at aTime.  0 is returned if there
+ * @return Step that occurred prior to or at aTime.  0 is returned if there
  * is no such time stored.
  */
 int Manager::
@@ -468,7 +468,7 @@ getTimeArrayTime(int aStep)
  *
  * @param aFileName Name of the file to which to print.  If the time array
  * cannot be written to a file of the specified name, the time array is
- * wirttent to standard out.
+ * written to standard out.
  */
 void Manager::
 printTimeArray(const char *aFileName)
@@ -563,7 +563,7 @@ setIntegrator(SimTK::Integrator& integrator)
 
 
 //-----------------------------------------------------------------------------
-// INTIAL AND FINAL TIME
+// INITIAL AND FINAL TIME
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -665,6 +665,11 @@ getStateStorage() const
         throw Exception("Manager::getStateStorage(): Storage is not set");
     return(*_stateStore);
 }
+
+TimeSeriesTable Manager::getStatesTable() const {
+    return getStateStorage().getAsTimeSeriesTable();
+}
+
 //_____________________________________________________________________________
 /**
  * Get whether there is a storage buffer for the integration states.
@@ -705,11 +710,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt,dtPrev,tReal;
+    double dt/*,dtPrev*/,tReal;
     double time =_ti;
     dt=dtFirst;
     if(dt>_dtMax) dt = _dtMax;
-    dtPrev=dt;
+    //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     
@@ -852,7 +857,7 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  */
 void Manager::initialize(SimTK::State& s, double dt )
 {
-    // skip initailizations for CMC's actutator system
+    // skip initializations for CMC's actuator system
     if( _writeToStorage && _performAnalyses ) { 
 
         double tReal = s.getTime();

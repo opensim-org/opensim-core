@@ -185,9 +185,9 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SmoothSegmentedFunction& mc
     SimTK::Vector yV(x.size());
 
     double y = 0;
-    double dy = 0;
+    // double dy = 0;
     double dyNUM = 0;
-    double err= 0;
+    // double err= 0;
     double h = 0;
     double xL = 0;
     double xR = 0;
@@ -195,7 +195,7 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SmoothSegmentedFunction& mc
     double c3 = 0;
     double fL = 0;
     double fR = 0;
-    double rootEPS = sqrt(SimTK::Eps);
+    // double rootEPS = sqrt(SimTK::Eps);
 
     double y_C3min = 1e-10;
     double y_C3max = 1e1;
@@ -241,8 +241,8 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SmoothSegmentedFunction& mc
 
         //Just for convenience checking ...
         dyNUM = (fR-fL)/h;
-        dy    = mcf.calcDerivative(x(i),order);
-        err   = abs(dy-dyNUM);
+        /*dy    = */mcf.calcDerivative(x(i),order);
+        // err   = abs(dy-dyNUM);
 
         /*if(err > tol && abs(dy) > rootEPS && order <= 2){
             err = err/abs(dy);
@@ -276,7 +276,7 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SmoothSegmentedFunction& mc
     @param minTol   The minimum error allowed - this prevents the second order
                     error term from going to zero
     @param taylorErrorMult  This scales the error tolerance. The default error
-                            tolerance is the the 2nd order Taylor series
+                            tolerance is the 2nd-order Taylor series
                             term.
 */
 bool isFunctionContinuous(SimTK::Vector xV, 
@@ -336,7 +336,7 @@ bool isFunctionContinuous(SimTK::Vector xV,
             errLMX = minTol;
 
         if(errRMX < minTol)
-            errRMX = minTol; // to accomodate numerical
+            errRMX = minTol; // to accommodate numerical
                              //error in errL
 
         if(errL > errLMX || errR > errRMX){            
@@ -353,7 +353,7 @@ This function will scan through a vector and determine if it is monotonic or
 not
 
 @param y the vector of interest
-@param multEPS The tolerance on the monotoncity check, expressed as a scaling of
+@param multEPS The tolerance on the monotonicity check, expressed as a scaling of
                 SimTK::Eps
 @return true if the vector is monotonic, false if it is not
 */
@@ -411,7 +411,7 @@ SimTK::Vector calcTrapzIntegral(SimTK::Vector x, SimTK::Vector y,
     inty = 0;
 
 
-    int startIdx = 1;
+    // int startIdx = 1;
     int endIdx = y.size()-1;
 
     if(flag_TrueIntForward_FalseIntBackward == true){
@@ -510,7 +510,7 @@ void testQuinticBezier_Exceptions(){
     double curvinessEX2 = -0.01; //illegal value 
 
 
-    double dydx0EX1 = 0; //illeagle pair
+    double dydx0EX1 = 0; //illegal pair
     double dydx1EX1 = 0.1;
 
     SimTK_TEST_MUST_THROW(SimTK::Matrix test1 = SegmentedQuinticBezierToolkit::
@@ -532,9 +532,9 @@ void testQuinticBezier_Exceptions(){
     double xEX1 = xPts(0)-0.01; //This is not in the set.
     double xEX2 = xPts(5)+0.01; //This is not in the set.
 
-    SimTK_TEST_MUST_THROW(int t = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*int t = */SegmentedQuinticBezierToolkit::
                             calcIndex(xEX1, xMPts));
-    SimTK_TEST_MUST_THROW(int t = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*int t = */SegmentedQuinticBezierToolkit::
                             calcIndex(xEX2, xMPts));
 
     //=========================================================================
@@ -543,53 +543,53 @@ void testQuinticBezier_Exceptions(){
     
     //xEX1 is not within the curve, and so the Newton iteration will not
     //converge
-    SimTK_TEST_MUST_THROW(double uPt = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double uPt = */SegmentedQuinticBezierToolkit::
                  calcU(xEX1, xPts, aSplineUX[0], 1e-8, 10));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveVal
     //=========================================================================
 
-    double uEX1 = -0.01; //illeagle
-    double uEX2 = 1.01;  //illeagle
+    double uEX1 = -0.01; //illegal
+    double uEX2 = 1.01;  //illegal
     SimTK::Vector xPtsEX(5);
     xPtsEX = 0;
 
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveVal(uEX1,xPts));
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveVal(uEX2,xPts));
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveVal(0.5,xPtsEX));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivU
     //=========================================================================
 
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(uEX1, xPts, (int)1));
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1));
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(0.5, xPtsEX, (int)1));
-    SimTK_TEST_MUST_THROW(double tst = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(0.5, xPts, 0));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivDYDX
     //=========================================================================
     
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(uEX1,xPts,yPts,1));
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(uEX2,xPts,yPts,1));
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0));
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7));
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPtsEX,yPts,3));
-    SimTK_TEST_MUST_THROW(double test= SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,xPtsEX,3));
     
     //=========================================================================
@@ -868,7 +868,7 @@ void testMuscleCurveDerivatives(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSam
     SimTK::Matrix relError(mcfSample.nrow(),maxDer);
     
 
-    double bigTol = sqrt(SimTK::Eps);
+    // double bigTol = sqrt(SimTK::Eps);
 
     for(int i=0; i < maxDer; i++){
         //Compute the relative error
@@ -963,7 +963,7 @@ void testMuscleCurveDerivatives(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSam
      //   printMatrixToFile(mcfSample,"analyticDerivatives.csv");
      //   printMatrixToFile(numSample,"numericDerivatives.csv");
      //   printMatrixToFile(numError,"numAnalyticError.csv");
-     //   cout << "Matricies Printed" << endl;
+     //   cout << "Matrices Printed" << endl;
 
   printf("   passed: A tolerance of %fe-3 reached with a maximum relative error\n"
          "           of %fe-3 and %fe-3 for the first two derivatives\n"
@@ -1022,7 +1022,7 @@ void testMuscleCurveIntegral(SmoothSegmentedFunction mcf,SimTK::Matrix mcfSample
         double supdf = 0;
 
         if(mcf.isIntegralComputedLeftToRight()){
-            //Get the vector of accumulated errors left to rigth
+            //Get the vector of accumulated errors left to right
             intyCumError(0) = xWidth(0)*xWidth(0)*0.5*mcfSample(0,1);
             for(int i=1; i< intyCumError.nelt(); i++){
                 supdf = max(mcfSample(i,1),mcfSample(i-1,1));
@@ -1210,23 +1210,23 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(tendonCurve,tendonCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
             testMonotonicity(tendonCurveSample);
 
         //5. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* tendonCurveEX
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* tendonCurveEX
+                                    = */SmoothSegmentedFunctionFactory::
                   createTendonForceLengthCurve(0,kiso,ftoe,c,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* tendonCurveEX
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* tendonCurveEX
+                                    = */SmoothSegmentedFunctionFactory::
                   createTendonForceLengthCurve(e0,(1/e0),ftoe,c,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* tendonCurveEX
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* tendonCurveEX
+                                    = */SmoothSegmentedFunctionFactory::
                   createTendonForceLengthCurve(e0,kiso,ftoe,-0.01,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* tendonCurveEX
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* tendonCurveEX
+                                    = */SmoothSegmentedFunctionFactory::
                   createTendonForceLengthCurve(e0,kiso,ftoe,1.01,true,"test"));
             cout << "    passed" << endl;
 
@@ -1274,24 +1274,24 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFLCurve,fiberFLCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFLCurveSample);
 
         //5. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFLCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFLCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                   createFiberForceLengthCurve(0.0,0,klow,kisof,cf,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFLCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFLCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                   createFiberForceLengthCurve(0.0,e0f,klow,1/e0f,cf,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFLCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFLCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                   createFiberForceLengthCurve(0.0,e0f,klow,kisof,-0.01,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFLCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFLCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                   createFiberForceLengthCurve(0.0,e0f,klow,kisof,1.01,true,"test"));
             cout << "    passed" << endl;
         ///////////////////////////////////////
@@ -1337,23 +1337,23 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCECurve,fiberCECurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECurveSample);
         //5. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
               createFiberCompressiveForceLengthCurve(0,kce,cce,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
               createFiberCompressiveForceLengthCurve(lmax,-1/lmax,cce,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
               createFiberCompressiveForceLengthCurve(lmax,kce,-0.01,true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
               createFiberCompressiveForceLengthCurve(lmax,kce,1.01,true,"test"));
             cout << "    passed" << endl;
 
@@ -1395,29 +1395,29 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCEPhiCurve,fiberCEPhiCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
             testMonotonicity(fiberCEPhiCurveSample);
         //5. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCEPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForcePennationCurve(0,kphi,cphi,
                                                           true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCEPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForcePennationCurve(SimTK::Pi/2,kphi,cphi,
                                                           true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCEPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                     createFiberCompressiveForcePennationCurve(phi0,
                     1.0/(SimTK::Pi/2-phi0),cphi, true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCEPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForcePennationCurve(phi0,kphi,-0.01,
                                                           true,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCEPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForcePennationCurve(phi0,kphi,1.01,
                                                           true,"test"));
             cout << "    passed" << endl;
@@ -1459,34 +1459,34 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCECosPhiCurve,fiberCECosPhiCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECosPhiCurveSample);
         //5. Test exceptions
             cout << endl;
         cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECosPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(0,kcosPhi,
                                                         ccosPhi, true,"test"));
 
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECosPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(1,kcosPhi,
                                                         ccosPhi, true,"test"));
 
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECosPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(cosPhi0,1/kcosPhi,
                                                         ccosPhi, true,"test"));
 
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECosPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,
                                                         -0.01, true,"test"));
 
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberCECosPhiCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,
                                                         1.01, true,"test"));
             cout << "    passed" << endl;
@@ -1543,60 +1543,60 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFVCurve,fiberFVCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVCurveSample);
         //5. Exception testing
             cout << endl;    
             cout << "   Exception Testing" << endl;
                 
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(1, 
                                 dydxC,dydxNearC,dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 -0.01,dydxNearC,dydxIso, dydxE,  dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 1.01, dydxNearC, dydxIso, dydxE,  dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, 1.0, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, -0.01, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, (fmaxE-1), dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 -0.01,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 1.01,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  -0.01,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
                                 dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 1.01,  1.01,false,"test"));
@@ -1646,7 +1646,7 @@ int main(int argc, char* argv[])
 
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberFVInvCurve,fiberFVInvCurveSample);
-        //4. Test for montonicity where appropriate
+        //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVInvCurveSample);
 
@@ -1655,53 +1655,53 @@ int main(int argc, char* argv[])
             //5. Exception testing
             cout << endl;
                 cout << "   Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(1, 
                                 dydxC, dydxNearC, dydxIso, dydxE, dydxNearE, 
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 0,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 1.01,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, 1.0, dydxE, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, 0, dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, (fmaxE-1), dydxNearE,
                                 concCurviness,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 -0.01,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 1.01,  eccCurviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 concCurviness,  -0.01,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* fiberFVCurveEX 
-                = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFVCurveEX 
+                                    = */SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, 
                                 dydxC,  dydxNearC, dydxIso, dydxE, dydxNearE,
                                 1.01,  1.01,false,"test"));
@@ -1792,32 +1792,39 @@ int main(int argc, char* argv[])
         //4. Exception Testing
             cout << endl;
             cout << "    Exception Testing" << endl;
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce0, lce2, lce3, 
                       shoulderVal, plateauSlope, curviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce1, lce3, 
                       shoulderVal, plateauSlope, curviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce2, 
                       shoulderVal, plateauSlope, curviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                       -0.01, plateauSlope, curviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                       shoulderVal, -0.01, curviness,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                       shoulderVal, plateauSlope, -0.01,false,"test"));
-            SimTK_TEST_MUST_THROW(SmoothSegmentedFunction* 
-                fiberfalCurveEX = SmoothSegmentedFunctionFactory::
+            SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* 
+                                    fiberfalCurveEX = */
+                                  SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                       shoulderVal, plateauSlope, 1.01,false,"test"));
             cout << "    passed"<<endl;
@@ -1832,10 +1839,10 @@ int main(int argc, char* argv[])
             //calcDerivative ... ditto
             
             //This function does not have an integral curve
-            SimTK_TEST_MUST_THROW(double tst = fiberfalCurve.calcIntegral(0.0));
+            SimTK_TEST_MUST_THROW(/*double tst = */fiberfalCurve.calcIntegral(0.0));
 
             //isIntegralAvailable doesn't throw an exception
-            //isIntegralComputedLeftToRight doesn't rhwo an exception
+            //isIntegralComputedLeftToRight doesn't throw an exception
             //getName doesn't throw an exception
             //getCurveDomain doesn't throw an exception
 

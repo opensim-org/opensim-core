@@ -41,7 +41,7 @@ using SimTK::Vec3;
 
 static const char* wrapTypeName = "doubleCylinderObst";
 
-static const double TwoPi = 2.0*SimTK::Pi;
+//static const double TwoPi = 2.0*SimTK::Pi;
 // static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
 
@@ -119,8 +119,6 @@ void WrapDoubleCylinderObst::setNull()
 */
 void WrapDoubleCylinderObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
 
     _radiusUcylProp.setName("radiusUcyl");  _radiusUcylProp.setValue(-1.0);     _propertySet.append(&_radiusUcylProp);
     _radiusVcylProp.setName("radiusVcyl");  _radiusVcylProp.setValue(-1.0);     _propertySet.append(&_radiusVcylProp);
@@ -217,9 +215,6 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
 */
 void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapDoubleCylinderObst);
-
     _radiusUcyl = aWrapDoubleCylinderObst._radiusUcyl;
     _radiusVcyl = aWrapDoubleCylinderObst._radiusVcyl;
     _wrapUcylDirectionName = aWrapDoubleCylinderObst._wrapUcylDirectionName;
@@ -499,7 +494,7 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
                         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 
-    double U[3];    U[0]=_translation[0];       U[1]=_translation[1];       U[2]=_translation[2];
+    double U[3];    U[0]=get_translation()[0];       U[1]= get_translation()[1];       U[2]= get_translation()[2];
     double V[3];    V[0]=_translationVcyl[0];   V[1]=_translationVcyl[1];   V[2]=_translationVcyl[2];
     double Ru = ( _wrapUcylDirection==righthand ? _radiusUcyl : -_radiusUcyl );
     double Rv = ( _wrapVcylDirection==righthand ? _radiusVcyl : -_radiusVcyl );
@@ -508,8 +503,8 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     double S[3],t[3],T[3],Tt,tS,L,rv;       S[0]=aPoint2[0];    S[1]=aPoint2[1];    S[2]=aPoint2[2];
     
     // CONSTRUCT SOME ROTATION MATRICES
-    double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cyllinder Frame
-    double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
+    double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cylinder Frame
+    double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylObstToUcylBody[9];   load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
     double VcylObstToVcylBody[9];   load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
@@ -585,7 +580,7 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 /*============================================================================*/
 void WrapDoubleCylinderObst::
 getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9]) const {
-    double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
+    double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylBodyToUcylObst[9];   load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
     double VcylBodyToVcylObst[9];   load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
@@ -701,7 +696,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         T[0]=S[0]; T[1]=S[1]; T[2]=S[2];        t[0]=S[0]; t[1]=S[1]; t[2]=S[2];
         quick_mul_vec_by_mtx(S,M,C); quick_add_vec_to_vec(C,V,C); *Tt=0.0;*tS=0.0;
         i=1;    single_cylinder(Ru,P,q,Q,C,Pq,qQ,QT,L,&i,ru);
-        if(!i) {    Q[0]=P[0]; Q[1]=P[1]; Q[2]=P[2];    /* NIETHER SHOULD BE ACTIVE */
+        if(!i) {    Q[0]=P[0]; Q[1]=P[1]; Q[2]=P[2];    /* NEITHER SHOULD BE ACTIVE */
             *QT=*qQ;    *qQ=0.0; *active=0;
             quick_mul_vec_by_mtxT(P,M,C); quick_add_vec_to_vec(C,U,C);  /*=2?*/
             if(path_inside_radius(C,S,Rv)) {    *active=2;  RETURN_DOUBLE; }
@@ -714,7 +709,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         q[0]=P[0]; q[1]=P[1]; q[2]=P[2];        Q[0]=P[0]; Q[1]=P[1]; Q[2]=P[2];
         quick_mul_vec_by_mtxT(P,M,C); quick_add_vec_to_vec(C,U,C);*Pq=0.0;*qQ=0.0;
         i=1;    single_cylinder(Rv,C,T,t,S,QT,Tt,tS,L,&i,rv);
-        if(!i) {    T[0]=S[0]; T[1]=S[1]; T[2]=S[2]; /* NIETHER SHOULD BE ACTIVE */
+        if(!i) {    T[0]=S[0]; T[1]=S[1]; T[2]=S[2]; /* NEITHER SHOULD BE ACTIVE */
             *QT=*Tt; *Tt=0.0; *active=0; return(0); }
         quick_mul_vec_by_mtx(T,M,C);    quick_add_vec_to_vec(C,V,C);
         if(path_inside_radius(P,C,Ru)) { *active=3; RETURN_DOUBLE; } return(0);
@@ -835,13 +830,13 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         q[0]=P[0]; q[1]=P[1]; q[2]=P[2];        Q[0]=P[0]; Q[1]=P[1]; Q[2]=P[2];
         quick_mul_vec_by_mtxT(P,M,C);   quick_add_vec_to_vec(C,U,C);    *active=2;
         i=1;    single_cylinder(Rv,C,T,t,S,QT,Tt,tS,L,&i,rv);   *Pq=0.0;    *qQ=0.0;
-        if(!i) { *active=0; return(0); }    /* NIETHER CYLINDER SHOULD BE ACTIVE */
+        if(!i) { *active=0; return(0); }    /* NEITHER CYLINDER SHOULD BE ACTIVE */
     } else
     if(Rv*(t[0]*T[1]-t[1]*T[0])>0.0) {  /* V CYLINDER SHOULD BE INACTIVE */
         t[0]=S[0]; t[1]=S[1]; t[2]=S[2];        T[0]=S[0]; T[1]=S[1]; T[2]=S[2];
         quick_mul_vec_by_mtx(S,M,C);    quick_add_vec_to_vec(C,V,C);    *active=1;
         i=1;    single_cylinder(Ru,P,q,Q,C,Pq,qQ,QT,L,&i,ru);   *tS=0.0;    *Tt=0.0;
-        if(!i) { *active=0; return(0); }    /* NIETHER CYLINDER SHOULD BE ACTIVE */
+        if(!i) { *active=0; return(0); }    /* NEITHER CYLINDER SHOULD BE ACTIVE */
     } else { *active=3;                     /* BOTH CYLINDERS SHOULD REMAIN ACTIVE */
         *Pq=sqrt((*Pq)*(*Pq)+(q[2]-P[2])*(q[2]-P[2]));
         *qQ=sqrt((*qQ)*(*qQ)+(Q[2]-q[2])*(Q[2]-q[2]));

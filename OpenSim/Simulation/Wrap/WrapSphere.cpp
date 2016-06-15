@@ -151,9 +151,6 @@ void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
  */
 void WrapSphere::copyData(const WrapSphere& aWrapSphere)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphere);
-
     _radius = aWrapSphere._radius;
 }
 
@@ -235,7 +232,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
             
-   int i, j, maxit, return_code = wrapped;
+   int i, j,/* maxit, */ return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
@@ -252,7 +249,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         aWrapResult.sv[i] = previousWrap.sv[i];
     }
 
-   maxit = 50;
+   //maxit = 50;
    aFlag = true;
 
     aWrapResult.wrap_pts.setSize(0);

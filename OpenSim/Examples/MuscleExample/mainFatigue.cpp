@@ -32,6 +32,7 @@
 #include <OpenSim/OpenSim.h>
 #include "FatigableMuscle.h"
 #include <OpenSim/Common/IO.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -65,9 +66,9 @@ int main()
         Ground& ground = osimModel.updGround();
 
         // Add display geometry to the ground to visualize in the GUI
-        ground.addMeshGeometry("ground.vtp");
-        ground.addMeshGeometry("anchor1.vtp");
-        ground.addMeshGeometry("anchor2.vtp");
+        ground.attachMeshGeometry("ground.vtp");
+        ground.attachMeshGeometry("anchor1.vtp");
+        ground.attachMeshGeometry("anchor2.vtp");
 
         // BLOCK BODY
 
@@ -82,7 +83,7 @@ int main()
             blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addMeshGeometry("block.vtp");
+        block->attachMeshGeometry("block.vtp");
 
         // FREE JOINT
 
@@ -162,7 +163,7 @@ int main()
         ///////////////////////////////////
         // Create a prescribed controller that simply supplies controls as 
         // a function of time.
-        // For muscles, controls are normalized motor-neuron excitations
+        // For muscles, controls are normalized stoor-neuron excitations
         PrescribedController *muscleController = new PrescribedController();
         muscleController->setActuators(osimModel.updActuators());
     
@@ -233,10 +234,11 @@ int main()
 
         // Save the simulation results
         // Save the states
-        manager.getStateStorage().print("tugOfWar_fatigue_states.sto");
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_fatigue_states.sto");
 
-        // Save the forces
-        reporter->getForceStorage().print("tugOfWar_fatigue_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        STOFileAdapter::write(forcesTable, "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results
         IO::makeDir("MuscleAnalysisResults");

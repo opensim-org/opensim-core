@@ -109,7 +109,7 @@ public:
     const SimTK::Vec3& getPoint2() const { return get_point2(); }
 
     /**
-    * Set the mathematical expression that defines the force magnitude of this
+    * %Set the mathematical expression that defines the force magnitude of this
     * point-to-point force in terms of the point-to-point distance (d) and its
     * time derivative (ddot). Expressions with C-mathematical operations
     * such as +,-,*,/ and common functions: exp, pow, sqrt, sin, cos, tan, 
@@ -163,7 +163,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram _forceProg;

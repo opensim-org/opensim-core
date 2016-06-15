@@ -130,7 +130,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
  * Copy constructors for all Tools do not copy the Object's DOMnode
  * and XMLDocument.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for a Tool:
@@ -139,7 +139,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Tool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document that is held in memory.  In this way the proper connection
  * between an object's node and the corresponding node within the XML
  * document is established.
@@ -291,7 +291,7 @@ void CMCTool::setupProperties()
 
     comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";           
     comment += "The fast target requires the desired accelerations to be met. ";         
-    comment += "The optimizer fails if the acclerations constraints cannot be ";         
+    comment += "The optimizer fails if the accelerations constraints cannot be ";         
     comment += "met, so the fast target can be less robust.  The regular target ";       
     comment += "does not require the acceleration constraints to be met; it ";       
     comment += "meets them as well as it can, but it is slower and less accurate.";          
@@ -350,7 +350,7 @@ operator=(const CMCTool &aTool)
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     _excludedActuators = aTool._excludedActuators;
     _desiredPointsFileName = aTool._desiredPointsFileName;
     _desiredKinematicsFileName = aTool._desiredKinematicsFileName;
@@ -398,7 +398,7 @@ bool CMCTool::run()
     }
     // OUTPUT DIRECTORY
     // Do the maneuver to change then restore working directory 
-    // so that the parsing code behaves prope()rly if called from a different directory
+    // so that the parsing code behaves properly if called from a different directory
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
     IO::chDir(directoryOfSetupFile);
@@ -408,7 +408,7 @@ bool CMCTool::run()
     // SET OUTPUT PRECISION
     IO::SetPrecision(_outputPrecision);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
     //taskSet.print("cmcTasksRT.xml");
@@ -428,7 +428,7 @@ bool CMCTool::run()
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);
 
-    //Make sure system is uptodate with model (i.e. added actuators, etc...)
+    //Make sure system is up-to-date with model (i.e. added actuators, etc...)
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
@@ -669,10 +669,10 @@ bool CMCTool::run()
     const SimTK::Vector &modelZ = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
     
-    int nra = actSysZ.size();
-    int nrm = modelZ.size();
+    // int nra = actSysZ.size();
+    // int nrm = modelZ.size();
 
-    assert(nra == nrm);
+    assert(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =
@@ -750,7 +750,7 @@ bool CMCTool::run()
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
 
-    // Initial auxilliary states
+    // Initial auxiliary states
     time_t startTime,finishTime;
     struct tm *localTime;
     double elapsedTime;
@@ -1106,7 +1106,7 @@ Set<Actuator> CMCTool::
     Array<string> groupNames;
     actuatorsForCMC.getGroupNames(groupNames);
 
-    /* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
+    /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
     for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
         // index result when a name is not a force or group name for forces in the model
         int k = -1;  
@@ -1121,7 +1121,7 @@ Set<Actuator> CMCTool::
                     actuatorsForCMC.remove((Actuator *)members[j]);
                 actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);
             }
-        } //otherwise, check for an individual acuator
+        } //otherwise, check for an individual actuator
         else{
             k = actuatorsForCMC.getIndex(actuatorsByNameOrGroup[i]);
             if(k > -1){ //found

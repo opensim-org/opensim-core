@@ -39,7 +39,7 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //_____________________________________________________________________________
 /**
- * Main routine for stepping thru a trajectory and running a set of
+ * Main routine for stepping through a trajectory and running a set of
  * analyses.
  */
 int main(int argc,char **argv)
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
     AnalyzeTool analyze(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = analyze.getModel();
+    // Model& model = analyze.getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";

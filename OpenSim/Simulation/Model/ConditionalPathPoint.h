@@ -87,8 +87,8 @@ public:
     ConditionalPathPoint& operator=(const ConditionalPathPoint &aPoint);
 #endif
     void copyData(const ConditionalPathPoint &aPoint);
-    virtual void init(const PathPoint& aPoint);
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void init(const PathPoint& aPoint) override;
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     Array<double>& getRange() const { return _range; }
     const Coordinate* getCoordinate() const { return _coordinate; }
@@ -100,7 +100,7 @@ public:
 
     // Override PathPoint methods.
     bool isActive(const SimTK::State& s) const override;
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+    void connectToModelAndPath(Model& aModel, GeometryPath& aPath) 
                                                                 override;
 #endif
 private:

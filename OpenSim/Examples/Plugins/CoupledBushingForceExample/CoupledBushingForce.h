@@ -26,43 +26,37 @@
 
 // INCLUDE
 #include "osimPluginDLL.h"
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
 namespace OpenSim {
 
-//=================================================================================
-//=================================================================================
+//==============================================================================
+//==============================================================================
 /**
  * A class implementing a Coupled Bushing Force.
- * A Couple Bushing Force is the force proportional to the deviation of two frames, 
- * where components of the resulting BodyForce are coupled to any or all 
- * deviations, such that the general stiffness and damping matrices are 6x6.
+ * A Coupled Bushing Force is the force proportional to the deflection between 
+ * frames where components of the resulting internal force are coupled to any 
+ * component of the (6d) deflection, such that the general stiffness and damping
+ * matrices are 6x6.
  *
- * Deviations of an offset_frame (1) (on a PhysicalFrame e.g. a Body) and another 
- * offset_frame2 (on another PhysicalFrame) are expressed in terms of and x-y-z 
- * Euler angle sequence (for rotational deviation in radians) and x,y,z (distance
- * in m) of the bushing's offset_frame2 w.r.t. offset_frame1.
- * Damping is applied to the relative angular velocity (rad/s) and linear velocity 
- * (m/s) of offset_frame2 in offset_frame1.
+ * The deflection of one frame (2) (on a PhysicalFrame, e.g. a Body) with respect
+ * to the another frame (1) (another PhysicalFrame) are expressed in terms of an
+ * X,Y,Z body-fixed Euler angle sequence (for rotational deviation in radians) 
+ * and x,y,z (distances in m) to describe bushing frame2 w.r.t. frame1.
+ * Damping is applied to the relative deflection angle derivatives (rad/s) and
+ * linear velocity (m/s) of frame2 expressed in frame1.
  *
  * @author Ajay Seth
- * @version 1.0
+
  */
-class OSIMPLUGIN_API CoupledBushingForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);
+class OSIMPLUGIN_API CoupledBushingForce : public TwoFrameLinker<Force, PhysicalFrame> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, TwoFrameLinker);
 public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    /** @name Property declarations
-    These are the serializable properties associated with the CoupleBushingForce. **/
-    /**@{**/
-    /// BushingForce defined frames that are connected by this bushing
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames needed to satisfy the BushingForce's connections.");
-
     /** Stiffness of the bushing related to Euler XYZ body-fixed angular and
         translational deviations that express frame2 in frame1. Force is zero
         when frames are coincident and aligned. */
@@ -110,7 +104,8 @@ public:
     Rotational stiffness (damping) in N/rad(/s) and translational in N/m(/s).
     Off-diagonals represent the coupling terms.
     See property declarations for more information. **/
-    CoupledBushingForce(const std::string& frame1Name,
+    CoupledBushingForce(const std::string& name,
+                        const std::string& frame1Name,
                         const std::string& frame2_name,
                         SimTK::Mat66 stiffnessMat,
                         SimTK::Mat66 dampingMat);
@@ -123,11 +118,6 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
-    /** Compute the deflection (spatial separation) of the two frames connected
-        by the bushing force. Angular displacement expressed in Euler angles.
-        The force and potential energy are determined by the deflection.  */
-    SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
-
     /** Compute the bushing force contribution to the system and add in to appropriate
      bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
      where, [K] is the spatial 6dof stiffness matrix between the two frames 
@@ -159,13 +149,10 @@ public:
 
 
 private:
-    void setNull();
-
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
-    void constructProperties();
-    void constructConnectors() override;
+    void constructProperties() override;
     void extendFinalizeFromProperties() override;
 
     void finalizeMatricesFromProperties();

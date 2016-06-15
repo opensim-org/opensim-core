@@ -120,7 +120,7 @@ public:
 
     /** Returns the column labels of the probe values for reporting.
     Currently uses the Probe name as the column label, so be sure
-    to name your probe appropiately! */
+    to name your probe appropriately! */
     OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
     // connectToModel is protected for Java wrapping purpose
@@ -138,7 +138,7 @@ private:
     // ModelComponent Interface
     //--------------------------------------------------------------------------
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     //==============================================================================
 };  // END of class ActuatorPowerProbe

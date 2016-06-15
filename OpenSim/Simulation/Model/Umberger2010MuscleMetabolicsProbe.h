@@ -48,6 +48,11 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * The discussion here is based on the following papers:
  *
+ * <a href="http://dx.doi.org/10.1371/journal.pone.0150378">
+ * Uchida, T. K., Hicks, J. L., Dembia, C. L., Delp, S. L. (2016). Stretching
+ * your energetic budget: how tendon compliance affects the metabolic cost of
+ * running. PLOS ONE 11(3), e0150378.</a>
+ *
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/20356877">
  * Umberger, B. R. (2010). Stance and swing phase costs in human walking.
  * J R Soc Interface 7, 1329-40.</a>
@@ -68,11 +73,11 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * the rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
- *       - Bdot is the basal heat rate (W).
- *       - Adot is the activation heat rate (W).
- *       - Mdot is the maintenance heat rate (W).
- *       - Sdot is the shortening heat rate (W).
- *       - Wdot is the mechanical work rate (W).
+ * - Bdot is the basal heat rate (W).
+ * - Adot is the activation heat rate (W).
+ * - Mdot is the maintenance heat rate (W).
+ * - Sdot is the shortening heat rate (W).
+ * - Wdot is the mechanical work rate (W).
  *
  *
  * This probe also uses muscle parameters stored in the MetabolicMuscle object for each muscle.
@@ -89,9 +94,9 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * slow-twitch fibers increases from r to 1. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/14672571">Bhargava, L.J., Pandy,
  * M.G., Anderson, F.C. (2004) A phenomenological model for estimating metabolic
- * energy consumption in muscle contraction. J Biomech 37:81-88</a>. To assume a
- * constant ratio of slow- and fast-twitch fiber recruitment, set the
- * 'use_Bhargava_recruitment_model' property to false.
+ * energy consumption in muscle contraction. J Biomech 37:81-88</a> and Uchida
+ * et al. (2016). To assume a constant ratio of slow- and fast-twitch fiber
+ * recruitment, set the 'use_Bhargava_recruitment_model' property to false.
  *
  *
  *
@@ -100,7 +105,7 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * <B>Bdot = basal_coefficient * (m_body^basal_exponent) </B>
  *     - m_body = mass of the entire model
  *     - basal_coefficient and basal_exponent are defined by their respective properties.\n
- * <I>Note that this quantity is muscle independant. Rather it is calculated on a whole body level.</I>
+ * <I>Note that this quantity is muscle independent. Rather it is calculated on a whole body level.</I>
  *
  *
  * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE (W) </B></H2>
@@ -125,7 +130,6 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Sdot = m * (alphaL * v_CE_norm * A * S)              </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
  * <B>Sdot = m * (alphaL * v_CE_norm * A * S * F_CE_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
- * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
  *
@@ -166,8 +170,9 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * Sdot (if necessary) to ensure Edot > 0 for each muscle. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/9409483">Constable, J.K.,
  * Barclay, C.J., Gibbs, C.L. (1997) Energetics of lengthening in mouse and toad
- * skeletal muscles. J Physiol 505:205-215</a>. To allow muscles to have
- * negative total power, set the 'forbid_negative_total_power' property to false.
+ * skeletal muscles. J Physiol 505:205-215</a> and Uchida et al. (2016). To
+ * allow muscles to have negative total power, set the
+ * 'forbid_negative_total_power' property to false.
  *
  *
  * Note that if enforce_minimum_heat_rate_per_muscle == true AND 
@@ -330,7 +335,7 @@ public:
 
     /** Returns the column labels of the probe values for reporting. 
         Currently uses the Probe name as the column label, so be sure
-        to name your probe appropiately!  */
+        to name your probe appropriately!  */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
 
@@ -354,10 +359,10 @@ public:
     @note It is important to first add the metabolic probe to the model before
     calling any other methods that may modify its properties. This is because 
     some methods (e.g. addMuscle() or useCalculatedMass) may require information
-    about the muscles to sucsessfully execute, and this information can only be
+    about the muscles to successfully execute, and this information can only be
     obtained if the metabolic probe is already 'connected' to the model.
     */
-    /** Get the number of muscles being analysed in the metabolic analysis. */
+    /** Get the number of muscles being analyzed in the metabolic analysis. */
     const int getNumMetabolicMuscles() const;  
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
@@ -372,10 +377,10 @@ public:
     /** Remove a muscle from the metabolic analysis. */
     void removeMuscle(const std::string& muscleName);
 
-    /** Set an existing muscle to use a provided muscle mass. */
+    /** %Set an existing muscle to use a provided muscle mass. */
     void useProvidedMass(const std::string& muscleName, double providedMass);
     
-    /** Set an existing muscle to calculate its own mass. */
+    /** %Set an existing muscle to calculate its own mass. */
     void useCalculatedMass(const std::string& muscleName);
 
     /** Get whether the muscle mass is being explicitly provided.
@@ -393,19 +398,19 @@ public:
     /** Get the ratio of slow twitch fibers for an existing muscle. */
     const double getRatioSlowTwitchFibers(const std::string& muscleName) const;
 
-    /** Set the ratio of slow twitch fibers for an existing muscle. */
+    /** %Set the ratio of slow twitch fibers for an existing muscle. */
     void setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio);
 
     /** Get the density for an existing muscle (kg/m^3). */
     const double getDensity(const std::string& muscleName) const;
 
-    /** Set the density for an existing muscle (kg/m^3). */
+    /** %Set the density for an existing muscle (kg/m^3). */
     void setDensity(const std::string& muscleName, const double& density);
 
     /** Get the specific tension for an existing muscle (Pascals (N/m^2)). */
     const double getSpecificTension(const std::string& muscleName) const;
 
-    /** Set the specific tension for an existing muscle (Pascals (N/m^2)). */
+    /** %Set the specific tension for an existing muscle (Pascals (N/m^2)). */
     void setSpecificTension(const std::string& muscleName, const double& specificTension);
 
 
@@ -428,7 +433,7 @@ private:
         Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter& mm);
 
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 
     //--------------------------------------------------------------------------

@@ -118,10 +118,8 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
-    const PhysicalFrame& f1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
-    const PhysicalFrame& f2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+    const PhysicalFrame& f1 = getConnectee<PhysicalFrame>("body_1");
+    const PhysicalFrame& f2 = getConnectee<PhysicalFrame>("body_2");
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
@@ -140,24 +138,24 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
 //=============================================================================
 const PhysicalFrame& ConstantDistanceConstraint::getBody1() const
 {
-    return getConnector<PhysicalFrame>("body_1").getConnectee();
+    return getConnectee<PhysicalFrame>("body_1");
 }
 
 const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 {
-    return getConnector<PhysicalFrame>("body_2").getConnectee();
+    return getConnectee<PhysicalFrame>("body_2");
 }
 
 /*
 * Following methods set attributes of the constraint */
 void ConstantDistanceConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
 }
 
 void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -210,9 +208,9 @@ void ConstantDistanceConstraint::generateDecorations(
     if (fixed) return;
     const Vec3 pink(1, .6, .8);
     const OpenSim::PhysicalFrame& frame1 = getBody1();
-    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
+    const Vec3& p_B1 = frame1.getTransformInGround(state)*get_location_body_1();
     const OpenSim::PhysicalFrame& frame2 = getBody2();
-    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
+    const Vec3& p_B2 = frame2.getTransformInGround(state)*get_location_body_2();
     appendToThis.push_back(
         SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
         .setColor(pink).setOpacity(1.0).setLineThickness(.05));

@@ -37,7 +37,7 @@ using namespace OpenSim;
 using SimTK::Vec3; using SimTK::square; using SimTK::Eps; using SimTK::State;
 using SimTK::Vector;
 
-static int counter=0;
+// static int counter=0;
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
@@ -155,7 +155,7 @@ void RigidTendonMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
     normalized velocities, pennation angular velocity, etc... */
 void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo& fvi) const
 {
-    const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+    /*const MuscleLengthInfo &mli = */getMuscleLengthInfo(s);
     fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
     fvi.normFiberVelocity = fvi.fiberVelocity / 
                             (getOptimalFiberLength()*getMaxContractionVelocity());
@@ -198,7 +198,7 @@ calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
 //--------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Compute the actuation (i.e. activation causing tenson) of this muscle. 
+ * Compute the actuation (i.e. activation causing tension) of this muscle. 
  */
 double RigidTendonMuscle::computeActuation(const State& s) const
 {

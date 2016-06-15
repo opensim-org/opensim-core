@@ -91,7 +91,7 @@ public:
 
     /** Returns the column labels of the probe values for reporting. 
         Currently uses the Probe name as the column label, so be sure
-        to name your probe appropiately! */
+        to name your probe appropriately! */
     virtual OpenSim::Array<std::string> getProbeOutputLabels() const override;
 
 
@@ -105,7 +105,7 @@ private:
     void extendConnectToModel(Model& aModel) override;
     
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class MuscleActiveFiberPowerProbe

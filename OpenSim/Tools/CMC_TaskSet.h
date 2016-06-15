@@ -79,7 +79,7 @@ protected:
     /** Array of accelerations. */
     Array<double> _a;
 
-    /** In case there're tracking targets loaded from file, the filename goes here
+    /** In case there are tracking targets loaded from file, the filename goes here
      * and the column names go into individual targets.
      */
     PropertyStr _dataFileNameProp;

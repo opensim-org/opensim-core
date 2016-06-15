@@ -53,8 +53,9 @@ using namespace std;
 // 30501 for Changing serialization of Marker
 // 30502 for Changing serialization of Geometry
 // 30503 for Changing serialization of Ground
-
-const int XMLDocument::LatestVersion = 30503;   
+// 30505 for Changing serialization of Joint to create offset frames
+// 30506 for testing 30505 conversion code
+const int XMLDocument::LatestVersion = 30506;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -100,7 +101,7 @@ XMLDocument::XMLDocument()
  * @param aFileName File name of the XML document.
  */
 XMLDocument::XMLDocument(const string &aFileName) :
-Xml::Document(aFileName)
+SimTK::Xml::Document(aFileName)
 {
 
 
@@ -278,7 +279,7 @@ void XMLDocument::copyDefaultObjects(const XMLDocument &aDocument){
 /*static*/ 
 void  XMLDocument::renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName)
 {
-    Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
+    SimTK::Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
     if (elmtIter!=aNode.element_end()){
         elmtIter->setElementTag(newElementName);
     }
@@ -292,11 +293,11 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
         equal = (_documentVersion == aOtherDocument._documentVersion);
     if (!equal) return false;
     // Get Roots 
-    Xml::Element root1=  getRootElement();
-    Xml::Element root2=  aOtherDocument.getRootElement();
+    SimTK::Xml::Element root1=  getRootElement();
+    SimTK::Xml::Element root2=  aOtherDocument.getRootElement();
 
     //if (!equal) return false;
-    // Cycle thru children and compare. Order is assumed to be the same for now
+    // Cycle through children and compare. Order is assumed to be the same for now
     SimTK::Array_<SimTK::Xml::Element> elts1 = root1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = root2.getAllElements();
     if (elts1.size() != elts2.size()){
@@ -372,7 +373,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
             return false; 
         }
         if (value1){
-            // We should check if this's a double or array of doubles in that case we can getValueAs<double> anbd
+            // We should check if this's a double or array of doubles in that case we can getValueAs<double>
             try {
                 SimTK::Array_<double> v1, v2;
                 elts1[it].getValueAs(v1);
@@ -404,23 +405,60 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 /*
  * Helper function to add connector to the xmlElement passed in
  */
-void XMLDocument::addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue)
+void XMLDocument::addConnector(SimTK::Xml::Element& element,
+    const std::string& connectorTag, const std::string& connectorName, 
+    const std::string& connectorValue)
 {
     SimTK::Xml::element_iterator  connectors_node =  element.element_begin("connectors");
-    SimTK::String debug;
+    //SimTK::String debug; //Only used for debugging
     if (connectors_node == element.element_end()){
         SimTK::Xml::Element connectorsElement("connectors");
         element.insertNodeBefore(element.element_begin(), connectorsElement);
         connectors_node =  element.element_begin("connectors");
     }
-    // Here we're guaranteed connectors node exist, add individual connector
+    // Here we're guaranteed connectors node exists, add individual connector
     SimTK::Xml::Element newConnectorElement(connectorTag);
     newConnectorElement.setAttributeValue("name", connectorName);
-    newConnectorElement.writeToString(debug);
+    //newConnectorElement.writeToString(debug);
+
     SimTK::Xml::Element connecteeElement("connectee_name");
     connecteeElement.insertNodeAfter(connecteeElement.element_end(), SimTK::Xml::Text(connectorValue));
     // Insert text under newConnectorElement
     newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
     connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
-    connectors_node->writeToString(debug);
+    //connectors_node->writeToString(debug);
+}
+
+void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+    const std::string& frameName,
+    const std::string& parentFrameName, 
+    const SimTK::Vec3& location, const SimTK::Vec3& orientation)
+{
+    SimTK::Xml::element_iterator  frames_node = element.element_begin("frames");
+    //SimTK::String debug; //Only used for debugging
+    
+    if (frames_node == element.element_end()) {
+        SimTK::Xml::Element framesElement("frames");
+        element.insertNodeBefore(element.element_begin(), framesElement);
+        frames_node = element.element_begin("frames");
+    }
+    // Here we're guaranteed frames node exists, add individual frame
+    SimTK::Xml::Element newFrameElement("PhysicalOffsetFrame");
+    newFrameElement.setAttributeValue("name", frameName);
+    //newFrameElement.writeToString(debug);
+
+    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+
+    std::ostringstream transValue;
+    transValue << location[0] << " " << location[1] << " " << location[2];
+    SimTK::Xml::Element translationElement("translation", transValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), translationElement);
+
+    std::ostringstream orientValue; 
+    orientValue << orientation[0] << " " << orientation[1] << " " << orientation[2];
+    SimTK::Xml::Element orientationElement("orientation", orientValue.str());
+    newFrameElement.insertNodeAfter(newFrameElement.element_end(), orientationElement);
+
+    frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
+    //frames_node->writeToString(debug);
 }

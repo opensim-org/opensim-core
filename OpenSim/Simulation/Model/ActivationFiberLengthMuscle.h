@@ -87,7 +87,7 @@ public:
     //--------------------------------------------------------------------------
     // State Variables
     //--------------------------------------------------------------------------
-    void setActivation(SimTK::State& s, double activation) const;
+    void setActivation(SimTK::State& s, double activation) const override;
     void setFiberLength(SimTK::State& s, double fiberLength) const;
 
     //--------------------------------------------------------------------------
@@ -99,14 +99,14 @@ public:
     // SCALING
     //--------------------------------------------------------------------------
 protected:
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
     //--------------------------------------------------------------------------
     // FORCE APPLICATION
     //--------------------------------------------------------------------------
     virtual void computeForce(const SimTK::State& state, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForce) const;
+                              SimTK::Vector& generalizedForce) const override;
 
     /** Calculate activation rate */
     virtual double calcActivationRate(const SimTK::State& s) const = 0;
@@ -126,7 +126,7 @@ protected:
     static const std::string STATE_FIBER_LENGTH_NAME;   
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 
 //==============================================================================
 };  // END of class ActivationFiberLengthMuscle

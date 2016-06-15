@@ -156,7 +156,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // There are situations where we don't want to read the whole file in advance just header
     if (readHeadersOnly) return;
 
-    //MM using the occurance of time and range in the column labels to distinguish between
+    //MM using the occurrence of time and range in the column labels to distinguish between
     //SIMM and non SIMMOtion files.
     Array<std::string> currentLabels = getColumnLabels();
     int indexTime = currentLabels.findIndex("time");
@@ -324,7 +324,7 @@ setNull()
  * other members of aStorage such as the name and the description.  To get
  * a complete copy, the copy constructor should be used.
  *
- * If this instance does not have enough capicity to hold the states
+ * If this instance does not have enough capacity to hold the states
  * of the specified storage (aStorage), the capacity is increased.
  */
 void Storage::
@@ -414,61 +414,66 @@ getHeaderToken() const
 // COLUMN LABELS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the column index corresponding to specified column name.
- *
- * @return State index of column or -1.  Note that the returned index is equivalent
- * to the state index.  For example, for the first column in a storage (usually
- * time) -1 would be returned.  For the second column in a storage (the first
- * state) 0 would be returned.
- * @todo Rename this method getStateIndex()
- * 
- * added a default Parameter for startIndex. -Ayman
- */
+// added a default Parameter for startIndex. -Ayman
+// TODO startIndex is being ignored.
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex = _columnLabels.findIndex(aColumnName);
-    if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
-        // in the "state vector"
-        return thisColumnIndex-1;
+    int thisColumnIndex = -1;
 
-    // Assume a mismatch between earlier and the latest component state variable 
-    // labeling mechanism and redo find with the just the ending substring instead
-    // of its full path name
-    std::string::size_type back = aColumnName.rfind("/");
-    std::string prefix = aColumnName.substr(0, back);
-    std::string shortName = aColumnName.substr(back + 1, aColumnName.length() - back);
-    thisColumnIndex = _columnLabels.findIndex(shortName);
+    // This uses the `do while(false)` idiom to run common code if one of a
+    // number of conditions succeeds (much like what a goto would be used for).
+    do {
+        thisColumnIndex = _columnLabels.findIndex(aColumnName);
+        if (thisColumnIndex != -1) break;
 
-    // additional checking for old coordinate state names that have been renamed
-    // <coord_name>/value and <coord_name>/speed
-    if (thisColumnIndex < 0){
-        if (shortName == "value"){
-            // old formats did not have "/value" so remove it if here
+        // Assume column labels follow pre-v4.0 state variable labeling.
+        // Redo search with what the pre-v4.0 label might have been.
+
+        // First, try just the last element of the path.
+        std::string::size_type back = aColumnName.rfind("/");
+        std::string prefix = aColumnName.substr(0, back);
+        std::string shortName = aColumnName.substr(back + 1,
+                                                   aColumnName.length() - back);
+        thisColumnIndex = _columnLabels.findIndex(shortName);
+        if (thisColumnIndex != -1) break;
+
+        // If that didn't work, specifically check for coordinate state names
+        // (<coord_name>/value and <coord_name>/speed) and muscle state names
+        // (<muscle_name>/activation <muscle_name>/fiber_length).
+        if (shortName == "value") {
+            // pre-v4.0 did not have "/value" so remove it if here
             back = prefix.rfind("/");
             shortName = prefix.substr(back + 1, prefix.length());
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-        else if (shortName == "speed"){
-            // replace "/speed" (the latest labeling for speeds) with "_u"
+        else if (shortName == "speed") {
+            // replace "/speed" (the v4.0 labeling for speeds) with "_u"
             back = prefix.rfind("/");
-            shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+            shortName =
+                    prefix.substr(back + 1, prefix.length() - back) + "_u";
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
         else if (back < aColumnName.length()) {
-            // try replacing the '/' with '.' in the last connection
+            // try replacing the '/' with '.' in the last segment
             shortName = aColumnName;
             shortName.replace(back, 1, ".");
             back = shortName.rfind("/");
-            shortName = shortName.substr(back + 1, shortName.length() - back);
+            shortName = shortName.substr(back + 1,
+                                         shortName.length() - back);
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-    }
-    // subtract 1 because time is included in the labels but not 
-    // in the "state vector"
-    return thisColumnIndex-1;
+        if (thisColumnIndex != -1) break;
+
+        // If all of the above checks failed, return -1.
+        return -1;
+
+    } while (false);
+
+    // If we get here, we successfully found a column.
+    // Subtract 1 because time is included in the labels but not
+    // in the "state vector".
+    return thisColumnIndex - 1;
 }
 
 
@@ -477,7 +482,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
  * Set a labels string for the columns in this Storage instance.
  * 
  * A character string is used to label the columns.  Each separate column
- * label is usually delimited by a tab ("\t"), but any delimeter may
+ * label is usually delimited by a tab ("\t"), but any delimiter may
  * be used.
  * 
  * The first column is almost always "Time."  The other columns
@@ -645,7 +650,7 @@ getLastStateVector() const
 }
 //_____________________________________________________________________________
 /**
- * Get the StateVector at a spcified time index.
+ * Get the StateVector at a specified time index.
  *
  * @param aTimeIndex Time index at which to get the state vector:
  * 0 <= aTimeIndex < _storage.getSize().
@@ -1268,6 +1273,35 @@ OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& i
     }
     return found;
 }
+
+TimeSeriesTable Storage::getAsTimeSeriesTable() const {
+    TimeSeriesTable table{};
+
+    table.addTableMetaData("header", getName());
+    table.addTableMetaData("version", std::to_string(LatestVersion));
+    table.addTableMetaData("inDegrees", std::string{_inDegrees ? "yes" : "no"});
+    table.addTableMetaData("nRows", std::to_string(_storage.getSize()));
+    table.addTableMetaData("nColumns", std::to_string(_columnLabels.getSize()));
+    if(!getDescription().empty())
+        table.addTableMetaData("description", getDescription());
+
+    // Exclude the first column label. It is 'time'. Time is a separate column
+    // in TimeSeriesTable and column label is optional.
+    table.setColumnLabels(_columnLabels.get() + 1, 
+                          _columnLabels.get() + _columnLabels.getSize());
+
+    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+        const auto& row = getStateVector(i)->getData();
+        const auto time = getStateVector(i)->getTime();
+        // Exclude the first column. It is 'time'. Time is a separate column in
+        // TimeSeriesTable.
+        table.appendRow(time, row.get(), row.get() + row.getSize());
+    }
+
+    return table;
+}
+
+
 //=============================================================================
 // RESET
 //=============================================================================
@@ -1382,7 +1416,7 @@ append(const Array<StateVector> &aStorage)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aN Length of the array.
@@ -1409,7 +1443,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aY Vector.
@@ -1423,7 +1457,7 @@ append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of data that occured at a specified time.
+ * Append an array of data that occurred at a specified time.
  *
  * @param aT Time stamp of the data.
  * @param aY Array<double>.
@@ -1685,7 +1719,7 @@ subtract(Storage *aStorage)
 /**
  * Multiply all state vectors in this storage instance by a value.
  *
- * @param aValue Value by which to mutiply the state vectors.
+ * @param aValue Value by which to multiply the state vectors.
  * @see StateVector::multiply(double)
  */
 void Storage::
@@ -1729,7 +1763,7 @@ multiply(StateVector *aStateVector)
 }
 //_____________________________________________________________________________
 /**
- * Multipy this storage instance by a storage instance.
+ * Multiply this storage instance by a storage instance.
  *
  * Linear interpolation or extrapolation is used to get the values of the
  * states that correspond in time to the states held in this storage
@@ -1768,7 +1802,7 @@ multiply(Storage *aStorage)
  * Multiply entries at column aIndex by a value.
  *
  * @param aIndex is the index of the column to multiply
- * @param aValue Value by which to mutiply the column.
+ * @param aValue Value by which to multiply the column.
  */
 void Storage::
 multiplyColumn(int aIndex, double aValue)
@@ -1873,7 +1907,7 @@ divide(Storage *aStorage)
  * vectors stored in this storage instance.
  *
  * This method uses computeArea() to compute the area (integral) and then
- * simply divides by the the time interval (tf-ti).
+ * simply divides by the time interval (tf-ti).
  *
  * It is assumed that there is enough memory at aAve to hold aN states.
  * If aN exceeds the number of states held in storage, aN is disregarded.
@@ -2066,7 +2100,7 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
     // RECORD FIRST STATE
     if(rStorage) rStorage->append(aTI,n,rArea);
 
-    // GET RELAVENT STATE INDICES
+    // GET RELEVANT STATE INDICES
     int II = findIndex(aTI)+1;
     int FF = findIndex(aTF);
 
@@ -2405,12 +2439,12 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Find the index of the storage element that occured immediately before
+ * Find the index of the storage element that occurred immediately before
  * or at time aT ( aT <= getTime(index) ).
  *
  * This method can be much more efficient than findIndex(aT) if a good guess
  * is made for aI.
- * If aI corresponds to a state which occured later than aT, an exhaustive
+ * If aI corresponds to a state which occurred later than aT, an exhaustive
  * search is performed by calling findIndex(aT).
  *
  * @param aI Index at which to start searching.
@@ -2438,7 +2472,7 @@ findIndex(int aI,double aT) const
 }
 //_____________________________________________________________________________
 /**
- * Find the index of the storage element that occured immediately before
+ * Find the index of the storage element that occurred immediately before
  * or at a specified time ( getTime(index) <= aT ).
  *
  * This method is not very efficient because it always starts its search
@@ -2602,8 +2636,8 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 //_____________________________________________________________________________
 /**
  * Set name of output file to be written into.
- * This has the side effect of openning the file for writing. The header will not have the correct
- * number of rows but this may not be an issue for ersion 2 of the Storage class
+ * This has the side effect of opening the file for writing. The header will not have the correct
+ * number of rows but this may not be an issue for version 2 of the Storage class
  */
 void Storage::
 setOutputFileName(const std::string& aFileName)
@@ -2615,21 +2649,20 @@ setOutputFileName(const std::string& aFileName)
     _fp = IO::OpenFile(aFileName,"w");
     if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
     // WRITE THE HEADER
-    int n=0,nTotal=0;
-    n = writeHeader(_fp);
-    n = writeDescription(_fp);
+    writeHeader(_fp);
+    writeDescription(_fp);
     // WRITE THE COLUMN LABELS
-    n = writeColumnLabels(_fp);
+    writeColumnLabels(_fp);
 }
 //_____________________________________________________________________________
 /**
  * Print the contents of this storage instance to a file.
  *
- * The argument aMode specifies whether the file is openned for writting, "w",
- * or appending, "a".  If a bad value for aMode is sent in, the file is openned
+ * The argument aMode specifies whether the file is opened for writing, "w",
+ * or appending, "a".  If a bad value for aMode is sent in, the file is opened
  * for writing.
  *
- * The total number of characters written is returned.  If an error occured,
+ * The total number of characters written is returned.  If an error occurred,
  * a negative number is returned.
  *
  * @param aFileName Name of file to which to save.
@@ -2703,13 +2736,13 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
  * Print the contents of this storage instance to a file named by the argument
  * aFileaName using uniform time spacing.
  *
- * The argument aMode specifies whether the file is openned for writting, "w",
- * or appending, "a".  If a bad value for aMode is sent in, the file is openned
+ * The argument aMode specifies whether the file is opened for writing, "w",
+ * or appending, "a".  If a bad value for aMode is sent in, the file is opened
  * for writing.
  *
  * The argument aDT specifies the time spacing.
  *
- * The total number of characters written is returned.  If an error occured,
+ * The total number of characters written is returned.  If an error occurred,
  * a negative number is returned.
  */
 int Storage::
@@ -3022,7 +3055,7 @@ bool Storage::hasKey(const std::string& aKey) const
 
 //_____________________________________________________________________________
 /**
- * Check that a Token belongs to a list of resere
+ * Check that a Token belongs to a list of reserved keys
  *
  * @returns true on success (meaningful values of rNumRows, rNumColumns)
  */
@@ -3051,7 +3084,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
     while(!done){
         // NAME
         string line = IO::ReadLine(aStream);
-        // Always Strip leading and trainling spaces and tabs
+        // Always Strip leading and trailing spaces and tabs
         IO::TrimLeadingWhitespace(line);
         IO::TrimTrailingWhitespace(line);
         if(line.empty() && !aStream.good()) {
@@ -3144,7 +3177,7 @@ exchangeTimeColumnWith(int aColumnIndex)
 }
 //_____________________________________________________________________________
 /**
- * If that was a SIMM motion file postprocess it to account for
+ * If that was a SIMM motion file post-process it to account for
  * lack of time column, assumption of uniform time
  * other kinds of processing can be added here to account for calc_derivatives, ...
  *
@@ -3314,34 +3347,39 @@ void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed,
     columnsUsed.setSize(columns);
     comparisons.setSize(columns);
 }
-/**
- * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
- * as needed where n=1, 2, ...
- *
- * @returns true if labels were changed false otherwise.
- **/
+
 bool Storage::makeStorageLabelsUnique() {
     Array<std::string> lbls = getColumnLabels();
-    std::string offending="";
-    bool changedLabels=false;
-    for(int i=0; i< lbls.getSize(); i++){
-        bool isUnique= (lbls.findIndex(lbls[i])==i);
-        if (!isUnique){ // Make new names
-            offending =lbls[i];
-            bool exist=true;
-            std::string newName =offending;
+    std::string offending = "";
+    bool changedLabels = false;
+    for(int i = 0; i < lbls.getSize(); i++){
+        bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) { // Make new names
+            offending = lbls[i];
+            bool exist = true;
+            std::string newName = offending;
             changedLabels = true;
-            int c=1;
-            while(exist){
+            int c = 1;
+            while (exist) {
                 char cString[20];
                 sprintf(cString,"%d", c);
-                newName = std::string(cString)+"_"+offending;
-                exist= (lbls.findIndex(newName)!=-1);
+                newName = std::string(cString) + "_" + offending;
+                exist = (lbls.findIndex(newName) != -1);
                 c++;
             }
-            lbls[i]= newName;
+            lbls[i] = newName;
         }
     }
     if (changedLabels) setColumnLabels(lbls);
-    return (!changedLabels);
+    const bool labelsWereUnique = (!changedLabels);
+    return labelsWereUnique;
+}
+
+bool Storage::storageLabelsAreUnique() const {
+    const auto& lbls = getColumnLabels();
+    for(int i = 0; i < lbls.getSize(); i++) {
+        const bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) return false;
+    }
+    return true;
 }

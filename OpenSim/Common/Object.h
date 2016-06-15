@@ -61,15 +61,12 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
         #undef OSIMCOMMON_API
     #endif
     #define OSIMCOMMON_API
-    #ifdef override
-        #undef override
+
+    #ifdef SWIGJAVA
+        #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
+    #else
+        #define SWIG_DECLARE_EXCEPTION
     #endif
-    #define override
-    #ifdef final
-        #undef final
-    #endif
-    #define final
-    #define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
 #else
     #define SWIG_DECLARE_EXCEPTION
 #endif
@@ -224,6 +221,11 @@ public:
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
 
+    /// @cond
+    // This is an assignment operator for use in Java.
+    virtual void assign(Object &aObject) = 0;
+    /// @endcond
+
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
@@ -261,23 +263,23 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    /** Set the name of the Object. */
+    /** %Set the name of the Object. */
     void setName(const std::string& name);
     /** Get the name of this Object. */
     const std::string& getName() const;
-    /** Set description, a one-liner summary. */
+    /** %Set description, a one-liner summary. */
     void setDescription(const std::string& description);
     /** Get description, a one-liner summary. */
     const std::string& getDescription() const;
 
     /** Get Authors of this Object */
     const std::string& getAuthors() const { return _authors; };
-    /** Set Authors of this object, call this method in your constructor if needed */
+    /** %Set Authors of this object. Call this method in your constructor if needed. */
     void setAuthors(const std::string& authors) { _authors=authors; };
 
     /** Get references or publications to cite if using this object. */
     const std::string& getReferences() const { return _references; };
-    /** Set references or publications to cite if using this object. */
+    /** %Set references or publications to cite if using this object. */
     void setReferences(const std::string& references) 
     {   _references=references; };
 
@@ -387,7 +389,7 @@ public:
 
     /** Register an instance of a class; if the class is already registered it
     will be replaced. This is normally called as part of the static
-    intialization of a dynamic library (DLL). The supplied object's concrete
+    initialization of a dynamic library (DLL). The supplied object's concrete
     class name will be used as a key, and a \e copy (via clone()) of the 
     supplied %Object is used as the default value for objects of this type when 
     created (typically during the deserialization process when reading an 
@@ -616,7 +618,7 @@ public:
         return this->isKindOf(type); 
     } 
 
-    /** Set the debug level to get verbose output. Zero means no debugging. **/
+    /** %Set the debug level to get verbose output. Zero means no debugging. **/
     static void setDebugLevel(int newLevel) {
         _debugLevel=newLevel; 
     };
@@ -721,7 +723,7 @@ protected:
     list lengths, and a zero-length initial value. The
     property must have a name (the empty string is not acceptable), and that
     name must be unique within this %Object's property table.
-    @returns The PropertyIndex of this property in the proprty table for this
+    @returns The PropertyIndex of this property in the property table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
     template <class T> PropertyIndex
@@ -734,7 +736,7 @@ protected:
     indexing. Here the minimum size may be greater than zero, provided that
     the initial value has at least that many element (and no more than the
     allowed maximum).
-    @returns The PropertyIndex of this property in the proprty table for this
+    @returns The PropertyIndex of this property in the property table for this
              object. 
     @see addProperty(), addOptionalProperty() **/
     template <class T, template<class> class Container> PropertyIndex 
@@ -769,8 +771,6 @@ protected:
 //--------------------------------------------------------------------------
 private:
     void setNull();
-    void setupProperties();
-    void init();
 
     // Functions to support deserialization. 
     void generateXMLDocument();
@@ -1081,8 +1081,10 @@ template <> struct Object_GetClassName<std::string>
 {   static const std::string name() {return "string";} };
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
-template <> struct Object_GetClassName<SimTK::Vector>
-{   static const std::string name() {return "Vector";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
+{   static const std::string name() {return "Vector"; } };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
+{   static const std::string name() {return "Vector_<Vec3>";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
@@ -1090,16 +1092,16 @@ typedef ConcreteClass Self;                                                    \
 typedef SuperClass    Super;                                                   \
 OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 
-// For nontemplate classes, the class name is identical to the supplied
+// For non-template classes, the class name is identical to the supplied
 // ConcreteClass argument.
 #define OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass)             \
-static const std::string& getClassName()                                             \
+static const std::string& getClassName()                                       \
 {   static std::string name(#ConcreteClass); return name; }
 
 // For template classes ConcreteClass<TemplateArg>, we construct the class
 // name by assembling the pieces.
 #define OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass)          \
-static const std::string& getClassName()                                             \
+static const std::string& getClassName()                                       \
 {   static std::string name = #ConcreteClass "_"                               \
                               + Object_GetClassName<TArg>::name()              \
                               + "_";                                           \
@@ -1108,8 +1110,8 @@ static const std::string& getClassName()                                        
 // This provides definitions for the two Object pure virtuals clone() and
 // getConcreteClassName().
 #define OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override {return new ConcreteClass(*this);}    \
-const std::string& getConcreteClassName() const override                    \
+ConcreteClass* clone() const override {return new ConcreteClass(*this);}       \
+const std::string& getConcreteClassName() const override                       \
 {   return getClassName(); }                                                   \
 private:
 
@@ -1118,19 +1120,19 @@ private:
 // which allows it to be invoked ConcreteClass::clone() and return the correct
 // pointer type.
 #define OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override = 0;                                  \
-const std::string& getConcreteClassName() const override = 0;               \
+ConcreteClass* clone() const override = 0;                                     \
+const std::string& getConcreteClassName() const override = 0;                  \
 private:
 
-// Add public static method declaration in class to assist in downcasting arbitrary objects 
-// to the new type to support dynamic casting across JNI.
+// Add public static method declaration in class to assist in downcasting
+// arbitrary objects to the new type to support dynamic casting across JNI.
 #define OpenSim_OBJECT_JAVA_DEFS(thisClass) \
   public: \
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
   } \
-  virtual void assign(Object &aObject) \
+  void assign(Object &aObject) override \
   { \
       if (safeDownCast(&aObject)!=0) { \
           *this = *((thisClass*)(&aObject)); \

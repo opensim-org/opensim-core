@@ -1,7 +1,7 @@
 #ifndef OPENSIM_PLANAR_JOINT_H_
 #define OPENSIM_PLANAR_JOINT_H_
-/* -------------------------------------------------------------------------- *
- *                          OpenSim:  SliderJoint.h                           *
+/* -------------------------------------------------------- ----------------- *
+ *                         OpenSim:  PlanarJoint.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -33,7 +33,6 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
-
 A class implementing a Planar joint. The underlying implementation
 in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three
 ordered mobilities; rotation about Z and translation in X then Y.
@@ -42,37 +41,17 @@ ordered mobilities; rotation about Z and translation in X then Y.
 
 @author Ajay Seth
 */
-
-
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
-private:
-    static const int _numMobilities = 3;
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+    /** Specify the Coordinates of the GimbalJoint */
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
 
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-    // CONSTRUCTION
-    PlanarJoint();
-
-    // Convenience constructor
-    PlanarJoint(const std::string &name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse = false);
-
-    int numCoordinates() const { return _numMobilities; }
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
 
 protected:
     /** Model component interface */

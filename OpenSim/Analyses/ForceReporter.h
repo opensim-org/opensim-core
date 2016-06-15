@@ -71,7 +71,7 @@ protected:
 public:
     ForceReporter(Model *aModel=0);
     ForceReporter(const std::string &aFileName);
-    // Copy constrctor and virtual copy 
+    // Copy constructor and virtual copy 
     ForceReporter(const ForceReporter &aObject);
     virtual ~ForceReporter();
 
@@ -102,8 +102,14 @@ public:
     {
         return _forceStore;
     }
+    
+    /** Get forces table.                                                     */
+    TimeSeriesTable getForcesTable() const {
+        return _forceStore.getAsTimeSeriesTable();
+    }
+
     // MODEL
-    virtual void setModel(Model& aModel);
+    void setModel(Model& aModel) override;
 
     //--------------------------------------------------------------------------
     // ANALYSIS
@@ -111,12 +117,12 @@ public:
     void includeConstraintForces(bool flag) {_includeConstraintForces = flag;}
 
 
-    virtual int
-        begin(SimTK::State& s );
-    virtual int
-        step(const SimTK::State& s, int setNumber );
-    virtual int
-        end(SimTK::State& s );
+    int
+        begin(SimTK::State& s ) override;
+    int
+        step(const SimTK::State& s, int setNumber ) override;
+    int
+        end(SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );
@@ -125,9 +131,9 @@ protected:
     // IO
     //--------------------------------------------------------------------------
 public:
-    virtual int
+    int
         printResults(const std::string &aBaseName,const std::string &aDir="",
-        double aDT=-1.0,const std::string &aExtension=".sto");
+        double aDT=-1.0,const std::string &aExtension=".sto") override;
 
 //=============================================================================
 };  // END of class ForceReporter

@@ -35,57 +35,11 @@ using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-UniversalJoint::~UniversalJoint()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-UniversalJoint::UniversalJoint() : Joint()
-{
-    setAuthors("Tim Dorn");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Rotational);
-    coordinateSet[1].setMotionType(Coordinate::Rotational);
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-UniversalJoint::UniversalJoint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) :
-        Joint(name, parent, locationInParent,orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
-{
-    setAuthors("Tim Dorn");
-    constructCoordinates();
-
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    coordinateSet[0].setMotionType(Coordinate::Rotational);
-    coordinateSet[1].setMotionType(Coordinate::Rotational);
-}
-
-//=============================================================================
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
 void UniversalJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     createMobilizedBody<MobilizedBody::Universal>(system);
 }

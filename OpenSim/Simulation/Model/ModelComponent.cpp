@@ -32,19 +32,25 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(nullptr) 
+ModelComponent::ModelComponent() : Component()
 {
-    constructProperty_geometry();
+    constructInfrastructure();
 }
 
+
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
-:   Component(fileName, updFromXMLNode), _model(nullptr)
+:   Component(fileName, updFromXMLNode)
 {
-    constructProperty_geometry();
+    constructInfrastructure();
 }
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
-:   Component(element), _model(nullptr)
+:   Component(element)
+{
+    constructInfrastructure();
+}
+
+void ModelComponent::constructProperties()
 {
     constructProperty_geometry();
 }
@@ -82,13 +88,8 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    int geomSize = getProperty_geometry().size();
-    if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i){
-            addComponent(&upd_geometry(i));
-        }
-    }
 }
+
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {
@@ -97,14 +98,13 @@ void ModelComponent::connectToModel(Model& model)
 }
 
 void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
-    extendAddGeometry(geom);
     // Check that name exists and is unique as it's used to form PathName
     if (geom.getName().empty()){
         bool nameFound = false;
         int index = 1;
         while (!nameFound){
             std::stringstream ss;
-            // generate candiate name
+            // generate candidate name
             ss << getName() << "_geom_" << index;
             std::string candidate = ss.str();
             bool exists = false;
@@ -123,8 +123,11 @@ void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
         }
         
     }
-    append_geometry(geom);
-    return;
+
+    int ix = append_geometry(geom);
+    finalizeFromProperties();
+
+    extendAddGeometry(upd_geometry(ix));
 }
 
 

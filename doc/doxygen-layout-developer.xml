@@ -39,7 +39,8 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="modules" visible="no" title="" intro=""/>
+    <tab type="modules" visible="yes" title="Class Groups"
+        intro="Here is a list of manually-curated class groupings:"/>
     <tab type="namespaces" visible="yes" title="">
       <tab type="namespaces" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>
@@ -66,8 +67,7 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <nestedclasses visible="yes" title="Nested Classes"/>
-      <properties title="OpenSim (XML) Properties"/>
+      <properties title="OpenSim Properties, Outputs, Inputs"/>
       <publicmethods title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -96,6 +96,7 @@
       <friends title=""/>
       <related title="" subtitle=""/>
       <membergroups visible="yes"/>
+      <nestedclasses visible="yes" title="Nested Classes"/>
     </memberdecl>
    
     <detaileddescription title="Detailed Description "/>
@@ -109,7 +110,7 @@
       <functions title=""/>
       <related title=""/>
       <variables title=""/>
-      <properties title="OpenSim (XML) Property Documentation"/>
+      <properties title="OpenSim Property, Output, Input Documentation"/>
       <events title=""/>
     </memberdef>
     

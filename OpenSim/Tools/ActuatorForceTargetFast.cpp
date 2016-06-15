@@ -50,7 +50,7 @@ using SimTK::Matrix;
 #define USE_LINEAR_CONSTRAINT_MATRIX
 
 //==============================================================================
-// DESTRUCTOR & CONSTRUCTIOR(S)
+// DESTRUCTOR & CONSTRUCTOR(S)
 //==============================================================================
 //______________________________________________________________________________
 /**
@@ -147,7 +147,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     }
 #endif
 
-    // use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
+    // use temporary copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
     // will change the muscle states. This is necessary ONLY in the case of deprecated muscles
     SimTK::State tempState = s;
     double activation = 1.0;
@@ -215,7 +215,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
         }
         j++;
     }
-    double pre = p;
+    // double pre = p;
     // If tracking states, add in errors from them squared
     for(int t=0; t<tset.getSize(); t++){
         TrackingTask& ttask = tset.get(t);
@@ -244,7 +244,7 @@ int ActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
     const Set<Actuator>& fSet = _controller->getActuatorSet();
-    double p = 0.0;
+    // double p = 0.0;
     for(int i=0,index=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         Muscle* mus = dynamic_cast<Muscle*>(act);
@@ -292,7 +292,7 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 
     // Use precomputed constraint matrix
     constraints = _constraintMatrix * x + _constraintVector;
-    //cout <<"x = " << x[0] <<" contraintEqn = " << constraints[0] << endl;
+    //cout <<"x = " << x[0] <<" constraintEqn = " << constraints[0] << endl;
 
 #endif
     return(0);

@@ -90,10 +90,16 @@ public:
     static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
     const int& getDocumentVersion() const { return _documentVersion; };
     static void getVersionAsString(const int aVersion, std::string& aString); 
-    Xml::Element getRootDataElement();
+    SimTK::Xml::Element getRootDataElement();
     bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
         bool compareDefaults=false, bool compareVersionNumbers=false);
-    static void addConnector(SimTK::Xml::Element& element, const std::string& connectorTag, const std::string& connectorName, const std::string& connectorValue);
+    static void addConnector(SimTK::Xml::Element& element,
+        const std::string& connectorTag, const std::string& connectorName, 
+        const std::string& connectorValue);
+    static void addPhysicalOffsetFrame(SimTK::Xml::Element& element, const std::string& frameName,
+        const std::string& parentFrameName,
+        const SimTK::Vec3& location, const SimTK::Vec3& orientation);
+
 private:
     static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
     void updateDocumentVersion();

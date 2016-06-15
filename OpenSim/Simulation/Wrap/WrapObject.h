@@ -1,5 +1,5 @@
-#ifndef __WrapObject_h__
-#define __WrapObject_h__
+#ifndef OPENSIM_WRAP_OBJECT_H_
+#define OPENSIM_WRAP_OBJECT_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapObject.h                           *
  * -------------------------------------------------------------------------- *
@@ -24,19 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim {
 
@@ -56,13 +44,31 @@ class PhysicalFrame;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapObject : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Object);
-
-//=============================================================================
-// DATA
-//=============================================================================
+class OSIMSIMULATION_API WrapObject : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(active, bool,
+        "Whether or not the WrapObject is considered active in computing paths");
+
+    OpenSim_DECLARE_PROPERTY(xyz_body_rotation, SimTK::Vec3,
+        "Body-fixed Euler angle sequence for the orientation of the WrapObject");
+
+    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
+        "Translation of the WrapObject.");
+
+    OpenSim_DECLARE_PROPERTY(display_preference, int,
+        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
+
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
+        "Display Color as RGB with each being any value on [0, 1]");
+
+    OpenSim_DECLARE_PROPERTY(quadrant, std::string,
+        "The name of quadrant over which the wrap object is active. "
+        "For example, '+x' or '-y' to set the sidedness of the wrapping.");
+
     enum WrapQuadrant
     {
         allQuadrants,
@@ -82,82 +88,77 @@ public:
         mandatoryWrap    // successful wrap that must be used (e.g., both tangent
     };                  // points are on the constrained side of the wrap object)
 
-protected:
 
-    PropertyDblArray _xyzBodyRotationProp;
-    Array<double>& _xyzBodyRotation;
-
-    PropertyDblVec3 _translationProp;
-    SimTK::Vec3 & _translation;
-
-    PropertyBool _activeProp;
-    bool& _active;
-
-    PropertyStr _quadrantNameProp;
-    std::string& _quadrantName;
-
-    WrapQuadrant _quadrant;
-    int _wrapAxis;
-    int _wrapSign;
-
-    SimTK::ReferencePtr<PhysicalFrame> _body;
-
-    SimTK::Transform _pose;
-    const Model* _model;
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    /** Display Preference to apply to the contact geometry.  **/
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    /** Display Color to apply to the contact geometry.  **/
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color");
-
     WrapObject();
-    WrapObject(const WrapObject& aWrapObject);
     virtual ~WrapObject();
 
-#ifndef SWIG
-    WrapObject& operator=(const WrapObject& aWrapObject);
-#endif
-   void copyData(const WrapObject& aWrapObject);
+    // Use default copy and assignment operator
 
     virtual void scale(const SimTK::Vec3& aScaleFactors);
-    virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody);
+    virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
-    PhysicalFrame& getBody() const { return *_body; }
-    const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
-    const double* getTranslation() const { return &_translation[0]; }
-    bool getActive() const { return _active; }
-    bool getActiveUseDefault() const { return _activeProp.getValueIsDefault(); }
-    const char* getQuadrantName() const { return _quadrantName.c_str(); }
-    bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getValueIsDefault(); }
-    void setQuadrantName(const std::string& aName);
-        const SimTK::Transform& getTransform() const { return _pose; }
+    const PhysicalFrame& getFrame() const;
+    void setFrame(const PhysicalFrame& frame);
+
+    bool getActiveUseDefault() const { 
+        return getProperty_active().getValueIsDefault();
+    }
+    bool getQuadrantNameUseDefault() const {
+        return getProperty_quadrant().getValueIsDefault();
+    }
+    const SimTK::Transform& getTransform() const { return _pose; }
     virtual const char* getWrapTypeName() const = 0;
-    virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
-#ifndef SWIG
-    int wrapPathSegment( const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult) const;
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
-#endif
+
+    // TODO: total SIMM hack!
+    virtual std::string getDimensionsString() const { return ""; }
+
+//=============================================================================
+// WRAPPING
+//=============================================================================
+/**
+* Calculate the wrapping of one path segment over one wrap object.
+* @param state   The State of the model
+* @param aPoint1 The first path point
+* @param aPoint2 The second path point
+* @param aPathWrap An object holding the parameters for this path/wrap-object pairing
+* @param aWrapResult The result of the wrapping (tangent points, etc.)
+* @return The status, as a WrapAction enum
+*/
+    int wrapPathSegment( const SimTK::State& state, 
+                         PathPoint& aPoint1, PathPoint& aPoint2,
+                         const PathWrap& aPathWrap,
+                         WrapResult& aWrapResult) const;
+
+    virtual int wrapLine(const SimTK::State& state,
+                         SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+                         const PathWrap& aPathWrap,
+                         WrapResult& aWrapResult, bool& aFlag) const = 0;
+
     virtual void updateGeometry() {};
 
 protected:
-    void setupProperties();
-    void setupQuadrant();
-    //void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
+   /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
+     * based on the name of the quadrant. finalizeFromProperties() should be
+     * called whenever the quadrant property changes. */
+    void extendFinalizeFromProperties() override;
+
 private:
-    void setNull();
-    void constructProperties();
+    void constructProperties() override;
+
+    SimTK::ReferencePtr<const PhysicalFrame> _frame;
+
+protected:
+
+    WrapQuadrant _quadrant{ WrapQuadrant::allQuadrants };
+    int _wrapAxis{ 0 };
+    int _wrapSign{ 1 };
+
+    SimTK::Transform _pose;
 //=============================================================================
 };  // END of class WrapObject
 //=============================================================================
@@ -165,6 +166,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapObject_h__
+#endif // OPENSIM_WRAP_OBJECT_H_
 
 

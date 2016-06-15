@@ -105,7 +105,7 @@ void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
     SimTK::MobilizedBody roller = _rollingFrame->getMobilizedBody();
     SimTK::MobilizedBody surface = _surfaceFrame->getMobilizedBody();
     
-    // Add a ficticious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
+    // Add a fictitious massless body to be the "Case" reference body coincident with surface for the no-slip constraint
     SimTK::MobilizedBody::Weld  cb(surface, SimTK::Body::Massless());
 
     // Constrain the roller to the surface
@@ -138,7 +138,7 @@ void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& sta
 {
     Super::extendInitStateFromProperties(state);
 
-    // All constraints treated the same as default behavior at initilization
+    // All constraints treated the same as default behavior at initialization
     for(int i=0; i < _numConstraintEquations; i++){
         SimTK::Constraint& simConstraint = 
             updSystem().updMatterSubsystem().updConstraint(_indices[i]);
@@ -173,12 +173,12 @@ void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State
  * Following methods set attributes of the weld constraint */
 void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("rolling_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("rolling_body").setConnecteeName(aBodyName);
 }
 
 void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("surface_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("surface_body").setConnecteeName(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
@@ -307,7 +307,7 @@ bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
 
 bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled)
 {
-    // All constraints treated the same as default behavior i.e. at initilization
+    // All constraints treated the same as default behavior i.e. at initialization
     std::vector<bool> shouldBeOn(_numConstraintEquations, !isDisabled);
 
     // If dynamics has been realized, then this is an attempt to enable/disable the constraint
@@ -371,7 +371,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             
             int sbi = -1;
             int rbi = -1;
-            int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
+            //int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
             
             for(int j=0; j< ncb; j++){
                 if (_surfaceFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
@@ -384,7 +384,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             cout << "Constraint " << i << "  forces:" << endl;
             cout << " Surf body index: " << sbi << " Expressed in: " << anc << endl;
             cout << " Roll body index: " << rbi << " Expressed in: " << anc << endl;
-            bfs.dump(" Constrint body forces:");
+            bfs.dump(" Constraint body forces:");
             */
             bodyForcesInAncestor[0] += bfs[sbi];
             bodyForcesInAncestor[1] += bfs[rbi];

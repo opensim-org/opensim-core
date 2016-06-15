@@ -10,29 +10,29 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on BUILD_DOXYGEN=on NPROC=1
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
     - os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off BUILD_DOXYGEN=off NPROC=3
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
 
 env:
   global:
     # The python tests look for OPENSIM_HOME.
-    - OPENSIM_HOME=~/opensim-install
-    - SWIG_VER=3.0.5
-    - USE_CCACHE=1
-    - CCACHE_COMPRESS=1
-    # for Clang to work with ccache.
-    - CCACHE_CPP2=1
+    - OPENSIM_HOME=~/opensim-core
+    - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
+    - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
+    - SWIG_VER=3.0.6
+    - PATH="$PATH:$TRAVIS_BUILD_DIR/travis_scripts"
+    - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
+    - USE_CACHE=false
 
-cache:
-  - directories: $HOME/.ccache
+cache: false
 
 addons:
   # Dependencies on linux.
@@ -40,57 +40,72 @@ addons:
     sources:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
+      # for clang
+      #- llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
     packages:
       - cmake
       # For Simbody.
       - liblapack-dev
-      # C++11 on Ubuntu. Update to gcc 4.8, which provides full C++11 support.  We
-      # use this script because if building Simbody with C++11, we need gcc-4.8,
-      # and the Travis Ubuntu 12.04 machines have an older version of gcc. Even if
-      # building with Clang, we need the newer libstdc++ that we get by updating to
-      # gcc-4.8.  See https://github.com/travis-ci/travis-ci/issues/979.
-      - g++-4.8
+      - g++-4.9
+      #- clang-3.5
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
-      - doxygen
+      # TOO OLD; see below. - doxygen
       # To run the python tests.
       - python-nose
+      # To send a password to ssh.
+      - sshpass
 
 before_install:
+  ###########################################################################################################
+  # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then export CXX="$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin/clang++"; fi
+  ###########################################################################################################
+  
+  ## Ensure that there are no tabs in source code.
+  - cd $TRAVIS_BUILD_DIR
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
 
   ## Set up environment variables.
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 
-  ## Set up ccache.
-  # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
-  # Put /usr/lib/ccache on the path.
-  - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  # For some reason the Travis CI clang compiler toolchain installation does not
-  # have a symlink in the ccache symlinks directory, so workaround it
-  - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
-  # Without the following lines, ccache causes clang to not print in color.
-  - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
-  - if [ "$CXX" == "clang++" ]; then export CX="clang++ -fcolor-diagnostics"; fi;
+  # Temporary fix until llvm.org/apt is up again. See above.
+  # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
+  
+  ## Temporary hack to find libblas and liblapack.
+  # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
+  # liblapack.so.3 and libblas.so.3. These files don't exist on the 12.04 machines.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir ~/lib; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/liblapack.so ~/lib/liblapack.so.3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/libblas.so ~/lib/libblas.so.3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/lib; fi
+
+  ## Doxygen.
+  # Need a doxygen that is more recent than that available through apt-get.
+  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Install Simbody.
-  # Clone Simbody into the Simbody directory. Don't need its history, and
-  # only need the master branch.
-  - git clone https://github.com/simbody/simbody.git ~/simbody-source --depth 1 --branch master
-  - cd ~/simbody-source
-  # Configure Simbody. No matter how we're compiling OpenSim,
-  # compile Simbody with clang for a faster build (allows us to use 8 procs).
-  - cmake . -DBUILD_VISUALIZER=off -DBUILD_EXAMPLES=off -DCMAKE_INSTALL_PREFIX=~/simbody-install -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$BTYPE
-  # Build Simbody.
-  - make -j8
-  # Test Simbody.
-  - ctest -j8 --output-on-failure
-  # Install Simbody.
-  - make -j8 install
+  # The Simbody travis script uploads the latestsimbody binaries to bintray.
+  - SIMBODYZIP=simbody-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
+  - wget https://dl.bintray.com/chrisdembia/opensim-testing/$SIMBODYZIP
+  # Put Simbody in ~/simbody (-q: quiet).
+  - unzip -q $SIMBODYZIP -d ~
 
   ## Install SWIG to build Java/python wrapping.
   - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
@@ -112,19 +127,67 @@ before_install:
   ## On OSX, we know that testInitState fails; exclude it.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState|testPrescribedForce|testInducedAccelerations|testAssemblySolver|testCMC|testOptimizationExample|testComponents|testForward"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testCMC|testOptimizationExample|testWrapping"; fi
+  
+  ## Set compiler flags.
+  - export CXX_FLAGS="-Werror"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
+
+  # Run superbuild to download, configure, build and install dependencies.
+  - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
+  - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
+  - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - BTK_SOURCE_DIR="${TRAVIS_BUILD_DIR}/dependencies/BTK"
+  - BTK_BUILD_DIR="${OPENSIM_DEPENDENCIES_BUILD_DIR}/BTK"
+  - source DownloadDepBuildFromCache.sh BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+
+  - make -j8
+  
+  #######################################################################################################################
+  # Cache BTK build directory.
+  #######################################################################################################################
+  - source UploadBuildToCache.sh BTKCore $BTK_SOURCE_DIR $BTK_BUILD_DIR
+  
+  # Force some cleanup of homebrew cache so we do not exceed availabe disk space
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; rm -rf "`brew cache`"; fi
+  
 
 install:
-  - mkdir ~/opensim-core-build && cd ~/opensim-core-build
+  #######################################################################################################################
+  # Download the cached build directory, if one exists.
+  #######################################################################################################################
+  - source DownloadBuildFromCache.sh opensim-core $TRAVIS_BUILD_DIR ~/opensim-core-build
+
+  #######################################################################################################################
   # Configure OpenSim.
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody-install -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE
+  #######################################################################################################################
+  - cd ~/opensim-core-build
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+
+  #######################################################################################################################
   # Build OpenSim.
+  #######################################################################################################################
+  - BUILD_START_TIMESTAMP=$(date +%s)
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PyWrap; fi
+  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
+  #######################################################################################################################
+  # Cache OpenSim build directory if current branch is master.
+  #######################################################################################################################
+  - source UploadBuildToCache.sh opensim-core $TRAVIS_BUILD_DIR ~/opensim-core-build
+  - cd ~/opensim-core-build
+
 script:
+  #######################################################################################################################
+  # Find tests to exclude. Add them to TESTS_TO_EXCLUDE.
+  #######################################################################################################################
+  - source FindTestsToExclude.sh
+
   # Test OpenSim.
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
@@ -135,32 +198,67 @@ script:
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
 
   ## Build doxygen documentation.
-  - if [ "$BUILD_DOXYGEN" = "on" ]; then make doxygen; fi
+  - if [ "$DOXY" = "on" ]; then make doxygen; fi
+  
+  ## Install OpenSim. Suppress output.
+  - make -j8 install > /dev/null
 
   ## Test python wrapping.
-  # Install OpenSim. Suppress output.
-  - if [ "$WRAP" = "on" ]; then make -j8 install > /dev/null; fi
   # Add OpenSim libraries to library path.
-  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$OPENSIM_HOME/lib; fi
+  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
   # Go to the python wrapping package directory.
-  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/python; fi
+  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
+    
+  ## Upload doxygen to server for viewing.
+  # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
+  # The `-e "ssh...` is for providing the password andautomatically
+  # accepting the ssh key.
+  # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
+  # MYOSIN_SOURCEFORGE_PASSWORD is a hidden environment variable that we set
+  # at https://travis-ci.org/opensim-org/opensim-core/settings.
+  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  # If we're uploading doxygen, we also want to delete old
+  # doxygen files from the server so they don't build up indefinitely.
+  # However, ssh'ing into the server takes a while, so we only do this
+  # randomly (1% of the time).
+  - if [[ "$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then echo "This build is randomly selected to delete old folders from myosin.sourceforge.net."; fi
+  # Creates an environment at sourceforge that we can ssh into.
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net create; fi
+  # Now that the environment is created, we can run a command on the server.
+  # mindepth and maxdepth makes sure that we only look to delete folders
+  # in the htdocs folder, and we don't look at subdirectories.
+  # We only look for folders (`-type d`).
+  # We delete folders older than 30 days (`-mtime +30`).
+  # The "shutdown" command shuts down the ssh environment.
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
+  
+before_deploy:
+  # Zip up the installation using a file name that identifies where
+  # the binaries were built.
+  - mkdir ~/binstar-packages
+  - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
+  - # Zip up opensim relative to where it's installed.
+  - cd $OPENSIM_HOME/../
+  - zip --recurse-paths --quiet ~/binstar-packages/$ZIPNAME opensim-core
 
-  ## Ensure that there are no tabs in source code.
-  - cd $TRAVIS_BUILD_DIR
-  # GREP returns 0 (true) if there are any matches, and
-  # we don't want any matches. If there are matches,
-  # print a helpful message, and make the test fail by using "false".
-  # The GREP command here checks for any tab characters in the the files
-  # that match the specified pattern. GREP does not pick up explicit tabs
-  # (e.g., literally a \t in a source file).
-  - if grep --recursive --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+  # Paths in the .bintray.json file are relative to the current directory.
+  - cd ~
 
-  # Maximum size of cache is 100 MB.
-  # TODO 100 MB is not big enough. Using default limit of 1 GB for now.
-  #- ccache --max-size 100M
-
-before_cache:
-  # Show cache statistics.
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ccache --show-stats; fi
+deploy:
+  # Uploads to https://bintray.com/chrisdembia/opensim-testing/opensim-core/view
+  #            https://dl.bintray.com/chrisdembia/opensim-testing/
+  # See http://docs.travis-ci.com/user/deployment/bintray/ for help.
+  provider: bintray
+  file: $TRAVIS_BUILD_DIR/doc/.bintray.json
+  user: chrisdembia
+  skip_cleanup: true
+  # API key is encrypted with travis.
+  key: $BINTRAY_API_KEY
+  on:
+    branch: master
+    # Upload for both linux (once) and OSX. Might need to modify the condition
+    # if we change the build matrix.
+    condition: "$DEPLOY = yes"

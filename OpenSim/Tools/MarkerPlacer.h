@@ -50,7 +50,7 @@ class Storage;
  * A class implementing a set of parameters describing how to place markers
  * on a model (presumably after it has been scaled to fit a subject).
  *
- * MarkerPlacer is bundeled with ModelScaler and GenericModelMaker to 
+ * MarkerPlacer is bundled with ModelScaler and GenericModelMaker to 
  * form the ScaleTool
  *
  * @author Peter Loan
@@ -101,12 +101,13 @@ protected:
     PropertyDbl _maxMarkerMovementProp;
     double &_maxMarkerMovement;
 
-    // Whether or not to write write to the designated output files (GUI will set this to false)
+    // Whether or not to write to the designated output files (GUI will set this to false)
     bool _printResultFiles;
     // Whether to move the model markers (set to false if you just want to preview the static pose)
     bool _moveModelMarkers;
 
-    Storage* _outputStorage;
+    // This is cached during processModel() so the GUI can access it.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<Storage>> _outputStorage;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -123,7 +124,8 @@ public:
 #ifndef SWIG
     MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-    bool processModel(Model* aModel, const std::string& aPathToSubject="");
+    bool processModel(Model* aModel,
+            const std::string& aPathToSubject="") const;
 
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -198,7 +200,8 @@ public:
 private:
     void setNull();
     void setupProperties();
-    void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
+    void moveModelMarkersToPose(SimTK::State& s, Model& aModel,
+            MarkerData& aPose) const;
 //=============================================================================
 };  // END of class MarkerPlacer
 //=============================================================================

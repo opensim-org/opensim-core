@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 //==========================================================================================================
-//  testPrescribedForce tests the application of function speciefied forces applied to a body
+//  testPrescribedForce tests the application of function specified forces applied to a body
 //  as a force and torque on the body, with the point force application also a function
 //  Tests Include:
 //      1. No force
@@ -116,14 +116,13 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
         std::stringstream coord_name;
         coord_name << "free_q" << i;
         free_coords.get(i).setName(coord_name.str());
-        free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
     }
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&free);
 
     // Add a PrescribedForce.
-    PrescribedForce force(&ball);
+    PrescribedForce force("forceOnBall", ball);
     if (forceX != NULL)
         force.setForceFunctions(forceX, forceY, forceZ);
     if (pointX != NULL)

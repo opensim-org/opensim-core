@@ -33,51 +33,51 @@ using namespace SimTK;
 
 void testVisModel(string fileName);
 
-// Implmenetation of DecorativeGeometryImplementation that prints the representation to 
+// Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
 class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImplementation
 {
 
-    void implementPointGeometry(const DecorativePoint& dp){
+    void implementPointGeometry(const DecorativePoint& dp) override{
         printout << "DecorativePoint:" << dp.getPoint() << printCommonProps(dp) << std::endl;
     };
-    void implementLineGeometry(const DecorativeLine& dl){
+    void implementLineGeometry(const DecorativeLine& dl) override{
         printout << "DecorativeLine:" << dl.getPoint1() << dl.getPoint2() << printCommonProps(dl) << std::endl;
     };
-    void implementBrickGeometry(const DecorativeBrick& db){
+    void implementBrickGeometry(const DecorativeBrick& db) override{
         printout << "DecorativeBrick:" << db.getHalfLengths() << printCommonProps(db) << std::endl;
     };
-    void implementCylinderGeometry(const DecorativeCylinder& dc){
+    void implementCylinderGeometry(const DecorativeCylinder& dc) override{
         printout << "DecorativeCylinder:" << dc.getHalfHeight() << dc.getRadius() << printCommonProps(dc) << std::endl;
     };
-    void implementCircleGeometry(const DecorativeCircle& dc){
+    void implementCircleGeometry(const DecorativeCircle& dc) override{
         printout << "DecorativeCircle:" << dc.getRadius() << printCommonProps(dc) << std::endl;
     };
-    void implementSphereGeometry(const DecorativeSphere& dp){
+    void implementSphereGeometry(const DecorativeSphere& dp) override{
         printout << "DecorativeSphere:" << dp.getRadius() << printCommonProps(dp) << std::endl;
     };
-    void implementEllipsoidGeometry(const DecorativeEllipsoid& dp){
+    void implementEllipsoidGeometry(const DecorativeEllipsoid& dp) override{
         printout << "DecorativeEllipsoid:" << dp.getRadii() << printCommonProps(dp) << std::endl;
     };
-    void implementFrameGeometry(const DecorativeFrame& dp){
+    void implementFrameGeometry(const DecorativeFrame& dp) override{
         printout << "DecorativeFrame:" << dp.getAxisLength() << printCommonProps(dp) << std::endl;
     };
-    void implementTextGeometry(const DecorativeText& dp){
+    void implementTextGeometry(const DecorativeText& dp) override{
         printout << "DecorativeText:" << dp.getText() << printCommonProps(dp) << std::endl;
     };
-    void implementMeshGeometry(const DecorativeMesh& dp){
+    void implementMeshGeometry(const DecorativeMesh& dp) override{
         printout << "DecorativeMesh:" << dp.getMesh().getNumFaces() << " " << dp.getMesh().getNumVertices() << printCommonProps(dp) << std::endl;
     };
-    void implementMeshFileGeometry(const DecorativeMeshFile& dp){
+    void implementMeshFileGeometry(const DecorativeMeshFile& dp) override{
         printout << "DecorativeMeshFile:" << dp.getMeshFile() << " " << printCommonProps(dp) << std::endl;
     };
-    void implementArrowGeometry(const DecorativeArrow& dp){
+    void implementArrowGeometry(const DecorativeArrow& dp) override{
         printout << "DecorativeArrow:" << dp.getStartPoint() << dp.getEndPoint() << dp.getTipLength() << printCommonProps(dp) << std::endl;
     };
-    void implementTorusGeometry(const DecorativeTorus& dp){
+    void implementTorusGeometry(const DecorativeTorus& dp) override{
         printout << "DecorativeTorus:" << dp.getTorusRadius() << dp.getTubeRadius() << printCommonProps(dp) << std::endl;
     };
-    void implementConeGeometry(const DecorativeCone& dp){
+    void implementConeGeometry(const DecorativeCone& dp) override{
         printout << "DecorativeTorus:" << dp.getBaseRadius() << dp.getDirection() << dp.getHeight() << printCommonProps(dp) << std::endl;
     };
 

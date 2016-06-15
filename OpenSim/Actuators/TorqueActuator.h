@@ -45,7 +45,7 @@ class Model;
 //                           TORQUE ACTUATOR
 //==============================================================================
 /**
- * A TorqueActuatorr applies equal and opposite torques on the two bodies 
+ * A TorqueActuator applies equal and opposite torques on the two bodies 
  * (bodyA and B) that it connects. The torque is applied about an axis
  * specified in ground (global) by default, otherwise it is in bodyA's frame. 
  * The magnitude of the torque is equal to the product of the optimal_force of 
@@ -89,7 +89,7 @@ public:
      @param bodyA   the body that the actuator applies torque to
      @param bodyB   the body that the actuator applies the opposite torque to
      @param axis    the axis about which the torque is applied
-     @param axisInGround flag to inidicate the axis is expressed in ground
+     @param axisInGround flag to indicate the axis is expressed in ground
                            otherwise, it is expressed in bodyA's frame
     */
     TorqueActuator(const PhysicalFrame& bodyA, const PhysicalFrame& bodyB,
@@ -98,7 +98,7 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
     
-    /** Set the 'axis' property to the supplied value; frame is interpreted
+    /** %Set the 'axis' property to the supplied value; frame is interpreted
     according to the 'torque_is_global' property. **/
     void setAxis(const SimTK::Vec3& axis) 
     {   set_axis(axis); }
@@ -106,7 +106,7 @@ public:
     const SimTK::Vec3& getAxis() const 
     {   return get_axis(); }
 
-    /** Set the 'torque_is_global' property that determines how to interpret
+    /** %Set the 'torque_is_global' property that determines how to interpret
     the 'axis' vector; if not global (Ground frame) it is in body A's frame. **/
     void setTorqueIsGlobal(bool isGlobal) 
     {   set_torque_is_global(isGlobal); }
@@ -114,25 +114,27 @@ public:
     bool getTorqueIsGlobal() const
     {   return get_torque_is_global(); }
 
-    /** Set the 'optimal_force' property. **/
+    /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double optimalForce)
     {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/
     double getOptimalForce() const override // Part of Actuator interface.
     {   return get_optimal_force(); }
 
-    /* Set the bodies to which this actuator applies torque. */
+    /** %Set the first body (bodyA) to which this actuator applies torque. */
     void setBodyA(const PhysicalFrame& body);
+    /** %Set the second body (bodyB) to which this actuator applies torque. */
     void setBodyB(const PhysicalFrame& body);
-    /* Get the bodies that this actuator applies torque to. */
+    /** Get the first body (bodyA) to which this actuator applies torque. */
     const PhysicalFrame& getBodyA() const {return *_bodyA;}
+    /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
 //==============================================================================
 // PRIVATE
 //==============================================================================
 private:
-    void constructProperties();
+    void constructProperties() override;
 
     //--------------------------------------------------------------------------
     // Implement Force interface

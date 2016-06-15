@@ -28,8 +28,6 @@
 #include "SimTKcommon/internal/SubsystemGuts.h"
 #include "SimTKcommon/internal/SystemGuts.h"
 
-using namespace SimTK;
-
 namespace OpenSim {
 
 class Model;
@@ -43,43 +41,43 @@ class Model;
 
 // Excluding this from Doxygen. -Sam Hamner
     /// @cond
-class CMCActuatorSystemRep : public System::Guts {
+class CMCActuatorSystemRep : public SimTK::System::Guts {
     public:
     CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") {}
     
     // Required by the System::Guts interface.
-    /*virtual*/ CMCActuatorSystemRep* cloneImpl() const 
+    CMCActuatorSystemRep* cloneImpl() const override 
     {   return new CMCActuatorSystemRep(*this); }
 
     // This system doesn't have constraints, prescribed motion, or events so
     // we don't need to implement any of the related System::Guts methods.
 
-    SimTK_DOWNCAST( CMCActuatorSystemRep, System::Guts );
+    SimTK_DOWNCAST( CMCActuatorSystemRep, SimTK::System::Guts );
 };
 
-class CMCActuatorSystem : public System {
+class CMCActuatorSystem : public SimTK::System {
    public:
    explicit CMCActuatorSystem() {
        adoptSystemGuts( new CMCActuatorSystemRep() );
-       DefaultSystemSubsystem defsub(*this);
+       SimTK::DefaultSystemSubsystem defsub(*this);
    }
 
    SimTK_PIMPL_DOWNCAST( CMCActuatorSystem, System );
 };
 
-class CMCActuatorSubsystemRep : public Subsystem::Guts {
+class CMCActuatorSubsystemRep : public SimTK::Subsystem::Guts {
 
   public:
   CMCActuatorSubsystemRep( Model* model);
 
-  CMCActuatorSubsystemRep* cloneImpl() const;
+  CMCActuatorSubsystemRep* cloneImpl() const override;
   ~CMCActuatorSubsystemRep();
 
   void setCompleteState(const SimTK::State& s);
   const SimTK::State& getCompleteState() const;
 
-  int realizeSubsystemTopologyImpl(State& s) const;
-  int realizeSubsystemDynamicsImpl(const State& s) const;
+  int realizeSubsystemTopologyImpl(SimTK::State& s) const override;
+  int realizeSubsystemDynamicsImpl(const SimTK::State& s) const override;
   void setSpeedCorrections(const double corrections[] );
   void setCoordinateCorrections(const double corrections[] );
   void setSpeedTrajectories(FunctionSet *aSet);
@@ -106,10 +104,10 @@ class CMCActuatorSubsystemRep : public Subsystem::Guts {
   /** Prescribed trajectories of the generalized speeds. */
   FunctionSet *_uSet;
 
-  SimTK_DOWNCAST( CMCActuatorSubsystemRep, Subsystem::Guts );
+  SimTK_DOWNCAST( CMCActuatorSubsystemRep, SimTK::Subsystem::Guts );
 };
 
-class OSIMSIMULATION_API CMCActuatorSubsystem : public Subsystem {
+class OSIMSIMULATION_API CMCActuatorSubsystem : public SimTK::Subsystem {
     public:
     explicit CMCActuatorSubsystem( CMCActuatorSystem& sys, Model* model);
 

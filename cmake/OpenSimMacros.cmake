@@ -36,7 +36,7 @@ function(OpenSimAddLibrary)
     set(options VENDORLIB LOWERINCLUDEDIRNAME)
     set(oneValueArgs KIT AUTHORS)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
-    CMAKE_PARSE_ARGUMENTS(
+    cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     string(TOUPPER "${OSIMADDLIB_KIT}" OSIMADDLIB_UKIT)
@@ -94,13 +94,13 @@ function(OpenSimAddLibrary)
     endif()
     install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
         EXPORT OpenSimTargets
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION "${OSIMADDLIB_LIBRARY_DESTINATION}"
-        ARCHIVE DESTINATION sdk/lib)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
     # Install headers.
     # ----------------
-    set(_INCLUDE_PREFIX sdk/include)
+    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
     if(OSIMADDLIB_VENDORLIB)
         set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
     else()
@@ -179,7 +179,7 @@ function(OpenSimAddTests)
         set(options)
         set(oneValueArgs)
         set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
-        CMAKE_PARSE_ARGUMENTS(
+        cmake_parse_arguments(
             OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
         # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
@@ -233,14 +233,98 @@ function(OpenSimAddApplication APPNAME)
     include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
     add_executable(${APPNAME} ${APPNAME}.cpp)
     target_link_libraries(${APPNAME} osimTools)
-    install(TARGETS ${APPNAME} DESTINATION bin)
+    install(TARGETS ${APPNAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
     set_target_properties(${APPNAME} PROPERTIES
         FOLDER "Applications")
 
     if(${OPENSIM_USE_INSTALL_RPATH})
+        # TODO @executable_path only makes sense on OSX, so if we use RPATH on
+        # Linux we'll have to revisit.
+
+        # bin_dir_to_install_dir is most likely "../"
+        file(RELATIVE_PATH bin_dir_to_install_dir
+            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+            "${CMAKE_INSTALL_PREFIX}")
+        set(bin_dir_to_lib_dir
+            "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
         set_target_properties(${APPNAME} PROPERTIES
-            INSTALL_RPATH "\@executable_path/../lib"
+            INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
             )
     endif()
 
 endfunction()
+
+
+# Function to copy DLL files from dependency install directory into OpenSim 
+# build and install directories. This is a Windows specific function enabled 
+# only for Windows platform. Intention is to allow runtime loader to find all 
+# the required DLLs without need for editing PATH variable.
+function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
+    # On Windows, copy dlls into OpenSim binary directory.
+    if(WIN32)
+        file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
+        if(NOT DLLS)
+            message(FATAL_ERROR "Zero DLLs found in directory "
+                                "${DEP_INSTALL_DIR}.")
+        endif()
+        foreach(DLL IN LISTS DLLS)
+            get_filename_component(DLL_NAME ${DLL} NAME)
+            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+            add_custom_command(OUTPUT ${DLL_NAME}
+                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
+                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}")
+            list(APPEND DLL_NAMES ${DLL_NAME})
+        endforeach()
+        add_custom_target("Copy_${DEP_NAME}_DLLs" ALL DEPENDS ${DLL_NAMES})
+        install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+    endif()
+endfunction()
+
+
+# Discover the file dependencies for an invocation of swig, for use with the
+# DEPENDS field of an add_custom_command().
+#
+# OSIMSWIGDEP_RETURNVAL  is filled with a list of the dependencies.
+# OSIMSWIGDEP_MODULE     is the name of the module (just for messages).
+# OSIMSWIGDEP_INVOCATION is the SWIG command to use to check for dependencies.
+#                        We append `-MM` to this, which asks SWIG for the
+#                        dependencies.
+macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
+                                      OSIMSWIGDEP_MODULE
+                                      OSIMSWIGDEP_INVOCATION)
+    # We must use a macro instead of a function in order to return a value.
+
+    # Assemble dependencies. This command is run during CMake's configure step.
+    message(STATUS
+        "Discovering dependencies for SWIG module ${OSIMSWIGDEP_MODULE}.")
+    execute_process(COMMAND ${SWIG_EXECUTABLE}
+            -MM # List dependencies, but omit files in SWIG library.
+            ${OSIMSWIGDEP_INVOCATION}
+        OUTPUT_VARIABLE _dependencies_makefile
+        RESULT_VARIABLE _successfully_got_dependencies
+            )
+    # Clean up the output, since it's in the form of a makefile
+    # (and we just want a list of file paths).
+    if(${_successfully_got_dependencies} EQUAL 0) # return code 0 is success.
+        # '^.*:' matches the first line of the makefile (the output file path).
+        # '\\\\' matches a single \ (escape for CMake, and escape for regex).
+        string(REGEX REPLACE "(^.*:|\\\\\n)" "" ${OSIMSWIGDEP_RETURNVAL}
+            ${_dependencies_makefile})
+        # Replace spaces with semicolons to create a list of file paths.
+        separate_arguments(${OSIMSWIGDEP_RETURNVAL})
+    else()
+        # In case the variable has a value for previous modules.
+        unset(${OSIMSWIGDEP_RETURNVAL})
+        # If someone ends up here, it's a bug in this CMakeLists.txt.
+        message(AUTHOR_WARNING
+            "Could not determine dependencies for SWIG module ${OSIMSWIGDEP_MODULE}.")
+    endif()
+
+    unset(_dependencies_makefile)
+    unset(_successfully_got_dependencies)
+
+endmacro()
+
+
+
+

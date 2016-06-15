@@ -28,18 +28,6 @@
 
 using namespace OpenSim;
 
-PhysicalOffsetFrame::PhysicalOffsetFrame() : OffsetFrame<PhysicalFrame>()
-{
-    setAuthors("Ajay Seth");
-}
-
-PhysicalOffsetFrame::PhysicalOffsetFrame(const PhysicalFrame& parent,
-    const SimTK::Transform& offset) : 
-        OffsetFrame<PhysicalFrame>(parent, offset)
-{
-    setAuthors("Ajay Seth");
-}
-
 void PhysicalOffsetFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);

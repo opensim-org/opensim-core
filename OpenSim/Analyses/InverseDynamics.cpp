@@ -63,9 +63,9 @@ InverseDynamics::~InverseDynamics()
  */
 InverseDynamics::InverseDynamics(Model *aModel) :
     Analysis(aModel),
+    _numCoordinateActuators(0),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0)
+    _modelWorkingCopy(NULL)
 {
     setNull();
 
@@ -74,7 +74,7 @@ InverseDynamics::InverseDynamics(Model *aModel) :
     }
     else allocateStorage();
 }
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -82,9 +82,9 @@ InverseDynamics::InverseDynamics(Model *aModel) :
  */
 InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
     Analysis(aInverseDynamics),
+    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators)
+    _modelWorkingCopy(NULL)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -313,15 +313,15 @@ record(const SimTK::State& s)
     // Set model Q's and U's
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
-    // Set modeling options for Actuators to be overriden
-    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+    // Set modeling options for Actuators to be overridden
+    for(int i=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
             act->overrideActuation(sWorkingCopy, true);
         }
     }
 
-    // Having updated the model atleast re-realize Model stage!
+    // Having updated the model, at least re-realize Model stage!
     _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Model);
 
     sWorkingCopy.setTime(s.getTime());
@@ -329,12 +329,12 @@ record(const SimTK::State& s)
     sWorkingCopy.setU(s.getU());
 
 
-    // Having updated the states atleast realize to velocity!
+    // Having updated the states, at least realize to velocity!
     _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
 
     int nf = _numCoordinateActuators;
     int nacc = _accelerationIndices.getSize();
-    int nq = _modelWorkingCopy->getNumCoordinates();
+    // int nq = _modelWorkingCopy->getNumCoordinates();
 
 //cout << "\nQ= " << s.getQ() << endl;
 //cout << "\nU= " << s.getU() << endl;
@@ -397,7 +397,7 @@ record(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -451,7 +451,7 @@ begin(SimTK::State& s )
             // Copy whatever forces that are not muscles back into the model
             
             for(int i=0; i<saveForces->getSize(); i++){
-                const Force& f=saveForces->get(i);
+                // const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
                     as.append(saveForces->get(i).clone());
             }
@@ -477,7 +477,7 @@ begin(SimTK::State& s )
         int nacc = _accelerationIndices.getSize();
 
         if(nf < nacc) 
-            throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
+            throw(Exception("InverseDynamics: ERROR- over-constrained system -- need at least as many forces as there are degrees of freedom.\n"));
 
         // Realize to velocity in case there are any velocity dependent forces
         _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
@@ -529,11 +529,11 @@ begin(SimTK::State& s )
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param s state of sytem
+ * @param s state of system
  *
  * @return -1 on error, 0 otherwise.
  */
@@ -551,7 +551,7 @@ step(const SimTK::State& s, int stepNumber )
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *

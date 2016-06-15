@@ -27,7 +27,7 @@ There are lots of ways to contribute to the OpenSim project, and people with wid
 - Ask and/or answer questions on the forum.
 - File bug reports, documentation problems, feature requests, and developer discussion topics using the GitHub [Issue tracker](https://github.com/opensim-org/opensim-core/issues).
 - Submit GitHub Pull Requests providing new features, examples, or bug fixes to code or documentation (see below).
-- If our hard work has helped you with yours, please considering acknowledging your use of OpenSim and encourage others to do so. Please cite the following papers:
+- If our hard work has helped you with yours, please consider acknowledging your use of OpenSim and encourage others to do so. Please cite the following papers:
 
     Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (2007) OpenSim: open-source software to create and analyze dynamic simulations of movement. *IEEE Trans Biomed Eng* 54:1940–50.
 
@@ -41,7 +41,7 @@ Please don't surprise us with a big out-of-the-blue pull request (PR). Preferabl
 
 If you have never made a PR before, there are excellent GitHub tutorials to familiarize you with the concepts and steps like the [GitHub Bootcamp](https://help.github.com/categories/bootcamp/).
 
-When you are ready to make a PR, please adhere to following guidelines:
+When you are ready to make a PR, please adhere to the following guidelines:
 
 1. To help the people who review your pull request, include a detailed description of what changes or additions the PR includes and what you have done to test and verify the changes. Reference the existing Issue (or set of Issues) that documents the problem the PR is adressing (e.g., use ``#<issue_number>`` ). Also, please make sure detailed information about the commits is easily available.
 
@@ -59,6 +59,8 @@ When you are ready to make a PR, please adhere to following guidelines:
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
 
+It is important that reviewers also review the effect that your PR has on the doxygen documentation. To facilitate this, we automatically upload the doxygen documentation for each PR to [myosin.sourceforge.net](http://myosin.sourceforge.net); you can view the documentation for a specific PR at `myosin.sourceforge.net/<issue-number>`.
+
 
 Writing tests
 -------------
@@ -66,10 +68,12 @@ There are directories of tests scattered throughout the repository. Each
 directory contains most of the files (e.g., .osim model files) necessary to run
 the tests. When building, these files are copied over into the build tree. Some
 of these files are used by multiple tests from different parts of the
-repository. To avoid duplicating such files within the repository, they should
+repository. To avoid duplicating such files within the repository, the files should
 go into the `OpenSim/Tests/shared` directory. You can then use the
-`OPENSIM_COPY_SHARED_TEST_FILES` CMake macro (in `cmake/OpenSimMacros.osim`) to
-copy the necessary shared files to the proper build directory.
+`OpenSimCopySharedTestFiles` CMake macro (in `cmake/OpenSimMacros.osim`) to
+copy the necessary shared files to the proper build directory. *DO NOT CHANGE* files
+that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
+that rely on some obscure aspect of the files.
 
 Checking for Memory Leaks through GitHub
 ----------------------------------------
@@ -220,7 +224,8 @@ We have some conventional starting verbs; you should use the same ones when they
 `realize` | Initiate state-dependent computations and cache results internally; no result returned.
 `add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
-`extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`extend`  | A virtual method intended to extend a defining capability of a Base class; can either be pure virtual or not. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`implement` | A virtual method intended to implement a *pure* virtual function of a Base class. The derived class's implementation does *not* call any method on `Super`.
 
 ### ``throw`` and ``return`` are not functions
 
@@ -308,7 +313,8 @@ Peter Loan         |              |Original code base; SIMM Translator; WrapObje
 Kate Saul          |              |Original MuscleAnalysis
 Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
-
+Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
+Andrew LaPre       |@ankela       |IK error output to file
 
 Contributor License Agreement
 -----------------------------

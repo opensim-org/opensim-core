@@ -32,6 +32,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 #include <ctime>    // for clock()
 
@@ -93,13 +94,13 @@ int main()
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor
-        ground.addMeshGeometry("checkered_floor.vtp");
+        ground.attachMeshGeometry("checkered_floor.vtp");
         // add anchors for the muscles to be fixed to
         Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        leftAnchorGeometry.setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+        leftAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(0.0, 1.0, 0.0));
         Brick rightAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        rightAnchorGeometry.setColor(SimTK::Vec3(1.0, 1.0, 0.0));
-        rightAnchorGeometry.setOpacity(0.5);
+        rightAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry.upd_Appearance().set_opacity(0.5);
 
         // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
         // transform anchors to be placed at the two extremes of the sliding block (to come)
@@ -115,11 +116,11 @@ int main()
         
         Cylinder cylGeometry(0.2, .3);
         cylGeometry.setFrameName("CylAnchor");
-        cylGeometry.setRepresentation(Geometry::DrawWireframe);
+        cylGeometry.upd_Appearance().set_representation(VisualRepresentation::DrawWireframe);
         ground.addGeometry(cylGeometry);
 
         Ellipsoid ellipsoidGeometry(0.2, .7, .5);
-        ellipsoidGeometry.setColor(SimTK::Vec3(1.0, .5, 0.1));
+        ellipsoidGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, .5, 0.1));
         ellipsoidGeometry.setFrameName("EllipsoidAnchor");
         ground.addGeometry(ellipsoidGeometry);
         
@@ -131,11 +132,10 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->addMeshGeometry("block.vtp");
+        block->attachMeshGeometry("block.vtp");
         
-        Sphere sphereGeometry(0.1);
-        sphereGeometry.setFrameName(block->getName());
-        block->addGeometry(sphereGeometry);
+        // Use attachGeometry to set frame name & addGeometry
+        block->attachGeometry(Sphere(0.1));
         
         // FREE JOINT
 
@@ -157,7 +157,7 @@ int main()
         jointCoordinateSet[5].setRange(positionRange);
 
         // GRAVITY
-        // Obtaine the default acceleration due to gravity
+        // Obtain the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
 
         // Define non-zero default states for the free joint
@@ -239,8 +239,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function
@@ -270,7 +269,7 @@ int main()
         // muscle2 control has slope of 0.95 starting 0.05 at t = 0
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
         
-        // Set the indiviudal muscle control functions for the prescribed muscle controller
+        // Set the individual muscle control functions for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
         muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 
@@ -309,8 +308,8 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        double mfv1 = muscle1->getFiberVelocity(si);
-        double mfv2 = muscle2->getFiberVelocity(si);
+        /*double mfv1 = */muscle1->getFiberVelocity(si);
+        /*double mfv2 = */muscle2->getFiberVelocity(si);
 
         // Create the force reporter for obtaining the forces applied to the model
         // during a forward simulation
@@ -337,11 +336,11 @@ int main()
         // SAVE THE RESULTS TO FILE //
         //////////////////////////////
         // Save the model states from forward integration
-        Storage statesDegrees(manager.getStateStorage());
-        statesDegrees.print("tugOfWar_states.sto");
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
 
-        // Save the forces
-        reporter->getForceStorage().print("tugOfWar_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
     }
     catch (const std::exception& ex)
     {

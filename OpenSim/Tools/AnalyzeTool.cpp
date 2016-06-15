@@ -59,8 +59,8 @@ AnalyzeTool::AnalyzeTool() :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
 }
@@ -79,8 +79,8 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(aLoadModelAndInput),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(aLoadModelAndInput)
 {
     setNull();
     updateFromXMLDocument();
@@ -111,8 +111,8 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
     setModel(aModel);
@@ -136,7 +136,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Tool:
@@ -145,7 +145,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Tool(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -211,8 +211,8 @@ void AnalyzeTool::setupProperties()
                  "The first column contains the time.  The rest of the columns contain the states in the order "
                  "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
                  "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
-                 "one of the time stamps in this file, inerpolation is NOT used because it is sometimes necessary to "
-                 "an exact set of states for analyses.  Instead, the closest earlier set of states is used.";
+                 "one of the time stamps in this file, interpolation is NOT used because it is sometimes necessary to "
+                 "use an exact set of states for analyses.  Instead, the closest earlier set of states is used.";
     _statesFileNameProp.setComment(comment);
     _statesFileNameProp.setName("states_file");
     _propertySet.append( &_statesFileNameProp );
@@ -254,7 +254,7 @@ operator=(const AnalyzeTool &aTool)
     // BASE CLASS
     AbstractTool::operator=(aTool);
 
-    // MEMEBER VARIABLES
+    // MEMBER VARIABLES
     _statesFileName = aTool._statesFileName;
     _coordinatesFileName = aTool._coordinatesFileName;
     _speedsFileName = aTool._speedsFileName;
@@ -291,7 +291,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     stateNames = aModel.getStateVariableNames();
     stateNames.insert(0, "time");
     
-    // Preserve the labels from the data file which are typically abreviated
+    // Preserve the labels from the data file which are typically abbreviated
     // label[0] = time
     for(int i=1; i<=nq; ++i){
         stateNames[i] = qLabels[i];
@@ -514,7 +514,7 @@ bool AnalyzeTool::run(bool plotting)
     }
 
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
     // Call initSystem except when plotting
@@ -562,7 +562,7 @@ bool AnalyzeTool::run(bool plotting)
     _statesStore->getTime(iInitial,ti);
     _statesStore->getTime(iFinal,tf);
 
-    // It is rediculous too start before the specified time! So check we aren't doing something stupid.
+    // It is ridiculous to start before the specified time! So check we aren't doing something stupid.
     //while(ti < _ti){
     //  _statesStore->getTime(++iInitial,ti);
     //}
@@ -602,7 +602,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
-    double tPrev=0.0,t=0.0,dt=0.0;
+    double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;
     int ny = s.getNY();
     Array<double> dydt(0.0,ny);
     Array<double> yFromStorage(0.0,ny);
@@ -613,8 +613,37 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     SimTK::Vector stateData;
     stateData.resize(numOpenSimStates);
 
+    // There is no guarantee that the order in which a model had written out
+    // its states will be the same order in which the states will be created,
+    // allocated and listed in any future recreation of the model and its
+    // system. Therefore, it is imperative that we ensure that the state
+    // values being read in are reordered according to the model's order.
+    // The model's order is given by its getStateVariableNames() so we can 
+    // compare to the column labels of the storage and construct a dataToModel
+    // mapping.
+    const Array<std::string>& stateNames = aStatesStore.getColumnLabels();
+    Array<std::string> modelStateNames = aModel.getStateVariableNames();
+
+    int nsData = stateNames.size() - 1;  //-1 since time is a column
+    Array<int> dataToModel(-1, nsData);
+    for (int k = 0; k < nsData; ++k) {
+        for (int j = 0; j < modelStateNames.size(); ++j) {
+            if (stateNames[k+1] == modelStateNames[j]) { //+1 skip "time"
+                dataToModel[k] = j;
+            }
+        }
+    }
+
+    // It is possible that there are internal states or that future modeling
+    // choices add state variables that are not known to the modeler/user.
+    // In which case we rely on the model to supply reasonable defaults and
+    // assume all the important/necessary state values for running an analysis
+    // are provided by the Storage. Here we initialize the state values to their
+    // model defaults.
+    SimTK::Vector stateValues = aModel.getStateVariableValues(s);
+
     for(int i=iInitial;i<=iFinal;i++) {
-        tPrev = t;
+        // tPrev = t;
         aStatesStore.getTime(i,s.updTime()); // time
         t = s.getTime();
         aModel.setAllControllersEnabled(true);
@@ -622,11 +651,11 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         aStatesStore.getData(i,numOpenSimStates,&stateData[0]); // states
         // Get data into local Vector and assign to State using common utility
         // to handle internal (non-OpenSim) states that may exist
-        Array<std::string> stateNames = aStatesStore.getColumnLabels();
-        for (int j=0; j<stateData.size(); ++j){
-            // storage labels included time at index 0 so +1 to skip
-            aModel.setStateVariableValue(s, stateNames[j+1], stateData[j]);
+
+        for (int k=0; k < nsData; ++k) {
+            stateValues[dataToModel[k]] = stateData[k];
         }
+        aModel.setStateVariableValues(s, stateValues);
        
         // Adjust configuration to match constraints and other goals
         aModel.assemble(s);
@@ -645,7 +674,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
                 cout << "Reason: " << e.what() << endl;
             }
         }
-        // Make sure model is atleast ready to provide kinematics
+        // Make sure model is at least ready to provide kinematics
         aModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         if(i==iInitial) {

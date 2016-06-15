@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2015 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Matthew Millard, Ajay Seth                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -38,25 +38,29 @@ using namespace std;
 */
 void testArm26(const string& muscleModelClassName, double atol, double ftol);
 
+void testLapackErrorDLASD4();
+
+void testModelWithPassiveForces();
+
 int main()
 {
     Array<string> muscleModelNames;
-    muscleModelNames.append("Thelen2003Muscle_Deprecated"); 
-    muscleModelNames.append("Thelen2003Muscle");    
+    muscleModelNames.append("Thelen2003Muscle_Deprecated");
+    muscleModelNames.append("Thelen2003Muscle");
     muscleModelNames.append("Millard2012EquilibriumMuscle");
     muscleModelNames.append("Millard2012AccelerationMuscle");
-
+    
     // Tolerances for the differences between the current models
     // and the 'standard' solution, which was closest to using 
-    // Thelen2003Muscle_Deprecated musle formulation.
+    // Thelen2003Muscle_Deprecated muscle formulation.
     double actTols[4] = {0.005, 0.025, 0.04, 0.04};
     double forceTols[4] = {0.5, 4, 5, 6};
-
+    
     SimTK::Array_<std::string> failures;
     
     for(int i=0; i< muscleModelNames.getSize(); ++i){
         try { // regression test for the Thelen deprecate muscle
-              // otherwise verify that SO runs with the new models
+           // otherwise verify that SO runs with the new models
             testArm26(muscleModelNames[i], actTols[i], forceTols[i]);
         }
         catch (const std::exception& e) {
@@ -64,7 +68,23 @@ int main()
             failures.push_back("testArm26_"+muscleModelNames[i]);
         }
     }
-  
+    
+    try {
+        testModelWithPassiveForces();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testModelWithPassiveForces");
+    }
+    
+    try {
+        testLapackErrorDLASD4();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testLapackErrorDLASD4");
+    }
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -114,7 +134,6 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     // Uncomment to use muscle model specific standard
     //Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
-
     CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
                                     Array<double>(actTol, 6),
                                     __FILE__, __LINE__, 
@@ -156,4 +175,47 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
  
     cout << resultsDir << ": testArm26 with bounds passed" << endl;
     cout << "=============================================================\n" << endl;
+}
+
+void testModelWithPassiveForces() {
+    AnalyzeTool analyze("staticoptimization_spring_Setup.xml");
+    analyze.run();
+    std::string resultsDir("ResultsSO_spring");
+    Storage activations(resultsDir + "/walk_subject01_ankle_spring_StaticOptimization_activation.sto");
+    Storage stdActivations("std_walk_subject01_ankle_spring_StaticOptimization_activation.sto");
+
+    Storage forces(resultsDir + "/walk_subject01_ankle_spring_StaticOptimization_force.sto");
+    Storage stdForces("std_walk_subject01_ankle_spring_StaticOptimization_force.sto");
+
+    CHECK_STORAGE_AGAINST_STANDARD(activations, stdActivations,
+        Array<double>(0.025, 28),
+        __FILE__, __LINE__,
+        "ModelWithPassiveForces activations failed");
+
+    CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
+        Array<double>(2.5, 48),
+        __FILE__, __LINE__,
+        "ModelWithPassiveForces forces failed.");
+    cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;
+
+}
+
+void testLapackErrorDLASD4() {
+    // With OpenSim 3.2 64bit, the 64 bit lapack library (in Simbody 3.3.1) 
+    // crashes with an error[1] if there are not enough actuators (or under 
+    // other similar circumstances). With Simbody 3.5.2, the 64 bit Windows lapack
+    // libraries are updated and do not have this bug.
+    // This test ensures that the bug is gone. We only expect this test to fail
+    // on Windows 64 bit build using Simbody 3.3.1 or earlier.
+    // What this function should do is print SimTK exceptions about not being 
+    // able to satisfy constraints, but nothing should crash and 
+    // no exceptions should reach this function.
+    // 
+    // The error is caused by using unfiltered inverse kinematics as input.
+    //
+    // [1] The error was:
+    //     "** On entry to DLASD4 parameter number -1 had an illegal value"
+    AnalyzeTool analyze("subject01_Setup_StaticOptimization.xml");
+    analyze.setResultsDir("Results_subject01_StaticOptimization_LapackError");
+    analyze.run();
 }

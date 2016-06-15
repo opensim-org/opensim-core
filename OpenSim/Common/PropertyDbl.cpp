@@ -170,7 +170,7 @@ getValueDbl() const
 /**
  * Get a constant String representing the value of this property.
  *
- * @return Constant String represeting the value of this property.
+ * @return Constant String representing the value of this property.
  */
 string PropertyDbl::
 toString() const

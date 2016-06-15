@@ -78,7 +78,7 @@ public:
     complicated; here we're just setting/clearing visualization flags so no 
     synchronization is required. Note that the Visualizer's InputSilo class 
     handles synchronization automatically but this one does not. */
-    /*virtual*/ bool menuSelected(int menu, int item) {
+    bool menuSelected(int menu, int item) override {
         if (menu != ShowMenuId) return false; // some other menu
         ModelDisplayHints& hints = _model.updDisplayHints();
         switch(item) {
@@ -155,8 +155,8 @@ void DefaultGeometry::generateDecorations
                     if (cylinder != NULL) {
                         Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
                         geometry.push_back(
-                            DecorativeCylinder(cylinder->getRadius(), 
-                                               cylinder->getLength()/2)
+                            DecorativeCylinder(cylinder->get_radius(), 
+                                               cylinder->get_length()/2)
                                 .setTransform(X_GW).setResolution(_dispWrapResolution)
                                 .setColor(color).setOpacity(_dispWrapOpacity));
                     }
@@ -196,9 +196,7 @@ void DefaultGeometry::generateDecorations
         const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const PhysicalFrame& body = contactGeometries.get(i).getBody();
-            const Transform& X_GB = 
-                matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
+            const PhysicalFrame& frame = contactGeometries.get(i).getFrame();
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
@@ -207,10 +205,18 @@ void DefaultGeometry::generateDecorations
                 ContactSphere* sphere = 
                     dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
                 if (sphere != NULL) {
-                    Transform X_GW = X_GB*sphere->getTransform();
+                    // G: Ground
+                    // F: PhysicalFrame that this ContactGeometry is connected
+                    //    to
+                    // P: the frame defined (relative to F) by the location and
+                    //    orientation properties.
+                    const auto& X_GF =
+                        sphere->getFrame().getTransformInGround(state);
+                    const auto& X_FP = sphere->getTransform();
+                    Transform X_GP = X_GF * X_FP;
                     geometry.push_back(
                         DecorativeSphere(sphere->getRadius())
-                            .setTransform(X_GW).setResolution(_dispContactResolution)
+                            .setTransform(X_GP).setResolution(_dispContactResolution)
                             .setColor(color).setOpacity(_dispContactOpacity));
                 }
             }
@@ -245,7 +251,7 @@ bool ModelVisualizer::
 findGeometryFile(const Model& aModel, 
                  const std::string&          geoFile,
                  bool&                       geoFileIsAbsolute,
-                 SimTK::Array_<std::string>& attempts) const
+                 SimTK::Array_<std::string>& attempts)
 {
     attempts.clear();
     std::string geoDirectory, geoFileName, geoExtension; 

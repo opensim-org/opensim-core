@@ -47,7 +47,7 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * An abstract Tool for defining tools for perfroming a dynamics analysis 
+ * An abstract Tool for defining tools for performing a dynamics analysis 
  * with a given model. For example, InverseDynamics and ForwardDynamics Tools
  * derive from DynamicsTool, which provides convenient method for performing
  * and dynamics analysis over or to produce a trajectory in time.
@@ -74,7 +74,7 @@ protected:
     PropertyDblVec2 _timeRangeProp;
     SimTK::Vec2 &_timeRange;
 
-    /** Idenitify the list of forces to be ignored for computing dynamics */
+    /** Identify the list of forces to be ignored for computing dynamics */
     PropertyStrArray _excludedForcesProp;
     Array<std::string> &_excludedForces;
 
@@ -147,7 +147,7 @@ public:
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
                                      Model& aModel, const Storage *loadKinematics=NULL);
 
-    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
+    virtual bool run() override SWIG_DECLARE_EXCEPTION=0;
 
 
 //=============================================================================

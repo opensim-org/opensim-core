@@ -357,7 +357,7 @@ ReadToTokenLine(istream &aIS,const string &aToken)
  *
  * The terminating carriage return is not included in the returned string.
  *
- * This handles both dos and unix style line endings.
+ * This handles both DOS- and Unix-style line endings.
  *
  * @param aIS Input stream.
  * @return Line of text not including the terminating carriage return.
@@ -505,7 +505,7 @@ getCwd()
 {
     char buffer[PATH_MAX];
 #if defined __linux__ || defined __APPLE__
-    char* ptr = getcwd(buffer, PATH_MAX); 
+    auto ptr = getcwd(buffer, PATH_MAX); (void)ptr;
 #else
     _getcwd(buffer, PATH_MAX);
 #endif
@@ -535,7 +535,7 @@ getParentDirectory(const string& fileName)
 
 //_____________________________________________________________________________
 /**
- * Get filename part of a passed in URI (also works if a dos/unix path is passed in)
+ * Get filename part of a passed in URI (also works if a DOS/Unix path is passed in)
  * 
 */
 string IO::

@@ -256,7 +256,7 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     }
 }
 
-// for any post XML deserialization intialization
+// for any post XML deserialization initialization
 void CorrectionController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
@@ -290,7 +290,7 @@ void CorrectionController::extendConnectToModel(Model& model)
         _model->getForceSet().getSize(), _kv, _kp );
 }
 
-// for any intialization requiring a state or the complete system 
+// for any initialization requiring a state or the complete system 
 void CorrectionController::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);

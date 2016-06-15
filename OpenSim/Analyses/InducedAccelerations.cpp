@@ -68,15 +68,15 @@ InducedAccelerations::~InducedAccelerations()
  */
 InducedAccelerations::InducedAccelerations(Model *aModel) :
     Analysis(aModel),
+    _coordSet(*new CoordinateSet()),
+    _bodySet(*new BodySet()),
     _coordNames(_coordNamesProp.getValueStrArray()),
     _bodyNames(_bodyNamesProp.getValueStrArray()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
     _forceThreshold(_forceThresholdProp.getValueDbl()),
     _computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
-    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
-    _bodySet(*new BodySet()),
-    _coordSet(*new CoordinateSet())
+    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool())
 {
     // make sure members point to NULL if not valid. 
     setNull();
@@ -96,15 +96,15 @@ InducedAccelerations::InducedAccelerations(Model *aModel) :
  */
 InducedAccelerations::InducedAccelerations(const std::string &aFileName):
     Analysis(aFileName, false),
+    _coordSet(*new CoordinateSet()),
+    _bodySet(*new BodySet()),
     _coordNames(_coordNamesProp.getValueStrArray()),
     _bodyNames(_bodyNamesProp.getValueStrArray()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
     _forceThreshold(_forceThresholdProp.getValueDbl()),
     _computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
-    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
-    _bodySet(*new BodySet()),
-    _coordSet(*new CoordinateSet())
+    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool())
 {
     setNull();
 
@@ -112,7 +112,7 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
     updateFromXMLDocument();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /*
  * Copy constructor.
@@ -120,15 +120,15 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
  */
 InducedAccelerations::InducedAccelerations(const InducedAccelerations &aInducedAccelerations):
     Analysis(aInducedAccelerations),
+    _coordSet(*new CoordinateSet()),
+    _bodySet(*new BodySet()),
     _coordNames(_coordNamesProp.getValueStrArray()),
     _bodyNames(_bodyNamesProp.getValueStrArray()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
     _forceThreshold(_forceThresholdProp.getValueDbl()),
     _computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
-    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
-    _bodySet(*new BodySet()),
-    _coordSet(*new CoordinateSet())
+    _reportConstraintReactions(_reportConstraintReactionsProp.getValueBool())
 {
     setNull();
     // COPY TYPE AND NAME
@@ -211,7 +211,7 @@ void InducedAccelerations::setupProperties()
     _propertySet.append(&_constraintSetProp);
 
     _forceThresholdProp.setName("force_threshold");
-    _forceThresholdProp.setComment("The minimum amount of external force (N) that is neccessary to be replaced with a constraint.");
+    _forceThresholdProp.setComment("The minimum amount of external force (N) that is necessary to be replaced with a constraint.");
     _propertySet.append(&_forceThresholdProp);
 
     _computePotentialsOnlyProp.setName("compute_potentials_only");
@@ -588,7 +588,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             const SimTK::Vector &appliedMobilityForces = _model->getMultibodySystem().getMobilityForces(s_analysis, SimTK::Stage::Dynamics);
             appliedMobilityForces.dump("All Applied Mobility Forces");
         
-            // Get all applied body forces like those from conact
+            // Get all applied body forces like those from contact
             const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = _model->getMultibodySystem().getRigidBodyForces(s_analysis, SimTK::Stage::Dynamics);
             appliedBodyForces.dump("All Applied Body Forces");
 
@@ -710,7 +710,7 @@ int InducedAccelerations::record(const SimTK::State& s)
         _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
 
         // Sanity check that constraints hasn't totally changed the configuration of the model
-        double error = (Q-s_analysis.getQ()).norm();
+        // double error = (Q-s_analysis.getQ()).norm();
 
         // Report reaction forces for debugging
         /*
@@ -808,7 +808,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
     _model = _model->clone();
 
     SimTK::State s_copy = s;
-    double time = s_copy.getTime();
+    // double time = s_copy.getTime();
 
     _externalForces.setSize(0);
 
@@ -833,7 +833,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
     // Get value for gravity
     _gravity = _model->getGravity();
 
-    SimTK::State &s_analysis =_model->initSystem();
+    /*SimTK::State &s_analysis =*/_model->initSystem();
 
     // UPDATE VARIABLES IN THIS CLASS
     constructDescription();
@@ -845,7 +845,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
+ * This method is meant to be called at the beginning of an integration in
  * Model::integBeginCallback() and has the same argument list.
  *
  * @param s SimTK:State

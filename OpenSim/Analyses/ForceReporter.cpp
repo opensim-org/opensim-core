@@ -52,9 +52,10 @@ ForceReporter::~ForceReporter()
  *
  * @param aModel Model for which the Forces are to be recorded.
  */
-ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(Model *aModel) :   
+    Analysis(aModel),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     // NULL
     setNull();
@@ -75,9 +76,10 @@ ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
  *
  * @param aFileName File name of the document.
  */
-ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, false),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(const std::string &aFileName): 
+    Analysis(aFileName, false),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     setNull();
 
@@ -91,7 +93,7 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
     allocateStorage();
 }
 
-// Copy constrctor and virtual copy 
+// Copy constructor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -99,8 +101,8 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
  */
 ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
     Analysis(aForceReporter),
-    _forceStore(aForceReporter._forceStore),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(aForceReporter._forceStore)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -299,7 +301,7 @@ int ForceReporter::record(const SimTK::State& s)
  * necessary initializations may be performed.
  *
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
@@ -335,7 +337,7 @@ begin(SimTK::State& s)
  *
  * When called during an integration, this method is meant to be called 
  *
- * This method should be overriden in derived classes.  It is
+ * This method should be overridden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
@@ -359,7 +361,7 @@ step(const SimTK::State& s, int stepNumber )
  *
  * This method is meant to be called at the end of an integration 
  *
- * This method should be overriden in the child class.  It is
+ * This method should be overridden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  * @param state System state

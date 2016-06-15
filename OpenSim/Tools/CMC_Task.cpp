@@ -187,7 +187,7 @@ setupProperties()
 
     Vec3 r(0.0);
     _propR0.setComment("Direction vector[3] for component 0 of a task. "
-        "Joint tasks do not use this propery.");
+        "Joint tasks do not use this property.");
     _propR0.setName("r0");
     _propR0.setValue(r);
     _propertySet.append(&_propR0);
@@ -910,7 +910,7 @@ void CMC_Task::
 computeJacobian()
 {
     printf("CMC_Task.computeJacobian: ERROR- this method should be ");
-    printf("overriden in derived classes.\n");
+    printf("overridden in derived classes.\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -924,7 +924,7 @@ void CMC_Task::
 computeEffectiveMassMatrix()
 {
     printf("CMC_Task.computeEffectiveMassMatrix: ERROR- this method ");
-    printf("should be overriden in derived classes.\n");
+    printf("should be overridden in derived classes.\n");
 }
 
 

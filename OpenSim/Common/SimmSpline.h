@@ -44,7 +44,7 @@ namespace OpenSim {
  * the behavior of a joint function created in SIMM.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Peter Loan
  * @version 1.0
@@ -84,7 +84,7 @@ public:
     SimmSpline(const SimmSpline &aSpline);
     virtual ~SimmSpline();
 
-    virtual void init(Function* aFunction);
+    void init(Function* aFunction) override;
 
 private:
     void setNull();
@@ -120,13 +120,13 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    double calcValue(const SimTK::Vector& x) const;
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
-    int getArgumentSize() const;
-    int getMaxDerivativeOrder() const;
-    SimTK::Function* createSimTKFunction() const;
+    double calcValue(const SimTK::Vector& x) const override;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const override;
+    int getArgumentSize() const override;
+    int getMaxDerivativeOrder() const override;
+    SimTK::Function* createSimTKFunction() const override;
 
-    virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
 private:
     void calcCoefficients();

@@ -70,13 +70,6 @@ void PathSpring::constructProperties()
     constructProperty_dissipation(SimTK::NaN);
 }
 
-void PathSpring::constructOutputs()
-{
-    constructOutput<double>("stretch", 
-           std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
-                      SimTK::Stage::Position);
-}
-
 //_____________________________________________________________________________
 /*
  * Set the resting length.
@@ -114,9 +107,7 @@ void PathSpring::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     GeometryPath& path = upd_GeometryPath();
-    path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
-    addComponent(&path);
 
     // Resting length must be greater than 0.0.
     assert(get_resting_length() > 0.0);

@@ -62,8 +62,8 @@ static const int CorrectnessTest        = 2;
 static const double MaxIsometricForce0 = 100.0,
 OptimalFiberLength0 = 0.1,
 TendonSlackLength0 = 0.2,
-PennationAngle0 = 0.0,
-PennationAngle1 = SimTK::Pi / 4;
+    PennationAngle0 = 0.0;
+// PennationAngle1 = SimTK::Pi / 4;
 
 static const double Activation0 = 0.01,
 Deactivation0 = 0.4,
@@ -160,7 +160,7 @@ Main test driver to be used on any muscle model (derived from Muscle) so new
 cases should be easy to add currently, the test only verifies that the work
 done by the muscle corresponds to the change in system energy.
 
-TODO: Test will fail wih prescribe motion until the work done by this
+TODO: Test will fail with prescribed motion until the work done by this
 constraint is accounted for.
 ================================================================================
 */
@@ -208,14 +208,13 @@ void simulateMuscle(
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.addMeshGeometry("box.vtp");
 
     OpenSim::Body * ball = new OpenSim::Body("ball",
         ballMass,
         Vec3(0),
                         ballMass*SimTK::Inertia::sphere(ballRadius));
 
-    ball->addMeshGeometry("sphere.vtp");
+    ball->attachGeometry(Sphere(ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 
@@ -247,7 +246,7 @@ void simulateMuscle(
     //==========================================================================
 
     //Attach the muscle
-    const string &actuatorType = aMuscle->getConcreteClassName();
+    /*const string &actuatorType = */aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
     aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
@@ -279,7 +278,7 @@ void simulateMuscle(
     PrescribedController * muscleController = new PrescribedController();
     if (control != NULL){
         muscleController->setActuators(model.updActuators());
-        // Set the indiviudal muscle control functions 
+        // Set the individual muscle control functions 
         //for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle", control->clone());
 
@@ -307,7 +306,7 @@ void simulateMuscle(
     //muscWorkProbe->setName("ActuatorWork");
     muscWorkProbe->setOperation("integrate");
     SimTK::Vector ic1(1);
-    ic1 = 9.0;      // some arbitary initial condition.
+    ic1 = 9.0;      // some arbitrary initial condition.
     muscWorkProbe->setInitialConditions(ic1);
     model.addProbe(muscWorkProbe);
     model.setup();
@@ -529,7 +528,7 @@ void simulateMuscle(
     //cout << "Muscle initial energy = " << Emuscle0 << endl;
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
     //cout << "Total initial system energy = " << Esys0 << endl; 
 
     //==========================================================================

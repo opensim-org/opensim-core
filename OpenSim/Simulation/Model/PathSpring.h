@@ -67,6 +67,17 @@ public:
         "The GeometryPath defines the set of points and wrapping surface" 
         "interactions that form the path of action of the PathSpring");
 
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(length, double, getLength,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(stretch, double, getStretch,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension,
+        SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
@@ -130,7 +141,7 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    /** compute the moment-arm of the PathSpring about a coordinat of interest. */
+    /** compute the moment-arm of the PathSpring about a coordinate of interest. */
     double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
@@ -160,7 +171,7 @@ protected:
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
      */
-    OpenSim::Array<std::string> getRecordLabels() const {
+    OpenSim::Array<std::string> getRecordLabels() const override {
         OpenSim::Array<std::string> labels("");
         labels.append(getName()+"_tension");
         return labels;
@@ -169,7 +180,7 @@ protected:
      * Given SimTK::State object extract all the values necessary to report forces, application location
      * frame, etc. used in conjunction with getRecordLabels and should return same size Array
      */
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override {
         OpenSim::Array<double> values(1);
         values.append(getTension(state));
         return values;
@@ -177,7 +188,6 @@ protected:
 
 private:
     void constructProperties() override;
-    void constructOutputs() override;
 
 //=============================================================================
 };  // END of class PathSpring

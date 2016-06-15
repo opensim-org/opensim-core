@@ -64,7 +64,7 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** default contructor*/
+    /** default constructor*/
     Body();
 
     /** Convenience constructor */  
@@ -86,7 +86,7 @@ public:
     const SimTK::Inertia& getInertia() const;
     void setInertia(const SimTK::Inertia& aInertia);
 
-    /** Assemble body interial properties: mass, center of mass location, moment 
+    /** Assemble body inertial properties: mass, center of mass location, moment 
         of inertia about the origin of the body and return as
         SimTK::MassProperties.
      */
@@ -95,11 +95,6 @@ public:
     void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
     void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
     void scaleMass(double aScaleFactor);
-    /** Add a Mesh specified by file name to the list of Geometry owned by the Body.
-        Transform is assumed to be the same as the Body.
-        Scale defaults to 1.0 but can be changed on the call line.
-    */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
  protected:
 
     // Model component interface.
@@ -112,7 +107,7 @@ public:
 
 private:
     /** Component Interface */
-    void constructProperties();
+    void constructProperties() override;
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
@@ -124,17 +119,12 @@ private:
         return _internalRigidBody;
     }
 
-    /** Convert old format Geometry version 3.2 to recent 4.0 format */
-    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode, 
-                                             const SimTK::Vec3& outerScaleFactors, 
-                                             const SimTK::Vec6& outerTransform, 
-                                             SimTK::Xml::Element& geomSetElement) const;
-    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName, 
-                                            const SimTK::Vec6& localXform, const std::string& bodyName) const;
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
 
-    SimTK::Array_<Body*> _slaves;
+    // Keep track of the slave bodies used to partition this Body
+    // in order break kinematic loops
+    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
 
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave
@@ -144,7 +134,7 @@ private:
     SimTK::Body::Rigid _internalRigidBody;
 
     // Have to be at the Model level to build the system topology. This
-    // involves splitting bodies to satsify loop constraints. Only the Model,
+    // involves splitting bodies to satisfy loop constraints. Only the Model,
     // therefore, can tell a Body if it must add slaves to implement a valid
     // Multibody tree.
     friend class Model;

@@ -1,0 +1,237 @@
+%module(directors="1") opensimModelCommon
+%module opensimModelCommon
+
+#pragma SWIG nowarn=822,451,503,516,325,401
+
+%{
+#include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
+
+using namespace OpenSim;
+using namespace SimTK;
+%}
+
+%include "arrays_java.i";
+
+%typemap(javacode) OpenSim::Object %{
+  public boolean equals(Object obj) {
+    boolean equal = false;
+    if (obj instanceof $javaclassname)
+      equal = ((($javaclassname)obj).swigCPtr == this.swigCPtr);
+    return equal;
+  }
+  // cache the Id to avoid recomputation for hashing purposes
+  private int cacheId=-1;  
+ 
+  public int hashCode() {
+     if (cacheId==-1)
+        cacheId=(int)swigCPtr;
+     
+    return( cacheId );
+  }
+  // Flag to indicate if an object is pickable in the GUI
+  // Example of a non-pickable object would be a PathWrapPoint
+  private boolean pickable=true;
+  
+  public boolean isPickable() {
+	 return pickable;
+  }
+  
+  public void setPickable(boolean onOff) {
+	 pickable=onOff;
+  }
+  public void markAdopted() {
+    if (swigCPtr != 0) {
+      if (swigCMemOwn) swigCMemOwn = false;
+    }
+  }  
+%}
+
+%typemap(javacode) OpenSim::MarkerData %{
+  public double[] getTimeRange() { 
+      return new double[]{getStartFrameTime(), getLastFrameTime()}; 
+  }
+%}
+
+%newobject *::clone; 
+
+%typemap(javacode) OpenSim::Array<double> %{
+	public void fromString(String string) {
+      // Remove open and close parenth if any
+      String workString= new String(string);
+      int liveStart = workString.indexOf("(");
+      int liveEnd = workString.indexOf(")");
+      if (liveStart!=-1 && liveEnd!=-1){
+          workString = workString.substring(liveStart+1, liveEnd);
+      }
+      else if (liveStart!=liveEnd){
+          // throw new ParseException("Illegal format: Expect space separated" +
+          //                          " values, optionally between matched " +
+          //                          "parentheses", liveEnd);
+          return;
+      }
+      String[] splits = workString.split(" ");
+      double[] values = new double[splits.length];
+      for(int i=0; i<splits.length; i++){
+           values[i]=Double.parseDouble(splits[i]);
+       }
+       this.setValues(values, splits.length);
+	}
+%}
+
+%typemap(javacode) OpenSim::FunctionSet %{
+  public boolean adoptAndAppend(Function aFunction) {
+	aFunction.markAdopted();
+    return super.adoptAndAppend(aFunction);
+  }
+%}
+
+%typemap(javacode) OpenSim::SetMarkerWeights %{
+  public boolean adoptAndAppend(MarkerWeight aObject) {
+	aObject.markAdopted();
+    return super.adoptAndAppend(aObject);
+  }
+%}
+
+%typemap(javacode) OpenSim::Array<std::string> %{
+   public java.util.Vector<String> toVector() {
+       java.util.Vector<String> vector = new java.util.Vector<String>();
+       vector.setSize(getSize());
+       for(int i=0; i<getSize(); i++) vector.set(i, getitem(i));
+       return vector;
+   }
+   public void append(java.util.Vector<String> vector) {
+       for(int i=0; i<vector.size(); i++) append(vector.get(i));
+   }
+   public static ArrayStr fromVector(java.util.Vector<String> vector) {
+       ArrayStr array = new ArrayStr();
+       array.append(vector);
+       return array;
+   }
+%}
+
+%typemap(javacode) OpenSim::XYFunctionInterface %{
+    // cache pointer to function so it's not garbage collected early.
+  private Function  dFunction;  
+
+  public XYFunctionInterface(Function aFunction, Boolean unused) {
+      this(aFunction);
+      dFunction = aFunction;
+  }
+%}
+
+// Generic Exception handling
+%typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
+    SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
+                            "C++ $1_type exception thrown");
+    return $null;
+%}
+
+%typemap(throws, throws="java.io.IOException") OpenSim::Exception {
+    jclass excep = jenv->FindClass("java/io/IOException");
+    if (excep)
+        jenv->ThrowNew(excep, ($1).getMessage());
+    return $null;
+}
+
+%exception {
+  if (OpenSim::mapCxxExceptionsToJava){
+	  try {
+	  $action
+	  }
+	  catch(std::exception& _ex){
+              jclass excep = jenv->FindClass("java/lang/RuntimeException");
+              if (excep)
+                  jenv->ThrowNew(excep,_ex.what());
+	  }
+  }
+  else
+	$action
+}
+
+%extend OpenSim::Array<double> {
+    void setValues(double dValues[], int size) {
+        self->setSize(size);
+        for(int i=0; i< size; i++)
+            self->set(i, dValues[i]);
+    };
+    SimTK::Vec3 getAsVec3() {
+        return SimTK::Vec3::getAs(self->get());
+    };
+    
+    static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
+        Array<double>* arr = new Array<double>(e1, 3);
+        arr->set(1, e2);
+        arr->set(2, e3);
+        return SimTK::Vec3::getAs(arr->get());
+    };
+  
+    static SimTK::Vec3 createVec3(double e1) {
+       Array<double>* arr = new Array<double>(e1, 3);
+       return SimTK::Vec3::getAs(arr->get());
+    };
+   
+   static SimTK::Vec3  createVec3(double es[3]) {
+       Array<double>* arr = new Array<double>(es[0], 3);
+       arr->set(1, es[1]);
+       arr->set(2, es[2]);
+       return SimTK::Vec3::getAs(arr->get());
+   };
+
+   SimTK::Vector_<double>  getAsVector() {
+       return SimTK::Vector(self->getSize(), &(*self)[0]);
+   };
+
+   void populateFromVector(SimTK::Vector_<double> aVector) {
+       int sz = aVector.size();
+       for(int i=0; i<sz; ++i)
+           self->append(aVector[i]);
+   }
+
+   static  OpenSim::Array<double> getValuesFromVec3(SimTK::Vec3 vec3) {
+       OpenSim::Array<double> arr(0, 3);
+       for (int i=0; i<3; i++) arr[i] = vec3[i];
+       return arr;
+   };
+  
+  std::string toString() const {
+      std::stringstream stream;
+      for (int i=0; i< self->getSize(); i++)
+          stream <<  self->get(i) << " ";
+      return stream.str(); 
+  }
+};
+
+/* Load the required libraries when this module is loaded.                    */
+%pragma(java) jniclassclassmodifiers="public class"
+SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
+%pragma(java) jniclasscode=%{
+  static {
+      try{
+          // All OpenSim classes required for GUI operation.
+          System.loadLibrary("osimJavaJNI");
+      }
+      catch(UnsatisfiedLinkError e){
+          new JOptionPane("Required library failed to load. Check that the " +
+                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
+        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+      }
+  }
+%}
+
+%extend OpenSim::Object {
+	static OpenSim::Array<std::string> getFunctionClassNames() {
+		  OpenSim::Array<std::string> availableClassNames;
+		  ArrayPtrs<OpenSim::Function> rArray;
+		  Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
+		  for (int i=0;i<rArray.size(); i++)
+			availableClassNames.append(rArray[i]->getConcreteClassName());
+		  
+		  return availableClassNames;
+	}
+}
+
+%import "java_simbody.i"
+
+%include <Bindings/common.i>

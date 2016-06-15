@@ -72,16 +72,16 @@ public:
 #ifndef SWIG
     WrapSphere& operator=(const WrapSphere& aWrapSphere);
 #endif
-   void copyData(const WrapSphere& aWrapSphere);
-    virtual const char* getWrapTypeName() const;
-    virtual std::string getDimensionsString() const;
-        double getRadius() const;
+    void copyData(const WrapSphere& aWrapSphere);
+    const char* getWrapTypeName() const override;
+    std::string getDimensionsString() const override;
+    double getRadius() const;
 
-    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::Vec3& aScaleFactors) override;
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 #ifndef SWIG
-    virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
 protected:
     void setupProperties();

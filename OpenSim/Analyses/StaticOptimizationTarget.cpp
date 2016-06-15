@@ -198,7 +198,7 @@ setStatesSplineSet(GCVSplineSet aStatesSplineSet)
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
 /**
- * Set the number of paramters.
+ * Set the number of parameters.
  *
  * The number of parameters can be set at any time.  However, the perturbation
  * sizes for the parameters (i.e., _dx) is destroyed.  Therefore, the
@@ -360,7 +360,7 @@ computeActuatorAreas(const SimTK::State& s )
  * @param ic Index of the constraint.
  * @param dcdx The derivatives of the constraints.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int StaticOptimizationTarget::
 CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
@@ -410,7 +410,7 @@ CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
  * @param x Values of the controls at time t.
  * @param dpdx The derivatives of the performance criterion.
  *
- * @return -1 if an error is encountered, 0 otherwize.
+ * @return -1 if an error is encountered, 0 otherwise.
  */
 int StaticOptimizationTarget::
 CentralDifferences(const StaticOptimizationTarget *aTarget,
@@ -479,7 +479,7 @@ objectiveFunc(const Vector &parameters, const bool new_parameters, Real &perform
     int na = _model->getActuators().getSize();
     double p = 0.0;
     for(int i=0;i<na;i++) {
-        p +=  pow(fabs(parameters[i]),_activationExponent);
+            p +=  pow(fabs(parameters[i]),_activationExponent);
     }
     performance = p;
 
@@ -516,9 +516,10 @@ gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradie
     for(int i=0;i<na;i++) {
         if(parameters[i] < 0) {
             gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-        } else {
-            gradient[i] =  _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-    }
+        }
+        else {
+            gradient[i] = _activationExponent * pow(fabs(parameters[i]), _activationExponent - 1.0);
+        }
     }
 
     //QueryPerformanceCounter(&stop);
@@ -664,7 +665,7 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-    double time = s.getTime();
+    // double time = s.getTime();
     
 
     const ForceSet& fs = _model->getForceSet();
@@ -672,8 +673,8 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
          if( act ) {
              act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
+             j++;
          }
-         j++;
     }
 
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);

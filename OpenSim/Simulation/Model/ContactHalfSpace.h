@@ -1,5 +1,5 @@
-#ifndef __ContactHalfSpace_h__
-#define __ContactHalfSpace_h__
+#ifndef OPENSIM_CONTACT_HALF_SPACE_H_
+#define OPENSIM_CONTACT_HALF_SPACE_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  ContactHalfSpace.h                        *
  * -------------------------------------------------------------------------- *
@@ -31,7 +31,7 @@ namespace OpenSim {
  * This class represents a half space (that is, everything to one side of an infinite plane)
  * for use in contact modeling.  In its local coordinate system, all points for which x>0 are
  * considered to be inside the geometry.  Its location and orientation properties can be used
- * to move and rotateit to represent other half spaces.
+ * to move and rotate it to represent other half spaces.
  *
  * @author Peter Eastman
  */
@@ -70,7 +70,7 @@ public:
         PhysicalFrame& body, const std::string& name);
     ContactHalfSpace(const ContactHalfSpace& geom);
 
-    SimTK::ContactGeometry createSimTKContactGeometry();
+    SimTK::ContactGeometry createSimTKContactGeometry() override;
 private:
     // INITIALIZATION
     void setNull();
@@ -82,4 +82,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactHalfSpace_h__
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 

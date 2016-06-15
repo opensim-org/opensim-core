@@ -34,6 +34,7 @@
 #include "PistonActuator.h"
 #include "ControllableSpring.h"
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -55,7 +56,7 @@ int main()
             
         // Get the ground body
         Ground& ground = osimModel.updGround();
-        ground.addMeshGeometry("checkered_floor.vtp");
+        ground.attachMeshGeometry("checkered_floor.vtp");
 
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
@@ -75,25 +76,23 @@ int main()
         cyl.setFrameName("Cyl1_frame");
         linkage1->addGeometry(cyl);
 
-        Sphere sphere(0.1);
-        linkage1->addGeometry(sphere);
+        linkage1->attachGeometry(Sphere(0.1));
          
-        // Creat a second linkage body
+        // Create a second linkage body
         OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
         linkage2->setName("linkage2");
         Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         osimModel.addFrame(cyl2Frame);
         (linkage2->upd_geometry(0)).setFrameName("Cyl2_frame");
-        // Creat a block to be the pelvis
+        // Create a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->addGeometry(brick);
+        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
-        // Create 1 degree-of-freedom pin joints between the bodies to creat a kinematic chain from ground through the block
+        // Create 1 degree-of-freedom pin joints between the bodies to create a kinematic chain from ground through the block
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
 
         PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
@@ -127,7 +126,7 @@ int main()
         osimModel.addJoint(ankle);
         osimModel.addJoint(knee);
         osimModel.addJoint(hip);
-        // Define contraints on the model
+        // Define constraints on the model
         //  Add a point on line constraint to limit the block to vertical motion
 
         Vec3 lineDirection(0,1,0), pointOnLine(0,0,0), pointOnBlock(0);
@@ -181,7 +180,7 @@ int main()
         // add the controller to the model
         osimModel.addController(legController);     
         
-        // define the acceration due to gravity
+        // define the acceleration due to gravity
         osimModel.setGravity(Vec3(0, -9.80665, 0));
 
         // enable the model visualizer see the model in action, which can be
@@ -215,7 +214,6 @@ int main()
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
-        osimModel.dumpPathName();
         // Integrate
         manager.setInitialTime(t0);
         manager.setFinalTime(tf);
@@ -223,14 +221,16 @@ int main()
         manager.integrate(si);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
-        forces->getForceStorage().print("actuator_forces.mot");
-        
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        STOFileAdapter::write(statesTable, 
+                              "SpringActuatedLeg_states_degrees.sto");
+
+        auto forcesTable = forces->getForcesTable();
+        STOFileAdapter::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)
     {

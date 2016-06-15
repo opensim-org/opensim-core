@@ -135,15 +135,15 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual double computeActuation(const SimTK::State& s) const;
+    double computeActuation(const SimTK::State& s) const override;
     double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+    double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const override;
+    double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const override;
     double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-    virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+    double computeIsometricForce(SimTK::State& s, double activation) const override;
 
 private:
-    void constructProperties();
+    void constructProperties() override;
 //==============================================================================
 };  // END of class Thelen2003Muscle_Deprecated
 //==============================================================================

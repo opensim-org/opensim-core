@@ -99,11 +99,11 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)");
+        "Optimal length of the muscle fibers, in meters (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
-        "Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)");
+        "Angle between tendon and fibers at optimal fiber length, in radians (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
-        "Maximum pennation angle (radians)");
+        "Maximum pennation angle, in radians (overridden when this is a subcomponent of a Muscle)");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -118,7 +118,7 @@ public:
                                    double optimalPennationAngle,
                                    double maximumPennationAngle);
 
-    /** @returns The height of the fixed-width paralleogram. */
+    /** @returns The height of the fixed-width parallelogram. */
     double getParallelogramHeight() const;
 
     /** @returns The minimum possible fiber length. */
@@ -313,7 +313,7 @@ public:
     @param muscleVelocity
         The lengthening velocity of the musculotendon actuator (m/s).
     @param tendonVelocity
-        The lengening velocity of the tendon (m/s).
+        The lengthening velocity of the tendon (m/s).
     @return
         The lengthening velocity of the fiber (m/s).
     */
@@ -327,7 +327,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties();
+    void constructProperties() override;
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;

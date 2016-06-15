@@ -39,7 +39,7 @@ namespace OpenSim {
  * dependent = slope*independent + intercept
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Fuction as input.
+ * any class requiring a Function as input.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -85,25 +85,24 @@ public:
     // SET AND GET Coefficients
     //--------------------------------------------------------------------------
 public:
-    /** Set Coefficients for slope and intercept */
+    /** %Set Coefficients for slope and intercept */
     void setCoefficients(Array<double> coefficients);
-    /** Set slope */
+    /** %Set slope */
     void setSlope(double slope) {_coefficients[0] = slope; }
-    /** Set intercept */
+    /** %Set intercept */
     void setIntercept(double intercept) {_coefficients[1] = intercept; }
     /** Get Coefficients */
-    const Array<double> getCoefficients() const
-    { return _coefficients; }
+    const Array<double> getCoefficients() const { return _coefficients; }
     /** Get Slope */
-    double getSlope() { return _coefficients[0]; }
+    double getSlope() const { return _coefficients[0]; }
     /** Get Intercept */ 
-    double getIntercept() { return _coefficients[1]; }
+    double getIntercept() const { return _coefficients[1]; }
     
 
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    virtual SimTK::Function* createSimTKFunction() const;
+    SimTK::Function* createSimTKFunction() const override;
 
 //=============================================================================
 };  // END class LinearFunction

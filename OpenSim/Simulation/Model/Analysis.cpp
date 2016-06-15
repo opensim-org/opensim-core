@@ -46,12 +46,12 @@ using namespace std;
  * param: aModel Model on which the analysis is to be performed.
  */
 Analysis::Analysis(Model *aModel):
+    _statesStore(NULL),
+    _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _stepInterval(_stepIntervalProp.getValueInt()),
-    _inDegrees(_inDegreesProp.getValueBool()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     
     _model = aModel;
@@ -89,12 +89,12 @@ Analysis::~Analysis()
  */
 Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     Object(aFileName, false),
-    _stepInterval(_stepIntervalProp.getValueInt()),
+    _statesStore(NULL),
     _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
@@ -108,7 +108,7 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
- * to the XML document nodes, the the object would need to reconstruct based
+ * to the XML document nodes, the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
  * There are three proper ways to generate an XML document for an Analysis:
@@ -117,7 +117,7 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
  * In this case, the XML document is created by parsing the XML file.
  *
  * 2) Construction by Analysis(const XMLDocument *aDocument).
- * This constructor explictly requests construction based on an
+ * This constructor explicitly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
@@ -138,12 +138,12 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
  */
 Analysis::Analysis(const Analysis &aAnalysis):
    Object(aAnalysis),
+   _statesStore(NULL),
+   _inDegrees(_inDegreesProp.getValueBool()),
+   _stepInterval(_stepIntervalProp.getValueInt()),
    _on(_onProp.getValueBool()),
    _startTime(_startTimeProp.getValueDbl()),
-   _endTime(_endTimeProp.getValueDbl()),
-   _stepInterval(_stepIntervalProp.getValueInt()),
-   _inDegrees(_inDegreesProp.getValueBool()),
-   _statesStore(NULL)
+   _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     *this = aAnalysis;
@@ -172,7 +172,7 @@ setNull()
  */
 void Analysis::setupProperties()
 {
-    _onProp.setComment("Flag (true or false) specifying whether whether on. "
+    _onProp.setComment("Flag (true or false) specifying whether on. "
         "True by default.");
     _onProp.setName("on");
     _propertySet.append(&_onProp);
@@ -223,7 +223,7 @@ operator=(const Analysis &aAnalysis)
     _inDegrees = aAnalysis._inDegrees;
     _printResultFiles = aAnalysis._printResultFiles;
 
-    // Class Memebers
+    // Class Members
     setStepInterval(aAnalysis.getStepInterval());
 
     return(*this);

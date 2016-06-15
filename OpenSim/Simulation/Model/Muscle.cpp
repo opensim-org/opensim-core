@@ -43,7 +43,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static int counter=0;
+//static int counter=0;
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
@@ -121,86 +121,6 @@ void Muscle::constructProperties()
     constructProperty_max_contraction_velocity(10.0);
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_ignore_activation_dynamics(false);
-}
-
-void Muscle::constructOutputs()
-{
-    constructOutput<double>("excitation", &Muscle::getExcitation,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("activation", &Muscle::getActivation,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_length", &Muscle::getFiberLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("pennation_angle", &Muscle::getPennationAngle,
-                            SimTK::Stage::Position);
-    constructOutput<double>("cos_pennation_angle", &Muscle::getCosPennationAngle,
-                            SimTK::Stage::Position);
-    constructOutput<double>("tendon_length", &Muscle::getTendonLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("normalized_fiber_length",
-                            &Muscle::getNormalizedFiberLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("fiber_length_along_tendon",
-                            &Muscle::getFiberLengthAlongTendon,
-                            SimTK::Stage::Position);
-    constructOutput<double>("tendon_strain", &Muscle::getTendonStrain,
-                            SimTK::Stage::Position);
-    constructOutput<double>("passive_force_multiplier",
-                            &Muscle::getPassiveForceMultiplier,
-                            SimTK::Stage::Position);
-    constructOutput<double>("active_force_length_multiplier",
-                            &Muscle::getActiveForceLengthMultiplier,
-                            SimTK::Stage::Position);
-    constructOutput<double>("fiber_velocity", &Muscle::getFiberVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("normalized_fiber_velocity",
-                            &Muscle::getNormalizedFiberVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("fiber_velocity_along_tendon",
-                            &Muscle::getFiberVelocityAlongTendon,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("tendon_velocity", &Muscle::getTendonVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("force_velocity_multiplier",
-                            &Muscle::getForceVelocityMultiplier,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("pennation_angular_velocity",
-                            &Muscle::getPennationAngularVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("fiber_force", &Muscle::getFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_force_along_tendon",
-                            &Muscle::getFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("active_fiber_force", &Muscle::getActiveFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("passive_fiber_force", &Muscle::getPassiveFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("active_fiber_force_along_tendon",
-                            &Muscle::getActiveFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("passive_fiber_force_along_tendon",
-                            &Muscle::getPassiveFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_force", &Muscle::getTendonForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_stiffness", &Muscle::getFiberStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_stiffness_along_tendon",
-                            &Muscle::getFiberStiffnessAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_stiffness", &Muscle::getTendonStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("muscle_stiffness", &Muscle::getMuscleStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_active_power", &Muscle::getFiberActivePower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_passive_power", &Muscle::getFiberPassivePower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_power", &Muscle::getTendonPower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("muscle_power", &Muscle::getMusclePower,
-                            SimTK::Stage::Dynamics);
 }
 
 
@@ -707,7 +627,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
     // is computing gradients, but in those cases the actuation will be 
     // overridden and will not be computed by the muscle
-    if (!isActuationOverriden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
+    if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
         cout << msg << " at time = " << s.getTime() << endl;
@@ -749,14 +669,14 @@ void Muscle::updateGeometry(const SimTK::State& s)
 {
     double aFiberLength = getFiberLength(s);
     if (aFiberLength < SimTK::Eps){
-        cout << "Muscle::calcPennationAngle() ERRROR- fiber length is zero." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- fiber length is zero." << endl;
         return SimTK::NaN;
     }
     
     double value = _muscleWidth/aFiberLength;
 
     if(value >= 1.0){
-        cout << "Muscle::calcPennationAngle() ERRROR- pennation at 90 degrees." << endl;
+        cout << "Muscle::calcPennationAngle() ERROR- pennation at 90 degrees." << endl;
         return SimTK_PI/2.0;
     }
    else

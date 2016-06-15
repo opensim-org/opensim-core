@@ -33,7 +33,7 @@ using namespace SimTK;
 namespace OpenSim {
 
 //______________________________________________________________________________
-/**
+/*
  * An implementation of the InverseKinematicsSolver 
  *
  * @param model to assemble
@@ -44,9 +44,6 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
                             _markersReference(markersReference) 
 {
     setAuthors("Ajay Seth");
-
-    // Base AssemblySolver takes care of creating the underlying _assembler and setting up CoordinateReferences;
-    _markerAssemblyCondition = NULL;
 
     // Do some consistency checking for markers
     const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
@@ -79,8 +76,8 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 
 }
 
-/** Change the weighting of a marker to take affect when assemble or track is called next. 
-    Update a marker's weight by name. */
+/* Change the weighting of a marker to take affect when assemble or track is called next. 
+   Update a marker's weight by name. */
 void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, double value)
 {
     const Array_<std::string> &names = _markersReference.getNames();
@@ -89,7 +86,7 @@ void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, 
     updateMarkerWeight(index, value);
 }
 
-/** Update a marker's weight by its index. */
+/* Update a marker's weight by its index. */
 void InverseKinematicsSolver::updateMarkerWeight(int markerIndex, double value)
 {
     if(markerIndex >=0 && markerIndex < _markersReference.updMarkerWeightSet().getSize()){
@@ -100,11 +97,12 @@ void InverseKinematicsSolver::updateMarkerWeight(int markerIndex, double value)
         throw Exception("InverseKinematicsSolver::updateMarkerWeight: invalid markerIndex.");
 }
 
-/** Update all markers weights by order in the markersReference passed in to
-    construct the solver. */
+/* Update all markers weights by order in the markersReference passed in to
+   construct the solver. */
 void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &weights)
 {
-    if(_markersReference.updMarkerWeightSet().getSize() == weights.size()){
+    if(static_cast<unsigned>(_markersReference.updMarkerWeightSet().getSize()) 
+       == weights.size()){
         for(unsigned int i=0; i<weights.size(); i++){
             _markersReference.updMarkerWeightSet()[i].setWeight(weights[i]);
             _markerAssemblyCondition->changeMarkerWeight(SimTK::Markers::MarkerIx(i), weights[i]);
@@ -114,7 +112,7 @@ void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &w
         throw Exception("InverseKinematicsSolver::updateMarkerWeights: invalid size of weights.");
 }
 
-/** Compute and return the spatial location of a marker in ground. */
+/* Compute and return the spatial location of a marker in ground. */
 SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::string &markerName)
 {
     const Array_<std::string> &names = _markersReference.getNames();
@@ -132,7 +130,7 @@ SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(int markerInde
         throw Exception("InverseKinematicsSolver::computeCurrentMarkerLocation: invalid markerIndex.");
 }
 
-/** Compute and return the spatial locations of all markers in ground. */
+/* Compute and return the spatial locations of all markers in ground. */
 void InverseKinematicsSolver::computeCurrentMarkerLocations(SimTK::Array_<SimTK::Vec3> &markerLocations)
 {
     markerLocations.resize(_markerAssemblyCondition->getNumMarkers());
@@ -141,7 +139,7 @@ void InverseKinematicsSolver::computeCurrentMarkerLocations(SimTK::Array_<SimTK:
 }
 
 
-/** Compute and return the distance error between model marker and observation. */
+/* Compute and return the distance error between model marker and observation. */
 double InverseKinematicsSolver::computeCurrentMarkerError(const std::string &markerName)
 {
     const Array_<std::string> &names = _markersReference.getNames();
@@ -159,7 +157,7 @@ double InverseKinematicsSolver::computeCurrentMarkerError(int markerIndex)
         throw Exception("InverseKinematicsSolver::computeCurrentMarkerError: invalid markerIndex.");
 }
 
-/** Compute and return the distance errors between all model markers and their observations. */
+/* Compute and return the distance errors between all model markers and their observations. */
 void InverseKinematicsSolver::computeCurrentMarkerErrors(SimTK::Array_<double> &markerErrors)
 {
     markerErrors.resize(_markerAssemblyCondition->getNumMarkers());
@@ -168,7 +166,7 @@ void InverseKinematicsSolver::computeCurrentMarkerErrors(SimTK::Array_<double> &
 }
 
 
-/** Compute and return the squared-distance error between model marker and observation. */
+/* Compute and return the squared-distance error between model marker and observation. */
 double InverseKinematicsSolver::computeCurrentSquaredMarkerError(const std::string &markerName)
 {
     const Array_<std::string> &names = _markersReference.getNames();
@@ -186,7 +184,7 @@ double InverseKinematicsSolver::computeCurrentSquaredMarkerError(int markerIndex
         throw Exception("InverseKinematicsSolver::computeCurrentMarkerSquaredError: invalid markerIndex.");
 }
 
-/** Compute and return the distance errors between all model marker and observations. */
+/* Compute and return the distance errors between all model marker and observations. */
 void InverseKinematicsSolver::computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors)
 {
     markerErrors.resize(_markerAssemblyCondition->getNumMarkers());
@@ -194,21 +192,22 @@ void InverseKinematicsSolver::computeCurrentSquaredMarkerErrors(SimTK::Array_<do
         markerErrors[i] = _markerAssemblyCondition->findCurrentMarkerErrorSquared(SimTK::Markers::MarkerIx(i));
 }
 
-/** Marker errors are reported in order different from tasks file or model, find name corresponding to passed in index  */
+/* Marker errors are reported in order different from tasks file or model, find name corresponding to passed in index  */
 std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) const
 {
     return _markerAssemblyCondition->getMarkerName(SimTK::Markers::MarkerIx(markerIndex));
 }
 
 
-/** Internal method to convert the MarkerReferences into additional goals of the 
+/* Internal method to convert the MarkerReferences into additional goals of the 
     of the base assembly solver, that is going to do the assembly.  */
 void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 {
     // Setup coordinates performed by the base class
     AssemblySolver::setupGoals(s);
 
-    _markerAssemblyCondition = new SimTK::Markers();
+    std::unique_ptr<SimTK::Markers> condOwner(new SimTK::Markers());
+    _markerAssemblyCondition.reset(condOwner.get());
 
     // Setup markers goals
     // Get lists of all markers by names and corresponding weights from the MarkersReference
@@ -232,20 +231,18 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
         if((index >= 0) && (wIndex >=0)){
             Marker &marker = modelMarkerSet[index];
             const SimTK::MobilizedBody& mobod =
-                marker.getReferenceFrame().getMobilizedBody();
+                marker.getParentFrame().getMobilizedBody();
 
-            X_BF = marker.getReferenceFrame().findTransformInBaseFrame();
+            X_BF = marker.getParentFrame().findTransformInBaseFrame();
             _markerAssemblyCondition->
                 addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
-
-                markerWeights[i]);
-
-            //cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
+                          markerWeights[i]);
         }
     }
 
-    // Add marker goal to the ik objective
-    _assembler->adoptAssemblyGoal(_markerAssemblyCondition);
+    // Add marker goal to the ik objective and transfer ownership of the 
+    // goal (AssemblyCondition) to Assembler
+    updAssembler().adoptAssemblyGoal(condOwner.release());
     // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
     // and we can use an array of just the data for updating
     _markerAssemblyCondition->defineObservationOrder(markerNames);
@@ -253,7 +250,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     updateGoals(s);
 }
 
-/** Internal method to update the time, reference values and/or their weights based
+/* Internal method to update the time, reference values and/or their weights based
     on the state */
 void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
 {
