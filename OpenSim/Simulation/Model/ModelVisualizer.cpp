@@ -196,9 +196,7 @@ void DefaultGeometry::generateDecorations
         const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
 
         for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const PhysicalFrame& body = contactGeometries.get(i).getBody();
-            const Transform& X_GB = 
-                matter.getMobilizedBody(body.getMobilizedBodyIndex()).getBodyTransform(state);
+            const PhysicalFrame& frame = contactGeometries.get(i).getFrame();
             const string type = contactGeometries.get(i).getConcreteClassName();
             const int displayPref = contactGeometries.get(i).getDisplayPreference();
             //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
@@ -207,10 +205,18 @@ void DefaultGeometry::generateDecorations
                 ContactSphere* sphere = 
                     dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
                 if (sphere != NULL) {
-                    Transform X_GW = X_GB*sphere->getTransform();
+                    // G: Ground
+                    // F: PhysicalFrame that this ContactGeometry is connected
+                    //    to
+                    // P: the frame defined (relative to F) by the location and
+                    //    orientation properties.
+                    const auto& X_GF =
+                        sphere->getFrame().getTransformInGround(state);
+                    const auto& X_FP = sphere->getTransform();
+                    Transform X_GP = X_GF * X_FP;
                     geometry.push_back(
                         DecorativeSphere(sphere->getRadius())
-                            .setTransform(X_GW).setResolution(_dispContactResolution)
+                            .setTransform(X_GP).setResolution(_dispContactResolution)
                             .setColor(color).setOpacity(_dispContactOpacity));
                 }
             }

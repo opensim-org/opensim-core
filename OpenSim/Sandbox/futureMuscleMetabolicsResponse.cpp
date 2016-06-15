@@ -8,6 +8,7 @@ class ComplexResponse : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(ComplexResponse, ModelComponent);
 public:
     OpenSim_DECLARE_PROPERTY(strength, double, "per-coord param.");
+    OpenSim_DECLARE_CONNECTOR(coord, Coordinate, "");
 
     OpenSim_DECLARE_OUTPUT(term_1, double, getTerm1, SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(term_2, double, getTerm2, SimTK::Stage::Velocity);
@@ -41,9 +42,6 @@ public:
 private:
     void constructProperties() override {
         constructProperty_strength(3.0);
-    }
-    void constructConnectors() override {
-        constructConnector<Coordinate>("coord");
     }
     void extendAddToSystem(MultibodySystem& system) const override {
         Super::extendAddToSystem(system);

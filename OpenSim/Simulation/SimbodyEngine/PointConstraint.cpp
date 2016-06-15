@@ -105,13 +105,6 @@ void PointConstraint::constructProperties()
     constructProperty_location_body_2(origin);
 }
 
-void PointConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
-
 void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);

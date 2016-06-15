@@ -68,15 +68,17 @@ public:
     // Default display properties e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance for this Geometry");
+    
+    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
+        "The frame to which this geometry is attached.");
+    
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    /// Default constructor, does nothing
-    Geometry() {
-        setNull();
-        constructInfrastructure();
-    }
+    /// Default constructor
+    Geometry();
+    
     /// Convenience constructor that takes a Frame
     Geometry(const Frame& frame) : Geometry() {
         setFrame(frame);
@@ -177,9 +179,6 @@ private:
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_Appearance(Appearance());
     }
-
-    /// Define the connector to the Frame that Geometry connects to.
-    void constructConnectors() override;
 
     void setNull() {
         setAuthors("Ayman Habib");

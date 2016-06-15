@@ -25,10 +25,10 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
 
 //=============================================================================
@@ -62,6 +62,12 @@ public:
     /** The default is spatial_force_is_global=true. **/
     OpenSim_DECLARE_PROPERTY(spatial_force_is_global, bool,
         "Interpret axis in Ground frame if true; otherwise, body's frame.");
+    
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(body, Body,
+        "The body on which to apply the spatial force.");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -133,10 +139,6 @@ private:
     /** Construct the infrastructure of the BodyActuator component.
     Begin with its properties. */
     void constructProperties() override;
-
-    /** Next define its structural dependencies on other components.
-    This will be the body that force/torques are applied to.*/
-    void constructConnectors() override;
 
     //--------------------------------------------------------------------------
     // Implement Force interface
