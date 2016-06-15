@@ -192,7 +192,6 @@ void addComponentsToModel(Model& osimModel)
     ///////////////////////////////////////
     // DEFINE FORCES ACTING ON THE MODEL //
     ///////////////////////////////////////
-
     // MUSCLE FORCES
     // Create two new muscles with identical properties
     double maxIsometricForce = 1000.0, optimalFiberLength = 0.25,
@@ -264,7 +263,8 @@ void addComponentsToModel(Model& osimModel)
     // Create a prescribed controller that simply applies controls as function of time
     // For muscles, controls are normalized motor-neuron excitations
     PrescribedController *muscleController = new PrescribedController();
-    muscleController->setActuators(osimModel.updActuators());
+    muscleController->set_actuator_list(0, "muscle1");
+    muscleController->set_actuator_list(1, "muscle2");
     // Define linear functions for the control values for the two muscles
     Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
     Array<double> slopeAndIntercept2(0.0, 2);
@@ -274,8 +274,12 @@ void addComponentsToModel(Model& osimModel)
     slopeAndIntercept2[0] = 0.95 / (finalTime - initialTime);  slopeAndIntercept2[1] = 0.05;
 
     // Set the individual muscle control functions for the prescribed muscle controller
-    muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
-    muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
+    muscleController->upd_ControlFunctions().adoptAndAppend(
+        new LinearFunction(slopeAndIntercept1));
+    muscleController->upd_ControlFunctions()[0].setName("muscle1");
+    muscleController->upd_ControlFunctions().adoptAndAppend(
+        new LinearFunction(slopeAndIntercept2));
+    muscleController->upd_ControlFunctions()[1].setName("muscle2");
 
     // Add the muscle controller to the model
     osimModel.addController(muscleController);
@@ -290,7 +294,6 @@ void addComponentsToModel(Model& osimModel)
     // Fiber length
     muscle2->setDefaultFiberLength(optimalFiberLength);
     muscle1->setDefaultFiberLength(optimalFiberLength);
-
 }
 
 void compareResultsToStandard() {
