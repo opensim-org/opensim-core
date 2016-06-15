@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Point.h"
+#include "Frame.h"
 
 //=============================================================================
 // STATICS
@@ -113,9 +114,30 @@ const SimTK::Vec3& Point::getAccelerationInGround(const SimTK::State& s) const
 }
 
 //=============================================================================
-// POINT COMPUTATIONS
+// Helpful Point Calculations
 //=============================================================================
+double Point::calcDistanceBetween(const SimTK::State& s, const Point& o) const
+{
+    return (getLocationInGround(s) - o.getLocationInGround(s)).norm();
+}
 
+double Point::calcDistanceBetween(const SimTK::State& s,
+    const Frame& f, const SimTK::Vec3& p) const
+{
+    return (getLocationInGround(s) - f.getTransformInGround(s)*p).norm();
+}
+
+double Point::calcSpeedBetween(const SimTK::State& s, const Point& o) const
+{
+    const auto r = getLocationInGround(s) - o.getLocationInGround(s);
+    const double d = r.norm();
+    const auto v = getVelocityInGround(s) - o.getVelocityInGround(s);
+    if (d < SimTK::Eps) // avoid divide by zero
+        return v.norm();
+    else // speed is the projection of relative velocity, v, onto the 
+         // displacement unit vector, r_hat = r/d; 
+        return dot(v, r/d);
+}
 
 //=============================================================================
 // Component level realizations
