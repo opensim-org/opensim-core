@@ -282,7 +282,7 @@ void addComponentsToModel(Model& osimModel)
     muscleController->upd_ControlFunctions()[1].setName("muscle2");
 
     // Add the muscle controller to the model
-    osimModel.addController(muscleController);
+    osimModel.addComponent(muscleController);
 
     ///////////////////////////////////
     // SPECIFY MODEL DEFAULT STATES  //
