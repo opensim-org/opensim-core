@@ -117,6 +117,8 @@ public:
  * handles all of the bookkeeping of system indices and provides convenience 
  * access to variable values (incl. derivatives) via their names as strings. 
  *
+ * ### System and State
+ *
  * The MultibodySystem and its State are defined by Simbody (ref ...). Briefly,
  * a System represents the mathematical equations that specify the behavior
  * of a computational model. The State is a collection of all the variables 
@@ -141,6 +143,8 @@ public:
  * the modeled dynamics of the component. Component provides services
  * that enable developers of components to define additional ModelingOptions.
  *
+ * ### Discrete variables
+ *
  * Often a component requires input from an outside source (precomputed data 
  * from a file, another program, or interaction from a user) in which case these
  * variables do not have dynamics (differential eqns.) known to the component, 
@@ -155,6 +159,8 @@ public:
  * provides services to enable developers of components to define and access its
  * DiscreteVariables.
  *
+ * ### Cache variables
+ *
  * Fast and efficient simulations also require computationally expensive 
  * calculations to be performed only when necessary. Often the result of an
  * expensive calculation can be reused many times over, while the variables it
@@ -165,6 +171,8 @@ public:
  * from the State. OpenSim uses the Simbody infrastructure to manage cache 
  * variables and their validity. Component provides a simplified interface to
  * define and access CacheVariables.
+ *
+ * ### Stages
  *
  * Many modeling and simulation codes put the onus on users and component 
  * creators to manage the validity of cache variables, which is likely to lead 
@@ -217,7 +225,9 @@ public:
  * Component provides methods to check if the cache is valid, update its value
  * and then to mark it as valid. 
  *
- * The primary responsibility of a Component is to add its computational 
+ * ### The interface of this class
+ *
+ * The primary responsibility of a Component is to add its computational
  * representation(s) to the underlying SimTK::System by implementing
  * extendAddToSystem().
  *
@@ -272,6 +282,9 @@ protected:
 //==============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
         "List of connectors (structural dependencies) that this component has.");
+    
+    OpenSim_DECLARE_LIST_PROPERTY(inputs, AbstractInput,
+        "List of inputs (slots for outputs) that this component has.");
 
     OpenSim_DECLARE_LIST_PROPERTY(components, Component,
         "List of components that this component owns and serializes.");
@@ -525,7 +538,7 @@ public:
 
     /** Access the number of Inputs that this component has. */
     int getNumInputs() const {
-        return int(_inputsTable.size());
+        return getProperty_inputs().size();
     }
 
     /** Access the number of Outputs that this component has. */
@@ -616,7 +629,7 @@ public:
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
     */
-    //@{ 
+    //@{
 
     /**
     * Get an Input provided by this Component by name.
@@ -624,37 +637,20 @@ public:
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
-    const AbstractInput& getInput(const std::string& name) const
-    {
-        auto it = _inputsTable.find(name);
-
-        if (it != _inputsTable.end()) {
-            return it->second.getRef(); 
-        }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string inName = name.substr(back + 1, name.length() - back);
-
-            const Component* found = findComponent<Component>(prefix);
-            if (found)
-                return found->getInput(inName);
-        }
-        std::stringstream msg;
-        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+    const AbstractInput& getInput(const std::string& name) const {
+        const AbstractInput* found = findInput(name);
+        OPENSIM_THROW_IF_FRMOBJ(!found, Exception,
+                                "Input '" + name + "' not found.");
+        return *found;
     }
     
-    AbstractInput& updInput(const std::string& name)
-    {
-        return *const_cast<AbstractInput *>(&getInput(name));
+    AbstractInput& updInput(const std::string& name) {
+        return const_cast<AbstractInput&>(getInput(name));
     }
 
 
     /**
-    * Get a concrete Input that you can direclty ask for its values.
+    * Get a concrete Input that you can directly ask for its values.
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
@@ -1722,6 +1718,8 @@ public:
 
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
+    /** Similarly find an Input of this Component (includes its subcomponents) */
+    const AbstractInput* findInput(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
 #ifndef SWIG // StateVariable is protected.
     const StateVariable* findStateVariable(const std::string& name) const;
@@ -1927,12 +1925,15 @@ protected:
     * is thrown because the output cannot satisfy the Input's requirement.
     */
     template <typename T>
-    bool constructInput(const std::string& name,
+    int constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
         const bool& isList = false) {
-        _inputsTable[name].reset(
-                new Input<T>(name, requiredAtStage, isList, *this));
-        return true;
+        
+        int ix = updProperty_inputs().adoptAndAppendValue(
+            new Input<T>(name, requiredAtStage, isList, *this));
+        // Add pointer to inputsTable so we can access inputs easily by name.
+        _inputsTable[name] = std::pair<int, bool>{ix, isList};
+        return ix;
     }
     
     /// @}
@@ -2038,22 +2039,10 @@ private:
         _namedCacheVariableInfo.clear();    
     }
 
-    // Reset by clearing underlying system indices, disconnecting connectors and
-    // creating a fresh connectorsTable.
+    // Reset by clearing underlying system indices.
     void reset() {
         _simTKcomponentIndex.invalidate();
         clearStateAllocations();
-
-        _connectorsTable.clear();
-        for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-            AbstractConnector& connector = upd_connectors(ix);
-            connector.setOwner(*this);
-            _connectorsTable[connector.getName()] = ix;
-        }
-        
-        for (auto& it : _inputsTable) {
-            it.second->setOwner(*this);
-    }
     }
 
 protected:
@@ -2151,8 +2140,8 @@ private:
     // Connector lives.
     std::map<std::string, int> _connectorsTable;
 
-    // Table of Component's Inputs indexed by name.
-    std::map<std::string, SimTK::ClonePtr<AbstractInput> > _inputsTable;
+    // Table of Inputs holding the property index and isList setting.
+    std::map<std::string, std::pair<int, bool>> _inputsTable;
 
     // Table of Component's Outputs indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;
@@ -2389,94 +2378,98 @@ template<class T>
 void Input<T>::connect(const AbstractOutput& output,
                        const std::string& annotation) {
     const auto* outT = dynamic_cast<const Output<T>*>(&output);
-    if (outT) {
-        if (!isListConnector()) {
-            if (outT->isListOutput()) {
-                throw Exception("Non-list input cannot connect to list output");
-            }
-        }
-
-        int ix = 0; 
-        // For a non-list connector, there will only be one channel.
-        for (const auto& chan : outT->getChannels()) {
-            ix = int(_connectees.size());
-            _connectees.push_back(
-                SimTK::ReferencePtr<const Channel>(&chan.second) );
-
-            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
-            std::string pathName =
-                output.getOwner().getRelativePathName(getOwner());
-            pathName = pathName + "/" + chan.second.getName();
-            if (!annotation.empty() && annotation != chan.second.getChannelName()) {
-                pathName += "(" + annotation + ")";
-            }
-
-            // set the connectee name so that the connection can be
-            // serialized
-            int numPreexistingConnectees = getNumConnectees();
-            if (ix < numPreexistingConnectees)
-                setConnecteeName(pathName, ix);
-            else
-                appendConnecteeName(pathName);
-
-            // Use the same annotation for each channel.
-            std::string annoToStore = annotation.empty() ?
-                                      chan.second.getChannelName() :
-                                      annotation;
-            _annotations.push_back(annoToStore);
-        }
-    }
-    else {
+    if (!outT) {
         std::stringstream msg;
-        msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
-        << "' of type Output<" << output.getTypeName() << ">. Input requires "
-        << getConnecteeTypeName() << ".";
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        msg << "Cannot connect '" << output.getName()
+            << "' of type Output<" << output.getTypeName()
+            << ">. Input requires "
+            << getConnecteeTypeName() << ".";
+        OPENSIM_THROW(Exception, msg.str());
+    }
+    
+    if (!isListConnector() && outT->isListOutput()) {
+        OPENSIM_THROW(Exception,
+                      "Non-list input cannot connect to list output");
+    }
+
+    // For a non-list connector, there will only be one channel.
+    for (const auto& chan : outT->getChannels()) {
+    
+        // Record the number of pre-existing satisfied connections...
+        const int numPreexistingSatisfiedConnections(_connectees.size());
+        // ...which happens to be the index of this new connectee.
+        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        _connectees.push_back(
+            SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+        //update the connectee_name as /<OwnerPath>/<Output:Channel>
+        std::string pathName =
+            output.getOwner().getRelativePathName(getOwner());
+        pathName = pathName + "/" + chan.second.getName();
+        if (!annotation.empty() && annotation != chan.second.getChannelName()) {
+            pathName += "(" + annotation + ")";
+        }
+
+        // set the connectee name so that the connection can be
+        // serialized
+        int numDesiredConnections = getNumConnectees();
+        if (idxThisConnectee < numDesiredConnections)
+            setConnecteeName(pathName, idxThisConnectee);
+        else
+            appendConnecteeName(pathName);
+
+        // Use the same annotation for each channel.
+        std::string annoToStore = annotation.empty() ?
+                                  chan.second.getChannelName() :
+                                  annotation;
+        _annotations.push_back(annoToStore);
     }
 }
 
 template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
-             const std::string& annotation) {
+                       const std::string& annotation) {
     const auto* chanT = dynamic_cast<const Channel*>(&channel);
-    if (chanT) {
-        if (!isListConnector()) {
-            // Remove the existing connecteee (if it exists).
-            disconnect();
-        }
-        
-        // Record the number of existing satisfied connections.
-        int ix = int(_connectees.size());
-        _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-        
-        // Update the connectee name as
-        // /<OwnerPath>/<Output>:<Channel><(annotation)>
-        const auto& outputsOwner = chanT->getOutput().getOwner();
-        std::string pathName = outputsOwner.getRelativePathName(getOwner());
-        pathName += "/" + chanT->getName();
-        if (!annotation.empty() && annotation != chanT->getChannelName()) {
-            pathName += "(" + annotation + ")";
-        }
-        
-        // Set the connectee name so the connection can be serialized.
-        int numPreexistingConnectees = getNumConnectees();
-        if (ix < numPreexistingConnectees)
-            setConnecteeName(pathName, ix);
-        else
-            appendConnecteeName(pathName);
-        
-        // Annotation.
-        std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
-                                  annotation;
-        _annotations.push_back(annoToStore);
-    }
-    else {
+    if (!chanT) {
         std::stringstream msg;
-        msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
-        << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
-        << getConnecteeTypeName() << ".";
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        msg << "Cannot connect '" << channel.getPathName()
+            << "' of type Output<" << channel.getTypeName()
+            << ">::Channel. Input requires "
+            << getConnecteeTypeName() << ".";
+        OPENSIM_THROW(Exception, msg.str());
     }
+    
+    if (!isListConnector()) {
+        // Remove the existing connecteee (if it exists).
+        disconnect();
+    }
+    
+    // Record the number of pre-existing satisfied connections...
+    const int numPreexistingSatisfiedConnections(_connectees.size());
+    // ...which happens to be the index of this new connectee.
+    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+    
+    // Update the connectee name as
+    // /<OwnerPath>/<Output>:<Channel><(annotation)>
+    const auto& outputsOwner = chanT->getOutput().getOwner();
+    std::string pathName = outputsOwner.getRelativePathName(getOwner());
+    pathName += "/" + chanT->getName();
+    if (!annotation.empty() && annotation != chanT->getChannelName()) {
+        pathName += "(" + annotation + ")";
+    }
+    
+    // Set the connectee name so the connection can be serialized.
+    int numDesiredConnections = getNumConnectees();
+    if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
+        setConnecteeName(pathName, idxThisConnectee);
+    else
+        appendConnecteeName(pathName);
+    
+    // Annotation.
+    std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
+                                                   annotation;
+    _annotations.push_back(annoToStore);
 }
 
 template<class T>

@@ -79,14 +79,15 @@ class OSIMCOMMON_API AbstractConnector : public Object {
 //==============================================================================
 // PROPERTIES
 //==============================================================================
+private:
     OpenSim_DECLARE_LIST_PROPERTY(connectee_name, std::string,
-        "Name of the component this Connector should be connected to.");
+        "Path to the component or output this Connector should connect to.");
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Default constructor */
-    AbstractConnector() : Object(), connectAtStage(SimTK::Stage::Topology) {
+    AbstractConnector() {
         constructProperties();
     }
 
@@ -122,17 +123,18 @@ public:
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
     //--------------------------------------------------------------------------
-    /** Is the Connector connected to anything? */
+    /** Is the Connector connected to its connectee(s)? For a list connector,
+    this is only true if this connector is connected to all its connectees.
+     */
     virtual bool isConnected() const = 0;
     
-    /** The number of connectees connected to this connector. This is either
-        0 or 1 for a non-list connector. */
+    /** The number of desired connectees. This is 1 for a non-list connector. */
     unsigned getNumConnectees() const {
         auto num = getProperty_connectee_name().size();
         return static_cast<unsigned>(num);
     }
 
-    /** Get the type of object this connector connects to*/
+    /** Get the type of object this connector connects to. */
     virtual std::string getConnecteeTypeName() const = 0;
 
     /** Connect this Connector to the provided connectee object. If this is a
@@ -154,17 +156,15 @@ public:
         OPENSIM_THROW_IF(_isList,
                          Exception,
                          "An index must be provided for a list Connector.");
-
         setConnecteeName(name, 0);
-            
     }
 
     /** Set connectee name of a connectee among a list of connectees. This
     function is used if this connector is a list connector.                   */
     void setConnecteeName(const std::string& name, unsigned ix) {
-        OPENSIM_THROW_IF(ix >= getNumConnectees(),
-                         IndexOutOfRange,
-                         ix, 0, static_cast<unsigned>(getNumConnectees() - 1));
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+                                "AbstractInput::setConnecteeName()");
         upd_connectee_name(ix) = name;
     }
 
@@ -174,15 +174,14 @@ public:
         OPENSIM_THROW_IF(_isList,
                          Exception,
                          "An index must be provided for a list Connector.");
-
         return getConnecteeName(0);
     }
 
     /** Get connectee name of a connectee among a list of connectees.         */
     const std::string& getConnecteeName(unsigned ix) const {
-        OPENSIM_THROW_IF(ix >= getNumConnectees(),
-                         IndexOutOfRange,
-                         ix, 0, static_cast<unsigned>(getNumConnectees() - 1));
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+                                "AbstractInput::getConnecteeName()");
         return get_connectee_name(ix);
     }
 
@@ -198,7 +197,29 @@ public:
 
 protected:
     const Component& getOwner() const { return _owner.getRef(); }
-    void setOwner(const Component& o) { _owner.reset(&o); }
+    void initialize(const Component& o, bool isList = false) {
+        _owner.reset(&o);
+        _isList = isList;
+        if (!_isList) {
+            OPENSIM_THROW_IF_FRMOBJ(updProperty_connectee_name().size() > 1,
+                    Exception, "Connector '" + getName() + "' has multiple "
+                               "entries in connectee_name property, but "
+                               "is a single-value connector.");
+            
+            // Single-value connector must have a value for this property.
+            if (updProperty_connectee_name().empty()) {
+                updProperty_connectee_name().appendValue("");
+            }
+            // Now we are sure the property has one entry; keep it that way.
+            updProperty_connectee_name().setAllowableListSize(1);
+        }
+    }
+    
+    /** To be used by subclasses that may want to alter the default setting
+    of if this is a list connector. */
+    AbstractConnector(bool isList) : _isList(isList) {
+        constructProperties();
+    }
 
 private:
     void constructProperties() {
@@ -208,7 +229,7 @@ private:
             updProperty_connectee_name().setAllowableListSize(1);
         }
     }
-    SimTK::Stage connectAtStage;
+    SimTK::Stage connectAtStage = SimTK::Stage::Topology;
     bool _isList = false;
 
     SimTK::ReferencePtr<const Component> _owner;
@@ -320,15 +341,52 @@ private:
 
 
 /** A specialized Connector that connects to an Output signal is an Input.
-    An AbstractInput enables maintenance of a list of unconnected Inputs. 
-    An Input can either be a single-value Input or a list Input. A list Input
-    can connect to multiple (Output) Channels.
+An AbstractInput enables maintenance of a list of unconnected Inputs. 
+An Input can either be a single-value Input or a list Input. A list Input
+can connect to multiple (Output) Channels.
+
+#### Syntax of `connectee_name`
+
+The XML representation of this class allows one to specify, via the
+`connectee_name` property, the outputs/channels that should be connected to
+this input (that is, the connectees). The syntax for the `connectee_name`
+property is as follows:
+@verbatim
+<path/to/component/><output_name>[:<channel_name>][(<annotation>)]
+@endverbatim
+Angle brackets indicate fields that one would fill in, and square brackets
+indicate optional fields. The `<path/to/component>` can be relative or
+absolute, and describes the location of the Component that contains the 
+desired Output relative to the location of the Component that contains this
+Input. The `<path/to/component>` and `<output_name>` must always be specified.
+The `<channel_name>` should only be specified if the %Output is a list output
+(i.e., it has multiple channels). The `<annotation>` is a name for the
+output/channel that is specific to this input, and it is optional (if left out,
+the annotation becomes the channel name).
+All fields should contain only letters, numbers, and underscores (the path
+to the component can contain slashes and periods); fields must *not* contain
+spaces.
+Here are some examples:
+ - `../marker_data/column:left_ankle`: The TableSourceVec3 component
+   `../marker_data` has a list output `column`, and we want to connect to its
+   `left_ankle` channel.
+ - `../averager/output(knee_joint_center)`: The component `../averager`
+   (presumably a component that averages its inputs) has an output named
+   `output`, and we are annotating this output as `knee_joint_center`.
+ - `/leg_model/soleus/activation`: This connectee name uses the absolute path
+   to component `soleus`, which has an output named `activation`.
+
+List inputs can contain multiple entries in its `connectee_name`, with the
+entries separated by a space. For example:
+@verbatim
+../marker_data/column:left_ankle ../marker_data/column:right_ankle ../averager/output(knee_joint_center)
+@endverbatim
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
-    /** Default constructor */
-    AbstractInput() : AbstractConnector() {}
+    /** By default, Inputs are list connectors. */
+    AbstractInput() : AbstractConnector(true) {}
     /** Convenience constructor
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
@@ -353,18 +411,20 @@ public:
     }
 
     /** Input-specific Connect. Connect this Input to a single-value Output or
-     if this is a list Input and the output is a list Output, connect to 
-     all the channels of the Output.
-     You can optionally provide an annotation of the output that is specific
-     to its use by the component that owns this input. If this method
-     connects to multiple channels, the annotation will be used for all 
-     the channels. */
+    if this is a list Input and the output is a list Output, connect to 
+    all the channels of the Output.
+    You can optionally provide an annotation of the output that is specific
+    to its use by the component that owns this input. If this method
+    connects to multiple channels, the annotation will be used for all 
+    the channels. If you do not specify an annotation, it becomes the name
+    of the output (or channel, if there are multiple channels). */
     virtual void connect(const AbstractOutput& output,
                          const std::string& annotation = "") = 0;
     /** Connect to a single output channel. This can be used with either
     single-value or list Inputs.
     You can optionally provide an annotation of the output that is specific
-    to its use by the component that owns this input. */
+    to its use by the component that owns this input. If you do not specify
+    an annotation, it becomes the name of the channel. */
     virtual void connect(const AbstractChannel& channel,
                          const std::string& annotation = "") = 0;
     
@@ -383,35 +443,34 @@ public:
     the annotation is the name of the channel. Specify the specific Channel 
     desired through the index.                                                */
     virtual const std::string& getAnnotation(unsigned index) const = 0;
-    // TODO what's the best way to serialize annotations?
     
     /** Break up a connectee name into its output path, channel name
-     (empty for single-value outputs), and annotation. This function writes
-     to the passed-in outputPath, channelName, and annotation.
-     
-     Examples:
-     @verbatim
-     /foo/bar/output
-     outputPath is "/foo/bar/output"
-     channelName is ""
-     annotation is "output"
-     
-      /foo/bar/output:channel
-      outputPath is "/foo/bar/output"
-      channelName is "channel"
-      annotation is "channel"
-     
-      /foo/bar/output(anno)
-      outputPath is "/foo/bar/output"
-      channelName is ""
-      annotation is "anno"
-     
-      /foo/bar/output:channel(anno)
-      outputPath is "/foo/bar/output"
-      channelName is "channel"
-      annotation is "anno"
-      @endverbatim
-     */
+    (empty for single-value outputs), and annotation. This function writes
+    to the passed-in outputPath, channelName, and annotation.
+    
+    Examples:
+    @verbatim
+    /foo/bar/output
+    outputPath is "/foo/bar/output"
+    channelName is ""
+    annotation is "output"
+    
+    /foo/bar/output:channel
+    outputPath is "/foo/bar/output"
+    channelName is "channel"
+    annotation is "channel"
+    
+    /foo/bar/output(anno)
+    outputPath is "/foo/bar/output"
+    channelName is ""
+    annotation is "anno"
+    
+    /foo/bar/output:channel(anno)
+    outputPath is "/foo/bar/output"
+    channelName is "channel"
+    annotation is "anno"
+    @endverbatim
+    */
     static bool parseConnecteeName(const std::string& connecteeName,
                                    std::string& outputPath,
                                    std::string& channelName,
@@ -453,7 +512,7 @@ public:
 /** An Input<Y> must be connected by an Output<Y> */
 template<class T>
 class  Input : public AbstractInput {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Input, AbstractInput);
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(Input, T, AbstractInput);
 public:
 
     typedef typename Output<T>::Channel Channel;
@@ -493,7 +552,7 @@ public:
     }
     
     bool isConnected() const override {
-        return !_connectees.empty();
+        return _connectees.size() == getNumConnectees();
     }
     
     /** Get the value of this Input when it is connected. Redirects to connected
@@ -512,11 +571,9 @@ public:
     Output<T>'s getValue() with minimal overhead. Specify the index of the 
     Channel whose value is desired.                                           */
     const T& getValue(const SimTK::State &state, unsigned index) const {
-        // TODO remove this check in order to improve speed?
-        OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange,
-                         index, 0, 
-                         static_cast<unsigned>(getNumConnectees() - 1));
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Input<T>::getValue()");
 
         return _connectees[index].getRef().getValue(state);
     }
@@ -535,11 +592,10 @@ public:
     /** Get the Channel associated with this Input. Specify the index of the
     channel desired.                                                          */
     const Channel& getChannel(unsigned index) const {
-        OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange,
-                         index, 0, 
-                         static_cast<unsigned>(getNumConnectees() - 1));
-
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
+                                "Input<T>::getChannel()");
+        assert(isConnected());
         return _connectees[index].getRef();
     }
     
@@ -553,11 +609,10 @@ public:
     }
     
     const std::string& getAnnotation(unsigned index) const override {
-        OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange,
-                         index, 0, 
-                         static_cast<unsigned>(getNumConnectees() - 1));
-
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
+                                "Input<T>::getAnnotation()");
+        assert(isConnected());
         return _annotations[index];
     }
     
@@ -595,8 +650,8 @@ public:
 
 private:
     SimTK::ResetOnCopy<ChannelList> _connectees;
-    // TODO I think the annotations need to be serialized, since
-    // tools may depend on them for interpreting the connected channels.
+    // Annotations are serialized, since tools may depend on them for
+    // interpreting the connected channels.
     SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
 
@@ -633,7 +688,9 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_input_##iname { constructInput<T>(#iname, istage) };          \
+    int _input_TODO_##iname {                                               \
+        this->template constructInput<T>(#iname, istage)                    \
+    };                                                                      \
     /** @endcond                                                         */
     
 /** Create a list input, which can connect to more than one Channel. This
@@ -654,7 +711,9 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_input_##iname { constructInput<T>(#iname, istage, true) };    \
+    int _input_TODO_##iname {                                               \
+        this->template constructInput<T>(#iname, istage, true)              \
+    };                                                                      \
     /** @endcond                                                         */
 /// @}
 

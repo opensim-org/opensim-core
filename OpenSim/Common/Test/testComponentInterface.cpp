@@ -24,6 +24,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -559,7 +560,7 @@ void testMisc() {
 
     // Test the output that returns by const T&.
     SimTK_TEST(foo.getOutputValue<double>(s, "return_by_ref") == s.getTime());
-
+    
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
         
@@ -1054,6 +1055,7 @@ void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
 
+#ifdef WITH_BTK
     {
     const std::string src_file{"TestTableSource.osim"};
     TheWorld model{src_file};
@@ -1068,6 +1070,7 @@ void testTableSource() {
                      tablesource.get_filename(),
                      OpenSim::Exception);
     }
+#endif
 
     TimeSeriesTable table{};
     table.setColumnLabels({"0", "1", "2", "3"});
@@ -1137,6 +1140,260 @@ void testTableSource() {
     std::cout << report << std::endl;
 }
 
+
+const std::string dataFileNameForInputConnecteeSerialization =
+        "testComponentInterface_testInputConnecteeSerialization_data.sto";
+
+void writeTimeSeriesTableForInputConnecteeSerialization() {
+    TimeSeriesTable table{};
+    table.setColumnLabels({"a", "b", "c", "d"});
+    SimTK::RowVector row{4, 0.0}; row(1)=0.5; row(2)= 0.7; row(3)=0.8;
+    for(unsigned i = 0; i < 4; ++i) table.appendRow(0.25 * i, row + i);
+    STOFileAdapter::write(table, dataFileNameForInputConnecteeSerialization);
+}
+
+void testListInputConnecteeSerialization() {
+    // We build a model, store the input connectee names, then
+    // recreate the same model from a serialization, and make sure the
+    // connectee names are the same.
+
+    // Helper function.
+    auto getConnecteeNames = [](const AbstractInput& in) {
+        const auto numConnectees = in.getNumConnectees();
+        std::vector<std::string> connecteeNames(numConnectees);
+        for (int ic = 0; ic < numConnectees; ++ic) {
+            connecteeNames[ic] = in.getConnecteeName(ic);
+        }
+        return connecteeNames;
+    };
+
+    // Build a model and serialize it.
+    std::string modelFileName = "testComponentInterface_"
+                                "testListInputConnecteeSerialization_world.xml";
+    std::vector<std::string> expectedConnecteeNames{
+            "../producer/column:a",
+            "../producer/column:c",
+            "../producer/column:b(berry)"};
+    SimTK::Vector expectedInputValues;
+    {
+        // Create the "model," which just contains a reporter.
+        TheWorld world;
+        world.setName("World");
+        
+        // TableSource.
+        auto* source = new TableSource();
+        source->setName("producer");
+        source->set_filename(dataFileNameForInputConnecteeSerialization);
+        
+        // TableReporter.
+        auto* reporter = new TableReporter();
+        reporter->setName("consumer");
+        
+        // Add to world.
+        world.add(source);
+        world.add(reporter);
+        
+        // Connect, finalize, etc.
+        const auto& output = source->getOutput("column");
+        // See if we preserve the ordering of the channels.
+        reporter->updInput("inputs").connect(output.getChannel("a"));
+        reporter->updInput("inputs").connect(output.getChannel("c"));
+        // We want to make sure annotations are preserved.
+        reporter->updInput("inputs").connect(output.getChannel("b"), "berry");
+        world.finalizeFromProperties();
+        world.connect();
+        MultibodySystem system;
+        world.buildUpSystem(system);
+        
+        // Grab the connectee names.
+        const auto& input = reporter->getInput("inputs");
+        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        
+        // Get the value of the input at some given time.
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        s.setTime(0.3);
+        expectedInputValues = Input<double>::downcast(input).getVector(s);
+        SimTK_TEST(expectedInputValues.size() == 3);
+        
+        // Serialize.
+        world.print(modelFileName);
+    }
+    
+    // Deserialize and test.
+    {
+        TheWorld world(modelFileName);
+        const auto& reporter = world.getComponent("consumer");
+        const auto& input = reporter.getInput("inputs");
+        // Check connectee names before *and* after connecting, since
+        // the connecting process edits the connectee_name property.
+        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        world.connect();
+        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        // Check annotations.
+        SimTK_TEST(input.getAnnotation(0) == "a"); // default.
+        SimTK_TEST(input.getAnnotation(1) == "c"); // default.
+        SimTK_TEST(input.getAnnotation(2) == "berry"); // specified.
+        
+        // Check that the value of the input is the same as before.
+        MultibodySystem system;
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        s.setTime(0.3);
+        auto actualInputValues = Input<double>::downcast(input).getVector(s);
+        
+        SimTK_TEST_EQ(expectedInputValues, actualInputValues);
+        
+        // Check that `getInput()` can search through subcomponents.
+        SimTK_TEST(world.getInput("consumer/inputs") == input);
+    }
+}
+
+void testSingleValueInputConnecteeSerialization() {
+
+    // Test normal behavior of single-value input (de)serialization.
+    // -------------------------------------------------------------
+    
+    // Build a model and serialize it.
+    std::string modelFileName = "testComponentInterface_"
+            "testSingleValueInputConnecteeSerialization_world.xml";
+    double expectedInput1Value(SimTK::NaN);
+    {
+        // Create the "model," which just contains a reporter.
+        TheWorld world;
+        world.setName("World");
+        
+        // TableSource.
+        auto* source = new TableSource();
+        source->setName("producer");
+        source->set_filename(dataFileNameForInputConnecteeSerialization);
+        
+        // TableReporter.
+        auto* foo = new Foo();
+        foo->setName("consumer");
+        // Make sure we are dealing with single-value inputs
+        // (future-proofing this test).
+        SimTK_TEST(!foo->updInput("input1").isListConnector());
+        SimTK_TEST(!foo->updInput("fiberLength").isListConnector());
+        
+        // Add to world.
+        world.add(source);
+        world.add(foo);
+        
+        // Connect, finalize, etc.
+        const auto& output = source->getOutput("column");
+        // See if we preserve the ordering of the channels.
+        foo->updInput("input1").connect(output.getChannel("b"));
+        // We want to make sure annotations are preserved.
+        foo->updInput("fiberLength").connect(output.getChannel("d"), "desert");
+        world.finalizeFromProperties();
+        world.connect();
+        MultibodySystem system;
+        world.buildUpSystem(system);
+        
+        // Get the value of the input at some given time.
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        s.setTime(0.3);
+        const auto& input1 = foo->getInput("input1");
+        expectedInput1Value = Input<double>::downcast(input1).getValue(s);
+        
+        // We won't wire up this input, but its connectee name should still
+        // (de)serialize.
+        foo->updInput("activation").setConnecteeName("non/existant");
+        
+        // Serialize.
+        world.print(modelFileName);
+    }
+    
+    // Deserialize and test.
+    {
+        TheWorld world(modelFileName);
+        auto& foo = world.updComponent("consumer");
+        const auto& input1 = foo.getInput("input1");
+        const auto& fiberLength = foo.getInput("fiberLength");
+        auto& activation = foo.updInput("activation");
+        
+        // Make sure these inputs are single-value after deserialization,
+        // even before connecting.
+        SimTK_TEST(!input1.isListConnector());
+        SimTK_TEST(!fiberLength.isListConnector());
+        SimTK_TEST(!activation.isListConnector());
+        
+        // Check connectee names before *and* after connecting, since
+        // the connecting process edits the connectee_name property.
+        std::cout << "DEBUG " << input1.getConnecteeName() << std::endl;
+        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
+        SimTK_TEST(fiberLength.getConnecteeName() ==
+                   "../producer/column:d(desert)");
+        // Even if we hadn't wired this up, its name still deserializes:
+        SimTK_TEST(activation.getConnecteeName() == "non/existant");
+        // Now we must clear this before trying to connect, since the connectee
+        // doesn't exist.
+        activation.setConnecteeName("");
+        
+        // Connect.
+        world.connect();
+        
+        // Make sure these inputs are single-value even after connecting.
+        SimTK_TEST(!input1.isListConnector());
+        SimTK_TEST(!fiberLength.isListConnector());
+        SimTK_TEST(!activation.isListConnector());
+        
+        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
+        SimTK_TEST(fiberLength.getConnecteeName() ==
+                   "../producer/column:d(desert)");
+        
+        // Check annotations.
+        SimTK_TEST(input1.getAnnotation(0) == "b");
+        SimTK_TEST(fiberLength.getAnnotation(0) == "desert");
+        
+        // Check that the value of the input is the same as before.
+        MultibodySystem system;
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        s.setTime(0.3);
+        
+        SimTK_TEST_EQ(Input<double>::downcast(input1).getValue(s),
+                      expectedInput1Value);
+    }
+    
+    // Test error case: single-value input connectee_name has multiple values.
+    // -----------------------------------------------------------------------
+    // We'll first create an Input with multiple connectee_names (as is possible
+    // in an XML file), then deserialize it and see what errors we get.
+    std::string modelFileNameMultipleValues = "testComponentInterface_"
+        "testSingleValueInputConnecteeSerializationMultipleValues_world.xml";
+    {
+        TheWorld world;
+        auto* foo = new Foo();
+        world.add(foo);
+        
+        // Hack into the Foo and modify its properties! The typical interface
+        // for editing the input's connectee_name does not allow multiple
+        // connectee names for a single-value input.
+        auto& input1 = foo->updInput("input1");
+        AbstractProperty& connectee_name =
+                input1.updPropertyByName("connectee_name");
+        connectee_name.setAllowableListSize(0, 10);
+        connectee_name.appendValue<std::string>("apple");
+        connectee_name.appendValue<std::string>("banana");
+        connectee_name.appendValue<std::string>("lemon");
+        
+        world.print(modelFileNameMultipleValues);
+    }
+    // Deserialize.
+    {
+        // Single-value connectee cannot have multiple connectee_names.
+        SimTK_TEST_MUST_THROW_EXC(
+            TheWorld world(modelFileNameMultipleValues),
+            OpenSim::Exception);
+    }
+}
+
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1154,6 +1411,10 @@ int main() {
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
+    
+        writeTimeSeriesTableForInputConnecteeSerialization();
+        SimTK_SUBTEST(testListInputConnecteeSerialization);
+        SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
     SimTK_END_TEST();
 }
 

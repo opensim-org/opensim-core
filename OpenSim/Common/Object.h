@@ -1085,6 +1085,8 @@ template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
 {   static const std::string name() { return "Vector"; } };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
 {   static const std::string name() {return "Vector_<Vec3>";} };
+template <> struct Object_GetClassName<SimTK::SpatialVec>
+{   static const std::string name() {return "SpatialVec";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \

@@ -111,6 +111,7 @@ private:
 Component::Component() : Object()
 {
     constructProperty_connectors();
+    constructProperty_inputs();
     constructProperty_components();
 }
 
@@ -118,12 +119,14 @@ Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
     constructProperty_connectors();
+    constructProperty_inputs();
     constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
     constructProperty_connectors();
+    constructProperty_inputs();
     constructProperty_components();
 }
 
@@ -173,8 +176,27 @@ void Component::finalizeFromProperties()
     // TODO if we implement custom copy constructor and assignment methods,
     // then this could be moved there (and then Output could take owner as an
     // argument to its constructor).
-    for (auto& it : _inputsTable) {
-        it.second->setOwner(*this);
+    if (getProperty_connectors().size() != _connectorsTable.size()) {
+        std::stringstream msg;
+        msg << "Expected " << _connectorsTable.size()
+            << " Connectors but got " << getProperty_connectors().size() << ".";
+        OPENSIM_THROW_FRMOBJ(Exception, msg.str());
+    }
+    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
+        AbstractConnector& connector = upd_connectors(icx);
+        connector.initialize(*this);
+    }
+    
+    if (getProperty_inputs().size() != _inputsTable.size()) {
+        std::stringstream msg;
+        msg << "Expected " << _inputsTable.size()
+            << " Inputs but got " << getProperty_inputs().size() << ".";
+        OPENSIM_THROW_FRMOBJ(Exception, msg.str());
+    }
+    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
+        AbstractInput& input = upd_inputs(iix);
+        // The inputsTable holds an std::pair, whose second entry is `isList`.
+        input.initialize(*this, _inputsTable[input.getName()].second);
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
@@ -212,11 +234,9 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    reset();
-
     // rebuilding the connectors table, which was emptied by clearStateAllocations
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        AbstractConnector& connector = upd_connectors(ix);
+    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
+        AbstractConnector& connector = upd_connectors(icx);
         connector.disconnect();
         try {
             connector.findAndConnect(root);
@@ -230,8 +250,8 @@ void Component::connect(Component &root)
         }
     }
 
-    for (auto& inputPair : _inputsTable) {
-        AbstractInput& input = inputPair.second.updRef();
+    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
+        AbstractInput& input = upd_inputs(iix);
 
         if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
             std::cout << getConcreteClassName() << "'" << getName() << "'";
@@ -241,8 +261,8 @@ void Component::connect(Component &root)
             continue;
         }
 
+        input.disconnect();
         try {
-            input.disconnect();
             input.findAndConnect(root);
         }
         catch (const std::exception& x) {
@@ -293,14 +313,13 @@ void Component::disconnect()
     }
 
     //Now cycle through and disconnect all connectors for this component
-    std::map<std::string, int>::const_iterator it;
-    for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-        upd_connectors(it->second).disconnect();
+    for (const auto& it : _connectorsTable) {
+        upd_connectors(it.second).disconnect();
     }
     
     // Must also clear the input's connections.
-    for (auto& it : _inputsTable) {
-        it.second->disconnect();
+    for (const auto& it : _inputsTable) {
+        upd_inputs(it.second.first).disconnect();
     }
 
     //now clear all the stored system indices from this component
@@ -698,6 +717,28 @@ const AbstractConnector* Component::findConnector(const std::string& name) const
     return found;
 }
 
+const AbstractInput* Component::findInput(const std::string& name) const
+{
+    const AbstractInput* found = nullptr;
+    
+    const auto it = _inputsTable.find(name);
+    
+    if (it != _inputsTable.end()) {
+        const AbstractInput& absInput = get_inputs(it->second.first);
+        found = &absInput;
+    }
+    else {
+        std::string::size_type back = name.rfind("/");
+        std::string prefix = name.substr(0, back);
+        std::string inputName = name.substr(back + 1, name.length() - back);
+        
+        const Component* component = findComponent(prefix);
+        if (component) {
+            found = component->findInput(inputName);
+        }
+    }
+    return found;
+}
 
 const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
@@ -1431,8 +1472,8 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumConnectors() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        const auto& connector = get_connectors(ix);
+    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
+        const auto& connector = get_connectors(icx);
         std::cout << "  " << connector.getConnecteeTypeName() << " '"
                   << connector.getName() << "': ";
         if (connector.getNumConnectees() == 0) {
@@ -1449,8 +1490,8 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (const auto it : _inputsTable) {
-        const auto& input = it.second.getRef();
+    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
+        const auto& input = get_inputs(iix);
         std::cout << "  " << input.getConnecteeTypeName() << " '"
                   << input.getName() << "': ";
         if (input.getNumConnectees() == 0) {

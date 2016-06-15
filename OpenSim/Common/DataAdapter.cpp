@@ -42,7 +42,8 @@ namespace {
 //                  DataAdapter::registerDataAdapter("mot", STOFileAdapter{})};
 bool 
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) 
-              && DataAdapter::registerDataAdapter("mot", STOFileAdapter{}) 
+              && DataAdapter::registerDataAdapter("sto", STOFileAdapter{})
+              && DataAdapter::registerDataAdapter("mot", STOFileAdapter{})
               && DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})
 #ifdef WITH_BTK 
               && DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})
