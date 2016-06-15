@@ -32,10 +32,7 @@
 namespace OpenSim {
 
 class PhysicalFrame;
-class Model;
 class GeometryPath;
-class SimbodyEngine;
-class WrapObject;
 
 //=============================================================================
 //=============================================================================
