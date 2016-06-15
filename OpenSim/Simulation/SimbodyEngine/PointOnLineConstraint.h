@@ -34,17 +34,13 @@ class PhysicalFrame;
 //=============================================================================
 /**
  * A class implementing a Point On Line Constraint.  The underlying Constraint 
- * in Simbody is a Constraint::PointOnLine
+ * in Simbody is a SimTK::Constraint::PointOnLine.
  *
  * @author Samuel Hamner
- * @version 1.0
  */
 class OSIMSIMULATION_API PointOnLineConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointOnLineConstraint, Constraint);
 
-//=============================================================================
-// DATA
-//=============================================================================
 public:
     OpenSim_DECLARE_PROPERTY(line_direction_vec, SimTK::Vec3,
         "Direction of the line specified in the line body frame.");
@@ -53,14 +49,22 @@ public:
     OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3,
         "The point on (and specified in) the follower body constrained to the line.");
 
+    OpenSim_DECLARE_CONNECTOR(line_body, PhysicalFrame,
+        "A frame fixed to the body that contains the line along which the "
+        "point on the follower body can move.");
+    OpenSim_DECLARE_CONNECTOR(follower_body, PhysicalFrame,
+        "A frame fixed to the body that contains the point that is constrained "
+        "to move along a line.");
+
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     // CONSTRUCTION
     PointOnLineConstraint();
-    PointOnLineConstraint(const PhysicalFrame& lineBody, const SimTK::Vec3& lineDirection, SimTK::Vec3 pointOnLine,
-        const PhysicalFrame& followerBody, const SimTK::Vec3& followerPoint);
+    PointOnLineConstraint(const PhysicalFrame& lineBody,
+            const SimTK::Vec3& lineDirection, SimTK::Vec3 pointOnLine,
+            const PhysicalFrame& followerBody, const SimTK::Vec3& followerPoint);
 
     virtual ~PointOnLineConstraint();
 
@@ -83,8 +87,6 @@ protected:
 private:
     /** Construct PointConstraint's properties */
     void constructProperties() override;
-    /** Construct PointConstraint's connectors */
-    void constructConnectors() override;
     void setNull();
 
 

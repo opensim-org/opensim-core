@@ -26,11 +26,6 @@
 //=============================================================================
 #include "ConditionalPathPoint.h"
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 //=============================================================================
@@ -46,13 +41,9 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-ConditionalPathPoint::ConditionalPathPoint() :
-   _range(_rangeProp.getValueDblArray()),
-    _coordinateName(_coordinateNameProp.getValueStr()),
-    _coordinate(NULL)
+ConditionalPathPoint::ConditionalPathPoint() : PathPoint()
 {
-    setNull();
-    setupProperties();
+    constructInfrastructure();
 }
 
 //_____________________________________________________________________________
@@ -60,223 +51,99 @@ ConditionalPathPoint::ConditionalPathPoint() :
  * Destructor.
  */
 ConditionalPathPoint::~ConditionalPathPoint()
-{
-}
+{}
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aPoint ConditionalPathPoint to be copied.
- */
-ConditionalPathPoint::ConditionalPathPoint(const ConditionalPathPoint &aPoint) :
-   PathPoint(aPoint),
-   _range(_rangeProp.getValueDblArray()),
-    _coordinateName(_coordinateNameProp.getValueStr()),
-    _coordinate(NULL)
-{
-    setNull();
-    setupProperties();
-    copyData(aPoint);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one ConditionalPathPoint to another.
- *
- * @param aPoint ConditionalPathPoint to be copied.
- */
-void ConditionalPathPoint::copyData(const ConditionalPathPoint &aPoint)
-{
-    _range = aPoint._range;
-    _coordinateName = aPoint._coordinateName;
-    _coordinate = aPoint._coordinate;
-}
-
-//_____________________________________________________________________________
-/**
- * Initialize a ConditionalPathPoint with data from a PathPoint.
- * This function should not do anything to invalidate the path,
- * because the via point may not be added to it.
- *
- * @param aPoint PathPoint to be copied.
- */
-void ConditionalPathPoint::init(const PathPoint& aPoint)
-{
-    PathPoint::copyData(aPoint);
-
-    // If aPoint is a ConditionalPathPoint, then you can copy all of its members over.
-    // Otherwise, set the range and coordinate name to default values (using the first
-    // coordinate in the model, if there is one).
-   const ConditionalPathPoint* mmp = dynamic_cast<const ConditionalPathPoint*>(&aPoint);
-    if (mmp) {
-        copyData(*mmp);
-    } else {
-        _range[0] = 0.0;
-        _range[1] = 0.0;
-        GeometryPath* path = aPoint.getPath();
-        if (path) {
-            ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
-            if (comp) {
-                const CoordinateSet& coords = comp->getModel().getCoordinateSet();
-                if (coords.getSize() > 0) {
-                    int index = 0;
-                    _coordinateName = coords.get(index).getName();
-                    _range[0] = coords.get(index).getRangeMin();
-                    _range[1] = coords.get(index).getRangeMax();
-                }
-            }
-        }
-    }
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this ConditionalPathPoint to their null values.
- */
-void ConditionalPathPoint::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
+/*
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
-void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node, 
+                                             int versionNumber)
 {
-    if ( versionNumber < XMLDocument::getLatestVersion()){
-        if (versionNumber<=20001)
+    if (versionNumber <= 20001) {
         // Version has to be 1.6 or later, otherwise assert
-        XMLDocument::renameChildNode(aNode, "coordinates", "coordinate");
-        }
+        XMLDocument::renameChildNode(node, "coordinates", "coordinate");
+    }
+    if (versionNumber < 30505) {
+        // replace old properties with latest use of Connectors
+        SimTK::Xml::element_iterator coord = node.element_begin("coordinate");
+        std::string coord_name("");
+        if (coord != node.element_end())
+            coord->getValueAs<std::string>(coord_name);
+        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate", coord_name);
+    }
+
     // Call base class now assuming _node has been corrected for current version
-    PathPoint::updateFromXMLNode(aNode, versionNumber);
+    PathPoint::updateFromXMLNode(node, versionNumber);
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Connect properties to local pointers.
  */
-void ConditionalPathPoint::setupProperties()
+void ConditionalPathPoint::constructProperties()
 {
-    const double defaultRange[] = {0.0, 0.0};
-    _rangeProp.setName("range");
-    _rangeProp.setValue(2, defaultRange);
-    _rangeProp.setAllowableListSize(2);
-    _propertySet.append(&_rangeProp);
+    Array<double> defaultRange(0.0, 2); //two values of the range
+    constructProperty_range(defaultRange);
+}
 
-    _coordinateNameProp.setName("coordinate");
-    _propertySet.append(&_coordinateNameProp);
+
+void ConditionalPathPoint::constructConnectors()
+{
+    constructConnector<Coordinate>("coordinate");
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the coordinate that this point is linked to.
- *
- * @return Whether or not this point is active.
  */
-void ConditionalPathPoint::setCoordinate(const SimTK::State& s, Coordinate& aCoordinate)
+void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
 {
-    if (&aCoordinate != _coordinate)
-    {
-       _coordinate = &aCoordinate;
-       _coordinateName = _coordinate->getName();
-    }
+    updConnector<Coordinate>("coordinate").connect(coordinate);
 }
 
+bool ConditionalPathPoint::hasCoordinate() const
+{
+    return getConnector<Coordinate>("coordinate").isConnected();
+}
+
+const Coordinate& ConditionalPathPoint::getCoordinate() const
+{
+    return getConnectee<Coordinate>("coordinate");
+}
+
+
 //_____________________________________________________________________________
-/**
+/*
  * Set the range min.
- *
- * @param aRange range min to change to.
  */
-void ConditionalPathPoint::setRangeMin(const SimTK::State& s, double aMin)
+void ConditionalPathPoint::setRangeMin(double minVal)
 {
-    if (aMin <= _range[1])
-    {
-        _range[0] = aMin;
-    }
+    set_range(0, minVal);
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the range max.
- *
- * @param aRange range max to change to.
  */
-void ConditionalPathPoint::setRangeMax( const SimTK::State& s, double aMax)
+void ConditionalPathPoint::setRangeMax(double maxVal)
 {
-    if (aMax >= _range[0])
-    {
-        _range[1] = aMax;
-    }
+    set_range(1, maxVal);
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Determine if this point is active by checking the value of the
  * coordinate that it is linked to.
- *
- * @return Whether or not this point is active.
  */
 bool ConditionalPathPoint::isActive(const SimTK::State& s) const
 {
-    if (_coordinate)
-    {
-        double value = _coordinate->getValue(s);
-        if (value >= _range[0] - 1e-5 &&
-             value <= _range[1] + 1e-5)
+    if (getConnector<Coordinate>("coordinate").isConnected()) {
+        double value = getConnectee<Coordinate>("coordinate").getValue(s);
+        if (value >= get_range(0) - 1e-5 &&
+             value <= get_range(1) + 1e-5)
             return true;
     }
-
     return false;
-}
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this ConditionalPathPoint.
- */
-void ConditionalPathPoint::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
-{
-    // base class
-    Super::connectToModelAndPath(aModel, aPath);
-
-    // Setup() can be called before the model's coordinate set has been constructed, in which
-    // case you don't want to throw an exception if the coordinate is not found.
-    if (aModel.getCoordinateSet().getSize() > 0) {
-        // Look up the coordinate by name and store a pointer to it.
-        if (aModel.getCoordinateSet().contains(_coordinateName)) {
-            _coordinate = &aModel.getCoordinateSet().get(_coordinateName);
-        } else {
-            string errorMessage = "Error: Coordinate " + _coordinateName + " referenced in muscle " + aPath.getOwner()->getName() +
-                " does not exist in model " +   aModel.getName();
-            throw Exception(errorMessage);
-        }
-    }
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-ConditionalPathPoint& ConditionalPathPoint::operator=(const ConditionalPathPoint &aPoint)
-{
-    // BASE CLASS
-    PathPoint::operator=(aPoint);
-
-    copyData(aPoint);
-
-    return(*this);
 }

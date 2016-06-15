@@ -43,7 +43,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-PathWrap::PathWrap() : Component()
+PathWrap::PathWrap() : ModelComponent()
 {
     setNull();
     constructProperties();
@@ -82,11 +82,17 @@ void PathWrap::constructProperties()
 }
 
 
-void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
+void PathWrap::extendConnectToModel(Model& model)
 {
-    _path = &aPath;
+    Super::extendConnectToModel(model);
 
-    ComponentList<PhysicalFrame> bodiesList = aModel.getComponentList<PhysicalFrame>();
+    _path = dynamic_cast<const GeometryPath*>(&getParent());
+    std::string msg = "PathWrap '" + getName()
+        + "' must have a GeometryPath as its parent.";
+    OPENSIM_THROW_IF(_path == nullptr, Exception, msg);
+
+    ComponentList<PhysicalFrame> bodiesList = 
+        model.getComponentList<PhysicalFrame>();
     for (ComponentList<PhysicalFrame>::const_iterator it = bodiesList.begin();
             it != bodiesList.end(); ++it) {
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
@@ -99,11 +105,6 @@ void PathWrap::connectToModelAndPath(Model& aModel, GeometryPath& aPath)
             break;
         }
     }
-
-    // connectToModelAndPath() must be called after setBody() because it requires
-    // that _bodyName already be assigned.
-    updWrapPoint1().connectToModelAndPath(aModel, aPath);
-    updWrapPoint2().connectToModelAndPath(aModel, aPath);
 
     if (get_method() == "hybrid" || get_method() == "Hybrid" || get_method() == "HYBRID")
         _method = hybrid;

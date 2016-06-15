@@ -76,6 +76,8 @@ namespace OpenSim {
  */
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
+public:
+    
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -241,7 +243,7 @@ private:
 
 
 template<class T>
-class  Connector : public AbstractConnector {
+class Connector : public AbstractConnector {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
     
@@ -257,7 +259,7 @@ public:
     @param connectAtStage   Stage at which Connector should be connected.
     @param owner The component that contains this input. */
     Connector(const std::string& name, const SimTK::Stage& connectAtStage,
-              Component& owner) :
+              const Component& owner) :
         AbstractConnector(name, connectAtStage, false, owner),
         connectee(nullptr) {}
 
@@ -330,15 +332,16 @@ public:
     
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnecteeTypeName() const override
-    { return T::getClassName(); }
+    std::string getConnecteeTypeName() const override {
+        return T::getClassName();
+    }
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
 
 private:
     mutable SimTK::ReferencePtr<const T> connectee;
 }; // END class Connector<T>
-
+            
 
 /** A specialized Connector that connects to an Output signal is an Input.
 An AbstractInput enables maintenance of a list of unconnected Inputs. 
@@ -654,6 +657,138 @@ private:
     // interpreting the connected channels.
     SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
+        
+/// @name Creating Connectors to other objects for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create a socket for this component's dependence on another component.
+ * You must specify the type of the component that can be connected to this
+ * connector. The comment should describe how the connected component
+ * (connectee) is used by this component.
+ *
+ * Here's an example for using this macro:
+ * @code{.cpp}
+ * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * @endcode
+ *
+ * @note This macro requires that you have included the header that defines
+ * type `T`, as shown in the example above. We currently do not support
+ * declaring connectors if `T` is only forward-declared.
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Connector will
+ * not get copied properly if you create a custom copy constructor.
+ *
+ * @see Component::constructConnector()
+ * @relates OpenSim::Connector
+ */
+#define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
+    /** @name Connectors                                                 */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This connector was generated with the                            */ \
+    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    int _connector_##cname {                                                \
+        this->template constructConnector<T>(#cname)                        \
+    };                                                                      \
+    /** @endcond                                                         */
+
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
+ * when are you unable to include the header that defines type `T`. This might
+ * be the case if you have a circular dependency between your class and `T`.
+ * In such cases, you must:
+ *
+ *  -# forward-declare type `T`
+ *  -# call this macro inside the definition of your class, and
+ *  -# call #OpenSim_DEFINE_CONNECTOR_FD in your class's .cpp file (notice the
+ *      difference: DEFINE vs DECLARE).
+ *
+ * MyComponent.h:
+ * @code{.cpp}
+ * namespace OpenSim {
+ * class PhysicalOffsetFrame;
+ * class MyComponent : public Component {
+ * OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR_FD(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * }
+ * @endcode
+ *
+ * MyComponent.cpp:
+ * @code{.cpp}
+ * #include "MyComponent.h"
+ * OpenSim_DEFINE_CONNECTOR_FD(parent, OpenSim::MyComponent);
+ * ...
+ * @endcode
+ *
+ * You can also look at the OpenSim::Geometry source code for an example.
+ *
+ * @note Do NOT forget to call OpenSim_DEFINE_CONNECTOR_FD in your .cpp file!
+ *
+ * The "FD" in the name of this macro stands for "forward-declared."
+ *
+ * @warning This macro is experimental and may be removed in future versions.
+ *
+ * @see Component::constructConnector()
+ * @relates OpenSim::Connector
+ */
+#define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
+    /** @name Connectors                                                 */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This is an %OpenSim Connector.                                   */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    int _connector_##cname {                                                \
+        constructConnector_##cname()                                        \
+    };                                                                      \
+    /* Declare the method used in the in-class member initializer.       */ \
+    /* This method will be defined by OpenSim_DEFINE_CONNECTOR_FD.       */ \
+    int constructConnector_##cname();                                       \
+    /* Remember the provided type so we can use it in the DEFINE macro.  */ \
+    typedef T _connector_##cname##_type;                                    \
+    /** @endcond                                                         */
+
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* When specifying a Connector to a forward-declared type (using
+ * OpenSim_DECLARE_CONNECTOR_FD in the class definition), you must call this
+ * macro in your .cpp file.  The arguments are the name of the connector (the
+ * same one provided to OpenSim_DECLARE_CONNECTOR_FD) and the class in which
+ * the connector exists. See #OpenSim_DECLARE_CONNECTOR_FD for an example.
+ *
+ * @warning This macro is experimental and may be removed in future versions.
+ *
+ * @see #OpenSim_DECLARE_CONNECTOR_FD
+ * @relates OpenSim::Connector
+ */
+// This macro defines the method that the in-class member initializer calls
+// to construct the Connector. The reason why this must be in the .cpp file is
+// that putting the template member function `template <typename T>
+// Component::constructConnector` in the header requires that `T` is not an
+// incomplete type (specifically, when compiling cpp files for classes OTHER
+// than `MyComponent` but that include MyComponent.h). OpenSim::Geometry is an
+// example of this scenario.
+#define OpenSim_DEFINE_CONNECTOR_FD(cname, Class)                           \
+int Class::constructConnector_##cname() {                                   \
+    using T = _connector_##cname##_type;                                    \
+    return this->template constructConnector<T>(#cname);                    \
+}
+/// @}
 
 /// @name Creating Inputs for your Component
 /// Use these macros at the top of your component class declaration,

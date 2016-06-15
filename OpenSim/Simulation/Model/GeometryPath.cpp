@@ -25,9 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
@@ -36,7 +33,6 @@
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include "CoordinateSet.h"
 #include "Model.h"
-
 #include "ModelVisualizer.h"
 //=============================================================================
 // STATICS
@@ -77,13 +73,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     // (i.e., the set of currently active points is numbered
     // 1, 2, 3, ...).
     namePathPoints(0);
-
-    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
-        upd_PathWrapSet().get(i).connectToModelAndPath(aModel, *this);
-
-    for (int i = 0; i < get_PathPointSet().getSize(); i++){
-        upd_PathPointSet().get(i).connectToModelAndPath(aModel, *this);
-    }
 }
 
 //_____________________________________________________________________________
@@ -241,9 +230,6 @@ getPointForceDirections(const SimTK::State& s,
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     int np = currentPath.getSize();
-
-    //const SimbodyEngine& engine = _model->getSimbodyEngine();
- 
     rPFDs->ensureCapacity(np);
     
     for (i = 0; i < np; i++) {
@@ -327,8 +313,8 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.
-            po = bo->findStationLocationInGround(s, start->getLocation());
-            pf = bf->findStationLocationInGround(s, end->getLocation());
+            po = start->getLocationInGround(s);
+            pf = end->getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
             dir = (pf - po);
@@ -344,18 +330,37 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             else{
                 dir = dir.normalize();
             }
-        
+
             force = tension*dir;
 
+            const MovingPathPoint* mppo =
+                dynamic_cast<MovingPathPoint *>(start);
+
+            // do the same for the end point of this segment of the path
+            const MovingPathPoint* mppf =
+                dynamic_cast<MovingPathPoint *>(end);
+
             // add in the tension point forces to body forces
-            bo->applyForceToBodyPoint(s, start->getLocation(), force, 
-                bodyForces);
-            bf->applyForceToBodyPoint(s, end->getLocation(), -force,
-                bodyForces);
+            if (mppo) {// moving path point location is a function of the state
+                bo->applyForceToBodyPoint(s, mppo->getLocation(s), force,
+                    bodyForces);
+            }
+            else {
+                bo->applyForceToBodyPoint(s, start->getLocation(), force,
+                    bodyForces);
+            }
 
-            const MovingPathPoint* mppo = 
-                    dynamic_cast<MovingPathPoint *>(start);
+            if (mppf) {// moving path point location is a function of the state
+                bf->applyForceToBodyPoint(s, mppf->getLocation(s), -force,
+                    bodyForces);
+            }
+            else {
+                bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+                    bodyForces);
+            }
 
+            // Now account for the work being done by virtue of the moving
+            // path point motion relative to the body it is on
             if(mppo){
                 // torque (genforce) contribution due to relative movement 
                 // of a via point w.r.t. the body it is connected to.
@@ -364,17 +369,13 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
                 // get the mobilized body the coordinate is couple to.
                 const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppo->getXCoordinate()->getBodyIndex());
+                    matter.getMobilizedBody(mppo->getXCoordinate().getBodyIndex());
 
                 // apply the generalized (mobility) force to the coordinate's body
                 mpbod.applyOneMobilityForce(s, 
-                    mppo->getXCoordinate()->getMobilizerQIndex(), 
+                    mppo->getXCoordinate().getMobilizerQIndex(), 
                     fo, mobilityForces);
             }
-
-            // do the same for the end point of this segment of the path
-            const MovingPathPoint* mppf = 
-                    dynamic_cast<MovingPathPoint *>(end);
 
             if(mppf){
                 dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
@@ -382,10 +383,10 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
                 // get the mobilized body the coordinate is couple to.
                 const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppf->getXCoordinate()->getBodyIndex());
+                    matter.getMobilizedBody(mppf->getXCoordinate().getBodyIndex());
 
                 mpbod.applyOneMobilityForce(s, 
-                    mppf->getXCoordinate()->getMobilizerQIndex(), 
+                    mppf->getXCoordinate().getMobilizerQIndex(), 
                     ff, mobilityForces);
             }
             
@@ -505,7 +506,6 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
     newPoint->setBody(aBody);
     Vec3& location = newPoint->getLocation();
     placeNewPathPoint(s, location, aIndex, aBody);
-    newPoint->connectToModelAndPath(updModel(), *this);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.
@@ -523,7 +523,6 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
         if (endPoint != -1 && aIndex <= endPoint)
             get_PathWrapSet().get(i).setEndPoint(s,endPoint + 1);
     }
-
 
     return newPoint;
 }
@@ -724,8 +723,8 @@ void GeometryPath::addPathWrap(WrapObject& aWrapObject)
     PathWrap* newWrap = new PathWrap();
     newWrap->setWrapObject(aWrapObject);
     newWrap->setMethod(PathWrap::hybrid);
-    newWrap->connectToModelAndPath(updModel(), *this);
     upd_PathWrapSet().adoptAndAppend(newWrap);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
@@ -815,7 +814,7 @@ void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
             {
                 Vec3 scaleFactors(1.0);
                 aScale.getScaleFactors(scaleFactors);
-                upd_PathPointSet().get(i).scale(s, scaleFactors);
+                upd_PathPointSet().get(i).scale(scaleFactors);
             }
         }
     }
@@ -859,17 +858,8 @@ void GeometryPath::computePath(const SimTK::State& s) const
         updCacheVariableValue<Array<PathPoint*> >(s, "current_path");
     currentPath.setSize(0);
 
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // TODO: This is a bug. Here we are going to modify moving path point
-    // locations *in the property* which means they are out of sync with 
-    // the supplied state. These updates should be done in the state cache.
-    GeometryPath * mutableThis = const_cast<GeometryPath*>(this);
-
     // Add the active fixed and moving via points to the path.
     for (int i = 0; i < get_PathPointSet().getSize(); i++) {
-        // If this is a moving path point, update its location *in the
-        // PathPointSet property* (BAD).
-        mutableThis->upd_PathPointSet()[i].update(s);
         if (get_PathPointSet()[i].isActive(s))
             currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
@@ -891,51 +881,12 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     if (isCacheVariableValid(s, "speed"))
         return;
 
-    SimTK::Vec3 posRelative, velRelative;
-    SimTK::Vec3 posStartInertial, posEndInertial, 
-                velStartInertial, velEndInertial;
-    SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
-    PathPoint *start, *end;
     const Array<PathPoint*>& currentPath = getCurrentPath(s);
 
     double speed = 0.0;
-
-    //const SimbodyEngine& engine = _model->getSimbodyEngine()
     
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
-        start = currentPath[i];
-        end   = currentPath[i+1];
-
-        // Find the positions and velocities in the inertial frame.
-        posStartInertial = start->getLocationInGround(s);
-        posEndInertial = end->getLocationInGround(s);
-
-        velStartInertial = start->getVelocityInGround(s);
-        velEndInertial = end->getVelocityInGround(s);
-
-        // The points might be moving in their local bodies' reference frames
-        // (MovingPathPoints and possibly PathWrapPoints) so find their
-        // local velocities and transform them to the inertial frame.
-        start->getVelocity(s, velStartLocal);
-        end->getVelocity(s, velEndLocal);
-
-        velStartMoving = start->getBody()
-            .expressVectorInAnotherFrame(s, velStartLocal, getModel().getGround());
-
-        velEndMoving = end->getBody()
-            .expressVectorInAnotherFrame(s, velEndLocal, getModel().getGround());
-
-        // Calculate the relative positions and velocities.
-        posRelative = posEndInertial - posStartInertial;
-        velRelative =   (velEndInertial + velEndMoving) 
-                      - (velStartInertial + velStartMoving);
-
-        // Normalize the vector from start to end.
-        posRelative = posRelative.normalize();
-
-        // Dot the relative velocity with the unit vector from start to end,
-        // and add this speed to the running total.
-        speed += ~velRelative * posRelative;
+        speed += currentPath[i]->calcSpeedBetween(s, *currentPath[i+1]);
     }
 
     setLengtheningSpeed(s, speed);
@@ -1125,8 +1076,6 @@ applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
 
                     ws.updWrapPoint1().setWrapLength(0.0);
                     ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
-                    ws.updWrapPoint1().setBody(wo->getFrame());
-                    ws.updWrapPoint2().setBody(wo->getFrame());
 
                     ws.updWrapPoint1().setLocation(s,best_wrap.r1);
                     ws.updWrapPoint2().setLocation(s,best_wrap.r2);
@@ -1182,17 +1131,11 @@ calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
     const PathPoint* pt1 = path.get(wr.startPoint);
     const PathPoint* pt2 = path.get(wr.endPoint);
 
-    double straight_length = getModel().getSimbodyEngine()
-        .calcDistance(s, pt1->getBody(), pt1->getLocation(),
-                         pt2->getBody(), pt2->getLocation());
+    double straight_length = pt1->calcDistanceBetween(s, *pt2);
 
-    const Vec3& p1 = pt1->getLocation();
-    const Vec3& p2 = pt2->getLocation();
-    double wrap_length = getModel().getSimbodyEngine()
-        .calcDistance(s, pt1->getBody(), p1, wo.getFrame(), wr.r1);
+    double wrap_length = pt1->calcDistanceBetween(s, wo.getFrame(), wr.r1);
     wrap_length += wr.wrap_path_length;
-    wrap_length += getModel().getSimbodyEngine()
-        .calcDistance(s, wo.getFrame(), wr.r2, pt2->getBody(), p2);
+    wrap_length += pt2->calcDistanceBetween(s, wo.getFrame(), wr.r2);
 
     return wrap_length - straight_length; // return absolute diff, not relative
 }
@@ -1207,8 +1150,6 @@ calcLengthAfterPathComputation(const SimTK::State& s,
                                const Array<PathPoint*>& currentPath) const
 {
     double length = 0.0;
-
-    const SimbodyEngine& engine = _model->getSimbodyEngine();
 
     for (int i = 0; i < currentPath.getSize() - 1; i++) {
         const PathPoint* p1 = currentPath[i];
@@ -1225,8 +1166,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
             if (smwp)
                 length += smwp->getWrapLength();
         } else {
-            length += engine.calcDistance(s, p1->getBody(), p1->getLocation(), 
-                                             p2->getBody(), p2->getLocation());
+            length += p1->calcDistanceBetween(s, *p2);
         }
     }
 
@@ -1257,17 +1197,7 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s) const
 {
     Array<PathPoint*>& currentDisplayPath = 
         updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-    // Clear the current display path. Delete all path points
-    // that have a NULL path pointer. This means that they were
-    // created by an earlier call to updateDisplayPath() and are
-    // not part of the _currentPath.
-/*
-    for (int i=0; i<currentDisplayPath.getSize(); i++) {
-        PathPoint* mp = currentDisplayPath.get(i);
-        if (!mp->getPath())
-            ;
-    }
-*/
+
     currentDisplayPath.setSize(0);
 
     const Array<PathPoint*>& currentPath =  
