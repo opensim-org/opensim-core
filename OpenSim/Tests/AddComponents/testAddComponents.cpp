@@ -224,8 +224,8 @@ void addComponentsToModel(Model& osimModel)
     OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockMesh.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
 
     // Add contact geometry to the model
-    osimModel.addContactGeometry(floor);
-    osimModel.addContactGeometry(cube);
+    osimModel.addComponent(floor);
+    osimModel.addComponent(cube);
 
     // Define contact parameters for elastic foundation force
     OpenSim::ElasticFoundationForce::ContactParameters *contactParams =
