@@ -971,12 +971,12 @@ void Model::equilibrateMuscles(SimTK::State& state)
     bool failed = false;
     string errorMsg = "";
 
-    for (int i = 0; i < get_ForceSet().getSize(); i++)
-    {
-        Muscle* muscle = dynamic_cast<Muscle*>(&get_ForceSet().get(i));
-        if (muscle != NULL && !muscle->isDisabled(state)){
+    auto muscles = getComponentList<Muscle>();
+
+    for (auto& muscle : muscles) {
+        if (!muscle.isDisabled(state)){
             try{
-                muscle->equilibrate(state);
+                muscle.equilibrate(state);
             }
             catch (const std::exception& e) {
                 if(!failed){ // haven't failed to equilibrate other muscles yet

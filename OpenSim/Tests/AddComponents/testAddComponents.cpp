@@ -212,8 +212,8 @@ void addComponentsToModel(Model& osimModel)
     muscle2->addNewPathPoint("muscle2-point2", *block, Vec3(0.0, 0.0, 0.05));
 
     // Add the two muscles (as forces) to the model
-    osimModel.addForce(muscle1);
-    osimModel.addForce(muscle2);
+    osimModel.addComponent(muscle1);
+    osimModel.addComponent(muscle2);
 
     // CONTACT FORCE
     // Define contact geometry
@@ -330,7 +330,6 @@ void compareResultsToStandard() {
  */
 int main()
 {
-
     clock_t startTime = clock();
 
     try {
