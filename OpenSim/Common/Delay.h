@@ -84,7 +84,8 @@ namespace OpenSim {
  *     OpenSim_DECLARE_PROPERTY(delay, double, "Duration of delay (seconds).");
  *     MyController() { constructProperties(); }
  *     void computeControls(const State& s, Vector& controls) const override {
- *         double q = _coordDelay.getValue(s);
+ *         const Delay& coordDelay = getMemberSubcomponent<Delay>(_delayIdx);
+ *         double q = coordDelay.getValue(s);
  *         // Delayed negative feedback control law.
  *         double u = -10 * q;
  *         getModel().getActuatorSet().get("my_actuator").addInControls(
@@ -96,17 +97,20 @@ namespace OpenSim {
  *     }
  *     void extendFinalizeFromProperties() override {
  *         Super::extendFinalizeFromProperties();
- *         _coordDelay.set_delay(get_delay());
+ *         Delay& coordDelay = updMemberSubcomponent<Delay>(_delayIdx);
+ *         coordDelay.set_delay(get_delay());
  *         addComponent(&_coordDelay);
  *     }
  *     void extendConnectToModel(Model& model) override {
  *         Super::extendConnectToModel(model);
  *         const auto& coord = model.getCoordinateSet().get("ankle_angle");
  *         // Set the input for the Delay component.
- *         _coordDelay.getInput("input").connect(coord.getOutput("value"));
+ *         Delay& coordDelay = updMemberSubcomponent<Delay>(_delayIdx);
+ *         coordDelay.getInput("input").connect(coord.getOutput("value"));
  *     }
  *
- *     Delay _coordDelay;
+ *     MemberSubcomponentIndex _delayIdx
+ *     { constructSubcomponent<Delay>("coord_delay") };
  * };
  * @endcode
  *
@@ -126,6 +130,15 @@ public:
     OpenSim_DECLARE_PROPERTY(can_use_current_value, bool,
         "(Advanced) Use current value of input to compute output.");
 
+    // TODO the requiredAt Stage should be the same as this Delay's output
+    // dependsOn stage.
+    OpenSim_DECLARE_INPUT(input, T, SimTK::Stage::Time,
+        "The quantity to delay.");
+
+    // TODO the depensdOn stage should be the dependsOn stage of the output
+    // that is wired to this Delay's input.
+    OpenSim_DECLARE_OUTPUT(output, T, getValue, SimTK::Stage::Time);
+
     /// Default constructor.
     Delay_();
 
@@ -138,8 +151,6 @@ public:
 private:
 
     void constructProperties() override;
-    void constructInputs() override;
-    void constructOutputs() override;
 
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -161,19 +172,6 @@ template<class T>
 void Delay_<T>::constructProperties() {
     constructProperty_delay(0.0);
     constructProperty_can_use_current_value(false);
-}
-
-template<class T>
-void Delay_<T>::constructInputs() {
-    // TODO the requiredAt Stage should be the same as this Delay's output dependsOn stage.
-    constructInput<T>("input", SimTK::Stage::Time);
-}
-
-template<class T>
-void Delay_<T>::constructOutputs() {
-    // TODO the depensdOn stage should be the dependsOn stage of the output
-    // that is wired to this Delay's input.
-    constructOutput<T>("output", &Delay_::getValue, SimTK::Stage::Time);
 }
 
 template<class T>

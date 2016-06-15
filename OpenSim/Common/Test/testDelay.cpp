@@ -50,17 +50,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PendulumController, Controller);
 public:
     OpenSim_DECLARE_PROPERTY(delay, double,
             "Use a delayed coordinate value.");
+    OpenSim_DECLARE_INPUT(coord_value, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_OUTPUT(coord_value_vector, Vector, getCoordValueVector,
+            SimTK::Stage::Model);
     PendulumController() {
         constructInfrastructure();
-        _delay.setName("coordinate_delay");
-        _vectorDelay.setName("vector_coordinate_delay");
-        _comVelocityDelay.setName("com_velocity_delay");
     }
     PendulumController(double delay) : PendulumController() {
         set_delay(delay);
     }
     void computeControls(const State& s, Vector &controls) const override {
-        double q = _delay.getValue(s);
+        const auto& delay = getMemberSubcomponent<Delay>(_delayIdx);
+        double q = delay.getValue(s);
         double u = -10 * q;
         getModel().getActuators()[0].addInControls(Vector(1, u), controls);
     }
@@ -69,49 +70,50 @@ public:
     }
     // Just for testing purposes to see if the Delay itself works.
     double getDelayedCoordinateValue(const State& s) const {
-        return _delay.getOutputValue<double>(s, "output");
+        const auto& delay = getMemberSubcomponent<Delay>(_delayIdx);
+        return delay.getOutputValue<double>(s, "output");
     }
     Vector getDelayedCoordValueVector(const SimTK::State& s) const {
-        return _vectorDelay.getValue(s);
+        const auto& vectorDelay = getMemberSubcomponent<DelayVector>(_delayVectorIdx);
+        return vectorDelay.getValue(s);
     }
     SimTK::Vec3 getDelayedCOMVelocityValue(const State& s) const {
-        return _comVelocityDelay.getValue(s);
+        const auto& comVelocityDelay = getMemberSubcomponent<Delay_<SimTK::Vec3>>(_comVelocityDelayIdx);
+        return comVelocityDelay.getValue(s);
     }
 
 private:
     void constructProperties() override {
         constructProperty_delay(0.0);
     }
-    void constructInputs() override {
-        constructInput<double>("coord_value", SimTK::Stage::Model);
-    }
-    void constructOutputs() override {
-        constructOutput<Vector>("coord_value_vector",
-                &PendulumController::getCoordValueVector,
-                SimTK::Stage::Model);
-    }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
-        _delay.set_delay(get_delay());
-        _vectorDelay.set_delay(get_delay());
-        _comVelocityDelay.set_delay(get_delay());
-        addComponent(&_delay);
-        addComponent(&_vectorDelay);
-        addComponent(&_comVelocityDelay);
+        auto& delay = updMemberSubcomponent<Delay>(_delayIdx);
+        auto& vectorDelay = updMemberSubcomponent<DelayVector>(_delayVectorIdx);
+        auto& comVelocityDelay = updMemberSubcomponent<Delay_<SimTK::Vec3>>(_comVelocityDelayIdx);
+        delay.set_delay(get_delay());
+        vectorDelay.set_delay(get_delay());
+        comVelocityDelay.set_delay(get_delay());
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
         const auto& coord = model.getCoordinateSet()[0];
-        getInput("coord_value").connect(coord.getOutput("value"));
-        _delay.getInput("input").connect(coord.getOutput("value"));
-        _vectorDelay.getInput("input").connect(getOutput("coord_value_vector"));
-        _comVelocityDelay.getInput("input").connect(
+        updInput("coord_value").connect(coord.getOutput("value"));
+        auto& delay = updMemberSubcomponent<Delay>(_delayIdx);
+        auto& vectorDelay = updMemberSubcomponent<DelayVector>(_delayVectorIdx);
+        auto& comVelocityDelay = updMemberSubcomponent<Delay_<SimTK::Vec3>>(_comVelocityDelayIdx);
+        delay.updInput("input").connect(coord.getOutput("value"));
+        vectorDelay.updInput("input").connect(getOutput("coord_value_vector"));
+        comVelocityDelay.updInput("input").connect(
                 model.getOutput("com_velocity"));
     }
 
-    Delay _delay;
-    DelayVector _vectorDelay;
-    Delay_<SimTK::Vec3> _comVelocityDelay;
+    MemberSubcomponentIndex _delayIdx
+    { constructSubcomponent<Delay>("coordinate_delay") };
+    MemberSubcomponentIndex _delayVectorIdx
+    { constructSubcomponent<DelayVector>("vector_coordinate_delay") };
+    MemberSubcomponentIndex _comVelocityDelayIdx
+    { constructSubcomponent<Delay_<SimTK::Vec3>>("com_velocity_delay") };
 };
 
 // Contains dummy outputs with different requiresAt stages so that we can
@@ -119,6 +121,17 @@ private:
 class DelayStageTesting : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(DelayStageTesting, ModelComponent);
 public:
+    OpenSim_DECLARE_OUTPUT(position, double, getPosition,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(velocity, double, getVelocity,
+            SimTK::Stage::Velocity);
+    // There's a bug where outputs with a dependsOn stage of Dynamics or
+    // above causes an exception to be thrown when initializing the
+    // TimeStepper.
+    // TODO
+    OpenSim_DECLARE_OUTPUT(dynamics, double, getDynamics,
+            SimTK::Stage::Dynamics);
+
     DelayStageTesting() {
         constructInfrastructure();
     }
@@ -127,28 +140,16 @@ public:
     Delay velDelay{0.02};
     Delay dynDelay{0.03};
 
+    double getPosition(const SimTK::State& s) const
+    { return s.getTime() + 1.0; }
+
+    double getVelocity(const SimTK::State& s) const
+    { return s.getTime() + 2.0; }
+
+    double getDynamics(const SimTK::State& s) const
+    { return s.getTime() + 3.0; }
+
 private:
-    void constructOutputs() override {
-        constructOutput<double>("position",
-                std::bind([](const SimTK::State& s)->double
-                        { return s.getTime() + 1.0; },
-                        std::placeholders::_1),
-                SimTK::Stage::Position);
-        constructOutput<double>("velocity",
-                std::bind([](const SimTK::State& s)->double
-                        { return s.getTime() + 2.0; },
-                        std::placeholders::_1),
-                SimTK::Stage::Velocity);
-        // There's a bug where outputs with a dependsOn stage of Dynamics or
-        // above causes an exception to be thrown when initializing the
-        // TimeStepper.
-        // TODO
-        constructOutput<double>("dynamics",
-                std::bind([](const SimTK::State& s)->double
-                        { return s.getTime() + 3.0; },
-                        std::placeholders::_1),
-                SimTK::Stage::Dynamics);
-    }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         addComponent(&posDelay);
@@ -157,9 +158,9 @@ private:
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
-        posDelay.getInput("input").connect(getOutput("position"));
-        velDelay.getInput("input").connect(getOutput("velocity"));
-        dynDelay.getInput("input").connect(getOutput("dynamics"));
+        posDelay.updInput("input").connect(getOutput("position"));
+        velDelay.updInput("input").connect(getOutput("velocity"));
+        dynDelay.updInput("input").connect(getOutput("dynamics"));
     }
 };
 
@@ -466,6 +467,10 @@ void testNegativeDelayDurationException() {
 class DiscontinuousInputTesting : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(DiscontinuousInputTesting, ModelComponent);
 public:
+    OpenSim_DECLARE_OUTPUT(time, double, getTime, SimTK::Stage::Time);
+    OpenSim_DECLARE_OUTPUT(step, double, getStep, SimTK::Stage::Time);
+    OpenSim_DECLARE_OUTPUT(discont, double, getDiscont, SimTK::Stage::Time);
+
     DiscontinuousInputTesting() {
         constructInfrastructure();
     }
@@ -473,24 +478,14 @@ public:
     Delay stepDelay{0.2};
     Delay discontDelay{0.2};
 
+    double getTime(const SimTK::State& s) const
+    { return s.getTime(); }
+    double getStep(const SimTK::State& s) const
+    { return s.getTime() < 0.5 ? 1.5 : 4.3; }
+    double getDiscont(const SimTK::State& s) const
+    { return s.getTime() < 0.5 ? s.getTime() : 1 + s.getTime(); }
+
 private:
-    void constructOutputs() override {
-        constructOutput<double>("time",
-            std::bind([](const SimTK::State& s)->double
-                      { return s.getTime(); },
-                      std::placeholders::_1),
-            SimTK::Stage::Time);
-        constructOutput<double>("step",
-            std::bind([](const SimTK::State& s)->double
-                      { return s.getTime() < 0.5 ? 1.5 : 4.3; },
-                      std::placeholders::_1),
-            SimTK::Stage::Time);
-        constructOutput<double>("discont",
-            std::bind([](const SimTK::State& s)->double
-                  { return s.getTime() < 0.5 ? s.getTime() : 1 + s.getTime(); },
-                  std::placeholders::_1),
-            SimTK::Stage::Time);
-    }
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         addComponent(&timeDelay);
@@ -499,9 +494,9 @@ private:
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
-        timeDelay.getInput("input").connect(getOutput("time"));
-        stepDelay.getInput("input").connect(getOutput("step"));
-        discontDelay.getInput("input").connect(getOutput("discont"));
+        timeDelay.updInput("input").connect(getOutput("time"));
+        stepDelay.updInput("input").connect(getOutput("step"));
+        discontDelay.updInput("input").connect(getOutput("discont"));
     }
     // This event gets triggered at 0.5 seconds, which matches the
     // time of the discontinuity in the "step" and "discont" outputs.
