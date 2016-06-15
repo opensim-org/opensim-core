@@ -255,7 +255,7 @@ void addComponentsToModel(Model& osimModel)
     prescribedForce->setPointFunctions(new Constant(0.0), new Constant(0.0), new Constant(0.0));
 
     // Add the new prescribed force to the model
-    osimModel.addForce(prescribedForce);
+    osimModel.addComponent(prescribedForce);
 
     ///////////////////////////////////
     // DEFINE CONTROLS FOR THE MODEL //
