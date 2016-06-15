@@ -57,7 +57,7 @@ changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
     // the location of the point in the inertial reference frame.
     upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
 
-    // now assign this point's body to point to aBody
+    // now make "body" this PathPoint's parent Frame
     setParentFrame(body);
 }
 
