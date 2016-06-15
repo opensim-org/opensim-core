@@ -238,7 +238,7 @@ void addComponentsToModel(Model& osimModel)
     contactForce->setName("contactForce");
 
     // Add the new elastic foundation force to the model
-    osimModel.addForce(contactForce);
+    osimModel.addComponent(contactForce);
 
     // PRESCRIBED FORCE
     // Create a new prescribed force to be applied to the block
