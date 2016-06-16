@@ -48,7 +48,7 @@ using SimTK::Vec3;
  */
 MovingPathPoint::MovingPathPoint() : PathPoint()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -68,13 +68,6 @@ void MovingPathPoint::constructProperties()
     constructProperty_x_location(Constant(0.0));
     constructProperty_y_location(Constant(0.0));
     constructProperty_z_location(Constant(0.0));
-}
-
-void MovingPathPoint::constructConnectors()
-{
-    constructConnector<Coordinate>("x_coordinate");
-    constructConnector<Coordinate>("y_coordinate");
-    constructConnector<Coordinate>("z_coordinate");
 }
 
 bool MovingPathPoint::hasXCoordinate() const

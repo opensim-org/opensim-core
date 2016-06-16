@@ -40,7 +40,7 @@ public:
         return getCacheVariableValue<double>(s, "sum");
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_strength(3.0);
     }
     void extendAddToSystem(MultibodySystem& system) const override {
@@ -105,7 +105,7 @@ public:
 
 private:
     
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_scaling_factor(1.0);
     }
 };

@@ -50,6 +50,12 @@ public:
         "The minimum and maximum values that the coordinate can range between, "
         "for which the PathPoint is active. Angular coordinates in radians.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(coordinate, Coordinate,
+        "The coordinate whose value this path point depends on.");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -70,8 +76,7 @@ public:
     bool isActive(const SimTK::State& s) const override;
 
 private:
-    void constructProperties() override;
-    void constructConnectors() override;
+    void constructProperties();
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) override;
 //=============================================================================
 };  // END of class ConditionalPathPoint

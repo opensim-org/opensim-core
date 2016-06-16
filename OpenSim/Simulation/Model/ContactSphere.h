@@ -90,7 +90,7 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 

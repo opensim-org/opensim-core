@@ -154,7 +154,7 @@ public:
         return get_function().calcValue(SimTK::Vector(1, s.getTime()));
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_function(Constant(0.0));
     }
 }; // end of SignalGenerator

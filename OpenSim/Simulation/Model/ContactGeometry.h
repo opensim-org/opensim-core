@@ -63,7 +63,7 @@ public:
         "Display Color to apply to the contact geometry.");
 
     OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
-        "The frame to which this goemetry is attached.");
+        "The frame to which this geometry is attached.");
 
 //=============================================================================
 // METHODS
