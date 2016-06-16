@@ -73,6 +73,11 @@ public:
     "Orientation offset of this frame in its parent frame, expressed as a "
     "frame-fixed x-y-z rotation sequence.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(parent, C, "The parent frame to this frame.");
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -159,7 +164,6 @@ protected:
     /** @name Component Interface
     These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
     /**@}**/
 
@@ -238,12 +242,6 @@ void OffsetFrame<C>::constructProperties()
     constructProperty_translation(zero);
     constructProperty_orientation(zero);
     // transform at default
-}
-
-template <class C>
-void OffsetFrame<C>::constructConnectors()
-{
-    this->template constructConnector<C>("parent");
 }
 
 //=============================================================================

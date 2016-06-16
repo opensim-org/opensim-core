@@ -67,7 +67,7 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <properties title="OpenSim Properties, Outputs, Input"/>
+      <properties title="OpenSim Properties, Connectors, Outputs, Inputs"/>
       <publicmethods title=""/>
     </memberdecl>
    
@@ -76,7 +76,7 @@
       <constructors title=""/>
       <typedefs title=""/>
       <functions title=""/>
-      <properties title="OpenSim Property, Output, Input Documentation"/>
+      <properties title="OpenSim Property, Connector, Output, Input Documentation"/>
       <!-- <enums title=""/>
       
       

@@ -1563,6 +1563,8 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
+                         OpenSim_DECLARE_CONNECTOR \
+                         OpenSim_DECLARE_CONNECTOR_FD \
                          OpenSim_DECLARE_OUTPUT \
                          OpenSim_DECLARE_LIST_OUTPUT \
                          OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \

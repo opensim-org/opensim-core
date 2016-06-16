@@ -23,19 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-#include "SimTKcommon.h"
-#include "SimTKsimbody.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -62,36 +53,21 @@ class SimbodyEngine;
  */
 class OSIMSIMULATION_API MovingPathPoint : public PathPoint {
 OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, PathPoint);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(x_location, Function,
+        "Function defining the x component of the point's location expressed "
+        "in the Frame of the Point.");
 
-//=============================================================================
-// DATA
-//=============================================================================
-private:
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(y_location, Function,
+        "Function defining the y component of the point's location expressed "
+        "in the Frame of the Point.");
 
-protected:
-    PropertyObjPtr<Function> _xLocationProp;
-    Function* &_xLocation;
-
-    PropertyStr _xCoordinateNameProp;
-    std::string &_xCoordinateName;
-
-    const Coordinate* _xCoordinate;
-
-    PropertyObjPtr<Function> _yLocationProp;
-    Function* &_yLocation;
-
-    PropertyStr _yCoordinateNameProp;
-    std::string &_yCoordinateName;
-
-    const Coordinate* _yCoordinate;
-
-    PropertyObjPtr<Function> _zLocationProp;
-    Function* &_zLocation;
-
-    PropertyStr _zCoordinateNameProp;
-    std::string &_zCoordinateName;
-
-    const Coordinate* _zCoordinate;
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(z_location, Function,
+        "Function defining the z component of the point's location expressed "
+        "in the Frame of the Point.");
 
 //=============================================================================
 // METHODS
@@ -101,49 +77,50 @@ protected:
     //--------------------------------------------------------------------------
 public:
     MovingPathPoint();
-    MovingPathPoint(const MovingPathPoint &aPoint);
     virtual ~MovingPathPoint();
 
-#ifndef SWIG
-    MovingPathPoint& operator=(const MovingPathPoint &aPoint);
-#endif
-    void copyData(const MovingPathPoint &aPoint);
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
-    void init(const PathPoint& aPoint) override;
 
-    const Coordinate* getXCoordinate() const { return _xCoordinate; }
-    const Coordinate* getYCoordinate() const { return _yCoordinate; }
-    const Coordinate* getZCoordinate() const { return _zCoordinate; }
-#ifndef SWIG
-    void setXCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
-    void setYCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
-    void setZCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
+    bool hasXCoordinate() const;
+    bool hasYCoordinate() const;
+    bool hasZCoordinate() const;
+
+    const Coordinate& getXCoordinate() const;
+    const Coordinate& getYCoordinate() const;
+    const Coordinate& getZCoordinate() const;
+
+    void setXCoordinate(const Coordinate& coordinate);
+    void setYCoordinate(const Coordinate& coordinate);
+    void setZCoordinate(const Coordinate& coordinate);
 
     // Override methods from PathPoint.
     bool isActive(const SimTK::State& s) const override { return true; }
-    void connectToModelAndPath(Model& aModel, GeometryPath& aPath) 
-                                                                override;
-    void update(const SimTK::State& s) override;
-    void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) override;
-#endif
+
+    /** Get the local location of the MovingPathPoint in its Frame */
+    SimTK::Vec3 getLocation(const SimTK::State& s) const;
+    /** Get the local velocity of the MovingPathPoint w.r.t to and 
+        expressed in its Frame. To get the velocity of the point w.r.t.
+        and expressed in Ground, call getVelocityInGround(). */
+    SimTK::Vec3 getVelocity(const SimTK::State& s) const;
+
     SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
 
-    const std::string& getXCoordinateName() const { return _xCoordinateName; }
-    const std::string& getYCoordinateName() const { return _yCoordinateName; }
-    const std::string& getZCoordinateName() const { return _zCoordinateName; }
-    virtual Function* getXFunction() const { return _xLocation; }
-    virtual Function* getYFunction() const { return _yLocation; }
-    virtual Function* getZFunction() const { return _zLocation; }
-#ifndef SWIG
-    void setXFunction( const SimTK::State& s, Function& aFunction);
-    void setYFunction( const SimTK::State& s, Function& aFunction);
-    void setZFunction( const SimTK::State& s, Function& aFunction);
-#endif
-   void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors) override;
+   void scale(const SimTK::Vec3& aScaleFactors) override;
 
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties() override;
+    void constructConnectors() override;
+    void extendConnectToModel(Model& model) override;
+
+    SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const override;
+    SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const override;
+    SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
+
+private:
+    SimTK::ReferencePtr<const Coordinate> _xCoordinate;
+    SimTK::ReferencePtr<const Coordinate> _yCoordinate;
+    SimTK::ReferencePtr<const Coordinate> _zCoordinate;
+
 //=============================================================================
 };  // END of class MovingPathPoint
 //=============================================================================

@@ -53,6 +53,13 @@ public:
     OpenSim_DECLARE_PROPERTY(rest_length, double,
         "Spring resting length (m).");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(body1, PhysicalFrame,
+        "A frame on the first body that this spring connects to.");
+    OpenSim_DECLARE_CONNECTOR(body2, PhysicalFrame,
+        "A frame on the second body that this spring connects to.");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -126,8 +133,6 @@ protected:
 private:
     void setNull();
     void constructProperties() override;
-    /** These will be the two bodies the PointToPointSpring connects to.*/
-    void constructConnectors() override;
 
 //==============================================================================
 };  // END of class PointToPointSpring
