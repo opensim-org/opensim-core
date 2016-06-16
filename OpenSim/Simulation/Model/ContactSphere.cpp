@@ -83,7 +83,7 @@ void ContactSphere::setRadius(double radius)
     _radius = radius;
 }
 
-SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
+SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry() const
 {
     return SimTK::ContactGeometry::Sphere(_radius);
 }

@@ -67,6 +67,7 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
+            /*
             if (!_model->getContactGeometrySet().contains(
                         params.getGeometry()[j])) {
                 std::string errorMessage = "Invalid ContactGeometry ("
@@ -74,8 +75,11 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
                     + ") specified in HuntCrossleyForce" + getName();
                 throw Exception(errorMessage);
             }
-            ContactGeometry& geom = _model->updContactGeometrySet().get(
-                    params.getGeometry()[j]);
+            */
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
+                /* _model->updContactGeometrySet().get(
+                    params.getGeometry()[j]); */
 
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to
@@ -335,7 +339,7 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             const ContactGeometry& geom =
-                _model->getContactGeometrySet().get(params.getGeometry()[j]);
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
             std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
@@ -376,8 +380,8 @@ getRecordValues(const SimTK::State& state) const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            const ContactGeometry& geom = 
-                _model->getContactGeometrySet().get(params.getGeometry()[j]);
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
     
             const auto& mbi = geom.getFrame().getMobilizedBodyIndex();
             const auto& thisBodyForce = bodyForces(mbi);

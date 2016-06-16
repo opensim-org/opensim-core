@@ -102,7 +102,7 @@ public:
     void setDisplayPreference(const int dispPref);
 
     /** Create a new SimTK::ContactGeometry based on this object. */
-    virtual SimTK::ContactGeometry createSimTKContactGeometry() = 0;
+    virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
 
     /** Get a Transform representing the position and orientation of the
      * geometry relative to the PhysicalFrame `F` to which this geometry is

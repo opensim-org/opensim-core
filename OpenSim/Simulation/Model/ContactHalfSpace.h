@@ -70,7 +70,7 @@ public:
         PhysicalFrame& body, const std::string& name);
     ContactHalfSpace(const ContactHalfSpace& geom);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
 private:
     // INITIALIZATION
     void setNull();

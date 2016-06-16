@@ -80,7 +80,7 @@ public:
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
                 PhysicalFrame& frame, const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
 
     // ACCESSORS
     /**
@@ -96,16 +96,15 @@ private:
     void setNull();
     void constructProperties() override;
     void extendFinalizeFromProperties() override;
-    /**
-     * Load the mesh from disk.
-     */
-    void loadMesh(const std::string& filename);
+
+    //Load the mesh from disk.
+    SimTK::ContactGeometry::TriangleMesh* loadMesh(const std::string& filename) const;
     
     
 //=============================================================================
 // DATA
 //=============================================================================
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
         _geometry;
 
 //=============================================================================
