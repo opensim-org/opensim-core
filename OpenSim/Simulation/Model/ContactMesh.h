@@ -27,6 +27,8 @@
 
 namespace OpenSim {
 
+// TODO update doxygen comments to mention connector.
+
 /**
  * This class represents a polygonal mesh for use in contact modeling.
  *
@@ -64,7 +66,7 @@ public:
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame);
+                const PhysicalFrame& frame);
     /**
      * Construct a ContactMesh.
      *
@@ -78,7 +80,7 @@ public:
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame, const std::string& name);
+                const PhysicalFrame& frame, const std::string& name);
 
     SimTK::ContactGeometry createSimTKContactGeometry() const override;
 

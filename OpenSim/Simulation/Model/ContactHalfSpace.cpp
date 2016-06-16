@@ -34,24 +34,18 @@ ContactHalfSpace::ContactHalfSpace() :
 }
 
 ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
-    const SimTK::Vec3& orientation, PhysicalFrame& body) :
-        ContactGeometry(location, orientation, body)
+    const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
+        ContactGeometry(location, orientation, frame)
 {
     setNull();
 }
 
 ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location, 
-    const SimTK::Vec3& orientation, PhysicalFrame& body, const std::string& name) :
-        ContactGeometry(location, orientation, body)
+    const SimTK::Vec3& orientation, const PhysicalFrame& frame,
+    const std::string& name) :
+        ContactHalfSpace(location, orientation, frame)
 {
-    setNull();
     setName(name);
-}
-
-ContactHalfSpace::ContactHalfSpace(const ContactHalfSpace& geom) :
-    ContactGeometry(geom)
-{
-    setNull();
 }
 
 void ContactHalfSpace::setNull()
