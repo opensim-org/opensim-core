@@ -170,36 +170,61 @@ void Component::finalizeFromProperties()
     for (auto& comp : _adoptedSubcomponents) {
         comp->setParent(*this);
     }
+    
+    // Make sure connectors and inputs properties are not messed up
+    // (e.g., containing connectors that don't exist in this component).
+    
+    // Helper function that does the actual check.
+    auto checkPropertyAndTableNames = [this](
+            const std::string& type, /*connector or input*/
+            const AbstractProperty& prop,
+            const std::vector<std::string>& namesFromTable /*must be sorted*/) {
+        // Create (sorted) vector of connector names from the property.
+        std::vector<std::string> namesFromProp(prop.size());
+        for (int ixc = 0; ixc < prop.size(); ++ixc)
+            namesFromProp[ixc] = prop.getValueAsObject(ixc).getName();
+        std::sort(namesFromProp.begin(), namesFromProp.end());
+        // Check that the two (sorted) vectors of names match.
+        if (namesFromProp != namesFromTable) {
+            std::stringstream msg;
+            msg << "Expected " << type << " ";
+            for (const auto& name : namesFromTable) msg << name << ", ";
+            msg.seekp(-2, msg.end); // Remove the extra comma and space.
+            msg << " but got ";
+            for (const auto& name : namesFromProp) msg << name << ", ";
+            msg.seekp(-2, msg.end); // Remove the extra comma and space.
+            msg << ". This may result from a malformed <" << type
+                << "> property.";
+            OPENSIM_THROW_FRMOBJ(Exception, msg.str());
+        }
+    };
+    // Because _connectorsTable is an (ordered) std::map, this will be sorted.
+    std::vector<std::string> conNamesFromTable;
+    for (const auto& it : _connectorsTable)
+        conNamesFromTable.push_back(it.first);
+    checkPropertyAndTableNames("connectors", getProperty_connectors(),
+                                             conNamesFromTable);
+    
+    std::vector<std::string> inputNamesFromTable;
+    for (const auto& it : _inputsTable) inputNamesFromTable.push_back(it.first);
+    checkPropertyAndTableNames("inputs", getProperty_inputs(),
+                                         inputNamesFromTable);
 
-    // Provide each Input and Output with a pointer to its component (this) so 
-    // that it can invoke its methods.
-    // TODO if we implement custom copy constructor and assignment methods,
-    // then this could be moved there (and then Output could take owner as an
-    // argument to its constructor).
-    if (getProperty_connectors().size() != _connectorsTable.size()) {
-        std::stringstream msg;
-        msg << "Expected " << _connectorsTable.size()
-            << " Connectors but got " << getProperty_connectors().size() << ".";
-        OPENSIM_THROW_FRMOBJ(Exception, msg.str());
-    }
-    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
-        AbstractConnector& connector = upd_connectors(icx);
+    // Sync the connectors and inputs, and provide each input and output with
+    // a pointer to its component (this) so that it can invoke its methods.
+    for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
+        AbstractConnector& connector = upd_connectors(ixc);
         connector.initialize(*this);
-        _connectorsTable[connector.getName()] = icx;
+        _connectorsTable[connector.getName()] = ixc;
     }
     
-    if (getProperty_inputs().size() != _inputsTable.size()) {
-        std::stringstream msg;
-        msg << "Expected " << _inputsTable.size()
-            << " Inputs but got " << getProperty_inputs().size() << ".";
-        OPENSIM_THROW_FRMOBJ(Exception, msg.str());
-    }
-    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
-        AbstractInput& input = upd_inputs(iix);
+    for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
+        AbstractInput& input = upd_inputs(ixi);
         // The inputsTable holds an std::pair, whose second entry is `isList`.
         input.initialize(*this, _inputsTable[input.getName()].second);
-        _inputsTable[input.getName()].first = iix;
+        _inputsTable[input.getName()].first = ixi;
     }
+    
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
     }
@@ -237,8 +262,8 @@ void Component::connect(Component &root)
     }
 
     // rebuilding the connectors table, which was emptied by clearStateAllocations
-    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
-        AbstractConnector& connector = upd_connectors(icx);
+    for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
+        AbstractConnector& connector = upd_connectors(ixc);
         connector.disconnect();
         try {
             connector.findAndConnect(root);
@@ -252,8 +277,8 @@ void Component::connect(Component &root)
         }
     }
 
-    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
-        AbstractInput& input = upd_inputs(iix);
+    for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
+        AbstractInput& input = upd_inputs(ixi);
 
         if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
             std::cout << getConcreteClassName() << "'" << getName() << "'";
@@ -1474,8 +1499,8 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumConnectors() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
-        const auto& connector = get_connectors(icx);
+    for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
+        const auto& connector = get_connectors(ixc);
         std::cout << "  " << connector.getConnecteeTypeName() << " '"
                   << connector.getName() << "': ";
         if (connector.getNumConnectees() == 0) {
@@ -1492,8 +1517,8 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (int iix = 0; iix < getProperty_inputs().size(); ++iix) {
-        const auto& input = get_inputs(iix);
+    for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
+        const auto& input = get_inputs(ixi);
         std::cout << "  " << input.getConnecteeTypeName() << " '"
                   << input.getName() << "': ";
         if (input.getNumConnectees() == 0) {
