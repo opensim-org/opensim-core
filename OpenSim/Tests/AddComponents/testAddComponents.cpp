@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Samuel R. Hamner   *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Author(s):                                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,13 +22,12 @@
  * -------------------------------------------------------------------------- */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of tug-of-war between two
- *  muscles pulling on a block.
+ * Test cases to verify that the identical system and simulation is created
+ * when generic addComponent() calls are used to build-up the model opposed
+ * to the old add#ComponentType#() type specific methods (e.g. addBody(),
+ * addJoint(), addConstraint(), ...) which are no longer functionally necessary
+ * but exist for backward compatibility.
  */
-
-// Author:  Jeff Reinbolt, Ayman Habib, Ajay Seth, Samuel Hamner
-
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
@@ -229,13 +228,17 @@ void addComponentsToModel(Model& osimModel)
     osimModel.addComponent(cube);
 
     // Define contact parameters for elastic foundation force
-    OpenSim::ElasticFoundationForce::ContactParameters *contactParams =
-        new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, friction, viscosity);
-    contactParams->addGeometry("cube");
-    contactParams->addGeometry("floor");
+    auto *contactParams =
+        new OpenSim::ElasticFoundationForce::
+        ContactParameters(stiffness, dissipation, friction, friction, viscosity);
+    
+    /* These are NOT Component adds to the model. They are defining which 
+       ContactGeometry are to be associated with a group of ContactParameters. */
+    /**/contactParams->addGeometry("cube");
+    /**/contactParams->addGeometry("floor");
 
     // Create a new elastic foundation (contact) force between the floor and cube.
-    OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce(contactParams);
+    auto *contactForce = new OpenSim::ElasticFoundationForce(contactParams);
     contactForce->setName("contactForce");
 
     // Add the new elastic foundation force to the model
@@ -246,10 +249,10 @@ void addComponentsToModel(Model& osimModel)
     PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
     // Specify properties of the force function to be applied to the block
-    double time[2] = { 0, finalTime };                    // time nodes for linear function
-    double fXofT[2] = { 0,  -blockMass*gravity[1] * 3.0 };  // force values at t1 and t2
+    double time[2] = { 0, finalTime };                     // times for linear function
+    double fXofT[2] = { 0,  -blockMass*gravity[1] * 3.0 }; // force values at t1 and t2
 
-                                                            // Create linear function for the force components
+    // Create linear function for the force components
     PiecewiseLinearFunction *forceX = new PiecewiseLinearFunction(2, time, fXofT);
     // Set the force and point functions for the new prescribed force
     prescribedForce->setForceFunctions(forceX, new Constant(0.0), new Constant(0.0));
@@ -270,9 +273,11 @@ void addComponentsToModel(Model& osimModel)
     Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
     Array<double> slopeAndIntercept2(0.0, 2);
     // muscle1 control has slope of -1 starting 1 at t = 0
-    slopeAndIntercept1[0] = -1.0 / (finalTime - initialTime);  slopeAndIntercept1[1] = 1.0;
+    slopeAndIntercept1[0] = -1.0 / (finalTime - initialTime);
+    slopeAndIntercept1[1] = 1.0;
     // muscle2 control has slope of 0.95 starting 0.05 at t = 0
-    slopeAndIntercept2[0] = 0.95 / (finalTime - initialTime);  slopeAndIntercept2[1] = 0.05;
+    slopeAndIntercept2[0] = 0.95 / (finalTime - initialTime);
+    slopeAndIntercept2[1] = 0.05;
 
     // Set the individual muscle control functions for the prescribed muscle controller
     muscleController->upd_ControlFunctions().adoptAndAppend(
@@ -334,7 +339,6 @@ int main()
     clock_t startTime = clock();
 
     try {
-
         // Create an OpenSim model and set its name
         Model osimModel;
         osimModel.setName("testAddComponents_model");
