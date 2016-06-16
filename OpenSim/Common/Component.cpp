@@ -185,6 +185,7 @@ void Component::finalizeFromProperties()
     for (int icx = 0; icx < getProperty_connectors().size(); ++icx){
         AbstractConnector& connector = upd_connectors(icx);
         connector.initialize(*this);
+        _connectorsTable[connector.getName()] = icx;
     }
     
     if (getProperty_inputs().size() != _inputsTable.size()) {
@@ -197,6 +198,7 @@ void Component::finalizeFromProperties()
         AbstractInput& input = upd_inputs(iix);
         // The inputsTable holds an std::pair, whose second entry is `isList`.
         input.initialize(*this, _inputsTable[input.getName()].second);
+        _inputsTable[input.getName()].first = iix;
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
