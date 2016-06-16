@@ -122,7 +122,7 @@ do { \
     } \
 } while(false) 
 
-static OpenSim::Object* randomize(OpenSim::Object* obj)
+OpenSim::Object* randomize(OpenSim::Object* obj)
 {
     using namespace OpenSim;
     using namespace std;
