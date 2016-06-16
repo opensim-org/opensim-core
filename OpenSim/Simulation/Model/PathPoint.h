@@ -32,10 +32,7 @@
 namespace OpenSim {
 
 class PhysicalFrame;
-class Model;
 class GeometryPath;
-class SimbodyEngine;
-class WrapObject;
 
 //=============================================================================
 //=============================================================================
@@ -50,14 +47,6 @@ class WrapObject;
 
 class OSIMSIMULATION_API PathPoint : public Station {
 OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Station);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-    // the path that owns this path point
-    SimTK::ReferencePtr<GeometryPath> _path; 
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -66,12 +55,6 @@ protected:
     //--------------------------------------------------------------------------
 public:
     PathPoint() : Station() {}
-
-    virtual void init(const PathPoint& point) {
-        *this = point;
-        copyData(point);
-    }
-   void copyData(const PathPoint &aPoint);
 
 #ifndef SWIG
     const SimTK::Vec3& getLocation() const { return get_location(); }
@@ -105,31 +88,13 @@ public:
         this->setParentFrame(body);
     }
 
-    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& body){
-        if (!hasParent()) {
-            throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
-                " change the body on PathPoint which was not assigned to a body.");
-        }
-        // if it is already assigned to aBody, do nothing
-        const PhysicalFrame& currentFrame = getParentFrame();
-
-        if (currentFrame == body)
-            return;
-
-        // Preserve location means to switch bodies without changing
-        // the location of the point in the inertial reference frame.
-        upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
-
-        // now assign this point's body to point to aBody
-        setParentFrame(body);
-    }
+    void changeBodyPreserveLocation(const SimTK::State& s,
+                                    const PhysicalFrame& body);
 
     const PhysicalFrame& getBody() const { return getParentFrame(); }
     const std::string& getBodyName() const { return getParentFrame().getName(); }
 
-    GeometryPath* getPath() const { return _path.get(); }
-
-    virtual void scale(const SimTK::State& s, const SimTK::Vec3& scaleFactors) {
+    virtual void scale(const SimTK::Vec3& scaleFactors) {
         for (int i = 0; i < 3; i++)
             upd_location()[i] *= scaleFactors[i];
     }
@@ -137,8 +102,6 @@ public:
     virtual const WrapObject* getWrapObject() const { return NULL; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
-    virtual void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
-    virtual void update(const SimTK::State& s) { }
 
     // get the relative velocity of the path point with respect to the body
     // it is connected to.
@@ -151,10 +114,6 @@ public:
         { return SimTK::Vec3(0); }
 
     virtual void updateGeometry() {}
-
-    // Utility
-    static PathPoint* makePathPointOfType(PathPoint* aPoint,
-        const std::string& aNewTypeName);
 
     static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 

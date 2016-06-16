@@ -37,8 +37,8 @@ ContactMesh::ContactMesh()
 ContactMesh::ContactMesh(const std::string& filename,
                          const SimTK::Vec3& location,
                          const SimTK::Vec3& orientation,
-                         PhysicalFrame& body) :
-    ContactGeometry(location, orientation, body)
+                         const PhysicalFrame& frame) :
+    ContactGeometry(location, orientation, frame)
 {
     setNull();
     constructProperties();
@@ -58,9 +58,9 @@ ContactMesh::ContactMesh(const std::string& filename,
 ContactMesh::ContactMesh(const std::string& filename,
                          const SimTK::Vec3& location,
                          const SimTK::Vec3& orientation,
-                         PhysicalFrame& body,
+                         const PhysicalFrame& frame,
                          const std::string& name) :
-    ContactMesh(filename, location, orientation, body)
+    ContactMesh(filename, location, orientation, frame)
 {
     setName(name);
 }

@@ -23,12 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
 #include "PathWrapPoint.h"
 #include "WrapResult.h"
 
@@ -41,8 +37,8 @@
 
 namespace OpenSim {
 
+class Model;
 class WrapObject;
-class SimbodyEngine;
 class GeometryPath;
 
 //=============================================================================
@@ -55,8 +51,8 @@ class GeometryPath;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrap : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Component);
+class OSIMSIMULATION_API PathWrap : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, ModelComponent);
 public:
     //==============================================================================
     // PROPERTIES
@@ -66,9 +62,9 @@ public:
     OpenSim_DECLARE_PROPERTY(method, std::string,
         "The wrapping method used to solve the path around the wrap object.");
 
-    // Range should not be exposed as far as one can tell, since al instances are
-    // -1, -1 which is the default value, which means the PathWrap is overwriting
-    // anyways.
+    // TODO Range should not be exposed as far as one can tell, since all instances
+    // are (-1, -1), which is the default value, and that means the PathWrap is
+    // ignoring/overwriting this property anyways.
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, int, 2,
         "The range of indices to use to compute the path over the wrap object.")
 
@@ -77,19 +73,6 @@ public:
         midpoint,
         axial
     };
-
-protected:
-    WrapMethod _method;
-
-    const WrapObject* _wrapObject;
-    GeometryPath* _path;
-
-    WrapResult _previousWrap;  // results from previous wrapping
-
-    MemberSubcomponentIndex _wrapPoint1Ix {
-        constructSubcomponent<PathWrapPoint>("pwpt1") };
-    MemberSubcomponentIndex _wrapPoint2Ix {
-        constructSubcomponent<PathWrapPoint>("pwpt2") };
 
 //=============================================================================
 // METHODS
@@ -102,7 +85,6 @@ public:
     ~PathWrap();
 
 #ifndef SWIG
-    void connectToModelAndPath(Model& aModel, GeometryPath& aPath);
     void setStartPoint( const SimTK::State& s, int aIndex);
     void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
@@ -125,11 +107,9 @@ public:
         return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
     }
 
-
     WrapMethod getMethod() const { return _method; }
     void setMethod(WrapMethod aMethod);
     const std::string& getMethodName() const { return get_method(); }
-    GeometryPath* getPath() const { return _path; }
 
     const WrapResult& getPreviousWrap() const { return _previousWrap; }
     void setPreviousWrap(const WrapResult& aWrapResult);
@@ -137,7 +117,21 @@ public:
 
 private:
     void constructProperties();
+    void extendConnectToModel(Model& model) override;
     void setNull();
+
+private:
+    WrapMethod _method;
+
+    const WrapObject* _wrapObject;
+    const GeometryPath* _path;
+
+    WrapResult _previousWrap;  // results from previous wrapping
+
+    MemberSubcomponentIndex _wrapPoint1Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt1") };
+    MemberSubcomponentIndex _wrapPoint2Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt2") };
 //=============================================================================
 };  // END of class PathWrap
 //=============================================================================
