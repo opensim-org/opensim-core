@@ -811,8 +811,11 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
     if (hints.get_show_wrap_geometry()) {
         const Vec3 color(SimTK::Cyan);
         SimTK::Transform ztoy;
+        // Make transform that takes z axis to y axis due to different
+        // assumptions between DecorativeCylinder aligned with y  and
+        // WrapCylinder aligned with z
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
-        const SimTK::Transform& X_GB = getFrame().getMobilizedBody().getBodyTransform(state);
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
         SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
         appendToThis.push_back(
             SimTK::DecorativeCylinder(get_radius(),

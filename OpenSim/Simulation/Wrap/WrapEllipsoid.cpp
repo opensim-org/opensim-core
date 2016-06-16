@@ -1306,7 +1306,7 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
         const Vec3 color(SimTK::Cyan);
         SimTK::Transform ztoy;
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
-        const SimTK::Transform& X_GB = getFrame().getMobilizedBody().getBodyTransform(state);
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
         SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
         appendToThis.push_back(
             SimTK::DecorativeEllipsoid(getRadii())
