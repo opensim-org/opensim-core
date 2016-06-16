@@ -58,28 +58,16 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
-    //SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::HuntCrossleyForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().size(); ++j)
-        {
-            /*
-            if (!_model->getContactGeometrySet().contains(
-                        params.getGeometry()[j])) {
-                std::string errorMessage = "Invalid ContactGeometry ("
-                    + params.getGeometry()[j]
-                    + ") specified in HuntCrossleyForce" + getName();
-                throw Exception(errorMessage);
-            }
-            */
+        for (int j = 0; j < params.getGeometry().size(); ++j) {
+            // get the ContactGeometry from the Model
             const ContactGeometry& geom =
                 getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
-                /* _model->updContactGeometrySet().get(
-                    params.getGeometry()[j]); */
 
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to

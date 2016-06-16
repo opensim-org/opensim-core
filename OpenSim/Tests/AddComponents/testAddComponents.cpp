@@ -221,7 +221,8 @@ void addComponentsToModel(Model& osimModel)
     ContactHalfSpace *floor =
         new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
     // Create new cube contact mesh
-    OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockMesh.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
+    OpenSim::ContactMesh *cube =
+        new OpenSim::ContactMesh("blockMesh.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
 
     // Add contact geometry to the model
     osimModel.addComponent(floor);

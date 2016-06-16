@@ -63,16 +63,9 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     {
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j) {
-            /*
-            if (!_model->updContactGeometrySet().contains(params.getGeometry()[j]))
-            {
-                std::string errorMessage = "Invalid ContactGeometry (" + params.getGeometry()[j] + ") specified in ElasticFoundationForce" + getName();
-                throw (Exception(errorMessage.c_str()));
-            } */
+            // get the ContactGeometry from the Model
             const ContactGeometry& geom =
                 getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
-                /* _model->updContactGeometrySet().get(
-                    params.getGeometry()[j]); */
 
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to
@@ -316,7 +309,7 @@ ElasticFoundationForce::ContactParametersSet::ContactParametersSet()
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/*
  * Provide names of the quantities (column labels) of the force value(s) reported
  * 
  */
@@ -346,7 +339,7 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
 
     return labels;
 }
-/**
+/*
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::State& state) const 
