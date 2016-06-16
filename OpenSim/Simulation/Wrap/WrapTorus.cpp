@@ -516,8 +516,8 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 
 
 // Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
-// in ModelVisualizer
+// in ModelVisualizer, not implemented yet in API visualizer
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
-    OPENSIM_THROW(NotImplementedYet, "WrapTorus::generateDecorations not implemented yet");
+    //OPENSIM_THROW(NotImplementedYet, "WrapTorus::generateDecorations not implemented yet");
 }
