@@ -50,19 +50,11 @@ PhysicalFrame::PhysicalFrame() : Frame()
 void PhysicalFrame::constructProperties()
 {
     constructProperty_WrapObjectSet(WrapObjectSet());
-
-    FrameGeometry frm;
-    frm.setName("frame_geometry");
-    frm.upd_Appearance().set_visible(false);
-    updProperty_geometry().setValue(0, frm);
 }
 
 void PhysicalFrame::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    if (!getProperty_geometry().empty()) {
-        upd_geometry(0).setFrame(*this);
-    }
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
