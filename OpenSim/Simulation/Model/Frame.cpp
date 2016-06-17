@@ -39,15 +39,15 @@ using SimTK::SpatialVec;
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
 Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
 }
 
+void Frame::constructProperties()
+{
+    constructProperty_attached_geometry();
+}
 
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -115,29 +115,10 @@ const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
         getCacheEntry(s, _accelerationIndex)).get();
 }
 
-void Frame::extendAddGeometry(OpenSim::Geometry& geom)
+void Frame::attachGeometry(OpenSim::Geometry* geom)
 {
-    Super::extendAddGeometry(geom);
-    geom.setFrame(*this);
-}
-
-
-void Frame::attachMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
-{
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    geom.setFrame(*this);
-    addGeometry(geom);
-}
-
-
-void Frame::attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale)
-{
-    SimTK::ClonePtr<Geometry> clone = SimTK::ClonePtr<Geometry>(geom);
-    clone->set_scale_factors(scale);
-    clone->setFrameName(getName());
-    addGeometry(clone.updRef());
-
+    geom->setFrame(*this);
+    updProperty_attached_geometry().adoptAndAppendValue(geom);
 }
 
 //=============================================================================
