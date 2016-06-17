@@ -50,11 +50,6 @@ ModelComponent::ModelComponent(SimTK::Xml::Element& element)
     constructInfrastructure();
 }
 
-void ModelComponent::constructProperties()
-{
-    constructProperty_geometry();
-}
-
 const Model& ModelComponent::getModel() const
 {
     if(!_model)
@@ -96,40 +91,6 @@ void ModelComponent::connectToModel(Model& model)
     _model = &model;
     extendConnectToModel(model);
 }
-
-void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
-    // Check that name exists and is unique as it's used to form PathName
-    if (geom.getName().empty()){
-        bool nameFound = false;
-        int index = 1;
-        while (!nameFound){
-            std::stringstream ss;
-            // generate candidate name
-            ss << getName() << "_geom_" << index;
-            std::string candidate = ss.str();
-            bool exists = false;
-            for (int idx = 0; idx < getProperty_geometry().size() && !exists; idx++){
-                if (get_geometry(idx).getName() == candidate){
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists){
-                nameFound = true;
-                geom.setName(candidate);
-            }
-            else
-                index++;
-        }
-        
-    }
-
-    int ix = append_geometry(geom);
-    finalizeFromProperties();
-
-    extendAddGeometry(upd_geometry(ix));
-}
-
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
