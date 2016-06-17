@@ -83,7 +83,6 @@ int main()
             Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         osimModel.addFrame(cyl2Frame);
-        (linkage2->upd_attached_geometry(0)).setFrameName("Cyl2_frame");
 
         // Create a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;

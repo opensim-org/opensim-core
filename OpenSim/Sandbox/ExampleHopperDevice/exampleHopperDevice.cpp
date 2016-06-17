@@ -199,11 +199,10 @@ OpenSim::Model createTestBed() {
     auto load = new OpenSim::Body("load", LOAD, Vec3(0), Inertia(1));
     // Set properties of a sphere geometry to be used for the load.
     OpenSim::Sphere sphere;
-    sphere.setFrameName("load");
     sphere.set_radius(0.02);
     sphere.setOpacity(0.5);
     sphere.setColor(Vec3{ 0, 0, 1 });
-    load->addGeometry(sphere);
+    load->attachGeometry(sphere.clone());
     testBed.addBody(load);
 
     auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", ground, *load);
@@ -278,8 +277,7 @@ OpenSim::Device* createDevice() {
     sphere.setName("sphere");
     sphere.setColor(Vec3{ 0.0, 0.8, 0 });
     // Add sphere (geometry) attach them to the cuffs
-    sphere.setFrameName("cuffA");
-    cuffA->addGeometry(sphere);
+    cuffA->attachGeometry(sphere.clone());
     // TODO: cuffB
 
     // Joint from something in the environment to cuffA.

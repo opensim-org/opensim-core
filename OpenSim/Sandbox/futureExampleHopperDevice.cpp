@@ -162,11 +162,10 @@ OpenSim::Model createTestBed() {
     auto load = new OpenSim::Body("load", 10, Vec3(0), Inertia(1));
     // Set properties of a sphere geometry to be used for the load.
     OpenSim::Sphere sphere;
-    sphere.setFrameName("load");
     sphere.set_radius(0.2);
     sphere.setOpacity(0.5);
     sphere.setColor(Vec3{0, 0, 1});
-    load->addGeometry(sphere);
+    load->attachGeometry(sphere.clone());
     testBed.addBody(load);
 
     auto grndToLoad = new OpenSim::FreeJoint("grndToLoad", 
@@ -245,10 +244,8 @@ int main() {
     device->addComponent(massB);
 
     // Sphere geometry for the masses. 
-    sphere.setFrameName("massA");
-    massA->addGeometry(sphere);
-    sphere.setFrameName("massB");
-    massB->addGeometry(sphere);
+    massA->attachGeometry(sphere.clone());
+    massB->attachGeometry(sphere.clone());
 
     // Joint from something in the environment to massA. 
     auto anchorA = new OpenSim::WeldJoint();
