@@ -86,10 +86,7 @@ public:
 
     /// Default destructor
     virtual ~Geometry() {}
-    /** Interface methods to handle the Frame which the Geometry is attached to.
-    **/
-    /** %Set the name of the Frame of attachment **/
-    void setFrameName(const std::string& name);
+    /** Interface methods to handle the Frame which the Geometry is attached to. */
     /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
@@ -189,6 +186,9 @@ private:
 /**
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
+ * 
+ * NOTE: LineGeometry assumes its Frame is Ground!
+ * TODO make LineGeometry draw between actual Points!
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {   
@@ -202,30 +202,26 @@ public:
         "Line end point.");
     /// Convenience constructor that takes two end points
     LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
         setPoints(aPoint1, aPoint2);
-        std::string gnd("ground");
-        setFrameName(gnd);
     }
+
     /// default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
     }
+
     /// destructor
     virtual ~LineGeometry() {}
     /// Get end points as Vec3 in passed in arguments
-    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
-    {
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const {
         rPoint1 = get_start_point();
         rPoint2 = get_end_point();
     }
     /// %Set end points from passed in arguments
-    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
-    {
+    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2) {
         upd_start_point() = aPoint1;
         upd_end_point() = aPoint2;
     }

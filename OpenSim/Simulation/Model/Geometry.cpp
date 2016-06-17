@@ -46,11 +46,6 @@ Geometry::Geometry() {
     constructInfrastructure();
 }
 
-void Geometry::setFrameName(const std::string& name)
-{
-    updConnector<Frame>("frame").setConnecteeName(name);
-}
-
 void Geometry::setFrame(const Frame& frame)
 {
     updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
