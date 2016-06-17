@@ -1753,7 +1753,7 @@ protected:
         std::string currentPath = "";
         const Component* current = this;
 
-        std::string compName = back < std::string::npos ? path.substr(back) : path;
+        const std::string compName = back < std::string::npos ? path.substr(back) : path;
         back = 0;
 
         while (back < std::string::npos && current) {
@@ -1797,7 +1797,11 @@ protected:
             }
             front = back + 1;
         }
-        return dynamic_cast<const C*>(current);
+
+        if (current && current->getName() == compName)
+            return dynamic_cast<const C*>(current);
+
+        return nullptr;
     }
 
     //@} 
