@@ -1480,7 +1480,7 @@ void testExternalForce()
     OpenSim::Body tower("tower", 
                         mass, Vec3(0), 
                         mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
-    tower.attachGeometry(Brick(Vec3(0.1, 1.0, 0.2)));
+    tower.attachGeometry(new Brick(Vec3(0.1, 1.0, 0.2)));
     tower.scale(Vec3(0.1, 1.0, 0.2));
 
     // Add joint connecting the tower to the ground and associate joint to tower body

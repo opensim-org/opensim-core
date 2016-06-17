@@ -1688,7 +1688,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    osim_thigh.attachMeshGeometry("femur.vtp");
+    osim_thigh.attachGeometry(new Mesh("femur.vtp"));
 
     // Define hip transform in terms of coordinates and axes for custom joint
     SpatialTransform hipTransform;

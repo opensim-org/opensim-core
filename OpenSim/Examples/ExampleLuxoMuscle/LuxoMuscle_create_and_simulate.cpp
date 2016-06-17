@@ -389,7 +389,7 @@ void createLuxoJr(OpenSim::Model &model){
                                     Vec3(0.0),
                                     Inertia::brick(leg_bar_dimensions/2.0));
     
-    posteriorLegBar->attachMeshGeometry(new Mesh("Leg_meters.obj"));
+    posteriorLegBar->attachGeometry(new Mesh("Leg_meters.obj"));
 
     PhysicalOffsetFrame posterior_knee_on_bottom_bracket(
         "posterior_knee_on_bottom_bracket",
