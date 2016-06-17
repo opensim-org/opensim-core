@@ -1302,6 +1302,9 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
 {
 
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+
     if (hints.get_show_wrap_geometry()) {
         const Vec3 color(SimTK::Cyan);
         SimTK::Transform ztoy;

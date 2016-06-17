@@ -597,6 +597,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
 {
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+
     if (hints.get_show_wrap_geometry()) {
         const Vec3 color(SimTK::Cyan);
         SimTK::Transform ztoy;
