@@ -3,7 +3,7 @@
 	<TheWorld name="TestTableSource">
           <components>
             <TableSource__Vec3_ name="tablesource">
-              <filename>aStaticTrial_2.c3d</filename>
+              <filename>testEformatParsing.trc</filename>
               <tablename>markers</tablename>
             </TableSource__Vec3_>
           </components>
