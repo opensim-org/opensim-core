@@ -122,7 +122,7 @@ do { \
     } \
 } while(false) 
 
-static OpenSim::Object* randomize(OpenSim::Object* obj)
+OpenSim::Object* randomize(OpenSim::Object* obj)
 {
     using namespace OpenSim;
     using namespace std;
@@ -173,7 +173,7 @@ static OpenSim::Object* randomize(OpenSim::Object* obj)
             }
         } else if (ts == "double" && isList && ap.getMaxListSize() < 20) {
             for (int i=0; i< ap.getMaxListSize(); ++i)
-                ap.updValue<double>(i) = (double) rand();
+                ap.updValue<double>(i) = (double) rand() / RAND_MAX;
         } else if (ts == "Function") {
             //FunctionSet's objects getTypeName() returns "Function"
             //which is wrong! This is a HACK to test that we aren't

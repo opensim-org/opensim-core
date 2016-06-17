@@ -121,7 +121,7 @@ void Coordinate::constructProperties(void)
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
 
-    Array<double> defaultRange(-10.0, 2); //twp values in range
+    Array<double> defaultRange(-10.0, 2); //two values in range
     defaultRange[1] = 10.0; // second value in range is 10.0
     constructProperty_range(defaultRange);
 

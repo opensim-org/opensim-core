@@ -1460,19 +1460,6 @@ protected:
      **/
 
     //@{
-    /**
-    * Construct a specialized Connector for this Component's dependence on an another
-    * Component. It serves as a placeholder for the Component and its type and enables
-    * the Component to automatically traverse its dependencies and provide a meaningful 
-    * message if the provided Component is incompatible or non-existant.
-    */
-    template <typename T>
-    void constructConnector(const std::string& name, bool isList = false) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, *this));
-        //add pointer to connectorsTable so we can access connectors easily by name
-        _connectorsTable[name] = ix;
-    }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
     this Component. Each modeling option is identified by its own 
@@ -1799,11 +1786,12 @@ protected:
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs, Inputs
-     * To declare Outputs and Inputs for your component,
+    /** @name Internal methods for constructing Connectors, Outputs, Inputs
+     * To declare Connector%s, Output%s, and Input%s for your component,
      * use the following macros within your class declaration (ideally at
      * the top near property declarations):
      *
+     *  - #OpenSim_DECLARE_CONNECTOR
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -1814,7 +1802,24 @@ protected:
      * methods yourself.
      */
     /// @{
-    /** Construct an output for a member function of the same component. 
+    /**
+    * Construct a specialized Connector for this Component's dependence on an
+    * another Component. It serves as a placeholder for the Component and its
+    * type and enables the Component to automatically traverse its dependencies
+    * and provide a meaningful message if the provided Component is
+    * incompatible or non-existant.
+    */
+    template <typename T>
+    int constructConnector(const std::string& name, bool isList = false) {
+        int ix = updProperty_connectors().adoptAndAppendValue(
+            new Connector<T>(name, SimTK::Stage::Topology, *this));
+        // Add pointer to connectorsTable so we can access connectors easily by
+        // name.
+        _connectorsTable[name] = ix;
+        return ix;
+    }
+    
+    /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
 
@@ -1917,15 +1922,14 @@ protected:
      * the corresponding state variable. */
     bool constructOutputForStateVariable(const std::string& name);
 
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
+    /** Construct an Input (socket) for this Component's dependence on an
+     * Output signal.  It is a placeholder for the Output and its type and
+     * enables the Component to automatically traverse its dependencies and
+     * provide a meaningful message if the provided Output is incompatible or
+     * non-existant. The also specifies at what stage the output must be valid
+     * for the the component to consume it as an input.  if the Output's
+     * dependsOnStage is above the Input's requiredAtStage, an Exception is
+     * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
     bool constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
@@ -2272,8 +2276,9 @@ private:
     // bookkeeping of component variables (state variables and cache entries) with 
     // their index in the computational system. The earliest time we have a valid 
     // index is when we ask the system to allocate the resources and that only
-    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the
-    // Component in any way that would effect its behavior- that is why it it const!
+    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not
+    // alter the Component in any way that would effect its behavior- that is
+    // why it is const!
     // The setting of the variable indices is not in the public interface and is 
     // not polymorphic.
 
@@ -2300,7 +2305,8 @@ private:
 //==============================================================================
 };  // END of class Component
 //==============================================================================
-
+//==============================================================================
+    
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.

@@ -247,6 +247,9 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
+    
+    OpenSim_DECLARE_CONNECTOR(parentFoo, Foo, "");
+    OpenSim_DECLARE_CONNECTOR(childFoo, Foo, "");
 
     // This is used to test output copying and returns the address of the 
     // component.
@@ -333,10 +336,6 @@ protected:
     }
 
 private:
-    void constructConnectors() override {
-        constructConnector<Foo>("parentFoo");
-        constructConnector<Foo>("childFoo");
-    }
 
     // keep track of the force added by the component
     mutable ForceIndex fix;

@@ -182,6 +182,29 @@ void testComponent(const Component& instanceToTest)
             string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
+
+            // Dependency on a Coordinate needs special treatment.
+            // A Coordinate is defined by a Joint and cannot stand on its own.
+            // Here we see if there is a Coordinate already in the model, 
+            // otherwise we add a Body and Joint so we can connect to its
+            // Coordinate.
+            if (dynamic_cast<Connector<Coordinate> *>(&connector)) {
+                while (!connector.isConnected()) {
+                    // Dependency on a coordinate, check if there is one in the model already
+                    auto coordinates = model.getComponentList<Coordinate>();
+                    if(coordinates.begin() != coordinates.end()) {
+                        connector.connect(*coordinates.begin());
+                        break;
+                    }
+                    // no luck finding a Coordinate already in the Model
+                    Body* body = new Body();
+                    randomize(body);
+                    model.addBody(body);
+                    model.addJoint(new PinJoint("pin", model.getGround(), *body));
+                }
+                continue;
+            }
+
             Object* dependency =
                 Object::newInstanceOfType(dependencyTypeName);
 

@@ -106,13 +106,6 @@ void ConstantDistanceConstraint::constructProperties()
     constructProperty_constant_distance(SimTK::NaN);
 }
 
-void ConstantDistanceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
-
 void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);

@@ -62,12 +62,6 @@ PointToPointSpring::
     setRestlength(restlength);
 }
 
-void PointToPointSpring::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body1");
-    constructConnector<PhysicalFrame>("body2");
-}
-
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================

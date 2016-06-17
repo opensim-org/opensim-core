@@ -113,12 +113,6 @@ void PointOnLineConstraint::constructProperties()
     constructProperty_point_on_follower(origin);
 }
 
-void PointOnLineConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("line_body");
-    constructConnector<PhysicalFrame>("follower_body");
-}
-
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);

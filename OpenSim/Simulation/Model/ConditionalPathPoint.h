@@ -25,29 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
 class Coordinate;
-class Model;
-class GeometryPath;
-class SimbodyEngine;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -59,18 +42,13 @@ class SimbodyEngine;
  */
 class OSIMSIMULATION_API ConditionalPathPoint : public PathPoint {
 OpenSim_DECLARE_CONCRETE_OBJECT(ConditionalPathPoint, PathPoint);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-    PropertyDblArray _rangeProp;
-    Array<double> &_range;
-
-    PropertyStr _coordinateNameProp;
-    std::string &_coordinateName;
-
-    const Coordinate* _coordinate;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, double, 2,
+        "The minimum and maximum values that the coordinate can range between, "
+        "for which the PathPoint is active. Angular coordinates in radians.");
 
 //=============================================================================
 // METHODS
@@ -80,32 +58,21 @@ protected:
     //--------------------------------------------------------------------------
 public:
     ConditionalPathPoint();
-    ConditionalPathPoint(const ConditionalPathPoint &aPoint);
     virtual ~ConditionalPathPoint();
+    void setRangeMin(double minVal);
+    void setRangeMax(double maxVal);
+    void setCoordinate(const Coordinate& coordinate);
 
-#ifndef SWIG
-    ConditionalPathPoint& operator=(const ConditionalPathPoint &aPoint);
-#endif
-    void copyData(const ConditionalPathPoint &aPoint);
-    void init(const PathPoint& aPoint) override;
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
-
-    Array<double>& getRange() const { return _range; }
-    const Coordinate* getCoordinate() const { return _coordinate; }
-    const std::string& getCoordinateName() const { return _coordinateName; }
-#ifndef SWIG
-    void setCoordinate(const SimTK::State& s, Coordinate& aCoordinate);
-    void setRangeMin( const SimTK::State& s, double aMin);
-    void setRangeMax( const SimTK::State& s, double aMax);
+    bool hasCoordinate() const;
+    const Coordinate& getCoordinate() const;
 
     // Override PathPoint methods.
     bool isActive(const SimTK::State& s) const override;
-    void connectToModelAndPath(Model& aModel, GeometryPath& aPath) 
-                                                                override;
-#endif
+
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties() override;
+    void constructConnectors() override;
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) override;
 //=============================================================================
 };  // END of class ConditionalPathPoint
 //=============================================================================

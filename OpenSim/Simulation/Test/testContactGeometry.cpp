@@ -470,7 +470,7 @@ Model createBaseModel() {
     // For debugging: model.setUseVisualizer(true);
 
     // Body and Joint.
-    Ground& ground = model.updGround();
+    const Ground& ground = model.getGround();
     auto* point = new OpenSim::Body("point", mass, Vec3(0), Inertia(1.0));
     auto* hinge = new OpenSim::PinJoint("hinge",
                                ground, Vec3(0), Vec3(0),
@@ -549,7 +549,7 @@ void testIntermediateFrames() {
 
         // Scaffolding for the ball.
         auto* linkOffset = new PhysicalOffsetFrame("link_offset",
-                model.updBodySet().get("point"),
+                model.getBodySet().get("point"),
                 // Frame is up 1m in the y direction.
                 SimTK::Transform(Vec3(0, 1, 0)));
         model.addFrame(linkOffset);
@@ -577,7 +577,7 @@ void testIntermediateFrames() {
 
         // Scaffolding for the ball.
         auto* linkOffset = new PhysicalOffsetFrame("link_offset",
-                model.updBodySet().get("point"),
+                model.getBodySet().get("point"),
                 // Frame is 0.5m to the right and 1m up.
                 SimTK::Transform(Vec3(0.5, 1, 0)));
         model.addFrame(linkOffset);

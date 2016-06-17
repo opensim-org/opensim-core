@@ -25,12 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathPoint.h"
-#include "BodySet.h"
-#include "Model.h"
-#include "GeometryPath.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h> 
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 
 //=============================================================================
 // STATICS
@@ -40,51 +34,25 @@ using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Transform;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/* Copy data members from one PathPoint to another.
- *
- * @param aPoint PathPoint to be copied.
- */
-void PathPoint::copyData(const PathPoint &aPoint)
+void PathPoint::
+changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
 {
-    _path = aPoint._path;
-}
-
-/* TODO: All Points should be Components that use Connectors
-* and extendConnect(). This must go away! -aseth
-*/
-void PathPoint::connectToModelAndPath(Model& model, GeometryPath& path)
-{
-    Super::connectToModel(model);
-    _path = &path;
-}
-
-
-PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewTypeName)
-{
-    PathPoint* newPoint = NULL;
-    cout << "PathPoint::makePathPointOfType()" << endl;
-    if (aPoint != NULL) {
-        Object* newObject = Object::newInstanceOfType(aNewTypeName);
-        if (newObject) {
-            newPoint = dynamic_cast<PathPoint*>(newObject);
-            if (newPoint) {
-                // Copy the contents from aPoint.
-                newPoint->init(*aPoint);
-            }
-        }
+    if (!hasParent()) {
+        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
+            " change the body on PathPoint which was not assigned to a body.");
     }
+    // if it is already assigned to body, do nothing
+    const PhysicalFrame& currentFrame = getParentFrame();
 
-    return newPoint;
+    if (currentFrame == body)
+        return;
+
+    // Preserve location means to switch bodies without changing
+    // the location of the point in the inertial reference frame.
+    upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
+
+    // now make "body" this PathPoint's parent Frame
+    setParentFrame(body);
 }
 
 void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)

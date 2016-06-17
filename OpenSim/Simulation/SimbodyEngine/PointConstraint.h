@@ -33,25 +33,27 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class implementing a Point Constraint. The constraint keeps two points,
- * one on each of two separate PhysicalFrames, coincident and free to rotate
+ * one on each of two separate PhysicalFrame%s, coincident and free to rotate
  * about that point.
  *
- * The underlying SimTK::Constraint in Simbody is a Constraint::Point
+ * The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Point.
  *
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API PointConstraint : public Constraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
 
-//=============================================================================
-// DATA
-//=============================================================================
 public:
-    /** Properties */
     OpenSim_DECLARE_PROPERTY(location_body_1, SimTK::Vec3,
-        "Location of the point in first body specified in body1 reference frame.");
+        "Location of the point in first body specified in body_1 reference frame.");
     OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
-        "Location of the point in second body specified in body2 reference frame.");
+        "Location of the point in second body specified in body_2 reference frame.");
+
+    OpenSim_DECLARE_CONNECTOR(body_1, PhysicalFrame,
+        "A frame fixed to the first body participating in the constraint.");
+    OpenSim_DECLARE_CONNECTOR(body_2, PhysicalFrame,
+        "A frame fixed to the second body participating in the constraint.");
+
 
 //=============================================================================
 // METHODS
@@ -77,8 +79,10 @@ public:
     void setBody2ByName(const std::string& aBodyName);
     void setBody2PointLocation(SimTK::Vec3 location);
 
-    /** Method to set point location of contact during an induced acceleration analysis */
-    void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point) override;
+    /** Method to set point location of contact during an induced acceleration
+     * analysis */
+    void setContactPointForInducedAccelerations(const SimTK::State &s,
+            SimTK::Vec3 point) override;
 
 
 protected:
@@ -93,8 +97,6 @@ protected:
 private:
     /** Construct PointConstraint's properties */
     void constructProperties() override;
-    /** Construct PointConstraint's connectors */
-    void constructConnectors() override;
 
     void setNull();
 

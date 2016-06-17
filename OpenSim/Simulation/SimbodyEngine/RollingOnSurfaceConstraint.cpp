@@ -86,12 +86,6 @@ void RollingOnSurfaceConstraint::constructProperties()
     constructProperty_contact_radius(0.01);
 }
 
-void RollingOnSurfaceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("rolling_body");
-    constructConnector<PhysicalFrame>("surface_body");
-}
-
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
