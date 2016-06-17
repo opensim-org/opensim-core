@@ -270,12 +270,9 @@ private:
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
 
-    void constructProperties();
-
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
-
 //=============================================================================
 };  // END of class Frame
 //=============================================================================
