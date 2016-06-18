@@ -1054,7 +1054,6 @@ void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
 
-#ifdef WITH_BTK
     {
     const std::string src_file{"TestTableSource.osim"};
     TheWorld model{src_file};
@@ -1069,7 +1068,6 @@ void testTableSource() {
                      tablesource.get_filename(),
                      OpenSim::Exception);
     }
-#endif
 
     TimeSeriesTable table{};
     table.setColumnLabels({"0", "1", "2", "3"});
