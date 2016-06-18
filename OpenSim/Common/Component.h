@@ -1753,7 +1753,7 @@ protected:
         std::string currentPath = "";
         const Component* current = this;
 
-        const std::string compName = back < std::string::npos ? path.substr(back) : path;
+        const std::string compName = back < std::string::npos ? path.substr(back+1) : path;
         back = 0;
 
         while (back < std::string::npos && current) {
