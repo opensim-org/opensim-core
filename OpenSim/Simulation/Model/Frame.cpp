@@ -42,7 +42,21 @@ using SimTK::SpatialVec;
 Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
+
     constructProperty_attached_geometry();
+    FrameGeometry* default_geometry = new FrameGeometry();
+    default_geometry->setName("frame_geometry");
+    updProperty_attached_geometry().adoptAndAppendValue(default_geometry);
+    updProperty_attached_geometry().setValueIsDefault(true);
+}
+
+void Frame::extendConnectToModel(Model& model)
+{
+    int naf = getProperty_attached_geometry().size();
+    for (int i = 0; i < naf; ++i) {
+        upd_attached_geometry(i).updInput("transform")
+            .connect(getOutput("transform"));
+    }
 }
 
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -113,8 +127,6 @@ const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 
 void Frame::attachGeometry(OpenSim::Geometry* geom)
 {
-    geom->setFrame(*this);
-
     // Check that name exists and is unique as it's used to form PathName
     if (geom->getName().empty()) {
         bool nameFound = false;
@@ -142,8 +154,6 @@ void Frame::attachGeometry(OpenSim::Geometry* geom)
     }
 
     updProperty_attached_geometry().adoptAndAppendValue(geom);
-    std::cout << getConcreteClassName() << ": " << getName() <<
-        "::attachGeometry() geom: " << geom->getName() << std::endl;
 }
 
 //=============================================================================

@@ -260,6 +260,7 @@ protected:
     /** @name Component Extension methods.
     Frame types override these Component methods. */
     /**@{**/
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
 
