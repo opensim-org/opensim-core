@@ -226,7 +226,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
     SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
 
     if (objectsIter != geomSetElement.element_end()) {
-        SimTK::Xml::Element geometrySetNode("geometry");
+        SimTK::Xml::Element geometrySetNode("attached_geometry");
         bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
 
         SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
