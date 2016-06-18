@@ -116,7 +116,7 @@ public:
     void resetPreviousWrap();
 
 private:
-    void constructProperties() override;
+    void constructProperties();
     void extendConnectToModel(Model& model) override;
     void setNull();
 

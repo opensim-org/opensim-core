@@ -239,7 +239,7 @@ protected:
 
 private:
     // create the frames property
-    void constructProperties() override;
+    void constructProperties();
 
     //hang on to references to the individual frames for fast access
     mutable SimTK::ReferencePtr<const F> _frame1;
@@ -259,7 +259,7 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors

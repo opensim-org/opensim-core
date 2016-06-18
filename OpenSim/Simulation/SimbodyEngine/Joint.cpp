@@ -54,7 +54,7 @@ Joint::~Joint()
 Joint::Joint() : Super()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /* API constructor. */

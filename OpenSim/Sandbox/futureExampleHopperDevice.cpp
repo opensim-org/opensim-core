@@ -96,7 +96,7 @@ public:
         "The control signal is proportional to this input.");
 
     PropMyoController() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double computeControl(const SimTK::State& s) const {
@@ -116,7 +116,7 @@ public:
 
 private:
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_gain(1.0);
     }
 };
@@ -134,14 +134,14 @@ public:
     OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
 
     SignalGenerator() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double getSignal(const SimTK::State& s) const {
         return get_function().calcValue(SimTK::Vector(1, s.getTime()));
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_function(Constant(0.0));
     }
 };
