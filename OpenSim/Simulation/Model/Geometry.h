@@ -60,17 +60,19 @@ class ModelComponent;
 class OSIMSIMULATION_API Geometry : public Component {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Geometry, Component);
 public:
-    // Properties common to all Geometry types are included as Properties
-    // of the base class.
-    // Scale factors
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Default display properties e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance for this Geometry");
-    
-    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
-        "The frame to which this geometry is attached.");
+        "Default appearance attributes for this Geometry");
+//=============================================================================
+// INPUTS
+//=============================================================================
+    OpenSim_DECLARE_INPUT(transform, SimTK::Transform, SimTK::Stage::Position,
+        "The transform that positions the Geometry in Ground so it can be "
+        "visualized.");
     
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -78,23 +80,10 @@ public:
 public:
     /// Default constructor
     Geometry();
-    
-    /// Convenience constructor that takes a Frame
-    Geometry(const Frame& frame) : Geometry() {
-        setFrame(frame);
-    }
 
     /// Default destructor
     virtual ~Geometry() {}
-    /** Interface methods to handle the Frame which the Geometry is attached to. */
-    /** %Set the Frame of attachment **/
-    void setFrame(const Frame& frame);
-    /** Return a reference to the name of the Frame to which
-    this Geometry is attached (using a Connector). **/
-    const std::string& getFrameName() const;
-    /** Return a reference to the actual Frame to which this Geometry
-    is attached. */
-    const Frame& getFrame() const;
+
     //==========================================================================
     // METHODS
     //==========================================================================

@@ -39,30 +39,16 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
     constructInfrastructure();
 }
 
-void Geometry::setFrame(const Frame& frame)
-{
-    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
-}
 
-
-const std::string& Geometry::getFrameName() const
-{
-    return getConnector<Frame>("frame").getConnecteeName();
-}
-
-const OpenSim::Frame& Geometry::getFrame() const
-{
-    return getConnector<Frame>("frame").getConnectee();
-}
-
-void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+void Geometry::generateDecorations(bool fixed, 
+    const ModelDisplayHints& hints,
+    const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
     if (!fixed) return; // serialized Geometry is assumed fixed
@@ -76,28 +62,24 @@ void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, c
     }
 }
 
-/**
- * Compute Transform of a Geometry w.r.t. passed in Frame
- * Both Frame(s) could be Bodies, state is assumed to be realized to position
+/*
+ * Apply Transform supplied to Geometry via its Input.
+ * As a function of the State.
 */
-void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeometry>& decorations, const SimTK::State& state) const
+void Geometry::setDecorativeGeometryTransform(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
+    const SimTK::State& state) const
 {
-    const Frame& myFrame = getFrame();
-    const Frame& bFrame = myFrame.findBaseFrame();
-    const PhysicalFrame* bPhysicalFrame = dynamic_cast<const PhysicalFrame*>(&bFrame);
-    if (bPhysicalFrame == nullptr){
-        // throw exception something is wrong
-        throw (Exception("Frame for Geometry " + getName() + " is not attached to a PhysicalFrame."));
-    }
-    const SimTK::MobilizedBodyIndex& idx = bPhysicalFrame->getMobilizedBodyIndex();
-    SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    const SimTK::Transform& transformInGround = 
+        getInputValue<SimTK::Transform>(state, "transform");
     for (unsigned i = 0; i < decorations.size(); i++){
-        decorations[i].setBodyId(idx);
-        decorations[i].setTransform(transformInBaseFrame);
+        decorations[i].setBodyId(0);
+        decorations[i].setTransform(transformInGround);
         decorations[i].setIndexOnBody(i);
     }
 }
-void Sphere::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Sphere::implementCreateDecorativeGeometry(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeSphere deco(get_radius());
@@ -105,7 +87,8 @@ void Sphere::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGe
     decoGeoms.push_back(deco);
 }
 
-void Cylinder::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Cylinder::implementCreateDecorativeGeometry(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeCylinder deco(get_radius(), get_half_height());
