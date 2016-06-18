@@ -52,8 +52,9 @@ Frame::Frame() : ModelComponent()
 
 void Frame::extendConnectToModel(Model& model)
 {
-    int naf = getProperty_attached_geometry().size();
-    for (int i = 0; i < naf; ++i) {
+    int nag = getProperty_attached_geometry().size();
+    for (int i = 0; i < nag; ++i) {
+        upd_attached_geometry(i).updInput("transform").disconnect();
         upd_attached_geometry(i).updInput("transform")
             .connect(getOutput("transform"));
     }
