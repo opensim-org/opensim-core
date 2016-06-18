@@ -93,7 +93,7 @@ public:
         "Flag to indicate whether or not to show points along path are shown, default to true.");
 
     OpenSim_DECLARE_PROPERTY(show_markers, bool,
-        "Flag to indicate whether or not to show wrap geometry, default to true.");
+        "Flag to indicate whether or not to show markers, default to true.");
 
     OpenSim_DECLARE_PROPERTY(show_forces, bool,
         "Flag to indicate whether or not to show forces, default to true.");

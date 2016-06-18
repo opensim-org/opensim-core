@@ -26,39 +26,26 @@ using SimTK::Transform;
 
 namespace OpenSim {
 
-ContactSphere::ContactSphere() :
-    ContactGeometry(),
-    _radius(_radiusProp.getValueDbl())
+ContactSphere::ContactSphere() : ContactGeometry()
 {
     setNull();
+    constructProperties();
 }
 
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& body) :
-    ContactGeometry(location, SimTK::Vec3(0.0), body),
-    _radius(_radiusProp.getValueDbl())
+ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location,
+        const PhysicalFrame& frame) :
+    ContactGeometry(location, SimTK::Vec3(0.0), frame)
 {
     setNull();
-    setupProperties();
-    _radius = radius;
+    constructProperties();
+    set_radius(radius);
 }
 
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& body, const std::string& name) :
-    ContactGeometry(location, SimTK::Vec3(0.0), body),
-    _radius(_radiusProp.getValueDbl())
+ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location,
+        const PhysicalFrame& frame, const std::string& name) :
+    ContactSphere(radius, location, frame)
 {
-    setNull();
-    setupProperties();
-    _radius = radius;
     setName(name);
-}
-
-ContactSphere::ContactSphere(const ContactSphere& geom) :
-    ContactGeometry(geom),
-    _radius(_radiusProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    _radius = geom._radius;
 }
 
 void ContactSphere::setNull()
@@ -66,26 +53,25 @@ void ContactSphere::setNull()
     setAuthors("Peter Eastman");
 }
 
-void ContactSphere::setupProperties()
+void ContactSphere::constructProperties()
 {
-    _radiusProp.setName("radius");
-    _propertySet.append(&_radiusProp);
+    constructProperty_radius(0);
 }
 
 
 double ContactSphere::getRadius() const
 {
-    return _radius;
+    return get_radius();
 }
 
 void ContactSphere::setRadius(double radius)
 {
-    _radius = radius;
+    set_radius(radius);
 }
 
 SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry()
 {
-    return SimTK::ContactGeometry::Sphere(_radius);
+    return SimTK::ContactGeometry::Sphere(get_radius());
 }
 
 

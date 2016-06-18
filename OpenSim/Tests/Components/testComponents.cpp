@@ -303,8 +303,13 @@ void testComponent(const Component& instanceToTest)
             Component* copy = instance->clone();
             delete copy;
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nCopies;
+
+        // Catch a possible decrease in the memory footprint, which will cause
+        // size_t (unsigned int) to wrap through zero.
+        const size_t increaseInMemory = getCurrentRSS() > initMemory ?
+                                        getCurrentRSS() - initMemory : 0;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)
+                                        /nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "

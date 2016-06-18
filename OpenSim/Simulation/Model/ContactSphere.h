@@ -1,5 +1,5 @@
-#ifndef __ContactSphere_h__
-#define __ContactSphere_h__
+#ifndef OPENSIM_CONTACT_SPHERE_H_
+#define OPENSIM_CONTACT_SPHERE_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  ContactSphere.h                          *
  * -------------------------------------------------------------------------- *
@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include <OpenSim/Common/PropertyDbl.h>
 #include "ContactGeometry.h"
 
 namespace OpenSim {
@@ -37,11 +36,10 @@ class OSIMSIMULATION_API ContactSphere : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 
 //=============================================================================
-// DATA
+// PROPERTIES
 //=============================================================================
-protected:
-    PropertyDbl _radiusProp;
-    double& _radius;
+    OpenSim_DECLARE_PROPERTY(radius, double,
+            "Radius of the sphere (default: 0).");
 
 //=============================================================================
 // METHODS
@@ -56,34 +54,28 @@ public:
      * Construct a ContactSphere.
      *
      * @param radius       the radius of the sphere
-     * @param location     the location of the center of the sphere within the Body it is attached to
-     * @param frame        the PhysicalFrame this mesh is attached to
+     * @param location     the location of the center of the sphere expressed
+     *                     in `frame`.
+     * @param frame        the PhysicalFrame this geometry is attached to;
+     *                     this constructor connects this ContactSphere to
+     *                     the provided `frame`.
      */
-    ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& frame);
+    ContactSphere(double radius, const SimTK::Vec3& location,
+            const PhysicalFrame& frame);
     /**
      * Construct a ContactSphere.
      *
      * @param radius       the radius of the sphere
-     * @param location     the location of the center of the sphere within the Body it is attached to
-     * @param frame        the PhysicalFrame this mesh is attached to
+     * @param location     the location of the center of the sphere expressed
+     *                     in `frame`.
+     * @param frame        the PhysicalFrame this geometry is attached to;
+     *                     this constructor connects this ContactSphere to
+     *                     the provided `frame`.
      * @param name         the name of this object
      */
-    ContactSphere(double radius, const SimTK::Vec3& location, PhysicalFrame& frame, const std::string& name);
-    ContactSphere(const ContactSphere& geom);
+    ContactSphere(double radius, const SimTK::Vec3& location,
+            const PhysicalFrame& frame, const std::string& name);
 
-    #ifndef SWIG
-    ContactSphere& operator=(const ContactSphere& source) {
-        if (&source != this) {
-            Super::operator=(source);
-            copyData(source);
-        }
-        return *this;
-    }
-    #endif
-
-    void copyData(const ContactSphere& source) {
-        _radius = source._radius;
-    }
     SimTK::ContactGeometry createSimTKContactGeometry() override;
 
     // ACCESSORS
@@ -98,7 +90,7 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void setupProperties();
+    void constructProperties() override;
 
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
@@ -112,4 +104,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactSphere_h__
+#endif // OPENSIM_CONTACT_SPHERE_H_ 
