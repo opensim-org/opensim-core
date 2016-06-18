@@ -151,17 +151,22 @@ int main()
         // to recompose existing components, this will need continual updating. For example,
         // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
         // and orientation offsets.
-        ASSERT(numComponents == 134); 
-        ASSERT(numBodies == model.getNumBodies());
-        ASSERT(numBodiesPost == numBodies);
-        ASSERT(numMuscles == model.getMuscles().getSize());
-        ASSERT(numJointsWithStateVariables == 2);
-        ASSERT(numModelComponentsWithStateVariables == 10);
+        ASSERT(numComponents == 134, "", 0, "Number of Components mismatch"); 
+        ASSERT(numBodies == model.getNumBodies(), "", 0, "Number of Bodies mismatch");
+        ASSERT(numBodiesPost == numBodies, "", 0, "Number of Bodies post mismatch");
+        ASSERT(numMuscles == model.getMuscles().getSize(), "", 0, 
+            "Number of Muscles mismatch");
+        ASSERT(numJointsWithStateVariables == 2, "", 0, 
+            "Number of Joints with StateVariables mismatch");
+        ASSERT(numModelComponentsWithStateVariables == 10, "", 0, 
+            "Number of Components with StateVariables mismatch");
         // Below updated from 1 to 3 to account for offset frame and its geometry added to the Joint
-        ASSERT(numJntComponents == 3);
-        // Test using the iterator to skip over every other Component (Frame in this case)
+        ASSERT(numJntComponents == 3, "", 0,
+            "Number of Components within Joints mismatch");
+        // Test using the iterator to skip over every other Frame 
         // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
-        ASSERT(countSkipFrames == 3);
+        ASSERT(countSkipFrames == 3, "", 0,
+            "Number of Frames skipping every other one, mismatch");
     }
     catch (Exception &ex) {
         ex.print(std::cout);
