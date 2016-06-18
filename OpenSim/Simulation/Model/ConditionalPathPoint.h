@@ -54,7 +54,8 @@ public:
 // CONNECTORS
 //==============================================================================
     OpenSim_DECLARE_CONNECTOR(coordinate, Coordinate,
-        "The coordinate whose value this path point depends on.");
+        "The coordinate whose value determines when "
+        "the path point is active according to the specified range.");
 
 //=============================================================================
 // METHODS
