@@ -682,19 +682,24 @@ public:
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            // if found is this component again, no point trying to find
-            // output again, otherwise we would not have reached here 
-            if (found && (found != this)) {
-                return found->getOutput(outName);
+            try {
+                const Component& found = getComponent<Component>(prefix);
+                // if found is this component again, no point trying to find
+                // output again, otherwise we would not have reached here 
+                return found.getOutput(outName);
+            }
+            catch (const std::exception& x) {
+                std::stringstream msg;
+                msg << "Component::getOutput: ERR-  no output '" << name
+                    << "' found.\n " "for component '" << getName() << "' of type "
+                    << getConcreteClassName() << ". Details:\n" << x.what() 
+                    << std::endl;
+
+                 throw Exception(msg.str(), __FILE__, __LINE__);
             }
         }
         
-        std::stringstream msg;
-        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-        << "for component '" << getName() << "' of type "
-        << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+
     }
 
     /**
@@ -1798,7 +1803,7 @@ protected:
             front = back + 1;
         }
 
-        if (current && current->getName() == compName)
+        if (dir == compName)
             return dynamic_cast<const C*>(current);
 
         return nullptr;
@@ -2432,7 +2437,12 @@ void Input<T>::connect(const AbstractOutput& output,
             //update the connectee_name as /<OwnerPath>/<Output:Channel> name
             std::string pathName =
                 output.getOwner().getRelativePathName(getOwner());
-            pathName = pathName + "/" + chan.second.getName();
+            if (pathName.rfind("/") == (pathName.length()-1)) { 
+                pathName = pathName + chan.second.getName();
+            }
+            else {
+                pathName = pathName + "/" + chan.second.getName();
+            }
             if (!annotation.empty() && annotation != chan.second.getChannelName()) {
                 pathName += "(" + annotation + ")";
             }
@@ -2479,7 +2489,13 @@ void Input<T>::connect(const AbstractChannel& channel,
         // /<OwnerPath>/<Output>:<Channel><(annotation)>
         const auto& outputsOwner = chanT->getOutput().getOwner();
         std::string pathName = outputsOwner.getRelativePathName(getOwner());
-        pathName += "/" + chanT->getName();
+
+        if (pathName.rfind("/") == (pathName.length() - 1)) {
+            pathName = pathName + chanT->getName();
+        }
+        else {
+            pathName = pathName + "/" + chanT->getName();
+        }
         if (!annotation.empty() && annotation != chanT->getChannelName()) {
             pathName += "(" + annotation + ")";
         }
@@ -2512,8 +2528,14 @@ void Input<T>::findAndConnect(const Component& root) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {
-            const auto& output = root.getOutput(outputPath);
-            const auto& channel = output.getChannel(channelName);
+            const AbstractOutput* output = nullptr;
+            if (outputPath[0] == '/') { //absolute path name
+                output = &root.getOutput(outputPath);
+            }
+            else { // relative path name
+                output = &getOwner().getOutput(outputPath);
+            }
+            const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);
         }
         catch (const Exception& ex) {
