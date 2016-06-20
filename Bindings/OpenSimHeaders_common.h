@@ -54,6 +54,8 @@
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
 
+#include <OpenSim/Common/TableSource.h>
+
 #include <OpenSim/Common/Reporter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_

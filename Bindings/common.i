@@ -134,6 +134,9 @@
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
+%include <OpenSim/Common/TableSource.h>
+%template(TableSource) OpenSim::TableSource_<SimTK::Real>;
+%template(TableSourceVec3) OpenSim::TableSource_<SimTK::Vec3>;
 
 %include <OpenSim/Common/Reporter.h>
 %template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;

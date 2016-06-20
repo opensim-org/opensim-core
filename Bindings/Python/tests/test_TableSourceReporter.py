@@ -8,23 +8,44 @@ test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
 
 # Tests TableSource and Reporter (including TableReporter) classes.
 class TestTableSourceReporter(unittest.TestCase):
-    def test_ConsoleReporter(self):
+    def test_TableSourceReporter(self):
         m = osim.Model()
-        b1 = osim.Body("b1", 1, osim.Vec3(1, 0, 0), osim.Inertia(1))
-        j1 = osim.PinJoint("j1", m.getGround(), osim.Vec3(0), osim.Vec3(0),
-                                b1, osim.Vec3(0), osim.Vec3(0))
-        coord = j1.getCoordinateSet().get(0)
-        coord.setDefaultValue(0.5)
-        rep = osim.ConsoleReporter()
-        m.addBody(b1)
-        m.addJoint(j1)
-        # TODO this first call to initSystem() is here b/c of a bug where
-        # Ground's MobilizedBodyIndex is not available b/c extendAddtoSystem()
-        # has not yet been invoked on it.
+
+        # Source.
+        source = osim.TableSource()
+        source.setName("source")
+
+        table = osim.TimeSeriesTable()
+        table.setColumnLabels(('col1', 'col2', 'col3', 'col4'))
+        row = osim.RowVector([1, 2, 3, 4])
+        table.appendRow(0.0, row)
+        row = osim.RowVector([2, 3, 4, 5])
+        table.appendRow(1.0, row)
+
+        source.setTable(table)
+
+        # Reporter.
+        c_rep = osim.ConsoleReporter()
+        c_rep.setName("c_rep")
+
+        t_rep = osim.TableReporter()
+        t_rep.setName("t_rep")
+
+        # Add.
+        m.addComponent(source)
+        m.addComponent(c_rep)
+        m.addComponent(t_rep)
+
+        # Connect.
+        c_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col1"))
+        t_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col2"))
+
+        # Realize.
         s = m.initSystem()
-        m.addComponent(rep)
-        rep.updInput("inputs").connect(coord.getOutput("value"))
-        s = m.initSystem()
+        s.setTime(0.5)
         m.realizeReport(s)
+
+        # Test.
+        assert t_rep.getReport().getRowAtIndex(0)[0] == 2.5
 
 
