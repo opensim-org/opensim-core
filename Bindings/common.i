@@ -83,6 +83,10 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
+namespace OpenSim {
+    %ignore DataTable_::DataTable_(DataTable_ &&);
+    %ignore TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
+}
 %shared_ptr(OpenSim::AbstractDataTable);
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
@@ -128,12 +132,21 @@
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
 %include <OpenSim/Common/FileAdapter.h>
+namespace OpenSim {
+    %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
+    %ignore DelimFileAdapter::DelimFileAdapter(DelimFileAdapter &&);
+    %ignore STOFileAdapter::STOFileAdapter(STOFileAdapter &&);
+    %ignore CSVFileAdapter::CSVFileAdapter(CSVFileAdapter &&);
+}
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
 %include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
+namespace OpenSim {
+    %ignore TableSource_::TableSource_(TableSource_ &&);
+}
 %include <OpenSim/Common/TableSource.h>
 %template(TableSource) OpenSim::TableSource_<SimTK::Real>;
 %template(TableSourceVec3) OpenSim::TableSource_<SimTK::Vec3>;
