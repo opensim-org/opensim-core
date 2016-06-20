@@ -224,8 +224,8 @@
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::ModelComponent::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::ModelComponent::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::ModelComponent::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::ModelComponent::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::ModelComponent::getComponentList<OpenSim::Joint>;
