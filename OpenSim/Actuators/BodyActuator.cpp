@@ -47,7 +47,7 @@ using SimTK::Vec3;
 BodyActuator::BodyActuator()
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
 }
 //_____________________________________________________________________________
@@ -60,7 +60,7 @@ BodyActuator::BodyActuator(const Body& body,
                            bool spatialForceIsGlobal)
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
     updConnector<Body>("body").setConnecteeName(body.getName());
 
@@ -74,13 +74,6 @@ void BodyActuator::constructProperties()
     constructProperty_point(Vec3(0)); // origin
     constructProperty_point_is_global(false);
     constructProperty_spatial_force_is_global(true);
-}
-//_____________________________________________________________________________
-/**
-* Construct Structural Connectors
-*/
-void BodyActuator::constructConnectors() {
-    constructConnector<Body>("body");
 }
 
 void BodyActuator::setBodyName(const std::string& name)

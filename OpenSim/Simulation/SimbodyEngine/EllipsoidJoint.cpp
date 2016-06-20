@@ -26,7 +26,6 @@
 //=============================================================================
 #include "EllipsoidJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
@@ -208,7 +207,7 @@ void EllipsoidJoint::generateDecorations
 
     // Construct the visible Ellipsoid
     SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
-    ellipsoid.setTransform(getParentFrame().getGroundTransform(state));
+    ellipsoid.setTransform(getParentFrame().getTransformInGround(state));
     ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
 
     geometryArray.push_back(ellipsoid);

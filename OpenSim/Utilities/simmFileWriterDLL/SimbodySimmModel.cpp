@@ -903,14 +903,14 @@ void SimbodySimmModel::writeWrapObjects(OpenSim::Body& aBody, ofstream& aStream)
         aStream << "segment " << aBody.getName() << endl;
         aStream << wo.getDimensionsString() << endl;
         if (!wo.getQuadrantNameUseDefault())
-            aStream << "quadrant " << wo.getQuadrantName() << endl;
+            aStream << "quadrant " << wo.get_quadrant() << endl;
         if (!wo.getActiveUseDefault())
-            aStream << "active " << (wo.getActive() ? "yes" : "no") << endl;
-        aStream << "translation " << wo.getTranslation()[0] << " " <<
-            wo.getTranslation()[1] << " " << wo.getTranslation()[2] << endl;
-        aStream << "xyz_body_rotation " << wo.getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
-            " " << wo.getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
+            aStream << "active " << (wo.get_active() ? "yes" : "no") << endl;
+        aStream << "translation " << wo.get_translation()[0] << " " <<
+            wo.get_translation()[1] << " " << wo.get_translation()[2] << endl;
+        aStream << "xyz_body_rotation " << wo.get_xyz_body_rotation()[0] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[1] * SimTK_RADIAN_TO_DEGREE <<
+            " " << wo.get_xyz_body_rotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
         aStream << "endwrapobject" << endl << endl;
     }
 }
@@ -1034,32 +1034,35 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
         if (pt.getConcreteClassName()==("ConditionalPathPoint")) {
             ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
             Vec3& attachment = mvp->getLocation();
-            Array<double>& range = mvp->getRange();
+            double range[]{ mvp->get_range(0), mvp->get_range(1) };
             aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
-            const Coordinate* coord = mvp->getCoordinate();
-            if (coord) {
-                if (coord->getMotionType() == Coordinate::Rotational)
-                    aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
+            
+            if (mvp->hasCoordinate()) {
+                const Coordinate& coord = mvp->getCoordinate();
+                if (coord.getMotionType() == Coordinate::Rotational)
+                    aStream << " ranges 1 " << coord.getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
                 else
-                    aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
+                    aStream << " ranges 1 " << coord.getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
             } else {
-                aStream << " ranges 1 " << mvp->getCoordinateName() << " (0.0, 1.0)" << endl;
+                aStream << " ranges 1 " 
+                    << mvp->getConnector<Coordinate>("coordinate").getConnecteeName()
+                    << " (0.0, 1.0)" << endl;
             }
         } else if (pt.getConcreteClassName()==("MovingPathPoint")) {
             MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
-            Vec3& attachment = mpp->getLocation();
-            if (mpp->getXCoordinate()) {
-                aStream << "f" << addMuscleFunction(mpp->getXFunction(), mpp->getXCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getXCoordinateName() << ") ";
+            const Vec3& attachment = mpp->get_location();
+            if (mpp->hasXCoordinate()) {
+                aStream << "f" << addMuscleFunction(&mpp->get_x_location(), mpp->getXCoordinate().getMotionType(), Coordinate::Translational) << "(" << mpp->getXCoordinate().getName() << ") ";
             } else {
                 aStream << attachment[0] << " ";
             }
-            if (mpp->getYCoordinate()) {
-                aStream << "f" << addMuscleFunction(mpp->getYFunction(), mpp->getYCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getYCoordinateName() << ") ";
+            if (mpp->hasYCoordinate()) {
+                aStream << "f" << addMuscleFunction(&mpp->get_y_location(), mpp->getYCoordinate().getMotionType(), Coordinate::Translational) << "(" << mpp->getYCoordinate().getName() << ") ";
             } else {
                 aStream << attachment[1] << " ";
             }
-            if (mpp->getZCoordinate()) {
-                aStream << "f" << addMuscleFunction(mpp->getZFunction(), mpp->getZCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getZCoordinateName() << ")";
+            if (mpp->hasZCoordinate()) {
+                aStream << "f" << addMuscleFunction(&mpp->get_z_location(), mpp->getZCoordinate().getMotionType(), Coordinate::Translational) << "(" << mpp->getZCoordinate().getName() << ")";
             } else {
                 aStream << attachment[2];
             }

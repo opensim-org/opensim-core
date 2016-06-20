@@ -226,7 +226,8 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
+        double aSubjectMass) const
 {
     if (!getApply()) return false;
 
@@ -392,7 +393,7 @@ double ModelScaler::takeModelMeasurement(const SimTK::State& s, const Model& aMo
     }
     const Marker& marker1 = aModel.getMarkerSet().get(aName1);
     const Marker& marker2 = aModel.getMarkerSet().get(aName2);
-    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getReferenceFrame());
+    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getParentFrame());
     return difference.norm();
 }
 

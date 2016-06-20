@@ -200,8 +200,7 @@ Object::Object(SimTK::Xml::Element& aNode)
  * @return Reference to this object.
  * @see updateXMLNode()
  */
-Object& Object::
-operator=(const Object& source)
+Object& Object::operator=(const Object& source)
 {
     if (&source != this) {
         _name           = source._name;
@@ -224,50 +223,19 @@ operator=(const Object& source)
 /**
  * Set all non-static member variables to their null or default values.
  */
-void Object::
-setNull()
+void Object::setNull()
 {
     _propertySet.clear();
     _propertyTable.clear();
     _objectIsUpToDate = false;
 
-    _name           = "";
-    _description    = "";
-    _authors        = "";
-    _references     = "";
+    _name = "";
+    _description = "";
+    _authors = "";
+    _references = "";
 
-    _document       = NULL;
-    _inlined        = true;
-
-    // In case there are properties allocated at the Object base class level,
-    // they need to be reallocated now. Derived objects will get a chance to
-    // do this later.
-    setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.  This involves both generating
- * the properties and connecting them to the local pointers used to access
- * the serialized member variables.
- */
-void Object::
-setupProperties()
-{
-
-    // CURRENTLY THERE ARE NO SERIALIZED MEMBERS IN Object
-
-}
-
-//_____________________________________________________________________________
-/**
- * Perform any initializations that should occur upon instantiation.
- */
-void Object::
-init()
-{
-
-    // CURRENTLY THERE ARE NO INITIALIZATIONS NEEDED.
-
+    _document = NULL;
+    _inlined = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -276,8 +244,7 @@ init()
 // Compare the base class mundane data members, and the properties. Concrete
 // Objects should override this but they must make sure to invoke the base
 // operator.
-bool Object::
-operator==(const Object& other) const
+bool Object::operator==(const Object& other) const
 {
     if (getConcreteClassName()  != other.getConcreteClassName()) return false;
     if (getName()               != other.getName())         return false;

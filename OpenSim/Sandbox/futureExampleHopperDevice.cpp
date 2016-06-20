@@ -89,10 +89,14 @@ public:
     OpenSim_DECLARE_PROPERTY(gain, double,
                              "Gain used in converting muscle activation into a"
                              " control signal (units depend on the device)");
+    OpenSim_DECLARE_CONNECTOR(actuator, Actuator,
+        "The ScalarActuator for which we're computing a control signal.");
     OpenSim_DECLARE_OUTPUT(myo_control, double, computeControl, SimTK::Stage::Time);
+    OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model,
+        "The control signal is proportional to this input.");
 
     PropMyoController() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double computeControl(const SimTK::State& s) const {
@@ -112,18 +116,8 @@ public:
 
 private:
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_gain(1.0);
-    }
-
-    void constructConnectors() override {
-        // The ScalarActuator for which we're computing a control signal.
-        constructConnector<Actuator>("actuator");
-    }
-
-    void constructInputs() override {
-        // The control signal is proportional to this input.
-        constructInput<double>("activation", SimTK::Stage::Model);
     }
 };
 
@@ -140,14 +134,14 @@ public:
     OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
 
     SignalGenerator() {
-        constructInfrastructure();
+        constructProperties();
     }
 
     double getSignal(const SimTK::State& s) const {
         return get_function().calcValue(SimTK::Vector(1, s.getTime()));
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_function(Constant(0.0));
     }
 };

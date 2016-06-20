@@ -1,5 +1,5 @@
-#ifndef __ContactMesh_h__
-#define __ContactMesh_h__
+#ifndef OPENSIM_CONTACT_MESH_H_
+#define OPENSIM_CONTACT_MESH_H_ 
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  ContactMesh.h                           *
  * -------------------------------------------------------------------------- *
@@ -27,6 +27,8 @@
 
 namespace OpenSim {
 
+// TODO update doxygen comments to mention connector.
+
 /**
  * This class represents a polygonal mesh for use in contact modeling.
  *
@@ -35,14 +37,15 @@ namespace OpenSim {
 class OSIMSIMULATION_API ContactMesh : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
 
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-    SimTK::ContactGeometry::TriangleMesh* _geometry;
-    PropertyStr _filenameProp;
-    std::string& _filename;
 public:
+//=============================================================================
+// PROPERTIES 
+//=============================================================================
+
+    OpenSim_DECLARE_PROPERTY(filename, std::string,
+            "Path to mesh geometry file (supports .obj, .stl, .vtp). "
+            "Mesh should be closed and water-tight.");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -55,42 +58,30 @@ public:
      * Construct a ContactMesh.
      *
      * @param filename     the name of the file to load the mesh from
-     * @param location     the location of the mesh within the PhysicalFrame it is attached to
-     * @param orientation  the orientation of the mesh within the PhysicalFrame it is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it
+     *                     is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame
+     *                     it is attached to
      * @param frame        the PhysicalFrame this mesh is attached to
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame);
+                const PhysicalFrame& frame);
     /**
      * Construct a ContactMesh.
      *
      * @param filename     the name of the file to load the mesh from
-     * @param location     the location of the mesh within the PhysicalFrame it is attached to
-     * @param orientation  the orientation of the mesh within the PhysicalFrame it is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it
+     *                     is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame
+     *                     it is attached to
      * @param frame        the PhysicalFrame this mesh is attached to
      * @param name         the name of this object
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame, const std::string& name);
+                const PhysicalFrame& frame, const std::string& name);
 
-    ContactMesh(const ContactMesh& geom);
-
-    #ifndef SWIG
-    ContactMesh& operator=(const ContactMesh& source) {
-        if (&source != this) {
-            Super::operator=(source);
-            copyData(source);
-        }
-        return *this;
-    }
-    #endif
-
-    void copyData(const ContactMesh& source) {
-        _geometry = source._geometry;
-        _filename = source._filename;
-    }
     SimTK::ContactGeometry createSimTKContactGeometry() override;
 
     // ACCESSORS
@@ -105,11 +96,19 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void setupProperties();
+    void constructProperties();
+    void extendFinalizeFromProperties() override;
     /**
      * Load the mesh from disk.
      */
     void loadMesh(const std::string& filename);
+    
+    
+//=============================================================================
+// DATA
+//=============================================================================
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
+        _geometry;
 
 //=============================================================================
 };  // END of class ContactMesh
@@ -118,4 +117,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactMesh_h__
+#endif // OPENSIM_CONTACT_MESH_H_ 

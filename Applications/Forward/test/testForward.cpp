@@ -159,8 +159,9 @@ void testPendulumExternalLoadWithPointInGround() {
     for (int j = 0; j < nc; ++j) {      
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
+        cout << message.str() << endl;
         ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
-        cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
+        cout << "ASSERT_EQUAL PASSED " << endl;
     }
 }
 

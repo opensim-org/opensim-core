@@ -29,54 +29,32 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-//______________________________________________________________________________
-/**
- * An implementation of the MarkersReference 
- *
- * @param model to assemble
- */
-MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(), 
-        _markersFile(_markersFileProp.getValueStr()),
-        _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
-        _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
-        _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(nullptr)
+MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>()
 {
+    constructProperties();
     setAuthors("Ajay Seth");
 }
 
-MarkersReference::MarkersReference(const std::string markerFile, Units modelUnits) : Reference_<SimTK::Vec3>(), 
-        _markersFile(_markersFileProp.getValueStr()),
-        _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
-        _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
-        _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(nullptr)
+MarkersReference::MarkersReference(const std::string& markerFile,
+    Units modelUnits) : MarkersReference()
 {
-    setAuthors("Ajay Seth");
     loadMarkersFile(markerFile, modelUnits);
 }
 
-/**
- * Convenience constructor to be used for Marker placement. 
- *
- * @param aMarkerData: MarkerData, assumed to be in the correct units already
- */
-MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet) : Reference_<SimTK::Vec3>(), 
-        _markersFile(_markersFileProp.getValueStr()),
-        _markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
-        _markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
-        _defaultWeight(_defaultWeightProp.getValueDbl()),
-        _markerData(nullptr)
+
+MarkersReference::MarkersReference(MarkerData *markerData,
+    const Set<MarkerWeight>* markerWeightSet) : MarkersReference()
 {
-    if (aMarkerWeightSet!=nullptr) _markerWeightSet= *aMarkerWeightSet;
-    populateFromMarkerData(aMarkerData);
+    _markerData.reset(markerData);
+    if (markerWeightSet!=nullptr) upd_marker_weights()= *markerWeightSet;
+    populateFromMarkerData(*markerData);
 }
 
 /** load the marker data for this MarkersReference from markerFile  */
 void MarkersReference::loadMarkersFile(const std::string markerFile, Units modelUnits)
 {
-    _markersFile = markerFile;
-    _markerData = new MarkerData(_markersFile);
+    upd_marker_file() = markerFile;
+    _markerData.reset(new MarkerData(get_marker_file()));
 
     // Convert the marker data into the model's units
     _markerData->convertToUnits(modelUnits);
@@ -86,9 +64,8 @@ void MarkersReference::loadMarkersFile(const std::string markerFile, Units model
 
 
 /** A convenience method yo populate MarkersReference from MarkerData **/
-void MarkersReference::populateFromMarkerData(MarkerData& aMarkerData)
+void MarkersReference::populateFromMarkerData(const MarkerData& aMarkerData)
 {
-    _markerData = &aMarkerData;
     const Array<std::string> &tempNames = aMarkerData.getMarkerNames();
     int nm = tempNames.getSize();
 
@@ -97,17 +74,17 @@ void MarkersReference::populateFromMarkerData(MarkerData& aMarkerData)
     _weights.clear();
     // pre-allocate arrays to the number of markers in the file with default weightings
     _markerNames.assign(nm, "");
-    _weights.assign(nm, _defaultWeight);
+    _weights.assign(nm, get_default_weight());
 
     int index = 0;
     // Build flat lists (arrays) of marker names and weights in the same order as the marker data
     for(int i=0; i<tempNames.getSize(); i++){
         const std::string &name = tempNames[i];
         _markerNames[i] = name;
-        index = _markerWeightSet.getIndex(name, index);
+        index = get_marker_weights().getIndex(name, index);
         //Assign user weighting for markers that are user listed in the input set
         if(index >= 0)
-            _weights[i] = _markerWeightSet[index].getWeight();
+            _weights[i] = get_marker_weights()[index].getWeight();
     }
 
     if(_markerNames.size() != _weights.size())
@@ -121,16 +98,12 @@ SimTK::Vec2 MarkersReference::getValidTimeRange() const
 
 // utility to define object properties including their tags, comments and 
 // default values.
-void MarkersReference::setupProperties()
+void MarkersReference::constructProperties()
 {
-    _markersFileProp.setComment("TRC file (.trc) containing the time history of observations of marker."
-                                "positions.");
-    _markersFileProp.setName("marker_file");
-    _propertySet.append( &_markersFileProp );
-
-    _markerWeightSetProp.setComment("Set of marker weights identified by marker name with weight being a positive scalar.");
-    _markerWeightSetProp.setName("marker_weights");
-    _propertySet.append( &_markerWeightSetProp );
+    constructProperty_marker_file("");
+    Set<MarkerWeight> markerWeights;
+    constructProperty_marker_weights(markerWeights);
+    constructProperty_default_weight(1.0);
 }
 
 /** get the names of the markers serving as references */
@@ -174,15 +147,9 @@ void  MarkersReference::getWeights(const SimTK::State &s, SimTK::Array_<double> 
     weights = _weights;
 }
 
-void MarkersReference::setMarkerWeightSet(Set<MarkerWeight> &markerWeights)
+void MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights)
 {
-    _markerWeightSet.setSize(0);
-    for(int i=0; i<markerWeights.getSize(); i++)
-        _markerWeightSet.adoptAndAppend(&markerWeights[i]);
-
-    //Make sure the input set no longer owns the weightings
-    _markerWeightSet.setMemoryOwner(false);
+    upd_marker_weights() = markerWeights;
 }
-
 
 } // end of namespace OpenSim

@@ -23,7 +23,7 @@
 #define OPENSIM_DELIM_FILE_ADAPTER_H_
 
 #include "FileAdapter.h"
-
+#include "TimeSeriesTable.h"
 
 namespace OpenSim {
 
@@ -48,14 +48,6 @@ public:
                      const std::string& delimterWrite);
 
     DelimFileAdapter* clone() const override;
-
-    /** Read a given file using the delimiters specified at construction.     */
-    TimeSeriesTable read(const std::string& filename) const;
-
-    /** Write the table to a file using the delimiter specified at 
-    construction.                                                             */
-    void write(const TimeSeriesTable& table,
-               const std::string& filename) const;
 
     /** Key used for table associative array returned/accepted by write/read. */
     static const std::string _table;

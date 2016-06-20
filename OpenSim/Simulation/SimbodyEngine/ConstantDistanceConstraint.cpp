@@ -61,7 +61,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /*
@@ -73,7 +73,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(
     const double& distance) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());
@@ -105,13 +105,6 @@ void ConstantDistanceConstraint::constructProperties()
     // Constant distance between points
     constructProperty_constant_distance(SimTK::NaN);
 }
-
-void ConstantDistanceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
 
 void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -208,9 +201,9 @@ void ConstantDistanceConstraint::generateDecorations(
     if (fixed) return;
     const Vec3 pink(1, .6, .8);
     const OpenSim::PhysicalFrame& frame1 = getBody1();
-    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
+    const Vec3& p_B1 = frame1.getTransformInGround(state)*get_location_body_1();
     const OpenSim::PhysicalFrame& frame2 = getBody2();
-    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
+    const Vec3& p_B2 = frame2.getTransformInGround(state)*get_location_body_2();
     appendToThis.push_back(
         SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
         .setColor(pink).setOpacity(1.0).setLineThickness(.05));

@@ -118,7 +118,8 @@ public:
 #endif
    void copyData(const ModelScaler &aModelScaler);
 
-    bool processModel(Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
+    bool processModel(Model* aModel, const std::string& aPathToSubject="",
+            double aFinalMass = -1.0) const;
     /* Register types to be used when reading a ModelScaler object from xml file. */
     static void registerTypes();
 

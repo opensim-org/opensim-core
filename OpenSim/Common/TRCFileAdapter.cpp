@@ -24,17 +24,17 @@ TRCFileAdapter::clone() const {
 }
 
 TimeSeriesTableVec3
-TRCFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(_markers);
+TRCFileAdapter::read(const std::string& fileName) {
+    auto abs_table = TRCFileAdapter{}.extendRead(fileName).at(_markers);
     return static_cast<TimeSeriesTableVec3&>(*abs_table);
 }
 
 void 
 TRCFileAdapter::write(const TimeSeriesTableVec3& table, 
-                      const std::string& fileName) const {
+                      const std::string& fileName) {
     InputTables tables{};
     tables.emplace(_markers, &table);
-    extendWrite(tables, fileName);
+    TRCFileAdapter{}.extendWrite(tables, fileName);
 }
 
 TRCFileAdapter::OutputTables

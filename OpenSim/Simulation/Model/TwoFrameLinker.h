@@ -59,6 +59,15 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+
+    OpenSim_DECLARE_CONNECTOR(frame1, F,
+            "The first frame participtting in this linker.");
+    OpenSim_DECLARE_CONNECTOR(frame2, F,
+            "The second frame participating in this linker.");
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -183,7 +192,6 @@ protected:
     /** @name Component Interface
         These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
@@ -231,7 +239,7 @@ protected:
 
 private:
     // create the frames property
-    void constructProperties() override;
+    void constructProperties();
 
     //hang on to references to the individual frames for fast access
     mutable SimTK::ReferencePtr<const F> _frame1;
@@ -251,7 +259,7 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors
@@ -341,13 +349,6 @@ void TwoFrameLinker<C, F>::constructProperties()
 }
 
 template <class C, class F>
-void TwoFrameLinker<C,F>::constructConnectors()
-{
-    this->template constructConnector<F>("frame1");
-    this->template constructConnector<F>("frame2");
-}
-
-template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
@@ -426,9 +427,9 @@ template <class C, class F>
 SimTK::Transform TwoFrameLinker<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
     // Define frame1 as the "fixed" frame, F
-    SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
+    SimTK::Transform X_GF = getFrame1().getTransformInGround(s);
     // Define the frame2 as the "moving" frame, M
-    SimTK::Transform X_GM = getFrame2().getGroundTransform(s);
+    SimTK::Transform X_GM = getFrame2().getTransformInGround(s);
     // Express M in F
     return ~X_GF * X_GM;
 }
@@ -458,8 +459,8 @@ SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVelocity(const SimTK::Sta
     const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Rotation& R_GF = X_GF.R();
 
@@ -524,8 +525,8 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     //const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     //const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Mat33 N_FM =
         SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));

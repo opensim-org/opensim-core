@@ -152,7 +152,7 @@ GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGeneri
  *
  * @return Pointer to the Model that is constructed.
  */
-Model* GenericModelMaker::processModel(const string& aPathToSubject)
+Model* GenericModelMaker::processModel(const string& aPathToSubject) const
 {
     Model* model = NULL;
 
@@ -160,9 +160,7 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 
     try
     {
-        _fileName = aPathToSubject + _fileName;
-
-        model = new Model(_fileName);
+        model = new Model(aPathToSubject + _fileName);
         model->initSystem();
 
         if (!_markerSetFileNameProp.getValueIsDefault() && _markerSetFileName !="Unassigned") {

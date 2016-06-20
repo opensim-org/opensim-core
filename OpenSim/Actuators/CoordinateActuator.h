@@ -116,7 +116,7 @@ private:
     // Implement Object interface.
     //--------------------------------------------------------------------------
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 
     // Note: reference pointers are automatically set to null on construction 

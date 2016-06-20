@@ -59,7 +59,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,7 +72,7 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
         Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setLineBodyByName(lineBody.getName());
     setFollowerBodyByName(followerBody.getName());
@@ -111,12 +111,6 @@ void PointOnLineConstraint::constructProperties()
 
     // Point On Follower Body 
     constructProperty_point_on_follower(origin);
-}
-
-void PointOnLineConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("line_body");
-    constructConnector<PhysicalFrame>("follower_body");
 }
 
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const

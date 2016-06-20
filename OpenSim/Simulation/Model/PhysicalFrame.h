@@ -154,10 +154,6 @@ public:
     ///@} 
 
 protected:
-    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
-
     /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -193,9 +189,19 @@ protected:
         int versionNumber = -1) override;
 
 private:
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override;
+
+    /** The spatial velocity {omega; v} for this PhysicalFrame in ground. */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override;
+    /** The spatial acceleration {alpha; a} for this PhysicalFrame in ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override;
 
     /* Component construction interface */
-    void constructProperties() override;
+    void constructProperties();
 
     /* Utility to convert Geometry version 3.2 to recent 4.0 format */
     void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,

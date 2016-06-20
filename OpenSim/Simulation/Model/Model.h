@@ -738,6 +738,7 @@ public:
     bool isControlled() const;
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage(const std::string& fileName ) const;
+    TimeSeriesTable getControlsTable() const;
     const ControllerSet& getControllerSet() const;
     ControllerSet& updControllerSet();
     bool getAllControllersEnabled() const;
@@ -983,7 +984,7 @@ private:
     void setNull();
 
     // Construct the properties of a Model.
-    void constructProperties() override;
+    void constructProperties();
     void setDefaultProperties();
 
     // Utility to build a connected graph (tree) of the multibody system

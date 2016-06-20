@@ -23,6 +23,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/TableSource.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -51,16 +52,10 @@ private:
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-    TheWorld() : Component() {
-        // Constructing own properties, connectors, inputs or connectors? Must invoke!
-        constructInfrastructure();
-    }
+    TheWorld() : Component() { }
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // have to construct this Component's properties so that deserialization from
-        // XML has a place to go.
-        constructInfrastructure();
         // Propagate XML file values to properties 
         updateFromXMLDocument();
         // add components listed as properties as sub components.
@@ -153,7 +148,7 @@ public:
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
-        constructInfrastructure();
+        constructProperties();
         m_ctr = 0;
         m_mutableCtr = 0;
     }
@@ -225,16 +220,11 @@ private:
     mutable int m_mutableCtr;
 
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_mass(1.0);
         Array<double> inertia(0.001, 6);
         inertia[0] = inertia[1] = inertia[2] = 0.1;
         constructProperty_inertia(inertia);
-    }
-
-    void constructOutputs() override {
-
-
     }
 
     // Keep indices and reference to the world
@@ -246,6 +236,9 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
+    
+    OpenSim_DECLARE_CONNECTOR(parentFoo, Foo, "");
+    OpenSim_DECLARE_CONNECTOR(childFoo, Foo, "");
 
     // This is used to test output copying and returns the address of the 
     // component.
@@ -261,8 +254,6 @@ public:
 
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(fiberLength);
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
-
-    Bar() : Component() { constructInfrastructure(); }
 
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
@@ -332,10 +323,6 @@ protected:
     }
 
 private:
-    void constructConnectors() override {
-        constructConnector<Foo>("parentFoo");
-        constructConnector<Foo>("childFoo");
-    }
 
     // keep track of the force added by the component
     mutable ForceIndex fix;
@@ -357,7 +344,7 @@ public:
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
 
     CompoundFoo() : Foo() {
-        constructInfrastructure();
+        constructProperties();
     }
 
 protected:
@@ -382,7 +369,7 @@ protected:
     }
 
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_Foo1(Foo());
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
@@ -1041,6 +1028,86 @@ void testInputConnecteeNames() {
     // TODO test invalid names as well.
 }
 
+template<typename RowVec>
+void assertEqual(const RowVec& a, const RowVec& b) {
+    assert(a.nrow() == b.nrow());
+    assert(a.ncol() == b.ncol());
+    for(int i = 0; i < a.ncol(); ++i)
+        ASSERT_EQUAL(a[i], b[i], 1e-10);
+}
+
+void testTableSource() {
+    using namespace OpenSim;
+    using namespace SimTK;
+
+    TimeSeriesTable table{};
+    table.setColumnLabels({"0", "1", "2", "3"});
+    SimTK::RowVector_<double> row{4, double{0}};
+    for(unsigned i = 0; i < 4; ++i)
+        table.appendRow(0.00 + 0.25 * i, row + i);
+
+    std::cout << "Contents of the table :" << std::endl;
+    std::cout << table << std::endl;
+
+    auto tableSource = new TableSource{table};
+
+    auto tableReporter = new TableReporter_<double, double>{};
+
+    // Define the Simbody system
+    MultibodySystem system;
+
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    theWorld.add(tableSource);
+    theWorld.add(tableReporter);
+
+    tableReporter->updInput("inputs").connect(tableSource->getOutput("column"));
+
+    theWorld.finalizeFromProperties();
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    const auto& report = tableReporter->getReport();
+
+    State s = system.realizeTopology();
+
+    s.setTime(0);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(0)  , report.getRowAtIndex(0));
+
+    s.setTime(0.1);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 0.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(1));
+
+    s.setTime(0.25);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(1)  , report.getRowAtIndex(2));
+
+    s.setTime(0.4);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 1.6};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(3));
+
+    s.setTime(0.5);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(2)  , report.getRowAtIndex(4));
+
+    s.setTime(0.6);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 2.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(5));
+
+    s.setTime(0.75);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(3)  , report.getRowAtIndex(6));
+
+    std::cout << "Report: " << std::endl;
+    std::cout << report << std::endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1056,6 +1123,7 @@ int main() {
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputConnecteeNames);
+        SimTK_SUBTEST(testTableSource);
     SimTK_END_TEST();
 }
 

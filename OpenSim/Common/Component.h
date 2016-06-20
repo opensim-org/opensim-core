@@ -493,7 +493,9 @@ public:
 
     /**
      * Get the names of "continuous" state variables maintained by the Component
-     * and its subcomponents
+     * and its subcomponents. Note that states are defined when the system is 
+     * created. Make sure to call initSystem on the top  level Component
+     * (e.g. Model)
      */
     Array<std::string> getStateVariableNames() const;
 
@@ -1107,18 +1109,6 @@ protected:
     }
 #endif //SWIG
 
-  /** Single call to construct the underlying infrastructure of a Component, which
-     include: 1) its properties, 2) its structural connectors (to other components),
-     3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
-     own Outputs (wires) that it provides for other components to access its values.
-     Override the corresponding private virtual method to customize any of them. */ 
-    void constructInfrastructure() {
-        constructProperties();
-        constructConnectors();
-        constructInputs();
-        constructOutputs();
-    }
-
     /**
     * Adopt a component as a subcomponent of this Component. Component
     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
@@ -1458,19 +1448,6 @@ protected:
      **/
 
     //@{
-    /**
-    * Construct a specialized Connector for this Component's dependence on an another
-    * Component. It serves as a placeholder for the Component and its type and enables
-    * the Component to automatically traverse its dependencies and provide a meaningful 
-    * message if the provided Component is incompatible or non-existant.
-    */
-    template <typename T>
-    void constructConnector(const std::string& name, bool isList = false) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, *this));
-        //add pointer to connectorsTable so we can access connectors easily by name
-        _connectorsTable[name] = ix;
-    }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
     this Component. Each modeling option is identified by its own 
@@ -1725,7 +1702,6 @@ public:
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 
-protected:
     /** Access the parent of this Component.
         An exception is thrown if the Component has no parent.
         @see hasParent() */
@@ -1736,6 +1712,7 @@ protected:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
+protected:
     /** %Set this Component's reference to its parent Component */
     void setParent(const Component& parent);
 
@@ -1797,11 +1774,12 @@ protected:
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs, Inputs
-     * To declare Outputs and Inputs for your component,
+    /** @name Internal methods for constructing Connectors, Outputs, Inputs
+     * To declare Connector%s, Output%s, and Input%s for your component,
      * use the following macros within your class declaration (ideally at
      * the top near property declarations):
      *
+     *  - #OpenSim_DECLARE_CONNECTOR
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -1812,7 +1790,24 @@ protected:
      * methods yourself.
      */
     /// @{
-    /** Construct an output for a member function of the same component. 
+    /**
+    * Construct a specialized Connector for this Component's dependence on an
+    * another Component. It serves as a placeholder for the Component and its
+    * type and enables the Component to automatically traverse its dependencies
+    * and provide a meaningful message if the provided Component is
+    * incompatible or non-existant.
+    */
+    template <typename T>
+    int constructConnector(const std::string& name, bool isList = false) {
+        int ix = updProperty_connectors().adoptAndAppendValue(
+            new Connector<T>(name, SimTK::Stage::Topology, *this));
+        // Add pointer to connectorsTable so we can access connectors easily by
+        // name.
+        _connectorsTable[name] = ix;
+        return ix;
+    }
+    
+    /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
 
@@ -1915,15 +1910,14 @@ protected:
      * the corresponding state variable. */
     bool constructOutputForStateVariable(const std::string& name);
 
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
+    /** Construct an Input (socket) for this Component's dependence on an
+     * Output signal.  It is a placeholder for the Output and its type and
+     * enables the Component to automatically traverse its dependencies and
+     * provide a meaningful message if the provided Output is incompatible or
+     * non-existant. The also specifies at what stage the output must be valid
+     * for the the component to consume it as an input.  if the Output's
+     * dependsOnStage is above the Input's requiredAtStage, an Exception is
+     * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
     bool constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
@@ -1936,35 +1930,6 @@ protected:
     /// @}
 
 private:
-    // Construct the table of serializeable properties for a Component.
-    // Base constructs property that contains the structural connectors.
-    virtual void constructProperties() {}
-
-    //Construct the table of structural Connectors this component requires to
-    //hookup to other components in order to function. For example, a Joint needs 
-    //a parent body in order to join its owning body to the model. A Connector
-    //formalizes this dependency. The Component is inoperable until the Connector
-    //is satisfied. Connectors are not to be confused with subcomponents, with the key 
-    //difference being that a subcomponent is part of and owned by the component, 
-    //whereas a Connector is a requirement or a "slot" that must be satisfied by
-    //the time the system is ready to simulate. 
-    //Connectors are resolved in Component's connect().
-    //constructStructuralDependencies is a series of calls to constrcuctConnector()
-    //which adds a component by name and type to a dependency Connectors table.
-    virtual void constructConnectors() {}
-
-    //Construct the table of Inputs for this component. A Component::Input is a
-    //dependency on the Output of another Component. Unlike a structural 
-    //connector, an input specifies the required flow of data into the component.
-    //@see Component::Input
-    virtual void constructInputs() {}
-
-    //Construct the table of Outputs provided by this component. An Output is
-    //a data signal generated by this Component. It can be any response or 
-    //calculation made by the Component as a function of the state. Specifically,
-    //an Output is a redirect to a method on the Component and a specification of 
-    //the return type, @see addOutput()
-    virtual void constructOutputs() {}
 
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 
@@ -2085,7 +2050,7 @@ protected:
         const int& getVarIndex() const { return varIndex; }
         // return the index of the subsystem used to make resource allocations 
         const SimTK::SubsystemIndex& getSubsysIndex() const { return subsysIndex; }
-        // return the index of the subsystem used to make resource allocations 
+        // return the index in the global list of continuous state variables, Y 
         const SimTK::SystemYIndex& getSystemYIndex() const { return sysYIndex; }
 
         bool isHidden() const { return hidden; }
@@ -2093,8 +2058,7 @@ protected:
         void show()  { hidden = false; }
 
         void setVarIndex(int index) { varIndex = index; }
-        void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix)
-        {
+        void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix) {
             subsysIndex = sbsysix;
         }
 
@@ -2116,7 +2080,7 @@ protected:
         // The local variable index in the subsystem also provided at creation
         // (e.g. can be QIndex, UIndex, or Zindex type)
         int  varIndex;
-        // Once allocated a state will in the system will have a global index
+        // Once allocated a state in the system will have a global index
         // and that can be stored here as well
         SimTK::SystemYIndex sysYIndex;
 
@@ -2271,8 +2235,9 @@ private:
     // bookkeeping of component variables (state variables and cache entries) with 
     // their index in the computational system. The earliest time we have a valid 
     // index is when we ask the system to allocate the resources and that only
-    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the Component
-    // in any way that would effect its behavior- that is why it it const!
+    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not
+    // alter the Component in any way that would effect its behavior- that is
+    // why it is const!
     // The setting of the variable indices is not in the public interface and is 
     // not polymorphic.
 
@@ -2286,10 +2251,21 @@ private:
     // Map names of cache entries of the Component to their individual 
     // cache information.
     mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
+
+    // Check that the list of _allStateVariables is valid
+    bool isAllStatesVariablesListValid() const;
+
+    // Array of all state variables for fast access during simulation
+    mutable SimTK::Array_<SimTK::ReferencePtr<const StateVariable> > 
+                                                            _allStateVariables;
+    // A handle the System associated with the above state variables
+    mutable SimTK::ReferencePtr<const SimTK::System> _statesAssociatedSystem;
+
 //==============================================================================
 };  // END of class Component
 //==============================================================================
-
+//==============================================================================
+    
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.

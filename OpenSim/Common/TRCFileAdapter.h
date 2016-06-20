@@ -23,6 +23,7 @@
 #define OPENSIM_TRC_FILE_ADAPTER_H_
 
 #include "FileAdapter.h"
+#include "TimeSeriesTable.h"
 
 namespace OpenSim {
 
@@ -119,12 +120,13 @@ public:
     TRCFileAdapter* clone() const override;
 
     /** Read a given TRC file. The filename provided need not contain ".trc". */
-    TimeSeriesTableVec3 read(const std::string& filename) const;
+    static
+    TimeSeriesTableVec3 read(const std::string& filename);
 
     /** Write a table to a TRC file. The filename provided need not contain 
     ".trc".                                                                   */
-    void write(const TimeSeriesTableVec3& table, 
-               const std::string& filename) const;
+    static
+    void write(const TimeSeriesTableVec3& table, const std::string& filename);
 
     /** Key used for table associative array returned/accepted by write/read. */
     static const std::string              _markers;

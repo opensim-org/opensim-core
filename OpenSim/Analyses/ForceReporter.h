@@ -102,6 +102,12 @@ public:
     {
         return _forceStore;
     }
+    
+    /** Get forces table.                                                     */
+    TimeSeriesTable getForcesTable() const {
+        return _forceStore.getAsTimeSeriesTable();
+    }
+
     // MODEL
     void setModel(Model& aModel) override;
 

@@ -665,6 +665,11 @@ getStateStorage() const
         throw Exception("Manager::getStateStorage(): Storage is not set");
     return(*_stateStore);
 }
+
+TimeSeriesTable Manager::getStatesTable() const {
+    return getStateStorage().getAsTimeSeriesTable();
+}
+
 //_____________________________________________________________________________
 /**
  * Get whether there is a storage buffer for the integration states.

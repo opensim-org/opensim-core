@@ -322,8 +322,8 @@ double calcLigamentLengthError(const SimTK::State &s, const Model &model)
         const PhysicalFrame& b1 = constraint->getBody1();
         const PhysicalFrame& b2 = constraint->getBody2();
 
-        p1inG = b1.getGroundTransform(s)*p1inB1;
-        p2inG = b2.getGroundTransform(s)*p2inB2;
+        p1inG = b1.getTransformInGround(s)*p1inB1;
+        p2inG = b2.getTransformInGround(s)*p2inB2;
 
         double length = (p2inG-p1inG).norm();
         error = length - constraint->get_constant_distance();

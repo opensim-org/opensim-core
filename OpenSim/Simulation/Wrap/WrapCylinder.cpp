@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "SimTKsimbody.h"
 #include "WrapCylinder.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
@@ -32,7 +33,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
-
+#include "OpenSim/Simulation/Model/ModelDisplayHints.h"
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -50,69 +51,33 @@ static Vec3 dn(0.0, 0.0, 1.0);
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
 * Default constructor.
 */
-WrapCylinder::WrapCylinder() :
-WrapObject(),
-_radius(_radiusProp.getValueDbl()),
-_length(_lengthProp.getValueDbl())
+WrapCylinder::WrapCylinder() : WrapObject()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
+/*
 * Destructor.
 */
 WrapCylinder::~WrapCylinder()
-{
-}
+{}
 
-//_____________________________________________________________________________
-/**
-* Copy constructor.
-*
-* @param aWrapCylinder WrapCylinder to be copied.
-*/
-WrapCylinder::WrapCylinder(const WrapCylinder& aWrapCylinder) :
-WrapObject(aWrapCylinder),
-_radius(_radiusProp.getValueDbl()),
-_length(_lengthProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapCylinder);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
-* Set the data members of this WrapCylinder to their null values.
-*/
-void WrapCylinder::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
 * Connect properties to local pointers.
 */
-void WrapCylinder::setupProperties()
+void WrapCylinder::constructProperties()
 {
-    // BASE CLASS
-    //WrapObject::setupProperties();
-
-    _radiusProp.setName("radius");
-    _radiusProp.setValue(-1.0);
-    _propertySet.append(&_radiusProp);
-
-    _lengthProp.setName("length");
-    _lengthProp.setValue(1.0);
-    _propertySet.append(&_lengthProp);
+    constructProperty_radius(-1.0);
+    constructProperty_length(1.0);
 }
 
 //_____________________________________________________________________________
@@ -142,46 +107,27 @@ void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
         localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
         localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
     }
-   _radius *= ((localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5);
-   _length *= localScaleVector[2].norm();
+   upd_radius() *= ((localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5);
+   upd_length() *= localScaleVector[2].norm();
 }
 
 //_____________________________________________________________________________
-/**
+/*
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
-*
-* @param aModel pointer to OpenSim model.
 */
-void WrapCylinder::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapCylinder::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
-    if (_radius < 0.0)
+    if (get_radius() < 0.0)
     {
-        string errorMessage = "Error: radius for WrapCylinder " + getName() + " was either not specified, or is negative.";
+        string errorMessage = "Error: radius for WrapCylinder " + getName() +
+            " was either not specified, or is negative.";
         throw Exception(errorMessage);
     }
-/*  Cylinder* cyl = new Cylinder(_radius, _length);
-    setGeometryQuadrants(cyl);
-*/
-}
-
-//_____________________________________________________________________________
-/**
-* Copy data members from one WrapCylinder to another.
-*
-* @param aWrapCylinder WrapCylinder to be copied.
-*/
-void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
-{
-    // BASE CLASS
-    WrapObject::copyData(aWrapCylinder);
-
-    _radius = aWrapCylinder._radius;
-    _length = aWrapCylinder._length;
 }
 
 //_____________________________________________________________________________
@@ -206,26 +152,9 @@ const char* WrapCylinder::getWrapTypeName() const
 string WrapCylinder::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radius << "\nheight " << _length;
+    dimensions << "radius " << get_radius() << "\nheight " << get_length();
 
     return dimensions.str();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
-* Assignment operator.
-*
-* @return Reference to this object.
-*/
-WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapCylinder);
-
-    return(*this);
 }
 
 //=============================================================================
@@ -245,6 +174,7 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
+    const double& _radius = get_radius();
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         /* *r11, *r22, */alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
@@ -290,8 +220,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     SimTK::Vec3 cylStart, cylEnd;
     cylStart[0] = cylEnd[0] = 0.0;
     cylStart[1] = cylEnd[1] = 0.0;
-    cylStart[2] = -0.5 * _length;
-    cylEnd[2] = 0.5 * _length;
+    cylStart[2] = -0.5 * get_length();
+    cylEnd[2] = 0.5 * get_length();
 
     WrapMath::IntersectLines(aPoint1, aPoint2, cylStart, cylEnd, near12, t12, near00, t00);
 
@@ -659,7 +589,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // no wrapping. Since the axis of the cylinder is the Z axis, and
     // the cylinder is centered on Z=0, check the Z components of r1 and r2
     // to see if they are within _length/2.0 of zero.
-    if ((aWrapResult.r1[2] < -_length/2.0 || aWrapResult.r1[2] > _length/2.0) && (aWrapResult.r2[2] < -_length/2.0 || aWrapResult.r2[2] > _length/2.0))
+    double halfL = get_length() / 2.0;
+    if ((aWrapResult.r1[2] < -halfL || aWrapResult.r1[2] > halfL) &&
+        (aWrapResult.r2[2] < -halfL || aWrapResult.r2[2] > halfL) )
         return noWrap;
 
     // make the path and calculate the muscle length:
@@ -668,7 +600,6 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     aFlag = true;
 
     return return_code;
-
 }
 
 //_____________________________________________________________________________
@@ -692,6 +623,7 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
     double sense = far_side_wrap ? -1.0 : 1.0;
     double m[4][4];
     int i, iterations = 0;
+    const double _radius = get_radius();
 
 restart_spiral_wrap:
 
@@ -808,7 +740,7 @@ void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
 
     for (i = 0; i < 3; i++)
     {
-        double radial_component = _radius * n[1][i];
+        double radial_component = get_radius() * n[1][i];
         double axial_component = t * axial_vec[i];
 
         wrap_pt[i] = r1a[i] + radial_component + axial_component;
@@ -868,4 +800,30 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
     }
 
     return did_adust;
+}
+
+// Implement generateDecorations by WrapCylinder to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Vec3 color(SimTK::Cyan);
+        SimTK::Transform ztoy;
+        // Make transform that takes z axis to y axis due to different
+        // assumptions between DecorativeCylinder aligned with y  and
+        // WrapCylinder aligned with z
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
+        SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
+        appendToThis.push_back(
+            SimTK::DecorativeCylinder(get_radius(),
+                get_length() / 2)
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(0.5));
+    }
 }

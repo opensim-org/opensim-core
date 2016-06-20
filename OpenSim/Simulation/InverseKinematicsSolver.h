@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -64,18 +64,6 @@ class MarkersReference;
  */
 class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 {
-//=============================================================================
-// MEMBER VARIABLES
-//=============================================================================
-protected:
-
-    // The marker reference values and weightings
-    MarkersReference &_markersReference;
-
-    // Markers collectively form a single assembly condition for the SimTK::Assembler
-    SimTK::Markers *_markerAssemblyCondition;
-
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -140,15 +128,21 @@ protected:
         assembly solver. Subclasses can override to include other goals  
         such as point of interest matching (Marker tracking). This method is
         automatically called by assemble. */
-    virtual void setupGoals(SimTK::State &s) override;
+    void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state */
-    virtual void updateGoals(const SimTK::State &s) override;
+    void updateGoals(const SimTK::State &s) override;
 
 private:
+    // The marker reference values and weightings
+    MarkersReference &_markersReference;
+
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
 
+    // Markers collectively form a single assembly condition for the SimTK::Assembler
+    // and the memory is managed by the Assembler
+    SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver

@@ -1273,6 +1273,35 @@ OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& i
     }
     return found;
 }
+
+TimeSeriesTable Storage::getAsTimeSeriesTable() const {
+    TimeSeriesTable table{};
+
+    table.addTableMetaData("header", getName());
+    table.addTableMetaData("version", std::to_string(LatestVersion));
+    table.addTableMetaData("inDegrees", std::string{_inDegrees ? "yes" : "no"});
+    table.addTableMetaData("nRows", std::to_string(_storage.getSize()));
+    table.addTableMetaData("nColumns", std::to_string(_columnLabels.getSize()));
+    if(!getDescription().empty())
+        table.addTableMetaData("description", getDescription());
+
+    // Exclude the first column label. It is 'time'. Time is a separate column
+    // in TimeSeriesTable and column label is optional.
+    table.setColumnLabels(_columnLabels.get() + 1, 
+                          _columnLabels.get() + _columnLabels.getSize());
+
+    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+        const auto& row = getStateVector(i)->getData();
+        const auto time = getStateVector(i)->getTime();
+        // Exclude the first column. It is 'time'. Time is a separate column in
+        // TimeSeriesTable.
+        table.appendRow(time, row.get(), row.get() + row.getSize());
+    }
+
+    return table;
+}
+
+
 //=============================================================================
 // RESET
 //=============================================================================

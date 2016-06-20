@@ -53,6 +53,13 @@ int main()
         availableComponents.push_back(availableFrames[i]);
     }
 
+    // next with type Point
+    ArrayPtrs<Point> availablePoints;
+    Object::getRegisteredObjectsOfGivenType(availablePoints);
+    for (int i = 0; i < availablePoints.size(); ++i) {
+        availableComponents.push_back(availablePoints[i]);
+    }
+
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
@@ -74,6 +81,9 @@ int main()
         availableComponents.push_back(availableBushingForces[i]);
     }
 
+    // Test PrescribedForce
+    std::unique_ptr<PrescribedForce> f(new PrescribedForce());
+    availableComponents.push_back(f.get());
     // continue with other Constraints, Forces, Actuators, ...
     //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
@@ -172,6 +182,29 @@ void testComponent(const Component& instanceToTest)
             string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
+
+            // Dependency on a Coordinate needs special treatment.
+            // A Coordinate is defined by a Joint and cannot stand on its own.
+            // Here we see if there is a Coordinate already in the model, 
+            // otherwise we add a Body and Joint so we can connect to its
+            // Coordinate.
+            if (dynamic_cast<Connector<Coordinate> *>(&connector)) {
+                while (!connector.isConnected()) {
+                    // Dependency on a coordinate, check if there is one in the model already
+                    auto coordinates = model.getComponentList<Coordinate>();
+                    if(coordinates.begin() != coordinates.end()) {
+                        connector.connect(*coordinates.begin());
+                        break;
+                    }
+                    // no luck finding a Coordinate already in the Model
+                    Body* body = new Body();
+                    randomize(body);
+                    model.addBody(body);
+                    model.addJoint(new PinJoint("pin", model.getGround(), *body));
+                }
+                continue;
+            }
+
             Object* dependency =
                 Object::newInstanceOfType(dependencyTypeName);
 
@@ -270,8 +303,13 @@ void testComponent(const Component& instanceToTest)
             Component* copy = instance->clone();
             delete copy;
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nCopies;
+
+        // Catch a possible decrease in the memory footprint, which will cause
+        // size_t (unsigned int) to wrap through zero.
+        const size_t increaseInMemory = getCurrentRSS() > initMemory ?
+                                        getCurrentRSS() - initMemory : 0;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)
+                                        /nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "

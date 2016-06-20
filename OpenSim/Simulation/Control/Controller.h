@@ -131,7 +131,7 @@ private:
     Set<Actuator> _actuatorSet;
 
     // construct and initialize properties
-    void constructProperties() override;
+    void constructProperties();
 
     //friend class ControlSet;
     friend class ControllerSet;

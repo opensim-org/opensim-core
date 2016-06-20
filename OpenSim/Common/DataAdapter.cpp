@@ -39,10 +39,10 @@ namespace {
 // bool 
 // registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
 //                  DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
-//                  DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
+//                  DataAdapter::registerDataAdapter("mot", STOFileAdapter{})};
 bool 
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) 
-              && DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) 
+              && DataAdapter::registerDataAdapter("mot", STOFileAdapter{}) 
               && DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})
 #ifdef WITH_BTK 
               && DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})
