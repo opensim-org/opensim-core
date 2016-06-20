@@ -1055,6 +1055,17 @@ void testTableSource() {
     using namespace SimTK;
 
     {
+        TheWorld model{};
+        auto tablesource = new TableSourceVec3{};
+        tablesource->setName("tablesource");
+        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_tablename("markers");
+        model.addComponent(tablesource);
+
+        model.print("TestTableSource.osim");
+    }
+
+    {
     const std::string src_file{"TestTableSource.osim"};
     TheWorld model{src_file};
     const auto& tablesource = 
