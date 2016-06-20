@@ -28,6 +28,7 @@
 #include "OpenSim/Simulation/SimbodyEngine/Body.h"
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include <SimTKsimbody.h>
+#include "Appearance.h"
 
 namespace OpenSim {
 
@@ -56,11 +57,9 @@ public:
         "Orientation of geometry in the PhysicalFrame "
         "(body-fixed XYZ Euler angles).");
 
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color to apply to the contact geometry.");
+    // Default display properties e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance for this Geometry");
 
     OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
         "The frame to which this geometry is attached.");
@@ -98,11 +97,6 @@ public:
     const PhysicalFrame& getFrame() const;
     /** %Set the PhysicalFrame this geometry is attached to. */
     void setFrame(const PhysicalFrame& body);
-
-    /** Get the display_preference of this geometry. */
-    const int getDisplayPreference();
-    /** %Set the display_preference of this geometry. */
-    void setDisplayPreference(const int dispPref);
 
     /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
