@@ -72,10 +72,6 @@ MODEL_ADOPT_HELPER(Analysis);
 MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
-%pythonappend OpenSim::Component::addComponent %{
-    comp._markAdopted()
-%}
-
 
 // Compensate for insufficient C++11 support in SWIG
 // =================================================
