@@ -67,11 +67,11 @@ void ContactGeometry::constructProperties()
 {
     constructProperty_location(Vec3(0));
     constructProperty_orientation(Vec3(0));
-    constructProperty_display_preference(1);
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Vec3(0., 1.0, 1.0));
+    defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
+    constructProperty_Appearance(defaultAppearance);
 
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
-    constructProperty_color(defaultColor);
 }
 
 const Vec3& ContactGeometry::getLocation() const
@@ -105,12 +105,6 @@ void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
     updConnector<PhysicalFrame>("frame").connect(frame);
 }
-
-const int ContactGeometry::getDisplayPreference()
-{ return get_display_preference(); }
-
-void ContactGeometry::setDisplayPreference(const int dispPref)
-{ set_display_preference(dispPref); }
 
 const PhysicalFrame& ContactGeometry::getBody() const
 { return getFrame(); }
