@@ -2,10 +2,6 @@
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
-
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
 %include <OpenSim/Simulation/Model/Appearance.h>
@@ -228,8 +224,8 @@
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::Component::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Component::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;

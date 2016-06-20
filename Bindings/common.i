@@ -64,11 +64,17 @@
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
-%include <OpenSim/Common/Component.h>
-
 %include <OpenSim/Common/ComponentConnector.h>
 
 %include <OpenSim/Common/ComponentList.h>
+
+// This must come after ComponentList.h, so SWIG can recognize the return
+// type of getComponentList().
+%include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
