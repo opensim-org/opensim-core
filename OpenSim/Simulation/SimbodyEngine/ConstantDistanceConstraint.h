@@ -113,7 +113,7 @@ protected:
 
 private:
     /** Construct ConstantDistanceConstraint's properties */
-    void constructProperties() override;
+    void constructProperties();
 
     void setNull();
 

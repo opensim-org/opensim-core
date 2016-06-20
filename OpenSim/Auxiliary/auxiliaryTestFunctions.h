@@ -146,7 +146,7 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
         if (ap.isOptionalProperty()) 
             continue;
         if (ts == "bool"&& !isList) 
-            ap.updValue<bool>() = !ap.getValue<bool>();
+            ap.updValue<bool>() = (rand() % 2 == 0);
         else if (ts == "integer"&& !isList) 
             ap.updValue<int>() = rand();
         else if (ts == "double" && !isList) 

@@ -121,7 +121,7 @@ protected:
     void extendConnectToModel(Model& model) override;
 private:
     // construct and initialize properties
-    void constructProperties() override;
+    void constructProperties();
 
     // utility
     Function* createFunctionFromData(const std::string& name,

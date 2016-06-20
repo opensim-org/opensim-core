@@ -15,7 +15,7 @@ public:
     OpenSim_DECLARE_OUTPUT(sum, double, getSum, SimTK::Stage::Velocity);
 
     ComplexResponse() {
-        constructInfrastructure();
+        constructProperties();
     }
     double getTerm1(const State& s) const {
         if (!isCacheVariableValid(s, "term_1")) {
@@ -40,7 +40,7 @@ public:
         return getCacheVariableValue<double>(s, "sum");
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_strength(3.0);
     }
     void extendAddToSystem(MultibodySystem& system) const override {
@@ -57,7 +57,7 @@ private:
 class AggregateResponse : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(AggregateResponse, ModelComponent);
 public:
-    AggregateResponse() { constructInfrastructure(); }
+    AggregateResponse() { constructProperties(); }
 
     // TODO propagate this scaling_factor to the ComplexResponses using
     // Component::getParent.
@@ -105,7 +105,7 @@ public:
 
 private:
     
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_scaling_factor(1.0);
     }
 };

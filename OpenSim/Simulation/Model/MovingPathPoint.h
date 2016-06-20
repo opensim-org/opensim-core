@@ -69,6 +69,18 @@ public:
         "Function defining the z component of the point's location expressed "
         "in the Frame of the Point.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(x_coordinate, Coordinate,
+        "The x_location function is a function of this coordinate's value.");
+
+    OpenSim_DECLARE_CONNECTOR(y_coordinate, Coordinate,
+        "The y_location function is a function of this coordinate's value.");
+
+    OpenSim_DECLARE_CONNECTOR(z_coordinate, Coordinate,
+        "The z_location function is a function of this coordinate's value.");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -108,8 +120,7 @@ public:
    void scale(const SimTK::Vec3& aScaleFactors) override;
 
 private:
-    void constructProperties() override;
-    void constructConnectors() override;
+    void constructProperties();
     void extendConnectToModel(Model& model) override;
 
     SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const override;
