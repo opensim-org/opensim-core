@@ -450,7 +450,7 @@ void testMisc() {
                   theWorld.connect() );
 
 
-    ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+    auto worldTreeAsList = theWorld.getComponentList();
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
