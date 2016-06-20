@@ -15,6 +15,14 @@
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Reporter.h>
+%template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;
+%template(ReporterVec3) OpenSim::Reporter<SimTK::Vec3>;
+%template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
+%template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
+%template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
+%template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
+%template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
 
 
 // Simulation wrappers.

@@ -904,7 +904,8 @@ public:
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
      * ContactGeometry and so on. That means the freeing of the memory of these objects is up
-     * to the caller.
+     * to the caller. This only affects components stored in the Model's Sets,
+     * and does not affect those added via Component::addComponent().
      */
     void disownAllComponents();
     /**
