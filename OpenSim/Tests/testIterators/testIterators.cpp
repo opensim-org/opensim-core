@@ -392,9 +392,9 @@ void testComponentListNonConstWithNonConstIterator() {
     ComponentList<Frame>::iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
     while (skipIter != allFrames.end()){
+        skipIter->setName(skipIter->getName());
         std::advance(skipIter, 2);
         countSkipFrames++;
-        skipIter->setName(skipIter->getName());
     }
     
     ASSERT(numComponents == expectedNumComponents);
