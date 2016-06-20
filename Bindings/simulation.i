@@ -2,6 +2,23 @@
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
+
+// Classes from Common that we are wrapping in Simulation.
+// This is because we want to provide getComponentList<Body> etc on Component,
+// but Body is in Simulation. See the end of this file for ComponentList
+// wrappers.
+// For now, all Components must be wrapped in Simulation.
+%include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
+
+%include <OpenSim/Common/Reporter.h>
+
+
+// Simulation wrappers.
+
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
 %include <OpenSim/Simulation/Model/Appearance.h>
@@ -224,8 +241,8 @@
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::ModelComponent::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::ModelComponent::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::ModelComponent::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::ModelComponent::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::ModelComponent::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::Component::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::Component::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;

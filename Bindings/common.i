@@ -68,14 +68,6 @@
 
 %include <OpenSim/Common/ComponentList.h>
 
-// This must come after ComponentList.h, so SWIG can recognize the return
-// type of getComponentList().
-%include <OpenSim/Common/Component.h>
-
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
-
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
@@ -132,5 +124,3 @@
 %include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
-
-%include <OpenSim/Common/Reporter.h>
