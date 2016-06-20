@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -41,7 +42,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>

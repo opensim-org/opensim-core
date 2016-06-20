@@ -64,9 +64,18 @@
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
+// Used in Component::generateDecorations.
+%include <OpenSim/Common/ModelDisplayHints.h>
+
 %include <OpenSim/Common/ComponentConnector.h>
 
 %include <OpenSim/Common/ComponentList.h>
+
+%include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
@@ -124,3 +133,14 @@
 %include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
+
+
+%include <OpenSim/Common/Reporter.h>
+%template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;
+%template(ReporterVec3) OpenSim::Reporter<SimTK::Vec3>;
+%template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
+%template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
+%template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
+%template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
+%template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;

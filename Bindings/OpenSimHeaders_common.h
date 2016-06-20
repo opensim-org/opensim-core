@@ -39,6 +39,7 @@
 #include <OpenSim/Common/FunctionSet.h>
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Component.h>
 
 #include <OpenSim/Common/MarkerData.h>

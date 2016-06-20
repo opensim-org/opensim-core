@@ -3,30 +3,6 @@
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
 
-// Classes from Common that we are wrapping in Simulation.
-// This is because we want to provide getComponentList<Body> etc on Component,
-// but Body is in Simulation. See the end of this file for ComponentList
-// wrappers.
-// For now, all Components must be wrapped in Simulation.
-%include <OpenSim/Common/Component.h>
-
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
-
-%include <OpenSim/Common/Reporter.h>
-%template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;
-%template(ReporterVec3) OpenSim::Reporter<SimTK::Vec3>;
-%template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
-%template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
-%template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
-%template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
-%template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
-%template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
-
-
-// Simulation wrappers.
-
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
 %include <OpenSim/Simulation/Model/Appearance.h>
@@ -185,7 +161,6 @@
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
-%include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
@@ -249,8 +224,8 @@
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::Component::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Component::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;

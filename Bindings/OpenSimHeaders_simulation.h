@@ -41,9 +41,6 @@
 #include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 #include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 
-#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
-
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
