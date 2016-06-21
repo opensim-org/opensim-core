@@ -22,8 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Helper methods to take care of some mundane tasks. All methods in this file
-have already been implemented. */
+/* Helper methods to take care of some mundane tasks. */
 
 #include <OpenSim/OpenSim.h>
 
