@@ -13,7 +13,7 @@ v4.0 (in development)
 
 Converting from v3.x to v4.0
 -----------------------------
-- The Actuator class has been renamed to ScalarActuator (and Actuator_ has been renamed to Actuator) (PR #126).
+- The Actuator class has been renamed to ScalarActuator (and `Actuator_` has been renamed to `Actuator`) (PR #126).
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
 - Markers are now ModelComponents (PR #188). Code is included for conversion on serialization/de-serialization.
@@ -32,6 +32,10 @@ Converting from v3.x to v4.0
   also use the `extend` variants. Otherwise, you will enter into an infinite recursion.
 - OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler
   must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
+- The following components have been upgraded to use Connectors to connect to
+  other components they depend on (instead of string properties):
+  - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
+- Many of the methods in ScaleTool have now been marked const.
 
 Bug Fixes
 ---------
@@ -40,7 +44,7 @@ Bug Fixes
 - Fixed memory leaks in AssemblySolver and using Simtk::XML (PR #176)
 - Fixed model mass scaling. When 'preserve mass distribution' is unchecked (GUI) the input mass was previously not respected and the resulting scaled model mass does not equal the input mass. The modelscaler() now alters the body masses and inertias to match the input mass. (PR #230)
 - Fixed a bug in the equilibrium solution of Millard and Thelen muscles, where the initial activation and fiber-length values (for solving for equilibrium) were always coming from the default values. This was unnecessary, because unless specified otherwise, the state automatically contains the default values. This fixes an issue where inital states activations from a file were not respected by the Forward Tool and instead, the initial activations would revert to the model defaults. (PR #272)
-- Fixed a bug where MuscleAnalysis was producing empty moment arm files. We now avoid creating empty Moment and MomentArm storage files when _computeMoments is False. (PR #324)
+- Fixed a bug where MuscleAnalysis was producing empty moment arm files. We now avoid creating empty Moment and MomentArm storage files when `_computeMoments` is False. (PR #324)
 
 New Classes
 -----------
@@ -51,7 +55,12 @@ New Classes
 - Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)  
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 - The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
+- Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
 
+Removed Classes
+--------------------------------
+The following classes are no longer supported in OpenSim and are removed in OpenSim 4.0.
+- Muscle class `ContDerivMuscle_Depredated`.
 
 Python
 ------
@@ -66,7 +75,9 @@ Other Changes
 - Made Object::print a const member function (PR #191)
 - Improved the testOptimization/OptimizationExample to reduce the runtime (PR #416)
 - InverseKinematics tool outputs marker error .sto file if report error flag is true.
-- Marker location file output name in IK changed to reflect trial name for batch processing. 
+- Marker location file output name in IK changed to reflect trial name for batch processing.
+- Created a method `ScaleTool::run()`, making it easier to run the Scale Tool
+programmatically in MATLAB or python.
 
 Documentation
 --------------

@@ -133,7 +133,7 @@ void testDoublePendulumWithSolver()
         ASSERT_EQUAL(udot[0], udot_grav[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_grav[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q2 FAILED");
 
-        Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
+        // Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
         //cout << "CoM Acceleration due to gravity: " << comAcc << endl;
 
         // Compute Torq1 contribution

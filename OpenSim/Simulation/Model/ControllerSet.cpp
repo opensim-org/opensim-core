@@ -200,6 +200,10 @@ void ControllerSet::printControlStorage( const string& fileName)  const
    _controlStore->print(fileName);
 }
 
+TimeSeriesTable ControllerSet::getControlTable() const {
+    return _controlStore->getAsTimeSeriesTable();
+}
+
 void ControllerSet::setActuators( Set<Actuator>& as) 
 {
     _actuatorSet = &as;

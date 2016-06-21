@@ -101,7 +101,7 @@ public:
     /** Advanced Method for computing induced accelerations given the constraint
         applied at the point of contact specified. */
     virtual void setContactPointForInducedAccelerations(
-        const SimTK::State &s, SimTK::Vec3 point);
+        const SimTK::State &s, SimTK::Vec3 point) override;
 
 protected:
     /** Extend Component Interface. */
@@ -111,7 +111,7 @@ protected:
 private:
     void setNull();
     // Construct WeldConstraint's properties
-    void constructProperties() override;
+    void constructProperties();
 
     // Some analyses (e.g. Induced Accelerations, update the constraint
     // location (Transform) based on experimental data. The constraint

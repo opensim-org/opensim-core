@@ -39,16 +39,22 @@ namespace {
 // bool 
 // registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) &&
 //                  DataAdapter::registerDataAdapter("csv", CSVFileAdapter{}) &&
-//                  DataAdapter::registerDataAdapter("mot", MOTFileAdapter{})};
+//                  DataAdapter::registerDataAdapter("mot", STOFileAdapter{})};
 bool 
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) 
-              && DataAdapter::registerDataAdapter("mot", MOTFileAdapter{}) 
+              && DataAdapter::registerDataAdapter("mot", STOFileAdapter{}) 
               && DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})
 #ifdef WITH_BTK 
               && DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})
 #endif
                 };
 
+}
+
+// Ignore this function. This exists to suppress compiler warning
+// about variable 'registerAdapters' being 'unused'.
+void ignore() {
+    registerAdapters = false;
 }
 
 }

@@ -43,7 +43,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static int counter=0;
+//static int counter=0;
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
@@ -51,7 +51,7 @@ static int counter=0;
 // Default constructor.
 Muscle::Muscle()
 {
-    constructInfrastructure();
+    constructProperties();
     // override the value of default _minControl, _maxControl
     setMinControl(0.0);
     setMaxControl(1.0);

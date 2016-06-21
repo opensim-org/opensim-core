@@ -503,7 +503,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             const WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
-            obs.bodyName = wrapObj->getBody().getName();
+            obs.bodyName = wrapObj->getFrame().getName();
             obs.X_BS = wrapObj->getTransform();
             obs.isVia = false;
             // initially assume inactive
@@ -648,8 +648,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
     MultibodySystem& system = osimModel.updMultibodySystem();
     GeneralForceSubsystem& forceSubsystem = osimModel.updForceSubsystem();
-    const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
-    const SimbodyEngine& engine = osimModel.getSimbodyEngine();
+    // const SimbodyMatterSubsystem& matter = osimModel.getMatterSubsystem();
+    // const SimbodyEngine& engine = osimModel.getSimbodyEngine();
 
     // add cable system
     CableTrackerSubsystem cables(system);
@@ -692,7 +692,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                 const WrapCylinder* wrapCyl = dynamic_cast<const WrapCylinder*>(oi.wrapObjectPtr);
                 if (wrapCyl != 0) {
                     CableObstacle::Surface surf(path, mobBody,
-                        oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->getRadius())); // along y
+                        oi.X_BS, SimTK::ContactGeometry::Cylinder(wrapCyl->get_radius())); // along y
                     if (oi.isActive)
                         surf.setContactPointHints(oi.P_S, oi.Q_S);
                     else

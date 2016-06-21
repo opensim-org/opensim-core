@@ -49,9 +49,13 @@ public:
         return (*(_dictionary.at(key)))[0];
     }
 
-    /** Set the value corresponding to a given key.                           */
+    /** Set the value corresponding to a given key. Value is set only if the key
+    does not already exist.
+
+    \retval true  If the value was set for the given key.
+    \retval false If the value was not set because key already present.       */
     template<typename ValueType>
-    void setValueForKey(const std::string& key,
+    bool setValueForKey(const std::string& key,
                         const ValueType& value) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
@@ -59,7 +63,7 @@ public:
         valueArray->upd().push_back(SimTK::Value<ValueType>{value});
         AbstractValueArray* absValueArray{valueArray};
 
-        _dictionary.emplace(key, Value{absValueArray});
+        return _dictionary.emplace(key, Value{absValueArray}).second;
     }
 
     /** Get the array corresponding to a given key.                           
@@ -72,12 +76,17 @@ public:
         return *(_dictionary.at(key));
     }
 
-    /** Set the array corresponding to a given key.                           */
-    void setValueArrayForKey(const std::string& key, 
+    /** Set the array corresponding to a given key. Value array is set only if
+    the key does not already exist.
+
+    \retval true  If the value was set for the given key.
+    \retval false If the value was not set because key already present.       */
+    bool setValueArrayForKey(const std::string& key, 
                              const AbstractValueArray& abstractValueArray) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
-        _dictionary.emplace(key, Value{abstractValueArray.clone()});
+        auto res = _dictionary.emplace(key, Value{abstractValueArray.clone()});
+        return res.second;
     }
 
     /** Remove a key and its associated array.                                */

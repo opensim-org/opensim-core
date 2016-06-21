@@ -64,7 +64,7 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
             coordinateSet.get(4).getDefaultValue(),
             coordinateSet.get(5).getDefaultValue());
 
-        FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
+        //FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
         getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
     }
 }

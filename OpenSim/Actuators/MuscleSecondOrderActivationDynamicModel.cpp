@@ -194,9 +194,9 @@ double MuscleSecondOrderActivationDynamicModel::
         "%s: Two arguments are required: excitation and activation", 
         getName().c_str());
 
-    double dactivation_dt   = x(0);
+    // double dactivation_dt   = x(0);
     double activation       = x(1);
-    double excitation       = x(2);
+    // double excitation       = x(2);
 
     return activation;
 }

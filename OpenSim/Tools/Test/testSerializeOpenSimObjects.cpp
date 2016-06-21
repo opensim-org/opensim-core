@@ -82,8 +82,10 @@ int main()
             try {
                 testModel.addModelComponent(ModelComponent::safeDownCast(randClone));
             } //Ignore the validity of the property values
-            catch (const SimTK::Exception::ErrorCheck& err) {
-                const string& errMsg = err.getMessage();
+            // TODO this should specifically handle "InvalidPropertyValue" exceptions
+            // once we have that in place.
+            catch (const std::exception&) {
+                // const string& errMsg = err.getMessage();
                 //std::cout << errMsg << std::endl;
             }
         }
@@ -100,9 +102,12 @@ int main()
 
         try {
             deserializedModel.finalizeFromProperties();
-        } //Ignore the validity of the property values
-        catch (const SimTK::Exception::ErrorCheck& err) {
-            const string& errMsg = err.getMessage();
+        }
+        //Ignore the validity of the property values
+        // TODO this should specifically handle "InvalidPropertyValue" exceptions
+        // once we have that in place.
+        catch (const std::exception&) {
+            // const string& errMsg = err.getMessage();
             //std::cout << errMsg << std::endl;
         }
 

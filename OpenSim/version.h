@@ -48,25 +48,25 @@ namespace OpenSim {
     static const char *OpenSimVersion = GET_OSIM_VERSION;
 
 #if defined(__cplusplus) || defined(SWIG)
-    std::string GetVersionAndDate() { 
+    inline std::string GetVersionAndDate() { 
         char buffer[256];
         sprintf(buffer,"version %s, build date %s %s", OpenSimVersion, __TIME__, __DATE__);
         return std::string(buffer);
     }
 
-    std::string GetVersion() {
+    inline std::string GetVersion() {
         return OpenSimVersion;
     }
 
-    std::string GetOSInfoVerbose() {
+    inline std::string GetOSInfoVerbose() {
         const char * str = GET_SYSTEM_INFO;
         return str;
     }
-    std::string GetOSInfo() {
+    inline std::string GetOSInfo() {
         const char * str = GET_OS_NAME;
         return str;
     }
-    std::string GetCompilerVersion() {
+    inline std::string GetCompilerVersion() {
         std::string os = GetOSInfo();
         std::string str;
 

@@ -209,23 +209,36 @@ class InvalidArgument : public Exception {
 public:
     InvalidArgument(const std::string& file,
                     size_t line,
-                    const std::string& func) :
+                    const std::string& func,
+                    const std::string& msg = "") :
         Exception(file, line, func) {
-        std::string msg = "Invalid Argument.";
+        std::string mesg = "Invalid Argument. " + msg;
 
-        addMessage(msg);
+        addMessage(mesg);
     }
 };
 
-template <typename T>
+class InvalidTemplateArgument : public Exception {
+public:
+    InvalidTemplateArgument(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const std::string& msg) :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Template argument. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
 class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,
                     size_t line,
                     const std::string& func,
-                    T index,
-                    T min, 
-                    T max) :
+                    size_t index,
+                    size_t min, 
+                    size_t max) :
         Exception(file, line, func) {
         std::string msg = "min = " + std::to_string(min);
         msg += " max = " + std::to_string(max);

@@ -28,7 +28,7 @@ namespace SimTK {
 }
 
 // Vector and Matrix
-%include <Bindings/std.i>
+//%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
 %template(StdVectorVec3) std::vector<SimTK::Vec3>;
 namespace SimTK {
@@ -75,6 +75,7 @@ namespace SimTK {
      }
  }
 %template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
+%template(MatrixView)          SimTK::MatrixView_<double>;
 %template(Matrix)              SimTK::Matrix_<double>;
 %template(VectorBaseDouble)    SimTK::VectorBase<double>;
 %template(VectorView)          SimTK::VectorView_<double>;
@@ -126,6 +127,7 @@ namespace SimTK {
      }
  }
 %template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
+%template(MatrixViewVec3)    SimTK::MatrixView_<Vec3>;
 %template(MatrixVec3)        SimTK::Matrix_<Vec3>;
 %template(VectorBaseVec3)    SimTK::VectorBase<Vec3>;
 %template(VectorViewVec3)    SimTK::VectorView_<Vec3>;
@@ -141,6 +143,7 @@ namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
+%template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
 
@@ -167,9 +170,9 @@ namespace SimTK {
 %template(SimTKArrayString) SimTK::Array_<std::string>;
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
+%template(SimTKArrayInt) SimTK::Array_<int>;
 }
 
-typedef int MobilizedBodyIndex;
 typedef int SubsystemIndex;
 typedef int SystemQIndex;
 typedef int SystemQErrIndex;
@@ -179,6 +182,10 @@ typedef int SystemYErrIndex;
 typedef int SystemUIndex;
 typedef int SystemUErrIndex;
 typedef int SystemUDotErrIndex;
+namespace SimTK {
+%template(SimTKArrayMobilizedBodyIndex) SimTK::Array_<MobilizedBodyIndex>;
+}
+typedef int MobilizedBodyIndex;
 
 namespace SimTK {
 %template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
@@ -186,6 +193,8 @@ namespace SimTK {
 }
 
 %include <SWIGSimTK/DecorativeGeometry.h>
+
+%include <SWIGSimTK/PolygonalMesh.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
@@ -196,3 +205,4 @@ namespace SimTK {
 %include <SWIGSimTK/State.h>
 // Used for StatesTrajectory iterating.
 %template(StdVectorState) std::vector<SimTK::State>;
+%include <SWIGSimTK/SimbodyMatterSubsystem.h>

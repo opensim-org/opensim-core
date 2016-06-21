@@ -215,7 +215,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
         }
         j++;
     }
-    double pre = p;
+    // double pre = p;
     // If tracking states, add in errors from them squared
     for(int t=0; t<tset.getSize(); t++){
         TrackingTask& ttask = tset.get(t);
@@ -244,7 +244,7 @@ int ActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
     const Set<Actuator>& fSet = _controller->getActuatorSet();
-    double p = 0.0;
+    // double p = 0.0;
     for(int i=0,index=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
         Muscle* mus = dynamic_cast<Muscle*>(act);

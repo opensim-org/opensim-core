@@ -39,7 +39,7 @@
             error('User cancelled function')
         end
         % Check if the correct OpenSim directory is selected
-        if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'))
+        if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt'))
             h = msgbox('Folder is not an OpenSim Install folder. Please select OpenSim Install folder','Error');
             uiwait(h)
         else

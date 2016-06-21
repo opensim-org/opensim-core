@@ -106,7 +106,8 @@ protected:
     // Whether to move the model markers (set to false if you just want to preview the static pose)
     bool _moveModelMarkers;
 
-    Storage* _outputStorage;
+    // This is cached during processModel() so the GUI can access it.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<Storage>> _outputStorage;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -123,7 +124,8 @@ public:
 #ifndef SWIG
     MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-    bool processModel(Model* aModel, const std::string& aPathToSubject="");
+    bool processModel(Model* aModel,
+            const std::string& aPathToSubject="") const;
 
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -198,7 +200,8 @@ public:
 private:
     void setNull();
     void setupProperties();
-    void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
+    void moveModelMarkersToPose(SimTK::State& s, Model& aModel,
+            MarkerData& aPose) const;
 //=============================================================================
 };  // END of class MarkerPlacer
 //=============================================================================

@@ -122,6 +122,8 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 
+#include "StatesTrajectoryReporter.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -141,7 +143,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
   try {
 
     Object::registerType( AnalysisSet() );
-    Object::registerType( ModelDisplayHints());
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
@@ -259,10 +260,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
+    Object::registerType( StatesTrajectoryReporter() );
+
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<Frame>());
     Object::registerType(Connector<PhysicalFrame>());
     Object::registerType(Connector<Body>());
+    Object::registerType(Connector<Coordinate>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

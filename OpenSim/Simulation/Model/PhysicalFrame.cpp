@@ -80,11 +80,24 @@ SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
 * 
 */
 SimTK::Transform PhysicalFrame::
-    calcGroundTransform(const SimTK::State& s) const
+    calcTransformInGround(const SimTK::State& s) const
 {
     // return X_GF = X_GB * X_BF;
     return getMobilizedBody().getBodyTransform(s);
 }
+
+SimTK::SpatialVec PhysicalFrame::
+calcVelocityInGround(const SimTK::State& state) const
+{
+    return getMobilizedBody().getBodyVelocity(state);
+}
+
+SimTK::SpatialVec PhysicalFrame::
+calcAccelerationInGround(const SimTK::State& state) const
+{
+    return getMobilizedBody().getBodyAcceleration(state);
+}
+
 
 SimTK::Transform PhysicalFrame::extendFindTransformInBaseFrame() const
 {
@@ -96,7 +109,7 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 
     for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
-        get_WrapObjectSet().get(i).connectToModelAndBody(aModel, *this);
+        get_WrapObjectSet()[i].setFrame(*this);
 }
 
 const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const

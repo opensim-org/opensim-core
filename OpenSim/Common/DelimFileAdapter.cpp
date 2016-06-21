@@ -19,20 +19,6 @@ DelimFileAdapter::clone() const {
     return new DelimFileAdapter{*this};
 }
 
-TimeSeriesTable
-DelimFileAdapter::read(const std::string& fileName) const {
-    auto abs_table = extendRead(fileName).at(_table);
-    return static_cast<TimeSeriesTable&>(*abs_table);
-}
-
-void 
-DelimFileAdapter::write(const TimeSeriesTable& table, 
-                        const std::string& fileName) const {
-    InputTables tables{};
-    tables.emplace(_table, &table);
-    extendWrite(tables, fileName);
-}
-
 DelimFileAdapter::OutputTables
 DelimFileAdapter::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(fileName.empty(),
@@ -104,7 +90,7 @@ DelimFileAdapter::extendRead(const std::string& fileName) const {
         TimeSeriesTable::RowVector 
             row_vector{static_cast<int>(column_labels.size())};
         for(std::size_t c = 0; c < column_labels.size(); ++c)
-            row_vector[c] = std::stod(row.at(c + 1));
+            row_vector[static_cast<int>(c)] = std::stod(row.at(c + 1));
 
         // Column 1 is time.
         table->appendRow(std::stod(row.at(0)), std::move(row_vector));
@@ -146,8 +132,14 @@ DelimFileAdapter::extendWrite(const InputTables& absTables,
                       getTableMetaData().
                       getValueForKey("header").
                       getValue<std::string>() << "\n";
-    } catch(KeyNotFound&) {
-        OPENSIM_THROW(TableMissingHeader);
+    } catch(KeyNotFound&) { 
+        // No operation. Continue with other keys in table metadata.
+    }
+    // Write rest of the key-value pairs and end the header.
+    for(const auto& key : table->getTableMetaDataKeys()) {
+        if(key != "header")
+            out_stream << key << "=" 
+                       << table->getTableMetaData<std::string>(key) << "\n";
     }
     out_stream << _endHeaderString << "\n";
 

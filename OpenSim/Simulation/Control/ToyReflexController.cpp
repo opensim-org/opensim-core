@@ -96,7 +96,7 @@ void ToyReflexController::extendConnectToModel(Model &model)
 void ToyReflexController::computeControls(const State& s, Vector &controls) const
 {   
     // get time
-    double time = s.getTime();
+    s.getTime();
 
     // get the list of actuators assigned to the reflex controller
     const Set<Actuator>& actuators = getActuatorSet();

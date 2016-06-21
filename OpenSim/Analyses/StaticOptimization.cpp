@@ -65,13 +65,13 @@ StaticOptimization::~StaticOptimization()
  */
 StaticOptimization::StaticOptimization(Model *aModel) :
     Analysis(aModel),
+    _numCoordinateActuators(0),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
     _activationExponent(_activationExponentProp.getValueDbl()),
     _useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
     _convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
     _maximumIterations(_maximumIterationsProp.getValueInt()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0)
+    _modelWorkingCopy(NULL)
 {
     setNull();
 
@@ -86,13 +86,13 @@ StaticOptimization::StaticOptimization(Model *aModel) :
  */
 StaticOptimization::StaticOptimization(const StaticOptimization &aStaticOptimization):
     Analysis(aStaticOptimization),
+    _numCoordinateActuators(aStaticOptimization._numCoordinateActuators),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
     _activationExponent(_activationExponentProp.getValueDbl()),
     _useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
     _convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
     _maximumIterations(_maximumIterationsProp.getValueInt()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(aStaticOptimization._numCoordinateActuators)
+    _modelWorkingCopy(NULL)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -544,7 +544,7 @@ begin(SimTK::State& s )
             // Copy whatever forces that are not muscles back into the model
             
             for(int i=0; i<saveForces->getSize(); i++){
-                const Force& f=saveForces->get(i);
+                // const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
                     as.append(saveForces->get(i).clone());
             }

@@ -12,7 +12,6 @@
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
 %include <OpenSim/Common/Exception.h>
-%template(IndexOutOfRangeSizeT) OpenSim::IndexOutOfRange<size_t>;
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/AbstractProperty.h>
@@ -65,14 +64,17 @@
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
+// Used in Component::generateDecorations.
+%include <OpenSim/Common/ModelDisplayHints.h>
+
 %include <OpenSim/Common/ComponentConnector.h>
 
 %include <OpenSim/Common/ComponentList.h>
-// TODO rename to singular form.
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 
 %include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Scale.h>
@@ -81,7 +83,10 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
-%include <Bindings/std.i>
+namespace OpenSim {
+    %ignore DataTable_::DataTable_(DataTable_ &&);
+    %ignore TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
+}
 %shared_ptr(OpenSim::AbstractDataTable);
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
@@ -94,6 +99,14 @@
 %ignore OpenSim::AbstractDataTable::setIndependentMetaData;
 %ignore OpenSim::AbstractDataTable::getDependentsMetaData;
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
+%ignore OpenSim::AbstractDataTable::setColumnLabels(
+                                     const std::initializer_list<std::string>&);
+%extend OpenSim::AbstractDataTable {
+    void setColumnLabels(const std::vector<std::string>& columnLabels) {
+        $self->setColumnLabels(columnLabels);
+    }
+}
+%include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
 %template(DataTable)           OpenSim::DataTable_<double, double>;
@@ -109,7 +122,7 @@
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
-%shared_ptr(OpenSim::MOTFileAdapter)
+%shared_ptr(OpenSim::STOFileAdapter)
 %shared_ptr(OpenSim::CSVFileAdapter)
 %shared_ptr(OpenSim::TRCFileAdapter)
 %shared_ptr(OpenSim::C3DFileAdapter)
@@ -119,8 +132,31 @@
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
 %include <OpenSim/Common/FileAdapter.h>
+namespace OpenSim {
+    %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
+    %ignore DelimFileAdapter::DelimFileAdapter(DelimFileAdapter &&);
+    %ignore STOFileAdapter::STOFileAdapter(STOFileAdapter &&);
+    %ignore CSVFileAdapter::CSVFileAdapter(CSVFileAdapter &&);
+}
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
-%include <OpenSim/Common/MOTFileAdapter.h>
+%include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
+
+namespace OpenSim {
+    %ignore TableSource_::TableSource_(TableSource_ &&);
+}
+%include <OpenSim/Common/TableSource.h>
+%template(TableSource) OpenSim::TableSource_<SimTK::Real>;
+%template(TableSourceVec3) OpenSim::TableSource_<SimTK::Vec3>;
+
+%include <OpenSim/Common/Reporter.h>
+%template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;
+%template(ReporterVec3) OpenSim::Reporter<SimTK::Vec3>;
+%template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
+%template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
+%template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
+%template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
+%template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;

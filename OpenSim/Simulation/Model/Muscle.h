@@ -308,7 +308,7 @@ public:
 
     /** Actuator interface for a muscle computes the tension in the muscle
         and applied by the tendon to bones (i.e. not the fiber force) */
-    double computeActuation(const SimTK::State& s) const = 0;
+    double computeActuation(const SimTK::State& s) const override = 0;
 
 
     /** @name Muscle initialization 
@@ -435,7 +435,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
     void copyData(const Muscle &aMuscle);
 
     //--------------------------------------------------------------------------

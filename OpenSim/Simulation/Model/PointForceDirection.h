@@ -67,7 +67,7 @@ public:
     /** Default constructor takes the point, body, direction and scale
         as arguments */
     PointForceDirection(SimTK::Vec3 point, Body &body, SimTK::Vec3 direction, double scale=1):
-        _point(point), _direction(direction), _body(body), _scale(scale) 
+        _point(point), _body(body), _direction(direction), _scale(scale) 
     {};
 
     /** get point of "contact" with on a body defined in the body frame */

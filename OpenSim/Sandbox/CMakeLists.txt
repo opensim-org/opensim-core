@@ -1,4 +1,3 @@
-
 add_subdirectory(TaskSpace EXCLUDE_FROM_ALL)
 
 file(GLOB TO_COMPILE "future*.cpp")
@@ -7,6 +6,9 @@ file(GLOB TO_COMPILE "future*.cpp")
 
 include_directories(${OpenSim_SOURCE_DIR}
                     ${OpenSim_SOURCE_DIR}/Vendors)
+
+add_subdirectory(ExampleHopperDevice)
+
 
 set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"
@@ -27,3 +29,11 @@ foreach(exec_file ${TO_COMPILE})
         FOLDER "Future sandbox"
     )
 endforeach()
+
+
+if(UNIX)
+    add_executable(ImuStreaming ImuStreaming.cpp)
+    target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
+endif()
+
+add_subdirectory(xsens)

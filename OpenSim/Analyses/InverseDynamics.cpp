@@ -63,9 +63,9 @@ InverseDynamics::~InverseDynamics()
  */
 InverseDynamics::InverseDynamics(Model *aModel) :
     Analysis(aModel),
+    _numCoordinateActuators(0),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0)
+    _modelWorkingCopy(NULL)
 {
     setNull();
 
@@ -82,9 +82,9 @@ InverseDynamics::InverseDynamics(Model *aModel) :
  */
 InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
     Analysis(aInverseDynamics),
+    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators)
+    _modelWorkingCopy(NULL)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -314,7 +314,7 @@ record(const SimTK::State& s)
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
     // Set modeling options for Actuators to be overridden
-    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+    for(int i=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
             act->overrideActuation(sWorkingCopy, true);
@@ -334,7 +334,7 @@ record(const SimTK::State& s)
 
     int nf = _numCoordinateActuators;
     int nacc = _accelerationIndices.getSize();
-    int nq = _modelWorkingCopy->getNumCoordinates();
+    // int nq = _modelWorkingCopy->getNumCoordinates();
 
 //cout << "\nQ= " << s.getQ() << endl;
 //cout << "\nU= " << s.getU() << endl;
@@ -451,7 +451,7 @@ begin(SimTK::State& s )
             // Copy whatever forces that are not muscles back into the model
             
             for(int i=0; i<saveForces->getSize(); i++){
-                const Force& f=saveForces->get(i);
+                // const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
                     as.append(saveForces->get(i).clone());
             }

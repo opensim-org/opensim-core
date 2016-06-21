@@ -23,6 +23,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/TableSource.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -51,16 +52,10 @@ private:
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-    TheWorld() : Component() {
-        // Constructing own properties, connectors, inputs or connectors? Must invoke!
-        constructInfrastructure();
-    }
+    TheWorld() : Component() { }
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // have to construct this Component's properties so that deserialization from
-        // XML has a place to go.
-        constructInfrastructure();
         // Propagate XML file values to properties 
         updateFromXMLDocument();
         // add components listed as properties as sub components.
@@ -70,7 +65,7 @@ public:
     void add(Component* comp) {
         addComponent(comp);
         // Edit Sub 
-        Sub& subc = updMemberSubcomponent<Sub>(intSubix);
+        /*Sub& subc = */updMemberSubcomponent<Sub>(intSubix);
     }
 
     // Top level connection method for this all encompassing component, TheWorld
@@ -95,7 +90,7 @@ protected:
             matter = system.updMatterSubsystem();
         }
         else{
-            const Sub& subc = getMemberSubcomponent<Sub>(intSubix);
+            // const Sub& subc = getMemberSubcomponent<Sub>(intSubix);
 
             SimbodyMatterSubsystem* old_matter = matter.release();
             delete old_matter;
@@ -153,7 +148,7 @@ public:
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
-        constructInfrastructure();
+        constructProperties();
         m_ctr = 0;
         m_mutableCtr = 0;
     }
@@ -225,16 +220,11 @@ private:
     mutable int m_mutableCtr;
 
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_mass(1.0);
         Array<double> inertia(0.001, 6);
         inertia[0] = inertia[1] = inertia[2] = 0.1;
         constructProperty_inertia(inertia);
-    }
-
-    void constructOutputs() override {
-
-
     }
 
     // Keep indices and reference to the world
@@ -246,6 +236,9 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
+    
+    OpenSim_DECLARE_CONNECTOR(parentFoo, Foo, "");
+    OpenSim_DECLARE_CONNECTOR(childFoo, Foo, "");
 
     // This is used to test output copying and returns the address of the 
     // component.
@@ -261,8 +254,6 @@ public:
 
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(fiberLength);
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
-
-    Bar() : Component() { constructInfrastructure(); }
 
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
@@ -332,10 +323,6 @@ protected:
     }
 
 private:
-    void constructConnectors() override {
-        constructConnector<Foo>("parentFoo");
-        constructConnector<Foo>("childFoo");
-    }
 
     // keep track of the force added by the component
     mutable ForceIndex fix;
@@ -357,7 +344,7 @@ public:
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
 
     CompoundFoo() : Foo() {
-        constructInfrastructure();
+        constructProperties();
     }
 
 protected:
@@ -382,7 +369,7 @@ protected:
     }
 
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_Foo1(Foo());
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
@@ -427,7 +414,7 @@ void testMisc() {
     theWorld.add(&foo);
     foo.set_mass(2.0);
 
-    Foo* footTest = foo.clone();
+    // Foo* footTest = foo.clone();
 
     // bar0 is to test copying of the function within a component's outputs.
     std::unique_ptr<Bar> bar0(new Bar());
@@ -500,7 +487,7 @@ void testMisc() {
     // Simbody model state setup
     State s = system.realizeTopology();
 
-    int nu = system.getMatterSubsystem().getNumMobilities();
+    // int nu = system.getMatterSubsystem().getNumMobilities();
 
     //SimTK::Visualizer viz(system);
     //viz.drawFrameNow(s);
@@ -658,14 +645,14 @@ void testMisc() {
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
-        const AbstractOutput& out = bar.getOutput("hiddenStateVar") );
+          /*const AbstractOutput& out = */bar.getOutput("hiddenStateVar") );
 
     s = system3.realizeTopology();
 
     bar.setStateVariableValue(s, "fiberLength", 1.5);
     bar.setStateVariableValue(s, "activation", 0);
 
-    int nu3 = system3.getMatterSubsystem().getNumMobilities();
+    // int nu3 = system3.getMatterSubsystem().getNumMobilities();
 
     // realize simbody system to velocity stage
     system3.realize(s, Stage::Velocity);
@@ -691,7 +678,7 @@ void testMisc() {
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
-    ASSERT(ncols == finalVal.size(), __FILE__, __LINE__,
+    ASSERT(ncols == static_cast<size_t>(finalVal.size()), __FILE__, __LINE__,
         "Number of cols in Reporter results not equal to size of Output'Qs' size.");
 
     // Check the result of the integration on our state variables.
@@ -715,7 +702,7 @@ void testMisc() {
 
     // With path to the component it should work
     auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
-    const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
+    // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
@@ -899,7 +886,7 @@ void testComponentPathNames()
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
-        auto& eref = top.getComponent("E") );
+                 /*auto& eref = */top.getComponent("E") );
 
     auto& cref = top.getComponent(fullPathC);
     auto& eref = top.getComponent(fullPathE);
@@ -951,7 +938,7 @@ void testComponentPathNames()
     bar2->updConnector<Foo>("childFoo")
         .connect(F->getComponent<Foo>("Foo2"));
 
-    auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
+    // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
 
     // now wire up bar2 that belongs to F and connect the 
     // two foo1s one in A and other F
@@ -1041,6 +1028,86 @@ void testInputConnecteeNames() {
     // TODO test invalid names as well.
 }
 
+template<typename RowVec>
+void assertEqual(const RowVec& a, const RowVec& b) {
+    assert(a.nrow() == b.nrow());
+    assert(a.ncol() == b.ncol());
+    for(int i = 0; i < a.ncol(); ++i)
+        ASSERT_EQUAL(a[i], b[i], 1e-10);
+}
+
+void testTableSource() {
+    using namespace OpenSim;
+    using namespace SimTK;
+
+    TimeSeriesTable table{};
+    table.setColumnLabels({"0", "1", "2", "3"});
+    SimTK::RowVector_<double> row{4, double{0}};
+    for(unsigned i = 0; i < 4; ++i)
+        table.appendRow(0.00 + 0.25 * i, row + i);
+
+    std::cout << "Contents of the table :" << std::endl;
+    std::cout << table << std::endl;
+
+    auto tableSource = new TableSource{table};
+
+    auto tableReporter = new TableReporter_<double, double>{};
+
+    // Define the Simbody system
+    MultibodySystem system;
+
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    theWorld.add(tableSource);
+    theWorld.add(tableReporter);
+
+    tableReporter->updInput("inputs").connect(tableSource->getOutput("column"));
+
+    theWorld.finalizeFromProperties();
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    const auto& report = tableReporter->getReport();
+
+    State s = system.realizeTopology();
+
+    s.setTime(0);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(0)  , report.getRowAtIndex(0));
+
+    s.setTime(0.1);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 0.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(1));
+
+    s.setTime(0.25);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(1)  , report.getRowAtIndex(2));
+
+    s.setTime(0.4);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 1.6};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(3));
+
+    s.setTime(0.5);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(2)  , report.getRowAtIndex(4));
+
+    s.setTime(0.6);
+    tableReporter->report(s);
+    row = RowVector_<double>{4, 2.4};
+    assertEqual(row.getAsRowVectorView(), report.getRowAtIndex(5));
+
+    s.setTime(0.75);
+    tableReporter->report(s);
+    assertEqual(table.getRowAtIndex(3)  , report.getRowAtIndex(6));
+
+    std::cout << "Report: " << std::endl;
+    std::cout << report << std::endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1056,6 +1123,7 @@ int main() {
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputConnecteeNames);
+        SimTK_SUBTEST(testTableSource);
     SimTK_END_TEST();
 }
 

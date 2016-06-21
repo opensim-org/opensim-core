@@ -51,7 +51,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
     UnilateralConstraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //=============================================================================
@@ -84,12 +84,6 @@ void RollingOnSurfaceConstraint::constructProperties()
     constructProperty_friction_coefficient(0.5);
 
     constructProperty_contact_radius(0.01);
-}
-
-void RollingOnSurfaceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("rolling_body");
-    constructConnector<PhysicalFrame>("surface_body");
 }
 
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
@@ -371,7 +365,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             
             int sbi = -1;
             int rbi = -1;
-            int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
+            //int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
             
             for(int j=0; j< ncb; j++){
                 if (_surfaceFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())

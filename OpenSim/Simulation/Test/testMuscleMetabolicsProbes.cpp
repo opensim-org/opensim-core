@@ -192,7 +192,7 @@ public:
     void computeStateVariableDerivatives(const SimTK::State& s) const override
     {
         // This implementation is not intended for use in dynamic simulations.
-        const int n = getNumStateVariables();
+        /*const int n = */getNumStateVariables();
         setStateVariableDerivativeValue(s, stateName_fiberLength, 0.0);
         setStateVariableDerivativeValue(s, stateName_fiberVelocity, 0.0);
     }

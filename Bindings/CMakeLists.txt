@@ -1,5 +1,5 @@
 if(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
-    find_package(SWIG 3.0.5 REQUIRED)
+    find_package(SWIG 3.0.6 REQUIRED)
 endif()
 
 # Flags are both Python and Java bindings will use.

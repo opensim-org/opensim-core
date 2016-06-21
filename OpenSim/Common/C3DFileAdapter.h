@@ -24,13 +24,11 @@
 
 #ifdef WITH_BTK
 
-#include "btkAcquisitionFileReader.h"
-#include "btkAcquisition.h"
-#include "btkForcePlatformsExtractor.h"
-#include "btkGroundReactionWrenchFilter.h"
-
 #include "FileAdapter.h"
+#include "TimeSeriesTable.h"
 #include "Event.h"
+
+template<typename> class shrik;
 
 namespace OpenSim {
 
@@ -48,9 +46,11 @@ public:
 
     C3DFileAdapter* clone() const override;
     
-    Tables read(const std::string& fileName) const;
+    static
+    Tables read(const std::string& fileName);
 
-    void write(const Tables& markerTable, const std::string& fileName) const;
+    static
+    void write(const Tables& markerTable, const std::string& fileName);
 
     static const std::string _markers;
     static const std::string _forces;
@@ -63,6 +63,7 @@ protected:
 
 private:
     static const std::unordered_map<std::string, std::size_t> _unit_index;
+
 };
 
 } // namespace OpenSim

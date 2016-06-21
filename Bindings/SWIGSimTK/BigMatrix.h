@@ -1793,8 +1793,6 @@ private:
     // NO DATA MEMBERS ALLOWED
 };
 
-#ifndef SWIG
-
 
 //  ------------------------------- MatrixView_ --------------------------------
 /// This class is identical to a Matrix_; it is used only to manage the C++ rules
@@ -1811,8 +1809,10 @@ public:
     // Default construction is suppressed.
     // Uses default destructor.
 
+#ifndef SWIG
     // Create a MatrixView_ handle using a given helper rep. 
     explicit MatrixView_(MatrixHelperRep<S>* hrep) : Base(hrep) {}
+#endif
 
     // Copy constructor is shallow. CAUTION: despite const argument, this preserves writability
     // if it was present in the source. This is necessary to allow temporary views to be
@@ -1827,6 +1827,7 @@ public:
         Base::operator=(m); return *this;
     }
 
+#ifndef SWIG
     // Copy construction and copy assignment from a DeadMatrixView steals the helper.
     MatrixView_(DeadMatrixView_<ELT>&);
     MatrixView_& operator=(DeadMatrixView_<ELT>&);
@@ -1834,6 +1835,7 @@ public:
     // Ask for shallow copy    
     MatrixView_(const MatrixHelper<S>& h) : Base(MatrixCommitment(), h, typename MatrixHelper<S>::ShallowCopy()) { }
     MatrixView_(MatrixHelper<S>&       h) : Base(MatrixCommitment(), h, typename MatrixHelper<S>::ShallowCopy()) { }
+#endif
 
     MatrixView_& operator=(const Matrix_<ELT>& v)     { Base::operator=(v); return *this; }
     MatrixView_& operator=(const ELT& e)              { Base::operator=(e); return *this; }
@@ -1845,8 +1847,11 @@ public:
     template <class EE> MatrixView_& operator-=(const MatrixBase<EE>& m)
       { Base::operator-=(m); return *this; }
 
+#ifndef SWIG
     MatrixView_& operator*=(const StdNumber& t) { Base::operator*=(t); return *this; }
     MatrixView_& operator/=(const StdNumber& t) { Base::operator/=(t); return *this; }
+#endif
+
     MatrixView_& operator+=(const ELT& r)       { this->updDiag() += r; return *this; }
     MatrixView_& operator-=(const ELT& r)       { this->updDiag() -= r; return *this; }  
 
@@ -1858,7 +1863,7 @@ private:
     MatrixView_(); // default constructor suppressed (what's it a view of?)
 };
 
-
+#ifndef SWIG
 
 //  ----------------------------- DeadMatrixView_ ------------------------------
 /// This is a MatrixView_ with the additional property that we are about to delete it.

@@ -136,7 +136,7 @@ updateWorkVariables(const SimTK::State& s)
         if(_wrtBodyName == "center_of_mass") {
             SimTK::Vec3 pVec,vVec;
             double Mass = 0.0;
-            double rP[3] = { 0.0, 0.0, 0.0 };
+            // double rP[3] = { 0.0, 0.0, 0.0 };
             for(int i=0;i<bs.getSize();i++) {
                 Body& body = bs.get(i);
                 const SimTK::Vec3& com = body.get_mass_center();

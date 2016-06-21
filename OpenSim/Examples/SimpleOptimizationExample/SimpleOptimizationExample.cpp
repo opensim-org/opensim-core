@@ -45,7 +45,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
+             OptimizerSystem(numParameters), 
+             numKnobs(numParameters), 
+             si(s), 
+             osimModel(aModel){}
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
@@ -123,7 +126,7 @@ int main()
         
         // Initialize the optimizer system we've defined.
         ExampleOptimizationSystem sys(1, si, osimModel);
-        Real f = NaN;
+        // Real f = NaN;
         
         /* Define initial values and bounds for the controls to optimize */
 
@@ -144,7 +147,7 @@ int main()
         opt.setLimitedMemoryHistory(500);
             
         // Optimize it!
-        f = opt.optimize(controls); // f=-0.049390301058364026
+        /*f = */opt.optimize(controls); // f=-0.049390301058364026
             
         cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
         

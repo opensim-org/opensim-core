@@ -218,10 +218,10 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
             const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
             SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n’th column of H
 
-            double thetaScale = Hcol[0].norm(); // magnitude of the rotational part of this column of H
+            /*double thetaScale = */Hcol[0].norm(); // magnitude of the rotational part of this column of H
             
             double Ci = C[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()];
-            double Wi = 1.0/thetaScale;
+            // double Wi = 1.0/thetaScale;
             //if(thetaScale)
                 W[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()] = Ci; 
         }
@@ -309,7 +309,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
     cout << "===================================================================================" << endl;
     for(int i = 0; i <=nsteps; i++){
         coord.setValue(s, q, true);
-        double angle = coord.getValue(s);
+        // double angle = coord.getValue(s);
 
         //cout << "muscle  force: " << muscle.getForce(s) << endl;
         //double ma = muscle.computeMomentArm(s, coord);

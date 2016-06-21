@@ -76,6 +76,8 @@ namespace OpenSim {
  */
 class OSIMCOMMON_API AbstractConnector : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
+public:
+    
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -103,8 +105,7 @@ public:
                       const SimTK::Stage& connectAtStage,
                       bool isList,
                       const Component& owner) :
-                      _owner(&owner), connectAtStage(connectAtStage),
-                      _isList(isList) {
+        connectAtStage(connectAtStage), _isList(isList), _owner(&owner) {
         constructProperties();
         setName(name);
     }
@@ -128,8 +129,9 @@ public:
     
     /** The number of connectees connected to this connector. This is either
         0 or 1 for a non-list connector. */
-    int getNumConnectees() const {
-        return getProperty_connectee_name().size();
+    unsigned getNumConnectees() const {
+        auto num = getProperty_connectee_name().size();
+        return static_cast<unsigned>(num);
     }
 
     /** Get the type of object this connector connects to*/
@@ -148,27 +150,41 @@ public:
                         "for this type of connector", __FILE__, __LINE__);
     }
 
-    void setConnecteeName(const std::string& name, int ix = -1) {
-        if (ix == -1) {
-            if (!_isList) ix = 0;
-            else OPENSIM_THROW(Exception,
-                "An index must be provided for a list Connector.");
-        }
+    /** Set connectee name. This function can only be used if this connector is
+    not a list connector.                                                     */
+    void setConnecteeName(const std::string& name) {
+        OPENSIM_THROW_IF(_isList,
+                         Exception,
+                         "An index must be provided for a list Connector.");
+
+        setConnecteeName(name, 0);
+            
+    }
+
+    /** Set connectee name of a connectee among a list of connectees. This
+    function is used if this connector is a list connector.                   */
+    void setConnecteeName(const std::string& name, unsigned ix) {
         OPENSIM_THROW_IF(ix >= getNumConnectees(),
-                         IndexOutOfRange<int>,
-                         ix, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange,
+                         ix, 0, static_cast<unsigned>(getNumConnectees() - 1));
         upd_connectee_name(ix) = name;
     }
 
-    const std::string& getConnecteeName(int ix = -1) const {
-        if (ix == -1) {
-            if (!_isList) ix = 0;
-            else OPENSIM_THROW(Exception,
-                "An index must be provided for a list Connector.");
-        }
+    /** Get connectee name. This function can only be used if this connector is
+    not a list connector.                                                     */
+    const std::string& getConnecteeName() const {
+        OPENSIM_THROW_IF(_isList,
+                         Exception,
+                         "An index must be provided for a list Connector.");
+
+        return getConnecteeName(0);
+    }
+
+    /** Get connectee name of a connectee among a list of connectees.         */
+    const std::string& getConnecteeName(unsigned ix) const {
         OPENSIM_THROW_IF(ix >= getNumConnectees(),
-                         IndexOutOfRange<int>,
-                         ix, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange,
+                         ix, 0, static_cast<unsigned>(getNumConnectees() - 1));
         return get_connectee_name(ix);
     }
 
@@ -206,7 +222,7 @@ private:
 
 
 template<class T>
-class  Connector : public AbstractConnector {
+class Connector : public AbstractConnector {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
     
@@ -222,7 +238,7 @@ public:
     @param connectAtStage   Stage at which Connector should be connected.
     @param owner The component that contains this input. */
     Connector(const std::string& name, const SimTK::Stage& connectAtStage,
-              Component& owner) :
+              const Component& owner) :
         AbstractConnector(name, connectAtStage, false, owner),
         connectee(nullptr) {}
 
@@ -239,6 +255,12 @@ public:
         once it is connected.
     Return a const reference to the object connected to this Connector */
     const T& getConnectee() const {
+        if (!isConnected()) {
+            std::string msg = getOwner().getConcreteClassName() + "::Connector '"
+                + getName() + "' is not connected to '" + getConnecteeName()
+                + "' of type " + T::getClassName();
+            OPENSIM_THROW(Exception, msg);
+        }
         return connectee.getRef();
     }
 
@@ -251,10 +273,20 @@ public:
             std::string objPathName = objT->getFullPathName();
             std::string ownerPathName = getOwner().getFullPathName();
 
+            // check if the full pathname is just /name
+            if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
+                // in which case we likely are connecting to an orphan
+                // (yet to adopted component) which the API permits when passing
+                // in the dependency directly.
+                // better off stripping off the / to identify it as a "floating"
+                // Component and we will need to find its full path next time
+                // we try to connect
+                setConnecteeName(objT->getName());
+            }
             // This can happen when top level components like a Joint and Body
             // have the same name like a pelvis Body and pelvis Joint that
             // connects that connects to a Body of the same name.
-            if(objPathName == ownerPathName)
+            else if(objPathName == ownerPathName)
                 setConnecteeName(objPathName);
             else { // otherwise store the relative path name to the object
                 std::string relPathName = objT->getRelativePathName(getOwner());
@@ -279,15 +311,16 @@ public:
     
     /** Derived classes must satisfy this Interface */
     /** get the type of object this connector connects to*/
-    std::string getConnecteeTypeName() const override
-    { return T::getClassName(); }
+    std::string getConnecteeTypeName() const override {
+        return T::getClassName();
+    }
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
 
 private:
     mutable SimTK::ReferencePtr<const T> connectee;
 }; // END class Connector<T>
-
+            
 
 /** A specialized Connector that connects to an Output signal is an Input.
     An AbstractInput enables maintenance of a list of unconnected Inputs. 
@@ -339,13 +372,20 @@ public:
                          const std::string& annotation = "") = 0;
     
     /** An Annotation is a description of a channel that is specific to how
-        this input should use that channel. For example, the component
-        containing this Input might expect the annotations to be the names
-        of markers in the model.
-        If no annotation was provided when connecting,
-        the annotation is the name of the channel.
-        If this is a list input, you must specify the specific Channel you want.*/
-    virtual const std::string& getAnnotation(int index = -1) const = 0;
+    this input should use that channel. For example, the component
+    containing this Input might expect the annotations to be the names
+    of markers in the model. If no annotation was provided when connecting,
+    the annotation is the name of the channel. This method can be used only for
+    non-list inputs. For list-inputs, use the other overload.                 */
+    virtual const std::string& getAnnotation() const = 0;
+
+    /** An Annotation is a description of a channel that is specific to how
+    this input should use that channel. For example, the component
+    containing this Input might expect the annotations to be the names
+    of markers in the model. If no annotation was provided when connecting,
+    the annotation is the name of the channel. Specify the specific Channel 
+    desired through the index.                                                */
+    virtual const std::string& getAnnotation(unsigned index) const = 0;
     // TODO what's the best way to serialize annotations?
     
     /** Break up a connectee name into its output path, channel name
@@ -459,46 +499,68 @@ public:
         return !_connectees.empty();
     }
     
+    /** Get the value of this Input when it is connected. Redirects to connected
+    Output<T>'s getValue() with minimal overhead. This method can be used only
+    for non-list Input(s). For list Input(s), use the other overload.         */
+    const T& getValue(const SimTK::State &state) const {
+        OPENSIM_THROW_IF(isListConnector(),
+                         Exception,
+                         "Input<T>::getValue(): an index must be "
+                         "provided for a list input.");
 
+        return getValue(state, 0);
+    }
 
     /**Get the value of this Input when it is connected. Redirects to connected
-       Output<T>'s getValue() with minimal overhead. If this is a list input,
-       you must specify the specific Channel whose value you want. */
-    const T& getValue(const SimTK::State &state, int index=-1) const {
-        if (index < 0) {
-            if (!isListConnector()) index = 0;
-            else throw Exception("Input<T>::getValue(): an index must be "
-                                 "provided for a list input.");
-    }
+    Output<T>'s getValue() with minimal overhead. Specify the index of the 
+    Channel whose value is desired.                                           */
+    const T& getValue(const SimTK::State &state, unsigned index) const {
         // TODO remove this check in order to improve speed?
         OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange<int>,
-                         index, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange,
+                         index, 0, 
+                         static_cast<unsigned>(getNumConnectees() - 1));
+
         return _connectees[index].getRef().getValue(state);
     }
-    
-    /** If this is a list input, you must specify the specific Channel you want.*/
-    const Channel& getChannel(int index=-1) const {
-        if (index == -1) {
-            if (!isListConnector()) index = 0;
-            else throw Exception("Input<T>::getChannel(): an index must be "
-                                 "provided for a list input.");
-        }
+
+    /** Get the Channel associated with this Input. This method can only be
+    used for non-list Input(s). For list Input(s), use the other overload.    */
+    const Channel& getChannel() const {
+        OPENSIM_THROW_IF(isListConnector(),
+                         Exception,
+                         "Input<T>::getChannel(): an index must be "
+                         "provided for a list input.");
+
+        return getChannel(0);
+    }
+
+    /** Get the Channel associated with this Input. Specify the index of the
+    channel desired.                                                          */
+    const Channel& getChannel(unsigned index) const {
         OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange<int>,
-                         index, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange,
+                         index, 0, 
+                         static_cast<unsigned>(getNumConnectees() - 1));
+
         return _connectees[index].getRef();
     }
     
-    const std::string& getAnnotation(int index = -1) const override {
-        if (index == -1) {
-            if (!isListConnector()) index = 0;
-            else throw Exception("Input<T>::getAnnotation(): an index must be "
-                                 "provided for a list input.");
-        }
+    const std::string& getAnnotation() const override {
+        OPENSIM_THROW_IF(isListConnector(),
+                         Exception,
+                         "Input<T>::getAnnotation(): an index must be "
+                         "provided for a list input.");
+
+        return getAnnotation(0);
+    }
+    
+    const std::string& getAnnotation(unsigned index) const override {
         OPENSIM_THROW_IF(index >= getNumConnectees(),
-                         IndexOutOfRange<int>,
-                         index, 0, (int)getNumConnectees() - 1);
+                         IndexOutOfRange,
+                         index, 0, 
+                         static_cast<unsigned>(getNumConnectees() - 1));
+
         return _annotations[index];
     }
     
@@ -540,6 +602,138 @@ private:
     // tools may depend on them for interpreting the connected channels.
     SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
+        
+/// @name Creating Connectors to other objects for your Component
+/// Use these macros at the top of your component class declaration,
+/// near where you declare @ref Property properties.
+/// @{
+/** Create a socket for this component's dependence on another component.
+ * You must specify the type of the component that can be connected to this
+ * connector. The comment should describe how the connected component
+ * (connectee) is used by this component.
+ *
+ * Here's an example for using this macro:
+ * @code{.cpp}
+ * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * @endcode
+ *
+ * @note This macro requires that you have included the header that defines
+ * type `T`, as shown in the example above. We currently do not support
+ * declaring connectors if `T` is only forward-declared.
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Connector will
+ * not get copied properly if you create a custom copy constructor.
+ *
+ * @see Component::constructConnector()
+ * @relates OpenSim::Connector
+ */
+#define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
+    /** @name Connectors                                                 */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This connector was generated with the                            */ \
+    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    int _connector_##cname {                                                \
+        this->template constructConnector<T>(#cname)                        \
+    };                                                                      \
+    /** @endcond                                                         */
+
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
+ * when are you unable to include the header that defines type `T`. This might
+ * be the case if you have a circular dependency between your class and `T`.
+ * In such cases, you must:
+ *
+ *  -# forward-declare type `T`
+ *  -# call this macro inside the definition of your class, and
+ *  -# call #OpenSim_DEFINE_CONNECTOR_FD in your class's .cpp file (notice the
+ *      difference: DEFINE vs DECLARE).
+ *
+ * MyComponent.h:
+ * @code{.cpp}
+ * namespace OpenSim {
+ * class PhysicalOffsetFrame;
+ * class MyComponent : public Component {
+ * OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
+ * public:
+ *     OpenSim_DECLARE_CONNECTOR_FD(parent, PhysicalOffsetFrame,
+ *             "To locate this component.");
+ *     ...
+ * };
+ * }
+ * @endcode
+ *
+ * MyComponent.cpp:
+ * @code{.cpp}
+ * #include "MyComponent.h"
+ * OpenSim_DEFINE_CONNECTOR_FD(parent, OpenSim::MyComponent);
+ * ...
+ * @endcode
+ *
+ * You can also look at the OpenSim::Geometry source code for an example.
+ *
+ * @note Do NOT forget to call OpenSim_DEFINE_CONNECTOR_FD in your .cpp file!
+ *
+ * The "FD" in the name of this macro stands for "forward-declared."
+ *
+ * @warning This macro is experimental and may be removed in future versions.
+ *
+ * @see Component::constructConnector()
+ * @relates OpenSim::Connector
+ */
+#define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
+    /** @name Connectors                                                 */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This is an %OpenSim Connector.                                   */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    int _connector_##cname {                                                \
+        constructConnector_##cname()                                        \
+    };                                                                      \
+    /* Declare the method used in the in-class member initializer.       */ \
+    /* This method will be defined by OpenSim_DEFINE_CONNECTOR_FD.       */ \
+    int constructConnector_##cname();                                       \
+    /* Remember the provided type so we can use it in the DEFINE macro.  */ \
+    typedef T _connector_##cname##_type;                                    \
+    /** @endcond                                                         */
+
+// The following doxygen-like description does NOT actually appear in doxygen.
+/* When specifying a Connector to a forward-declared type (using
+ * OpenSim_DECLARE_CONNECTOR_FD in the class definition), you must call this
+ * macro in your .cpp file.  The arguments are the name of the connector (the
+ * same one provided to OpenSim_DECLARE_CONNECTOR_FD) and the class in which
+ * the connector exists. See #OpenSim_DECLARE_CONNECTOR_FD for an example.
+ *
+ * @warning This macro is experimental and may be removed in future versions.
+ *
+ * @see #OpenSim_DECLARE_CONNECTOR_FD
+ * @relates OpenSim::Connector
+ */
+// This macro defines the method that the in-class member initializer calls
+// to construct the Connector. The reason why this must be in the .cpp file is
+// that putting the template member function `template <typename T>
+// Component::constructConnector` in the header requires that `T` is not an
+// incomplete type (specifically, when compiling cpp files for classes OTHER
+// than `MyComponent` but that include MyComponent.h). OpenSim::Geometry is an
+// example of this scenario.
+#define OpenSim_DEFINE_CONNECTOR_FD(cname, Class)                           \
+int Class::constructConnector_##cname() {                                   \
+    using T = _connector_##cname##_type;                                    \
+    return this->template constructConnector<T>(#cname);                    \
+}
+/// @}
 
 /// @name Creating Inputs for your Component
 /// Use these macros at the top of your component class declaration,

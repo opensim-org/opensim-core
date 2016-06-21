@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -41,7 +42,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
@@ -738,6 +738,7 @@ public:
     bool isControlled() const;
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage(const std::string& fileName ) const;
+    TimeSeriesTable getControlsTable() const;
     const ControllerSet& getControllerSet() const;
     ControllerSet& updControllerSet();
     bool getAllControllersEnabled() const;
@@ -768,9 +769,11 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
+    /** return the total Kinetic Energy for the underlying system.*/
     double calcKineticEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcKineticEnergy(s);
     }    
+    /** return the total Potential Energy for the underlying system.*/
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
@@ -901,7 +904,8 @@ public:
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
      * ContactGeometry and so on. That means the freeing of the memory of these objects is up
-     * to the caller.
+     * to the caller. This only affects components stored in the Model's Sets,
+     * and does not affect those added via Component::addComponent().
      */
     void disownAllComponents();
     /**

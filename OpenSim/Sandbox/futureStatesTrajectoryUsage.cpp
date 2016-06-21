@@ -41,5 +41,9 @@ int main() {
                   << std::endl;
     }
 
+    // Export to data table.
+    // ---------------------
+    auto table = states.exportToTable(model);
+
     return 0;
 }

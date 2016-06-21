@@ -60,7 +60,7 @@ void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
     double yangle = coordinateSet[1].getDefaultValue();
     double zangle = coordinateSet[2].getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-    BallJoint* mutableThis = const_cast<BallJoint*>(this);
+    //BallJoint* mutableThis = const_cast<BallJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
 

@@ -217,7 +217,7 @@ public:
         for (int ichan = 0; ichan < input.getNumConnectees(); ++ichan) {
             const auto& markerName = input.getAnnotation(ichan);
             const auto& marker = getModel().getMarkerSet().get(markerName);
-            const auto& mbi = marker.getReferenceFrame().getMobilizedBodyIndex();
+            const auto& mbi = marker.getParentFrame().getMobilizedBodyIndex();
             const_cast<Self*>(this)->_onBodyB.push_back(mbi);
             const_cast<Self*>(this)->_stationPinB.push_back(marker.get_location());
         }
@@ -271,27 +271,27 @@ void createModel(Model& model) {
     hog->getCoordinateSet().get(0).setDefaultValue(0.5 * SimTK::Pi);
     
     auto* asis = new OpenSim::Marker();
-    asis->setName("asis"); asis->setReferenceFrame(*pelvis);
+    asis->setName("asis"); asis->setParentFrame(*pelvis);
     model.addMarker(asis);
     
     auto* psis = new OpenSim::Marker();
-    psis->setName("psis"); psis->setReferenceFrame(*pelvis);
+    psis->setName("psis"); psis->setParentFrame(*pelvis);
     model.addMarker(psis);
     
     auto* med_knee = new OpenSim::Marker();
-    med_knee->setName("med_knee"); med_knee->setReferenceFrame(*femur);
+    med_knee->setName("med_knee"); med_knee->setParentFrame(*femur);
     model.addMarker(med_knee);
     
     auto* lat_knee = new OpenSim::Marker();
-    lat_knee->setName("lat_knee"); lat_knee->setReferenceFrame(*femur);
+    lat_knee->setName("lat_knee"); lat_knee->setParentFrame(*femur);
     model.addMarker(lat_knee);
     
     auto* thigh = new OpenSim::Marker();
-    thigh->setName("thigh"); thigh->setReferenceFrame(*femur);
+    thigh->setName("thigh"); thigh->setParentFrame(*femur);
     model.addMarker(thigh);
     
     auto* hjc = new OpenSim::Marker();
-    hjc->setName("hjc"); hjc->setReferenceFrame(*femur);
+    hjc->setName("hjc"); hjc->setParentFrame(*femur);
     model.addMarker(hjc);
 }
 
