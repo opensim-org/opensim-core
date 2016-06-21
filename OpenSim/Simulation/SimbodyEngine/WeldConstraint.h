@@ -111,7 +111,7 @@ protected:
 private:
     void setNull();
     // Construct WeldConstraint's properties
-    void constructProperties() override;
+    void constructProperties();
 
     // Some analyses (e.g. Induced Accelerations, update the constraint
     // location (Transform) based on experimental data. The constraint

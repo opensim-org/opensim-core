@@ -91,7 +91,7 @@ public:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // Set the body to which this actuator applies; setting this pointer
     // also sets the corresponding body name property.

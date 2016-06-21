@@ -80,7 +80,7 @@ public:
 
 private:
     // Connect properties to local pointers.  */
-    void constructProperties() override;
+    void constructProperties();
     // ModelComponent interface to connect this component to its model
     void extendConnectToModel(Model& aModel) override;
 

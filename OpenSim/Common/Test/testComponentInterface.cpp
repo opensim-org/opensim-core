@@ -53,16 +53,10 @@ private:
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-    TheWorld() : Component() {
-        // Constructing own properties, connectors, inputs or connectors? Must invoke!
-        constructInfrastructure();
-    }
+    TheWorld() : Component() { }
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // have to construct this Component's properties so that deserialization from
-        // XML has a place to go.
-        constructInfrastructure();
         // Propagate XML file values to properties 
         updateFromXMLDocument();
         // add components listed as properties as sub components.
@@ -155,7 +149,7 @@ public:
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
-        constructInfrastructure();
+        constructProperties();
         m_ctr = 0;
         m_mutableCtr = 0;
     }
@@ -227,16 +221,11 @@ private:
     mutable int m_mutableCtr;
 
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_mass(1.0);
         Array<double> inertia(0.001, 6);
         inertia[0] = inertia[1] = inertia[2] = 0.1;
         constructProperty_inertia(inertia);
-    }
-
-    void constructOutputs() override {
-
-
     }
 
     // Keep indices and reference to the world
@@ -266,8 +255,6 @@ public:
 
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(fiberLength);
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
-
-    Bar() : Component() { constructInfrastructure(); }
 
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
@@ -358,7 +345,7 @@ public:
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
 
     CompoundFoo() : Foo() {
-        constructInfrastructure();
+        constructProperties();
     }
 
 protected:
@@ -383,7 +370,7 @@ protected:
     }
 
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_Foo1(Foo());
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
@@ -1053,6 +1040,17 @@ void assertEqual(const RowVec& a, const RowVec& b) {
 void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
+
+    {
+        TheWorld model{};
+        auto tablesource = new TableSourceVec3{};
+        tablesource->setName("tablesource");
+        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_tablename("markers");
+        model.addComponent(tablesource);
+
+        model.print("TestTableSource.osim");
+    }
 
     {
     const std::string src_file{"TestTableSource.osim"};

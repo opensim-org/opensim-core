@@ -260,7 +260,7 @@ protected:
     }
 
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_filename("");
         constructProperty_tablename("");
     }
