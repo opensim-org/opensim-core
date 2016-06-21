@@ -485,6 +485,15 @@ public:
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
+    /** Print a list to the console of all components whose full path name
+     * contains the given string. You might use this if (a) you know the name of
+     * a component in your model but don't know its full path, (b) if you want
+     * to find all components with a given name, or (c) to get a list of all
+     * components on the right leg of a model (if all components on the right
+     * side have "_r" in their name).
+     * @returns The number of matches. */
+    int printComponentsMatching(const std::string& substring);
+
     /**
      * Get the number of "Continuous" state variables maintained by the Component
      * and its subcomponents

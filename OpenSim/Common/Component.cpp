@@ -27,6 +27,8 @@
 #include "OpenSim/Common/Set.h"
 #include "OpenSim/Common/IO.h"
 
+#include <regex>
+
 using namespace SimTK;
 
 namespace OpenSim {
@@ -541,6 +543,17 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
     }
 }
 
+int Component::printComponentsMatching(const std::string& substring) {
+    auto components = getComponentList();
+    std::regex expr(".*" + substring + ".*");
+    components.setFilter(ComponentFilterFullPathNameRegex(expr));
+    int count = 0;
+    for (const auto& comp : components) {
+        std::cout << comp.getFullPathName() << std::endl;
+        ++count;
+    }
+    return count;
+}
 
 int Component::getNumStateVariables() const
 {

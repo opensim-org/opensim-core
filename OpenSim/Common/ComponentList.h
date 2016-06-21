@@ -28,6 +28,8 @@
 #include <OpenSim/Common/osimCommonDLL.h>
 #include "Simbody.h"
 
+#include <regex>
+
 namespace OpenSim {
 
 class Component;
@@ -76,6 +78,21 @@ public:
         return new ComponentFilterMatchAll(*this);
     }
 };
+
+/** A component is considered a match if its full path name matches the 
+provided regular expression. */
+class ComponentFilterFullPathNameRegex : public ComponentFilter {
+public:
+    ComponentFilterFullPathNameRegex(const std::regex& expr) : _expr(expr) {}
+    bool isMatch(const Component& comp) const override;
+    ComponentFilterFullPathNameRegex* clone() const override {
+        return new ComponentFilterFullPathNameRegex(*this);
+    }
+private:
+    std::regex _expr;
+};
+
+
 /**
  Collection (linked list) of components to iterate through.  Typical use is to
  call getComponentList() on a component (e.g. model) to obtain an instance of 
