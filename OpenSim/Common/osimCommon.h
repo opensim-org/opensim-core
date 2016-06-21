@@ -56,4 +56,6 @@
 
 #include "Reporter.h"
 
+#include "ModelDisplayHints.h"
+
 #endif // _osimCommon_h_
