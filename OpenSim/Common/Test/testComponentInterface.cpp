@@ -615,6 +615,7 @@ void testMisc() {
     CompoundFoo& compFoo = *new CompoundFoo();
     compFoo.setName("BigFoo");
 
+    // setting Foo's creates copies that are now part of CompoundFoo
     compFoo.set_Foo1(foo);
     compFoo.set_Foo2(foo2);
     compFoo.finalizeFromProperties();
@@ -626,7 +627,10 @@ void testMisc() {
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
+    
     bar2.updConnector<Foo>("childFoo").connect(foo);
+    compFoo.upd_Foo1().updInput("input1")
+        .connect(bar2.getOutput("PotentialEnergy"));
 
     world3.finalizeFromProperties();
     world3.print("Compound_" + modelFile);
@@ -772,7 +776,6 @@ void testListInputs() {
     tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
     tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
 
-   
     theWorld.connect();
     theWorld.buildUpSystem(system);
     
