@@ -131,7 +131,12 @@ public:
     }
 
 private:
-    // TODO constructProperties()
+    void constructProperties() {
+        // (Changed this line so the code compiles. TODO: Add comment about what
+        // needs to go here.)
+        // TODO
+    }
+
 }; // end of PropMyoController
 
 /* A Generator is a component with no Inputs and only Outputs. This
@@ -175,6 +180,11 @@ void handlePathWrapping(OpenSim::ModelComponent* device,
 // Simulate means to integrate the model equations forward in time.
 // The State is updated so that it returns the final state of integration.
 void simulate(OpenSim::Model& model, SimTK::State& state);
+
+// TODO: Reorganize this file. Temporarily including forward declaration here.
+// Include a comment here with everything the user needs to know about the
+// model (e.g., full path of each attachment frame).
+Model buildHopper(bool printDebugInfo=false); //defined in buildHopperModel.cpp
 /************ end of HELPER FUNCTIONS: Implemented in answers.cpp ************/
 
 
@@ -338,8 +348,9 @@ int main() {
     using namespace OpenSim;
     //----------------------------- HOPPER CODE begin --------------------------
     // Load the hopper model and simulate (unassisted)
-    Model hopper(HopperModelFile);
-    hopper.setUseVisualizer(true);
+    //Model hopper(HopperModelFile);
+    Model hopper = buildHopper();
+    hopper.print("DennisHopper.osim");
 
     /**** EXERCISE 1: Add a Console Reporter ***********************************
      * Report the models height and muscle activation during the simulation.   *

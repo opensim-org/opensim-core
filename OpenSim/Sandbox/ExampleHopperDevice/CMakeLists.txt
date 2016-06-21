@@ -34,7 +34,8 @@ add_custom_command(
     "${CMAKE_CURRENT_BINARY_DIR}")
 
 
-add_executable(exampleHopperDevice exampleHopperDevice.cpp answers.cpp)
+# TODO: remove answers.cpp once its contents have been migrated into helperMethods.cpp.
+add_executable(exampleHopperDevice exampleHopperDevice.cpp answers.cpp buildHopperModel.cpp helperMethods.cpp)
 target_link_libraries(exampleHopperDevice osimTools)
 set_target_properties(exampleHopperDevice PROPERTIES
     PROJECT_LABEL "Hopper Device"
