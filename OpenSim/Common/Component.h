@@ -679,6 +679,12 @@ public:
         }
         else {
             std::string::size_type back = name.rfind("/");
+            // no prefix found then no prefix (path) to locate Component
+            OPENSIM_THROW_IF( back == std::string::npos, Exception,
+                "Component::getOutput has no output '" + name
+                    + "' for component '" + getName() + "' of type "
+                    + getConcreteClassName() );
+
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
@@ -698,8 +704,6 @@ public:
                  throw Exception(msg.str(), __FILE__, __LINE__);
             }
         }
-        
-
     }
 
     /**
