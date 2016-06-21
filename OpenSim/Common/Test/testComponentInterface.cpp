@@ -1040,6 +1040,32 @@ void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
 
+    {
+        TheWorld model{};
+        auto tablesource = new TableSourceVec3{};
+        tablesource->setName("tablesource");
+        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_tablename("markers");
+        model.addComponent(tablesource);
+
+        model.print("TestTableSource.osim");
+    }
+
+    {
+    const std::string src_file{"TestTableSource.osim"};
+    TheWorld model{src_file};
+    const auto& tablesource = 
+        model.getComponent<TableSourceVec3>("tablesource");
+    model.print("TestTableSourceResult.osim");
+    // Read the model file again to verify serialization.
+    TheWorld model_copy{"TestTableSourceResult.osim"};
+    const auto& tablesource_copy = 
+        model_copy.getComponent<TableSourceVec3>("tablesource");
+    OPENSIM_THROW_IF(tablesource_copy.get_filename() !=
+                     tablesource.get_filename(),
+                     OpenSim::Exception);
+    }
+
     TimeSeriesTable table{};
     table.setColumnLabels({"0", "1", "2", "3"});
     SimTK::RowVector_<double> row{4, double{0}};
@@ -1113,6 +1139,7 @@ int main() {
     //Register new types for testing deserialization
     Object::registerType(Foo());
     Object::registerType(Bar());
+    Object::registerType(TheWorld());
     // Register connector objects that are in use
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());
