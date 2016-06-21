@@ -444,6 +444,33 @@ public:
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
 
+    /** Query if there is a component (of any type) at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion." */
+    bool hasComponent(const std::string& pathname) const {
+        const auto* comp = this->template traversePathToComponent<Component>(pathname);
+        return comp;
+    }
+
+    /** Query if there is a component of a given type at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
+     * Coordinate. This method cannot be used from scripting; see the
+     * non-templatized hasComponent(). */
+    template <class C>
+    bool hasComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        return comp;
+    }
+
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
      * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
@@ -455,7 +482,7 @@ public:
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
      * If unsure of a Component's path or whether or not it exists in the model,
-     * use findComponent() 
+     * use printComponentsMatching() or hasComponent().
      *
      * @param  pathname        a pathname (string) of a Component of interest
      * @return const reference to component of type C at 

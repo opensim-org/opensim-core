@@ -467,6 +467,15 @@ void testMisc() {
         std::cout << "Iter at: " << component.getFullPathName() << std::endl;
     }
 
+    // Query existing components.
+    theWorld.printComponentsMatching("");
+    SimTK_TEST(theWorld.hasComponent("Foo"));
+    SimTK_TEST(!theWorld.hasComponent("Nonexistant"));
+    SimTK_TEST(theWorld.hasComponent<Foo>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Bar>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
+
+
     bar.updConnector<Foo>("childFoo").connect(foo2);
     string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
 
