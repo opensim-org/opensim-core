@@ -392,8 +392,6 @@ void testComponentEquivalence(const Component* a, const Component* b)
 
     auto aSubsList = a->getComponentList<Component>();
     auto bSubsList = b->getComponentList<Component>();
-    ComponentList<Component> aSubsList = a->getComponentList<Component>();
-    ComponentList<Component> bSubsList = b->getComponentList<Component>();
     auto iter_a = aSubsList.begin();
     auto iter_b = bSubsList.begin();
 
