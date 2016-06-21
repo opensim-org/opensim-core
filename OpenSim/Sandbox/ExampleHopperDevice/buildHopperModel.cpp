@@ -152,8 +152,9 @@ Model buildHopper(bool printDebugInfo) {
 
     // Attach a cylinder (patella) to the distal end of the thigh over which the
     // vastus muscle can wrap. In the future, it will be possible to wrap over
-    // WrapObjects attached to PhysicalOffsetFrames; for now, we must use the
-    // "translation" property.
+    // WrapObjects that are attached to PhysicalOffsetFrames; for now, we must
+    // attach the patella to the thigh Body and use the "translation" property
+    // to position the patella at the knee.
     auto patella = new WrapCylinder();
     patella->setName("patella");
     patella->set_radius(0.08);
@@ -162,7 +163,9 @@ Model buildHopper(bool printDebugInfo) {
     patella->set_translation(linkDistalPoint);
     thigh->addWrapObject(patella);
 
-    // Configure the vastus muscle to wrap over the patella.
+    // Configure the vastus muscle to wrap over the patella. We are currently
+    // using a helper method because of a bug in GeometryPath; in the future, we
+    // will be able to do: vastus->updGeometryPath().addPathWrap(*patella);
     addPathWrapHelper(hopper, "vastus", "patella", "thigh");
 
     // Create a controller to excite the vastus muscle.
