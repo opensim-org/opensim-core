@@ -28,8 +28,6 @@
 #include <OpenSim/Common/osimCommonDLL.h>
 #include "Simbody.h"
 
-#include <regex>
-
 namespace OpenSim {
 
 class Component;
@@ -79,17 +77,18 @@ public:
     }
 };
 
-/** A component is considered a match if its full path name matches the 
-provided regular expression. */
-class ComponentFilterFullPathNameRegex : public ComponentFilter {
+/** A component is considered a match if its full path name contains the
+given string. */
+class ComponentFilterFullPathNameContainsString : public ComponentFilter {
 public:
-    ComponentFilterFullPathNameRegex(const std::regex& expr) : _expr(expr) {}
+    ComponentFilterFullPathNameContainsString(const std::string& substring)
+        : _substring(substring) {}
     bool isMatch(const Component& comp) const override;
-    ComponentFilterFullPathNameRegex* clone() const override {
-        return new ComponentFilterFullPathNameRegex(*this);
+    ComponentFilterFullPathNameContainsString* clone() const override {
+        return new ComponentFilterFullPathNameContainsString(*this);
     }
 private:
-    std::regex _expr;
+    std::string _substring;
 };
 
 

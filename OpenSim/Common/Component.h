@@ -491,8 +491,19 @@ public:
      * to find all components with a given name, or (c) to get a list of all
      * components on the right leg of a model (if all components on the right
      * side have "_r" in their name).
+     *
+     * A function call like:
+     * @code{.cpp}
+     * unsigned num = comp.printComponentsMatching("rotation");
+     * @endcode
+     * may produce output like:
+     * @verbatim
+     * /leg_model/right_hip/rotation
+     * /leg_model/left_hip/rotation
+     * @endverbatim
+     *
      * @returns The number of matches. */
-    int printComponentsMatching(const std::string& substring);
+    unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
      * Get the number of "Continuous" state variables maintained by the Component
@@ -1603,7 +1614,6 @@ protected:
     friend void Connector<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
-public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1704,6 +1714,7 @@ public:
     }
 #endif
 
+public:
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
