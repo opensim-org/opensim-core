@@ -207,7 +207,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                 frameRepresentation.setValue("0");
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
                 physFrameNode.insertNodeAfter(physFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
+                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("attached_geometry");
                 if (geomSetIter != aNode.element_end()) {
                     geomSetIter->insertNodeAfter(geomSetIter->node_end(), physFrameNode);
                 }
