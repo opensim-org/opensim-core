@@ -79,7 +79,8 @@ public:
 
 /** A component is considered a match if its full path name contains the
 given string. */
-class ComponentFilterFullPathNameContainsString : public ComponentFilter {
+class OSIMCOMMON_API ComponentFilterFullPathNameContainsString
+        : public ComponentFilter {
 public:
     ComponentFilterFullPathNameContainsString(const std::string& substring)
         : _substring(substring) {}
