@@ -444,6 +444,33 @@ public:
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
 
+    /** Query if there is a component (of any type) at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion." */
+    bool hasComponent(const std::string& pathname) const {
+        const auto* comp = this->template traversePathToComponent<Component>(pathname);
+        return comp;
+    }
+
+    /** Query if there is a component of a given type at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
+     * Coordinate. This method cannot be used from scripting; see the
+     * non-templatized hasComponent(). */
+    template <class C>
+    bool hasComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        return comp;
+    }
+
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
      * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
@@ -455,7 +482,7 @@ public:
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
      * If unsure of a Component's path or whether or not it exists in the model,
-     * use findComponent() 
+     * use printComponentsMatching() or hasComponent().
      *
      * @param  pathname        a pathname (string) of a Component of interest
      * @return const reference to component of type C at 
@@ -484,6 +511,26 @@ public:
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+
+    /** Print a list to the console of all components whose full path name
+     * contains the given string. You might use this if (a) you know the name of
+     * a component in your model but don't know its full path, (b) if you want
+     * to find all components with a given name, or (c) to get a list of all
+     * components on the right leg of a model (if all components on the right
+     * side have "_r" in their name).
+     *
+     * A function call like:
+     * @code{.cpp}
+     * unsigned num = comp.printComponentsMatching("rotation");
+     * @endcode
+     * may produce output like:
+     * @verbatim
+     * /leg_model/right_hip/rotation
+     * /leg_model/left_hip/rotation
+     * @endverbatim
+     *
+     * @returns The number of matches. */
+    unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
      * Get the number of "Continuous" state variables maintained by the Component
@@ -1594,7 +1641,6 @@ protected:
     friend void Connector<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
-public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1695,6 +1741,7 @@ public:
     }
 #endif
 
+public:
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */

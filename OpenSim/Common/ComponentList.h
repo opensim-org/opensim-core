@@ -76,6 +76,23 @@ public:
         return new ComponentFilterMatchAll(*this);
     }
 };
+
+/** A component is considered a match if its full path name contains the
+given string. */
+class OSIMCOMMON_API ComponentFilterFullPathNameContainsString
+        : public ComponentFilter {
+public:
+    ComponentFilterFullPathNameContainsString(const std::string& substring)
+        : _substring(substring) {}
+    bool isMatch(const Component& comp) const override;
+    ComponentFilterFullPathNameContainsString* clone() const override {
+        return new ComponentFilterFullPathNameContainsString(*this);
+    }
+private:
+    std::string _substring;
+};
+
+
 /**
  Collection (linked list) of components to iterate through.  Typical use is to
  call getComponentList() on a component (e.g. model) to obtain an instance of 
