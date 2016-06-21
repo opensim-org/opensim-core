@@ -237,7 +237,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %javamethodmodifiers OpenSim::Component::addComponent "private";
 %rename OpenSim::Component::addComponent private_addComponent;
 %typemap(javacode) OpenSim::Component %{
-  public void addModelComponent(Component comp) {
+  public void addComponent(Component comp) {
       comp.markAdopted();
       private_addComponent(comp);
   }
