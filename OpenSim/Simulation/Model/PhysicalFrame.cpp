@@ -129,7 +129,8 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
     // are maintained, we may need to fix this or remove this method completely.
     // -Ayman 5/15
     
-    // Scale the Geometry if any
+    // DO NOT scale the FrameGeometry (axes) associated with this Frame.
+    // Scale the attached Geometry if any. 
     for (int i = 0; i < getProperty_attached_geometry().size(); ++i) {
         const SimTK::Vec3& oldScaleFactor =
             get_attached_geometry(i).get_scale_factors();
@@ -196,20 +197,6 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
                         geomSetIter->setElementTag("geometry");
                     }
-                }
-                // Regardless add FrameGeometry node for the display of the PhysicalFrame
-                std::string physFrameName = aNode.getRequiredAttribute("name").getValue();
-                SimTK::Xml::Element physFrameNode("FrameGeometry");
-                physFrameNode.setAttributeValue("name", physFrameName + "_frame_geometry");
-                XMLDocument::addConnector(physFrameNode, "Connector_Frame_", "frame", physFrameName);
-                SimTK::Xml::Element appearanceNode("Appearance");
-                SimTK::Xml::Element frameRepresentation("representation");
-                frameRepresentation.setValue("0");
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
-                physFrameNode.insertNodeAfter(physFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("attached_geometry");
-                if (geomSetIter != aNode.element_end()) {
-                    geomSetIter->insertNodeAfter(geomSetIter->node_end(), physFrameNode);
                 }
             }
         }
