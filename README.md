@@ -23,49 +23,58 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle:
+Let's simulate a simple leg whose knee is actuated by a muscle:
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
-using namespace OpenSim; using OpenSim::Body;
+using namespace OpenSim;
 int main() {
-    Model model; model.setUseVisualizer(true);
-    // Two links, with mass of 1 kg, center of mass at the
-    // origin of the body's frame, and moments/products of inertia of zero.
-    OpenSim::Body* link1 = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* link2 = new OpenSim::Body("radius", 1, Vec3(0), Inertia(0));
+    Model model;
 
-    // Joints that connect the bodies together.
-    PinJoint* joint1 = new PinJoint("shoulder",
+    // Create two links, each with a mass of 1 kg, center of mass at the body's
+    // origin, and moments and products of inertia of zero.
+    OpenSim::Body* femur = new OpenSim::Body("femur", 1, Vec3(0), Inertia(0));
+    OpenSim::Body* tibia = new OpenSim::Body("tibia", 1, Vec3(0), Inertia(0));
+
+    // Connect the bodies with pin joints. Assume each body is 1 m long.
+    PinJoint* hip = new PinJoint("hip",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *link1, Vec3(0, 1, 0), Vec3(0));
-    PinJoint* joint2 = new PinJoint("elbow",
-            *link1, Vec3(0), Vec3(0), *link2, Vec3(0, 1, 0), Vec3(0));
+            *femur, Vec3(0, 1, 0), Vec3(0));
+    PinJoint* knee = new PinJoint("knee",
+            *femur, Vec3(0), Vec3(0), *tibia, Vec3(0, 1, 0), Vec3(0));
 
-    // Add an actuator that crosses the elbow, and a joint stop.
+    // Add a muscle that flexes the knee.
     Millard2012EquilibriumMuscle* muscle = new
         Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    muscle->addNewPathPoint("point1", *link1, Vec3(0, 0.8, 0));
-    muscle->addNewPathPoint("point2", *link2, Vec3(0, 0.7, 0));
+    muscle->addNewPathPoint("origin",    *femur, Vec3(0, 0.8, 0));
+    muscle->addNewPathPoint("insertion", *tibia, Vec3(0, 0.7, 0));
 
-    // A controller that specifies the excitation of the biceps muscle.
+    // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
     brain->addActuator(*muscle);
-    // Muscle excitation is 0.3 for the first 0.5 seconds, and 1.0 thereafter.
+    // Muscle excitation is 0.3 for the first 0.5 seconds, then increases to 1.
     brain->prescribeControlForActuator("biceps",
             new StepFunction(0.5, 3, 0.3, 1));
 
-    // Add bodies and joints to the model.
-    model.addBody(link1); model.addBody(link2);
-    model.addJoint(joint1); model.addJoint(joint2);
+    // Add components to the model.
+    model.addBody(femur); model.addBody(tibia);
+    model.addJoint(hip);  model.addJoint(knee);
     model.addForce(muscle);
     model.addController(brain);
 
+    // Add a console reporter to print the muscle fiber force and knee angle.
+    ConsoleReporter* reporter = new ConsoleReporter();
+    reporter->set_report_time_interval(1.0);
+    reporter->updInput("inputs").connect(muscle->getOutput("fiber_force"));
+    reporter->updInput("inputs").connect(
+        knee->getCoordinateSet()[0].getOutput("value"));
+    model.addComponent(reporter);
+
     // Configure the model.
     State& state = model.initSystem();
-    // Fix shoulder joint, flex elbow joint.
+    // Fix the hip at its default angle and begin with the knee flexed.
     model.updCoordinateSet()[0].setLocked(state, true);
     model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
@@ -73,11 +82,11 @@ int main() {
     // Add display geometry.
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-    viz.setBackgroundColor(Vec3(1, 1, 1));
-    // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
+    viz.setBackgroundColor(White);
+    // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(femur->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(tibia->getMobilizedBodyIndex(), Transform(center), geom);
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
@@ -89,7 +98,23 @@ int main() {
 
 This code produces the following animation:
 
-![Simulation of an arm actuated by a muscle][simple_example_gif]
+![Simulation of a leg actuated by a muscle][simple_example_gif]
+
+and prints the following information to the console:
+
+        [reporter]
+                time|  fiber_force|       value|
+                   0|     1.180969|   1.5707963|
+                   1|     57.27509|  0.77066412|
+                   2|    19.728411|   1.5680456|
+                   3|    56.090431|   1.4419861|
+                   4|     34.54835|    1.508348|
+                   5|    32.603721|   1.5180237|
+                   6|    37.136052|   1.5021235|
+                   7|    35.698502|   1.5071888|
+                   8|     34.18601|   1.5079186|
+                   9|    34.341649|    1.506727|
+                  10|    35.784713|    1.507164|
 
 ---
 
