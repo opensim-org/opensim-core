@@ -377,6 +377,19 @@ if(${BUILD_JAVA_WRAPPING})
     # Also, the mechanism we use to set the java classpath and library path 
     # for MATLAB requires version 7.0 (R14).
     find_package(Matlab 7.0 COMPONENTS MAIN_PROGRAM)
+    # Issue warning if Matlab and OpenSim build architectures differ.
+    # That is, one is 64-bit and other is not.
+    if(Matlab_FOUND)
+        if(${Matlab_MEX_EXTENSION} MATCHES "64")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if((UNIX AND NOT ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64") OR
+               (MSVC AND NOT CMAKE_GENERATOR MATCHES "64"))
+                message(WARNING 
+                    "Matlab found is 64-bit but C++ compiler is 32-bit.")
+            endif()
+        endif()
+    endif()
 endif()
 
 if(WIN32)
