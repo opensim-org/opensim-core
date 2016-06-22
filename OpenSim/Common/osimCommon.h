@@ -52,6 +52,8 @@
 #include "DataTable.h"
 #include "TimeSeriesTable.h"
 
+#include "Adapters.h"
+
 #include "TableSource.h"
 
 #include "Reporter.h"
