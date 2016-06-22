@@ -84,9 +84,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
+    OpenSim_DECLARE_PROPERTY(frame_geometry, FrameGeometry,
+        "The geometry used to display the axes of this Frame.");
     OpenSim_DECLARE_LIST_PROPERTY(attached_geometry, Geometry,
         "List of geometry attached to this Frame.");
-
 //=============================================================================
 // OUTPUTS
 //=============================================================================

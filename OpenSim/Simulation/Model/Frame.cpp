@@ -43,25 +43,28 @@ Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
 
+    FrameGeometry default_frame_geometry;
+    default_frame_geometry.setName("frame_geometry");
+    constructProperty_frame_geometry(default_frame_geometry);
+
     constructProperty_attached_geometry();
-    FrameGeometry* default_geometry = new FrameGeometry();
-    default_geometry->setName("frame_geometry");
-    updProperty_attached_geometry().adoptAndAppendValue(default_geometry);
-    updProperty_attached_geometry().setValueIsDefault(true);
 }
 
 void Frame::extendConnectToModel(Model& model)
 {
+    Super::extendConnectToModel(model);
+    // All the Geometry attached to this Frame should have
+    // their frame connections automatically set to this Frame.
+    upd_frame_geometry().setFrame(*this);
     int nag = getProperty_attached_geometry().size();
     for (int i = 0; i < nag; ++i) {
-        upd_attached_geometry(i).updInput("transform").disconnect();
-        upd_attached_geometry(i).updInput("transform")
-            .connect(getOutput("transform"));
+        upd_attached_geometry(i).setFrame(*this);
     }
 }
 
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     SimTK::Transform x;
     SpatialVec v;
     // If the properties, topology or coordinate values change, 
@@ -154,6 +157,7 @@ void Frame::attachGeometry(OpenSim::Geometry* geom)
         }
     }
 
+    geom->setFrame(*this);
     updProperty_attached_geometry().adoptAndAppendValue(geom);
 }
 
