@@ -51,6 +51,9 @@ constructors because they have additional arguments.
 */
 %define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
 %extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
     NAME(const std::string& name,
          const PhysicalFrame& parent,
          const PhysicalFrame& child) {

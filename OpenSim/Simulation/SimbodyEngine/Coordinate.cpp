@@ -92,7 +92,7 @@ private:
  */
 Coordinate::Coordinate() 
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________

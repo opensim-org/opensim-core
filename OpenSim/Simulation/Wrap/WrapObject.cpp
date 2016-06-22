@@ -48,7 +48,7 @@ using SimTK::Vec3;
  */
 WrapObject::WrapObject() : ModelComponent()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 /*

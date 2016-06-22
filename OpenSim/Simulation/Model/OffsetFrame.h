@@ -181,7 +181,7 @@ protected:
 private:
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // the Offset transform in its parent frame
     SimTK::Transform _offsetTransform;
@@ -197,7 +197,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame() : C()
 {
     setNull();
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors

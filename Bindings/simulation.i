@@ -1,12 +1,7 @@
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
-// Include base class from osimCommon
-%include <OpenSim/Common/Component.h>
 
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
-%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
 
@@ -166,7 +161,6 @@
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
-%include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
@@ -212,6 +206,7 @@
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator) 
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 // Iterators.
 %template(FrameList) OpenSim::ComponentList<OpenSim::Frame>;
@@ -229,8 +224,8 @@
 %template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
 
-%template(getFrameList) OpenSim::Component::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Component::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
