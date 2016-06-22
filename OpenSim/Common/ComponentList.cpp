@@ -1,7 +1,5 @@
-#ifndef _osimCommon_h_
-#define _osimCommon_h_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                             OpenSim: ComponentList.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Authors: Ayman Habib                                                       *
+ * Contributers : Chris Dembia                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,41 +22,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
+#include "ComponentList.h"
+#include "Component.h"
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+using namespace OpenSim;
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
-
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
-
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // _osimCommon_h_
+bool ComponentFilterFullPathNameContainsString::isMatch(const Component& comp)
+        const {
+    return comp.getFullPathName().find(_substring) != std::string::npos;
+}

@@ -541,6 +541,17 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
     }
 }
 
+unsigned Component::printComponentsMatching(const std::string& substring) const
+{
+    auto components = getComponentList();
+    components.setFilter(ComponentFilterFullPathNameContainsString(substring));
+    unsigned count = 0;
+    for (const auto& comp : components) {
+        std::cout << comp.getFullPathName() << std::endl;
+        ++count;
+    }
+    return count;
+}
 
 int Component::getNumStateVariables() const
 {

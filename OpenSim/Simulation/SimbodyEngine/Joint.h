@@ -61,28 +61,31 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 
 <b>C++ example</b>
 \code{.cpp}
-    // Define a Pin joint between ground and platform.
-    PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                              "ground", "platform");
+// Define a pin joint that attaches pendulum (an OpenSim::Body) to ground.
+PinJoint* myPin = new PinJoint("pendulumToGround", myModel.getGround(),
+                               pendulum);
 \endcode
 
 <b>Python example</b>
 \code{.py}
     # Define a ball joint between blockA and blockB.
-    abJoint  = osim.BallJoint('JointName', 'blockA', 'blockB')
+    abJoint = osim.BallJoint('JointName', blockA, blockB)
 \endcode
 
-In the case that you want to connect to an existing PhysicalFrame, like
-a Body or Ground, but not to their origins you can create
-PhysicalOffsetFrames to connect to and add them to the Joint.
+If you want to connect to an existing PhysicalFrame (e.g., a Body or Ground)
+but not to its origin, you can create and connect to a PhysicalOffsetFrame; the
+following convenience constructor does this for you:
 
 <b>C++ example</b>
 \code{.cpp}
-// Define a Pin joint between ground and platform with offsets.
-PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                          "groundOffset", "platformOffset");
-platformToGround->append_frames(new PhysicalOffsetFrame("groundOffset", ...));
-platformToGround->append_frames(new PhysicalOffsetFrame("platformOffset", ...));
+// Define a pin joint that attaches the end of pendulum to the ground origin.
+PinJoint* myPin = new PinJoint("pendulumToGround",
+                               myModel.getGround(),   //parent PhysicalFrame
+                               Vec3(0),               //location in parent
+                               Vec3(0),               //orientation in parent
+                               pendulum,              //child PhysicalFrame
+                               Vec3(0,-length/2.,0),  //location in child
+                               Vec3(0));              //orientation in child
 \endcode
 
 

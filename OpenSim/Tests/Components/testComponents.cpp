@@ -389,7 +389,7 @@ void testComponentEquivalence(const Component* a, const Component* b)
         className + " components differ in number of outputs.");
 
     ComponentList<Component> aSubsList = a->getComponentList<Component>();
-    ComponentList<Component> bSubsList = a->getComponentList<Component>();
+    ComponentList<Component> bSubsList = b->getComponentList<Component>();
     auto iter_a = aSubsList.begin();
     auto iter_b = bSubsList.begin();
 
