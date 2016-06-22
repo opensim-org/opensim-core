@@ -9,7 +9,7 @@
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
- * Contributor(s): Thomas Uchida                                              *
+ * Contributor(s): Thomas Uchida, James Dunne                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
