@@ -217,6 +217,39 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 };
 
+%extend OpenSim::ComponentList {
+%pythoncode %{
+
+    def __iter__(self):
+        """Get an iterator for this ComponentList, to be used as such::
+           
+            for c in model.getComponentsList():
+                c.getName()
+        """
+        it = self.begin()
+        while it != self.end():
+            yield it
+            it.next()
+%}
+};
+
+// Return concrete instances from certain methods.
+// -----------------------------------------------
+// http://stackoverflow.com/questions/27392602/swig-downcasting-from-base-to-derived
+// "$1" holds the original return value from getConnectee() (an Object*).
+// An Object with name Foo is registered with SWIG as "OpenSim::Foo *".
+// If the type query fails, we just return an Object*
+%typemap(out) const OpenSim::Object& OpenSim::Component::getConnectee {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Object *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+
 
 // Include all the OpenSim code.
 // =============================
@@ -237,3 +270,4 @@ SET_ADOPT_HELPER(Scale);
         return super(FunctionSet, self).adoptAndAppend(aFunction)
 %}
 };
+

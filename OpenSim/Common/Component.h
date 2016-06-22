@@ -537,45 +537,61 @@ public:
     * Get the "connectee" object that the Component's Connector
     * is bound to. Guaranteed to be valid only after the Component
     * has been connected (that is connect() has been invoked).
-    * If Connector has not been connected an exception is thrown.
+    * If the Connector has not been connected, an exception is thrown.
     *
+    * This method is for getting the concrete connectee object, and is not
+    * available in scripting. If you want generic access to the connectee as an
+    * Object, use the non-templated version.
+    *
+    * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
     * @param name       the name of the connector
     * @return T         const reference to object that satisfies
     *                   the Connector
     *
-    * If you omit the template argument, then you get the connectee
-    * as an Object and cannot use the methods of its concrete type:
+    * Example:
+    * @code
+    * const PhysicalFrame& frame = joint.getConnectee<PhysicalFrame>("parent_frame");
+    * frame.getMobilizedBody();
+    * @endcode
+    */
+    template<typename T>
+    const T& getConnectee(const std::string& name) const {
+        // get the Connector and check if it is connected.
+        const Connector<T>& connector = getConnector<T>(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnectee();
+    }
+
+    /** Get the connectee as an Object. This means you will not have
+    * access to the methods on the concrete connectee. This is the method you
+    * must use in MATLAB to access the connectee.
+    *
+    * Example:
     * @code{.cpp}
     * const Object& obj = joint.getConnectee("parent_frame");
     * obj.getName(); // method on Object works.
-    * obj.getMobilizedBody(); // method on PhysicalFrame doesn't work.
+    * obj.getMobilizedBody(); // error: not available.
     * @endcode
     *
-    * To get the concrete type, you must supply the template argument:
-    * @code{.cpp}
-    * const PhysicalFrame& f = joint.getConnectee("parent_frame");
-    * f.getMobilizedBody(); // method on PhysicalFrame works.
+    * In MATLAB, if you want the concrete type, you need to downcast the
+    * Object. Here is an example where you know the "parent_frame" is a Body:
+    * @code
+    * f = joint.getConnectee('parent_frame');
+    * m = Body.safeDownCast(f).getMass();
     * @endcode
     *
-    * In Python, you'll always get the concrete type:
+    * Exception: in Python, you will get the concrete type (in most cases):
     * @code{.py}
     * f = joint.getConnectee("parent_frame"); 
-    * f.getMass() # works (if the parent frame is a body)
+    * m = f.getMass() # works (if the parent frame is a body)
     * @endcode
     */
-    template<typename T = Object>
-    const T& getConnectee(const std::string& name) const    {
-        // get the Connector and check if it is connected.
-        const AbstractConnector& connector = getConnector<T>(name);
-        if (connector.isConnected()){
-            return (Connector<T>::downcast(connector)).getConnectee();
-        }
-        else{
-            std::stringstream msg;
-            msg << "Component::getConnectee() ERR- Connector '" << name << "' not connected.\n "
-                << "for component '" << getName() << "' of type " << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+    const Object& getConnectee(const std::string& name) const {
+        const AbstractConnector& connector = getConnector(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnecteeAsObject();
     }
 
     /** Get an AbstractConnector for the given connector name. This
