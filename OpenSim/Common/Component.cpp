@@ -239,10 +239,15 @@ void Component::connect(Component &root)
         AbstractInput& input = inputPair.second.updRef();
 
         if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+            // TODO When we support verbose/debug logging we should include
+            // message about unspecified Outputs but generally this OK
+            // if the Input's value is not required.
+            /**
             std::cout << getConcreteClassName() << "'" << getName() << "'";
             std::cout << "::connect() Input<" << input.getConnecteeTypeName();
             std::cout << ">`" << input.getName();
             std::cout << "' Output has not been specified." << std::endl;
+            */
             continue;
         }
 
