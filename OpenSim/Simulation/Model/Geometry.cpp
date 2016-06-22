@@ -39,19 +39,34 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
+OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
     constructInfrastructure();
 }
 
+void Geometry::setFrame(const Frame& frame)
+{
+    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+}
+
+const OpenSim::Frame& Geometry::getFrame() const
+{
+    return getConnector<Frame>("frame").getConnectee();
+}
 
 void Geometry::generateDecorations(bool fixed, 
     const ModelDisplayHints& hints,
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    if (!fixed) return; // serialized Geometry is assumed fixed
+    // serialized Geometry is assumed fixed
+    // if it has a Transform input then it is not "attached" geometry
+    // and fixed to a body but floating w.r.t Ground.
+    if (!fixed && !getInput("transform").isConnected())
+        return; 
+    
     SimTK::Array_<SimTK::DecorativeGeometry> decos;
     implementCreateDecorativeGeometry(decos);
     if (decos.size() == 0) return;
@@ -70,11 +85,32 @@ void Geometry::setDecorativeGeometryTransform(
     SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
     const SimTK::State& state) const
 {
-    const SimTK::Transform& transformInGround = 
-        getInputValue<SimTK::Transform>(state, "transform");
+    auto& input = getInput<SimTK::Transform>("transform");
+
+    SimTK::Transform transformInBaseFrame;
+    SimTK::MobilizedBodyIndex mbidx;
+
+    if (input.isConnected()) {
+        transformInBaseFrame = input.getValue(state);
+        mbidx = SimTK::MobilizedBodyIndex(0);
+    }
+    else {
+        const Frame& myFrame = getFrame();
+        const Frame& bFrame = myFrame.findBaseFrame();
+        const PhysicalFrame* bPhysicalFrame =
+            dynamic_cast<const PhysicalFrame*>(&bFrame);
+        if (bPhysicalFrame == nullptr) {
+            // throw exception something is wrong
+            throw (Exception("Frame for Geometry " + getName() +
+                " is not attached to a PhysicalFrame."));
+        }
+        mbidx = bPhysicalFrame->getMobilizedBodyIndex();
+        transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    }
+
     for (unsigned i = 0; i < decorations.size(); i++){
-        decorations[i].setBodyId(0);
-        decorations[i].setTransform(transformInGround);
+        decorations[i].setBodyId(mbidx);
+        decorations[i].setTransform(transformInBaseFrame);
         decorations[i].setIndexOnBody(i);
     }
 }
