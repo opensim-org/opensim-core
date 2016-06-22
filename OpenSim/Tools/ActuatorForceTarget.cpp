@@ -233,10 +233,10 @@ prepareToOptimize(SimTK::State& s, double *x)
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-    const Set<Actuator> &fSet = _controller->getActuatorSet();
+    const Set<const Actuator> &fSet = _controller->getActuatorSet();
 
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         act->setOverrideActuation(s, aF[i]);
         act->overrideActuation(s, true);
     }
@@ -252,7 +252,7 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
     // PERFORMANCE
     double sqrtStressTermWeight = sqrt(_stressTermWeight);
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         rForcePerformanceVector[i] = sqrtStressTermWeight * act->getStress(s);
      }
 
@@ -261,11 +261,9 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
     // reset the actuator control
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         act->overrideActuation(s, false);
     }
-
-
 }
 
 //______________________________________________________________________________

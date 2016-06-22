@@ -235,7 +235,7 @@ void ControllerSet::printInfo() const
               i+1, (unsigned long long)&c, c.getName().c_str(), 
               (unsigned long long)&c.getModel() );
 
-          const Set<Actuator>& actSet = c.getActuatorSet();
+          const Set<const Actuator>& actSet = c.getActuatorSet();
           if( actSet.getSize() > 0 ) {
                std::cout << "Actuators" << std::endl;
                for(int j=0;j<get(i).getActuatorSet().getSize(); j++ ) {
