@@ -465,8 +465,10 @@ public:
      * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
      * Coordinate. This method cannot be used from scripting; see the
      * non-templatized hasComponent(). */
-    template <class C>
+    template <class C = Component>
     bool hasComponent(const std::string& pathname) const {
+        static_assert(std::is_base_of<Component, C>::value, 
+            "Template parameter 'C' must be derived from Component.");
         const C* comp = this->template traversePathToComponent<C>(pathname);
         return comp;
     }
@@ -484,12 +486,18 @@ public:
      * If unsure of a Component's path or whether or not it exists in the model,
      * use printComponentsMatching() or hasComponent().
      *
-     * @param  pathname        a pathname (string) of a Component of interest
+     * This template function cannot be used in Python/Java/MATLAB; see the
+     * non-templatized getComponent().
+     *
+     * @param  pathname        a pathname of a Component of interest
      * @return const reference to component of type C at 
      * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
     template <class C = Component>
     const C& getComponent(const std::string& pathname) const {
+        static_assert(std::is_base_of<Component, C>::value, 
+            "Template parameter 'CompType' must be derived from Component.");
+
         const C* comp = this->template traversePathToComponent<C>(pathname);
         if (comp) {
             return *comp;
@@ -501,8 +509,28 @@ public:
                                                        getName());
     }
 
+    /** Similar to the templatized getComponent(), except this returns the
+     * component as the generic Component type. This can be used in
+     * Python/Java/MATLAB. Here is an example of using this in MATLAB:
+     * @code
+     * coord = model.getComponent('right_elbow/elbow_flexion')
+     * coord.getNumConnectees() # okay; this is a Component method.
+     * coord.getDefaultClamped() # inaccessible; method on Coordinate.
+     * Coordinate.safeDownCast(coord).getDefaultClamped() # now accessible.
+     * @endcode
+     *
+     * Exception: in Python, you will get the concrete type (in most cases):
+     * @code{.py}
+     * coord = model.getComponent('right_elbow/elbow_flexion')
+     * coord.getDefaultClamped() # works; no downcasting necessary. 
+     * @endcode
+     */
+    const Component& getComponent(const std::string& pathname) const {
+        return getComponent<Component>(pathname);
+    }
+
     /** Get a writable reference to a subcomponent.
-    * @param name       the name(string) of the Component of interest
+    * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
     * @see getComponent()
@@ -511,6 +539,17 @@ public:
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+
+    /** Similar to the templatized updComponent(), except this returns the
+     * component as the generic Component type. As with the non-templatized
+     * getComponent(), though, this will give the concrete type in Python in
+     * most cases.
+     * @see getComponent()
+     */
+    Component& updComponent(const std::string& pathname) {
+        return updComponent<Component>(pathname);
+    }
+
 
     /** Print a list to the console of all components whose full path name
      * contains the given string. You might use this if (a) you know the name of
@@ -854,7 +893,7 @@ public:
      * This provides access to the outputs as AbstractOutput%s, not as the
      * concrete type. This also does not permit modifying the outputs.
      * 
-     * Not available in python/java/MATLAB; use getOutputNames() and
+     * Not available in Python/Java/MATLAB; use getOutputNames() and
      * getOutput() instead.
      */
     SimTK::IteratorRange<OutputConstIterator> getOutputs() const {

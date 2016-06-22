@@ -217,6 +217,9 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 };
 
+// This function tries to downcast the component; if that does not succeed,
+// then it just returns a Component (or whatever the type for this specific
+// ComponentList is).
 %extend OpenSim::ComponentList {
 %pythoncode %{
 
@@ -226,9 +229,17 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
             for c in model.getComponentsList():
                 c.getName()
         """
+        import sys
+        opensim_pkg = sys.modules[__name__.partition('.')[0]]
         it = self.begin()
         while it != self.end():
-            yield it
+            component = it.__deref__()
+            try:
+                ConcreteClass = getattr(opensim_pkg, component.getConcreteClassName())
+                concrete_component = ConcreteClass.safeDownCast(component)
+                yield concrete_component 
+            except:
+                yield component
             it.next()
 %}
 };
@@ -246,6 +257,26 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
         $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
     } else {
         swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Object *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) const OpenSim::Component& OpenSim::Component::getComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) OpenSim::Component& OpenSim::Component::updComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
         $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
     }
 }

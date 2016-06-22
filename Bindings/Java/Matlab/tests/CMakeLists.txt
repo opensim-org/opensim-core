@@ -55,3 +55,8 @@ add_dependencies(RunMatlabTests JavaBindings)
 
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
 OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
+OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
+
+# Copy resources.
+file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+     DESTINATION "${matlab_output_dir}")
