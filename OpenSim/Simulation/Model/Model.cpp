@@ -744,6 +744,8 @@ void Model::extendConnectToModel(Model &model)
 // creating components in its system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
+
     Model *mutableThis = const_cast<Model *>(this);
 
     // Ensure Ground is added before all other Components
