@@ -35,6 +35,7 @@
 
 // INCLUDES
 
+#include "Exception.h"
 #include "osimCommonDLL.h"
 #include "XMLDocument.h"
 #include "PropertySet.h"
@@ -78,6 +79,17 @@ namespace OpenSim {
 const char ObjectDEFAULT_NAME[] = "default";
 
 class XMLDocument;
+
+class InvalidXmlProperty : public Exception {
+public:
+    InvalidXmlProperty(const std::string& file,
+                       size_t line,
+                       const std::string& func,
+                       const std::string& msg) :
+        Exception(file, line, func) {
+        addMessage(msg);
+    }
+};
 
 //==============================================================================
 //                                 OBJECT
@@ -519,6 +531,16 @@ public:
     deleted. **/
     void setInlined(bool aInlined, const std::string &aFileName="");
 
+    /** Check if xml node contains any tag that is not a property in the 
+    property table of this object. Throws OpenSim::Exception if an invalid
+    property tag is found. Exception can be suppressed through the function
+    setInvalidPropertyException().                                            */
+    void checkForInvalidPropertiesInXml(SimTK::Xml::Element& aNode) const;
+
+    /** Toggle ON/OFF whether or not to throw an exception when an invalid
+    property tag is encountered during XML parsing.                           */
+    static void setInvalidPropertyException(bool toggle);
+
 protected:
     /** When an object is initialized using the current values of its
     properties, it can set a flag indicating that it is up to date. This
@@ -828,6 +850,13 @@ private:
     //     thrown by the low level libraries which is slower but helpful in 
     //     troubleshooting.
     static int      _debugLevel;
+
+    // During XML parsing, when an invalid property tag is encountered, this
+    // flag controls:
+    //         true  -- Throw exception.
+    //         false -- Print a warning to console.
+    // Use setInvalidPropertyException() to toggle this flag.
+    static bool _invalidPropertyException;
 
     // The name of this object.
     std::string     _name;
