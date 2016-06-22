@@ -184,7 +184,7 @@ void simulate(OpenSim::Model& model, SimTK::State& state);
 // TODO: Reorganize this file. Temporarily including forward declaration here.
 // Include a comment here with everything the user needs to know about the
 // model (e.g., full path of each attachment frame).
-Model buildHopper(bool printDebugInfo=false); //defined in buildHopperModel.cpp
+Model buildHopper(bool showComponentList=false); //defined in buildHopperModel.cpp
 /************ end of HELPER FUNCTIONS: Implemented in answers.cpp ************/
 
 

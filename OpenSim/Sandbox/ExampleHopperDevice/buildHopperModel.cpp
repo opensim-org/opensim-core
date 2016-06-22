@@ -45,7 +45,9 @@ void addPathWrapHelper(ModelComponent& model,
     const std::string& pathActuatorName, const std::string& wrapObjectName,
     const std::string& bodyName);
 
-Model buildHopper(bool printDebugInfo) {
+// Build the model. Set showComponentList=true to display a list of all
+// components in the model.
+Model buildHopper(bool showComponentList) {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -196,8 +198,8 @@ Model buildHopper(bool printDebugInfo) {
 
     hopper.setUseVisualizer(true);
 
-    // We're done! Print a list of all components in the model (for debugging).
-    if (printDebugInfo) { hopper.dumpSubcomponents(); }
+    // We're done! Display a list of all components in the model.
+    if (showComponentList) { hopper.dumpSubcomponents(); }
 
     return hopper;
 }
