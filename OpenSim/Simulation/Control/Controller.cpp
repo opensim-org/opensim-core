@@ -103,6 +103,9 @@ void Controller::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
+    // TODO this custom connection code can all disappear
+    // if we use a list Connector<Actuator> 
+
     // make sure controller does not take ownership
     _actuatorSet.setMemoryOwner(false);
     _actuatorSet.setSize(0);
@@ -148,7 +151,9 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
-    // make sure controller does assume ownership
+    //TODO this needs to be setting a Connector list of Actuators
+
+    // make sure controller does NOT assume ownership
     _actuatorSet.setMemoryOwner(false);
     //Rebuild consistent set of actuator lists
     _actuatorSet.setSize(0);
