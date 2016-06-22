@@ -650,10 +650,6 @@ public:
 
     //@} end of Component Connector Access methods
 
-    /** Define OutputsIterator for convenience */
-    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput> >::
-        const_iterator OutputsIterator;
-
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
     */
@@ -683,8 +679,9 @@ public:
      * std::vector. */
     std::vector<std::string> getOutputNames() const {
         std::vector<std::string> names;
-        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
-            names.push_back(it->first);
+        for (const auto& entry : getOutputs()) {
+            names.push_back(entry.first);
+        }
         return names;
     }
 
@@ -778,30 +775,28 @@ public:
         return *const_cast<AbstractOutput *>(&getOutput(name));
     }
 
-    /** An iterator to traverse all the Outputs of this component, pointing at the
-    * first Output. This can be used in a loop as such:
-     *
-     *  @code
-    *  OutputsIterator it;
-     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-     *  { ... }
-     *  @endcode
-     *
-     * @see getOutputsEnd()
-     */
-    OutputsIterator getOutputsBegin() const {
-        return _outputsTable.begin();
-    }
+    /** Define OutputConstIterator for convenience */
+    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput>>::
+        const_iterator OutputConstIterator;
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * end of the map. This can be used in a loop as such:
-     *
-     * @see getOutputsBegin()
+    /** Iterate through all Outputs of this component. The intent is to use
+     * this in a loop as such:
+     * @code
+     * for (const auto& entry : comp.getOutputs()) {
+     *     const std::string& name = entry.first;
+     *     const AbstractOutput* output = entry.second.get();
+     *     std::cout << output->getTypeName() << std::endl;
+     * }
+     * @endcode
+     * This provides access to the outputs as AbstractOutput%s, not as the
+     * concrete type. This also does not permit modifying the outputs.
+     * 
+     * Not available in python/java/MATLAB; use getOutputNames() and
+     * getOutput() instead.
      */
-    OutputsIterator getOutputsEnd() const {
-        return _outputsTable.end();
+    SimTK::IteratorRange<OutputConstIterator> getOutputs() const {
+        return {_outputsTable.cbegin(), _outputsTable.cend()};
     }
-
     //@} end of Component Inputs and Outputs Access methods
 
 
