@@ -46,18 +46,36 @@
         end
     end
 %% Edit the classpath.txt file (need full path for print)
-% Create the string names used
+    % Create the string names used
     classFile = fullfile(mr, 'toolbox', 'local', 'classpath.txt');
-    OpenSimJarPath =  fullfile(openSimFolder, 'opensim','modules','org-opensim-modeling.jar');
-% Edit the class path txt file
-    edit_path_txt_file(classFile,OpenSimJarPath)
-
+    OpenSimJarPath =  fullfile(openSimFolder, 'opensim', 'modules', 'org-opensim-modeling.jar');
+    % Edit the class path txt file
+    success = edit_path_txt_file(classFile, OpenSimJarPath);
+    % If above failed, Matlab is probably new. Try newer technique.
+    if ~success
+        classFile = fullfile(prefdir, 'javaclasspath.txt');
+        success = edit_path_txt_file(classFile, OpenSimJarPath);
+        if ~success
+            h = msgbox('Failed to add classpath.', 'Error');
+            uiwait(h)
+            error('Program exit');
+        end
+    end
 %% Edit the librarypath.txt (need full path for print)
-% Create the string names used
-    libraryFile = fullfile(mr, 'toolbox', 'local','librarypath.txt');
+    % Create the string names used
+    libraryFile = fullfile(mr, 'toolbox', 'local', 'librarypath.txt');
     OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
-% Edit the library path txt file
-    edit_path_txt_file(libraryFile,OpenSimLibPath)
+    % Edit the library path txt file
+    success = edit_path_txt_file(libraryFile, OpenSimLibPath);
+    if ~success
+        libraryFile = fullfile(prefdir, 'javalibrarypath.txt');
+        success = edit_path_txt_file(libraryFile, OpenSimLibPath);
+        if ~success
+            h = msgbox('Failed to add librarypath.', 'Error');
+            uiwait(h)
+            error('Program exit');
+        end
+    end
 %% Edit Matlab path
     cleanMatlabSearchPath
     addpath(OpenSimLibPath)
