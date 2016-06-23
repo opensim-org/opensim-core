@@ -87,13 +87,20 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [success] = edit_path_txt_file(txtname,spath)
+function [success] = edit_path_txt_file(txtname, spath)
     success = false;
+    % If the file does not exist, try creating it.
+    if not(exist(txtname, 'file'))
+        fileID = fopen(txtname, 'w');
+        if fileID == -1
+            return
+        end
+    end
     % Edit's path .txt files. Deletes old entries and adds new path.
     % Open the txt file
     fileIDtest = fopen(txtname, 'r+');
     % Return fail if file id is invalid.
-    if(fileIDtest == -1)
+    if fileIDtest == -1
         return
     end
     fclose(fileIDtest);
