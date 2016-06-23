@@ -139,34 +139,32 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function checkSystemInfo(openSimFolder)
- % check to see if the buildinfo.txt file is present. This file will give
- % us install type info that determines compatability between MATLAB and
- % opensim (both 64 bit?)
- if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'))
-	 % is systemInfo.txt file available?
-     h = msgbox('Unable to check OpenSim version (64 or 32). Buildinfo.txt not found in OpenSim\SDK folder. Please download OpenSim 3.2', 'Error');
-     uiwait(h)
-     return
- else
-    fileID = fopen(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'buildinfo.txt'));
-    OpenSimInstallInfo = textscan(fileID,'%s');
-    fclose(fileID);
-    platformID=char(OpenSimInstallInfo{1,1}{end,1});
-    % get the last two digits of the text string ie '86' or '64'
-    OsimInstallBuild= platformID(length(platformID)-1:end);
-    % matlab is 64 and OpenSim is 32
-    if strncmp(computer('arch'),'win64',5) &&  ~strncmp(OsimInstallBuild,'64',2) 
-        h = msgbox('Matlab version is 64 bit while OpenSim is 32 bit. Please install OpenSim 64bit','Error');
+    % check to see if the buildinfo.txt file is present. This file will give
+    % us install type info that determines compatability between MATLAB and
+    % opensim (both 64 bit?)
+    buildinfo_file = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt');
+    if ~exist(buildinfo_file)
+        % is systemInfo.txt file available?
+        h = msgbox(strcat('Unable to check if OpenSim is 64bit or 32bit. File ', buildinfo_file, ' not found.'), 'Error');
         uiwait(h)
-        error('Program exit')
+        return
+    else
+        fileID = fopen(buildinfo_file);
+        OpenSimInstallInfo = textscan(fileID,'%s');
+        fclose(fileID);
+        platformID=char(OpenSimInstallInfo{1,1}{end,1});
+        OpenSimIs64bit = not(isempty(strfind(platformID, '64')));
+        MatlabIs64bit = not(isempty(strfind(mexext, '64')));
+        if MatlabIs64bit && not(OpenSimIs64bit)
+            h = msgbox('Matlab is 64 bit. OpenSim is 32 bit. Re-build OpenSim with 64 bit compiler.','Error');
+            uiwait(h)
+            error('Program exit')
+        elseif not(MatlabIs64bit) && OpenSimIs64bit
+            h = msgbox('Matlab is 32 bit. OpenSim is 64 bit. Re-build OpenSim with 32 bit compiler.','Error');
+            uiwait(h)
+            error('Program exit') 
+        end
     end
-    % matlab is 32 and OpenSIm is 64
-     if ~strncmp(computer('arch'),'win64',5) &&  strncmp(OsimInstallBuild,'64',2) 
-        h = msgbox('Matlab version is 32 bit while OpenSim is 64 bit. Please install OpenSim 32bit','Error');
-        uiwait(h)
-        error('Program exit') 
-     end
- end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
