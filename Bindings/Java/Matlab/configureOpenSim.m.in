@@ -3,9 +3,6 @@
 %    Allows user to select the location of the OpenSim install directory
 %    and add these paths to the matlab library paths. Will allow MATLAB 
 %    users to run OpenSim calls in Matlab.
-%    Build Data: 10.17.2013
-%    Tested with Matlab 2012a and OpenSim 3.1 on Windows 7
-%    Authors: The OpenSim Team (James Dunne, Chris Dembia & Ayman Habib)  
 % #----------------------------------------------------------------------- %
 % #The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % #simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -13,7 +10,7 @@
 % #and supported by the US National Institutes of Health (U54 GM072970,    %
 % #R24 HD065690) and by DARPA through the Warrior Web program.             %
 % #                                                                        %   
-% #Copyright (c) 2005-2013 Stanford University and the Authors             %
+% #Copyright (c) 2005-2016 Stanford University and the Authors             %
 % #                                                                        %   
 % #Licensed under the Apache License, Version 2.0 (the "License");         %
 % #you may not use this file except in compliance with the License.        %
