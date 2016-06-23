@@ -285,7 +285,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // Subcomponents owned by the muscle. The properties of these subcomponents
     // are set (in extendFinalizeFromProperties()) from the properties of the

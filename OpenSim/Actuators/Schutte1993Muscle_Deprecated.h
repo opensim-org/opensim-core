@@ -124,7 +124,7 @@ private:
     double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
     double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 
-    void constructProperties() override;
+    void constructProperties();
 //=============================================================================
 };  // END of class Schutte1993Muscle_Deprecated
 //=============================================================================

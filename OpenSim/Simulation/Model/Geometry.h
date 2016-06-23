@@ -177,7 +177,7 @@ private:
     };
 
     /// Specify the default values for properties of Geometry
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_Appearance(Appearance());
     }
@@ -238,7 +238,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_end_point(SimTK::Vec3(1));
     }
@@ -283,7 +283,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_direction(SimTK::Vec3(1));
         constructProperty_length(1.0);
@@ -334,7 +334,7 @@ public:
         return _piece;
     }
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_quadrants();
     }
 };
@@ -369,7 +369,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_radius(1.0);
     }
 };  // Sphere
@@ -410,7 +410,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_radii(SimTK::Vec3(0.5, 1., 2.));
     }
 };
@@ -456,7 +456,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_radius(0.5);
         constructProperty_half_height(0.5);
     }
@@ -501,7 +501,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_origin(SimTK::Vec3(0));
         constructProperty_direction(SimTK::UnitVec3(1));
         constructProperty_base_radius(0.5);
@@ -647,7 +647,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_display_radius(.004);
     }
 };

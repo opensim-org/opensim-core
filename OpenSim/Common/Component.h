@@ -400,14 +400,37 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-    * Add a Component (as an addition) to this component.
-    * This component takes ownership of the addition and it will be
-    * serialized as part of this component.
-    * If the addition is already owned by this component, an Exception
+    * Add a Component (as a subcomponent) of this component.
+    * This component takes ownership of the subcomponent and it will be
+    * serialized (appear in XML) as part of this component. Specifically,
+    * it will appear in the `<components>` list for this Component.
+    * If the subcomponent is already owned by this component or exists
+    * in the same hierarchy (tree) as this component, an Exception
     * is thrown.
+    * @note addComponent is intended to replace existing addBody(), addJoint,
+    *       ... on Model or the requirement for specific add###() methods to
+    *       subcomponents to a Component.
     *
-    * @throws ComponentAlreadyPartOfOwnershipTree  */
-    void addComponent(Component* addition);
+    * Typical usage is:
+    @code
+        // Start with an empty Model (which is a Component)
+        Model myModel;
+        // Create any Component type on the heap
+        Body* newBody = new Body();
+        // Customize the Component by setting its properties
+        newBody->setName("newBody");
+        newBody->setMass(10.0);
+        newBody->setMassCenter(SimTK::Vec3(0));
+        // ... 
+        // Now add it to your model, which will take ownership of it
+        myModel.addComponent(newBody);
+        // 
+        // Keep creating and adding new components, like Joints, Forces, etc..
+    @endcode
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree
+    * @param subcomponent is the Component to be added. */
+    void addComponent(Component* subcomponent);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is 
@@ -444,6 +467,32 @@ public:
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
 
+    /** Query if there is a component (of any type) at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion." */
+    bool hasComponent(const std::string& pathname) const {
+        return hasComponent<Component>(pathname);
+    }
+
+    /** Query if there is a component of a given type at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
+     * Coordinate. This method cannot be used from scripting; see the
+     * non-templatized hasComponent(). */
+    template <class C>
+    bool hasComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        return comp != nullptr;
+    }
+
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
      * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
@@ -455,7 +504,7 @@ public:
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
      * If unsure of a Component's path or whether or not it exists in the model,
-     * use findComponent() 
+     * use printComponentsMatching() or hasComponent().
      *
      * @param  pathname        a pathname (string) of a Component of interest
      * @return const reference to component of type C at 
@@ -484,6 +533,26 @@ public:
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+
+    /** Print a list to the console of all components whose full path name
+     * contains the given string. You might use this if (a) you know the name of
+     * a component in your model but don't know its full path, (b) if you want
+     * to find all components with a given name, or (c) to get a list of all
+     * components on the right leg of a model (if all components on the right
+     * side have "_r" in their name).
+     *
+     * A function call like:
+     * @code{.cpp}
+     * unsigned num = comp.printComponentsMatching("rotation");
+     * @endcode
+     * may produce output like:
+     * @verbatim
+     * /leg_model/right_hip/rotation
+     * /leg_model/left_hip/rotation
+     * @endverbatim
+     *
+     * @returns The number of matches. */
+    unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
      * Get the number of "Continuous" state variables maintained by the Component
@@ -1118,18 +1187,6 @@ protected:
     }
 #endif //SWIG
 
-  /** Single call to construct the underlying infrastructure of a Component, which
-     include: 1) its properties, 2) its structural connectors (to other components),
-     3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
-     own Outputs (wires) that it provides for other components to access its values.
-     Override the corresponding private virtual method to customize any of them. */ 
-    void constructInfrastructure() {
-        constructProperties();
-        constructConnectors();
-        constructInputs();
-        constructOutputs();
-    }
-
     /**
     * Adopt a component as a subcomponent of this Component. Component
     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
@@ -1180,20 +1237,22 @@ protected:
 
     ///@{
 
-    /** Perform any secondary operations, e.g. to investigate the addition or 
-    inserting it into a particular internal list (for grouping), after adding
-    an addition (Component) to this component.
+    /** Perform any secondary operations, e.g. to investigate the component or 
+    to insert it into a particular internal list (for grouping), after adding
+    the subcomponent to this component. This is intended primarily for composites
+    like Model to have more control over the handling of a component being added
+    to it.
 
     If you override this method, be sure to invoke the base class method first,
     using code like this :
     @code
-    void MyComponent::extendAddComponent() {
-    Super::extendAddComponent(); // invoke parent class method
-    // ... your code goes here
-    // ... initialize any internal data structures
+    void MyComponent::extendAddComponent(Component* subcomponent) {
+        Super::extendAddComponent(); // invoke parent class method
+        // ... your code goes here
+        // ... initialize any internal data structures
     }
-        @endcode   */
-    virtual void extendAddComponent(Component* addition) {};
+    @endcode   */
+    virtual void extendAddComponent(Component* subcomponent) {};
 
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
@@ -1631,7 +1690,6 @@ protected:
     friend void Connector<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
-public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1732,6 +1790,7 @@ public:
     }
 #endif
 
+public:
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
@@ -1971,35 +2030,6 @@ protected:
     /// @}
 
 private:
-    // Construct the table of serializeable properties for a Component.
-    // Base constructs property that contains the structural connectors.
-    virtual void constructProperties() {}
-
-    //Construct the table of structural Connectors this component requires to
-    //hookup to other components in order to function. For example, a Joint needs 
-    //a parent body in order to join its owning body to the model. A Connector
-    //formalizes this dependency. The Component is inoperable until the Connector
-    //is satisfied. Connectors are not to be confused with subcomponents, with the key 
-    //difference being that a subcomponent is part of and owned by the component, 
-    //whereas a Connector is a requirement or a "slot" that must be satisfied by
-    //the time the system is ready to simulate. 
-    //Connectors are resolved in Component's connect().
-    //constructStructuralDependencies is a series of calls to constrcuctConnector()
-    //which adds a component by name and type to a dependency Connectors table.
-    virtual void constructConnectors() {}
-
-    //Construct the table of Inputs for this component. A Component::Input is a
-    //dependency on the Output of another Component. Unlike a structural 
-    //connector, an input specifies the required flow of data into the component.
-    //@see Component::Input
-    virtual void constructInputs() {}
-
-    //Construct the table of Outputs provided by this component. An Output is
-    //a data signal generated by this Component. It can be any response or 
-    //calculation made by the Component as a function of the state. Specifically,
-    //an Output is a redirect to a method on the Component and a specification of 
-    //the return type, @see addOutput()
-    virtual void constructOutputs() {}
 
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 

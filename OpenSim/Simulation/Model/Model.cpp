@@ -93,7 +93,7 @@ Model::Model() : ModelComponent(),
     _useVisualizer(false),
     _allControllersEnabled(true)
 {
-    constructInfrastructure();
+    constructProperties();
     setNull();
     finalizeFromProperties();
 }
@@ -110,7 +110,7 @@ Model::Model(const string &aFileName, const bool finalize) :
     _useVisualizer(false),
     _allControllersEnabled(true)
 {   
-    constructInfrastructure();
+    constructProperties();
     setNull();
     updateFromXMLDocument();
 
@@ -544,7 +544,7 @@ void Model::createMultibodyTree()
     // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(ground.getName(), 0, false, &ground);
 
-    auto& bodies = getComponentList<Body>();
+    auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
         _multibodyTree.addBody( body.getName(), body.getMass(), false,
                                 const_cast<Body*>(&body) );
@@ -552,7 +552,7 @@ void Model::createMultibodyTree()
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    auto& joints = getComponentList<Joint>();
+    auto joints = getComponentList<Joint>();
     for (auto& joint : joints) {
         std::string name = joint.getName();
         IO::TrimWhitespace(name);
@@ -744,6 +744,8 @@ void Model::extendConnectToModel(Model &model)
 // creating components in its system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
+
     Model *mutableThis = const_cast<Model *>(this);
 
     // Ensure Ground is added before all other Components
