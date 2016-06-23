@@ -23,7 +23,7 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple leg whose knee is actuated by a muscle:
+Let's simulate a simple arm whose elbow is actuated by a muscle:
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
