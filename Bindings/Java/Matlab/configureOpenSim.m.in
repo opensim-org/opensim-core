@@ -48,7 +48,7 @@
 %% Edit the classpath.txt file (need full path for print)
     % Create the string names used
     classFile = fullfile(mr, 'toolbox', 'local', 'classpath.txt');
-    OpenSimJarPath =  fullfile(openSimFolder, 'share', 'java', 'org-opensim-modeling.jar');
+    OpenSimJarPath =  fullfile(openSimFolder, '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     % Edit the class path txt file
     success = edit_path_txt_file(classFile, OpenSimJarPath);
     % If above failed, Matlab is probably new. Try newer technique.
