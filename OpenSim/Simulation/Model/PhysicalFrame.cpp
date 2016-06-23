@@ -195,34 +195,9 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                     SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
                     if (geomSetIter != visObjElement.element_end()) {
                         convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
+                        geomSetIter->setElementTag("geometry");
                     }
                 }
-            }
-        }
-        if (versionNumber < 30506) {
-            // geometry list property removed. Everything that was in this list
-            // should be moved to the components list property.
-            SimTK::Xml::element_iterator geometry = aNode.element_begin("geometry");
-            if (geometry != aNode.element_end()) {
-                // We found a list property of geometry.
-                SimTK::Xml::Element componentsNode;
-                SimTK::Xml::element_iterator componentsIt = aNode.element_begin("components");
-                if (componentsIt == aNode.element_end()) {
-                    // This component does not yet have a list property of
-                    // components, so we'll create one.
-                    componentsNode = SimTK::Xml::Element("components");
-                    aNode.insertNodeBefore(aNode.element_begin(), componentsNode);
-                } else {
-                    componentsNode = *componentsIt;
-                }
-                // Copy each node under <geometry> into <components>.
-                for (auto geomIt = geometry->element_begin();
-                        geomIt != geometry->element_end(); ++geomIt) {
-                    componentsNode.appendNode(geomIt->clone());
-                }
-                // Now that we moved over the geometry, we can delete the
-                // <geometry> element.
-                aNode.eraseNode(geometry);
             }
         }
     }
@@ -231,7 +206,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 
 void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
     const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform,
-    SimTK::Xml::Element& geomSetElement) const
+    SimTK::Xml::Element& geomSetElement)
 {
     std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
 
@@ -335,7 +310,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
 }
 
 // This private method creates a frame in the owner model document with passed in name and content relative to bodyName
-void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
+void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName)
 {
     SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);

@@ -185,6 +185,9 @@ template <class T> friend class ModelComponentSet;
     // End of System Creation and Access Methods.
     //@} 
 
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber) override;
+
 
 private:
     /** Satisfy the general Component interface, but this is not part of the
