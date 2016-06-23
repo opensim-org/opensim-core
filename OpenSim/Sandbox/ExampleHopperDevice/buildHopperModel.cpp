@@ -8,8 +8,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
- *            Thomas Uchida                                                   *
+ * Author(s): Thomas Uchida, Chris Dembia, Shrinidhi K. Lakshmikanth,         *
+ *            Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -29,25 +29,20 @@ prevents the end of the lower cylinder from passing through the floor. A vastus
 muscle wraps around a cylinder (patella) at the knee and a controller (brain)
 generates the muscle excitation signal required to produce a small hop when the
 mechanism is simulated. Two PhysicalOffsetFrames have been defined for attaching
-an assistive device (to help the hopper hop higher); their "path names" are:
+an assistive device (to help the hopper hop higher); their full path names are:
 
-    - on the thigh: "thigh/deviceAttachmentPoint"
-    - on the shank: "shank/deviceAttachmentPoint"
-*/
+    - on the thigh: "/Dennis/thigh/deviceAttachmentPoint"
+    - on the shank: "/Dennis/shank/deviceAttachmentPoint"
+
+You don't need to add anything in this file, but you should know what
+buildHopper() is doing. */
 
 #include <OpenSim/OpenSim.h>
+#include "helperMethods.h"
 
 namespace OpenSim {
 
-// This helper method configures a PathActuator so that it wraps over a
-// WrapObject attached to the specified Body. Implemented in helperMethods.cpp.
-void addPathWrapHelper(ModelComponent& model,
-    const std::string& pathActuatorName, const std::string& wrapObjectName,
-    const std::string& bodyName);
-
-// Build the model. Set showComponentList=true to display a list of all
-// components in the model.
-Model buildHopper(bool showComponentList) {
+Model buildHopper() {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -110,19 +105,19 @@ Model buildHopper(bool showComponentList) {
     double hipStiff[2] = {20., 20.}, hipDamping = 5., hipTransition = 10.;
     auto hipLimitForce = new CoordinateLimitForce("hipFlexion", hipRange[0],
         hipStiff[0], hipRange[1], hipStiff[1], hipDamping, hipTransition);
-    hopper.addForce(hipLimitForce);
+    hip->addComponent(hipLimitForce);
 
     double kneeRange[2] = {140., 10.};
     double kneeStiff[2] = {50., 40.}, kneeDamping = 2., kneeTransition = 10.;
     auto kneeLimitForce = new CoordinateLimitForce("kneeFlexion", kneeRange[0],
         kneeStiff[0], kneeRange[1], kneeStiff[1], kneeDamping, kneeTransition);
-    hopper.addForce(kneeLimitForce);
+    knee->addComponent(kneeLimitForce);
 
     // Create a constraint to keep the foot (distal end of the shank) directly
     // beneath the pelvis (the Y-axis points upwards).
     auto constraint = new PointOnLineConstraint(hopper.getGround(), Vec3(0,1,0),
                       Vec3(0), *shank, linkDistalPoint);
-    hopper.addConstraint(constraint);
+    shank->addComponent(constraint);
 
     // Use a contact model to prevent the foot (ContactSphere) from passing
     // through the floor (ContactHalfSpace).
@@ -180,11 +175,11 @@ Model buildHopper(bool showComponentList) {
 
     // Create frames on the thigh and shank segments for attaching the device.
     auto thighAttachment = new PhysicalOffsetFrame("deviceAttachmentPoint",
-                           *thigh, SimTK::Transform(Vec3(linkRadius, 0.1, 0)));
+                           *thigh, SimTK::Transform(Vec3(linkRadius, 0.15, 0)));
     auto shankAttachment = new PhysicalOffsetFrame("deviceAttachmentPoint",
                            *shank, SimTK::Transform(Vec3(linkRadius, 0, 0)));
-    hopper.addFrame(thighAttachment);
-    hopper.addFrame(shankAttachment);
+    thigh->addComponent(thighAttachment);
+    shank->addComponent(shankAttachment);
 
     // Attach geometry to the bodies and enable the visualizer.
     auto pelvisGeometry = Brick(Vec3(pelvisSideLength/2.));
@@ -198,8 +193,8 @@ Model buildHopper(bool showComponentList) {
 
     hopper.setUseVisualizer(true);
 
-    // We're done! Display a list of all components in the model.
-    if (showComponentList) { hopper.dumpSubcomponents(); }
+    // Suppress warning messages from Component::findComponent().
+    hopper.setDebugLevel(0);
 
     return hopper;
 }
