@@ -116,11 +116,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [newC] = searchForOpenSimString(C)
-    [rows, ~] = size(C{1, 1});
-    if rows == 0
-        newC = C;
-        return
-    end
+    newC = cell(1, 1);
     % Creates a new cell (newCnrows)and populates with only lines that dont
     % contain an 'OpenSim' string. Effectively deleting previous entries.
     [Cnrows,Cncols] = cellfun(@size, C);
