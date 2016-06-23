@@ -53,43 +53,43 @@ int main() {
 
     // Create two links, each with a mass of 1 kg, center of mass at the body's
     // origin, and moments and products of inertia of zero.
-    OpenSim::Body* femur = new OpenSim::Body("femur", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* tibia = new OpenSim::Body("tibia", 1, Vec3(0), Inertia(0));
+    OpenSim::Body* humerus = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
+    OpenSim::Body* radius  = new OpenSim::Body("radius",  1, Vec3(0), Inertia(0));
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
-    PinJoint* hip = new PinJoint("hip",
+    PinJoint* shoulder = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *femur, Vec3(0, 1, 0), Vec3(0));
-    PinJoint* knee = new PinJoint("knee",
-            *femur, Vec3(0), Vec3(0), *tibia, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, 1, 0), Vec3(0));
+    PinJoint* elbow = new PinJoint("elbow",
+            *humerus, Vec3(0), Vec3(0), *radius, Vec3(0, 1, 0), Vec3(0));
 
-    // Add a muscle that flexes the knee.
-    Millard2012EquilibriumMuscle* muscle = new
+    // Add a muscle that flexes the elbow.
+    Millard2012EquilibriumMuscle* biceps = new
         Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    muscle->addNewPathPoint("origin",    *femur, Vec3(0, 0.8, 0));
-    muscle->addNewPathPoint("insertion", *tibia, Vec3(0, 0.7, 0));
+    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.8, 0));
+    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.7, 0));
 
     // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
-    brain->addActuator(*muscle);
+    brain->addActuator(*biceps);
     // Muscle excitation is 0.3 for the first 0.5 seconds, then increases to 1.
     brain->prescribeControlForActuator("biceps",
             new StepFunction(0.5, 3, 0.3, 1));
 
     // Add components to the model.
-    model.addBody(femur); model.addBody(tibia);
-    model.addJoint(hip);  model.addJoint(knee);
-    model.addForce(muscle);
+    model.addBody(humerus);    model.addBody(radius);
+    model.addJoint(shoulder);  model.addJoint(elbow);
+    model.addForce(biceps);
     model.addController(brain);
 
-    // Add a console reporter to print the muscle fiber force and knee angle.
+    // Add a console reporter to print the muscle fiber force and elbow angle.
     ConsoleReporter* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.0);
-    reporter->updInput("inputs").connect(muscle->getOutput("fiber_force"));
+    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        knee->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinateSet()[0].getOutput("value"));
     model.addComponent(reporter);
 
     // Configure the model.
@@ -106,8 +106,8 @@ int main() {
     viz.setBackgroundColor(White);
     // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(femur->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration(tibia->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(humerus->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration( radius->getMobilizedBodyIndex(), Transform(center), geom);
 #endif
 
     // Simulate.
