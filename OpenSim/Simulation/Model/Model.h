@@ -478,9 +478,23 @@ public:
     //--------------------------------------------------------------------------
     // CREATE THE MULTIBODY SYSTEM
     //--------------------------------------------------------------------------
-    /**
-     * Add ModelComponents to the Model. Model takes ownership of the objects.
+    /** @name Add components to the model
+     * Model takes ownership of the Components.
+     * @note these are legacy methods and remain as a convenience alternative to
+     * using Component::addComponent(). Model will maintain Components added
+     * using these methods in separate %Sets of the corresponding type and they
+     * will serialize as part of type specific %Sets. In contrast, components
+     * added using addComponent() are not stored in the model's %Sets but live in
+     * a flat components list (which is also serialized). Component provides
+     * access via getComponentList<%SpecificType> or getComponent<%SpecificType> 
+     * to get any subcomponent, including those that are contained in Model's %Sets.
+     * Future versions of OpenSim are likely to deprecate the use of Sets and
+     * these methods, because they cannot support new types without modifying the
+     * API (for more add####() methods), whereas getComponentList<%SpecificType>()
+     * and getComponent<%SpecificType> are more general: they do not have these
+     * limitations and are applicable for any Component not just Model.
      */
+    // @{
     void addModelComponent(ModelComponent* adoptee);
     void addBody(Body *adoptee);
     void addJoint(Joint *adoptee);
@@ -490,6 +504,8 @@ public:
     void addContactGeometry(ContactGeometry *adoptee);
     void addFrame(Frame* adoptee);
     void addMarker(Marker *adoptee);
+    // @}
+
     /** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
     //--------------------------------------------------------------------------

@@ -77,7 +77,7 @@ public:
                      const PhysicalFrame& frame,
                      const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
 private:
     // INITIALIZATION
     void setNull();

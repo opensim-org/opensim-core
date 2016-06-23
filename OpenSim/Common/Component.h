@@ -400,14 +400,37 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-    * Add a Component to this component's property list.
-    * This component takes ownership of the added component.
-    * 
-    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
-    * methods are also renamed. For the time being remain consistent. -aseth 
+    * Add a Component (as a subcomponent) of this component.
+    * This component takes ownership of the subcomponent and it will be
+    * serialized (appear in XML) as part of this component. Specifically,
+    * it will appear in the `<components>` list for this Component.
+    * If the subcomponent is already owned by this component or exists
+    * in the same hierarchy (tree) as this component, an Exception
+    * is thrown.
+    * @note addComponent is intended to replace existing addBody(), addJoint,
+    *       ... on Model or the requirement for specific add###() methods to
+    *       subcomponents to a Component.
     *
-    * @throws ComponentAlreadyPartOfOwnershipTree  */
-    void addComponent(Component* comp);
+    * Typical usage is:
+    @code
+        // Start with an empty Model (which is a Component)
+        Model myModel;
+        // Create any Component type on the heap
+        Body* newBody = new Body();
+        // Customize the Component by setting its properties
+        newBody->setName("newBody");
+        newBody->setMass(10.0);
+        newBody->setMassCenter(SimTK::Vec3(0));
+        // ... 
+        // Now add it to your model, which will take ownership of it
+        myModel.addComponent(newBody);
+        // 
+        // Keep creating and adding new components, like Joints, Forces, etc..
+    @endcode
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree
+    * @param subcomponent is the Component to be added. */
+    void addComponent(Component* subcomponent);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is 
@@ -1204,6 +1227,24 @@ protected:
     You should consider this ordering when designing a %Component.  **/ 
 
     ///@{
+
+    /** Perform any secondary operations, e.g. to investigate the component or 
+    to insert it into a particular internal list (for grouping), after adding
+    the subcomponent to this component. This is intended primarily for composites
+    like Model to have more control over the handling of a component being added
+    to it.
+
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+    void MyComponent::extendAddComponent(Component* subcomponent) {
+        Super::extendAddComponent(); // invoke parent class method
+        // ... your code goes here
+        // ... initialize any internal data structures
+    }
+    @endcode   */
+    virtual void extendAddComponent(Component* subcomponent) {};
+
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component
