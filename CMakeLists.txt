@@ -384,9 +384,17 @@ if(${BUILD_JAVA_WRAPPING})
             # On Unix, assume host architecture to be same as target 
             # architecture.
             if((UNIX AND NOT ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64") OR
-               (MSVC AND NOT CMAKE_GENERATOR MATCHES "64"))
+               (MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "64"))
                 message(WARNING 
                     "Matlab found is 64-bit but C++ compiler is 32-bit.")
+            endif()
+        elseif(${Matlab_MEX_EXTENSION} MATCHES "32")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if((UNIX AND ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64") OR
+               (MSVC AND ${CMAKE_GENERATOR} MATCHES "64"))
+                message(WARNING 
+                    "Matlab found is 32-bit but C++ compiler is 64-bit.")
             endif()
         endif()
     endif()
