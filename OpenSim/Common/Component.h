@@ -475,8 +475,7 @@ public:
      * checks if `model` has a subcomponent "right_elbow," which has a
      * subcomponent "elbow_flexion." */
     bool hasComponent(const std::string& pathname) const {
-        const auto* comp = this->template traversePathToComponent<Component>(pathname);
-        return comp;
+        return hasComponent<Component>(pathname);
     }
 
     /** Query if there is a component of a given type at the specified
@@ -491,7 +490,7 @@ public:
     template <class C>
     bool hasComponent(const std::string& pathname) const {
         const C* comp = this->template traversePathToComponent<C>(pathname);
-        return comp;
+        return comp != nullptr;
     }
 
     /**
