@@ -95,7 +95,7 @@ MODEL_ADOPT_HELPER macro in python_simulation.i.
 note: ## is a "glue" operator: `a ## b` --> `ab`.
 */
 %pythonappend OpenSim::Component::addComponent %{
-    comp._markAdopted()
+    subcomponent._markAdopted()
 %}
 
 

@@ -99,10 +99,10 @@ private:
     void constructProperties();
     void extendFinalizeFromProperties() override;
 
-    //Load the mesh from disk.
+    /** Load the mesh from a file.
+    @param filename   string containing the file to be loaded
+    @return SimTK::ContactGeometry::TriangleMesh* heap allocated Contact mesh */
     SimTK::ContactGeometry::TriangleMesh* loadMesh(const std::string& filename) const;
-    
-    
 //=============================================================================
 // DATA
 //=============================================================================
