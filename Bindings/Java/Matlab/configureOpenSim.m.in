@@ -91,12 +91,12 @@ function [success] = edit_path_txt_file(txtname,spath)
     success = false;
     % Edit's path .txt files. Deletes old entries and adds new path.
     % Open the txt file
-    fileIDwrite = fopen(txtname, 'w');
+    fileIDtest = fopen(txtname, 'r+');
     % Return fail if file id is invalid.
-    if(fileIDwrite == -1)
+    if(fileIDtest == -1)
         return
     end
-    fclose(fileIDwrite);
+    fclose(fileIDtest);
     fileIDread = fopen(txtname, 'r');
     C = textscan(fileIDread,'%s', 'delimiter','\n');
     fclose(fileIDread);
