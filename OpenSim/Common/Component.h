@@ -403,7 +403,7 @@ public:
     * Add a Component (as a subcomponent) of this component.
     * This component takes ownership of the subcomponent and it will be
     * serialized (appear in XML) as part of this component. Specifically,
-    * it will appear in the %<components> list for this Component.
+    * it will appear in the `<components>` list for this Component.
     * If the subcomponent is already owned by this component or exists
     * in the same hierarchy (tree) as this component, an Exception
     * is thrown.
