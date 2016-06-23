@@ -214,14 +214,14 @@ void Component::finalizeFromProperties()
     // a pointer to its component (this) so that it can invoke its methods.
     for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
         AbstractConnector& connector = upd_connectors(ixc);
-        connector.initialize(*this);
+        connector.restoreMembers(*this);
         _connectorsTable[connector.getName()] = ixc;
     }
     
     for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
         AbstractInput& input = upd_inputs(ixi);
         // The inputsTable holds an std::pair, whose second entry is `isList`.
-        input.initialize(*this, _inputsTable[input.getName()].second);
+        input.restoreMembers(*this, _inputsTable[input.getName()].second);
         _inputsTable[input.getName()].first = ixi;
     }
     
@@ -261,7 +261,6 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    // rebuilding the connectors table, which was emptied by clearStateAllocations
     for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
         AbstractConnector& connector = upd_connectors(ixc);
         connector.disconnect();

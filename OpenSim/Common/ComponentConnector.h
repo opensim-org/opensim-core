@@ -130,7 +130,8 @@ public:
      */
     virtual bool isConnected() const = 0;
     
-    /** The number of desired connectees. This is 1 for a non-list connector. */
+    /** The number of slots to fill in order to satisfy this connector.
+     * This is 1 for a non-list connector. */
     unsigned getNumConnectees() const {
         auto num = getProperty_connectee_name().size();
         return static_cast<unsigned>(num);
@@ -199,7 +200,16 @@ public:
 
 protected:
     const Component& getOwner() const { return _owner.getRef(); }
-    void initialize(const Component& o, bool isList = false) {
+    /** Set the values of the member variables of this connector. This is
+     * called from Component::finalizeFromProperties().
+     * @note This is necessary because upon deserialization, the Connector is
+     * default-constructed, and the member variables are not stored in the
+     * serialization (because they should not be edited), but the containing
+     * Component does know what the values of these members should be. In the
+     * future, we hope to fix this mechanism so that Connectors retain the
+     * values of these member values even after deserialization, and so this
+     * call will not be necessary. */
+    void restoreMembers(const Component& o, bool isList = false) {
         _owner.reset(&o);
         _isList = isList;
         if (!_isList) {
@@ -231,7 +241,7 @@ private:
             updProperty_connectee_name().setAllowableListSize(1);
         }
     }
-    SimTK::Stage connectAtStage = SimTK::Stage::Topology;
+    SimTK::Stage connectAtStage = SimTK::Stage::Empty;
     bool _isList = false;
 
     SimTK::ReferencePtr<const Component> _owner;
@@ -823,7 +833,7 @@ int Class::constructConnector_##cname() {                                   \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _input_TODO_##iname {                                               \
+    int _input_##iname {                                               \
         this->template constructInput<T>(#iname, istage)                    \
     };                                                                      \
     /** @endcond                                                         */
@@ -846,7 +856,7 @@ int Class::constructConnector_##cname() {                                   \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _input_TODO_##iname {                                               \
+    int _input_##iname {                                               \
         this->template constructInput<T>(#iname, istage, true)              \
     };                                                                      \
     /** @endcond                                                         */
