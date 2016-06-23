@@ -87,30 +87,42 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function edit_path_txt_file(txtname,spath)
-% Edit's path .txt files. Deletes old entries and adds new path.
+function [success] = edit_path_txt_file(txtname,spath)
+    success = false;
+    % Edit's path .txt files. Deletes old entries and adds new path.
     % Open the txt file
-    fileID = fopen(txtname);
-    C = textscan(fileID,'%s', 'delimiter','\n');
-    fclose(fileID);
+    fileIDwrite = fopen(txtname, 'w');
+    % Return fail if file id is invalid.
+    if(fileIDwrite == -1)
+        return
+    end
+    fclose(fileIDwrite);
+    fileIDread = fopen(txtname, 'r');
+    C = textscan(fileIDread,'%s', 'delimiter','\n');
+    fclose(fileIDread);
     % Search the lines for previous entries and delete
     Cnew = searchForOpenSimString(C);
     % Add matlab jar path to cell
     [Cnrows,Cncols] = cellfun(@size, Cnew);
     Cnew{1}{Cnrows+1} = {spath};
     % Print the new cell array back to the txt file
-    fileID = fopen(txtname,'w');
+    fileIDwrite = fopen(txtname, 'w');
     for i=1:Cnrows+1
-        fprintf(fileID,'%s\n',char(Cnew{1}{i}));
+        fprintf(fileIDwrite, '%s\n', char(Cnew{1}{i}));
     end
-    fclose(fileID);
+    fclose(fileIDwrite);
+    success = true;
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [newC] = searchForOpenSimString(C)
-% Creates a new cell (newCnrows)and populates with only lines that dont
-% contain an 'OpenSim' string. Effectively deleting previous entries.
+    [rows, ~] = size(C{1, 1});
+    if rows == 0
+        newC = C;
+        return
+    end
+    % Creates a new cell (newCnrows)and populates with only lines that dont
+    % contain an 'OpenSim' string. Effectively deleting previous entries.
     [Cnrows,Cncols] = cellfun(@size, C);
     for i=1:Cnrows
         if isempty(strfind(lower(C{1}{i}),'opensim'))
