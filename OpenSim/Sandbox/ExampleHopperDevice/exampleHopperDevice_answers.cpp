@@ -50,14 +50,17 @@ static const std::string testbedAttachment2{"/testbed/load"};
 //      hopper for attaching the assistive device. See buildHopperModel.cpp and
 //      showSubcomponentInfo() in helperMethods.h.
 // [Step 3, Task A]
-static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
-static const std::string shankAttachment{"/Dennis/?????"}; //fill this in
+//static const std::string thighAttachment{"/Dennis/?????"};
+//static const std::string shankAttachment{"/Dennis/?????"};
+static const std::string thighAttachment{"/Dennis/thigh/deviceAttachmentPoint"};
+static const std::string shankAttachment{"/Dennis/shank/deviceAttachmentPoint"};
 
 //TODO: Provide the name of the output corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
 //      joint. Also see Device::getHeight() in defineDeviceAndController.h.
 // [Step 3, Task B]
-static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+//static const std::string hopperHeightOutput{"/Dennis/?????"};
+static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
 
 // To assist hopping, we will activate the knee device whenever the vastus
 // muscle is active. To do this, we will need to connect the vastus muscle's
@@ -81,12 +84,18 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
     //TODO: Get references to the "anchor" joints in the device.
+    auto& anchorA = device.updComponent<Joint>("anchorA");
+    auto& anchorB = device.updComponent<Joint>("anchorB");
 
     //TODO: Recall that the child frame of each anchor (WeldJoint) was attached
     //      to the corresponding cuff. We will now attach the parent frames of
     //      the anchors to modelFrameA and modelFrameB. First, get a reference
     //      to the specified PhysicalFrames in model, then connect them to the
     //      parent frames of each anchor (2 lines of code for each cuff).
+    const auto& frameA = model.getComponent<PhysicalFrame>(modelFrameAname);
+    anchorA.updConnector<PhysicalFrame>("parent_frame").connect(frameA);
+    const auto& frameB = model.getComponent<PhysicalFrame>(modelFrameBname);
+    anchorB.updConnector<PhysicalFrame>("parent_frame").connect(frameB);
 
     // Add the device to the model. We need to add the device using
     // addModelComponent() rather than addComponent() because of a bug in
@@ -106,10 +115,16 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 void addConsoleReporterToHopper(Model& hopper)
 {
     //TODO: Create a new ConsoleReporter. Set its name and reporting interval.
+    auto reporter = new ConsoleReporter();
+    reporter->setName("hopper_results");
+    reporter->set_report_time_interval(REPORTING_INTERVAL);
 
     //TODO: Connect outputs from the hopper to the reporter's inputs.
+    reporter->updInput("inputs").connect(hopper.getOutput(signalForKneeDevice));
+    reporter->updInput("inputs").connect(hopper.getOutput(hopperHeightOutput));
 
     //TODO: Add the reporter to the model.
+    hopper.addComponent(reporter);
 }
 
 
@@ -120,14 +135,18 @@ void addConsoleReporterToHopper(Model& hopper)
 void addSignalGeneratorToDevice(Device& device)
 {
     //TODO: Create a new SignalGenerator and set its name.
+    auto signalGen = new SignalGenerator();
+    signalGen->setName("signalGen");
 
     // Try changing the constant value and/or the function (e.g., try a
     // LinearFunction).
-    //signalGen->set_function(Constant(SIGNAL_GEN_CONSTANT));
-    //device.addComponent(signalGen);
+    signalGen->set_function(Constant(SIGNAL_GEN_CONSTANT));
+    device.addComponent(signalGen);
 
     //TODO: Connect the signal generator's output signal to the controller's
     //      activation input ("controller/activation").
+    device.updInput("controller/activation")
+        .connect(signalGen->getOutput("signal"));
 }
 
 

@@ -55,18 +55,24 @@ public:
     // The lengthening speed of the device.
     //TODO: Add an output called "speed" (to report the PathActuator's
     //      lengthening speed).
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
 
     // The force transmitted by the device.
     //TODO: Add an output called "tension".
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
 
     // The power produced(+) or dissipated(-) by the device.
     //TODO: Add an output called "power".
+    OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
     // The height of the model to which the device is attached.
     //TODO: Add an output called "height".
+    OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
 
     // The center of mass height of the model to which the device is attached.
     //TODO: Add an output called "com_height".
+    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
+                           SimTK::Stage::Position);
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
@@ -75,21 +81,24 @@ public:
     }
     double getSpeed(const SimTK::State& s) const {
         //TODO
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
     }
     double getTension(const SimTK::State& s) const {
         //TODO
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
     }
     double getPower(const SimTK::State& s) const {
         //TODO
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
         //      height. Hint: the hopper's pelvis is attached to ground with a
         //      vertical slider joint; see showAllOutputs() in helperMethods.h.
-        const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
+        //const std::string hopperHeightOutput = "/Dennis/?????";
+        const std::string hopperHeightOutput = "/Dennis/slider/height/value";
 
-        //return getModel().getOutputValue<double>(s, hopperHeightOutput);
-        return 0;
+        return getModel().getOutputValue<double>(s, hopperHeightOutput);
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {
         SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
@@ -100,6 +109,9 @@ protected:
     // Change the color of the device's path as its tension changes (optional).
     void extendRealizeDynamics(const SimTK::State& s) const override {
         //TODO
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1., getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
     }
 
 }; // end of Device
@@ -125,6 +137,8 @@ public:
     // Connector to the ScalarActuator for which the controller is computing a
     // control signal.
     //TODO: Add a connector called "actuator" for connecting the ScalarActuator.
+    OpenSim_DECLARE_CONNECTOR(actuator, ScalarActuator,
+        "The actuator for which the controller is computing a control signal");
 
     // Input the activation signal 'a' to which the controller's output should
     // be proportional.
@@ -143,9 +157,9 @@ public:
     double computeControl(const SimTK::State& s) const
     {
         double activation = getInputValue<double>(s, "activation");
-
         //TODO: Design a control strategy that improves jump height.
-        return 0;
+        //return 0;
+        return (activation < 0.31) ? 0. : get_gain() * activation;
     }
 
     // Member function for adding the control signal computed above into the
