@@ -223,9 +223,9 @@ int main() {
                                             SimTK::Vec3{0}};
 
     OpenSim::Brick brick{};
-    brick.setFrameName("slab");
+    brick.setFrame(*slab);
     brick.set_half_lengths(SimTK::Vec3{0.5, 0.05, 0.25});
-    slab->addGeometry(brick);
+    slab->addComponent(brick.clone());
 
     model.addBody(slab);
     model.addJoint(balljoint);
