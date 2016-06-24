@@ -569,9 +569,9 @@ public:
      * Python/Java/MATLAB. Here is an example of using this in MATLAB:
      * @code
      * coord = model.getComponent('right_elbow/elbow_flexion')
-     * coord.getNumConnectees() # okay; this is a Component method.
-     * coord.getDefaultClamped() # inaccessible; method on Coordinate.
-     * Coordinate.safeDownCast(coord).getDefaultClamped() # now accessible.
+     * coord.getNumConnectees() % okay; this is a Component method.
+     * coord.getDefaultClamped() % inaccessible; method on Coordinate.
+     * Coordinate.safeDownCast(coord).getDefaultClamped() % now accessible.
      * @endcode
      *
      * Exception: in Python, you will get the concrete type (in most cases):
@@ -822,7 +822,7 @@ public:
         return int(_outputsTable.size());
     }
 
-    /** Collect and return the names of Outputs in this component as an
+    /** Collect and return the names of Inputs in this component as an
      * std::vector. */
     std::vector<std::string> getInputNames() const {
         std::vector<std::string> names;
@@ -832,7 +832,7 @@ public:
         return names;
     }
 
-    /** Collect and return the names of Outputs in this compoonent as an
+    /** Collect and return the names of Outputs in this component as an
      * std::vector. */
     std::vector<std::string> getOutputNames() const {
         std::vector<std::string> names;
