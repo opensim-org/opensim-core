@@ -45,7 +45,6 @@ using namespace SimTK;
  */
 int main()
 {
-
     try {
         // Create a new OpenSim model
         Model osimModel;
@@ -61,7 +60,6 @@ int main()
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
         
-        Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
         Vec3 linkageMassCenter(0,linkageLength/2,0);
         Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
