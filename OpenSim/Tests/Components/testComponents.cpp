@@ -53,6 +53,13 @@ int main()
         availableComponents.push_back(availableFrames[i]);
     }
 
+    // next with type Geometry
+    ArrayPtrs<Geometry> availableGeometry;
+    Object::getRegisteredObjectsOfGivenType(availableGeometry);
+    for (int i = 0; i < availableGeometry.size(); ++i) {
+        availableComponents.push_back(availableGeometry[i]);
+    }
+
     // next with type Point
     ArrayPtrs<Point> availablePoints;
     Object::getRegisteredObjectsOfGivenType(availablePoints);
