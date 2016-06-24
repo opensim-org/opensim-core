@@ -31,8 +31,6 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
-void testVisModel(string fileName);
-
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
 class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImplementation
@@ -96,20 +94,6 @@ private:
     }
 };
 
-int main()
-{
-    try {
-        LoadOpenSimLibrary("osimActuators");
-        testVisModel("BuiltinGeometry.osim");
-    }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
 void testVisModel(string fileName)
 {
 
@@ -140,3 +124,120 @@ void testVisModel(string fileName)
     delete model;
     ASSERT(same == 0, __FILE__, __LINE__, "Files do not match.");
 }
+
+namespace OpenSim {
+
+//
+class FloatingFrame : public Frame {
+OpenSim_DECLARE_CONCRETE_OBJECT(FloatingFrame, Frame);
+public:
+    FloatingFrame(double speed) {
+        constructProperty_speed(0);
+        set_speed(speed);
+    }
+    OpenSim_DECLARE_PROPERTY(speed, double,
+    "This frame moves forward in the x direction at `speed` m/s.");
+protected:
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& s) const override {
+        return Vec3(s.getTime(), 0, 0);
+    }
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& s) const override {
+        return SimTK::SpatialVec(0);
+        // TODO OPENSIM_THROW(Exception, "Not implemented.");
+    }
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& s) const override {
+        return SimTK::SpatialVec(0);
+        // TODO OPENSIM_THROW(Exception, "Not implemented.");
+    }
+private:
+    const Frame& extendFindBaseFrame() const override {
+        // TODO is this well-defined for FloatingFrames?
+        return *this;
+    }
+    SimTK::Transform extendFindTransformInBaseFrame() const override {
+        return SimTK::Transform();
+    }
+};
+} // end namespace OpenSim
+
+
+
+
+void testNonPhysicalFrame() {
+    Model model;
+    auto* frame = new FloatingFrame(4.0);
+    frame->setName("floater");
+    frame->attachGeometry(new Sphere(2.0));
+    model.addComponent(frame);
+    SimTK::State& si = model.initSystem();
+    
+    // Set time to 1.0.
+    si.setTime(1);
+    
+    ModelDisplayHints mdh;
+    
+    // Fixed.
+    {
+        // The FloatingFrame is not fixed, so we expect to get only
+        // ground's FrameGeometry.
+        // use raw string literal so we can use newlines nicely.
+        std::string expectedText = R"(
+DecorativeFrame:1 bodyId:0 color:~[1,1,1] indexOnBody:0 Opacity:1 Rep:3 Scale:~[0.2,0.2,0.2] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+        )";
+        SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
+        model.generateDecorations(true, mdh, si, geometryToDisplay);
+        SimTK_TEST(geometryToDisplay.size() == 1);
+        cout << geometryToDisplay.size() << endl;
+        DecorativeGeometryImplementationText dgiText;
+        for (unsigned i = 0; i < geometryToDisplay.size(); i++)
+            geometryToDisplay[i].implementGeometry(dgiText);
+        SimTK_TEST(dgiText.getAsString() == expectedText);
+    }
+    
+    // Not fixed.
+    {
+        std::string expectedText = R"(
+DecorativeSphere:1 bodyId:0 color:~[1,1,1] indexOnBody:0 Opacity:1 Rep:3 Scale:~[0.2,0.2,0.2] Transform:
+[1,0,0,0]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+
+DecorativeFrame:1 bodyId:0 color:~[1,1,1] indexOnBody:0 Opacity:1 Rep:3 Scale:~[0.2,0.2,0.2] Transform:
+[1,0,0,4]
+[0,1,0,0]
+[0,0,1,0]
+[0,0,0,1]
+        )";
+        // Now we expect to get only the Sphere
+        // attached to floater (radius 2) and floater's FrameGeometry
+        // (at x = 4, b/c speed is 4 m/s, and we're evaluating at 1 second).
+        SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
+        model.generateDecorations(true, mdh, si, geometryToDisplay);
+        SimTK_TEST(geometryToDisplay.size() == 3);
+        cout << geometryToDisplay.size() << endl;
+        DecorativeGeometryImplementationText dgiText;
+        for (unsigned i = 0; i < geometryToDisplay.size(); i++)
+            geometryToDisplay[i].implementGeometry(dgiText);
+        SimTK_TEST(dgiText.getAsString() == expectedText);
+    }
+}
+
+int main()
+{
+    LoadOpenSimLibrary("osimActuators");
+    SimTK_START_TEST("testVisualization");
+        SimTK_SUBTEST1(testVisModel, "BuiltinGeometry.osim");
+        SimTK_SUBTEST(testNonPhysicalFrame);
+    SimTK_END_TEST();
+}
+
+
+
