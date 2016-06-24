@@ -67,16 +67,21 @@ public:
         "Scale factors in X, Y, Z directions respectively.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance attributes for this Geometry");
+
+//=============================================================================
+// CONNECTORS
+//=============================================================================
+    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
+        "The frame to which this geometry is attached. Note, being connected "
+        "to a Frame means its transform is used to position this Geometry." );
 //=============================================================================
 // INPUTS
 //=============================================================================
     OpenSim_DECLARE_INPUT(transform, SimTK::Transform, SimTK::Stage::Position,
         "The transform that positions the Geometry in Ground so it can be "
-        "visualized.");
-    
-    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
-        "The frame to which this geometry is attached.");
-    
+        "positioned. Note, either the Geometry is attached to a Frame OR "
+        "the input transform can be supplied, but not both. ");
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -153,6 +158,8 @@ protected:
     /// and return the result in the passed in Array.
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
+
+    void extendConnect(Component& root) override;
 
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 

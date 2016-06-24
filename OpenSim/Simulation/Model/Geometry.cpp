@@ -56,6 +56,26 @@ const OpenSim::Frame& Geometry::getFrame() const
     return getConnector<Frame>("frame").getConnectee();
 }
 
+void Geometry::extendConnect(Component& root)
+{
+    Super::extendConnect(root);
+
+    bool attachedToFrame = getConnector<Frame>("frame").isConnected();
+    bool hasInputTransform = getInput("transform").isConnected();
+    // Being both attached to a Frame (i.e. Connector<Frame> connected) 
+    // and the Input transform connected has ambiguous behavior so disallow it
+    if (attachedToFrame && hasInputTransform ) {
+        OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()
+            + "' cannot be attached to a Frame and have its "
+                "Input `transform` set.");
+    }
+    else if (!attachedToFrame && !hasInputTransform) {
+        OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()
+            + "' must be attached to a Frame OR have its "
+                "Input `transform` set.");
+    }
+}
+
 void Geometry::generateDecorations(bool fixed, 
     const ModelDisplayHints& hints,
     const SimTK::State& state,
@@ -78,8 +98,8 @@ void Geometry::generateDecorations(bool fixed,
 }
 
 /*
- * Apply Transform supplied to Geometry via its Input.
- * As a function of the State.
+ * Apply the Transform of the Frame the Geometry is attached to,
+ * OR use the Transform supplied to the Geometry via its Input.
 */
 void Geometry::setDecorativeGeometryTransform(
     SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
