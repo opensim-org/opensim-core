@@ -235,7 +235,7 @@ getPointForceDirections(const SimTK::State& s,
     for (i = 0; i < np; i++) {
         PointForceDirection *pfd = 
             new PointForceDirection(currentPath[i]->getLocation(), 
-                                    *(OpenSim::Body*)&(currentPath[i]->getBody()), Vec3(0));
+                                    currentPath[i]->getBody(), Vec3(0));
         rPFDs->append(pfd);
     }
 
@@ -252,10 +252,10 @@ getPointForceDirections(const SimTK::State& s,
 
             // Find the positions of start and end in the inertial frame.
             //engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-            posStart = start->getBody().getTransformInGround(s)*start->getLocation();
+            posStart = start->getLocationInGround(s);
             
             //engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
-            posEnd = end->getBody().getTransformInGround(s)*end->getLocation();
+            posEnd = end->getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
             direction = (posEnd - posStart);
@@ -342,20 +342,28 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
             // add in the tension point forces to body forces
             if (mppo) {// moving path point location is a function of the state
-                bo->applyForceToBodyPoint(s, mppo->getLocation(s), force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                bo->applyForceToBodyPoint(s, X_BF*mppo->getLocation(s), force,
                     bodyForces);
             }
             else {
-                bo->applyForceToBodyPoint(s, start->getLocation(), force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                bo->applyForceToBodyPoint(s, X_BF*start->getLocation(), force,
                     bodyForces);
             }
 
             if (mppf) {// moving path point location is a function of the state
-                bf->applyForceToBodyPoint(s, mppf->getLocation(s), -force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                bf->applyForceToBodyPoint(s, X_BF*mppf->getLocation(s), -force,
                     bodyForces);
             }
             else {
-                bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                bf->applyForceToBodyPoint(s, X_BF*end->getLocation(), -force,
                     bodyForces);
             }
 
@@ -389,7 +397,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
                     mppf->getXCoordinate().getMobilizerQIndex(), 
                     ff, mobilityForces);
             }
-            
         }       
     }
 }
