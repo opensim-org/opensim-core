@@ -208,8 +208,8 @@ void scaleModelWithLigament()
     comp.setup();
     std.setup();
 
-    ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
-    ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
+    auto compLigs = comp.getComponentList<Ligament>();
+    auto stdLigs = std.getComponentList<Ligament>();
 
     ComponentList<Ligament>::const_iterator itc = compLigs.begin();
     ComponentList<Ligament>::const_iterator its = stdLigs.begin();

@@ -82,11 +82,15 @@ set_target_properties(osim${KIT} PROPERTIES
 )
 
 # Compiler flags.
-# We purposefully wrap deprecated functions, so no need to see such warnings.
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # We purposefully wrap deprecated functions, so no need to see such warnings.
     set(COMPILE_FLAGS "-Wno-deprecated-declarations")
+    # C++ does not allow "const const T," but SWIG generates "const const T"
+    # even if we did not use it in the orignal source code (bug in SWIG).
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-duplicate-decl-specifier")
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+    # Don't warn about deprecated functions.
     set(COMPILE_FLAGS "/wd4996")
 endif()
 set_source_files_properties(

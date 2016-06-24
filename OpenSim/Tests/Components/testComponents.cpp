@@ -172,7 +172,7 @@ void testComponent(const Component& instanceToTest)
     // ----------------------------------------------------------------
     // First make sure Connectors are satisfied.
     Component* sub = instance;
-    ComponentList<Component> comps = instance->getComponentList<Component>();
+    auto comps = instance->getComponentList<Component>();
     ComponentList<Component>::const_iterator it = comps.begin();
 
     while(sub) {
@@ -390,8 +390,8 @@ void testComponentEquivalence(const Component* a, const Component* b)
     ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
         className + " components differ in number of outputs.");
 
-    ComponentList<Component> aSubsList = a->getComponentList<Component>();
-    ComponentList<Component> bSubsList = b->getComponentList<Component>();
+    auto aSubsList = a->getComponentList<Component>();
+    auto bSubsList = b->getComponentList<Component>();
     auto iter_a = aSubsList.begin();
     auto iter_b = bSubsList.begin();
 
