@@ -7,8 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
+ * Contributor(s): Thomas Uchida, James Dunne                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -43,48 +44,57 @@
 
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
-using namespace OpenSim; using OpenSim::Body;
+using namespace OpenSim;
 int main() {
     Model model;
 #ifdef VISUALIZE
     model.setUseVisualizer(true);
 #endif
-    // Two links, with mass of 1 kg, center of mass at the
-    // origin of the body's frame, and moments/products of inertia of zero.
-    OpenSim::Body* link1 = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* link2 = new OpenSim::Body("radius", 1, Vec3(0), Inertia(0));
 
-    // Joints that connect the bodies together.
-    PinJoint* joint1 = new PinJoint("shoulder",
+    // Create two links, each with a mass of 1 kg, center of mass at the body's
+    // origin, and moments and products of inertia of zero.
+    OpenSim::Body* humerus = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
+    OpenSim::Body* radius  = new OpenSim::Body("radius",  1, Vec3(0), Inertia(0));
+
+    // Connect the bodies with pin joints. Assume each body is 1 m long.
+    PinJoint* shoulder = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *link1, Vec3(0, 1, 0), Vec3(0));
-    PinJoint* joint2 = new PinJoint("elbow",
-            *link1, Vec3(0), Vec3(0), *link2, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, 1, 0), Vec3(0));
+    PinJoint* elbow = new PinJoint("elbow",
+            *humerus, Vec3(0), Vec3(0), *radius, Vec3(0, 1, 0), Vec3(0));
 
-    // Add an actuator that crosses the elbow, and a joint stop.
-    Millard2012EquilibriumMuscle* muscle = new
+    // Add a muscle that flexes the elbow.
+    Millard2012EquilibriumMuscle* biceps = new
         Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    muscle->addNewPathPoint("point1", *link1, Vec3(0, 0.8, 0));
-    muscle->addNewPathPoint("point2", *link2, Vec3(0, 0.7, 0));
+    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.8, 0));
+    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.7, 0));
 
-    // A controller that specifies the excitation of the biceps muscle.
+    // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
-    brain->addActuator(*muscle);
-    // Muscle excitation is 0.3 for the first 0.5 seconds, and 1.0 thereafter.
+    brain->addActuator(*biceps);
+    // Muscle excitation is 0.3 for the first 0.5 seconds, then increases to 1.
     brain->prescribeControlForActuator("biceps",
             new StepFunction(0.5, 3, 0.3, 1));
 
-    // Add bodies and joints to the model.
-    model.addBody(link1); model.addBody(link2);
-    model.addJoint(joint1); model.addJoint(joint2);
-    model.addForce(muscle);
+    // Add components to the model.
+    model.addBody(humerus);    model.addBody(radius);
+    model.addJoint(shoulder);  model.addJoint(elbow);
+    model.addForce(biceps);
     model.addController(brain);
+
+    // Add a console reporter to print the muscle fiber force and elbow angle.
+    ConsoleReporter* reporter = new ConsoleReporter();
+    reporter->set_report_time_interval(1.0);
+    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
+    reporter->updInput("inputs").connect(
+        elbow->getCoordinateSet()[0].getOutput("value"));
+    model.addComponent(reporter);
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix shoulder joint, flex elbow joint.
+    // Fix the hip at its default angle and begin with the knee flexed.
     model.updCoordinateSet()[0].setLocked(state, true);
     model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
@@ -93,11 +103,11 @@ int main() {
 #ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-    viz.setBackgroundColor(Vec3(1, 1, 1));
-    // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
+    viz.setBackgroundColor(White);
+    // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
     DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration(humerus->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.addDecoration( radius->getMobilizedBodyIndex(), Transform(center), geom);
 #endif
 
     // Simulate.
@@ -105,6 +115,7 @@ int main() {
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
 #ifdef VISUALIZE // To give you the chance to click View -> Save Movie.
+    std::cout << "Press enter/return to begin the simulation..." << std::endl;
     getchar();
 #endif
     manager.integrate(state);

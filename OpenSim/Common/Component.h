@@ -433,25 +433,58 @@ public:
     void addComponent(Component* subcomponent);
 
     /**
-     * Get an iterator through the underlying subcomponents that this component is 
-     * composed of. The hierarchy of Components/subComponents forms a tree. The 
-     * tree structure is fixed when the system is created.
+     * Get an iterator through the underlying subcomponents that this component is
+     * composed of. The hierarchy of Components/subComponents forms a tree.
      * The order of the Components is that of tree preorder traversal so that a
-     * component is traversed before its subcomponents. */
+     * component is traversed before its subcomponents.
+     *
+     * @code{.cpp}
+     * for (const auto& muscle : model.getComponentList<Muscle>()) {
+     *     muscle.get_max_isometric_force();
+     * }
+     * @endcode
+     *
+     * The returned ComponentList does not permit modifying any components; if
+     * you want to modify the components, see updComponentList().
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
     template <typename T = Component>
-    ComponentList<T> getComponentList() const {
+    ComponentList<const T> getComponentList() const {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
+        initComponentTreeTraversal(*this);
+        return ComponentList<const T>(*this);
+    }
+    
+    /** Similar to getComponentList(), except the resulting list allows one to
+    modify the components. For example, you could use this method to change
+    the max isometric force of all muscles:
+    
+    @code{.cpp}
+    for (auto& muscle : model.updComponentList<Muscle>()) {
+        muscle.set_max_isometric_force(...);
+    }
+    @endcode
+    
+    @note Do NOT use this method to add (or remove) (sub)components from any
+    component. The tree structure of the components should not be altered
+    through this ComponentList.
+    
+    @tparam T A subclass of Component (e.g., Body, Muscle). */
+    template <typename T = Component>
+    ComponentList<T> updComponentList() {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
-    /**
-     * Class to hold the list of components/subcomponents to iterate over.
-     */
+    /** Class that permits iterating over components/subcomponents (but does
+     * not actually contain the components themselves). */
     template <typename T>
     friend class ComponentList;
-    /**
-     * Class to iterate over ComponentList returned by getComponentList() call
-     */
+    /** Class to iterate over ComponentList returned by getComponentList(). */
     template <typename T>
     friend class ComponentListIterator;
 
@@ -1725,7 +1758,7 @@ protected:
                 foundCs.push_back(found);
         }
 
-        ComponentList<C> compsList = this->template getComponentList<C>();
+        ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
