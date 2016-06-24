@@ -113,7 +113,7 @@ inline void showSubcomponentInfo(const Component& comp)
 {
     using std::cout; using std::endl;
 
-    std::string className = typeid(C).name();
+    std::string className = SimTK::NiceTypeName<C>::namestr();
     const std::size_t colonPos = className.rfind(":");
     if (colonPos != std::string::npos)
         className = className.substr(colonPos+1, className.length()-colonPos);
