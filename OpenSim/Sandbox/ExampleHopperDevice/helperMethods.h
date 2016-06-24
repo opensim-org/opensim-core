@@ -166,9 +166,6 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
     }
 }
 
-class HopperDeviceInputListener : public SimTK::Visualizer::InputListener {
-};
-
 inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
 {
     SimTK::State initState = state;
@@ -180,6 +177,7 @@ inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
     SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     // We use the input silo to get key presses.
     using InputSilo = SimTK::Visualizer::InputSilo;
+    // OpenSim::ModelVisualizer adds two InputListeners, the 2nd is InputSilo.
     auto& silo = dynamic_cast<InputSilo&>(viz.updInputListener(1));
     SimTK::DecorativeText help("Press any key to start a new simulation; "
                                "ESC to quit.");
