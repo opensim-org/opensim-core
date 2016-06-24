@@ -127,7 +127,7 @@ inline void showSubcomponentInfo(const Component& comp)
     unsigned maxlen = 0;
     for (const C& thisComp : compList) {
         auto len = thisComp.getConcreteClassName().length();
-        maxlen = std::max(maxlen, static_cast<unsgined>(len));
+        maxlen = std::max(maxlen, static_cast<unsigned>(len));
     }
     maxlen += 4; //padding
 
