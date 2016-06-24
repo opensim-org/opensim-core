@@ -389,7 +389,7 @@ if(${BUILD_JAVA_WRAPPING})
                        " and OpenSim binaries arch have to be same.")
                 message(WARNING ${MSG})
             elseif(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "64")
-                string(concat MSG 
+                string(CONCAT MSG 
                        "Matlab found is 64-bit but C++ compiler chosen is "
                        "32-bit. Matlab arch and OpenSim binaries arch have"
                        " to be same.")
