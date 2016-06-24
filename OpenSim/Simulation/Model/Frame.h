@@ -87,7 +87,9 @@ public:
     OpenSim_DECLARE_PROPERTY(frame_geometry, FrameGeometry,
         "The geometry used to display the axes of this Frame.");
     OpenSim_DECLARE_LIST_PROPERTY(attached_geometry, Geometry,
-        "List of geometry attached to this Frame.");
+        "List of geometry attached to this Frame. Note, the geometry "
+        "are treated as fixed to the frame and they share the transform "
+        "of the frame when visualized");
 //=============================================================================
 // OUTPUTS
 //=============================================================================
@@ -229,9 +231,10 @@ public:
     // End of Base Frame and Transform accessors
     ///@}
 
-    /** Attach Geometry to this Frame and have this Frame take ownership of the
-        Geometry. The Frame will supply the Geometry's input Transform with
-        the Frame's own Transform w.r.t. Ground. */
+    /** Attach Geometry to this Frame and have this Frame take ownership of
+        it by adding it to this Frame's <attached_geometry> property list.
+        The Geometry is treated as being fixed to this Frame such that the
+        transform used to position the Geometry is that of this Frame. */
     void attachGeometry(OpenSim::Geometry* geom);
 
 protected:
