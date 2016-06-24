@@ -119,7 +119,8 @@ inline void showSubcomponentInfo(const Component& comp)
         className = className.substr(colonPos+1, className.length()-colonPos);
 
     cout << "Class name and full path name for descendants of '"
-         << comp.getName() << "' of type " << className << ":\n" << endl;
+         << comp.getName() << "' that are of type " << className << ":\n"
+         << endl;
 
     ComponentList<C> compList = comp.getComponentList<C>();
 
