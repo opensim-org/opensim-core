@@ -766,15 +766,6 @@ And you could get all the optional dependencies via:
 
 Your changes will only take effect in new terminal windows.
 
-
-[buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
-[travisci]: https://travis-ci.org/opensim-org/opensim-core
-[buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
-[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[running_gif]: doc/images/opensim_running.gif
-[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
-[java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
-
 #### For the impatient (Ubuntu)
 ##### Ubuntu 14.04 Trusty Tahr
 In **Terminal** --
@@ -869,3 +860,12 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
+
+
+[buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
+[travisci]: https://travis-ci.org/opensim-org/opensim-core
+[buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
+[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
+[running_gif]: doc/images/opensim_running.gif
+[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
+[java]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
