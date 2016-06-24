@@ -275,7 +275,6 @@ template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcAccelerationInGround(const SimTK::State& state) const
 {
-    std::cout << getConcreteClassName() << "::calcAccelerationInGround" << std::endl;
     // The rigid offset of the OffsetFrame expressed in ground
     const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
         getOffsetTransform().p();
