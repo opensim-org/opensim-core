@@ -330,7 +330,7 @@ ctest -C RelWithDebInfo --parallel 8
 On Mac OSX using Xcode
 ======================
 
-#### For Mac OSX 10.10 Yosemite and OS X 10.11 El Capitan
+### For Mac OSX 10.10 Yosemite and OS X 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
 ```shell 
 sudo xcodebuild -license
@@ -363,9 +363,9 @@ ctest -j8
 ```
 
 
-#### Extended Instructions for OSX
+### Extended Instructions for OSX
 
-##### Get the dependencies
+#### Get the dependencies
 
 * **operating system**: Mac OSX 10.8 or later.
 * **cross-platform build system**:
