@@ -124,7 +124,7 @@ inline void showSubcomponentInfo(const Component& comp)
     ComponentList<C> compList = comp.getComponentList<C>();
 
     // Step through compList once to find the longest concrete class name.
-    unsigned maxlen = 0;
+    unsigned long maxlen = 0;
     for (const C& thisComp : compList)
         maxlen = std::max(maxlen, thisComp.getConcreteClassName().length());
     maxlen += 4; //padding
