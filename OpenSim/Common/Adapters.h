@@ -26,4 +26,9 @@
 #include "DelimFileAdapter.h"
 #include "STOFileAdapter.h"
 #include "CSVFileAdapter.h"
+
+#ifdef WITH_BTK
+
 #include "C3DFileAdapter.h"
+
+#endif

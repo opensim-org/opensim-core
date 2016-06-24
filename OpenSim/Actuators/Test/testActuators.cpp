@@ -373,7 +373,7 @@ void testClutchedPathSpring()
     // body the path spring is connected to at both ends
     OpenSim::Body* block =
         new OpenSim::Body("block", mass ,Vec3(0),  mass*Inertia::brick(0.2, 0.1, 0.1));
-    block->attachGeometry(Brick(Vec3(0.2, 0.1, 0.1)));
+    block->attachGeometry(new Brick(Vec3(0.2, 0.1, 0.1)));
     block->scale(Vec3(0.2, 0.1, 0.1), false);
 
     //double dh = mass*gravity_vec(1)/stiffness;
@@ -573,7 +573,7 @@ void testBodyActuator()
                                              blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->attachGeometry(Brick(Vec3(blockSideLength/2,
+    block->attachGeometry(new Brick(Vec3(blockSideLength/2,
                                      blockSideLength/2, 
                                      blockSideLength/2)));
 
@@ -758,7 +758,7 @@ void testActuatorsCombination()
                                     blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->attachGeometry(Brick(Vec3(blockSideLength/2, 
+    block->attachGeometry(new Brick(Vec3(blockSideLength/2, 
                                      blockSideLength/2, 
                                      blockSideLength/2)));
 
