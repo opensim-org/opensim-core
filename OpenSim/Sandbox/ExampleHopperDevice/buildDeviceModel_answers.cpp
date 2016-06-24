@@ -101,7 +101,7 @@ Device* buildDevice() {
     controller->set_gain(GAIN);
 
     //TODO: Connect the controller's "actuator" Connector to pathActuator.
-    controller->updConnector<Actuator>("actuator").connect(*pathActuator);
+    controller->updConnector<ScalarActuator>("actuator").connect(*pathActuator);
 
     //TODO: Add the controller to the device.
     device->addComponent(controller);
