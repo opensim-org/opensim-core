@@ -34,7 +34,7 @@ Several lines of code need to be added to this file; see exampleHopperDevice.cpp
 and the "TODO" comments below for instructions. */
 
 #include <OpenSim/OpenSim.h>
-#include "defineDeviceAndController.h"
+#include "defineDeviceAndController_answers.h"
 #include "helperMethods.h"
 
 static const double OPTIMAL_FORCE{ 4000. };
