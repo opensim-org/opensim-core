@@ -356,7 +356,7 @@ public:
     @endcode
 
     @param[in]      fixed   
-        If \c true, generate only geometry that is independent of time, 
+        If \c true, generate only geometry that is fixed to a PhysicalFrame, 
         configuration, and velocity. Otherwise generate only such dependent 
         geometry.
     @param[in]      hints   
