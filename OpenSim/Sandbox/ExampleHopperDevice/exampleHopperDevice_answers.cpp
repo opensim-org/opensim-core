@@ -37,7 +37,7 @@ From there, you will be directed to specific files and methods in this project
 that need to be completed. Now, hop to it! */
 
 #include <OpenSim/OpenSim.h>
-#include "defineDeviceAndController.h"
+#include "defineDeviceAndController_answers.h"
 #include "helperMethods.h"
 
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
@@ -211,7 +211,7 @@ int main()
     //==========================================================================
     // Step 2. Build an assistive device and test it on a simple testbed.
     //==========================================================================
-    if (false)
+    if (true)
     {
         // Build the testbed and device.
         auto testbed = buildTestbed();
@@ -266,7 +266,7 @@ int main()
     //==========================================================================
     // Step 3. Connect the device to the hopper to increase hop height.
     //==========================================================================
-    if (false)
+    if (true)
     {
         // Build the hopper and device.
         auto assistedHopper = buildHopper();
