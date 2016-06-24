@@ -171,17 +171,31 @@ inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
     SimTK::State initState = state;
 
     // Configure the visualizer.
-    if (model.getUseVisualizer()) {
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        viz.setBackgroundType(viz.GroundAndSky).setShowSimTime(true);
-        viz.drawFrameNow(state);
-    }
+    OPENSIM_THROW_IF(!model.getUseVisualizer(), Exception,
+        "Must set model.setUseVisualizer(true).");
+    
+    SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    // We use the input silo to get key presses.
+    using InputSilo = SimTK::Visualizer::InputSilo;
+    // OpenSim::ModelVisualizer adds two InputListeners, the 2nd is InputSilo.
+    auto& silo = dynamic_cast<InputSilo&>(viz.updInputListener(1));
+    SimTK::DecorativeText help("Press any key to start a new simulation; "
+                               "ESC to quit.");
+    help.setIsScreenText(true);
+    viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
+    
+    viz.setBackgroundType(viz.GroundAndSky).setShowSimTime(true);
+    viz.drawFrameNow(state);
+    std::cout << "A visualizer window has opened." << std::endl;
 
-    // Simulate until the user enters 'q'.
+    // Simulate until the user hits ESC.
     while (true) {
-        std::cout << "Press <Enter> to begin simulating, or 'q' followed by "
-                  << "<Enter> to quit . . . " << std::endl;
-        if (std::cin.get() == 'q') { break; }
+        
+        // Get a key press.
+        silo.clear(); // Ignore any previous key presses.
+        unsigned key, modifiers;
+        silo.waitForKeyHit(key, modifiers);
+        if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
 
         // Set up manager and simulate.
         state = initState;
