@@ -209,20 +209,20 @@
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 // Iterators.
-%template(FrameList) OpenSim::ComponentList<OpenSim::Frame>;
-%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+%template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<const OpenSim::Frame>;
 
-%template(BodyList) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
+%template(BodyList) OpenSim::ComponentList<const OpenSim::Body>;
+%template(BodyIterator) OpenSim::ComponentListIterator<const OpenSim::Body>;
 
-%template(MuscleList) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+%template(MuscleList) OpenSim::ComponentList<const OpenSim::Muscle>;
+%template(MuscleIterator) OpenSim::ComponentListIterator<const OpenSim::Muscle>;
 
-%template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
-%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+%template(ModelComponentList) OpenSim::ComponentList<const OpenSim::ModelComponent>;
+%template(ModelComponentIterator) OpenSim::ComponentListIterator<const OpenSim::ModelComponent>;
 
-%template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
+%template(JointList) OpenSim::ComponentList<const OpenSim::Joint>;
+%template(JointIterator) OpenSim::ComponentListIterator<const OpenSim::Joint>;
 
 %template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
 %template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;

@@ -73,8 +73,8 @@
 
 %include <OpenSim/Common/Component.h>
 
-%template(ComponentsList) OpenSim::ComponentList<OpenSim::Component>;
-%template(ComponentIterator) OpenSim::ComponentListIterator<OpenSim::Component>;
+%template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
 %include <OpenSim/Common/Scale.h>
