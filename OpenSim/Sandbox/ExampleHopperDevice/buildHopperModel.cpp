@@ -182,14 +182,14 @@ Model buildHopper() {
     shank->addComponent(shankAttachment);
 
     // Attach geometry to the bodies and enable the visualizer.
-    auto pelvisGeometry = Brick(Vec3(pelvisSideLength/2.));
-    pelvisGeometry.setColor(Vec3(0.8, 0.1, 0.1));
-    pelvis->attachGeometry(pelvisGeometry);
+    auto pelvisGeometry = new Brick(Vec3(pelvisSideLength/2.));
+    pelvisGeometry->setColor(Vec3(0.8, 0.1, 0.1));
+    pelvis->attachGeometry(*pelvisGeometry);
 
-    auto linkGeometry = Cylinder(linkRadius, linkLength/2.);
-    linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
-    thigh->attachGeometry(linkGeometry);
-    shank->attachGeometry(linkGeometry);
+    auto linkGeometry = new Cylinder(linkRadius, linkLength/2.);
+    linkGeometry->setColor(Vec3(0.8, 0.1, 0.1));
+    thigh->attachGeometry(*linkGeometry);
+    shank->attachGeometry(*linkGeometry);
 
     hopper.setUseVisualizer(true);
 

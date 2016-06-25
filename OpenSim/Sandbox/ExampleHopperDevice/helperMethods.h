@@ -249,12 +249,11 @@ inline Model buildTestbed()
 
     // Create a 2500 kg load and add geometry for visualization.
     auto load = new Body("load", 2500., Vec3(0), Inertia(1.));
-    Sphere sphere;
-    sphere.setFrameName("load");
-    sphere.set_radius(0.02);
-    sphere.setOpacity(0.5);
-    sphere.setColor(SimTK::Blue);
-    load->addGeometry(sphere);
+    auto sphere = new Sphere(0.02);
+    sphere->setFrameName("load");
+    sphere->setOpacity(0.5);
+    sphere->setColor(SimTK::Blue);
+    load->addGeometry(*sphere);
     testbed.addBody(load);
 
     // Attach the load to ground with a FreeJoint and set the location of the
