@@ -63,16 +63,6 @@ inline void simulate(Model& model, SimTK::State& state,
 
 
 //------------------------------------------------------------------------------
-// Configure a PathActuator so that it wraps over a WrapObject attached to the
-// specified Body. The footwork in this method is necessary because of a bug in
-// GeometryPath.
-//------------------------------------------------------------------------------
-inline void addPathWrapHelper(ModelComponent& model,
-    const std::string& pathActuatorName, const std::string& wrapObjectName,
-    const std::string& bodyName);
-
-
-//------------------------------------------------------------------------------
 // Build a testbed for testing the device before attaching it to the hopper. We
 // will attach one end of the device to ground ("/testbed/ground") and the other
 // end to a sprung load ("/testbed/load").
@@ -218,21 +208,6 @@ inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
             manager.getStateStorage().print("hopperStates.sto");
         }
     }
-}
-
-inline void addPathWrapHelper(ModelComponent& model,
-    const std::string& pathActuatorName, const std::string& wrapObjectName,
-    const std::string& bodyName)
-{
-    // Ensure the specified body exists.
-    if (!model.hasComponent<Body>(bodyName)) { return; }
-
-    auto& pathActuator = model.updComponent<PathActuator>(pathActuatorName);
-    auto& body         = model.updComponent<Body>(bodyName);
-    auto& wrapObject   = body.upd_WrapObjectSet().get(wrapObjectName);
-    pathActuator.connect(model);
-    body.connect(model);
-    pathActuator.updGeometryPath().addPathWrap(wrapObject);
 }
 
 inline Model buildTestbed()

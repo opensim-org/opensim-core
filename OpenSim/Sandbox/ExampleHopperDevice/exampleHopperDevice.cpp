@@ -43,8 +43,8 @@ that need to be completed. Now, hop to it! */
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
 
-static const std::string testbedAttachment1{"/testbed/ground"};
-static const std::string testbedAttachment2{"/testbed/load"};
+static const std::string testbedAttachment1{"ground"};
+static const std::string testbedAttachment2{"load"};
 
 //TODO: Provide the name of the output corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
@@ -96,9 +96,15 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     // Model::initSystem().
     model.addModelComponent(&device);
 
-    // Configure the device to wrap over the patella (if one exists). We are
-    // currently using a helper method because of a bug in GeometryPath.
-    addPathWrapHelper(model, "/device/cableAtoB", "patella", "thigh");
+    // Configure the device to wrap over the patella (if one exists; there is no
+    // patella in the testbed).
+    const std::string& frameName = "thigh/patellaFrame";
+    if (model.hasComponent<PhysicalFrame>(frameName)) {
+        auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
+        auto& frame = model.updComponent<PhysicalFrame>(frameName);
+        auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
+        cable.updGeometryPath().addPathWrap(wrapObject);
+    }
 }
 
 
