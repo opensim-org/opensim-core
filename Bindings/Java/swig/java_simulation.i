@@ -223,6 +223,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 
+
 %import "java_common.i"
 
 %include <Bindings/simulation.i>
