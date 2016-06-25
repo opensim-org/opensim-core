@@ -58,15 +58,48 @@
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 
+// Used in Component::generateDecorations.
+%include <OpenSim/Common/ModelDisplayHints.h>
+
+namespace OpenSim {
+    %ignore Output::downcast(AbstractOutput&); // suppress warning 509.
+}
+// TODO I'm having trouble with the nested type inside a template class.
+// TODO %template(OutputChannelDouble) OpenSim::Output<double>::Channel;
+// TODO %template(OutputChannelVec3) OpenSim::Output<SimTK::Vec3>::Channel;
+// TODO %template(OutputChannelTransform) OpenSim::Output<SimTK::Transform>::Channel;
+// TODO %template(OutputChannelVector) OpenSim::Output<SimTK::Vector>::Channel;
 %include <OpenSim/Common/ComponentOutput.h>
 %template(OutputDouble) OpenSim::Output<double>;
 %template(OutputVec3) OpenSim::Output<SimTK::Vec3>;
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
-%include <OpenSim/Common/ComponentConnector.h>
 
+namespace OpenSim {
+    %ignore Input::downcast(AbstractInput&); // suppress warning 509.
+}
+%include <OpenSim/Common/ComponentConnector.h>
+%template(InputDouble) OpenSim::Input<double>;
+%template(InputVec3) OpenSim::Input<SimTK::Vec3>;
+// TODO These classes had issues from SimTK typedefs:
+// TODO %template(InputTransform) OpenSim::Input<SimTK::Transform>;
+// TODO %template(InputVector) OpenSim::Input<SimTK::Vector>;
+
+namespace OpenSim {
+    %ignore ComponentListIterator::operator++; // ignore warning 383.
+}
 %include <OpenSim/Common/ComponentList.h>
+
+// Can't wrap the return type of this function.
+%ignore OpenSim::Component::getOutputs;
+
+%include <OpenSim/Common/Component.h>
+
+%template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
+%template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
+%template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
+
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
@@ -74,6 +107,10 @@
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
 
+namespace OpenSim {
+    %ignore DataTable_::DataTable_(DataTable_ &&);
+    %ignore TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
+}
 %shared_ptr(OpenSim::AbstractDataTable);
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
@@ -119,8 +156,31 @@
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
 %include <OpenSim/Common/FileAdapter.h>
+namespace OpenSim {
+    %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
+    %ignore DelimFileAdapter::DelimFileAdapter(DelimFileAdapter &&);
+    %ignore STOFileAdapter::STOFileAdapter(STOFileAdapter &&);
+    %ignore CSVFileAdapter::CSVFileAdapter(CSVFileAdapter &&);
+}
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
 %include <OpenSim/Common/STOFileAdapter.h>
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
+
+namespace OpenSim {
+    %ignore TableSource_::TableSource_(TableSource_ &&);
+}
+%include <OpenSim/Common/TableSource.h>
+%template(TableSource) OpenSim::TableSource_<SimTK::Real>;
+%template(TableSourceVec3) OpenSim::TableSource_<SimTK::Vec3>;
+
+%include <OpenSim/Common/Reporter.h>
+%template(ReporterDouble) OpenSim::Reporter<SimTK::Real>;
+%template(ReporterVec3) OpenSim::Reporter<SimTK::Vec3>;
+%template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
+%template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
+%template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
+%template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
+%template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;

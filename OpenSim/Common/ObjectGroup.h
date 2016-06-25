@@ -63,7 +63,7 @@ protected:
     PropertyStrArray _memberNamesProp;
     Array<std::string>& _memberNames;
 
-    Array<Object*> _memberObjects;
+    Array<const Object*> _memberObjects;
 
 //=============================================================================
 // METHODS
@@ -83,11 +83,11 @@ public:
    void copyData(const ObjectGroup &aGroup);
 
     bool contains(const std::string& aName) const;
-    void add(Object* aObject);
+    void add(const Object* aObject);
     void remove(const Object* aObject);
-    void replace(const Object* aOldObject, Object* aNewObject);
+    void replace(const Object* aOldObject, const Object* aNewObject);
     void setupGroup(ArrayPtrs<Object>& aObjects);
-    const Array<Object*>& getMembers() const { return _memberObjects; }
+    const Array<const Object*>& getMembers() const { return _memberObjects; }
 
 private:
     void setNull();

@@ -58,24 +58,16 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
-    //SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::HuntCrossleyForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().size(); ++j)
-        {
-            if (!_model->getContactGeometrySet().contains(
-                        params.getGeometry()[j])) {
-                std::string errorMessage = "Invalid ContactGeometry ("
-                    + params.getGeometry()[j]
-                    + ") specified in HuntCrossleyForce" + getName();
-                throw Exception(errorMessage);
-            }
-            ContactGeometry& geom = _model->updContactGeometrySet().get(
-                    params.getGeometry()[j]);
+        for (int j = 0; j < params.getGeometry().size(); ++j) {
+            // get the ContactGeometry from the Model
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
 
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to
@@ -335,7 +327,7 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             const ContactGeometry& geom =
-                _model->getContactGeometrySet().get(params.getGeometry()[j]);
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
             std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
@@ -376,8 +368,8 @@ getRecordValues(const SimTK::State& state) const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            const ContactGeometry& geom = 
-                _model->getContactGeometrySet().get(params.getGeometry()[j]);
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
     
             const auto& mbi = geom.getFrame().getMobilizedBodyIndex();
             const auto& thisBodyForce = bodyForces(mbi);

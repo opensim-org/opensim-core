@@ -203,7 +203,7 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
             k = groupNames.findIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = modelForces.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
                     ((Force *)(members[j]))->setDisabled(s, true);
             }

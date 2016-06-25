@@ -24,18 +24,11 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/osimCommonDLL.h>
 #include <OpenSim/Common/Object.h>
 
 
 namespace OpenSim {
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 //==============================================================================
 //                           MODEL DISPLAY HINTS
@@ -77,7 +70,7 @@ be chained for convenience like assignment statements.
 
 @see ModelComponent::generateDecorations(), ModelVisualizer 
 @author Michael Sherman **/
-class OSIMSIMULATION_API ModelDisplayHints : public Object {
+class OSIMCOMMON_API ModelDisplayHints : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModelDisplayHints, Object);
 public:
     OpenSim_DECLARE_PROPERTY(show_wrap_geometry, bool,

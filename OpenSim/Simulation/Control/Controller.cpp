@@ -103,23 +103,39 @@ void Controller::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
-    if (getProperty_actuator_list().size() > 0){
-        if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
-            setActuators(model.getActuators());
-            // setup actuators to ensure actuators added by controllers are also setup properly
-            // TODO: Adopt the controls (discrete state variables) of the Actuator
-            return;
+    // TODO this custom connection code can all disappear
+    // if we use a list Connector<Actuator> 
+
+    // make sure controller does not take ownership
+    _actuatorSet.setMemoryOwner(false);
+    _actuatorSet.setSize(0);
+
+    int nac = getProperty_actuator_list().size();
+    if (nac == 0)
+        return;
+    
+    auto actuators = model.getComponentList<Actuator>();
+    if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
+        for (auto& actuator : actuators) {
+            _actuatorSet.adoptAndAppend(&actuator);
         }
-        else{
-            Set<Actuator> actuatorsByName;
-            for (int i = 0; i < getProperty_actuator_list().size(); i++){
-                if (model.updActuators().contains(get_actuator_list(i)))
-                    actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
-                else
-                    cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
+        return;
+    }
+    else{
+         for (int i = 0; i < nac; ++i) {
+             bool found = false;
+             for (auto& actuator : actuators) {
+                if (get_actuator_list(i) == actuator.getName()) {
+                    _actuatorSet.adoptAndAppend(&actuator);
+                    found = true;
+                    break;
+                }
+             }
+            if (!found) {
+                cerr << "WARN: Controller::connectToModel : Actuator "
+                    << get_actuator_list(i) <<
+                    " was not found and will be ignored." << endl;
             }
-            actuatorsByName.setMemoryOwner(false);
-            setActuators(actuatorsByName);
         }
     }
 }
@@ -135,31 +151,28 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
+    //TODO this needs to be setting a Connector list of Actuators
+
+    // make sure controller does NOT assume ownership
+    _actuatorSet.setMemoryOwner(false);
     //Rebuild consistent set of actuator lists
     _actuatorSet.setSize(0);
     updProperty_actuator_list().clear();
     for (int i = 0; i< actuators.getSize(); i++){
         addActuator(actuators[i]);
     }
-    // make sure controller does not take ownership
-    _actuatorSet.setMemoryOwner(false);
 }
 
 
 void Controller::addActuator(const Actuator& actuator)
 {
-    // want to keep a reference not make a clone
-    // but set interface does not take const pointer
-    // just const ref that forces a copy
-    // const_cast only to add to the private set of actuators
-    Actuator* mutable_act = const_cast<Actuator *>(&actuator);
-    _actuatorSet.adoptAndAppend(mutable_act);
+    _actuatorSet.adoptAndAppend(&actuator);
 
     int found = updProperty_actuator_list().findIndex(actuator.getName());
     if (found < 0) //add if the actuator isn't already in the list
         updProperty_actuator_list().appendValue(actuator.getName());
 }
 
-Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
+Set<const Actuator>& Controller::updActuators() { return _actuatorSet; }
 
-const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }
+const Set<const Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }

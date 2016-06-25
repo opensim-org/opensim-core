@@ -29,7 +29,7 @@
 #include <OpenSim/version.h>
 
 #include "Model.h"
-#include "ModelDisplayHints.h"
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include "ModelVisualizer.h"
 #include "MarkerSet.h"
 #include "BodySet.h"

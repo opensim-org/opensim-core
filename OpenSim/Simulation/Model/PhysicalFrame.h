@@ -204,16 +204,16 @@ private:
     void constructProperties();
 
     /* Utility to convert Geometry version 3.2 to recent 4.0 format */
-    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
+    static void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
         const SimTK::Vec3& outerScaleFactors,
         const SimTK::Vec6& outerTransform,
-        SimTK::Xml::Element& geomSetElement) const;
+        SimTK::Xml::Element& geomSetElement);
 
     /* Utility to construct a PhysicalOffsetFrame from properties of an
        offset transform. */
-    void createFrameForXform(const SimTK::Xml::element_iterator&,
+    static void createFrameForXform(const SimTK::Xml::element_iterator&,
         const std::string& frameName,
-        const SimTK::Vec6& localXform, const std::string& bodyName) const;
+        const SimTK::Vec6& localXform, const std::string& bodyName);
 
 
     /* ID for the underlying mobilized body in Simbody system.

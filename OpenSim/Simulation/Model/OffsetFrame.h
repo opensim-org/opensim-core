@@ -165,6 +165,7 @@ protected:
     These methods adhere to the Component Interface**/
     /**@{**/
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     /**@}**/
 
     // The transform X_GO for this OffsetFrame, O, in Ground, G.
@@ -274,6 +275,7 @@ template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcAccelerationInGround(const SimTK::State& state) const
 {
+    std::cout << getConcreteClassName() << "::calcAccelerationInGround" << std::endl;
     // The rigid offset of the OffsetFrame expressed in ground
     const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
         getOffsetTransform().p();
@@ -346,6 +348,13 @@ void OffsetFrame<C>::extendFinalizeFromProperties()
     _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
 }
 
+template<class C>
+void OffsetFrame<C>::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    OPENSIM_THROW_IF(*this == getParentFrame(), Exception,
+        getConcreteClassName() + " cannot connect to itself!");
+}
 
 } // end of namespace OpenSim
 

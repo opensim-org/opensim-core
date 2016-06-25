@@ -60,18 +60,28 @@ class ModelComponent;
 class OSIMSIMULATION_API Geometry : public Component {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Geometry, Component);
 public:
-    // Properties common to all Geometry types are included as Properties
-    // of the base class.
-    // Scale factors
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Default display properties e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance for this Geometry");
-    
+        "Default appearance attributes for this Geometry");
+
+//=============================================================================
+// CONNECTORS
+//=============================================================================
     OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
-        "The frame to which this geometry is attached.");
-    
+        "The frame to which this geometry is attached. Note, being connected "
+        "to a Frame means its transform is used to position this Geometry." );
+//=============================================================================
+// INPUTS
+//=============================================================================
+    OpenSim_DECLARE_INPUT(transform, SimTK::Transform, SimTK::Stage::Position,
+        "The transform that positions the Geometry in Ground so it can be "
+        "positioned. Note, either the Geometry is attached to a Frame OR "
+        "the input transform can be supplied, but not both. ");
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -86,15 +96,12 @@ public:
 
     /// Default destructor
     virtual ~Geometry() {}
-    /** Interface methods to handle the Frame which the Geometry is attached to.
-    **/
-    /** %Set the name of the Frame of attachment **/
-    void setFrameName(const std::string& name);
+    /** Interface methods to handle the Frame which the Geometry is attached to. */
     /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
     this Geometry is attached (using a Connector). **/
-    const std::string& getFrameName() const;
+
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */
     const Frame& getFrame() const;
@@ -152,6 +159,8 @@ protected:
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
+    void extendConnect(Component& root) override;
+
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 
     // passed in state. Both transform and body_id are set in the passed-in 
@@ -189,6 +198,9 @@ private:
 /**
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
+ * 
+ * NOTE: LineGeometry assumes its Frame is Ground!
+ * TODO make LineGeometry draw between actual Points!
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {   
@@ -202,30 +214,26 @@ public:
         "Line end point.");
     /// Convenience constructor that takes two end points
     LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
         setPoints(aPoint1, aPoint2);
-        std::string gnd("ground");
-        setFrameName(gnd);
     }
+
     /// default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
     }
+
     /// destructor
     virtual ~LineGeometry() {}
     /// Get end points as Vec3 in passed in arguments
-    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
-    {
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const {
         rPoint1 = get_start_point();
         rPoint2 = get_end_point();
     }
     /// %Set end points from passed in arguments
-    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
-    {
+    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2) {
         upd_start_point() = aPoint1;
         upd_end_point() = aPoint2;
     }
