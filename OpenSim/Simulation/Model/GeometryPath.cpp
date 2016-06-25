@@ -131,32 +131,44 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     this->updateDisplayPath(state);
 
+    // Even though these are Points which are Components they are completey 
+    // orphaned and not part of any system since they are populated during 
+    // a simulation. TODO we need another data structure to be a DecorativePath
+    // which simply an array of points in ground or on MBs.
+    // Trying to getLocationInGround(state) will faile due to no underlying system.
     const Array<PathPoint*>& points = getCurrentDisplayPath(state);
 
     if (points.getSize() == 0) { return; }
 
     const PathPoint* lastPoint = points[0];
+    /*
     Vec3 lastLoc_B = lastPoint->getLocation();
     MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
+    */
 
+    MobilizedBodyIndex mbix(0);
+
+    Vec3 lastPos = lastPoint->getLocationInGround(state);
     if (hints.get_show_path_points())
-        DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state),
-        appendToThis);
+        DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
+    /*
     const SimTK::SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     Vec3 lastPos = matter.getMobilizedBody(lastBody)
         .getBodyTransform(state) * lastLoc_B;
-
+        */
+    Vec3 pos;
     for (int j = 1; j < points.getSize(); j++) {
         const PathPoint* point = points[j];
-        const Vec3 loc_B = point->getLocation();
-        const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
+
+        // the body (PhysicalFrame) IS part of the actual Model and its system
+        // so we can ask it for its transform
+        pos = point->getBody().getTransformInGround(state)*point->getLocation();
 
         if (hints.get_show_path_points())
-            DefaultGeometry::drawPathPoint(body, loc_B, getColor(state),
-            appendToThis);
+            DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);
 
-        Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
+        
         // Line segments will be in ground frame
         appendToThis.push_back(DecorativeLine(lastPos, pos)
             .setLineThickness(4)
@@ -349,20 +361,20 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             }
             else {
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                auto X_BF = start->getParentFrame().findTransformInBaseFrame();
                 bo->applyForceToBodyPoint(s, X_BF*start->getLocation(), force,
                     bodyForces);
             }
 
             if (mppf) {// moving path point location is a function of the state
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                auto X_BF = mppf->getParentFrame().findTransformInBaseFrame();
                 bf->applyForceToBodyPoint(s, X_BF*mppf->getLocation(s), -force,
                     bodyForces);
             }
             else {
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                auto X_BF = end->getParentFrame().findTransformInBaseFrame();
                 bf->applyForceToBodyPoint(s, X_BF*end->getLocation(), -force,
                     bodyForces);
             }
