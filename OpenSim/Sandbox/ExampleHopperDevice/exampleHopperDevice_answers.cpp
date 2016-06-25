@@ -46,26 +46,29 @@ static const double REPORTING_INTERVAL{ 0.2 };
 static const std::string testbedAttachment1{"/testbed/ground"};
 static const std::string testbedAttachment2{"/testbed/load"};
 
+//TODO: Provide the name of the output corresponding to the hopper's height.
+//      Hint: the hopper's pelvis is attached to ground with a vertical slider
+//      joint; see buildHopperModel.cpp and showSubcomponentInfo() in
+//      helperMethods.h.
+// [Step 1, Task A]
+//static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
+
 //TODO: Provide the full path names of the PhysicalOffsetFrames defined on the
 //      hopper for attaching the assistive device. See buildHopperModel.cpp and
 //      showSubcomponentInfo() in helperMethods.h.
 // [Step 3, Task A]
-//static const std::string thighAttachment{"/Dennis/?????"};
-//static const std::string shankAttachment{"/Dennis/?????"};
+//static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
+//static const std::string shankAttachment{"/Dennis/?????"}; //fill this in
 static const std::string thighAttachment{"/Dennis/thigh/deviceAttachmentPoint"};
 static const std::string shankAttachment{"/Dennis/shank/deviceAttachmentPoint"};
 
-//TODO: Provide the name of the output corresponding to the hopper's height.
-//      Hint: the hopper's pelvis is attached to ground with a vertical slider
-//      joint. Also see Device::getHeight() in defineDeviceAndController.h.
+//TODO: To assist hopping, we will activate the knee device whenever the vastus
+//      muscle is active. To do this, we will need to connect the vastus
+//      muscle's "activation" output to the controller's "activation" input.
 // [Step 3, Task B]
-//static const std::string hopperHeightOutput{"/Dennis/?????"};
-static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
-
-// To assist hopping, we will activate the knee device whenever the vastus
-// muscle is active. To do this, we will need to connect the vastus muscle's
-// "activation" output to the controller's "activation" input.
-static const std::string signalForKneeDevice{"/Dennis/vastus/activation"};
+//static const std::string vastusActivationOutput{"/Dennis/?????"}; //fill this in
+static const std::string vastusActivationOutput{"/Dennis/vastus/activation"};
 
 
 namespace OpenSim {
@@ -83,15 +86,16 @@ Device* buildDevice();  //defined in buildDevice.cpp
 void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
-    //TODO: Get references to the "anchor" joints in the device.
+    //TODO: Get writable references to the "anchor" joints in the device.
     auto& anchorA = device.updComponent<Joint>("anchorA");
     auto& anchorB = device.updComponent<Joint>("anchorB");
 
     //TODO: Recall that the child frame of each anchor (WeldJoint) was attached
     //      to the corresponding cuff. We will now attach the parent frames of
-    //      the anchors to modelFrameA and modelFrameB. First, get a reference
-    //      to the specified PhysicalFrames in model, then connect them to the
-    //      parent frames of each anchor (2 lines of code for each cuff).
+    //      the anchors to modelFrameA and modelFrameB. First get references to
+    //      the two specified PhysicalFrames in model (i.e., modelFrameAname and
+    //      modelFrameBname), then connect them to the parent frames of each
+    //      anchor. (2 lines of code for each anchor.)
     const auto& frameA = model.getComponent<PhysicalFrame>(modelFrameAname);
     anchorA.updConnector<PhysicalFrame>("parent_frame").connect(frameA);
     const auto& frameB = model.getComponent<PhysicalFrame>(modelFrameBname);
@@ -110,7 +114,7 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
 //------------------------------------------------------------------------------
 // Add a ConsoleReporter to the hopper model to display variables of interest.
-// [Step 1, Task A]
+// [Step 1, Task B]
 //------------------------------------------------------------------------------
 void addConsoleReporterToHopper(Model& hopper)
 {
@@ -119,9 +123,14 @@ void addConsoleReporterToHopper(Model& hopper)
     reporter->setName("hopper_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 
-    //TODO: Connect outputs from the hopper to the reporter's inputs.
-    reporter->updInput("inputs").connect(hopper.getOutput(signalForKneeDevice));
+    //TODO: Connect outputs from the hopper to the reporter's inputs. Try
+    //      reporting the hopper's height, the vastus muscle's activation, the
+    //      knee angle, and any other variables of interest.
     reporter->updInput("inputs").connect(hopper.getOutput(hopperHeightOutput));
+    reporter->updInput("inputs").connect(
+        hopper.getOutput("/Dennis/vastus/activation"));
+    reporter->updInput("inputs").connect(
+        hopper.getOutput("/Dennis/knee/kneeFlexion/value"));
 
     //TODO: Add the reporter to the model.
     hopper.addComponent(reporter);
@@ -197,6 +206,12 @@ int main()
         showAllOutputs(hopper.getComponent("/Dennis/thigh"), false);
 
         // Step 1, Task A
+        // ==============
+        // Determine the name of the output corresponding to the hopper's
+        // height. The hopperHeightOutput string (at the top of this file) must
+        // be filled in.
+
+        // Step 1, Task B
         // ==============
         // Report the hopper's height and vastus muscle activation during the
         // simulation. The addConsoleReporterToHopper() method (in this file)
@@ -285,7 +300,7 @@ int main()
         // device. The signalForKneeDevice string (at the top of this file) must
         // be filled in.
         kneeDevice->updInput("controller/activation")
-            .connect(assistedHopper.getOutput(signalForKneeDevice));
+            .connect(assistedHopper.getOutput(vastusActivationOutput));
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> kneeDeviceOutputs{ "controller/myo_control",

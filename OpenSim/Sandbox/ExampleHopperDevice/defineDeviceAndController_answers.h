@@ -93,11 +93,12 @@ public:
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
-        //      height. Hint: the hopper's pelvis is attached to ground with a
-        //      vertical slider joint; see showAllOutputs() in helperMethods.h.
-        //const std::string hopperHeightOutput = "/Dennis/?????";
+        //      height. You found this in Step 1, Task A.
+        //const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
         const std::string hopperHeightOutput = "/Dennis/slider/height/value";
 
+        //TODO: Use "getModel().getOutputValue<?????>(?????);" to return the
+        //      output indicated by hopperHeightOutput.
         return getModel().getOutputValue<double>(s, hopperHeightOutput);
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {
