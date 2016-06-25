@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  ContactHalfSpace.cpp                       *
+ *                             OpenSim: ComponentList.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Eastman                                                   *
+ * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Authors: Ayman Habib                                                       *
+ * Contributers : Chris Dembia                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,42 +22,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ContactHalfSpace.h"
+#include "ComponentList.h"
+#include "Component.h"
 
-using namespace SimTK;
+using namespace OpenSim;
 
-namespace OpenSim {
-
-ContactHalfSpace::ContactHalfSpace() :
-    ContactGeometry()
-{
-    setNull();
+bool ComponentFilterFullPathNameContainsString::isMatch(const Component& comp)
+        const {
+    return comp.getFullPathName().find(_substring) != std::string::npos;
 }
-
-ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
-    const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
-        ContactGeometry(location, orientation, frame)
-{
-    setNull();
-}
-
-ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location, 
-    const SimTK::Vec3& orientation, const PhysicalFrame& frame,
-    const std::string& name) :
-        ContactHalfSpace(location, orientation, frame)
-{
-    setName(name);
-}
-
-void ContactHalfSpace::setNull()
-{
-    setAuthors("Peter Eastman");
-}
-
-
-SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry() const
-{
-    return SimTK::ContactGeometry::HalfSpace();
-}
-
-} // end of namespace OpenSim

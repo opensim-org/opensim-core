@@ -369,7 +369,7 @@ public:
     @endcode
 
     @param[in]      fixed   
-        If \c true, generate only geometry that is independent of time, 
+        If \c true, generate only geometry that is fixed to a PhysicalFrame, 
         configuration, and velocity. Otherwise generate only such dependent 
         geometry.
     @param[in]      hints   
@@ -413,35 +413,91 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-    * Add a Component to this component's property list.
-    * This component takes ownership of the added component.
-    * 
-    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
-    * methods are also renamed. For the time being remain consistent. -aseth 
+    * Add a Component (as a subcomponent) of this component.
+    * This component takes ownership of the subcomponent and it will be
+    * serialized (appear in XML) as part of this component. Specifically,
+    * it will appear in the `<components>` list for this Component.
+    * If the subcomponent is already owned by this component or exists
+    * in the same hierarchy (tree) as this component, an Exception
+    * is thrown.
+    * @note addComponent is intended to replace existing addBody(), addJoint,
+    *       ... on Model or the requirement for specific add###() methods to
+    *       subcomponents to a Component.
     *
-    * @throws ComponentAlreadyPartOfOwnershipTree  */
-    void addComponent(Component* comp);
+    * Typical usage is:
+    @code
+        // Start with an empty Model (which is a Component)
+        Model myModel;
+        // Create any Component type on the heap
+        Body* newBody = new Body();
+        // Customize the Component by setting its properties
+        newBody->setName("newBody");
+        newBody->setMass(10.0);
+        newBody->setMassCenter(SimTK::Vec3(0));
+        // ... 
+        // Now add it to your model, which will take ownership of it
+        myModel.addComponent(newBody);
+        // 
+        // Keep creating and adding new components, like Joints, Forces, etc..
+    @endcode
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree
+    * @param subcomponent is the Component to be added. */
+    void addComponent(Component* subcomponent);
 
     /**
-     * Get an iterator through the underlying subcomponents that this component is 
-     * composed of. The hierarchy of Components/subComponents forms a tree. The 
-     * tree structure is fixed when the system is created.
+     * Get an iterator through the underlying subcomponents that this component is
+     * composed of. The hierarchy of Components/subComponents forms a tree.
      * The order of the Components is that of tree preorder traversal so that a
-     * component is traversed before its subcomponents. */
+     * component is traversed before its subcomponents.
+     *
+     * @code{.cpp}
+     * for (const auto& muscle : model.getComponentList<Muscle>()) {
+     *     muscle.get_max_isometric_force();
+     * }
+     * @endcode
+     *
+     * The returned ComponentList does not permit modifying any components; if
+     * you want to modify the components, see updComponentList().
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
     template <typename T = Component>
-    ComponentList<T> getComponentList() const {
+    ComponentList<const T> getComponentList() const {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
+        initComponentTreeTraversal(*this);
+        return ComponentList<const T>(*this);
+    }
+    
+    /** Similar to getComponentList(), except the resulting list allows one to
+    modify the components. For example, you could use this method to change
+    the max isometric force of all muscles:
+    
+    @code{.cpp}
+    for (auto& muscle : model.updComponentList<Muscle>()) {
+        muscle.set_max_isometric_force(...);
+    }
+    @endcode
+    
+    @note Do NOT use this method to add (or remove) (sub)components from any
+    component. The tree structure of the components should not be altered
+    through this ComponentList.
+    
+    @tparam T A subclass of Component (e.g., Body, Muscle). */
+    template <typename T = Component>
+    ComponentList<T> updComponentList() {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
-    /**
-     * Class to hold the list of components/subcomponents to iterate over.
-     */
+    /** Class that permits iterating over components/subcomponents (but does
+     * not actually contain the components themselves). */
     template <typename T>
     friend class ComponentList;
-    /**
-     * Class to iterate over ComponentList returned by getComponentList() call
-     */
+    /** Class to iterate over ComponentList returned by getComponentList(). */
     template <typename T>
     friend class ComponentListIterator;
 
@@ -457,6 +513,32 @@ public:
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
 
+    /** Query if there is a component (of any type) at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion." */
+    bool hasComponent(const std::string& pathname) const {
+        return hasComponent<Component>(pathname);
+    }
+
+    /** Query if there is a component of a given type at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
+     * Coordinate. This method cannot be used from scripting; see the
+     * non-templatized hasComponent(). */
+    template <class C>
+    bool hasComponent(const std::string& pathname) const {
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        return comp != nullptr;
+    }
+
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
      * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
@@ -468,7 +550,7 @@ public:
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
      * If unsure of a Component's path or whether or not it exists in the model,
-     * use findComponent() 
+     * use printComponentsMatching() or hasComponent().
      *
      * @param  pathname        a pathname (string) of a Component of interest
      * @return const reference to component of type C at 
@@ -497,6 +579,26 @@ public:
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+
+    /** Print a list to the console of all components whose full path name
+     * contains the given string. You might use this if (a) you know the name of
+     * a component in your model but don't know its full path, (b) if you want
+     * to find all components with a given name, or (c) to get a list of all
+     * components on the right leg of a model (if all components on the right
+     * side have "_r" in their name).
+     *
+     * A function call like:
+     * @code{.cpp}
+     * unsigned num = comp.printComponentsMatching("rotation");
+     * @endcode
+     * may produce output like:
+     * @verbatim
+     * /leg_model/right_hip/rotation
+     * /leg_model/left_hip/rotation
+     * @endverbatim
+     *
+     * @returns The number of matches. */
+    unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
      * Get the number of "Continuous" state variables maintained by the Component
@@ -675,22 +777,31 @@ public:
         }
         else {
             std::string::size_type back = name.rfind("/");
+            // no prefix found then no prefix (path) to locate Component
+            OPENSIM_THROW_IF( back == std::string::npos, Exception,
+                "Component::getOutput has no output '" + name
+                    + "' for component '" + getName() + "' of type "
+                    + getConcreteClassName() );
+
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            // if found is this component again, no point trying to find
-            // output again, otherwise we would not have reached here 
-            if (found && (found != this)) {
-                return found->getOutput(outName);
+            try {
+                const Component& found = getComponent<Component>(prefix);
+                // if found is this component again, no point trying to find
+                // output again, otherwise we would not have reached here 
+                return found.getOutput(outName);
+            }
+            catch (const std::exception& x) {
+                std::stringstream msg;
+                msg << "Component::getOutput: ERR-  no output '" << name
+                    << "' found.\n " "for component '" << getName() << "' of type "
+                    << getConcreteClassName() << ". Details:\n" << x.what() 
+                    << std::endl;
+
+                 throw Exception(msg.str(), __FILE__, __LINE__);
             }
         }
-        
-        std::stringstream msg;
-        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-        << "for component '" << getName() << "' of type "
-        << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
     /**
@@ -1154,6 +1265,24 @@ protected:
     You should consider this ordering when designing a %Component.  **/ 
 
     ///@{
+
+    /** Perform any secondary operations, e.g. to investigate the component or 
+    to insert it into a particular internal list (for grouping), after adding
+    the subcomponent to this component. This is intended primarily for composites
+    like Model to have more control over the handling of a component being added
+    to it.
+
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+    void MyComponent::extendAddComponent(Component* subcomponent) {
+        Super::extendAddComponent(); // invoke parent class method
+        // ... your code goes here
+        // ... initialize any internal data structures
+    }
+    @endcode   */
+    virtual void extendAddComponent(Component* subcomponent) {};
+
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component
@@ -1590,7 +1719,6 @@ protected:
     friend void Connector<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
-public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1635,7 +1763,7 @@ public:
                 foundCs.push_back(found);
         }
 
-        ComponentList<C> compsList = this->template getComponentList<C>();
+        ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
@@ -1691,6 +1819,7 @@ public:
     }
 #endif
 
+public:
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find an Input of this Component (includes its subcomponents) */
@@ -1723,7 +1852,7 @@ protected:
         std::string currentPath = "";
         const Component* current = this;
 
-        std::string compName = back < std::string::npos ? path.substr(back) : path;
+        const std::string compName = back < std::string::npos ? path.substr(back+1) : path;
         back = 0;
 
         while (back < std::string::npos && current) {
@@ -1767,7 +1896,11 @@ protected:
             }
             front = back + 1;
         }
-        return dynamic_cast<const C*>(current);
+
+        if (dir == compName)
+            return dynamic_cast<const C*>(current);
+
+        return nullptr;
     }
 
     //@} 
@@ -2370,7 +2503,12 @@ void Input<T>::connect(const AbstractOutput& output,
         //update the connectee_name as /<OwnerPath>/<Output:Channel>
         std::string pathName =
             output.getOwner().getRelativePathName(getOwner());
-        pathName = pathName + "/" + chan.second.getName();
+        if (pathName.rfind("/") == (pathName.length()-1)) { 
+            pathName = pathName + chan.second.getName();
+        }
+        else {
+            pathName = pathName + "/" + chan.second.getName();
+        }
         if (!annotation.empty() && annotation != chan.second.getChannelName()) {
             pathName += "(" + annotation + ")";
         }
@@ -2419,7 +2557,12 @@ void Input<T>::connect(const AbstractChannel& channel,
     // /<OwnerPath>/<Output>:<Channel><(annotation)>
     const auto& outputsOwner = chanT->getOutput().getOwner();
     std::string pathName = outputsOwner.getRelativePathName(getOwner());
-    pathName += "/" + chanT->getName();
+    if (pathName.rfind("/") == (pathName.length() - 1)) {
+        pathName = pathName + chanT->getName();
+    }
+    else {
+        pathName = pathName + "/" + chanT->getName();
+    }
     if (!annotation.empty() && annotation != chanT->getChannelName()) {
         pathName += "(" + annotation + ")";
     }
@@ -2444,8 +2587,14 @@ void Input<T>::findAndConnect(const Component& root) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {
-            const auto& output = root.getOutput(outputPath);
-            const auto& channel = output.getChannel(channelName);
+            const AbstractOutput* output = nullptr;
+            if (outputPath[0] == '/') { //absolute path name
+                output = &root.getOutput(outputPath);
+            }
+            else { // relative path name
+                output = &getOwner().getOutput(outputPath);
+            }
+            const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);
         }
         catch (const Exception& ex) {

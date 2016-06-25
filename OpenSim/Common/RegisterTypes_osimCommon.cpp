@@ -46,6 +46,8 @@
 #include "Reporter.h"
 #include "TableSource.h"
 
+#include "ModelDisplayHints.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -70,6 +72,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType(Input<SimTK::Vec3>());
     Object::registerType(Input<SimTK::Vector>());
     Object::registerType(Input<SimTK::SpatialVec>());
+    Object::registerType(Input<SimTK::Transform>());
 
     //SimTK::Xml::setXmlCondenseWhiteSpace(false);
     Object::registerType( FunctionSet() );
@@ -97,6 +100,8 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( TableReporterVector() );
     Object::registerType( ConsoleReporter() );
     Object::registerType( ConsoleReporterVec3() );
+
+    Object::registerType( ModelDisplayHints());
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a
     // natural cubic spline) to renamed SimmSpline class. Later we

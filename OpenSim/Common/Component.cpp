@@ -130,7 +130,8 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_components();
 }
 
-void Component::addComponent(Component* comp) {
+void Component::addComponent(Component* subcomponent)
+{
     //get to the root Component
     const Component* root = this;
     while (root->hasParent()) {
@@ -139,14 +140,18 @@ void Component::addComponent(Component* comp) {
 
     auto components = root->getComponentList<Component>();
     for (auto& c : components) {
-        if (comp == &c) {
+        if (subcomponent == &c) {
             OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                comp->getName(), getName());
+                subcomponent->getName(), getName());
         }
     }
 
-    updProperty_components().adoptAndAppendValue(comp);
+    updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
+
+    // allow the derived Component to perform secondary operations
+    // in response to the inclusion of the subcomponent
+    extendAddComponent(subcomponent);
 }
 
 void Component::finalizeFromProperties()
@@ -280,10 +285,15 @@ void Component::connect(Component &root)
         AbstractInput& input = upd_inputs(ixi);
 
         if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+            // TODO When we support verbose/debug logging we should include
+            // message about unspecified Outputs but generally this OK
+            // if the Input's value is not required.
+            /**
             std::cout << getConcreteClassName() << "'" << getName() << "'";
             std::cout << "::connect() Input<" << input.getConnecteeTypeName();
             std::cout << ">`" << input.getName();
             std::cout << "' Output has not been specified." << std::endl;
+            */
             continue;
         }
 
@@ -586,6 +596,17 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
     }
 }
 
+unsigned Component::printComponentsMatching(const std::string& substring) const
+{
+    auto components = getComponentList();
+    components.setFilter(ComponentFilterFullPathNameContainsString(substring));
+    unsigned count = 0;
+    for (const auto& comp : components) {
+        std::cout << comp.getFullPathName() << std::endl;
+        ++count;
+    }
+    return count;
+}
 
 int Component::getNumStateVariables() const
 {

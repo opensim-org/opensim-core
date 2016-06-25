@@ -124,6 +124,9 @@ macro(OpenSimAddPythonModule)
         # Note that the last optimization flag is what counts for GCC. So an -O0
         # later on the command line overrides a previous -O2.
         set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
+        # C++ does not allow "const const T," but SWIG generates "const const T"
+        # even if we did not use it in the orignal source code (bug in SWIG).
+        set(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-duplicate-decl-specifier")
     elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
         # TODO disable optimization on Windows.
         set(_COMPILE_FLAGS "/wd4996")

@@ -90,40 +90,39 @@ void ContactMesh::setFilename(const std::string& filename)
     _geometry.reset();
 }
 
-void ContactMesh::loadMesh(const std::string& filename)
+SimTK::ContactGeometry::TriangleMesh* ContactMesh::
+    loadMesh(const std::string& filename) const
 {
-    if (!_geometry){
-        SimTK::PolygonalMesh mesh;
-        std::ifstream file;
-        assert (_model);
-        const std::string& savedCwd = IO::getCwd();
-        bool restoreDirectory = false;
-        if ((_model->getInputFileName()!="")
-                && (_model->getInputFileName()!="Unassigned")) {
-            std::string parentDirectory = IO::getParentDirectory(
-                    _model->getInputFileName());
-            IO::chDir(parentDirectory);
-            restoreDirectory=true;
-        }
-        file.open(filename.c_str());
-        if (file.fail()){
-            if (restoreDirectory) IO::chDir(savedCwd);
-            throw Exception("Error loading mesh file: "+filename+". "
-                    "The file should exist in same folder with model.\n "
-                    "Loading is aborted.");
-        }
-        file.close();
-        mesh.loadFile(filename);
-        if (restoreDirectory) IO::chDir(savedCwd);
-        _geometry.reset(new SimTK::ContactGeometry::TriangleMesh(mesh));
+    SimTK::PolygonalMesh mesh;
+    std::ifstream file;
+    assert (_model);
+    const std::string& savedCwd = IO::getCwd();
+    bool restoreDirectory = false;
+    if ((_model->getInputFileName()!="")
+            && (_model->getInputFileName()!="Unassigned")) {
+        std::string parentDirectory = IO::getParentDirectory(
+                _model->getInputFileName());
+        IO::chDir(parentDirectory);
+        restoreDirectory=true;
     }
-
+    file.open(filename.c_str());
+    if (file.fail()){
+        if (restoreDirectory) IO::chDir(savedCwd);
+        throw Exception("Error loading mesh file: "+filename+". "
+                "The file should exist in same folder with model.\n "
+                "Loading is aborted.");
+    }
+    file.close();
+    mesh.loadFile(filename);
+    if (restoreDirectory) IO::chDir(savedCwd);
+        
+    return new SimTK::ContactGeometry::TriangleMesh(mesh);
 }
 
-SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry()
+SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry() const
 {
     if (!_geometry)
-        loadMesh(get_filename());
+        _geometry.reset(loadMesh(get_filename()));
     return *_geometry;
 }
 

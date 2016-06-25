@@ -1688,7 +1688,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    osim_thigh.attachMeshGeometry("femur.vtp");
+    osim_thigh.attachGeometry(new Mesh("femur.vtp"));
 
     // Define hip transform in terms of coordinates and axes for custom joint
     SpatialTransform hipTransform;
@@ -1717,7 +1717,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    osim_shank.attachMeshGeometry("tibia.vtp");
+    osim_shank.attachGeometry(new Mesh("tibia.vtp"));
 
     // Define knee coordinates and axes for custom joint spatial transform
     SpatialTransform kneeTransform;
@@ -1753,7 +1753,7 @@ void testCustomVsCompoundJoint()
     //OpenSim thigh
     OpenSim::Body thigh2("thigh2", femurMass.getMass(),
         femurMass.getMassCenter(), femurMass.getInertia());
-    thigh2.attachMeshGeometry("femur.vtp");
+    thigh2.attachGeometry(new Mesh("femur.vtp"));
 
     // create compound hip joint
     CompoundJoint hip2("hip2", ground2, hipInPelvis, oInP,
@@ -1766,7 +1766,7 @@ void testCustomVsCompoundJoint()
     // Add OpenSim shank via a knee joint
     OpenSim::Body shank2("shank2", tibiaMass.getMass(),
         tibiaMass.getMassCenter(), tibiaMass.getInertia());
-    shank2.attachMeshGeometry("tibia.vtp");
+    shank2.attachGeometry(new Mesh("tibia.vtp"));
 
     // create custom knee joint
     CustomJoint knee2("knee2", thigh2, kneeInFemur, Vec3(0),
@@ -1950,9 +1950,8 @@ void testAutomaticJointReversal()
 
     //OpenSim bodies
     Ground& ground = model.updGround();
-    ground.upd_geometry(0).setColor(SimTK::Vec3(1, 1, 0));
-    //Brick floor(SimTK::Vec3(1.25, 0.01, 1.0));
-    //ground.addGeometry(floor);
+    ground.upd_frame_geometry().setColor(SimTK::Vec3(1, 1, 0));
+
     auto pelvis = new Body("pelvis", 10.0, SimTK::Vec3(0), 
         SimTK::Inertia::brick(SimTK::Vec3(0.1, 0.15, 0.25)));
     
@@ -1965,16 +1964,15 @@ void testAutomaticJointReversal()
     auto foot = new Body("foot", footMass.getMass(), footMass.getMassCenter(),
                             footMass.getInertia());
     
-    //pelvis.addGeometry(Brick(SimTK::Vec3(0.1, 0.15, 0.25)));
-    pelvis->upd_geometry(0).setColor(SimTK::Vec3(0, 1, 0));  // GREEN
-    //thigh.addGeometry(Cylinder(0.035, 0.4));
-    thigh->upd_geometry(0).setColor(SimTK::Vec3(0, 0, 1));   // BLUE
+    pelvis->upd_frame_geometry().setColor(SimTK::Vec3(0, 1, 0));  // GREEN
+
+    thigh->upd_frame_geometry().setColor(SimTK::Vec3(0, 0, 1));   // BLUE
     
     //ModelComponent::addGeometry makes a copy of the passed in Geometry
-    shank->attachGeometry(Cylinder(0.02, 0.243800));
-    shank->upd_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
-    foot->attachGeometry(Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
-    foot->upd_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
+    shank->attachGeometry(new Cylinder(0.02, 0.243800));
+    shank->upd_attached_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
+    foot->attachGeometry(new Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
+    foot->upd_attached_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
 
     // add them to the model
     model.addBody(foot);

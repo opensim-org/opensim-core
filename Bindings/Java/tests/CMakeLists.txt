@@ -101,7 +101,7 @@ set_target_properties(RunJavaTests PROPERTIES
 # Test name must be the name of a java file in this directory.
 # Leave out the ".java" extension.
 OpenSimAddJavaTest(TestBasics)
-OpenSimAddJavaTest(TestIteratorsJava)
+OpenSimAddJavaTest(TestIterators)
 OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
 

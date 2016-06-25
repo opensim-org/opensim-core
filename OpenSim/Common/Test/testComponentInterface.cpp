@@ -438,7 +438,7 @@ void testMisc() {
                   theWorld.connect() );
 
 
-    ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+    auto worldTreeAsList = theWorld.getComponentList();
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
@@ -467,6 +467,15 @@ void testMisc() {
     for (auto& component : theWorld.getComponentList<Foo>()) {
         std::cout << "Iter at: " << component.getFullPathName() << std::endl;
     }
+
+    // Query existing components.
+    theWorld.printComponentsMatching("");
+    SimTK_TEST(theWorld.hasComponent("Foo"));
+    SimTK_TEST(!theWorld.hasComponent("Nonexistant"));
+    SimTK_TEST(theWorld.hasComponent<Foo>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Bar>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
+
 
     bar.updConnector<Foo>("childFoo").connect(foo2);
     string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
@@ -603,6 +612,7 @@ void testMisc() {
     CompoundFoo& compFoo = *new CompoundFoo();
     compFoo.setName("BigFoo");
 
+    // setting Foo's creates copies that are now part of CompoundFoo
     compFoo.set_Foo1(foo);
     compFoo.set_Foo2(foo2);
     compFoo.finalizeFromProperties();
@@ -614,7 +624,10 @@ void testMisc() {
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
+    
     bar2.updConnector<Foo>("childFoo").connect(foo);
+    compFoo.upd_Foo1().updInput("input1")
+        .connect(bar2.getOutput("PotentialEnergy"));
 
     world3.finalizeFromProperties();
     world3.print("Compound_" + modelFile);
@@ -760,7 +773,6 @@ void testListInputs() {
     tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
     tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
 
-   
     theWorld.connect();
     theWorld.buildUpSystem(system);
     

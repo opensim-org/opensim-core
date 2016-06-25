@@ -237,16 +237,12 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
 
     cout << endl << "Step 2: Scaling generic model" << endl;
 
-    ComponentList<PhysicalFrame> segments
-        = aModel->getComponentList<PhysicalFrame>();
-    ComponentList<PhysicalFrame>::const_iterator it = segments.begin();
-
     /* Make a scale set with a Scale for each physical frame.
      * Initialize all factors to 1.0.
      */
-    for (; it != segments.end(); ++it) {
+    for (const auto& segment : aModel->getComponentList<PhysicalFrame>()) {
         Scale* segmentScale = new Scale();
-        segmentScale->setSegmentName(it->getName());
+        segmentScale->setSegmentName(segment.getName());
         segmentScale->setScaleFactors(unity);
         segmentScale->setApply(true);
         theScaleSet.adoptAndAppend(segmentScale);
