@@ -184,17 +184,17 @@ Model buildHopper() {
     // Attach geometry to the bodies and enable the visualizer.
     auto pelvisGeometry = new Brick(Vec3(pelvisSideLength/2.));
     pelvisGeometry->setColor(Vec3(0.8, 0.1, 0.1));
-    pelvis->attachGeometry(*pelvisGeometry);
+    pelvis->attachGeometry(pelvisGeometry);
 
     auto linkGeometry = new Cylinder(linkRadius, linkLength/2.);
     linkGeometry->setColor(Vec3(0.8, 0.1, 0.1));
-    thigh->attachGeometry(*linkGeometry);
-    shank->attachGeometry(*linkGeometry);
+    thigh->attachGeometry(linkGeometry);
+    shank->attachGeometry(linkGeometry->clone());
 
     hopper.setUseVisualizer(true);
 
     // Suppress warning messages from Component::findComponent().
-    hopper.setDebugLevel(0);
+    //hopper.setDebugLevel(0);
 
     return hopper;
 }

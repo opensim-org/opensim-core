@@ -122,7 +122,7 @@ inline void showSubcomponentInfo(const Component& comp)
          << comp.getName() << "' that are of type " << className << ":\n"
          << endl;
 
-    ComponentList<C> compList = comp.getComponentList<C>();
+    ComponentList<const C> compList = comp.getComponentList<const C>();
 
     // Step through compList once to find the longest concrete class name.
     unsigned maxlen = 0;
@@ -158,7 +158,8 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
     }
 
     if (includeDescendants) {
-        ComponentList<Component> compList = comp.getComponentList<Component>();
+        ComponentList<const Component> compList =
+            comp.getComponentList<const Component>();
         for (const Component& thisComp : compList) {
             // compList (comp's ComponentList) includes all descendants (i.e.,
             // children, grandchildren, etc.) so set includeDescendants=false
@@ -224,9 +225,7 @@ inline void addPathWrapHelper(ModelComponent& model,
     const std::string& bodyName)
 {
     // Ensure the specified body exists.
-    // Change to the following upon merge with master:
-    //if (!model.hasComponent<Body>(bodyName)) { return; }
-    if (model.findComponent<Body>(bodyName) == nullptr) { return; }
+    if (!model.hasComponent<Body>(bodyName)) { return; }
 
     auto& pathActuator = model.updComponent<PathActuator>(pathActuatorName);
     auto& body         = model.updComponent<Body>(bodyName);
@@ -250,10 +249,10 @@ inline Model buildTestbed()
     // Create a 2500 kg load and add geometry for visualization.
     auto load = new Body("load", 2500., Vec3(0), Inertia(1.));
     auto sphere = new Sphere(0.02);
-    sphere->setFrameName("load");
+    sphere->setFrame(*load);
     sphere->setOpacity(0.5);
     sphere->setColor(SimTK::Blue);
-    load->addGeometry(*sphere);
+    load->attachGeometry(sphere);
     testbed.addBody(load);
 
     // Attach the load to ground with a FreeJoint and set the location of the
@@ -268,6 +267,9 @@ inline Model buildTestbed()
         *load, Vec3(0),                 //frame F and location in F of point 2
         5000., 1.);                     //stiffness and rest length
     testbed.addForce(spring);
+
+    // Suppress warning messages from Component::findComponent().
+    //testbed.setDebugLevel(0);
 
     return testbed;
 }
