@@ -229,7 +229,7 @@ void PathSpring::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
                           tension*PFDs[i]->direction(), bodyForces);
     }
 
