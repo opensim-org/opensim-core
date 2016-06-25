@@ -266,9 +266,11 @@ void testComponent(const Component& instanceToTest)
     // Outputs.
     // --------
     cout << "Invoking Output's." << endl;
-    for (const auto& entry : instance->getOutputs()) {
-        const std::string thisName = entry.first;
-        const AbstractOutput* thisOutput = entry.second.get();
+    for (auto it = instance->getOutputsBegin();
+            it != instance->getOutputsEnd(); ++it)
+    {
+        const std::string thisName = it->first;
+        const AbstractOutput* thisOutput = it->second.get();
 
         cout << "Testing Output " << thisName << ", dependent on " <<
             thisOutput->getDependsOnStage().getName() << endl;

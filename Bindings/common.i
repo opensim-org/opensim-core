@@ -58,48 +58,24 @@
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 
-// Used in Component::generateDecorations.
-%include <OpenSim/Common/ModelDisplayHints.h>
-
-namespace OpenSim {
-    %ignore Output::downcast(AbstractOutput&); // suppress warning 509.
-}
-// TODO I'm having trouble with the nested type inside a template class.
-// TODO %template(OutputChannelDouble) OpenSim::Output<double>::Channel;
-// TODO %template(OutputChannelVec3) OpenSim::Output<SimTK::Vec3>::Channel;
-// TODO %template(OutputChannelTransform) OpenSim::Output<SimTK::Transform>::Channel;
-// TODO %template(OutputChannelVector) OpenSim::Output<SimTK::Vector>::Channel;
 %include <OpenSim/Common/ComponentOutput.h>
 %template(OutputDouble) OpenSim::Output<double>;
 %template(OutputVec3) OpenSim::Output<SimTK::Vec3>;
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 
+// Used in Component::generateDecorations.
+%include <OpenSim/Common/ModelDisplayHints.h>
 
-namespace OpenSim {
-    %ignore Input::downcast(AbstractInput&); // suppress warning 509.
-}
 %include <OpenSim/Common/ComponentConnector.h>
-%template(InputDouble) OpenSim::Input<double>;
-%template(InputVec3) OpenSim::Input<SimTK::Vec3>;
-// TODO These classes had issues from SimTK typedefs:
-// TODO %template(InputTransform) OpenSim::Input<SimTK::Transform>;
-// TODO %template(InputVector) OpenSim::Input<SimTK::Vector>;
 
-namespace OpenSim {
-    %ignore ComponentListIterator::operator++; // ignore warning 383.
-}
 %include <OpenSim/Common/ComponentList.h>
-
-// Can't wrap the return type of this function.
-%ignore OpenSim::Component::getOutputs;
 
 %include <OpenSim/Common/Component.h>
 
 %template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
-
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;

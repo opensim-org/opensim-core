@@ -21,8 +21,6 @@ class TestBasics {
     // Ensure Joint has a default constructor.
     PinJoint pj = new PinJoint();
 
-    m.addComponent(pj);
-
     System.out.println("Test finished!");
     // TODO to cause test to fail: System.exit(-1);
   }
