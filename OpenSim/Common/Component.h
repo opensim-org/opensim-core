@@ -625,53 +625,83 @@ public:
         return getProperty_connectors().size();
     }
 
-    /** Access the number of Inputs that this component has. */
-    int getNumInputs() const {
-        return int(_inputsTable.size());
-    }
-
-    /** Access the number of Outputs that this component has. */
-    int getNumOutputs() const {
-        return int(_outputsTable.size());
-    }
-
-    /** Collect and return the names of Outputs as an std::vector. */
-    std::vector<std::string> getOutputNames() const {
-        std::vector<std::string> names;
-        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
-            names.push_back(it->first);
+    /** Collect and return the names of the connectors in this
+     * component. The names are in the same order as the connectors. */
+    std::vector<std::string> getConnectorNames() {
+        std::vector<std::string> names(getNumConnectors());
+        for (int i = 0; i < getNumConnectors(); ++i) {
+            names[i] = get_connectors(i).getName(); 
+        }
         return names;
     }
 
-    /** Access a read-only Connector by index.
-    @see getNumConnectors()
-     */
-    const AbstractConnector& getConnector(int i) const {
-        return get_connectors(i);
-    }
-
-    /** Access a writeable Connector by index.
-    @see getNumConnectors()
-    */
-    AbstractConnector& updConnector(int i) {
-        return upd_connectors(i);
-    }
-
     /**
-    * Get the Connector provided by this Component by name.
+    * Get the "connectee" object that the Component's Connector
+    * is bound to. Guaranteed to be valid only after the Component
+    * has been connected (that is connect() has been invoked).
+    * If the Connector has not been connected, an exception is thrown.
     *
-    * @param name       the name of the Connector
-    * @return const reference to the (Abstract)Connector
+    * This method is for getting the concrete connectee object, and is not
+    * available in scripting. If you want generic access to the connectee as an
+    * Object, use the non-templated version.
+    *
+    * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
+    * @param name       the name of the connector
+    * @return T         const reference to object that satisfies
+    *                   the Connector
+    *
+    * Example:
+    * @code
+    * const PhysicalFrame& frame = joint.getConnectee<PhysicalFrame>("parent_frame");
+    * frame.getMobilizedBody();
+    * @endcode
     */
-    template<typename T> Connector<T>&
-        updConnector(const std::string& name)
-    {
-        return *const_cast<Connector<T>*>(&getConnector<T>(name));
+    template<typename T>
+    const T& getConnectee(const std::string& name) const {
+        // get the Connector and check if it is connected.
+        const Connector<T>& connector = getConnector<T>(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnectee();
     }
 
-    template<typename T>
-    const Connector<T>& getConnector(const std::string& name) const
-    {
+    /** Get the connectee as an Object. This means you will not have
+    * access to the methods on the concrete connectee. This is the method you
+    * must use in MATLAB to access the connectee.
+    *
+    * Example:
+    * @code{.cpp}
+    * const Object& obj = joint.getConnectee("parent_frame");
+    * obj.getName(); // method on Object works.
+    * obj.getMobilizedBody(); // error: not available.
+    * @endcode
+    *
+    * In MATLAB, if you want the concrete type, you need to downcast the
+    * Object. Here is an example where you know the "parent_frame" is a Body:
+    * @code
+    * f = joint.getConnectee('parent_frame');
+    * m = Body.safeDownCast(f).getMass();
+    * @endcode
+    *
+    * Exception: in Python, you will get the concrete type (in most cases):
+    * @code{.py}
+    * f = joint.getConnectee("parent_frame"); 
+    * m = f.getMass() # works (if the parent frame is a body)
+    * @endcode
+    */
+    const Object& getConnectee(const std::string& name) const {
+        const AbstractConnector& connector = getConnector(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnecteeAsObject();
+    }
+
+    /** Get an AbstractConnector for the given connector name. This
+     * lets you get information about the connection (like if the connector is
+     * connected), but does not give you access to the connector's connectee.
+     * For that, use getConnectee().
+     */
+    const AbstractConnector& getConnector(const std::string& name) const {
         const AbstractConnector* found = findConnector(name);
 
         if (!found){
@@ -682,43 +712,96 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        return (Connector<T>::downcast(*found));
+        return *found;
+    }
+
+    /** Get a writable reference to the AbstractConnector for the given
+     * connector name. Use this method to connect the Connector to something.
+     * @code
+     * joint.updConnector("parent_frame").connect(model.getGround());
+     * @endcode
+     */
+    AbstractConnector& updConnector(const std::string& name) {
+        return const_cast<AbstractConnector&>(getConnector(name));
     }
 
     /**
-    * Get the "connectee" object that the Component's Connector
-    * is bound to. Guaranteed to be valid only after the Component
-    * has been connected (that is connect() has been invoked).
-    * If Connector has not been connected an exception is thrown.
+    * Get a const reference to the concrete Connector provided by this
+    * Component by name.
     *
-    * @param name       the name of the connector
-    * @return T         const reference to object that satisfies
-    *                   the Connector
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
     */
     template<typename T>
-    const T& getConnectee(const std::string& name) const    {
-        // get the Connector and check if it is connected.
-        const AbstractConnector& connector = getConnector<T>(name);
-        if (connector.isConnected()){
-            return (Connector<T>::downcast(connector)).getConnectee();
-        }
-        else{
-            std::stringstream msg;
-            msg << "Component::getConnectee() ERR- Connector '" << name << "' not connected.\n "
-                << "for component '" << getName() << "' of type " << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+    const Connector<T>& getConnector(const std::string& name) const {
+        return Connector<T>::downcast(getConnector(name));
     }
-    //@} end of Component Connector Access methods
 
-    /** Define OutputsIterator for convenience */
-    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput> >::
-        const_iterator OutputsIterator;
+    /**
+    * Get a writable reference to the concrete Connector provided by this
+    * Component by name.
+    *
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T> Connector<T>& updConnector(const std::string& name) {
+        return const_cast<Connector<T>&>(getConnector<T>(name));
+    }
+
+    /** Access a read-only Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see getConnector(const std::string& name)
+     */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see updConnector(const std::string& name)
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
+
+    //@} end of Component Connector Access methods
 
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
     */
     //@{ 
+
+    /** Access the number of Inputs that this component has. */
+    int getNumInputs() const {
+        return int(_inputsTable.size());
+    }
+
+    /** Access the number of Outputs that this component has. */
+    int getNumOutputs() const {
+        return int(_outputsTable.size());
+    }
+
+    /** Collect and return the names of Outputs in this component as an
+     * std::vector. */
+    std::vector<std::string> getInputNames() const {
+        std::vector<std::string> names;
+        for (const auto& it : _inputsTable) {
+            names.push_back(it.first);
+        }
+        return names;
+    }
+
+    /** Collect and return the names of Outputs in this compoonent as an
+     * std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (const auto& entry : getOutputs()) {
+            names.push_back(entry.first);
+        }
+        return names;
+    }
 
     /**
     * Get an Input provided by this Component by name.
@@ -819,30 +902,28 @@ public:
         return *const_cast<AbstractOutput *>(&getOutput(name));
     }
 
-    /** An iterator to traverse all the Outputs of this component, pointing at the
-    * first Output. This can be used in a loop as such:
-     *
-     *  @code
-    *  OutputsIterator it;
-     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-     *  { ... }
-     *  @endcode
-     *
-     * @see getOutputsEnd()
-     */
-    OutputsIterator getOutputsBegin() const {
-        return _outputsTable.begin();
-    }
+    /** Define OutputConstIterator for convenience */
+    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput>>::
+        const_iterator OutputConstIterator;
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * end of the map. This can be used in a loop as such:
-     *
-     * @see getOutputsBegin()
+    /** Iterate through all Outputs of this component. The intent is to use
+     * this in a loop as such:
+     * @code
+     * for (const auto& entry : comp.getOutputs()) {
+     *     const std::string& name = entry.first;
+     *     const AbstractOutput* output = entry.second.get();
+     *     std::cout << output->getTypeName() << std::endl;
+     * }
+     * @endcode
+     * This provides access to the outputs as AbstractOutput%s, not as the
+     * concrete type. This also does not permit modifying the outputs.
+     * 
+     * Not available in python/java/MATLAB; use getOutputNames() and
+     * getOutput() instead.
      */
-    OutputsIterator getOutputsEnd() const {
-        return _outputsTable.end();
+    SimTK::IteratorRange<OutputConstIterator> getOutputs() const {
+        return {_outputsTable.cbegin(), _outputsTable.cend()};
     }
-
     //@} end of Component Inputs and Outputs Access methods
 
 

@@ -73,6 +73,11 @@ MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
 
+%pythonappend OpenSim::Frame::attachGeometry %{
+    geom._markAdopted()
+%}
+
+
 // Compensate for insufficient C++11 support in SWIG
 // =================================================
 /*
