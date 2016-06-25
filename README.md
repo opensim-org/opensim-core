@@ -361,6 +361,7 @@ Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreemen
 ```shell 
 sudo xcodebuild -license
 ``` 
+If you already have **Xcode**, update it to the latest version (7.3).
 
 Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
 ```shell
@@ -396,7 +397,7 @@ ctest -j8
 * **operating system**: Mac OSX 10.8 or later.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
+* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
