@@ -122,7 +122,7 @@ inline void showSubcomponentInfo(const Component& comp)
          << comp.getName() << "' that are of type " << className << ":\n"
          << endl;
 
-    ComponentList<const C> compList = comp.getComponentList<const C>();
+    ComponentList<const C> compList = comp.getComponentList<C>();
 
     // Step through compList once to find the longest concrete class name.
     unsigned maxlen = 0;
@@ -159,7 +159,7 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
 
     if (includeDescendants) {
         ComponentList<const Component> compList =
-            comp.getComponentList<const Component>();
+            comp.getComponentList<Component>();
         for (const Component& thisComp : compList) {
             // compList (comp's ComponentList) includes all descendants (i.e.,
             // children, grandchildren, etc.) so set includeDescendants=false

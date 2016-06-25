@@ -97,9 +97,9 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     //      modelFrameBname), then connect them to the parent frames of each
     //      anchor. (2 lines of code for each anchor.)
     const auto& frameA = model.getComponent<PhysicalFrame>(modelFrameAname);
-    anchorA.updConnector<PhysicalFrame>("parent_frame").connect(frameA);
+    anchorA.updConnector("parent_frame").connect(frameA);
     const auto& frameB = model.getComponent<PhysicalFrame>(modelFrameBname);
-    anchorB.updConnector<PhysicalFrame>("parent_frame").connect(frameB);
+    anchorB.updConnector("parent_frame").connect(frameB);
 
     // Add the device to the model. We need to add the device using
     // addModelComponent() rather than addComponent() because of a bug in

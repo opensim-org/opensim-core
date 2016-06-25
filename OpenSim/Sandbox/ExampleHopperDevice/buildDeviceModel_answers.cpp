@@ -75,7 +75,7 @@ Device* buildDevice() {
     //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
     //      frame will be connected in exampleHopperDevice.cpp.
-    anchorA->updConnector<PhysicalFrame>("child_frame").connect(*cuffA);
+    anchorA->updConnector("child_frame").connect(*cuffA);
     //TODO: Add anchorA to the device.
     device->addComponent(anchorA);
 
@@ -84,7 +84,7 @@ Device* buildDevice() {
     //      device.
     auto anchorB = new WeldJoint();
     anchorB->setName("anchorB");
-    anchorB->updConnector<PhysicalFrame>("child_frame").connect(*cuffB);
+    anchorB->updConnector("child_frame").connect(*cuffB);
     device->addComponent(anchorB);
 
     // Attach a PathActuator between the two cuffs.
@@ -101,7 +101,7 @@ Device* buildDevice() {
     controller->set_gain(GAIN);
 
     //TODO: Connect the controller's "actuator" Connector to pathActuator.
-    controller->updConnector<ScalarActuator>("actuator").connect(*pathActuator);
+    controller->updConnector("actuator").connect(*pathActuator);
 
     //TODO: Add the controller to the device.
     device->addComponent(controller);
