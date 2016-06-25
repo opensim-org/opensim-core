@@ -60,5 +60,3 @@ class TestAccessSubcomponents(unittest.TestCase):
             assert type(comp) == osim.Thelen2003Muscle
             count += 1
         assert count == 2
-        
-

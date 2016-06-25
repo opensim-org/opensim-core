@@ -50,9 +50,9 @@ model.setGravity(zeroVec3);
 ground = model.getGround();
 
 % Add display geometry to the ground to visualize in the GUI
-ground.attachMeshGeometry('ground.vtp');
-ground.attachMeshGeometry('anchor1.vtp');
-ground.attachMeshGeometry('anchor2.vtp');
+ground.attachGeometry(Mesh('ground.vtp'));
+ground.attachGeometry(Mesh('anchor1.vtp'));
+ground.attachGeometry(Mesh('anchor2.vtp'));
 
 % "BLOCK" BODY
 
@@ -62,7 +62,7 @@ block.setName('Block');
 block.setMass(20);
 block.setMassCenter(zeroVec3);
 % Need to set inertia
-block.attachMeshGeometry('block.vtp');
+block.attachGeometry(Mesh('block.vtp'));
 
 % FREE JOINT
 

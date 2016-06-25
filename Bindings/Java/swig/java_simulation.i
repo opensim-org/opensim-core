@@ -213,6 +213,17 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 }
 
 
+%javamethodmodifiers OpenSim::Frame::attachGeometry "private";
+%rename OpenSim::Frame::attachGeometry private_attachGeometry;
+%typemap(javacode) OpenSim::Frame %{
+  public void attachGeometry(Geometry geom) {
+      geom.markAdopted();
+      private_attachGeometry(geom);
+  }
+%}
+
+
+
 %import "java_common.i"
 
 %include <Bindings/simulation.i>

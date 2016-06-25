@@ -574,7 +574,7 @@ public:
      * Coordinate.safeDownCast(coord).getDefaultClamped() % now accessible.
      * @endcode
      *
-     * Exception: in Python, you will get the concrete type (in most cases):
+     * %Exception: in Python, you will get the concrete type (in most cases):
      * @code{.py}
      * coord = model.getComponent('right_elbow/elbow_flexion')
      * coord.getDefaultClamped() # works; no downcasting necessary. 
