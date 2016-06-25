@@ -140,6 +140,13 @@ public:
     /** Get the type of object this connector connects to. */
     virtual std::string getConnecteeTypeName() const = 0;
 
+    /** Generic access to the connectee. Not all connectors support this method
+     * (e.g., the connectee for an Input is not an Object). */
+    virtual const Object& getConnecteeAsObject() const {
+        OPENSIM_THROW_FRMOBJ(Exception,
+                "Not supported for this type of connector.");
+    }
+
     /** Connect this Connector to the provided connectee object. If this is a
         list connector, the connectee is appended to the list of connectees;
         otherwise, the provided connectee replaces the single connectee. */
@@ -278,6 +285,10 @@ public:
     /** Is the Connector connected to object of type T? */
     bool isConnected() const override {
         return !connectee.empty();
+    }
+
+    const T& getConnecteeAsObject() const override {
+        return connectee.getRef();
     }
 
     /** Temporary access to the connectee for testing purposes. Real usage

@@ -295,6 +295,12 @@ public:
     Output<T>* clone() const override { return new Output(*this); }
     SimTK_DOWNCAST(Output, AbstractOutput);
 
+    /** For use in python/java/MATLAB bindings. */
+    // This method exists for consistency with Object's safeDownCast.
+    static Output<T>* safeDownCast(AbstractOutput* parent) {
+        return dynamic_cast<Output<T>*>(parent);
+    }
+
 private:
     mutable T _result;
     std::function<void (const Component*,
@@ -340,9 +346,11 @@ private:
     SimTK::ReferencePtr<const Output<T>> _output;
     std::string _channelName;
     
+#ifndef SWIG // These declarations cause a warning in SWIG.
     // To allow Output<T> to set the _output pointer upon copy.
     friend Output<T>::Output(const Output&);
     friend Output<T>& Output<T>::operator=(const Output&);
+#endif
 };
 
 // TODO consider using std::reference_wrapper<T> as type for _output_##oname,
