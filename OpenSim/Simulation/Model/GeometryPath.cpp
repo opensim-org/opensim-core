@@ -141,28 +141,18 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     if (points.getSize() == 0) { return; }
 
     const PathPoint* lastPoint = points[0];
-    /*
-    Vec3 lastLoc_B = lastPoint->getLocation();
-    MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
-    */
-
     MobilizedBodyIndex mbix(0);
 
     Vec3 lastPos = lastPoint->getLocationInGround(state);
     if (hints.get_show_path_points())
         DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
-    /*
-    const SimTK::SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
-    Vec3 lastPos = matter.getMobilizedBody(lastBody)
-        .getBodyTransform(state) * lastLoc_B;
-        */
     Vec3 pos;
     for (int j = 1; j < points.getSize(); j++) {
         const PathPoint* point = points[j];
 
         // the body (PhysicalFrame) IS part of the actual Model and its system
-        // so we can ask it for its transform
+        // so we can ask it for its transform w.r.t. Ground
         pos = point->getBody().getTransformInGround(state)*point->getLocation();
 
         if (hints.get_show_path_points())
@@ -176,7 +166,6 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         lastPos = pos;
     }
-
 }
 
 //_____________________________________________________________________________
