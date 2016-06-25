@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth              *
+ * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
  *            Thomas Uchida                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -160,8 +160,9 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
     if (includeDescendants) {
         ComponentList<Component> compList = comp.getComponentList<Component>();
         for (const Component& thisComp : compList) {
-            // ComponentList includes all descendants (children, grandchildren,
-            // etc.) so don't call recursively here.
+            // compList (comp's ComponentList) includes all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
             showAllOutputs(thisComp, false);
         }
     }
