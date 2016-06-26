@@ -23,6 +23,12 @@ class TestBasics {
 
     m.addComponent(pj);
 
+    // Change from ArrayPtrs<Object*> being non-const const.
+    BodySet set = m.getBodySet();
+    set.addGroup("upper_extremity");
+    ObjectGroup group = set.getGroup(0);
+    ArrayConstObjPtr members = group.getMembers();
+
     System.out.println("Test finished!");
     // TODO to cause test to fail: System.exit(-1);
   }
