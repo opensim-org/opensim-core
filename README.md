@@ -75,9 +75,9 @@ int main() {
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix the hip at its default angle and begin with the knee flexed.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->upd_CoordinateSet()[0].setLocked(state, true);
+    elbow->upd_CoordinateSet()[0].setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
     // Add display geometry.
