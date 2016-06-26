@@ -356,11 +356,12 @@ ctest -C RelWithDebInfo --parallel 8
 On Mac OSX using Xcode
 ======================
 
-### For Mac OSX 10.10 Yosemite and OS X 10.11 El Capitan
+### For Mac OSX 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
 ```shell 
 sudo xcodebuild -license
 ``` 
+If you already have **Xcode**, update it to 7.3, or the latest version.
 
 Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
 ```shell
@@ -393,10 +394,10 @@ ctest -j8
 
 #### Get the dependencies
 
-* **operating system**: Mac OSX 10.8 or later.
+* **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
+* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
