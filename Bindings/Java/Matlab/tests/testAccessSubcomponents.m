@@ -7,9 +7,11 @@ model = Model('arm26.osim');
 % =====================
 muscle = model.getComponent('BICshort');
 assert(strcmp(muscle.getName(), 'BICshort'));
-Thelen2003Muscle.safeDownCast(muscle).get_max_isometric_force();
+thelenMuscle = Thelen2003Muscle.safeDownCast(muscle);
+thelenMuscle.get_max_isometric_force();
 muscle = model.updComponent('BICshort');
-Thelen2003Muscle.safeDownCast(muscle).set_max_isometric_force(100);
+updThelenMuscle = Thelen2003Muscle.safeDownCast(muscle)
+updThelenMuscle.set_max_isometric_force(100);
 
 % ComponentList
 % =============
