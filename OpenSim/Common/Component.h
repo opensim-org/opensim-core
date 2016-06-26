@@ -1907,12 +1907,14 @@ protected:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                std::string details = msg + " Found '" + compFullPathName + 
-                    "' as a match for:\n Component '" + name + "' of type " + 
-                    comp.getConcreteClassName() + ", but it "
-                    "is not on specified path.\n";
-                //throw Exception(details, __FILE__, __LINE__);
-                std::cout << details << std::endl;
+                if (comp.getDebugLevel() > 0) {
+                    std::string details = msg + " Found '" + compFullPathName + 
+                        "' as a match for:\n Component '" + name + "' of type " + 
+                        comp.getConcreteClassName() + ", but it "
+                        "is not on specified path.\n";
+                    //throw Exception(details, __FILE__, __LINE__);
+                    std::cout << details << std::endl;
+                }
             }
         }
 
