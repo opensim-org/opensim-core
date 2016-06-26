@@ -169,12 +169,13 @@ protected:
 
         std::vector<std::string> labels;
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-            const auto& chan = input.getChannel(idx);
-            std::string label = chan.getName();
-            if (label.empty()) {
-                label = chan.getOutput().getName();
-            }
-            labels.push_back(label);
+            // Always set the label to the full path name.
+            // TODO: Currently, a default annotation is set by Input::connect()
+            //       if none was provided by the user. Because the user may have
+            //       explicitly specified an annotation equal to the default, it
+            //       is impossible to determine whether the annotation should be
+            //       used here instead of the full path name.
+            labels.push_back( input.getChannel(idx).getPathName() );
         }
         const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
     }
@@ -215,8 +216,10 @@ private:
             std::cout << "[" << this->getName() << "] " << "\n";
             std::cout << std::setw(_width) << "time" << "| ";
             for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-                const auto& chan = input.getChannel(idx);
-                const auto& outName = chan.getName();
+                // Always set the label to the Input's annotation, which will be
+                // either the annotation provided by the user or a default
+                // annotation set by Input::connect().
+                const auto& outName = input.getAnnotation(idx);
                 const auto& truncName = 
                     static_cast<int>(outName.size()) <= _width ?
                     outName : outName.substr(outName.size() - _width);
