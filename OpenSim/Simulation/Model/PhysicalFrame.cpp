@@ -50,19 +50,11 @@ PhysicalFrame::PhysicalFrame() : Frame()
 void PhysicalFrame::constructProperties()
 {
     constructProperty_WrapObjectSet(WrapObjectSet());
-
-    FrameGeometry frm;
-    frm.setName("frame_geometry");
-    frm.upd_Appearance().set_visible(false);
-    updProperty_geometry().setValue(0, frm);
 }
 
 void PhysicalFrame::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    if (!getProperty_geometry().empty()) {
-        upd_geometry(0).setFrame(*this);
-    }
 }
 
 const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
@@ -134,15 +126,18 @@ void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
         upd_WrapObjectSet().get(i).scale(aScaleFactors);
 
     // TODO: When we redo scaling and decide where scale factors
-    // are maintained, we may need to fix this or remove this comment completely.
+    // are maintained, we may need to fix this or remove this method completely.
     // -Ayman 5/15
     
-    // Scale the Geometry if any
-    for (int i = 0; i < getNumGeometry(); ++i){
-        const SimTK::Vec3& oldScaleFactor = get_geometry(i).get_scale_factors();
+    // DO NOT scale the FrameGeometry (axes) associated with this Frame.
+    // Scale the attached Geometry if any. 
+    for (int i = 0; i < getProperty_attached_geometry().size(); ++i) {
+        const SimTK::Vec3& oldScaleFactor =
+            get_attached_geometry(i).get_scale_factors();
         // Recompute scale factors for Geometry
-        SimTK::Vec3 newScaleFactor = oldScaleFactor.elementwiseMultiply(aScaleFactors);
-        upd_geometry(i).set_scale_factors(newScaleFactor);
+        SimTK::Vec3 newScaleFactor =
+            oldScaleFactor.elementwiseMultiply(aScaleFactors);
+        upd_attached_geometry(i).set_scale_factors(newScaleFactor);
     }
 }
 
@@ -203,20 +198,6 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         geomSetIter->setElementTag("geometry");
                     }
                 }
-                // Regardless add FrameGeometry node for the display of the PhysicalFrame
-                std::string physFrameName = aNode.getRequiredAttribute("name").getValue();
-                SimTK::Xml::Element physFrameNode("FrameGeometry");
-                physFrameNode.setAttributeValue("name", physFrameName + "_frame_geometry");
-                XMLDocument::addConnector(physFrameNode, "Connector_Frame_", "frame", physFrameName);
-                SimTK::Xml::Element appearanceNode("Appearance");
-                SimTK::Xml::Element frameRepresentation("representation");
-                frameRepresentation.setValue("0");
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
-                physFrameNode.insertNodeAfter(physFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
-                if (geomSetIter != aNode.element_end()) {
-                    geomSetIter->insertNodeAfter(geomSetIter->node_end(), physFrameNode);
-                }
             }
         }
     }
@@ -225,14 +206,14 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 
 void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
     const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform,
-    SimTK::Xml::Element& geomSetElement) const
+    SimTK::Xml::Element& geomSetElement)
 {
     std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
 
     SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
 
     if (objectsIter != geomSetElement.element_end()) {
-        SimTK::Xml::Element geometrySetNode("geometry");
+        SimTK::Xml::Element geometrySetNode("attached_geometry");
         bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
 
         SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
@@ -329,7 +310,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
 }
 
 // This private method creates a frame in the owner model document with passed in name and content relative to bodyName
-void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
+void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName)
 {
     SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);

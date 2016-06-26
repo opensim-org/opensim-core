@@ -245,16 +245,22 @@ public:
     bool operator==(const ComponentListIterator<OtherT>& other) const
     { return _node == other._node; }
     
-    /// Check for equality using a normal method rather than an operator,
-    /// This variant accepts only an iterator with the same template parameter.
-    /// Exists for scripting.
-    bool equals(const ComponentListIterator& other) const
-    { return *this == other; }
-    
     /// Check for inequality using same convention as operator==.
     template <typename OtherT>
     bool operator!=(const ComponentListIterator<OtherT>& other) const
     { return _node != &*other._node; }
+    
+    /// @ Comparison operators for scripting
+    /// These variants accept only an iterator with the same template parameter.
+    /// @{
+    /// Check for (non)equality using a normal method rather than an operator.
+    bool equals(const ComponentListIterator& other) const
+    { return operator==<T>(other); }
+    bool operator==(const ComponentListIterator& other) const
+    { return operator==<T>(other); }
+    bool operator!=(const ComponentListIterator& other) const
+    { return operator!=<T>(other); }
+    /// @}
     
     /** Dereference the iterator to get a reference to Component of proper
     type (matching Filter if specified). If you have a const iterator, then

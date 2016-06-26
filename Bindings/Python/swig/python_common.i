@@ -217,6 +217,70 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 };
 
+// This function tries to downcast the component; if that does not succeed,
+// then it just returns a Component (or whatever the type for this specific
+// ComponentList is).
+%extend OpenSim::ComponentList {
+%pythoncode %{
+
+    def __iter__(self):
+        """Get an iterator for this ComponentList, to be used as such::
+           
+            for c in model.getComponentsList():
+                c.getName()
+        """
+        import sys
+        opensim_pkg = sys.modules[__name__.partition('.')[0]]
+        it = self.begin()
+        while it != self.end():
+            component = it.__deref__()
+            try:
+                ConcreteClass = getattr(opensim_pkg, component.getConcreteClassName())
+                concrete_component = ConcreteClass.safeDownCast(component)
+                yield concrete_component 
+            except:
+                yield component
+            it.next()
+%}
+};
+
+// Return concrete instances from certain methods.
+// -----------------------------------------------
+// http://stackoverflow.com/questions/27392602/swig-downcasting-from-base-to-derived
+// "$1" holds the original return value from getConnectee() (an Object*).
+// An Object with name Foo is registered with SWIG as "OpenSim::Foo *".
+// If the type query fails, we just return an Object*
+%typemap(out) const OpenSim::Object& OpenSim::Component::getConnectee {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Object *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) const OpenSim::Component& OpenSim::Component::getComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) OpenSim::Component& OpenSim::Component::updComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+
 
 // Include all the OpenSim code.
 // =============================
@@ -237,3 +301,4 @@ SET_ADOPT_HELPER(Scale);
         return super(FunctionSet, self).adoptAndAppend(aFunction)
 %}
 };
+

@@ -21,6 +21,8 @@ class TestBasics {
     // Ensure Joint has a default constructor.
     PinJoint pj = new PinJoint();
 
+    m.addComponent(pj);
+
     // Change from ArrayPtrs<Object*> being non-const const.
     BodySet set = m.getBodySet();
     ObjectGroup group = set.getGroup(0);
