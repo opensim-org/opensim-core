@@ -25,6 +25,7 @@ class TestBasics {
 
     // Change from ArrayPtrs<Object*> being non-const const.
     BodySet set = m.getBodySet();
+    set.addGroup("upper_extremity");
     ObjectGroup group = set.getGroup(0);
     ArrayConstObjPtr members = group.getMembers();
 
