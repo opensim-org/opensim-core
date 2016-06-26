@@ -21,6 +21,11 @@ class TestBasics {
     // Ensure Joint has a default constructor.
     PinJoint pj = new PinJoint();
 
+    // Change from ArrayPtrs<Object*> being non-const const.
+    BodySet set = m.getBodySet();
+    ObjectGroup group = set.getGroup(0);
+    ArrayConstObjPtr members = group.getMembers();
+
     System.out.println("Test finished!");
     // TODO to cause test to fail: System.exit(-1);
   }
