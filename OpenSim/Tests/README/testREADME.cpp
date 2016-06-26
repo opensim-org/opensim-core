@@ -89,7 +89,7 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinateSet()[0].getOutput("value"), "elbow_angle");
     model.addComponent(reporter);
 
     // Configure the model.

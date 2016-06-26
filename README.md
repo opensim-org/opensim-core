@@ -70,7 +70,7 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinateSet()[0].getOutput("value"), "elbow_angle");
     model.addComponent(reporter);
 
     // Configure the model.
@@ -104,7 +104,7 @@ This code produces the following animation:
 and prints the following information to the console:
 
         [reporter]
-                time|  fiber_force|       value|
+                time|  fiber_force| elbow_angle|
                    0|     1.180969|   1.5707963|
                    1|     57.27509|  0.77066412|
                    2|    19.728411|   1.5680456|
