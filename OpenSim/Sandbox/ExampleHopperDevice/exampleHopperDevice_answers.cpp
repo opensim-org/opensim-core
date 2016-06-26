@@ -132,11 +132,12 @@ void addConsoleReporterToHopper(Model& hopper)
     //TODO: Connect outputs from the hopper to the reporter's inputs. Try
     //      reporting the hopper's height, the vastus muscle's activation, the
     //      knee angle, and any other variables of interest.
-    reporter->updInput("inputs").connect(hopper.getOutput(hopperHeightOutput));
+    reporter->updInput("inputs").connect(
+        hopper.getOutput(hopperHeightOutput), "height");
     reporter->updInput("inputs").connect(
         hopper.getOutput("/Dennis/vastus/activation"));
     reporter->updInput("inputs").connect(
-        hopper.getOutput("/Dennis/knee/kneeFlexion/value"));
+        hopper.getOutput("/Dennis/knee/kneeFlexion/value"), "knee_angle");
 
     //TODO: Add the reporter to the model.
     hopper.addComponent(reporter);
