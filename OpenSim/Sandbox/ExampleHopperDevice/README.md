@@ -17,12 +17,12 @@ There are five files in this project, three of which you will need to complete.
 Here is a brief description of their contents:
 
 | File                        | Contents
-| :-------------------------- | :-------------------------------------------------------------------------
+| :-------------------------- | :---------------------------------------------------------------------------
 | buildHopperModel.cpp        | Builds an OpenSim model of a single-legged hopping mechanism.
 | helperMethods.h             | Methods for running simulations, displaying the names of outputs, etc.
-| defineDeviceAndController.h | (incomplete) Class definitions for an assistive device and its controller.
-| buildDeviceModel.cpp        | (incomplete) Builds an OpenSim model of the assistive device.
-| exampleHopperDevice.cpp     | (incomplete) Creates and connects models, runs simulations, etc.
+| defineDeviceAndController.h | (*incomplete*) Class definitions for an assistive device and its controller.
+| buildDeviceModel.cpp        | (*incomplete*) Builds an OpenSim model of the assistive device.
+| exampleHopperDevice.cpp     | (*incomplete*) Creates and connects models, runs simulations, etc.
 
 To start working through this example, go to `main()` at the bottom of the "exampleHopperDevice.cpp" file.
 From there, you will be directed to specific files and methods in this project that need to be completed.
