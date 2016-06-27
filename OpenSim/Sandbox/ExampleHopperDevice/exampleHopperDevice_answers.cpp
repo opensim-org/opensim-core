@@ -202,6 +202,7 @@ int main()
     {
         // Build the hopper.
         auto hopper = buildHopper();
+        hopper.finalizeFromProperties(); //required due to known bug
 
         // Show all Components in the model.
         showSubcomponentInfo(hopper);
@@ -235,6 +236,7 @@ int main()
     {
         // Build the testbed and device.
         auto testbed = buildTestbed();
+        testbed.finalizeFromProperties(); //required due to known bug
 
         // Step 2, Task A
         // ==============
@@ -250,6 +252,7 @@ int main()
         // ==============
         // Go to buildDeviceModel.cpp and complete the "TODO"s in buildDevice().
         auto device = buildDevice();
+        device->finalizeFromProperties(); //required due to known bug
 
         // Show all Components in the device and testbed.
         showSubcomponentInfo(*device);
@@ -290,7 +293,9 @@ int main()
     {
         // Build the hopper and device.
         auto assistedHopper = buildHopper();
+        assistedHopper.finalizeFromProperties(); //required due to known bug
         auto kneeDevice = buildDevice();
+        kneeDevice->finalizeFromProperties(); //required due to known bug
 
         // Step 3, Task A
         // ==============
