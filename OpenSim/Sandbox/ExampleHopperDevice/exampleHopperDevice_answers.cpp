@@ -48,8 +48,7 @@ static const std::string testbedAttachment2{"load"};
 
 //TODO: Provide the name of the output corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
-//      joint; see buildHopperModel.cpp and showSubcomponentInfo() in
-//      helperMethods.h.
+//      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
 //static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
 static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
