@@ -86,8 +86,8 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
     //TODO: Get writable references to the "anchor" joints in the device.
-    auto& anchorA = device.updComponent<Joint>("anchorA");
-    auto& anchorB = device.updComponent<Joint>("anchorB");
+    auto& anchorA = device.updComponent<WeldJoint>("anchorA");
+    auto& anchorB = device.updComponent<WeldJoint>("anchorB");
 
     //TODO: Recall that the child frame of each anchor (WeldJoint) was attached
     //      to the corresponding cuff. We will now attach the parent frames of
@@ -143,7 +143,8 @@ void addConsoleReporterToHopper(Model& hopper)
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device.
+// Add a SignalGenerator to a device (the SignalGenerator class is defined in
+// helperMethods.h).
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)

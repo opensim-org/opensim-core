@@ -123,7 +123,8 @@ void addConsoleReporterToHopper(Model& hopper)
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device.
+// Add a SignalGenerator to a device (the SignalGenerator class is defined in
+// helperMethods.h).
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)
@@ -242,8 +243,8 @@ int main()
         // ==============
         // Connect the device to the testbed. The connectDeviceToModel() method
         // (in this file) needs to be filled in.
-        connectDeviceToModel(*device, testbed, testbedAttachment1,
-                             testbedAttachment2);
+        //connectDeviceToModel(*device, testbed, testbedAttachment1,
+        //                     testbedAttachment2);
 
         // Step 2, Task E
         // ==============
@@ -257,7 +258,7 @@ int main()
                                                 "controller/myo_control" };
 
         // Add a ConsoleReporter to report deviceOutputs.
-        addDeviceConsoleReporterToModel(testbed, *device, deviceOutputs);
+        //addDeviceConsoleReporterToModel(testbed, *device, deviceOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
@@ -279,24 +280,24 @@ int main()
         // ==============
         // Connect the device to the hopper. The thighAttachment and
         // shankAttachment strings (at the top of this file) must be filled in.
-        connectDeviceToModel(*kneeDevice, assistedHopper, thighAttachment,
-                             shankAttachment);
+        //connectDeviceToModel(*kneeDevice, assistedHopper, thighAttachment,
+        //                     shankAttachment);
 
         // Step 3, Task B
         // ==============
         // Use the vastus muscle's activation as the control signal for the
         // device. The signalForKneeDevice string (at the top of this file) must
         // be filled in.
-        kneeDevice->updInput("controller/activation")
-            .connect(assistedHopper.getOutput(vastusActivationOutput));
+        //kneeDevice->updInput("controller/activation")
+        //    .connect(assistedHopper.getOutput(vastusActivationOutput));
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> kneeDeviceOutputs{ "controller/myo_control",
                                                     "tension", "height" };
 
         // Add a ConsoleReporter to report deviceOutputs.
-        addDeviceConsoleReporterToModel(assistedHopper, *kneeDevice,
-                                        kneeDeviceOutputs);
+        //addDeviceConsoleReporterToModel(assistedHopper, *kneeDevice,
+        //                                kneeDeviceOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
