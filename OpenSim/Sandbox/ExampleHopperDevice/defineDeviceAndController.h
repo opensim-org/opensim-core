@@ -159,7 +159,7 @@ public:
                          SimTK::Vector& controls) const override
     {
         double signal = computeControl(s);
-        const auto& actuator = getConnectee<Actuator>("actuator");
+        const auto& actuator = getConnectee<ScalarActuator>("actuator");
         SimTK::Vector thisActuatorsControls(1, signal);
         actuator.addInControls(thisActuatorsControls, controls);
     }
