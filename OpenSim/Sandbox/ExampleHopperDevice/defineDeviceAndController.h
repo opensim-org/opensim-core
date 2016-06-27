@@ -75,12 +75,15 @@ public:
     }
     double getSpeed(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getTension(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getPower(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
