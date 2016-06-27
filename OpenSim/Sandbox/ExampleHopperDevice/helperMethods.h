@@ -243,9 +243,6 @@ inline Model buildTestbed()
         5000., 1.);                     //stiffness and rest length
     testbed.addForce(spring);
 
-    // Suppress warning messages from Component::findComponent().
-    //testbed.setDebugLevel(0);
-
     return testbed;
 }
 

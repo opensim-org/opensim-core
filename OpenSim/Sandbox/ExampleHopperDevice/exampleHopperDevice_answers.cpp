@@ -51,7 +51,11 @@ static const std::string testbedAttachment2{"load"};
 //      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
 //static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+#pragma region Step1_TaskA_solution
+
 static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
+
+#pragma endregion
 
 //TODO: Provide the full path names of the PhysicalOffsetFrames defined on the
 //      hopper for attaching the assistive device. See buildHopperModel.cpp and
@@ -59,15 +63,23 @@ static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
 // [Step 3, Task A]
 //static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
 //static const std::string shankAttachment{"/Dennis/?????"}; //fill this in
+#pragma region Step3_TaskA_solution
+
 static const std::string thighAttachment{"/Dennis/thigh/deviceAttachmentPoint"};
 static const std::string shankAttachment{"/Dennis/shank/deviceAttachmentPoint"};
+
+#pragma endregion
 
 //TODO: To assist hopping, we will activate the knee device whenever the vastus
 //      muscle is active. To do this, we will need to connect the vastus
 //      muscle's "activation" output to the controller's "activation" input.
 // [Step 3, Task B]
 //static const std::string vastusActivationOutput{"/Dennis/?????"}; //fill this in
+#pragma region Step3_TaskB_solution
+
 static const std::string vastusActivationOutput{"/Dennis/vastus/activation"};
+
+#pragma endregion
 
 
 namespace OpenSim {
@@ -86,8 +98,12 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
     //TODO: Get writable references to the "anchor" joints in the device.
-    auto& anchorA = device.updComponent<Joint>("anchorA");
-    auto& anchorB = device.updComponent<Joint>("anchorB");
+    #pragma region Step2_TaskD_solution
+
+    auto& anchorA = device.updComponent<WeldJoint>("anchorA");
+    auto& anchorB = device.updComponent<WeldJoint>("anchorB");
+
+    #pragma endregion
 
     //TODO: Recall that the child frame of each anchor (WeldJoint) was attached
     //      to the corresponding cuff. We will now attach the parent frames of
@@ -95,10 +111,14 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     //      the two specified PhysicalFrames in model (i.e., modelFrameAname and
     //      modelFrameBname), then connect them to the parent frames of each
     //      anchor. (2 lines of code for each anchor.)
+    #pragma region Step2_TaskD_solution
+
     const auto& frameA = model.getComponent<PhysicalFrame>(modelFrameAname);
     anchorA.updConnector("parent_frame").connect(frameA);
     const auto& frameB = model.getComponent<PhysicalFrame>(modelFrameBname);
     anchorB.updConnector("parent_frame").connect(frameB);
+
+    #pragma endregion
 
     // Add the device to the model. We need to add the device using
     // addModelComponent() rather than addComponent() because of a bug in
@@ -123,34 +143,59 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 void addConsoleReporterToHopper(Model& hopper)
 {
     //TODO: Create a new ConsoleReporter. Set its name and reporting interval.
+    #pragma region Step1_TaskB_solution
+
     auto reporter = new ConsoleReporter();
     reporter->setName("hopper_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 
+    #pragma endregion
+
     //TODO: Connect outputs from the hopper to the reporter's inputs. Try
     //      reporting the hopper's height, the vastus muscle's activation, the
     //      knee angle, and any other variables of interest.
+    #pragma region Step1_TaskB_solution
+
     reporter->updInput("inputs").connect(
         hopper.getOutput(hopperHeightOutput), "height");
+
+    #pragma endregion
+    #pragma region Step1_TaskB_solution
+
     reporter->updInput("inputs").connect(
         hopper.getOutput("/Dennis/vastus/activation"));
+
+    #pragma endregion
+    #pragma region Step1_TaskB_solution
+
     reporter->updInput("inputs").connect(
         hopper.getOutput("/Dennis/knee/kneeFlexion/value"), "knee_angle");
 
+    #pragma endregion
+
     //TODO: Add the reporter to the model.
+    #pragma region Step1_TaskB_solution
+
     hopper.addComponent(reporter);
+
+    #pragma endregion
 }
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device.
+// Add a SignalGenerator to a device (the SignalGenerator class is defined in
+// helperMethods.h).
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)
 {
     //TODO: Create a new SignalGenerator and set its name.
+    #pragma region Step2_TaskE_solution
+
     auto signalGen = new SignalGenerator();
     signalGen->setName("signalGen");
+
+    #pragma endregion
 
     // Try changing the constant value and/or the function (e.g., try a
     // LinearFunction).
@@ -159,8 +204,12 @@ void addSignalGeneratorToDevice(Device& device)
 
     //TODO: Connect the signal generator's output signal to the controller's
     //      activation input ("controller/activation").
+    #pragma region Step2_TaskE_solution
+
     device.updInput("controller/activation")
         .connect(signalGen->getOutput("signal"));
+
+    #pragma endregion
 }
 
 
@@ -202,6 +251,9 @@ int main()
     {
         // Build the hopper.
         auto hopper = buildHopper();
+        // Update the hopper model's internal data members, which includes
+        // identifying its subcomponents from its properties.
+        hopper.finalizeFromProperties();
 
         // Show all Components in the model.
         showSubcomponentInfo(hopper);
@@ -235,6 +287,7 @@ int main()
     {
         // Build the testbed and device.
         auto testbed = buildTestbed();
+        testbed.finalizeFromProperties();
 
         // Step 2, Task A
         // ==============
@@ -250,6 +303,7 @@ int main()
         // ==============
         // Go to buildDeviceModel.cpp and complete the "TODO"s in buildDevice().
         auto device = buildDevice();
+        device->finalizeFromProperties();
 
         // Show all Components in the device and testbed.
         showSubcomponentInfo(*device);
@@ -290,7 +344,9 @@ int main()
     {
         // Build the hopper and device.
         auto assistedHopper = buildHopper();
+        assistedHopper.finalizeFromProperties();
         auto kneeDevice = buildDevice();
+        kneeDevice->finalizeFromProperties();
 
         // Step 3, Task A
         // ==============

@@ -56,11 +56,19 @@ Device* buildDevice() {
     double deviceMass = 2.0;
     auto cuffA = new Body("cuffA", deviceMass/2., Vec3(0), Inertia(0.5));
     //TODO: Repeat for cuffB.
+    #pragma region Step2_TaskC_solution
+
     auto cuffB = new Body("cuffB", deviceMass/2., Vec3(0), Inertia(0.5));
 
+    #pragma endregion
+
     //TODO: Add the cuff Components to the device.
+    #pragma region Step2_TaskC_solution
+
     device->addComponent(cuffA);
     device->addComponent(cuffB);
+
+    #pragma endregion
 
     // Attach a sphere to each cuff for visualization.
     auto sphere = new Sphere(0.01);
@@ -75,17 +83,30 @@ Device* buildDevice() {
     //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
     //      frame will be connected in exampleHopperDevice.cpp.
+    #pragma region Step2_TaskC_solution
+
     anchorA->updConnector("child_frame").connect(*cuffA);
+
+    #pragma endregion
+    
     //TODO: Add anchorA to the device.
+    #pragma region Step2_TaskC_solution
+
     device->addComponent(anchorA);
+
+    #pragma endregion
 
     //TODO: Create a WeldJoint to anchor cuffB to the hopper. Connect the
     //      "child_frame" Connector of anchorB to cuffB and add anchorB to the
     //      device.
+    #pragma region Step2_TaskC_solution
+
     auto anchorB = new WeldJoint();
     anchorB->setName("anchorB");
     anchorB->updConnector("child_frame").connect(*cuffB);
     device->addComponent(anchorB);
+
+    #pragma endregion
 
     // Attach a PathActuator between the two cuffs.
     auto pathActuator = new PathActuator();
@@ -101,10 +122,18 @@ Device* buildDevice() {
     controller->set_gain(GAIN);
 
     //TODO: Connect the controller's "actuator" Connector to pathActuator.
+    #pragma region Step2_TaskC_solution
+
     controller->updConnector("actuator").connect(*pathActuator);
 
+    #pragma endregion
+
     //TODO: Add the controller to the device.
+    #pragma region Step2_TaskC_solution
+
     device->addComponent(controller);
+
+    #pragma endregion
 
     return device;
 }
