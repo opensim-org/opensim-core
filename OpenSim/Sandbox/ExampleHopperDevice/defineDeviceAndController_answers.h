@@ -55,24 +55,44 @@ public:
     // The lengthening speed of the device.
     //TODO: Add an output called "speed" (to report the PathActuator's
     //      lengthening speed).
+    #pragma region Step2_TaskA_solution
+
     OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+
+    #pragma endregion
 
     // The force transmitted by the device.
     //TODO: Add an output called "tension".
+    #pragma region Step2_TaskA_solution
+
     OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
+
+    #pragma endregion
 
     // The power produced(+) or dissipated(-) by the device.
     //TODO: Add an output called "power".
+    #pragma region Step2_TaskA_solution
+
     OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
+
+    #pragma endregion
 
     // The height of the model to which the device is attached.
     //TODO: Add an output called "height".
+    #pragma region Step2_TaskA_solution
+
     OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
+
+    #pragma endregion
 
     // The center of mass height of the model to which the device is attached.
     //TODO: Add an output called "com_height".
+    #pragma region Step2_TaskA_solution
+
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
+
+    #pragma endregion
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
@@ -81,25 +101,45 @@ public:
     }
     double getSpeed(const SimTK::State& s) const {
         //TODO
+        #pragma region Step2_TaskA_solution
+
         return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+
+        #pragma endregion
     }
     double getTension(const SimTK::State& s) const {
         //TODO
+        #pragma region Step2_TaskA_solution
+
         return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+
+        #pragma endregion
     }
     double getPower(const SimTK::State& s) const {
         //TODO
+        #pragma region Step2_TaskA_solution
+
         return getComponent<PathActuator>("cableAtoB").getPower(s);
+
+        #pragma endregion
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
         //      height. You found this in Step 1, Task A.
         //const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
+        #pragma region Step2_TaskA_solution
+
         const std::string hopperHeightOutput = "/Dennis/slider/height/value";
+
+        #pragma endregion
 
         //TODO: Use "getModel().getOutputValue<?????>(?????);" to return the
         //      output indicated by hopperHeightOutput.
+        #pragma region Step2_TaskA_solution
+
         return getModel().getOutputValue<double>(s, hopperHeightOutput);
+
+        #pragma endregion
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {
         SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
@@ -137,8 +177,12 @@ public:
     // Connector to the ScalarActuator for which the controller is computing a
     // control signal.
     //TODO: Add a connector called "actuator" for connecting the ScalarActuator.
+    #pragma region Step2_TaskB_solution
+
     OpenSim_DECLARE_CONNECTOR(actuator, ScalarActuator,
         "The actuator for which the controller is computing a control signal");
+
+    #pragma endregion
 
     // Input the activation signal 'a' to which the controller's output should
     // be proportional.
@@ -158,8 +202,11 @@ public:
     {
         double activation = getInputValue<double>(s, "activation");
         //TODO: Design a control strategy that improves jump height.
-        //return 0;
+        #pragma region Step2_TaskB_solution
+
         return (activation < 0.31) ? 0. : get_gain() * activation;
+
+        #pragma endregion
     }
 
     // Member function for adding the control signal computed above into the
