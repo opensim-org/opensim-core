@@ -411,8 +411,8 @@ Body* Body::addSlave()
     name << getName() << "_slave_" << count;
     slave->setName(name.str());
 
-    //add to internal list as memory owner
-    _slaves.push_back(slave);
+    //add to internal list of references 
+    _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
 
     //add to list of subcomponents to automatically add to system and initialize
     adoptSubcomponent(slave);

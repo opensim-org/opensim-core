@@ -34,6 +34,7 @@
 #include "PistonActuator.h"
 #include "ControllableSpring.h"
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -44,7 +45,6 @@ using namespace SimTK;
  */
 int main()
 {
-
     try {
         // Create a new OpenSim model
         Model osimModel;
@@ -55,41 +55,39 @@ int main()
             
         // Get the ground body
         Ground& ground = osimModel.updGround();
-        ground.attachMeshGeometry("checkered_floor.vtp");
+        ground.attachGeometry(new Mesh("checkered_floor.vtp"));
 
         // create linkage body
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
         
-        Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
         Vec3 linkageMassCenter(0,linkageLength/2,0);
         Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
         OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-        
-        // Graphical representation
-        Cylinder cyl;
-        cyl.set_scale_factors(linkageDimensions);
-        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
-        cyl1Frame->setName("Cyl1_frame");
-        osimModel.addFrame(cyl1Frame);
-        cyl.setFrameName("Cyl1_frame");
-        linkage1->addGeometry(cyl);
+        linkage1->attachGeometry(new Sphere(0.1));
 
-        linkage1->attachGeometry(Sphere(0.1));
-         
-        // Create a second linkage body
-        OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
+        // Graphical representation
+        Cylinder cyl(linkageDiameter/2, linkageLength);
+        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, 
+            Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        cyl1Frame->setName("Cyl1_frame");
+        cyl1Frame->attachGeometry(cyl.clone());
+        osimModel.addFrame(cyl1Frame);
+
+        // Create a second linkage body as a clone of the first
+        OpenSim::Body* linkage2 = linkage1->clone();
         linkage2->setName("linkage2");
-        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2,
+            Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         osimModel.addFrame(cyl2Frame);
-        (linkage2->upd_geometry(0)).setFrameName("Cyl2_frame");
+
         // Create a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;
         Vec3 blockMassCenter(0);
         Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
+        block->attachGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // Create 1 degree-of-freedom pin joints between the bodies to create a kinematic chain from ground through the block
         Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
@@ -213,7 +211,6 @@ int main()
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
-        osimModel.dumpPathName();
         // Integrate
         manager.setInitialTime(t0);
         manager.setFinalTime(tf);
@@ -221,14 +218,16 @@ int main()
         manager.integrate(si);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
-        forces->getForceStorage().print("actuator_forces.mot");
-        
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        STOFileAdapter::write(statesTable, 
+                              "SpringActuatedLeg_states_degrees.sto");
+
+        auto forcesTable = forces->getForcesTable();
+        STOFileAdapter::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)
     {

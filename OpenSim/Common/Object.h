@@ -771,8 +771,6 @@ protected:
 //--------------------------------------------------------------------------
 private:
     void setNull();
-    void setupProperties();
-    void init();
 
     // Functions to support deserialization. 
     void generateXMLDocument();
@@ -1083,6 +1081,10 @@ template <> struct Object_GetClassName<std::string>
 {   static const std::string name() {return "string";} };
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
+{   static const std::string name() { return "Vector"; } };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
+{   static const std::string name() {return "Vector_<Vec3>";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \

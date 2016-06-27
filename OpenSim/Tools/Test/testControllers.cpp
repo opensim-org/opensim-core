@@ -88,13 +88,12 @@ void testControlSetControllerOnBlock()
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
     // Create coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
     jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block and joint to the model
@@ -184,12 +183,10 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create 6 coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block body to the model
@@ -279,12 +276,11 @@ void testCorrectionControllerOnBlock()
 
     //Create a free joint with 6 degrees-of-freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create coordinates (degrees-of-freedom) between the ground and block
     CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
     double posRange[2] = {-1, 1};
     jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
     jointCoordinateSet[0].setRange(posRange);
 
     // Add the block body to the model
@@ -292,7 +288,7 @@ void testCorrectionControllerOnBlock()
     osimModel.addJoint(&blockToGround);
 
     // Generate tracking data
-    Storage *desiredXTranslation = new Storage();
+    // Storage *desiredXTranslation = new Storage();
 
     CorrectionController tracker;
 
@@ -300,7 +296,7 @@ void testCorrectionControllerOnBlock()
     osimModel.addController(&tracker);
 
     // Initialize the system and get the state representing the state system
-    SimTK::State& si = osimModel.initSystem();
+    /*SimTK::State& si = */osimModel.initSystem();
 
     // Create the integrator and manager for the simulation.
     SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
@@ -404,7 +400,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Storage controls(outfileName);
 
     int nstates = osimModel.getNumStateVariables();
-    int ncontrols = osimModel.getNumControls();
+    /*int ncontrols = */osimModel.getNumControls();
 
     CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
         Array<double>(0.005, nstates), __FILE__, __LINE__,

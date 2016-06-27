@@ -136,12 +136,16 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(OPENSIM_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSim")
     # Location of the opensim python package in the installation.
-    # On Ubuntu/Debian (apt-get), might want lib/python2.7/dist-packages
-    set(OPENSIM_INSTALL_PYTHONDIR "${CMAKE_INSTALL_DOCDIR}/python")
-    # On Ubuntu/Debian (apt-get), might want share/java
-    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DOCDIR}/Java")
-    # On Ubuntu/Debian (apt-get), might want share/doc/OpenSim/java
-    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DOCDIR}/Java")
+    # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
+    # We replace VERSION with the correct version once we know it (in
+    # Bindings/Python/CMakeLists.txt).
+    # The _LIBDIR variable might contain something like x86-64-linux-gnu on
+    # some systems, but for python, we really just want lib/, no matter what.
+    set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    # share/java, as expected on Ubuntu/Debian (apt-get).
+    set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+    # Don't want to put source files in share/java.
+    set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_CPPEXDIR "${CMAKE_INSTALL_DOCDIR}/APIExamples")
     set(OPENSIM_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
 
@@ -330,6 +334,8 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
+    # Disable "C4068: unknown pragma" warning.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4068") 
     set(CMAKE_CXX_FLAGS_DEBUG
     "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
@@ -362,6 +368,51 @@ endif()
 set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+
+if(${BUILD_JAVA_WRAPPING})
+    # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
+    # To print info on where MATLAB is found: set(MATLAB_FIND_DEBUG ON)
+    # Running tests requires that we can find the matlab executable (component
+    # MAIN_PROGRAM).
+    # Also, the mechanism we use to set the java classpath and library path 
+    # for MATLAB requires version 7.0 (R14).
+    find_package(Matlab 7.0 COMPONENTS MAIN_PROGRAM)
+    # Issue warning if Matlab and OpenSim build architectures differ.
+    # That is, one is 64-bit and other is not.
+    if(Matlab_FOUND)
+        if(${Matlab_MEX_EXTENSION} MATCHES "64")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if(UNIX AND NOT ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
+                string(CONCAT MSG 
+                       "Matlab found is 64-bit but host is 32-bit. Matlab arch"
+                       " and OpenSim binaries arch have to be same.")
+                message(WARNING ${MSG})
+            elseif(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "64")
+                string(CONCAT MSG 
+                       "Matlab found is 64-bit but C++ compiler chosen is "
+                       "32-bit. Matlab arch and OpenSim binaries arch have"
+                       " to be same.")
+                message(WARNING ${MSG})
+            endif()
+        elseif(${Matlab_MEX_EXTENSION} MATCHES "32")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if(UNIX AND ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
+                string(CONCAT MSG
+                       "Matlab found is 32-bit but host is 64-bit. Matlab arch"
+                       " and OpenSim binaries arch have to be same.")
+                message(WARNING ${MSG})
+            elseif(MSVC AND ${CMAKE_GENERATOR} MATCHES "64")
+                string(CONCAT MSG
+                       "Matlab found is 32-bit but C++ compiler chosen is "
+                       "64-bit. Matlab arch and OpenSim binaries arch have"
+                       " to be same.")
+                message(WARNING ${MSG})
+            endif()
+        endif()
+    endif()
+endif()
 
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
@@ -434,11 +485,21 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-find_package(BTK 
-    REQUIRED
-    HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
-CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+set(WITH_BTK
+    OFF
+    CACHE
+    BOOL
+    "Compile OpenSim with BTK ? BTK provides C3D reading.")
 
+# If compiling with BTK, find and use it.
+if(WITH_BTK)
+    find_package(BTK 
+                 REQUIRED
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
+    include(${BTK_USE_FILE})
+    add_definitions(-DWITH_BTK)
+    CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -591,8 +652,9 @@ add_custom_target(RUN_TESTS_PARALLEL
                                    )
 
 
-# Create buildinfo.txt file and place under sdk to include product version, platform and compiler for troubleshooting purposes
-set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/buildinfo.txt)
+# Create buildinfo.txt file and place under sdk to include product version,
+# platform and compiler for troubleshooting purposes
+set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/OpenSim_buildinfo.txt)
 # message("version file="${VERSION_FILE_PATH})
 file(WRITE ${VERSION_FILE_PATH} "Product Version=${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")

@@ -39,7 +39,7 @@ using namespace std;
 PointToPointSpring::PointToPointSpring()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
@@ -49,7 +49,7 @@ PointToPointSpring::
                        double stiffness, double restlength )
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     // Set properties to the passed-in values.
     setBody1(body1);
@@ -60,12 +60,6 @@ PointToPointSpring::
 
     setStiffness(stiffness);
     setRestlength(restlength);
-}
-
-void PointToPointSpring::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body1");
-    constructConnector<PhysicalFrame>("body2");
 }
 
 //=============================================================================
@@ -107,31 +101,21 @@ void PointToPointSpring::setBody2(const PhysicalFrame& body)
 
 const PhysicalFrame& PointToPointSpring::getBody1() const
 {
-    return getConnector<PhysicalFrame>("body1").getConnectee();
+    return getConnectee<PhysicalFrame>("body1");
 }
 
 const PhysicalFrame& PointToPointSpring::getBody2() const
 {
-    return getConnector<PhysicalFrame>("body2").getConnectee();
-}
-
-//=============================================================================
-// Connect this force element to the rest of the model.
-//=============================================================================
-void PointToPointSpring::extendConnectToModel(Model& model)
-{
-    Super::extendConnectToModel(model); // Let base class connect first.
-
-    if(getName() == "")
-        setName("pointToPointSpring");
+    return getConnectee<PhysicalFrame>("body2");
 }
 
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::
+    extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
 {
-    Super::extendAddToSystem(system);
+    Super::extendAddToSystemAfterSubcomponents(system);
 
     const PhysicalFrame& body1 = getBody1();
     const PhysicalFrame& body2 = getBody2();

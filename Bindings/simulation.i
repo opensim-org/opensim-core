@@ -2,6 +2,9 @@
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 
+
+%typedef SimTK::DecorativeGeometry::Representation VisualRepresentation;
+
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -124,7 +127,10 @@
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
+
+%include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Station.h>
+%include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
@@ -155,7 +161,6 @@
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
-%include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
@@ -197,25 +202,30 @@
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
+%include <OpenSim/Simulation/StatesTrajectory.h>
+// This enables iterating using the getBetween() method.
+%template(IteratorRangeStatesTrajectoryIterator) 
+    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
+
 // Iterators.
-// TODO rename to singular form.
-%template(FramesList) OpenSim::ComponentList<OpenSim::Frame>;
-%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+%template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<const OpenSim::Frame>;
 
-%template(BodiesList) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
+%template(BodyList) OpenSim::ComponentList<const OpenSim::Body>;
+%template(BodyIterator) OpenSim::ComponentListIterator<const OpenSim::Body>;
 
-%template(MusclesList) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+%template(MuscleList) OpenSim::ComponentList<const OpenSim::Muscle>;
+%template(MuscleIterator) OpenSim::ComponentListIterator<const OpenSim::Muscle>;
 
-%template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
-%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+%template(ModelComponentList) OpenSim::ComponentList<const OpenSim::ModelComponent>;
+%template(ModelComponentIterator) OpenSim::ComponentListIterator<const OpenSim::ModelComponent>;
 
-%template(JointsList) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
+%template(JointList) OpenSim::ComponentList<const OpenSim::Joint>;
+%template(JointIterator) OpenSim::ComponentListIterator<const OpenSim::Joint>;
 
-%template(getFramesList) OpenSim::Component::getComponentList<OpenSim::Frame>;
-%template(getBodiesList) OpenSim::Component::getComponentList<OpenSim::Body>;
-%template(getMusclesList) OpenSim::Component::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Component::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Component::getComponentList<OpenSim::Joint>;
+%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
+%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
+%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
+%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
+%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;

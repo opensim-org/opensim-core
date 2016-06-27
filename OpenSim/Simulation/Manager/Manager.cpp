@@ -72,10 +72,10 @@ Manager::~Manager()
 Manager::Manager(Model& model):
        _model(&model),
        _integ(NULL),               
-       _controllerSet(&model.updControllerSet() ),
        _stateStore(NULL),
        _performAnalyses(true),
-       _writeToStorage(true)
+       _writeToStorage(true),
+       _controllerSet(&model.updControllerSet() )
 {
     setNull();
 
@@ -665,6 +665,11 @@ getStateStorage() const
         throw Exception("Manager::getStateStorage(): Storage is not set");
     return(*_stateStore);
 }
+
+TimeSeriesTable Manager::getStatesTable() const {
+    return getStateStorage().getAsTimeSeriesTable();
+}
+
 //_____________________________________________________________________________
 /**
  * Get whether there is a storage buffer for the integration states.
@@ -705,11 +710,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt,dtPrev,tReal;
+    double dt/*,dtPrev*/,tReal;
     double time =_ti;
     dt=dtFirst;
     if(dt>_dtMax) dt = _dtMax;
-    dtPrev=dt;
+    //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     

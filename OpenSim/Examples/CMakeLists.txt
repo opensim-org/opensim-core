@@ -5,6 +5,7 @@ option(BUILD_API_EXAMPLES
 if(BUILD_API_EXAMPLES)
 
     install(DIRECTORY ExampleMain
+        ExampleLuxoMuscle
         ControllerExample
         MuscleExample
         CustomActuatorExample
@@ -13,6 +14,7 @@ if(BUILD_API_EXAMPLES)
         SimpleOptimizationExample
         SymbolicExpressionReporter
         DataTable
+        DataAdapter
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
 
     add_subdirectory(SymbolicExpressionReporter)
@@ -21,6 +23,7 @@ if(BUILD_API_EXAMPLES)
 elseif()
 
     add_subdirectory(ControllerExample)
+    add_subdirectory(ExampleLuxoMuscle)
     add_subdirectory(ExampleMain)
     add_subdirectory(OptimizationExample_Arm26)
     add_subdirectory(CustomActuatorExample)

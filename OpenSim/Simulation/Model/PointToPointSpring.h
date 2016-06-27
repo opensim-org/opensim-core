@@ -53,6 +53,13 @@ public:
     OpenSim_DECLARE_PROPERTY(rest_length, double,
         "Spring resting length (m).");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(body1, PhysicalFrame,
+        "A frame on the first body that this spring connects to.");
+    OpenSim_DECLARE_CONNECTOR(body2, PhysicalFrame,
+        "A frame on the second body that this spring connects to.");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -106,12 +113,6 @@ public:
     double getRestlength() const {return get_rest_length();}
 
     //-----------------------------------------------------------------------------
-    // ModelComponent interface
-    //-----------------------------------------------------------------------------
-    void extendConnectToModel(Model& model) override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    //-----------------------------------------------------------------------------
     // Reporting
     //-----------------------------------------------------------------------------
     /** 
@@ -124,12 +125,14 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
+    //-----------------------------------------------------------------------------
+    // ModelComponent interface
+    //-----------------------------------------------------------------------------
+    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const override;
 
 private:
     void setNull();
-    void constructProperties() override;
-    /** These will be the two bodies the PointToPointSpring connects to.*/
-    void constructConnectors() override;
+    void constructProperties();
 
 //==============================================================================
 };  // END of class PointToPointSpring

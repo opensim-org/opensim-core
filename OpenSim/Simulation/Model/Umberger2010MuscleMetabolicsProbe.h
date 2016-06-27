@@ -48,6 +48,11 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * The discussion here is based on the following papers:
  *
+ * <a href="http://dx.doi.org/10.1371/journal.pone.0150378">
+ * Uchida, T. K., Hicks, J. L., Dembia, C. L., Delp, S. L. (2016). Stretching
+ * your energetic budget: how tendon compliance affects the metabolic cost of
+ * running. PLOS ONE 11(3), e0150378.</a>
+ *
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/20356877">
  * Umberger, B. R. (2010). Stance and swing phase costs in human walking.
  * J R Soc Interface 7, 1329-40.</a>
@@ -68,11 +73,11 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * the rate at which heat is liberated plus the rate at which work is done:\n
  * <B>Edot = Bdot + sumOfAllMuscles(Adot + Mdot + Sdot + Wdot).</B>
  *
- *       - Bdot is the basal heat rate (W).
- *       - Adot is the activation heat rate (W).
- *       - Mdot is the maintenance heat rate (W).
- *       - Sdot is the shortening heat rate (W).
- *       - Wdot is the mechanical work rate (W).
+ * - Bdot is the basal heat rate (W).
+ * - Adot is the activation heat rate (W).
+ * - Mdot is the maintenance heat rate (W).
+ * - Sdot is the shortening heat rate (W).
+ * - Wdot is the mechanical work rate (W).
  *
  *
  * This probe also uses muscle parameters stored in the MetabolicMuscle object for each muscle.
@@ -89,9 +94,9 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * slow-twitch fibers increases from r to 1. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/14672571">Bhargava, L.J., Pandy,
  * M.G., Anderson, F.C. (2004) A phenomenological model for estimating metabolic
- * energy consumption in muscle contraction. J Biomech 37:81-88</a>. To assume a
- * constant ratio of slow- and fast-twitch fiber recruitment, set the
- * 'use_Bhargava_recruitment_model' property to false.
+ * energy consumption in muscle contraction. J Biomech 37:81-88</a> and Uchida
+ * et al. (2016). To assume a constant ratio of slow- and fast-twitch fiber
+ * recruitment, set the 'use_Bhargava_recruitment_model' property to false.
  *
  *
  *
@@ -125,7 +130,6 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * <B>Sdot = m * (-[(alphaS_slow * v_CE_norm * r) + (alphaS_fast * v_CE_norm * (1-r))] * A^2 * S * F_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE >= 0 (concentric / isometric contraction)</I>\n
  * <B>Sdot = m * (alphaL * v_CE_norm * A * S)              </B>,   <I>l_CE <= l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>\n
  * <B>Sdot = m * (alphaL * v_CE_norm * A * S * F_CE_iso)   </B>,   <I>l_CE >  l_CE_opt   &   v_CE <  0 (eccentric contraction)</I>
- * 
  *     - <B>A = u          </B>,    <I>u >  a </I>
  *     - <B>A = (u+a)/2    </B>,    <I>u <= a </I>
  *
@@ -166,8 +170,9 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  * Sdot (if necessary) to ensure Edot > 0 for each muscle. See
  * <a href="http://www.ncbi.nlm.nih.gov/pubmed/9409483">Constable, J.K.,
  * Barclay, C.J., Gibbs, C.L. (1997) Energetics of lengthening in mouse and toad
- * skeletal muscles. J Physiol 505:205-215</a>. To allow muscles to have
- * negative total power, set the 'forbid_negative_total_power' property to false.
+ * skeletal muscles. J Physiol 505:205-215</a> and Uchida et al. (2016). To
+ * allow muscles to have negative total power, set the
+ * 'forbid_negative_total_power' property to false.
  *
  *
  * Note that if enforce_minimum_heat_rate_per_muscle == true AND 

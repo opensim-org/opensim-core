@@ -203,7 +203,7 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
             k = groupNames.findIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = modelForces.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
                     ((Force *)(members[j]))->setDisabled(s, true);
             }
@@ -235,6 +235,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // Create external forces
     try {
         _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        aModel.finalizeFromProperties();
     }
      catch (const Exception& ex) {
         // Important to catch exceptions here so we can restore current working directory...

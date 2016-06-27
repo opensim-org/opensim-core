@@ -276,8 +276,8 @@ void FunctionBasedBushingForce::generateDecorations
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
             // location of the bushing on frame2
-            SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
-            SimTK::Vec3 p_GM_G = frame2.getGroundTransform(s).p();
+            //SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
+            SimTK::Vec3 p_GM_G = frame2.getTransformInGround(s).p();
 
             // Add moment on frame2 as line vector starting at bushing location
             SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);

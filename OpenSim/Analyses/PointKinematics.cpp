@@ -66,9 +66,9 @@ Analysis(aModel),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     // NULL
     setNull();
@@ -102,9 +102,9 @@ Analysis(aFileName, false),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -132,9 +132,9 @@ Analysis(aPointKinematics),
 _body(aPointKinematics._body),
 _relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 

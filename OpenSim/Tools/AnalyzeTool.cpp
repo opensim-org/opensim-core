@@ -59,8 +59,8 @@ AnalyzeTool::AnalyzeTool() :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
 }
@@ -79,8 +79,8 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(aLoadModelAndInput),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(aLoadModelAndInput)
 {
     setNull();
     updateFromXMLDocument();
@@ -111,8 +111,8 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
     _speedsFileName(_speedsFileNameProp.getValueStr()),
     _lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-    _printResultFiles(true)
+    _printResultFiles(true),
+    _loadModelAndInput(false)
 {
     setNull();
     setModel(aModel);
@@ -514,7 +514,7 @@ bool AnalyzeTool::run(bool plotting)
     }
 
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
     // Call initSystem except when plotting
@@ -602,7 +602,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
-    double tPrev=0.0,t=0.0,dt=0.0;
+    double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;
     int ny = s.getNY();
     Array<double> dydt(0.0,ny);
     Array<double> yFromStorage(0.0,ny);
@@ -613,8 +613,37 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     SimTK::Vector stateData;
     stateData.resize(numOpenSimStates);
 
+    // There is no guarantee that the order in which a model had written out
+    // its states will be the same order in which the states will be created,
+    // allocated and listed in any future recreation of the model and its
+    // system. Therefore, it is imperative that we ensure that the state
+    // values being read in are reordered according to the model's order.
+    // The model's order is given by its getStateVariableNames() so we can 
+    // compare to the column labels of the storage and construct a dataToModel
+    // mapping.
+    const Array<std::string>& stateNames = aStatesStore.getColumnLabels();
+    Array<std::string> modelStateNames = aModel.getStateVariableNames();
+
+    int nsData = stateNames.size() - 1;  //-1 since time is a column
+    Array<int> dataToModel(-1, nsData);
+    for (int k = 0; k < nsData; ++k) {
+        for (int j = 0; j < modelStateNames.size(); ++j) {
+            if (stateNames[k+1] == modelStateNames[j]) { //+1 skip "time"
+                dataToModel[k] = j;
+            }
+        }
+    }
+
+    // It is possible that there are internal states or that future modeling
+    // choices add state variables that are not known to the modeler/user.
+    // In which case we rely on the model to supply reasonable defaults and
+    // assume all the important/necessary state values for running an analysis
+    // are provided by the Storage. Here we initialize the state values to their
+    // model defaults.
+    SimTK::Vector stateValues = aModel.getStateVariableValues(s);
+
     for(int i=iInitial;i<=iFinal;i++) {
-        tPrev = t;
+        // tPrev = t;
         aStatesStore.getTime(i,s.updTime()); // time
         t = s.getTime();
         aModel.setAllControllersEnabled(true);
@@ -622,11 +651,11 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         aStatesStore.getData(i,numOpenSimStates,&stateData[0]); // states
         // Get data into local Vector and assign to State using common utility
         // to handle internal (non-OpenSim) states that may exist
-        Array<std::string> stateNames = aStatesStore.getColumnLabels();
-        for (int j=0; j<stateData.size(); ++j){
-            // storage labels included time at index 0 so +1 to skip
-            aModel.setStateVariableValue(s, stateNames[j+1], stateData[j]);
+
+        for (int k=0; k < nsData; ++k) {
+            stateValues[dataToModel[k]] = stateData[k];
         }
+        aModel.setStateVariableValues(s, stateValues);
        
         // Adjust configuration to match constraints and other goals
         aModel.assemble(s);

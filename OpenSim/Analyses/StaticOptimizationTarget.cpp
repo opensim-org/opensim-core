@@ -665,7 +665,7 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-    double time = s.getTime();
+    // double time = s.getTime();
     
 
     const ForceSet& fs = _model->getForceSet();

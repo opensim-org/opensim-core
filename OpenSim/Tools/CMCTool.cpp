@@ -408,7 +408,7 @@ bool CMCTool::run()
     // SET OUTPUT PRECISION
     IO::SetPrecision(_outputPrecision);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
     //taskSet.print("cmcTasksRT.xml");
@@ -669,10 +669,10 @@ bool CMCTool::run()
     const SimTK::Vector &modelZ = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
     
-    int nra = actSysZ.size();
-    int nrm = modelZ.size();
+    // int nra = actSysZ.size();
+    // int nrm = modelZ.size();
 
-    assert(nra == nrm);
+    assert(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =
@@ -1116,7 +1116,7 @@ Set<Actuator> CMCTool::
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
                     actuatorsForCMC.remove((Actuator *)members[j]);
                 actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);

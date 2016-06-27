@@ -140,6 +140,12 @@ public:
     OpenSim_DECLARE_PROPERTY(gain, double,
         "Constant gain to scale the probe output by.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(probe_outputs, SimTK::Vector, getProbeOutputs,
+            SimTK::Stage::Report);
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -223,8 +229,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
 
 
 //=============================================================================

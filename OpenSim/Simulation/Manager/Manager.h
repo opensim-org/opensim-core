@@ -30,6 +30,7 @@
 
 // INCLUDES
 #include <OpenSim/Common/Object.h>
+#include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "SimTKsimbody.h"
 
@@ -190,6 +191,7 @@ public:
     bool hasStateStorage() const;
     void setStateStorage(Storage& aStorage);
     Storage& getStateStorage() const;
+    TimeSeriesTable getStatesTable() const;
 
    //--------------------------------------------------------------------------
    //  INTERRUPT

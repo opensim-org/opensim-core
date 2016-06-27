@@ -98,9 +98,9 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
-    _f(0.0),
-    _controlSet()
+    _controlSet(),
+    _paramList(-1),
+    _f(0.0)
 {
     setNull();
     setupProperties();
@@ -1024,8 +1024,8 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     Array<double> x0(0.0,size),x1(0.0,size),x2(0.0,size);
 
     // SET TIMES
-    double t0,t1,t2;
-    t2 = s.getTime();
+    double t0,t1/*,t2*/;
+    // t2 = s.getTime();
     t1 = s.getTime() - aDT;
     t0 = t1 - aDT;
 
@@ -1080,7 +1080,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 
-    double *val = &controls[0];
+    // double *val = &controls[0];
 }
 
 // for any post XML deserialization initialization
@@ -1115,7 +1115,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 
     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-    const Set<Actuator>& fSet = getActuatorSet();
+    const Set<const Actuator>& fSet = getActuatorSet();
     int nActs = fSet.getSize();
 
     mutableThis->_controlSetIndices.setSize(nActs);
@@ -1132,7 +1132,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
     
     for(int i=0; i < nActs; ++i ) {
 
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto* act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         //Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();
@@ -1146,7 +1146,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
         if (xmax ==SimTK::Infinity)
             xmax =MAX_CONTROLS_FOR_RRA;
 
-        Muscle *musc = dynamic_cast<Muscle *>(act);
+        auto *musc = dynamic_cast<const Muscle *>(act);
         // if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
         // since it uses this assumption to rootsolve for the required controls over the CMC time-window.
         if(musc){

@@ -102,6 +102,12 @@ public:
     {
         return _forceStore;
     }
+    
+    /** Get forces table.                                                     */
+    TimeSeriesTable getForcesTable() const {
+        return _forceStore.getAsTimeSeriesTable();
+    }
+
     // MODEL
     void setModel(Model& aModel) override;
 
@@ -110,13 +116,10 @@ public:
     //--------------------------------------------------------------------------
     void includeConstraintForces(bool flag) {_includeConstraintForces = flag;}
 
+    int begin(SimTK::State& s ) override;
+    int step(const SimTK::State& s, int setNumber ) override;
+    int end(SimTK::State& s ) override;
 
-    int
-        begin(SimTK::State& s ) override;
-    int
-        step(const SimTK::State& s, int setNumber ) override;
-    int
-        end(SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );

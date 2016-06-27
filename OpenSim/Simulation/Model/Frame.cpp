@@ -33,68 +33,132 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
+using SimTK::State;
+using SimTK::SpatialVec;
 
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
 Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
+
+    FrameGeometry default_frame_geometry;
+    default_frame_geometry.setName("frame_geometry");
+    constructProperty_frame_geometry(default_frame_geometry);
+
+    constructProperty_attached_geometry();
 }
 
+void Frame::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    // All the Geometry attached to this Frame should have
+    // their frame connections automatically set to this Frame.
+    upd_frame_geometry().setFrame(*this);
+    int nag = getProperty_attached_geometry().size();
+    for (int i = 0; i < nag; ++i) {
+        upd_attached_geometry(i).setFrame(*this);
+    }
+}
 
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
     SimTK::Transform x;
+    SpatialVec v;
     // If the properties, topology or coordinate values change, 
-    // Stage::Position will be invalid.
-    addCacheVariable("ground_transform", x, SimTK::Stage::Position);
+    // Stage::Position and above will be invalid.
+    addCacheVariable("transform_in_g", x, SimTK::Stage::Position);
+    // if a speed (u) changes then Stage::Velocity will also be invalid
+    addCacheVariable("velocity_in_g", v, SimTK::Stage::Velocity);
+    // if a force changes then Stage::Acceleration will also be invalid
+    addCacheVariable("acceleration_in_g", v, SimTK::Stage::Acceleration);
 }
 
-const SimTK::Transform& Frame::getGroundTransform(const SimTK::State& s) const
+const SimTK::Transform& Frame::getTransformInGround(const State& s) const
 {
     if (!getSystem().getDefaultSubsystem().
-            isCacheValueRealized(s, _groundTransformIndex)){
+            isCacheValueRealized(s, _transformIndex)){
         //cache is not valid so calculate the transform
         SimTK::Value<SimTK::Transform>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _groundTransformIndex)).upd()
-                = calcGroundTransform(s);
+            getSystem().getDefaultSubsystem().updCacheEntry(s, _transformIndex))
+            .upd() = calcTransformInGround(s);
         // mark cache as up-to-date
         getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _groundTransformIndex);
+            markCacheValueRealized(s, _transformIndex);
     }
     return SimTK::Value<SimTK::Transform>::downcast(
         getSystem().getDefaultSubsystem().
-            getCacheEntry(s, _groundTransformIndex)).get();
+            getCacheEntry(s, _transformIndex)).get();
 }
 
-void Frame::extendAddGeometry(OpenSim::Geometry& geom) {
-    if (geom.getFrameName() == "")
-        geom.setFrameName(getName());
-}
-
-
-void Frame::attachMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
+const SimTK::SpatialVec& Frame::getVelocityInGround(const State& s) const
 {
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    geom.setFrameName(getName());
-    addGeometry(geom);
+    if (!getSystem().getDefaultSubsystem().
+        isCacheValueRealized(s, _velocityIndex)) {
+        //cache is not valid so calculate the transform
+        SimTK::Value<SpatialVec>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, _velocityIndex)).upd()
+            = calcVelocityInGround(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, _velocityIndex);
+    }
+    return SimTK::Value<SpatialVec>::downcast(
+        getSystem().getDefaultSubsystem().
+        getCacheEntry(s, _velocityIndex)).get();
 }
 
-
-void Frame::attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scale)
+const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 {
-    SimTK::ClonePtr<Geometry> clone = SimTK::ClonePtr<Geometry>(geom);
-    clone->set_scale_factors(scale);
-    clone->setFrameName(getName());
-    addGeometry(clone.updRef());
+    if (!getSystem().getDefaultSubsystem().
+        isCacheValueRealized(s, _accelerationIndex)) {
+        //cache is not valid so calculate the transform
+        SimTK::Value<SpatialVec>::downcast(
+            getSystem().getDefaultSubsystem().
+            updCacheEntry(s, _accelerationIndex)).upd()
+            = calcAccelerationInGround(s);
+        // mark cache as up-to-date
+        getSystem().getDefaultSubsystem().
+            markCacheValueRealized(s, _accelerationIndex);
+    }
+    return SimTK::Value<SpatialVec>::downcast(
+        getSystem().getDefaultSubsystem().
+        getCacheEntry(s, _accelerationIndex)).get();
+}
 
+void Frame::attachGeometry(OpenSim::Geometry* geom)
+{
+    // Check that name exists and is unique as it's used to form PathName
+    if (geom->getName().empty()) {
+        bool nameFound = false;
+        int index = 1;
+        while (!nameFound) {
+            std::stringstream ss;
+            // generate candidate name
+            ss << getName() << "_geom_" << index;
+            std::string candidate = ss.str();
+            bool exists = false;
+            for (int idx = 0; 
+                idx < getProperty_attached_geometry().size() && !exists; idx++) {
+                if (get_attached_geometry(idx).getName() == candidate) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                nameFound = true;
+                geom->setName(candidate);
+            }
+            else
+                index++;
+        }
+    }
+
+    geom->setFrame(*this);
+    updProperty_attached_geometry().adoptAndAppendValue(geom);
 }
 
 //=============================================================================
@@ -104,8 +168,8 @@ void Frame::attachGeometry(const OpenSim::Geometry& geom, const SimTK::Vec3 scal
 SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
         const Frame& otherFrame) const
 {
-    SimTK::Transform X_GF = calcGroundTransform(state);
-    SimTK::Transform X_GA = otherFrame.calcGroundTransform(state);
+    const SimTK::Transform& X_GF = getTransformInGround(state);
+    const SimTK::Transform& X_GA = otherFrame.getTransformInGround(state);
     // return the transform, X_AF that expresses quantities in F into A
     return ~X_GA*X_GF;
 }
@@ -113,15 +177,13 @@ SimTK::Transform Frame::findTransformBetween(const SimTK::State& state,
 SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state,
                                 const SimTK::Vec3& vec, const Frame& frame) const
 {
-    SimTK::Transform X_AF = findTransformBetween(state, frame);
-    return X_AF.R()*vec;
+    return findTransformBetween(state, frame).R()*vec;
 }
 
 SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
         SimTK::Vec3& point, const Frame& otherFrame) const
 {
-    SimTK::Transform X_AF = findTransformBetween(state, otherFrame);
-    return X_AF*point;
+    return findTransformBetween(state, otherFrame)*point;
 }
 
 const Frame& Frame::findBaseFrame() const
@@ -137,6 +199,13 @@ SimTK::Transform Frame::findTransformInBaseFrame() const
 void Frame::extendRealizeTopology(SimTK::State& s) const
 {
     Super::extendRealizeTopology(s);
-    const_cast<Self*>(this)->_groundTransformIndex =
-        getCacheVariableIndex("ground_transform");
+
+    const_cast<Self*>(this)->_transformIndex =
+        getCacheVariableIndex("transform_in_g");
+
+    const_cast<Self*>(this)->_velocityIndex =
+        getCacheVariableIndex("velocity_in_g");
+
+    const_cast<Self*>(this)->_accelerationIndex =
+        getCacheVariableIndex("acceleration_in_g");
 }

@@ -32,6 +32,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 #include <ctime>    // for clock()
 
@@ -93,48 +94,45 @@ int main()
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
         // add a checkered floor
-        ground.attachMeshGeometry("checkered_floor.vtp");
+        ground.attachGeometry(new Mesh("checkered_floor.vtp"));
         // add anchors for the muscles to be fixed to
-        Brick leftAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        leftAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(0.0, 1.0, 0.0));
-        Brick rightAnchorGeometry(SimTK::Vec3(0.05, 0.05, 0.05));
-        rightAnchorGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, 1.0, 0.0));
-        rightAnchorGeometry.upd_Appearance().set_opacity(0.5);
+        Brick* leftAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        leftAnchorGeometry->upd_Appearance().set_color(SimTK::Vec3(0.0, 1.0, 0.0));
+        Brick* rightAnchorGeometry = new Brick(SimTK::Vec3(0.05, 0.05, 0.05));
+        rightAnchorGeometry->upd_Appearance().set_color(SimTK::Vec3(1.0, 1.0, 0.0));
+        rightAnchorGeometry->upd_Appearance().set_opacity(0.5);
 
         // block is 0.1 by 0.1 by 0.1m cube and centered at origin. 
         // transform anchors to be placed at the two extremes of the sliding block (to come)
 
         // scale the anchors
-        leftAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
-        rightAnchorGeometry.set_scale_factors(Vec3(5, 1, 1));
-        // reposition the anchors
-        leftAnchorGeometry.setFrameName(leftAnchorFrame->getName());
-        ground.addGeometry(leftAnchorGeometry);
-        rightAnchorGeometry.setFrameName(rightAnchorFrame->getName());
-        ground.addGeometry(rightAnchorGeometry);
+        leftAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
+        rightAnchorGeometry->set_scale_factors(Vec3(5, 1, 1));
+        // position the anchors
+        leftAnchorFrame->attachGeometry(leftAnchorGeometry);
+        rightAnchorFrame->attachGeometry(rightAnchorGeometry);
         
-        Cylinder cylGeometry(0.2, .3);
-        cylGeometry.setFrameName("CylAnchor");
-        cylGeometry.upd_Appearance().set_representation(VisualRepresentation::DrawWireframe);
-        ground.addGeometry(cylGeometry);
+        Geometry* cylGeometry = new Cylinder(0.2, .3);
+        cylGeometry->upd_Appearance().set_representation(VisualRepresentation::DrawWireframe);
+        cylFrame->attachGeometry(cylGeometry);
 
-        Ellipsoid ellipsoidGeometry(0.2, .7, .5);
-        ellipsoidGeometry.upd_Appearance().set_color(SimTK::Vec3(1.0, .5, 0.1));
-        ellipsoidGeometry.setFrameName("EllipsoidAnchor");
-        ground.addGeometry(ellipsoidGeometry);
+        Geometry* ellipsoidGeometry = new Ellipsoid(0.2, .7, .5);
+        ellipsoidGeometry->setColor(SimTK::Vec3(1.0, .5, 0.1));
+        ellipsoidFrame->attachGeometry(ellipsoidGeometry);
         
         // BLOCK BODY
         Vec3 blockMassCenter(0);
-        Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+        Inertia blockInertia = 
+            blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
 
         // Create a new block body with the specified properties
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->attachMeshGeometry("block.vtp");
+        block->attachGeometry(new Mesh("block.vtp"));
         
         // Use attachGeometry to set frame name & addGeometry
-        block->attachGeometry(Sphere(0.1));
+        block->attachGeometry(new Sphere(0.1));
         
         // FREE JOINT
 
@@ -238,8 +236,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function
@@ -308,8 +305,8 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        double mfv1 = muscle1->getFiberVelocity(si);
-        double mfv2 = muscle2->getFiberVelocity(si);
+        /*double mfv1 = */muscle1->getFiberVelocity(si);
+        /*double mfv2 = */muscle2->getFiberVelocity(si);
 
         // Create the force reporter for obtaining the forces applied to the model
         // during a forward simulation
@@ -336,11 +333,11 @@ int main()
         // SAVE THE RESULTS TO FILE //
         //////////////////////////////
         // Save the model states from forward integration
-        Storage statesDegrees(manager.getStateStorage());
-        statesDegrees.print("tugOfWar_states.sto");
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
 
-        // Save the forces
-        reporter->getForceStorage().print("tugOfWar_forces.mot");
+        auto forcesTable = reporter->getForcesTable();
+        STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
     }
     catch (const std::exception& ex)
     {

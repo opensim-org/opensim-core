@@ -74,7 +74,7 @@ void testSingleRigidTendonMuscle() {
     cmc.setDesiredKinematicsFileName(
             "block_hanging_from_rigid_thelen_muscle_ForwardResults/"
             "block_hanging_from_muscle_states.sto");
-    int n_acts = cmc.getModel().getActuators().getSize();
+    // int n_acts = cmc.getModel().getActuators().getSize();
     cmc.run();
 
     Storage fwd_result("block_hanging_from_rigid_thelen_muscle_ForwardResults/block_hanging_from_muscle_states.sto");

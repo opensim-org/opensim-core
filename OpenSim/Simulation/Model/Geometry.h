@@ -60,23 +60,35 @@ class ModelComponent;
 class OSIMSIMULATION_API Geometry : public Component {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Geometry, Component);
 public:
-    // Properties common to all Geometry types are included as Properties
-    // of the base class.
-    // Scale factors
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
         "Scale factors in X, Y, Z directions respectively.");
-    // Default display properties e.g. Representation, color, texture, etc.
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance for this Geometry");
+        "Default appearance attributes for this Geometry");
+
+//=============================================================================
+// CONNECTORS
+//=============================================================================
+    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
+        "The frame to which this geometry is attached. Note, being connected "
+        "to a Frame means its transform is used to position this Geometry." );
+//=============================================================================
+// INPUTS
+//=============================================================================
+    OpenSim_DECLARE_INPUT(transform, SimTK::Transform, SimTK::Stage::Position,
+        "The transform that positions the Geometry in Ground so it can be "
+        "positioned. Note, either the Geometry is attached to a Frame OR "
+        "the input transform can be supplied, but not both. ");
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    /// Default constructor, does nothing
-    Geometry() {
-        setNull();
-        constructInfrastructure();
-    }
+    /// Default constructor
+    Geometry();
+    
     /// Convenience constructor that takes a Frame
     Geometry(const Frame& frame) : Geometry() {
         setFrame(frame);
@@ -84,15 +96,12 @@ public:
 
     /// Default destructor
     virtual ~Geometry() {}
-    /** Interface methods to handle the Frame which the Geometry is attached to.
-    **/
-    /** %Set the name of the Frame of attachment **/
-    void setFrameName(const std::string& name);
+    /** Interface methods to handle the Frame which the Geometry is attached to. */
     /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
     this Geometry is attached (using a Connector). **/
-    const std::string& getFrameName() const;
+
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */
     const Frame& getFrame() const;
@@ -103,11 +112,13 @@ public:
     // will be removed before release 4.0 in favor of a mechanism that 
     // handles local/global/shared Appearance objects
     /// Convenient access to set Appearance/Color
+    /// color is RGB, each components is in the range [0, 1].
     void setColor(const SimTK::Vec3& color) { 
         upd_Appearance().set_color(color); 
     };
 
     /// Convenient access to get Appearance/Color
+    /// returns RGB , each components is in the range [0, 1].
     const SimTK::Vec3& getColor() const { 
         return get_Appearance().get_color(); 
     };
@@ -122,11 +133,11 @@ public:
     };
 
     /// Convenient access to set Appearance/representation
-    void setRepresentation(VisualRepresentation rep) { 
+    void setRepresentation(OpenSim::VisualRepresentation rep) { 
         upd_Appearance().set_representation(rep); 
     };
     /// Convenient access to get Appearance/representation
-    VisualRepresentation getRepresentation() { return
+    OpenSim::VisualRepresentation getRepresentation() { return
         get_Appearance().get_representation(); 
     };
     // END DEPRECATED
@@ -147,6 +158,8 @@ protected:
     /// and return the result in the passed in Array.
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
+
+    void extendConnect(Component& root) override;
 
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 
@@ -171,13 +184,10 @@ private:
     };
 
     /// Specify the default values for properties of Geometry
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_scale_factors(SimTK::Vec3(1));
         constructProperty_Appearance(Appearance());
     }
-
-    /// Define the connector to the Frame that Geometry connects to.
-    void constructConnectors() override;
 
     void setNull() {
         setAuthors("Ayman Habib");
@@ -188,6 +198,9 @@ private:
 /**
  * LineGeometry is a utility class used to abstract a line segment.
  * It is used by muscle segments so that it's as small and useful as possible.
+ * 
+ * NOTE: LineGeometry assumes its Frame is Ground!
+ * TODO make LineGeometry draw between actual Points!
  */
 class OSIMSIMULATION_API LineGeometry : public Geometry
 {   
@@ -201,30 +214,26 @@ public:
         "Line end point.");
     /// Convenience constructor that takes two end points
     LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
         setPoints(aPoint1, aPoint2);
-        std::string gnd("ground");
-        setFrameName(gnd);
     }
+
     /// default constructor, creates line (0,0,0)-(1,1,1)
     LineGeometry():
-      Geometry()
-    {
+      Geometry() {
         constructProperties();
     }
+
     /// destructor
     virtual ~LineGeometry() {}
     /// Get end points as Vec3 in passed in arguments
-    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
-    {
+    void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const {
         rPoint1 = get_start_point();
         rPoint2 = get_end_point();
     }
     /// %Set end points from passed in arguments
-    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
-    {
+    void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2) {
         upd_start_point() = aPoint1;
         upd_end_point() = aPoint2;
     }
@@ -236,7 +245,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_end_point(SimTK::Vec3(1));
     }
@@ -281,7 +290,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() {
         constructProperty_start_point(SimTK::Vec3(0));
         constructProperty_direction(SimTK::Vec3(1));
         constructProperty_length(1.0);
@@ -367,7 +376,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties(){
+    void constructProperties() {
         constructProperty_radius(1.0);
     }
 };  // Sphere
@@ -587,13 +596,15 @@ public:
 public:
     /// Default constructor
     Mesh() :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
-        Geometry()
+        Geometry(),
+        cachedMesh(nullptr)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -606,10 +617,18 @@ public:
         return get_mesh_file();
     };
 protected:
+    // ModelComponent interface.
+    void extendFinalizeFromProperties() override;
+
+protected:
     /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
-
+private:
+    // We cache the DecorativeMeshFile if we successfully
+    // load the mesh from file so we don't try loading from disk every frame.
+    // This is mutable since it is not part of the public interface.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
 };
 
 /**
@@ -635,7 +654,7 @@ protected:
     void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_display_radius(.004);
     }
 };

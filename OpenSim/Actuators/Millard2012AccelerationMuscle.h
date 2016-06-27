@@ -771,7 +771,7 @@ private:
     void setNull();
 
     //constructs all of the properties required to use this class
-    void constructProperties() override;
+    void constructProperties();
     
     /*Builds all of the components that are necessary to use this 
     muscle model in simulation*/
@@ -1059,8 +1059,8 @@ private:
             phi(SimTK::NaN),
             cosphi(SimTK::NaN),
             sinphi(SimTK::NaN),
-            dphi_dlce(SimTK::NaN),
             dphi_dt(SimTK::NaN),
+            dphi_dlce(SimTK::NaN),
             d_dphidt_dlce(SimTK::NaN),
             tl(SimTK::NaN),
             dtl_dt(SimTK::NaN),

@@ -28,177 +28,10 @@
 This file defines the  DataTable_ class, which is used by OpenSim to provide an 
 in-memory container for data access and manipulation.                         */
 
-// Non-standard headers.
-#include "SimTKcommon.h"
-#include "OpenSim/Common/Exception.h"
-#include "OpenSim/Common/ValueArrayDictionary.h"
+#include "AbstractDataTable.h"
+#include "FileAdapter.h"
 
 namespace OpenSim {
-
-class InvalidRow : public Exception {
-public:
-    using Exception::Exception;
-};
-
-class IncorrectNumColumns : public InvalidRow {
-public:
-    IncorrectNumColumns(const std::string& file,
-                        size_t line,
-                        const std::string& func,
-                        size_t expected,
-                        size_t received) :
-        InvalidRow(file, line, func) {
-        std::string msg = "expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
-
-        addMessage(msg);
-    }
-};
-
-class RowIndexOutOfRange : public IndexOutOfRange {
-public:
-    using IndexOutOfRange::IndexOutOfRange;
-};
-
-class ColumnIndexOutOfRange : public IndexOutOfRange {
-public:
-    using IndexOutOfRange::IndexOutOfRange;
-};
-
-class MissingMetaData : public Exception {
-public:
-    MissingMetaData(const std::string& file,
-                    size_t line,
-                    const std::string& func,
-                    const std::string& key) :
-        Exception(file, line, func) {
-        std::string msg = "Missing key '" + key + "'.";
-
-        addMessage(msg);
-    }
-};
-
-class IncorrectMetaDataLength : public Exception {
-public:
-    IncorrectMetaDataLength(const std::string& file,
-                            size_t line,
-                            const std::string& func,
-                            const std::string& key,
-                            size_t expected,
-                            size_t received) :
-        Exception(file, line, func) {
-        std::string msg = "Key = " + key ;
-        msg += " expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
-
-        addMessage(msg);
-    }
-};
-
-class MetaDataLengthZero : public Exception {
-public:
-    MetaDataLengthZero(const std::string& file,
-                       size_t line,
-                       const std::string& func,
-                       const std::string& key) :
-        Exception(file, line, func) {
-        std::string msg = "Key = " + key;
-
-        addMessage(msg);
-    }
-};
-
-/** AbstractDataTable is the base-class of all DataTable_(templated) allowing 
-storage of DataTable_ templated on different types to be stored in a container 
-like std::vector. DataTable_ represents a matrix and an additional column. The 
-columns of the matrix are dependent columns. The additional column is the
-independent column. All dependent columns and the independent column can have
-metadata. AbstractDataTable offers:
-- Interface to access metadata of independent column and dependent columns.
-- A heterogeneous container to store metadata associated with the DataTable_ in
-  the form of key-value pairs where key is of type std::string and value can be
-  of any type.
-
-This class is abstract and cannot be used directly. Create instances of 
-DataTable_ instead. See DataTable_ for details on usage.                     */
-class AbstractDataTable {
-public:
-    using TableMetaData       = ValueArrayDictionary;
-    using DependentsMetaData  = ValueArrayDictionary;
-    using IndependentMetaData = ValueArrayDictionary;
-
-    AbstractDataTable()                                      = default;
-    AbstractDataTable(const AbstractDataTable&)              = default;
-    AbstractDataTable(AbstractDataTable&&)                   = default;
-    AbstractDataTable& operator=(const AbstractDataTable&)   = default;
-    AbstractDataTable& operator=(AbstractDataTable&&)        = default;
-    virtual std::unique_ptr<AbstractDataTable> clone() const = 0;
-    virtual ~AbstractDataTable()                             = default;
-
-    /** Get metadata associated with the table.                               */
-    const TableMetaData& getTableMetaData() const {
-        return _tableMetaData;
-    }
-
-    /** Update metadata associated with the table.                            */
-    TableMetaData& updTableMetaData() {
-        return _tableMetaData;
-    }
-
-    /** Get number of rows.                                                   */
-    size_t getNumRows() const {
-        return implementGetNumRows();
-    }
-
-    /** Get number of dependent columns.                                      */
-    size_t getNumColumns() const {
-        return implementGetNumColumns();
-    }
-    
-    /** Get metadata associated with the independent column.                  */
-    const IndependentMetaData& getIndependentMetaData() const {
-        return _independentMetaData;
-    }
-    
-    /** Set metadata associated with the independent column.                  */
-    void 
-    setIndependentMetaData(const IndependentMetaData& independentMetaData) {
-        _independentMetaData = independentMetaData;
-        validateIndependentMetaData();
-    }
-
-    /** Get metadata associated with the dependent columns.                   */
-    const DependentsMetaData& getDependentsMetaData() const {
-        return _dependentsMetaData;
-    }
-    
-    /** Set metadata associated with the dependent columns.                   */
-    void 
-    setDependentsMetaData(const DependentsMetaData& dependentsMetaData) {
-        _dependentsMetaData = dependentsMetaData;
-        validateDependentsMetaData();
-    }
-
-protected:
-    /** Get number of rows. Implemented by derived classes.                   */
-    virtual size_t implementGetNumRows() const       = 0;
-    
-    /** Get number of columns. Implemented by derived classes.                */
-    virtual size_t implementGetNumColumns() const    = 0;
-    
-    /** Check if metadata for independent column is valid . Implemented by 
-    derived classes.                                                          */
-    virtual void validateIndependentMetaData() const = 0;
-
-    /** Check if metadata for dependent column is valid. Implemented by derived
-    classes.                                                                  */
-    virtual void validateDependentsMetaData() const  = 0;
-
-    TableMetaData       _tableMetaData;
-    DependentsMetaData  _dependentsMetaData;
-    IndependentMetaData _independentMetaData;
-}; // AbstractDataTable
-
 
 /** DataTable_ is a in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
@@ -206,13 +39,31 @@ independent column and a set of dependent columns. The type of the independent
 column can be configured using ETX (template param). The type of the dependent 
 columns, which together form a matrix, can be configured using ETY (template 
 param). Independent and Dependent columns can contain metadata. DataTable_ as a 
-whole can contain metadata.                                                   */
+whole can contain metadata.                                                   
+
+\tparam ETX Type of each element of the underlying matrix holding dependent 
+            data.
+\tparam ETY Type of each element of the column holding independent data.      */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
+    static_assert(!std::is_reference<ETY>::value,
+                  "Template argument ETY cannot be a 'reference'.");
+    static_assert(!std::is_pointer<ETY>::value,
+                  "Template argument ETY cannot be a 'pointer'.");
+    static_assert(!std::is_const<ETY>::value && !std::is_volatile<ETY>::value,
+                  "Template argument ETY cannot be 'const' or 'volatile'.");
+
 public:
-    using RowVector     = SimTK::RowVector_<ETY>;
-    using RowVectorView = SimTK::RowVectorView_<ETY>;
-    using VectorView    = SimTK::VectorView_<ETY>;
+    /** Type of each row of matrix holding dependent data.                    */
+    typedef SimTK::RowVector_<ETY>     RowVector;
+    /** (Read only view) Type of each row of matrix.                          */
+    typedef SimTK::RowVectorView_<ETY> RowVectorView;
+    /** Type of each column of matrix holding dependent data.                 */
+    typedef SimTK::VectorView_<ETY>    VectorView;
+    /** Type of the matrix holding the dependent data.                        */
+    typedef SimTK::Matrix_<ETY>        Matrix;
+    /** (Read only view) Type of the matrix  holding the dependent data.      */
+    typedef SimTK::MatrixView_<ETY>    MatrixView;
 
     DataTable_()                             = default;
     DataTable_(const DataTable_&)            = default;
@@ -221,13 +72,187 @@ public:
     DataTable_& operator=(DataTable_&&)      = default;
     ~DataTable_()                            = default;
 
-    std::unique_ptr<AbstractDataTable> clone() const override {
-        return std::unique_ptr<AbstractDataTable>{new DataTable_{*this}};
+    std::shared_ptr<AbstractDataTable> clone() const override {
+        return std::shared_ptr<AbstractDataTable>{new DataTable_{*this}};
+    }
+
+    /** Construct DataTable_ from a file.                                     
+
+    \param filename Name of the file. File should contain only one table. For
+                    example, trc, csv & sto files contain one table whereas a 
+                    c3d file can contain more than.
+    \param tablename Name of the table in file to construct this DataTable_
+                     from. For example, a c3d file contains tables named
+                     'markers' and 'forces'.
+
+    \throws InvalidArgument If the input file contains more than one table and
+                            tablename was not specified.   
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this DataTable_ type.                             */
+    DataTable_(const std::string& filename,
+               const std::string& tablename) {
+        auto absTables = FileAdapter::readFile(filename);
+
+        OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
+                         InvalidArgument,
+                         "File '" + filename + 
+                         "' contains more than one table and tablename not"
+                         " specified.");
+
+        AbstractDataTable* absTable{};
+        if(tablename.empty()) {
+            absTable = (absTables.cbegin()->second).get();
+        } else {
+            try {
+                absTable = absTables.at(tablename).get();
+            } catch (const std::out_of_range&) {
+                OPENSIM_THROW(InvalidArgument,
+                              "File '" + filename + "' contains no table named "
+                              "'" + tablename + "'.");
+            }
+        }
+        auto table = dynamic_cast<DataTable_*>(absTable);
+        OPENSIM_THROW_IF(table == nullptr,
+                         InvalidArgument,
+                         "DataTable cannot be created from file '" + filename +
+                         "'. Type mismatch.");
+
+        *this = std::move(*table);
+    }
+
+    /// @name Row accessors/mutators.
+    /// Following get/upd functions operate on matrix and not the independent
+    /// column.
+    /// The function appendRow() is pretty flexible and it is possible to 
+    /// append a row with any sequence of elements. Following are some examples:
+    /// \code
+    /// // Easiest way to append a row is to provide the list of elements 
+    /// // directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {0.3, 0.4, 0.5, 0.6}); // 4 elements of type double.
+    /// // For a table with elements of type SimTK::Vec3, this could like below.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 {{0.31, 0.32, 0.33},
+    ///                  {0.41, 0.42, 0.43},
+    ///                  {0.51, 0.52, 0.53},
+    ///                  {0.61, 0.62, 0.63}}); // 4 elements of SimTK::Vec3.
+    /// \endcode
+    /// \code
+    /// // It is possible to append a sequence container like std::vector or 
+    /// // std::list by providing it directly to appendRow.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   // 4 elements of
+    ///                              {0.61, 0.62, 0.63}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // A SimTK::RowVector can be provided to appendRow as well.
+    /// // For a table with elements of type double, this could look like below.
+    /// SimTK::RowVector row{0.3, 0.4, 0.5, 0.6};
+    /// table.appendRow(0.1, row);
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// SimTK::RowVector_<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                                    {0.41, 0.42, 0.43},
+    ///                                    {0.51, 0.52, 0.53},  // 4 elements of
+    ///                                    {0.61, 0.62, 0.63}}); // SimTK::Vec3.
+    /// table.appendRow(0.1, row);
+    /// \endcode
+    /// \code
+    /// // It is possible to be use a pair of iterators to append a row as well.
+    /// // This could arise in situations where you might want to append a row
+    /// // using a subset of elements in a sequence.
+    /// // For a table with elements of type double, this could look like below.
+    /// std::vector<double> row{0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element (0.4).
+    ///                 row.end() - 1);  // End at last but one (0.7).
+    /// // For a table with elements of type SimTK::Vec3, this could look like
+    /// // below.
+    /// std::vector<SimTK::Vec3> row{{0.31, 0.32, 0.33},
+    ///                              {0.41, 0.42, 0.43},
+    ///                              {0.51, 0.52, 0.53},   
+    ///                              {0.61, 0.62, 0.63},
+    ///                              {0.71, 0.72, 0.73},   // 6 elements of
+    ///                              {0.81, 0.82, 0.83}}); //  SimTK::Vec3.
+    /// table.appendRow(0.1, // Independent column.
+    ///                 row.begin() + 1, // Start from second element.
+    ///                 row.end() - 1); // End at last but one.
+    /// \endcode
+    /// @{
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param container Sequence container holding the elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename Container>
+    void appendRow(const ETX& indRow, const Container& container) {
+        using Value = decltype(*(container.begin()));
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The 'container' specified does not provide an iterator "
+                      "which when dereferenced provides elements that "
+                      "are of same type as elements of this table.");
+
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param container std::initializer_list containing elements of the row to be
+                     appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    void appendRow(const ETX& indRow, 
+                   const std::initializer_list<ETY>& container) {
+        appendRow(indRow, container.begin(), container.end());
+    }
+
+    /** Append row to the DataTable_.
+
+    \param indRow Entry for the independent column corresponding to the row to
+                  be appended.
+    \param begin Iterator representing the beginning of the row to be appended.
+    \param end Iterator representing one past the end of the row to be appended.
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    template<typename RowIter>
+    void appendRow(const ETX& indRow, RowIter begin, RowIter end) {
+        using Value = decltype(*begin);
+        using RmrefValue = typename std::remove_reference<Value>::type;
+        using RmcvRmrefValue = typename std::remove_cv<RmrefValue>::type;
+        static_assert(std::is_same<ETY, RmcvRmrefValue>::value,
+                      "The iterator 'begin' provided does not provide elements"
+                      " that are of same type as elements of this table.");
+
+        RowVector row{static_cast<int>(std::distance(begin, end))};
+        int ind{0};
+        for(auto it = begin; it != end; ++it)
+            row[ind++] = *it;
+
+        appendRow(indRow, row);
     }
 
     /** Append row to the DataTable_.                                         
 
-    \throws IncorrectNumCoilumns If the row added is invalid. Validity of the 
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
     row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
         validateRow(_indData.size(), indRow, depRow);
@@ -238,7 +263,8 @@ public:
             try {
                 auto& labels = 
                     _dependentsMetaData.getValueArrayForKey("labels");
-                OPENSIM_THROW_IF(depRow.ncol() != labels.size(),
+                OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) != 
+                                 labels.size(),
                                  IncorrectNumColumns, 
                                  labels.size(), 
                                  static_cast<size_t>(depRow.ncol()));
@@ -257,8 +283,10 @@ public:
     \throws RowIndexOutOfRange If index is out of range.                      */
     RowVectorView getRowAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size())
-        return _depData.row((int)index);
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
+        return _depData.row(static_cast<int>(index));
     }
 
     /** Get row corresponding to the given entry in the independent column.   
@@ -279,7 +307,9 @@ public:
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size());
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
         return _depData.updRow((int)index);
     }
 
@@ -296,38 +326,171 @@ public:
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
+    /// @} End of Row accessors/mutators.
+
+    /// @name Dependent and Independent column accessors/mutators.
+    /// @{
+
     /** Get independent column.                                               */
     const std::vector<ETX>& getIndependentColumn() const {
         return _indData;
     }
 
-    /** Get dependent column.                                                 
+    /** Get dependent column at index.
 
-    \throws ColumnIndexOutOfRange If index is out of range.                   */
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.                               */
     VectorView getDependentColumnAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
-                         static_cast<size_t>(_depData.ncol()));
-        return _depData.col((int)index);
+                         static_cast<size_t>(_depData.ncol() - 1));
+
+        return _depData.col(static_cast<int>(index));
     }
 
-    /** Set independent column at index.                                      
+    /** Get dependent Column which has the given column label.                
 
-    \throws RowIndexOutOfRange If index is out of range.                        
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.                                               */
+    VectorView getDependentColumn(const std::string& columnLabel) const {
+        return _depData.col(static_cast<int>(getColumnIndex(columnLabel)));
+    }
+
+    /** Update dependent column at index.
+
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.                               */
+    VectorView updDependentColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+                         ColumnIndexOutOfRange, index, 0,
+                         static_cast<size_t>(_depData.ncol() - 1));
+
+        return _depData.updCol(static_cast<int>(index));
+    }
+
+    /** Update dependent Column which has the given column label.
+
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.                                               */
+    VectorView updDependentColumn(const std::string& columnLabel) {
+        return _depData.updCol(static_cast<int>(getColumnIndex(columnLabel)));
+    }
+
+    /** %Set value of the independent column at index.
+
+    \throws RowIndexOutOfRange If rowIndex is out of range.
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
-    void setIndependentColumnAtIndex(size_t index, const ETX& value) {
-        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
-                         RowIndexOutOfRange, index, 0, _indData.size());
-        validateRow(index, value, _depData.row((int)index));
-        _indData[index] = value;
+    void setIndependentValueAtIndex(size_t rowIndex, const ETX& value) {
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowIndex),
+                         RowIndexOutOfRange, 
+                         rowIndex, 0, 
+                         static_cast<unsigned>(_indData.size() - 1));
+
+        validateRow(rowIndex, value, _depData.row((int)rowIndex));
+        _indData[rowIndex] = value;
     }
 
+    /// @}
+
+    /// @name Matrix accessors/mutators.
+    /// Following functions operate on the matrix not including the independent
+    /// column.
+    /// @{
+
+    /** Get a read-only view to the underlying matrix.                        */
+    const MatrixView& getMatrix() const {
+        return _depData.getAsMatrixView();
+    }
+
+    /** Get a read-only view of a block of the underlying matrix.             
+
+    \throws InvalidArgument If numRows or numColumns is zero.
+    \throws RowIndexOutOfRange If one or more rows of the desired block is out
+                               of range of the matrix.
+    \throws ColumnIndexOutOfRange If one or more columns of the desired block is
+                                  out of range of the matrix.                 */
+    MatrixView getMatrixBlock(size_t rowStart,
+                              size_t columnStart,
+                              size_t numRows,
+                              size_t numColumns) const {
+        OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
+                         InvalidArgument,
+                         "Either numRows or numColumns is zero.");
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
+                         RowIndexOutOfRange,
+                         rowStart, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart + numRows - 1),
+                         RowIndexOutOfRange,
+                         rowStart + numRows - 1, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart),
+                         ColumnIndexOutOfRange,
+                         columnStart, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart + numColumns - 1),
+                         ColumnIndexOutOfRange,
+                         columnStart + numColumns - 1, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+
+        return _depData.block(static_cast<int>(rowStart),
+                              static_cast<int>(columnStart),
+                              static_cast<int>(numRows),
+                              static_cast<int>(numColumns));
+    }
+
+    /** Get a writable view to the underlying matrix.                         */
+    MatrixView& updMatrix() {
+        return _depData.updAsMatrixView();
+    }
+
+    /** Get a writable view of a block of the underlying matrix.
+
+    \throws InvalidArgument If numRows or numColumns is zero.
+    \throws RowIndexOutOfRange If one or more rows of the desired block is out
+                               of range of the matrix.
+    \throws ColumnIndexOutOfRange If one or more columns of the desired block is
+                                  out of range of the matrix.                 */
+    MatrixView updMatrixBlock(size_t rowStart,
+                              size_t columnStart,
+                              size_t numRows,
+                              size_t numColumns) {
+        OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
+                         InvalidArgument,
+                         "Either numRows or numColumns is zero.");
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
+                         RowIndexOutOfRange,
+                         rowStart, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart + numRows - 1),
+                         RowIndexOutOfRange,
+                         rowStart + numRows - 1, 0, 
+                         static_cast<unsigned>(_depData.nrow() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart),
+                         ColumnIndexOutOfRange,
+                         columnStart, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(columnStart + numColumns - 1),
+                         ColumnIndexOutOfRange,
+                         columnStart + numColumns - 1, 0, 
+                         static_cast<unsigned>(_depData.ncol() - 1));
+
+        return _depData.updBlock(static_cast<int>(rowStart),
+                                 static_cast<int>(columnStart),
+                                 static_cast<int>(numRows),
+                                 static_cast<int>(numColumns));
+    }
+
+    /// @}
+
 protected:
+    /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
     }
 
+    /** Check if column index is out of range.                                */
     bool isColumnIndexOutOfRange(size_t index) const {
         return index >= static_cast<size_t>(_depData.ncol());
     }
@@ -363,7 +526,7 @@ protected:
                             entries in the metadata for dependent columns have
                             the correct length (equal to nubmer of columns).  */
     void validateDependentsMetaData() const override {
-        unsigned numCols{};
+        size_t numCols{};
         try {
             numCols = (unsigned)_dependentsMetaData
                                         .getValueArrayForKey("labels").size();
@@ -374,7 +537,8 @@ protected:
         OPENSIM_THROW_IF(numCols == 0,
                          MetaDataLengthZero,"labels");
 
-        OPENSIM_THROW_IF(_depData.ncol() != 0 && numCols != _depData.ncol(),
+        OPENSIM_THROW_IF(_depData.ncol() != 0 && 
+                         numCols != static_cast<unsigned>(_depData.ncol()),
                          IncorrectMetaDataLength, "labels", 
                          static_cast<size_t>(_depData.ncol()), numCols);
 
@@ -403,8 +567,37 @@ protected:
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
 
+/** Print DataTable out to a stream. Metadata is not printed to the stream as it
+is currently allowed to contain objects that do not support this operation.   
+Meant to be used for Debugging only.                                          */
+template<typename ETX, typename ETY>
+std::ostream& operator<<(std::ostream& outStream,
+                         const DataTable_<ETX, ETY>& table) {
+    outStream << "----------------------------------------------------------\n";
+    outStream << "NumRows: " << table.getNumRows()    << std::endl;
+    outStream << "NumCols: " << table.getNumColumns() << std::endl;
+    outStream << "Column-Labels: ";
+    const auto& labels = table.getColumnLabels();
+    if(!labels.empty()) {
+        outStream << "['" << labels[0] << "'";
+        if(labels.size() > 1)
+            for(size_t l = 1; l < labels.size(); ++l)
+                outStream << " '" << labels[l] << "'";
+        outStream << "]" << std::endl;
+    }
+    for(size_t r = 0; r < table.getNumRows(); ++r) {
+        outStream << table.getIndependentColumn().at(r) << " ";
+        outStream << table.getRowAtIndex(r) << std::endl;
+    }
+
+    outStream << "----------------------------------------------------------\n";
+    return outStream;
+}
+
 /** See DataTable_ for details on the interface.                              */
-using DataTable = DataTable_<SimTK::Real>;
+typedef DataTable_<double, double> DataTable;
+/** See DataTable_ for details on the interface.                              */
+typedef DataTable_<double, SimTK::Vec3> DataTableVec3;
 
 } // namespace OpenSim
 

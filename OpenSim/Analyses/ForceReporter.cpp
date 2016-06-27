@@ -52,9 +52,10 @@ ForceReporter::~ForceReporter()
  *
  * @param aModel Model for which the Forces are to be recorded.
  */
-ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(Model *aModel) :   
+    Analysis(aModel),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     // NULL
     setNull();
@@ -75,9 +76,10 @@ ForceReporter::ForceReporter(Model *aModel) :   Analysis(aModel),
  *
  * @param aFileName File name of the document.
  */
-ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, false),
-    _forceStore(1000,"ModelForces"),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+ForceReporter::ForceReporter(const std::string &aFileName): 
+    Analysis(aFileName, false),
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(1000,"ModelForces")
 {
     setNull();
 
@@ -99,8 +101,8 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
  */
 ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
     Analysis(aForceReporter),
-    _forceStore(aForceReporter._forceStore),
-    _includeConstraintForces(_includeConstraintForcesProp.getValueBool())
+    _includeConstraintForces(_includeConstraintForcesProp.getValueBool()),
+    _forceStore(aForceReporter._forceStore)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -209,24 +211,24 @@ void ForceReporter::constructColumnLabels(const SimTK::State& s)
         // ASSIGN
         Array<string> columnLabels;
         columnLabels.append("time");
-        int nf=_model->getForceSet().getSize();
-        for(int i=0;i<nf;i++) {
+        
+        auto forces = _model->getComponentList<Force>();
+
+        for(auto& force : forces) {
             // If body force we need to record six values for torque+force
             // If muscle we record one scalar
-            Force& f = _model->getForceSet().get(i);
-            if (f.isDisabled(s)) continue; // Skip over disabled forces
-            Array<string> forceLabels = f.getRecordLabels();
+            if (force.isDisabled(s)) continue; // Skip over disabled forces
+            Array<string> forceLabels = force.getRecordLabels();
             // If prescribed force we need to record point, 
             columnLabels.append(forceLabels);
         }
-        if(_includeConstraintForces){
-            int nc=_model->getConstraintSet().getSize();
-            for(int i=0;i<nc;i++) {
-                Constraint& c = _model->getConstraintSet().get(i);
-                if (c.isDisabled(s)) continue; // Skip over disabled constraints
 
+        if(_includeConstraintForces){
+            auto constraints = _model->getComponentList<Constraint>();
+            for(auto& c : constraints) {
+                if (c.isDisabled(s)) continue; // Skip over disabled constraints
                 // Ask constraint how many columns and their names it reports
-                Array<string> forceLabels = _model->getConstraintSet().get(i).getRecordLabels();
+                Array<string> forceLabels = c.getRecordLabels();
                 // If prescribed force we need to record point, 
                 columnLabels.append(forceLabels);
             }
@@ -264,28 +266,23 @@ int ForceReporter::record(const SimTK::State& s)
 
     StateVector nextRow = StateVector(s.getTime());
 
-    // NUMBER OF Forces
-    const ForceSet& forces = _model->getForceSet(); // This does not contain gravity
-    int nf = forces.getSize();
+    // Model Forces
+    auto forces = _model->getComponentList<Force>();
 
-    for(int i=0;i<nf;i++) {
+    for(auto& force : forces) {
         // If body force we need to record six values for torque+force
         // If muscle we record one scalar
-        OpenSim::Force& nextForce = (OpenSim::Force&)forces[i];
-        if (nextForce.isDisabled(s)) continue;
-        Array<double> values = nextForce.getRecordValues(s);
+        if (force.isDisabled(s)) continue;
+        Array<double> values = force.getRecordValues(s);
         nextRow.getData().append(values);
     }
 
     if(_includeConstraintForces){
-        // NUMBER OF Constraints
-        const ConstraintSet& constraints = _model->getConstraintSet(); // This does not contain gravity
-        int nc = constraints.getSize();
-
-        for(int i=0;i<nc;i++) {
-            OpenSim::Constraint& nextConstraint = (OpenSim::Constraint&)constraints[i];
-            if (nextConstraint.isDisabled(s)) continue;
-            Array<double> values = nextConstraint.getRecordValues(s);
+        // Model Constraints
+        auto constraints = _model->getComponentList<Constraint>();
+        for (auto& constraint : constraints) {
+            if (constraint.isDisabled(s)) continue;
+            Array<double> values = constraint.getRecordValues(s);
             nextRow.getData().append(values);
         }
     }

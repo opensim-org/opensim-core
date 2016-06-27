@@ -226,7 +226,8 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
+        double aSubjectMass) const
 {
     if (!getApply()) return false;
 
@@ -236,16 +237,12 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 
     cout << endl << "Step 2: Scaling generic model" << endl;
 
-    ComponentList<PhysicalFrame> segments
-        = aModel->getComponentList<PhysicalFrame>();
-    ComponentList<PhysicalFrame>::const_iterator it = segments.begin();
-
     /* Make a scale set with a Scale for each physical frame.
      * Initialize all factors to 1.0.
      */
-    for (; it != segments.end(); ++it) {
+    for (const auto& segment : aModel->getComponentList<PhysicalFrame>()) {
         Scale* segmentScale = new Scale();
-        segmentScale->setSegmentName(it->getName());
+        segmentScale->setSegmentName(segment.getName());
         segmentScale->setScaleFactors(unity);
         segmentScale->setApply(true);
         theScaleSet.adoptAndAppend(segmentScale);
@@ -392,7 +389,7 @@ double ModelScaler::takeModelMeasurement(const SimTK::State& s, const Model& aMo
     }
     const Marker& marker1 = aModel.getMarkerSet().get(aName1);
     const Marker& marker2 = aModel.getMarkerSet().get(aName2);
-    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getReferenceFrame());
+    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getParentFrame());
     return difference.norm();
 }
 

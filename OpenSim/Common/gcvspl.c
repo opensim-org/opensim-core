@@ -1387,7 +1387,7 @@ double splder(int ider, int m, int n, double t, double *x,
                   double *c, int *l, double *q)
 {
     int i, ii, ir, i1,
-       j, jl, jj, ju, jm, j1, j2, jin,
+        j, jl, jj, ju, jm, j1, j2, jin,
          k, ki, k1,
          lk, lk1, lk1i, lk1i1,
          ml, mi, m2, mp1, m2m1,
@@ -1455,11 +1455,11 @@ double splder(int ider, int m, int n, double t, double *x,
             /*
             max
          */
-            j1 = (1 > jl) ? j1 = 1 : jl ;
+            j1 = (1 > jl) ? 1 : jl ;
             /*
             min
          */
-            j2 = (*l < ii) ? j2 = *l : ii ;
+            j2 = (*l < ii) ? *l : ii ;
 
             mi = m2 -i ;
             j  = j2 + 1 ;

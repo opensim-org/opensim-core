@@ -59,7 +59,7 @@ PointConstraint::PointConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 PointConstraint::PointConstraint(const PhysicalFrame& body1, 
@@ -68,7 +68,7 @@ PointConstraint::PointConstraint(const PhysicalFrame& body1,
                                  const SimTK::Vec3& locationBody2) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());
@@ -105,13 +105,6 @@ void PointConstraint::constructProperties()
     constructProperty_location_body_2(origin);
 }
 
-void PointConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
-
 void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -141,12 +134,12 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
  * Following methods set attributes of the frames of constraint */
 void PointConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
 }
 
 void PointConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
 }
 
 /** Set the location for point on body 1*/

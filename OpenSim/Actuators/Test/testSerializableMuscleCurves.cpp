@@ -66,37 +66,37 @@ int main(int argc, char* argv[])
 
             double start = SimTK::realTime();
             ActiveForceLengthCurve fal;
-            double test = fal.calcValue(1.0);//forces a build of the curve
+            /*double test = */fal.calcValue(1.0);//forces a build of the curve
             double duration = SimTK::realTime() - start;
             cout << "default ActiveForceLengthCurve " << duration << " s"<<endl;
 
             start = SimTK::realTime();
             ForceVelocityCurve fv;
-            test = fv.calcValue(1.0);
+            /*test = */fv.calcValue(1.0);
             duration = SimTK::realTime() - start;
             cout << "default ForceVelocityCurve " << duration << " s"<<endl;
 
             start = SimTK::realTime();
             ForceVelocityInverseCurve fvI;
-            test = fvI.calcValue(1.0);
+            /*test = */fvI.calcValue(1.0);
             duration = SimTK::realTime() - start;
             cout << "default ForceVelocityInverseCurve "<<duration <<" s"<<endl;
 
             start = SimTK::realTime();
             FiberForceLengthCurve fpe;
-            test = fpe.calcValue(1.1);
+            /*test = */fpe.calcValue(1.1);
             duration = SimTK::realTime() - start;
             cout << "default FiberForceLengthCurve "<<duration <<" s"<<endl;
 
             start = SimTK::realTime();
             TendonForceLengthCurve fse;
-            test = fse.calcValue(1.04);
+            /*test = */fse.calcValue(1.04);
             duration = SimTK::realTime() - start;
             cout << "default TendonForceLengthCurve "<<duration <<" s"<<endl;
 
             start = SimTK::realTime();
             FiberCompressiveForceLengthCurve fce;
-            test = fce.calcValue(0.01);
+            /*test = */fce.calcValue(0.01);
             duration = SimTK::realTime() - start;
             cout << "default FiberCompressiveForceLengthCurve "
                 <<duration <<" s"<<endl;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 
             start = SimTK::realTime();
             FiberCompressiveForceCosPennationCurve fcphi;
-            test = fcphi.calcValue(0.01);
+            /*test = */fcphi.calcValue(0.01);
             duration = SimTK::realTime() - start;
             cout << "default FiberCompressiveForceCosPennationCurve "
                 <<duration <<" s"<<endl;
@@ -189,8 +189,8 @@ void testActiveForceLengthCurve()
         //cout <<"**************************************************"<<endl;
         cout <<"2. Testing API constructor" << endl;
         ActiveForceLengthCurve falCurve3(0.5, 0.75,1.5,0.75,0.01);
-        double falVal  = falCurve3.calcValue(1.0);
-        double dfalVal = falCurve3.calcDerivative(1.0,1);
+        /*double falVal  = */falCurve3.calcValue(1.0);
+        /*double dfalVal = */falCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //cout <<"**************************************************"<<endl;
@@ -328,8 +328,8 @@ void testForceVelocityCurve()
 
         cout <<"2. Testing API constructor" << endl;
         ForceVelocityCurve fvCurve3(0,0.1,5,0,0.1,1.8,0.1,0.75);
-        double falVal  = fvCurve3.calcValue(1.0);
-        double dfalVal = fvCurve3.calcDerivative(1.0,1);
+        /*double falVal  = */fvCurve3.calcValue(1.0);
+        /*double dfalVal = */fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
@@ -472,8 +472,8 @@ void testForceVelocityInverseCurve()
         //cout <<"**************************************************"<<endl;
         cout <<"2. Testing API constructor" << endl;
         ForceVelocityInverseCurve fvCurve3(0.1,0.15,5,0.1,0.1,1.8,0.1,0.75);
-        double falVal  = fvCurve3.calcValue(1.0);
-        double dfalVal = fvCurve3.calcDerivative(1.0,1);
+        /*double falVal  = */fvCurve3.calcValue(1.0);
+        /*double dfalVal = */fvCurve3.calcDerivative(1.0,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //cout <<"**************************************************"<<endl;
@@ -610,8 +610,8 @@ void testTendonForceLengthCurve()
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
         TendonForceLengthCurve fseCurve3(0.10,50,0.75,1.0/3.0);
-        double fseVal  = fseCurve3.calcValue(1.0999);
-        double dfseVal = fseCurve3.calcDerivative(1.0999,1);
+        /*double fseVal  = */fseCurve3.calcValue(1.0999);
+        /*double dfseVal = */fseCurve3.calcDerivative(1.0999,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
@@ -767,8 +767,8 @@ void testFiberForceLengthCurve()
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
         FiberForceLengthCurve fpeCurve3(0.0, 0.10,1.0/3.0,50,0.75);
-        double falVal  = fpeCurve3.calcValue(0.02);
-        double dfalVal = fpeCurve3.calcDerivative(0.02,1);
+        /*double falVal  = */fpeCurve3.calcValue(0.02);
+        /*double dfalVal = */fpeCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
@@ -916,8 +916,8 @@ void testFiberCompressiveForceLengthCurve()
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
         FiberCompressiveForceLengthCurve fceCurve3(0.80,-10,0.1,"testMuscle");
-        double fceVal  = fceCurve3.calcValue(0.02);
-        double dfceVal = fceCurve3.calcDerivative(0.02,1);
+        /*double fceVal  = */fceCurve3.calcValue(0.02);
+        /*double dfceVal = */fceCurve3.calcDerivative(0.02,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
@@ -1123,16 +1123,16 @@ void testFiberCompressiveForceCosPennationCurve()
         
         double cosAngle = cos(85*SimTK::Pi/180);
 
-        double fcpVal  = fcpCurve3.calcValue(cosAngle);
-        double dfcpVal = fcpCurve3.calcDerivative(cosAngle,1);
+        /*double fcpVal  = */fcpCurve3.calcValue(cosAngle);
+        /*double dfcpVal = */fcpCurve3.calcDerivative(cosAngle,1);
         
         FiberCompressiveForceCosPennationCurve fcpCurve3a(78,"testMuscle");
-        fcpVal  = fcpCurve3a.calcValue(cosAngle);
-        dfcpVal = fcpCurve3a.calcDerivative(cosAngle,1);
+        /*fcpVal  = */fcpCurve3a.calcValue(cosAngle);
+        /*dfcpVal = */fcpCurve3a.calcDerivative(cosAngle,1);
 
         FiberCompressiveForceCosPennationCurve fcpCurve3b;
-        fcpVal  = fcpCurve3b.calcValue(cosAngle);
-        dfcpVal = fcpCurve3b.calcDerivative(cosAngle,1);
+        /*fcpVal  = */fcpCurve3b.calcValue(cosAngle);
+        /*dfcpVal = */fcpCurve3b.calcDerivative(cosAngle,1);
 
         cout << "Passed: Testing API constructor" << endl;
 

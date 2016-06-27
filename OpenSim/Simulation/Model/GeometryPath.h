@@ -57,6 +57,12 @@ class PointForceDirection;
  */
 class OSIMSIMULATION_API GeometryPath : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
+    //=============================================================================
+    // OUTPUTS
+    //=============================================================================
+    OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
+    // 
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed, SimTK::Stage::Velocity);
 
 //=============================================================================
 // DATA
@@ -199,6 +205,8 @@ protected:
             const SimTK::State&                         state,
             SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
             override;
+
+    void extendFinalizeFromProperties() override;
 
 private:
 

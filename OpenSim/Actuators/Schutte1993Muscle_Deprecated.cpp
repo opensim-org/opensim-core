@@ -447,7 +447,7 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
    int i;
    double length,tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
-   double old_fiber_length, length_change, tendon_stiffness, percent;
+   double old_fiber_length{SimTK::NaN}, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
    double passiveForce, activeForce, tendonForce, fiberLength;
 

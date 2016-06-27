@@ -66,6 +66,9 @@ protected:
         underlying multibody system */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
 
+private:
+
+
 //=============================================================================
 }; // END of class PhysicalOffsetFrame
 //=============================================================================

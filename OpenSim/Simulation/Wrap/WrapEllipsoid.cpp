@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "SimTKsimbody.h"
 #include "WrapEllipsoid.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
@@ -31,6 +32,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <OpenSim/Common/ModelDisplayHints.h>
 
 //=============================================================================
 // STATICS
@@ -174,9 +176,6 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapEllipsoid);
-
     _dimensions = aWrapEllipsoid._dimensions;
 }
 
@@ -1198,7 +1197,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     double u2 = u*u, v2 = v*v;
     double a2u2 = a2*u2, b2v2 = b2*v2;
     double dx, dy, xda, ydb;
-    int i, which;
+    int i/*, which*/;
     double t, P, Q, P2, Q2, f, fp;
 
     bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
@@ -1260,15 +1259,15 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     // initial guess
     if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
     {
-        which = 0;
+        //which = 0;
         t = 0.0;
     }
     else
     {
         double max = a;
 
-        which = 1;
-
+        //which = 1;
+        
         if ( b > max )
             max = b;
 
@@ -1296,4 +1295,25 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     dy = *y - v;
 
     return sqrt(dx*dx + dy*dy);
+}
+// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Vec3 color(SimTK::Cyan);
+
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
+        SimTK::Transform X_GW = X_GB*getTransform();
+        appendToThis.push_back(
+            SimTK::DecorativeEllipsoid(getRadii())
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(0.5));
+    }
+
 }

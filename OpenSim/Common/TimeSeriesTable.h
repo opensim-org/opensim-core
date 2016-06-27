@@ -98,7 +98,7 @@ type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
 public:
-    using RowVector = SimTK::RowVector_<ETY>;
+    typedef SimTK::RowVector_<ETY> RowVector;
 
     TimeSeriesTable_()                                   = default;
     TimeSeriesTable_(const TimeSeriesTable_&)            = default;
@@ -123,11 +123,63 @@ public:
                          TimeColumnNotIncreasing);
     }
 
+    /** Construct TimeSeriesTable_ from a file.
+
+    \param filename Name of the file.
+
+    \throws InvalidArgument If the input file contains more than one table.
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this TimeSeriesTable_ type.                       */
+    TimeSeriesTable_(const std::string& filename) : 
+        TimeSeriesTable_{filename, ""} {}
+
+    /** Construct TimeSeriesTable_ from a file.
+
+    \param filename Name of the file.
+    \param tablename Name of the table in the file to construct this 
+                     TimeSeriesTable_ from. For example, a c3d file contains 
+                     tables named 'markers' and 'forces'.
+
+    \throws InvalidArgument If the input file contains more than one table and 
+                            tablename was not specified.
+    \throws InvalidArgument If the input file contains a table that is not of
+                            this TimeSeriesTable_ type.                       */
+    TimeSeriesTable_(const std::string& filename, 
+                     const std::string& tablename) {
+        auto absTables = FileAdapter::readFile(filename);
+
+        OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
+                         InvalidArgument,
+                         "File '" + filename + 
+                         "' contains more than one table and tablename not "
+                         "specified.");
+
+        AbstractDataTable* absTable{};
+        if(tablename.empty()) {
+            absTable = (absTables.cbegin()->second).get();
+        } else {
+            try {
+                absTable = absTables.at(tablename).get();
+            } catch (const std::out_of_range&) {
+                OPENSIM_THROW(InvalidArgument,
+                              "File '" + filename + "' contains no table named "
+                              "'"+ tablename + "'.");
+            }
+        }
+        auto table = dynamic_cast<TimeSeriesTable_*>(absTable);
+        OPENSIM_THROW_IF(table == nullptr,
+                         InvalidArgument,
+                         "DataTable cannot be created from file '" + filename +
+                         "'. Type mismatch.");
+
+        *this = std::move(*table);
+    }
+
 protected:
     /** Validate the given row. 
 
     \throws InvalidRow If the timestamp for the row breaks strictly increasing
-                       property of the indpedent column.                      */
+                       property of the indepedent column.                     */
     void validateRow(size_t rowIndex,
                      const double& time, 
                      const RowVector& row) const override {
@@ -151,8 +203,10 @@ protected:
 }; // TimeSeriesTable_
 
 /** See TimeSeriesTable_ for details on the interface.                        */
-using TimeSeriesTable = TimeSeriesTable_<SimTK::Real>;
+typedef TimeSeriesTable_<SimTK::Real> TimeSeriesTable;
 
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

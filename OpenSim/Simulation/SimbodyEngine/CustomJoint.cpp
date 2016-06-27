@@ -54,14 +54,14 @@ CustomJoint::CustomJoint()
  * Constructor with specified SpatialTransform.
  */
 CustomJoint::CustomJoint(const std::string &name,
-                         const std::string& parentName,
-                         const std::string& childName,
-                         SpatialTransform& aSpatialTransform,
+                         const PhysicalFrame& parent,
+                         const PhysicalFrame& child,
+                         SpatialTransform& spatialTransform,
                          bool reverse) :
-                         Super(name, parentName, childName, reverse)
+                         Super(name, parent, child, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 CustomJoint::CustomJoint(const std::string& name,
@@ -71,13 +71,13 @@ CustomJoint::CustomJoint(const std::string& name,
     const PhysicalFrame& child,
     const SimTK::Vec3& locationInChild,
     const SimTK::Vec3& orientationInChild,
-    SpatialTransform& aSpatialTransform,
+    SpatialTransform& spatialTransform,
     bool reverse) :
-        Joint(name, parent, locationInParent, orientationInParent,
+        Super(name, parent, locationInParent, orientationInParent,
             child, locationInChild, orientationInChild, reverse)
 {
     constructProperties();
-    set_SpatialTransform(aSpatialTransform);
+    set_SpatialTransform(spatialTransform);
 }
 
 //_____________________________________________________________________________
@@ -150,7 +150,7 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
     // SCALING TO DO WITH THE PARENT BODY -----
     // Joint kinematics are scaled by the scale factors for the
     // parent body, so get those body's factors
-    const string& parentName = getParentFrameName();
+    const string& parentName = getParentFrame().getName();
     for (int i=0; i<aScaleSet.getSize(); i++) {
         Scale& scale = aScaleSet.get(i);
         if (scale.getSegmentName()==parentName) {
@@ -174,19 +174,14 @@ void CustomJoint::constructCoordinates()
 
     for (int i = 0; i < ncoords; i++){
         std::string coordName = spatialTransform.getCoordinateNames()[i];
-
+        // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = coordinateSet.getIndex(coordName);
-        Coordinate* coord = nullptr;
         if (coordIndex < 0){
-            coord = new Coordinate();
-            coord->setName(coordName);
-            // Let joint take ownership as it should
-            coordinateSet.adoptAndAppend(coord);
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
         }
-        else {
-            //otherwise already in the set 
-            coord = &coordinateSet.get(coordIndex);
-        }
+        Coordinate& coord = coordinateSet.get(coordIndex);
+        coord.setName(coordName);
+
 
         // Determine if the MotionType of the Coordinate based
         // on which TransformAxis it is relate to 0-2 are Rotational
@@ -212,7 +207,7 @@ void CustomJoint::constructCoordinates()
                 }
             }
         }
-        coord->setMotionType(mt);
+        setMotionType(CoordinateIndex(i), mt);
     }
 }
 
@@ -325,7 +320,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Array_<SimTK::Xml::Element> list = 
                 axesSetNode->getAllElements();
             unsigned int listLength = list.size();
-            int objectsFound = 0;
+            //int objectsFound = 0;
             Array<int> translationIndices(-1, 0);
             Array<int>  rotationIndices(-1, 0);
             int nextAxis = 0;

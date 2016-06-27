@@ -59,7 +59,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,7 +72,7 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
         Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setLineBodyByName(lineBody.getName());
     setFollowerBodyByName(followerBody.getName());
@@ -113,12 +113,6 @@ void PointOnLineConstraint::constructProperties()
     constructProperty_point_on_follower(origin);
 }
 
-void PointOnLineConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("line_body");
-    constructConnector<PhysicalFrame>("follower_body");
-}
-
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -151,12 +145,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").set_connectee_name(aBodyName);
+    updConnector<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
 
 }
 

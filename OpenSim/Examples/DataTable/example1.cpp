@@ -23,20 +23,18 @@
 
 #include "OpenSim/Common/TimeSeriesTable.h"
 
+#include <vector>
+#include <iostream>
+
 int main() {
     using namespace OpenSim;
 
     DataTable table{};
 
-    ValueArray<std::string> value_array{};
-    auto& vec = value_array.upd();
-    for(unsigned i = 0; i < 5; ++i)
-        vec.push_back(SimTK::Value<std::string>{std::to_string(i)});
+    // Add column labels to the table. 
+    table.setColumnLabels({"0", "1", "2", "3", "4"});
 
-    DataTable::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
-
-    table.setDependentsMetaData(dep_metadata);
+    // Append rows to the table.
 
     SimTK::RowVector_<double> row0{5, double{0}};
     
@@ -57,6 +55,13 @@ int main() {
     auto row4 = row3 + 1;
 
     table.appendRow(1.00, row4);
+
+    // Retrieve a column by its label.
+    table.getDependentColumn("3");
+
+    // Print the DataTable to console. This is for debugging only. Do not
+    // rely on this output.
+    std::cout << table << std::endl;
 
     return 0;
 }
