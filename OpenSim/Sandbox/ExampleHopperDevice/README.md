@@ -7,7 +7,7 @@ For more information, please refer to the [OpenSim doxygen](http://doxygen.opens
 
 This interactive example consists of three steps:
 
-| &nbsp;                                                                 | &nbsp;
+| []()                                                                   | []()
 | ---------------------------------------------------------------------- | --------------------------------
 | **Step 1.** Build and simulate a single-legged hopping mechanism.      | ![Step 1 video](video_step1.gif)
 | **Step 2.** Build an assistive device and test it on a simple testbed. | ![Step 2 video](video_step2.gif)
