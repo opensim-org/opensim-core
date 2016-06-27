@@ -113,6 +113,19 @@ public:
     OpenSim_DECLARE_LIST_INPUT(inputs, InputT, SimTK::Stage::Report,
         "Variable list of quantities to be reported.");
 
+    //=============================================================================
+    // PUBLIC METHODS
+    //=============================================================================
+
+    // Allow overloading of updInput
+    using AbstractReporter::updInput;
+
+    /** Convenience method that can be used in place of updInput("inputs"). **/
+    AbstractInput& updInput()
+    {
+        return updInput("inputs");
+    }
+
 protected:
     /** Default constructor sets up Reporter-level properties; can only be
     called from a derived class constructor. **/
