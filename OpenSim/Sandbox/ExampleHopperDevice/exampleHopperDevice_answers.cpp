@@ -48,8 +48,7 @@ static const std::string testbedAttachment2{"load"};
 
 //TODO: Provide the name of the output corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
-//      joint; see buildHopperModel.cpp and showSubcomponentInfo() in
-//      helperMethods.h.
+//      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
 //static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
 static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
@@ -108,10 +107,9 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    const std::string& frameName = "thigh/patellaFrame";
-    if (model.hasComponent<PhysicalFrame>(frameName)) {
+    if (model.hasComponent<WrapCylinder>("thigh/patella")) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
-        auto& frame = model.updComponent<PhysicalFrame>(frameName);
+        auto& frame = model.updComponent<PhysicalFrame>("thigh");
         auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
         cable.updGeometryPath().addPathWrap(wrapObject);
     }

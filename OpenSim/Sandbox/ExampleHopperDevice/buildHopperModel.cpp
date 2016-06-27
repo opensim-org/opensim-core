@@ -88,17 +88,17 @@ Model buildHopper() {
 
     // Set the coordinate names and default values. Note that we need "auto&"
     // here so that we get a reference to the CoordinateSet rather than a copy.
-    auto& sliderCoordSet = sliderToGround->upd_CoordinateSet();
-    sliderCoordSet[0].setName("height");
-    sliderCoordSet[0].setDefaultValue(1.);
+    auto& sliderCoord = sliderToGround->upd_CoordinateSet()[0];
+    sliderCoord.setName("height");
+    sliderCoord.setDefaultValue(1.);
 
-    auto& hipCoordSet = hip->upd_CoordinateSet();
-    hipCoordSet[0].setName("hipFlexion");
-    hipCoordSet[0].setDefaultValue(0.35);
+    auto& hipCoord = hip->upd_CoordinateSet()[0];
+    hipCoord.setName("hipFlexion");
+    hipCoord.setDefaultValue(0.35);
 
-    auto& kneeCoordSet = knee->upd_CoordinateSet();
-    kneeCoordSet[0].setName("kneeFlexion");
-    kneeCoordSet[0].setDefaultValue(0.75);
+    auto& kneeCoord = knee->upd_CoordinateSet()[0];
+    kneeCoord.setName("kneeFlexion");
+    kneeCoord.setDefaultValue(0.75);
 
     // Limit the range of motion for the hip and knee joints.
     double hipRange[2] = {110., -90.};
@@ -148,18 +148,16 @@ Model buildHopper() {
     hopper.addForce(vastus);
 
     // Attach a cylinder (patella) to the distal end of the thigh over which the
-    // vastus muscle can wrap. We will first create a PhysicalOffsetFrame on the
-    // thigh, then attach a WrapCylinder to the PhysicalOffsetFrame.
-    auto patellaFrame = new PhysicalOffsetFrame("patellaFrame", *thigh,
-                        SimTK::Transform(linkDistalPoint));
-    thigh->addComponent(patellaFrame);
-
+    // vastus muscle can wrap. In the future, we will be able to attach wrap
+    // objects to PhysicalOffsetFrames; for now, we will use the existing
+    // "translation" property.
     auto patella = new WrapCylinder();
     patella->setName("patella");
     patella->set_radius(0.08);
     patella->set_length(linkRadius*2.);
+    patella->set_translation(linkDistalPoint);
     patella->set_quadrant("x");
-    patellaFrame->addWrapObject(patella);
+    thigh->addWrapObject(patella);
 
     // Configure the vastus muscle to wrap over the patella.
     vastus->updGeometryPath().addPathWrap(*patella);
@@ -191,9 +189,6 @@ Model buildHopper() {
     shank->attachGeometry(linkGeometry->clone());
 
     hopper.setUseVisualizer(true);
-
-    // Suppress warning messages from Component::findComponent().
-    //hopper.setDebugLevel(0);
 
     return hopper;
 }

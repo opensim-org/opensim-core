@@ -75,12 +75,15 @@ public:
     }
     double getSpeed(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getTension(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getPower(const SimTK::State& s) const {
         //TODO
+        return 0;
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
@@ -97,9 +100,11 @@ public:
     }
 
 protected:
-    // Change the color of the device's path as its tension changes (optional).
+    // Change the color of the device's path as its tension changes.
     void extendRealizeDynamics(const SimTK::State& s) const override {
-        //TODO
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1., getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
     }
 
 }; // end of Device
