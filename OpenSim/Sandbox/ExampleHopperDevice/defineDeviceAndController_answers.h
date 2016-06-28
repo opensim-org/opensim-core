@@ -129,7 +129,7 @@ public:
         //const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
         #pragma region Step2_TaskA_solution
 
-        const std::string hopperHeightOutput = "/Dennis/slider/height/value";
+        const std::string hopperHeightOutput = "/Dennis/slider/yCoord/value";
 
         #pragma endregion
 
