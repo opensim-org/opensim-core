@@ -416,10 +416,10 @@ protected:
     and child of the joint. This enables Joint component makers to introduce
     intermediate MobilizedBodies for the purpose of creating more complex Joints.
     If more than one MobilizedBody is being created, it is up to the caller to
-    supply the corresponding coordinateIndex for the purpose of automatically
+    supply the corresponding CoordinateIndex for the purpose of automatically
     assigning indices necessary for the Coordinates of this Joint to access
     the coordinates and speed values from the state of the MultibodySystem.
-    As a convenience the startingCoorinateIndex is updated so
+    As a convenience the starting CoordinateIndex is updated so
     that sequential calls will increment correctly based on the number of
     mobilities the concrete MobilizedBody enables.
 

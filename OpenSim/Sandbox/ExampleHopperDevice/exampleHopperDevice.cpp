@@ -50,7 +50,7 @@ static const std::string testbedAttachment2{"load"};
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
 //      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
-static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+static const std::string hopperHeightOutput{"/Dennis/slider/height/value"}; //fill this in
 
 //TODO: Provide the full path names of the PhysicalOffsetFrames defined on the
 //      hopper for attaching the assistive device. See buildHopperModel.cpp and
@@ -113,12 +113,20 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 void addConsoleReporterToHopper(Model& hopper)
 {
     //TODO: Create a new ConsoleReporter. Set its name and reporting interval.
+	auto reporter = new ConsoleReporter();
+	reporter->setName("hopper_results");
+	reporter->set_report_time_interval(REPORTING_INTERVAL);
+
 
     //TODO: Connect outputs from the hopper to the reporter's inputs. Try
     //      reporting the hopper's height, the vastus muscle's activation, the
     //      knee angle, and any other variables of interest.
+	reporter->updInput("inputs").connect(hopper.getOutput("/Dennis/vastus/activation"));
+
+	reporter->updInput("inputs").connect(hopper.getOutput("/Dennis/knee/kneeFlexion/value"), "knee_angle");
 
     //TODO: Add the reporter to the model.
+	hopper.addComponent(reporter);
 }
 
 
