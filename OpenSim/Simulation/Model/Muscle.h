@@ -804,7 +804,7 @@ protected:
         MusclePotentialEnergyInfo contains quantities related to the potential
         energy of the muscle (fiber + tendon) complex.
         
-        The function that populates this struct, calcMusclePotentialEnrgyInfo, can
+        The function that populates this struct, calcMusclePotentialEnergyInfo, can
         be called when position information is known. This function is
         dependent on calcMuscleLengthInfo.
 
@@ -817,7 +817,7 @@ protected:
 
         [4] This vector is left for the muscle modeler to populate with any
             computationally expensive quantities that are computed in 
-            calcMusclePotentialEnrgyInfo, that might be useful for others to
+            calcMusclePotentialEnergyInfo, that might be useful for others to
             access.
 
     */
