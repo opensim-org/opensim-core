@@ -43,7 +43,7 @@ static const double GAIN{ 1.0 };
 namespace OpenSim {
 
 // [Step 2, Task C]
-Device* buildDevice() {
+- {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -56,8 +56,12 @@ Device* buildDevice() {
     double deviceMass = 2.0;
     auto cuffA = new Body("cuffA", deviceMass/2., Vec3(0), Inertia(0.5));
     //TODO: Repeat for cuffB.
+	auto cuffB = new Body("cuffB", deviceMass / 2., Vec3(0), Inertia(0.5));
 
     //TODO: Add the cuff Components to the device.
+
+	device->addComponent(cuffA);
+	device->addComponent(cuffB);
 
     // Attach a sphere to each cuff for visualization.
     auto sphere = new Sphere(0.01);
@@ -72,19 +76,32 @@ Device* buildDevice() {
     //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
     //      frame will be connected in exampleHopperDevice.cpp.
+	anchorA->updConnector("child_frame").connect(*cuffA);
 
     //TODO: Add anchorA to the device.
 
+	device->addComponent(anchorA);
     //TODO: Create a WeldJoint to anchor cuffB to the hopper. Connect the
     //      "child_frame" Connector of anchorB to cuffB and add anchorB to the
     //      device.
+
+	auto anchorB = new WeldJoint();
+	anchorB->setName("anchorB");
+	//TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
+	//      cuffA. Note that only the child frame is connected now; the parent
+	//      frame will be connected in exampleHopperDevice.cpp.
+	anchorB->updConnector("child_frame").connect(*cuffB);
+
+	//TODO: Add anchorA to the device.
+
+	device->addComponent(anchorB);
 
     // Attach a PathActuator between the two cuffs.
     auto pathActuator = new PathActuator();
     pathActuator->setName("cableAtoB");
     pathActuator->set_optimal_force(OPTIMAL_FORCE);
     pathActuator->addNewPathPoint("pointA", *cuffA, Vec3(0));
-    //pathActuator->addNewPathPoint("pointB", *cuffB, Vec3(0));
+    pathActuator->addNewPathPoint("pointB", *cuffB, Vec3(0));
     device->addComponent(pathActuator);
 
     // Create a PropMyoController.
@@ -93,6 +110,8 @@ Device* buildDevice() {
     controller->set_gain(GAIN);
 
     //TODO: Connect the controller's "actuator" Connector to pathActuator.
+	controller->updConnector("actuator").connect(*pathActuator);
+	//OpenSim_DECLARE_CONNECTOR();
 
     //TODO: Add the controller to the device.
 
