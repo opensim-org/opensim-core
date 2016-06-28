@@ -107,7 +107,7 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
         override;
 
-    /** Updating XML formating to latest revision */
+    /** Updating XML formatting to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 
