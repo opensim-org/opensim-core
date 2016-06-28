@@ -64,7 +64,7 @@ public:
 //==============================================================================
 
     OpenSim_DECLARE_CONNECTOR(frame1, F,
-            "The first frame participtting in this linker.");
+            "The first frame participating in this linker.");
     OpenSim_DECLARE_CONNECTOR(frame2, F,
             "The second frame participating in this linker.");
 
