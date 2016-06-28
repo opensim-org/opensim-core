@@ -1587,7 +1587,7 @@ protected:
     Override to set the derivatives of state variables added to the system 
     by this component. (also see extendAddToSystem()). If the component adds states
     and computeStateVariableDerivatives is not implemented by the component,
-    an exception is thrown when the system tries to evaluate its derivates.
+    an exception is thrown when the system tries to evaluate its derivatives.
 
     Implement like this:
     @code
