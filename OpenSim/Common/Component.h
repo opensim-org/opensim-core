@@ -1772,7 +1772,7 @@ protected:
     dependence on individual state variables. Changing a variables whose
     "invalidates" stage is the same or lower as the one specified as the
     "depends on" stage here cause the cache entry to be invalidated. For 
-    example, a body's momementum, which is dependent on position and velocity 
+    example, a body's momentum, which is dependent on position and velocity 
     states, should have Stage::Velocity as its \a dependsOnStage. Then if a
     Velocity stage variable or lower (e.g. Position stage) changes, then the 
     cache is invalidated. But, if a Dynamics stage variable (or above) is 
