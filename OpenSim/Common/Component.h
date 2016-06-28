@@ -2170,7 +2170,7 @@ protected:
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
      * non-existant. The also specifies at what stage the output must be valid
-     * for the the component to consume it as an input.  if the Output's
+     * for the component to consume it as an input.  if the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
