@@ -120,7 +120,7 @@ public:
 protected:
     void extendConnectToModel(Model& aModel) override;
     /**
-     * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
+     * Create a SimTK::Constraint::CoordinateCoupler which implements this constraint.
      */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
@@ -130,11 +130,11 @@ private:
     friend class SimbodyEngine;
 
 //=============================================================================
-};  // END of class CoordinateCouplerConstraint
+};  //END of class CoordinateCouplerConstraint
 //=============================================================================
 //=============================================================================
 
-} // end of namespace OpenSim
+} //end of namespace OpenSim
 
 #endif // OPENSIM_COORDINATE_COUPLER_CONSTRAINT_H_
 

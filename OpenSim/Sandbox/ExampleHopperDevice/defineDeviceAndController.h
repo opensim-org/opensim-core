@@ -55,6 +55,7 @@ public:
     // The lengthening speed of the device.
     //TODO: Add an output called "speed" (to report the PathActuator's
     //      lengthening speed).
+	OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
 
     // The force transmitted by the device.
     //TODO: Add an output called "tension".
@@ -75,24 +76,24 @@ public:
     }
     double getSpeed(const SimTK::State& s) const {
         //TODO
-        return 0;
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
     }
     double getTension(const SimTK::State& s) const {
         //TODO
-        return 0;
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
     }
     double getPower(const SimTK::State& s) const {
         //TODO
-        return 0;
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
     }
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
         //      height. You found this in Step 1, Task A.
-        const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
+        const std::string hopperHeightOutput = "/Dennis/slider/slider/height"; //fill this in
 
         //TODO: Use "getModel().getOutputValue<?????>(?????);" to return the
         //      output indicated by hopperHeightOutput.
-        return 0;
+		return getModel().getOutputValue<double>(s, hopperHeightOutput);
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {
         SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
@@ -130,6 +131,8 @@ public:
     // Connector to the ScalarActuator for which the controller is computing a
     // control signal.
     //TODO: Add a connector called "actuator" for connecting the ScalarActuator.
+	OpenSim_DECLARE_CONNECTOR(actuator, ScalarActuator, 
+		"The actuator for which the controller is computing a control signal");
 
     // Input the activation signal 'a' to which the controller's output should
     // be proportional.
@@ -150,7 +153,7 @@ public:
         double activation = getInputValue<double>(s, "activation");
 
         //TODO: Design a control strategy that improves jump height.
-        return 0;
+        return (activation < 0.31) ? 0. : get_gain() * activation;
     }
 
     // Member function for adding the control signal computed above into the
