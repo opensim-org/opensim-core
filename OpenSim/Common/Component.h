@@ -1105,7 +1105,7 @@ public:
      * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
-     * @param name   the name of the dsicrete variable
+     * @param name   the name of the discrete variable
      * @param value  the value to set
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
