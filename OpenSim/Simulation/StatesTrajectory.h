@@ -419,7 +419,7 @@ public:
             msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
             msg += std::to_string(numDepColumns) + "). You must provide a ";
             msg += "States Storage that has the same number ";
-            msg += "of entires in every row.";
+            msg += "of entries in every row.";
             addMessage(msg);
         }
     };
