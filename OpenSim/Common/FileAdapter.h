@@ -199,7 +199,7 @@ protected:
     static
     std::string findExtension(const std::string& filename);
 
-    /** Tokenize/split a given string using the given delimiters. The delimters 
+    /** Tokenize/split a given string using the given delimiters. The delimiters 
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 
     specifies that either a space or a tab can act as the delimiter.          */
