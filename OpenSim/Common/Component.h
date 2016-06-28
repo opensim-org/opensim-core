@@ -878,7 +878,7 @@ public:
 
 
     /**
-    * Get a concrete Input that you can direclty ask for its values.
+    * Get a concrete Input that you can directly ask for its values.
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
