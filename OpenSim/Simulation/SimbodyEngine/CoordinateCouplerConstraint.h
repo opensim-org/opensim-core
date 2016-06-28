@@ -134,7 +134,7 @@ private:
 //=============================================================================
 //=============================================================================
 
-} // end of namespace OpenSim
+} //end of namespace OpenSim
 
 #endif // OPENSIM_COORDINATE_COUPLER_CONSTRAINT_H_
 
