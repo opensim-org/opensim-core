@@ -766,11 +766,12 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs to desired model outputs
-    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
-    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    // wire up table reporter inputs (using conveniece method) to desired 
+    // model outputs
+    tabReporter->updInput().connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput().connect(bar.getOutput("activation"));
+    tabReporter->updInput().connect(foo.getOutput("Output1"));
+    tabReporter->updInput().connect(bar.getOutput("PotentialEnergy"));
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
