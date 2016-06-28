@@ -296,7 +296,7 @@ public:
      languages. */
     ComponentListIterator& next() { return ++(*this); }
     
-    /** Allow cconverting from non-const iterator to const_iterator.
+    /** Allow converting from non-const iterator to const_iterator.
     This helps with iterating through the list in a const
     way, even if you have a non-const list. This
     allows the following code:
