@@ -120,7 +120,7 @@ public:
 protected:
     void extendConnectToModel(Model& aModel) override;
     /**
-     * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
+     * Create a SimTK::Constraint::CoordinateCoupler which implements this constraint.
      */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
