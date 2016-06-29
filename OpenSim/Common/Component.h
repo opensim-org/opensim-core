@@ -2349,7 +2349,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<const Component> >  _propertySubcomponents;
+    SimTK::Array_<SimTK::ReferencePtr<Component>>  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous

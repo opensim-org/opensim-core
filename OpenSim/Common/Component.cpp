@@ -1103,15 +1103,15 @@ void Component::markAsPropertySubcomponent(const Component* component)
 {
     // Only add if the component is not already a part of this Component
     // So, add if empty
-    SimTK::ReferencePtr<const Component> compRef(component);
+    SimTK::ReferencePtr<Component> compRef(const_cast<Component*>(component));
     if (_propertySubcomponents.empty() ){
-        _propertySubcomponents.push_back(SimTK::ReferencePtr<const Component>(component));
+        _propertySubcomponents.push_back(compRef);
     }
     else{ //otherwise check that it isn't a part of the component already
         auto it =
             std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
         if ( it == _propertySubcomponents.end() ){
-            _propertySubcomponents.push_back(SimTK::ReferencePtr<const Component>(component));
+            _propertySubcomponents.push_back(compRef);
         }
         else{
             auto compPath = component->getFullPathName();
@@ -1121,7 +1121,7 @@ void Component::markAsPropertySubcomponent(const Component* component)
         }
     }
 
-    component->setParent(*this);
+    compRef->setParent(*this);
 }
 
 
