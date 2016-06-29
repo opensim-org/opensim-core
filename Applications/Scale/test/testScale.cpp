@@ -198,9 +198,6 @@ void scaleModelWithLigament()
     Model comp(scaledModelFile);
     Model std(std_scaledModelFile);
 
-    std.print("std_toyLigamentModelScaled_latest.osim");
-    comp.print("comp_toyLigamentModelScaled_latest.osim");
-
     // the latest model will not match the standard because the naming convention has
     // been updated to store path names and connecting a model results in connectors
     // storing relative paths so that collections of components are more portable.
@@ -208,8 +205,11 @@ void scaleModelWithLigament()
     comp.setup();
     std.setup();
 
-    ComponentList<Ligament> compLigs = comp.getComponentList<Ligament>();
-    ComponentList<Ligament> stdLigs = std.getComponentList<Ligament>();
+    std.print("std_toyLigamentModelScaled_latest.osim");
+    comp.print("comp_toyLigamentModelScaled_latest.osim");
+
+    auto compLigs = comp.getComponentList<Ligament>();
+    auto stdLigs = std.getComponentList<Ligament>();
 
     ComponentList<Ligament>::const_iterator itc = compLigs.begin();
     ComponentList<Ligament>::const_iterator its = stdLigs.begin();
@@ -223,7 +223,8 @@ void scaleModelWithLigament()
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    ASSERT(std == comp);
+    ASSERT(std == comp, __FILE__, __LINE__, 
+            "Standard model failed to match scaled.");
 }
 
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {

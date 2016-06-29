@@ -62,9 +62,9 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
-/**
-  * Populate this flat list of Coordinates given a Model that has been set up
-  */
+/*
+ * Populate a flat list of Coordinates given a Model with Joints.
+ */
 void CoordinateSet::populate(Model& model)
 {
     setModel(model);

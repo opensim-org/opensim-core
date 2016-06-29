@@ -23,6 +23,7 @@
 
 #include "AssemblySolver.h"
 #include "Model/Model.h"
+#include "Model/Geometry.h"
 #include <OpenSim/Common/Constant.h>
 
 using namespace std;

@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "SimTKsimbody.h"
 #include "WrapEllipsoid.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
@@ -31,6 +32,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
+#include <OpenSim/Common/ModelDisplayHints.h>
 
 //=============================================================================
 // STATICS
@@ -1293,4 +1295,25 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     dy = *y - v;
 
     return sqrt(dx*dx + dy*dy);
+}
+// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Vec3 color(SimTK::Cyan);
+
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
+        SimTK::Transform X_GW = X_GB*getTransform();
+        appendToThis.push_back(
+            SimTK::DecorativeEllipsoid(getRadii())
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(0.5));
+    }
+
 }

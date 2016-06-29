@@ -51,6 +51,8 @@ public:
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
         "The fixed location of the station expressed in its parent frame.");
+    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+        "The frame to which this station is fixed.");
 
 public:
     //--------------------------------------------------------------------------
@@ -86,8 +88,7 @@ private:
     SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
 
     void setNull();
-    void constructProperties() override;
-    void constructConnectors() override;
+    void constructProperties();
 
 //=============================================================================
 };  // END of class Station

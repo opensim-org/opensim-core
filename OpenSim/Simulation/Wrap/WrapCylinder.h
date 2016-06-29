@@ -64,12 +64,15 @@ public:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
 #endif
+    /// Implement generateDecorations to draw geometry in visualizer
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 protected:
     void extendFinalizeFromProperties() override;
 
 private:
-    void constructProperties() override;
+    void constructProperties();
 
     void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                                  bool far_side_wrap,WrapResult& aWrapResult) const;

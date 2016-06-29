@@ -77,7 +77,7 @@ int main()
     int n1 = fs.getNumGroups();
     const ObjectGroup* grp = fs.getGroup("wrist");
     assert(grp);
-    const Array<Object*>& members = grp->getMembers();
+    const Array<const Object*>& members = grp->getMembers();
     int sz = members.getSize();
     ASSERT_EQUAL(sz,5,0);
     assert(members.get(0)->getName()=="ECRB");

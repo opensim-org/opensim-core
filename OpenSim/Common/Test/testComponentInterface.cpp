@@ -52,16 +52,10 @@ private:
 class TheWorld : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(TheWorld, Component);
 public:
-    TheWorld() : Component() {
-        // Constructing own properties, connectors, inputs or connectors? Must invoke!
-        constructInfrastructure();
-    }
+    TheWorld() : Component() { }
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // have to construct this Component's properties so that deserialization from
-        // XML has a place to go.
-        constructInfrastructure();
         // Propagate XML file values to properties 
         updateFromXMLDocument();
         // add components listed as properties as sub components.
@@ -154,7 +148,7 @@ public:
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
-        constructInfrastructure();
+        constructProperties();
         m_ctr = 0;
         m_mutableCtr = 0;
     }
@@ -226,16 +220,11 @@ private:
     mutable int m_mutableCtr;
 
 
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_mass(1.0);
         Array<double> inertia(0.001, 6);
         inertia[0] = inertia[1] = inertia[2] = 0.1;
         constructProperty_inertia(inertia);
-    }
-
-    void constructOutputs() override {
-
-
     }
 
     // Keep indices and reference to the world
@@ -247,6 +236,9 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
+    
+    OpenSim_DECLARE_CONNECTOR(parentFoo, Foo, "");
+    OpenSim_DECLARE_CONNECTOR(childFoo, Foo, "");
 
     // This is used to test output copying and returns the address of the 
     // component.
@@ -262,8 +254,6 @@ public:
 
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(fiberLength);
     OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activation);
-
-    Bar() : Component() { constructInfrastructure(); }
 
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
@@ -333,10 +323,6 @@ protected:
     }
 
 private:
-    void constructConnectors() override {
-        constructConnector<Foo>("parentFoo");
-        constructConnector<Foo>("childFoo");
-    }
 
     // keep track of the force added by the component
     mutable ForceIndex fix;
@@ -358,7 +344,7 @@ public:
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
 
     CompoundFoo() : Foo() {
-        constructInfrastructure();
+        constructProperties();
     }
 
 protected:
@@ -383,7 +369,7 @@ protected:
     }
 
 private:
-    void constructProperties() override {
+    void constructProperties() {
         constructProperty_Foo1(Foo());
         constructProperty_Foo2(Foo());
         constructProperty_scale1(1.0);
@@ -451,7 +437,7 @@ void testMisc() {
                   theWorld.connect() );
 
 
-    ComponentList<Component> worldTreeAsList = theWorld.getComponentList();
+    auto worldTreeAsList = theWorld.getComponentList();
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
@@ -480,6 +466,15 @@ void testMisc() {
     for (auto& component : theWorld.getComponentList<Foo>()) {
         std::cout << "Iter at: " << component.getFullPathName() << std::endl;
     }
+
+    // Query existing components.
+    theWorld.printComponentsMatching("");
+    SimTK_TEST(theWorld.hasComponent("Foo"));
+    SimTK_TEST(!theWorld.hasComponent("Nonexistant"));
+    SimTK_TEST(theWorld.hasComponent<Foo>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Bar>("Foo"));
+    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
+
 
     bar.updConnector<Foo>("childFoo").connect(foo2);
     string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
@@ -616,6 +611,7 @@ void testMisc() {
     CompoundFoo& compFoo = *new CompoundFoo();
     compFoo.setName("BigFoo");
 
+    // setting Foo's creates copies that are now part of CompoundFoo
     compFoo.set_Foo1(foo);
     compFoo.set_Foo2(foo2);
     compFoo.finalizeFromProperties();
@@ -627,7 +623,10 @@ void testMisc() {
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
+    
     bar2.updConnector<Foo>("childFoo").connect(foo);
+    compFoo.upd_Foo1().updInput("input1")
+        .connect(bar2.getOutput("PotentialEnergy"));
 
     world3.finalizeFromProperties();
     world3.print("Compound_" + modelFile);
@@ -773,7 +772,6 @@ void testListInputs() {
     tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
     tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
 
-   
     theWorld.connect();
     theWorld.buildUpSystem(system);
     
@@ -1054,6 +1052,32 @@ void testTableSource() {
     using namespace OpenSim;
     using namespace SimTK;
 
+    {
+        TheWorld model{};
+        auto tablesource = new TableSourceVec3{};
+        tablesource->setName("tablesource");
+        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_tablename("markers");
+        model.addComponent(tablesource);
+
+        model.print("TestTableSource.osim");
+    }
+
+    {
+    const std::string src_file{"TestTableSource.osim"};
+    TheWorld model{src_file};
+    const auto& tablesource = 
+        model.getComponent<TableSourceVec3>("tablesource");
+    model.print("TestTableSourceResult.osim");
+    // Read the model file again to verify serialization.
+    TheWorld model_copy{"TestTableSourceResult.osim"};
+    const auto& tablesource_copy = 
+        model_copy.getComponent<TableSourceVec3>("tablesource");
+    OPENSIM_THROW_IF(tablesource_copy.get_filename() !=
+                     tablesource.get_filename(),
+                     OpenSim::Exception);
+    }
+
     TimeSeriesTable table{};
     table.setColumnLabels({"0", "1", "2", "3"});
     SimTK::RowVector_<double> row{4, double{0}};
@@ -1127,6 +1151,7 @@ int main() {
     //Register new types for testing deserialization
     Object::registerType(Foo());
     Object::registerType(Bar());
+    Object::registerType(TheWorld());
     // Register connector objects that are in use
     Object::registerType(Connector<Foo>());
     Object::registerType(Connector<Bar>());

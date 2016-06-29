@@ -61,7 +61,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /*
@@ -73,7 +73,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(
     const double& distance) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());
@@ -105,13 +105,6 @@ void ConstantDistanceConstraint::constructProperties()
     // Constant distance between points
     constructProperty_constant_distance(SimTK::NaN);
 }
-
-void ConstantDistanceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
 
 void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {

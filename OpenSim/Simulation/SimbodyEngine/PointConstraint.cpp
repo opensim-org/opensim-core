@@ -59,7 +59,7 @@ PointConstraint::PointConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 PointConstraint::PointConstraint(const PhysicalFrame& body1, 
@@ -68,7 +68,7 @@ PointConstraint::PointConstraint(const PhysicalFrame& body1,
                                  const SimTK::Vec3& locationBody2) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setBody1ByName(body1.getName());
     setBody2ByName(body2.getName());
@@ -104,13 +104,6 @@ void PointConstraint::constructProperties()
     // Location in Body 2 
     constructProperty_location_body_2(origin);
 }
-
-void PointConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
 
 void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {

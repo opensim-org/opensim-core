@@ -67,7 +67,7 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <properties title="OpenSim Properties, Outputs, Inputs"/>
+      <properties title="OpenSim Properties, Connectors, Outputs, Inputs"/>
       <publicmethods title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -110,7 +110,7 @@
       <functions title=""/>
       <related title=""/>
       <variables title=""/>
-      <properties title="OpenSim Property, Output, Input Documentation"/>
+      <properties title="OpenSim Property, Connector, Output, Input Documentation"/>
       <events title=""/>
     </memberdef>
     

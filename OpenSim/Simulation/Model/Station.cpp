@@ -43,14 +43,14 @@ using SimTK::Vec3;
 Station::Station() : Point()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location)
     : Point()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
     setParentFrame(frame);
     set_location(location);
 }
@@ -84,11 +84,6 @@ void Station::constructProperties()
     constructProperty_location(origin);
 }
 
-
-void Station::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("parent_frame");
-}
 
 /*
  * Return the parent frame with respect to which this station is defined
