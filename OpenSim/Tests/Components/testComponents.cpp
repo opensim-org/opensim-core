@@ -487,10 +487,10 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
         else if (Object::isObjectTypeDerivedFrom< Frame >(className))
             model.addFrame(dynamic_cast<Frame*>(instance));
         else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
-            model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
+            model.addComponent(dynamic_cast<Component*>(instance));
         else
         {
-            throw Exception(className + " is not a ModelComponent.",
+            throw Exception(className + " is not a Component.",
                 __FILE__, __LINE__);
         }
     }
