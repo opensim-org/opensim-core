@@ -36,3 +36,15 @@ class TestSimbody(unittest.TestCase):
         assert J.nrow() == 3
         assert J.ncol() == model.getCoordinateSet().getSize()
 
+        # Inverse dynamics.
+        model.realizeDynamics(s)
+        appliedMobilityForces = osim.Vector()
+        appliedBodyForces = osim.VectorOfSpatialVec()
+        knownUdot = osim.Vector()
+        knownLambda = osim.Vector()
+        residualMobilityForces = osim.Vector()
+        smss.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
+                          knownUdot, knownLambda, residualMobilityForces)
+
+        idsolver = osim.InverseDynamicsSolver(model)
+        residual = idsolver.solve(s, knownUdot)
