@@ -200,7 +200,8 @@ void Component::componentsFinalizeFromProperties() const
             ->finalizeFromProperties();
     }
     for (auto& comp : _propertySubcomponents) {
-        comp->finalizeFromProperties();
+		const_cast<Component*>(comp.get())
+			->finalizeFromProperties();
     }
     for (auto& comp : _adoptedSubcomponents) {
         const_cast<Component*>(comp.get())
@@ -1059,14 +1060,14 @@ void Component::markPropertiesAsSubcomponents()
     // Now mark properties that are Components as subcomponents
     //loop over all its properties
     for (int i = 0; i < getNumProperties(); ++i) {
-        auto& prop = updPropertyByIndex(i);
+        auto& prop = getPropertyByIndex(i);
         // check if property is of type Object
         if (prop.isObjectProperty()) {
             // a property is a list so cycle through its contents
             for (int j = 0; j < prop.size(); ++j) {
-                Object& obj = prop.updValueAsObject(j);
+                const Object& obj = prop.getValueAsObject(j);
                 // if the object is a Component mark it
-                if (Component* comp = dynamic_cast<Component*>(&obj) ) {
+                if (const Component* comp = dynamic_cast<const Component*>(&obj) ) {
                     markAsPropertySubcomponent(comp);
                 }
                 else {
@@ -1081,12 +1082,12 @@ void Component::markPropertiesAsSubcomponents()
                     std::string objType = obj.getConcreteClassName();
                     if (obj.hasProperty("objects")) {
                         // get the PropertyObjArray if the object has one
-                        auto& objectsProp = obj.updPropertyByName("objects");
+                        auto& objectsProp = obj.getPropertyByName("objects");
                         // loop over the objects in the PropertyObjArray
                         for (int k = 0; k < objectsProp.size(); ++k) {
-                            Object& obj = objectsProp.updValueAsObject(k);
+                            const Object& obj = objectsProp.getValueAsObject(k);
                             // if the object is a Component mark it
-                            if (Component* comp = dynamic_cast<Component*>(&obj) )
+                            if (const Component* comp = dynamic_cast<const Component*>(&obj) )
                                 markAsPropertySubcomponent(comp);
                         } // loop over objects and mark it if it is a component
                     } // end if property is a Set with "objects" inside
@@ -1098,19 +1099,19 @@ void Component::markPropertiesAsSubcomponents()
 
 // mark a Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::markAsPropertySubcomponent(Component* component)
+void Component::markAsPropertySubcomponent(const Component* component)
 {
     // Only add if the component is not already a part of this Component
     // So, add if empty
-    SimTK::ReferencePtr<Component> compRef(component);
+    SimTK::ReferencePtr<const Component> compRef(component);
     if (_propertySubcomponents.empty() ){
-        _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
+        _propertySubcomponents.push_back(SimTK::ReferencePtr<const Component>(component));
     }
     else{ //otherwise check that it isn't a part of the component already
         auto it =
             std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
         if ( it == _propertySubcomponents.end() ){
-            _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
+            _propertySubcomponents.push_back(SimTK::ReferencePtr<const Component>(component));
         }
         else{
             auto compPath = component->getFullPathName();
