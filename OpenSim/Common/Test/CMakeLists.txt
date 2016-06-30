@@ -1,7 +1,5 @@
 
 file(GLOB TEST_PROGS "*est*.cpp")
-file(GLOB TESTDELAY *testDelay.cpp)
-list(REMOVE_ITEM TEST_PROGS ${TESTDELAY})
 
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
 file(GLOB TRC_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/test/*.trc")
@@ -21,7 +19,3 @@ OpenSimAddTests(
     LINKLIBS ${BTK_LIBRARIES} osimCommon ${SIMTK_ALL_LIBS} 
     )
 
-OpenSimAddTests(
-    TESTPROGRAMS testDelay.cpp
-    LINKLIBS osimTools
-    )
