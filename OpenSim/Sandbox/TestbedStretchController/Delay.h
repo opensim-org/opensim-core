@@ -23,8 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include "Component.h"
+#include <OpenSim/OpenSim.h>
 
 namespace OpenSim {
 
@@ -160,7 +159,7 @@ private:
 
 template<class T>
 Delay_<T>::Delay_() {
-    constructProperties();
+    constructInfrastructure();
 }
 
 template<class T>
