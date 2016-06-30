@@ -26,6 +26,7 @@
 #include <OpenSim/OpenSim.h>
 #include "helperMethods.h"
 #include "StretchController.h"
+#include "Spindle.h"
 
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
@@ -42,15 +43,27 @@ Model buildTestbed();   //defined in defineStretchController.h
 // Build the StretchController.
 //------------------------------------------------------------------------------
 
-StretchController* buildStretchController(PathActuator& pa) {
+StretchController* buildStretchController(Model& model, PathActuator& pa) {
 	try {
 		cout << "building controller with pathactuator " << pa.getName() << endl;
+		
+		auto spindle = new Spindle();
+		spindle->setName(pa.getName() + "_spindle");
+		spindle->set_delay_time(2);
+		spindle->updInput("fiberLength").connect(pa.getGeometryPath().getOutput("length"));
+		model.addComponent(spindle);
+
 		auto controller = new StretchController();
-		controller->setName("stretchCon");
+		controller->setName("stretch_controller");
 		controller->set_length_gain(LENGTH_GAIN);
 
-		controller->updInput("length").connect(pa.getGeometryPath().getOutput("length"));   // TODO connect this to what?
-		controller->updConnector("actuator").connect(pa); // TODO need pointer to muscle!
+		//controller->updInput("length").connect(pa.getGeometryPath().getOutput("length"));
+		//controller->set_delay_time(1.0);
+
+		controller->updInput("length").connect(spindle->getOutput("length"));
+		controller->updConnector("actuator").connect(pa); 
+		model.addComponent(controller);
+
 		return controller;
 	}
 	catch (Exception e) {
@@ -72,14 +85,6 @@ Controller* buildStretchController(const Muscle& m) {
 	catch (Exception e) {
 		cout << e.what() << endl;
 	}
-}
-
-//------------------------------------------------------------------------------
-// Attach the stretch controller to a model
-//------------------------------------------------------------------------------
-void connectControllerToModel(Controller& controller, Model& model)
-{
-	model.addController(&controller);
 }
 
 //------------------------------------------------------------------------------
@@ -144,15 +149,10 @@ int main()
 		cout << "model created" << endl;
 		
 		auto& pathActuator = testbed.updComponent<PathActuator>("muscle");
-		auto controller = buildStretchController(pathActuator);
-		controller->set_delay_time(1.0);
+		auto controller = buildStretchController(testbed, pathActuator);
 		
 		cout << "model and controller created" << endl;
-        
-		// Connect the controller to the testbed. 
-		connectControllerToModel(*controller, testbed);
 
-		cout << "connected" << endl;
 		// Use a SignalGenerator to create a set point signal for testing the
 		// controller. ```
 		addSignalGeneratorToController(*controller, 0.3);// pathActuator.getLength());
