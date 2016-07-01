@@ -38,7 +38,7 @@ The parent class, Muscle.h, provides
         OpenSim_DECLARE_PROPERTY(strain_at_max_iso_force_SEE, double,
         "Strain in the series elastic element at load of Fmax");                                    //umax (dimensionless)
 
-        OpenSim_DECLARE_PROPERTY(fl_width_parameter, double,
+        OpenSim_DECLARE_PROPERTY(fl_width, double,
         "Width parameter of the force-length relationship of the contractile element");             //W (dimensionless)
 
         OpenSim_DECLARE_PROPERTY(fv_AHill, double,
@@ -50,11 +50,18 @@ The parent class, Muscle.h, provides
         //OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,    <-----Comes from parent class, Muscle.h
         //    "Optimal Length of Contractile Element");                                                 //Lceopt (m)
 
-        OpenSim_DECLARE_PROPERTY(dampingCoeff_PEE, double,
+        OpenSim_DECLARE_PROPERTY(dampingCoeff_Pee, double,
         "Damping coefficient of damper parallel to the CE (normalized to Fmax)");                   //b (s/m)
 
         //OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,     <-----Comes from parent class, Muscle.h
         //   "Slack length of the series elastic element");                                            //SEELslack (m)
+
+
+        OpenSim_DECLARE_PROPERTY(length_slack_Pee, double,
+                                 "(dimensionless) slack length of the parallel elastic element, divided by Lceopt");                   //b (s/m)
+
+
+
 
         OpenSim_DECLARE_PROPERTY(t_act, double,
         "Activation time(s)");                         //Tact (s)
@@ -65,7 +72,9 @@ The parent class, Muscle.h, provides
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-
+        double computeActuation(const SimTK::State& s) const override;
+        void computeInitialFiberEquilibrium(SimTK::State& s) const override;
+        void setActivation(SimTK::State& s,double activation) const override;
 
 //=============================================================================
 // Construction
@@ -82,29 +91,29 @@ The parent class, Muscle.h, provides
 // GET & SET Properties
 //-------------------------------------------------------------------------
         // Properties
-        void VandenBogert2011Muscle::setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee);
-        double VandenBogert2011Muscle::getStrainAtMaxIsoForceSee() const;
+        void setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee);
+        double getStrainAtMaxIsoForceSee() const;
 
-        void VandenBogert2011Muscle::setFlWidth(double FlWidth);
-        double VandenBogert2011Muscle::getFlWidth() const;
+        void setFlWidth(double FlWidth);
+        double getFlWidth() const;
 
-        void VandenBogert2011Muscle::setFvAHill()(double FvAHill);
-        double VandenBogert2011Muscle::getFvAHill() const;
+        void setFvAHill(double FvAHill);
+        double getFvAHill() const;
 
-        void VandenBogert2011Muscle::setFvMaxMultiplier()(double FvMaxMultiplier);
-        double VandenBogert2011Muscle::getFvMaxMultiplier() const;
+        void setFvMaxMultiplier(double FvMaxMultiplier);
+        double getFvMaxMultiplier() const;
 
-        void VandenBogert2011Muscle::setDampingCoeffPee()(double DampingCoeffPee);
-        double VandenBogert2011Muscle::getDampingCoeffPee() const;
+        void setDampingCoeffPee(double DampingCoeffPee);
+        double getDampingCoeffPee() const;
 
-        void VandenBogert2011Muscle::setLengthSlackPee()(double LengthSlackPee);
-        double VandenBogert2011Muscle::getLengthSlackPee() const;
+        void setLengthSlackPee(double LengthSlackPee);
+        double getLengthSlackPee() const;
 
-        void VandenBogert2011Muscle::setTact(double Tact);
-        double VandenBogert2011Muscle::getTact() const;
+        void setTact(double Tact);
+        double getTact() const;
 
-        void VandenBogert2011Muscle::setTdeact(double Tdeact);
-        double VandenBogert2011Muscle::getTdeact() const;
+        void setTdeact(double Tdeact);
+        double getTdeact() const;
 
 /** default values for states
         double getDefaultActiveMotorUnits() const;
@@ -116,7 +125,8 @@ The parent class, Muscle.h, provides
 // COMPUTATION
 //=============================================================================
 
-array<double, 3> calcImplicitResidual(const SimTK::State& s) const override;
+//std::array<double, 3> calcImplicitResidual(const SimTK::State& s) const;
+std::array<double, 3> calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const;
 
 protected:
 //=============================================================================

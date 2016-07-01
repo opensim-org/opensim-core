@@ -30,8 +30,7 @@ VandenBogert2011Muscle::VandenBogert2011Muscle()
 /*
  * Constructor.
  */
-VandenBogert2011Muscle::VandenBogert2011Muscle(const std::string &name) :
-        Super(name)
+VandenBogert2011Muscle::VandenBogert2011Muscle(const std::string &name)
 {
     constructProperties();
 }
@@ -44,14 +43,15 @@ VandenBogert2011Muscle::VandenBogert2011Muscle(const std::string &name) :
  */
 void VandenBogert2011Muscle::constructProperties()
 {
-    setAuthors("Brad Humphreys");
+    setAuthors("A. van den Bogert, B. Humphreys");
     //constructProperty_max_isometric_force(1000);
     constructProperty_strain_at_max_iso_force_SEE(0.04);
-    constructProperty_fl_width_parameter(0.63);
+    constructProperty_fl_width(0.63);
     constructProperty_fv_AHill(0.25);
     constructProperty_fv_max_multiplier(1.4);
     //constructProperty_optimal_fiber_length(0.1);
-    constructProperty_dampingCoeff_PEE(0.01);
+    constructProperty_dampingCoeff_Pee(0.01);
+    constructProperty_length_slack_Pee(1.0);
     //constructProperty_tendon_slack_length(0.2);
     constructProperty_t_act(0.01);
     constructProperty_t_deact(0.04);
@@ -97,8 +97,9 @@ void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
 //--------------------------------------------------------------------------
 // GET & SET Properties
 //--------------------------------------------------------------------------
-void VandenBogert2011Muscle::setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee)
-    { set_strain_at_max_iso_force_SEE(StrainAtMaxIsoForceSee); }
+void VandenBogert2011Muscle::setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee) {
+        set_strain_at_max_iso_force_SEE(StrainAtMaxIsoForceSee);
+    }
 double VandenBogert2011Muscle::getStrainAtMaxIsoForceSee() const
     { return get_strain_at_max_iso_force_SEE(); }
 
@@ -107,25 +108,25 @@ void VandenBogert2011Muscle::setFlWidth(double FlWidth)
 double VandenBogert2011Muscle::getFlWidth() const
     { return get_fl_width(); }
 
-void VandenBogert2011Muscle::setFvAHill()(double FvAHill)
+void VandenBogert2011Muscle::setFvAHill(double FvAHill)
     { set_fv_AHill(FvAHill); }
 double VandenBogert2011Muscle::getFvAHill() const
     { return get_fv_AHill(); }
 
-void VandenBogert2011Muscle::setFvMaxMultiplier()(double FvMaxMultiplier)
+void VandenBogert2011Muscle::setFvMaxMultiplier(double FvMaxMultiplier)
     { set_fv_max_multiplier(FvMaxMultiplier); }
 double VandenBogert2011Muscle::getFvMaxMultiplier() const
     { return get_fv_max_multiplier(); }
 
-void VandenBogert2011Muscle::setDampingCoeffPee()(double DampingCoeffPee)
-    { set_dampingCoeff_PEE(DampingCoeffPee); }
+void VandenBogert2011Muscle::setDampingCoeffPee(double DampingCoeffPee)
+    { set_dampingCoeff_Pee(DampingCoeffPee); }
 double VandenBogert2011Muscle::getDampingCoeffPee() const
-    { return get_dampingCoeff_PEE(); }
+    { return get_dampingCoeff_Pee(); }
 
-void VandenBogert2011Muscle::setLengthSlackPee()(double LengthSlackPee)
-    { set_length_slack_PEE(LengthSlackPee); }
+void VandenBogert2011Muscle::setLengthSlackPee(double LengthSlackPee)
+    { set_length_slack_Pee(LengthSlackPee); }
 double VandenBogert2011Muscle::getLengthSlackPee() const
-    { return get_length_slack_PEE(); }
+    { return get_length_slack_Pee(); }
 
 void VandenBogert2011Muscle::setTact(double Tact)
     { set_t_act(Tact); }
@@ -189,6 +190,36 @@ void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
  }*/
 
 
+
+
+
+//==============================================================================
+// Muscle.h Interface
+//==============================================================================
+
+
+double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
+{return( 0.0);}
+
+void VandenBogert2011Muscle::setActivation(SimTK::State& s,double activation) const
+{}
+
+void VandenBogert2011Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
+{}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -200,19 +231,22 @@ void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
  */
 
 
-array<double,3> calcImplicitResidual(const SimTK::State& s) const
+//array<double,3> calcImplicitResidual(const SimTK::State& s) const
+
+array<double,3> VandenBogert2011Muscle::calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const
 {
 
+    // Later when using state variables:
     //State Variables
-    double Lm = getLength(s);
-    double Lce = getNormalizedFiberLength(s);  //Ton: Lce is dimensionless, it is the muscle fiber length divided by Lceopt
-    double a = getActivation(s);
-    double Lcedot = getNormalizedFiberVelocity(s);
+    //double Lm = getLength(s);
+    //double Lce = getNormalizedFiberLength(s);  //Ton: Lce is dimensionless, it is the muscle fiber length divided by Lceopt
+    //double a = getActivation(s);
+    //double Lcedot = getNormalizedFiberVelocity(s);
 
     // Parameters
     double Fmax = getMaxIsometricForce();  //Maximum isometric force that the fibers can generate
     double umax = getStrainAtMaxIsoForceSee(); //Strain in the series elastic element at load of Fmax
-    double W = getFlWidthParameter();   //Width parameter of the force-length relationship of the contractile element
+    double W = getFlWidth();   //Width parameter of the force-length relationship of the contractile element
     double AHill = getFvAHill();        //Hill parameter of the force-velocity relationship
     double FVmax = getFvMaxMultiplier(); //Maximal eccentric force multiplier
     double Lceopt = getOptimalFiberLength();  //Optimal Length of Contractile Element
@@ -223,8 +257,12 @@ array<double,3> calcImplicitResidual(const SimTK::State& s) const
     double Tdeact = getTdeact();  // Deactivation time(s)
 
     // constants derived from the muscle parameters
-    double Vmax  = 10*model.Lceopt;                 //Maximum shortening velocity (m/s) is 10 fiber lengths per sec
+    double Vmax  = 10*Lceopt;                 //Maximum shortening velocity (m/s) is 10 fiber lengths per sec
     double d1	= Vmax*AHill*(FVmax-1)/(AHill+1);  // parameter in the eccentric force-velocity equation
+
+
+    double kPEE2 = 1/pow(W,2);                       // PEE quadratic stiffness, so Fpee = Fmax when Lce = Lce*(1+W)
+    double kSEE2 = 1/pow(SEELslack*umax,2);  // SEE quadratic stiffness, so Fsee = Fmax at strain of umax
 
 
     //F1 is the normalized isometric force-length relationship at maximum activation
@@ -232,18 +270,19 @@ array<double,3> calcImplicitResidual(const SimTK::State& s) const
     double F1 = exp(pow(-ff,2));		// Gaussian force-length curve
     //dF1_dLce = -2.0*ff*F1 / W;
 
+    double F2=0.0;
     // F2 is the dimensionless force-velocity relationship
     if (Lcedot < 0)  {
         //concentric contraction
         ff          = Vmax - Lcedot/AHill;
-        double F2 = (Vmax + Lcedot)/ff;
+        F2 = (Vmax + Lcedot)/ff;
         //dF2_dLcedot = (1.0 + F2/AHill)/ff;
         }
     else    {
         //eccentric contraction
         double c = Vmax * AHill * (FVmax - 1.0) / (AHill + 1.0); // parameter in the eccentric force-velocity equation
         ff          = Lcedot + c;
-        double F2 = (FVmax*Lcedot + c) / ff;
+        F2 = (FVmax*Lcedot + c) / ff;
     //dF2_dLcedot = (FVmax - F2)/ff;
     }
 
