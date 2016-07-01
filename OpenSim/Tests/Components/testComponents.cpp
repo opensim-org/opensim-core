@@ -215,12 +215,9 @@ void testComponent(const Component& instanceToTest)
             Object* dependency =
                 Object::newInstanceOfType(dependencyTypeName);
 
-            if (dependency == nullptr){
-                // Get a concrete instance of a PhysicalFrame, which is a Body
-                size_t n = dependencyTypeName.length();
-                if (n > 4 && dependencyTypeName.substr(n-5) == "Frame") {
-                    dependency = Object::newInstanceOfType("Body");
-                }
+            if (dynamic_cast< Connector<Frame>*>(&connector) ||
+                dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
+                dependency = Object::newInstanceOfType("Body");
             }
 
             if (dependency) {
