@@ -57,6 +57,8 @@
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
 
+#include "VandenBogert2011Muscle.h"
+
 // Awaiting new component architecture that supports subcomponents with states.
 //#include "ConstantMuscleActivation.h"
 //#include "ZerothOrderMuscleActivationDynamics.h"
@@ -104,6 +106,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 
     Object::RegisterType(Millard2012EquilibriumMuscle());
     Object::RegisterType(Millard2012AccelerationMuscle());
+
+    Object::registerType(VandenBogert2011Muscle());
 
     //Object::RegisterType( ConstantMuscleActivation() );
     //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );

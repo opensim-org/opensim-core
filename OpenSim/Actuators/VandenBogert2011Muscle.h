@@ -81,7 +81,7 @@ The parent class, Muscle.h, provides
 //=============================================================================
         /**Default constructor: produces a non-functional empty muscle*/
         VandenBogert2011Muscle();
-        VandenBogert2011Muscle(const std::string &name);
+        explicit VandenBogert2011Muscle(const std::string &name);
 
 
         // TODO: Uses default (compiler-generated) destructor, copy constructor, copy assignment operator?
@@ -126,7 +126,7 @@ The parent class, Muscle.h, provides
 //=============================================================================
 
 //std::array<double, 3> calcImplicitResidual(const SimTK::State& s) const;
-std::array<double, 3> calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const;
+        SimTK::Vec3 calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const;
 
 protected:
 //=============================================================================

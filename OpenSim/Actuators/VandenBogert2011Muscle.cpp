@@ -233,7 +233,7 @@ void VandenBogert2011Muscle::computeInitialFiberEquilibrium(SimTK::State& s) con
 
 //array<double,3> calcImplicitResidual(const SimTK::State& s) const
 
-array<double,3> VandenBogert2011Muscle::calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const
+SimTK::Vec3 VandenBogert2011Muscle::calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const
 {
 
     // Later when using state variables:
@@ -345,10 +345,11 @@ array<double,3> VandenBogert2011Muscle::calcImplicitResidual(double Lm, double L
     dfdydot(6,6) = 1;
     end*/
 
-    array<double, 3> outArr;
-    outArr[0]=muscleForceResidual;
-    outArr[1]=activationResidual ;
-    outArr[2]=Fsee;
+    return SimTK::Vec3(muscleForceResidual, activationResidual, Fsee);
+    // array<double, 3> outArr;
+    // outArr[0]=muscleForceResidual;
+    // outArr[1]=activationResidual ;
+    // outArr[2]=Fsee;
 
-    return outArr;
+    // return outArr;
 }
