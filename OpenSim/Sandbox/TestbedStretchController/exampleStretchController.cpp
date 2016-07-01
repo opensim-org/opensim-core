@@ -30,7 +30,7 @@
 
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
-static const double LENGTH_GAIN = 1.0;
+static const double LENGTH_GAIN = 10.0;
 static const std::string testbedAttachment1{"ground"};
 static const std::string testbedAttachment2{"load"};
 using namespace std;
@@ -139,51 +139,60 @@ int main()
 	try {
     using namespace OpenSim;
 	using namespace std;
-    //==========================================================================
-    // Step 1. Build an stretch controller and test it on a simple testbed.
-    //==========================================================================
-    if (true){
-		// Build the testbed and controller.
-		cout << "starting" << endl;
-		auto& testbed = buildTestbed();
-		cout << "model created" << endl;
+
+
+	// Build the testbed and controller.
+	cout << "starting" << endl;
+	auto& testbed = buildTestbed();
+	cout << "model created" << endl;
 		
-		auto& pathActuator = testbed.updComponent<PathActuator>("muscle");
-		auto controller = buildStretchController(testbed, pathActuator);
+	auto& pathActuator = testbed.updComponent<PathActuator>("muscle");
+	pathActuator.updGeometryPath().setDefaultColor(SimTK::Vec3(0.3)); // gray
+	auto controller = buildStretchController(testbed, pathActuator);
 		
-		cout << "model and controller created" << endl;
+	cout << "model and controller created" << endl;
 
-		// Use a SignalGenerator to create a set point signal for testing the
-		// controller. ```
-		addSignalGeneratorToController(*controller, 0.3);// pathActuator.getLength());
-		cout << "generator added" << endl;
+	// Use a SignalGenerator to create a set point signal for testing the
+	// controller. ```
+	addSignalGeneratorToController(*controller, 0.3);// pathActuator.getLength());
+	cout << "generator added" << endl;
 
-		// Show all Components in the testbed.
-		showSubcomponentInfo(testbed);
-		showSubcomponentInfo(*controller);
+	// Show all Components in the testbed.
+	showSubcomponentInfo(testbed);
+	showSubcomponentInfo(*controller);
 
-		// List the device outputs we wish to display during the simulation.
-		std::vector<std::string> controllerOutputs{ "stretch_control"};
+	// List the device outputs we wish to display during the simulation.
+	std::vector<std::string> controllerOutputs{ "stretch_control"};
 
-		// Add a ConsoleReporter to report deviceOutputs.
-		//addDeviceConsoleReporterToModel(testbed, *controller, controllerOutputs);
+	// Add a ConsoleReporter to report deviceOutputs.
+	//addDeviceConsoleReporterToModel(testbed, *controller, controllerOutputs);
 
-		// Create a new ConsoleReporter. Set its name and reporting interval.
-		auto reporter = new ConsoleReporter();
-		reporter->setName(testbed.getName() + "_" + controller->getName() + "_results");
-		reporter->set_report_time_interval(REPORTING_INTERVAL);
-		reporter->updInput("inputs").connect(controller->getOutput("stretch_control"));
-		reporter->updInput("inputs").connect(pathActuator.getOutput("geometrypath_/length"));
+	// Create a new ConsoleReporter. Set its name and reporting interval.
+	auto reporter = new ConsoleReporter();
+	reporter->setName(testbed.getName() + "_" + controller->getName() + "_results");
+	reporter->set_report_time_interval(REPORTING_INTERVAL);
+	reporter->updInput("inputs").connect(controller->getOutput("stretch_control"));
+	reporter->updInput("inputs").connect(pathActuator.getOutput("actuation"));
+	reporter->updInput("inputs").connect(pathActuator.getOutput("geometrypath_/length"));
 
-		// Add the reporter to the model.
-		testbed.addComponent(reporter);
+
+	// Add a table reporter 
+	//TableReporter* tblReporter = new TableReporter();
+	//tblReporter->set_report_time_interval(0.1);
+	//tblReporter->updInput("inputs").connect(controller->getOutput("stretch_control"));
+	//tblReporter->updInput("inputs").connect(pathActuator.getOutput("geometrypath_/length"));
+	//testbed.addComponent(tblReporter);
+
+	// Add the reporter to the model.
+	testbed.addComponent(reporter);
 		
-		// Create the system, initialize the state, and simulate.
-		SimTK::State& sDev = testbed.initSystem();
+	// Create the system, initialize the state, and simulate.
+	SimTK::State& sDev = testbed.initSystem();
 		
-		OpenSim::simulate(testbed, sDev);
-    }
-	
+	simulate(testbed, sDev);
+    
+	//auto table = tblReporter->getReport();
+	//CSVFileAdapter::write(table, "C:/Users/stavness/Desktop/testbed_stretch.csv");
 
 }
 catch (const std::exception& e) {
