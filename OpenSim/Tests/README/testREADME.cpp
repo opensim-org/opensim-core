@@ -119,4 +119,6 @@ int main() {
     getchar();
 #endif
     manager.integrate(state);
+
+    return 0;
 };
