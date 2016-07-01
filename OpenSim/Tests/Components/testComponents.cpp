@@ -466,7 +466,7 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     cout << "Adding " << className << " to the model." << endl;
 
     if (Object::isObjectTypeDerivedFrom< Analysis >(className))
-        model.addAnalysis(dynamic_cast<Analysis*>(instance));
+        throw Exception("Analysis is not a Component.", __FILE__, __LINE__);
     else if (Object::isObjectTypeDerivedFrom< Body >(className))
         model.addBody(dynamic_cast<Body*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
