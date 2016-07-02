@@ -28,6 +28,8 @@
 #include "StretchController.h"
 #include "Spindle.h"
 
+static const double DELAY_TIME = 2.0;
+
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
 static const double LENGTH_GAIN = 10.0;
@@ -49,7 +51,7 @@ StretchController* buildStretchController(Model& model, PathActuator& pa) {
 		
 		auto spindle = new Spindle();
 		spindle->setName(pa.getName() + "_spindle");
-		spindle->set_delay_time(2);
+		spindle->set_delay_time(DELAY_TIME);
 		spindle->updInput("fiberLength").connect(pa.getGeometryPath().getOutput("length"));
 		model.addComponent(spindle);
 
