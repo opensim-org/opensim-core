@@ -5,7 +5,7 @@ add_executable(exampleStretchController
     Spindle.h)
 target_link_libraries(exampleStretchController osimTools)
 set_target_properties(exampleStretchController PROPERTIES
-    PROJECT_LABEL "Testbed Stretch Controller"
+    PROJECT_LABEL "Delayed Stretch Controller"
     FOLDER "Examples"
     EXCLUDE_FROM_ALL TRUE
     )
