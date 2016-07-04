@@ -122,7 +122,7 @@ void PrescribedController::extendConnectToModel(Model& model)
         FunctionSet& controlFuncs = upd_ControlFunctions();
         const Set<Actuator>& modelActuators = getModel().getActuators();
 
-        Set<Actuator>& controllerActuators = updActuators();
+        Set<const Actuator>& controllerActuators = updActuators();
 
         for(int i=0; i<ncols; ++i){
             if(i == tcol) continue;

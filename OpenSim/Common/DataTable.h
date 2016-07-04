@@ -524,7 +524,7 @@ protected:
                             for key "labels" does not have length equal to the
                             number of columns in the table. (3) If not all
                             entries in the metadata for dependent columns have
-                            the correct length (equal to nubmer of columns).  */
+                            the correct length (equal to number of columns).  */
     void validateDependentsMetaData() const override {
         size_t numCols{};
         try {

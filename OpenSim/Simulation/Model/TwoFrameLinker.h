@@ -64,7 +64,7 @@ public:
 //==============================================================================
 
     OpenSim_DECLARE_CONNECTOR(frame1, F,
-            "The first frame participtting in this linker.");
+            "The first frame participating in this linker.");
     OpenSim_DECLARE_CONNECTOR(frame2, F,
             "The second frame participating in this linker.");
 
@@ -239,7 +239,7 @@ protected:
 
 private:
     // create the frames property
-    void constructProperties() override;
+    void constructProperties();
 
     //hang on to references to the individual frames for fast access
     mutable SimTK::ReferencePtr<const F> _frame1;
@@ -259,7 +259,7 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors

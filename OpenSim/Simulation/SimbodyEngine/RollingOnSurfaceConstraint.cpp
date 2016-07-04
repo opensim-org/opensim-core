@@ -51,7 +51,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
     UnilateralConstraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //=============================================================================

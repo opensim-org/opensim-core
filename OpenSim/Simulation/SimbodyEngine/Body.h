@@ -107,7 +107,7 @@ public:
 
 private:
     /** Component Interface */
-    void constructProperties() override;
+    void constructProperties();
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,

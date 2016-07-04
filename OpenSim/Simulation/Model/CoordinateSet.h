@@ -52,8 +52,8 @@ public:
     ~CoordinateSet(void);
 
     /**
-     * Populate this flat list of Coordinates given a Model that has already
-     * been setup.
+     * Populate this %Set as a flat list of all Model Coordinates given 
+     * the a Model with Joints, which owns the Coordinates.
      */
     void populate(Model& model);
 

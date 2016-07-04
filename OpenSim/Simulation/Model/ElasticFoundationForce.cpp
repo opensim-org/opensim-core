@@ -56,22 +56,16 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
-    //SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::ElasticFoundationForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().size(); ++j)
-        {
-            if (!_model->updContactGeometrySet().contains(params.getGeometry()[j]))
-            {
-                std::string errorMessage = "Invalid ContactGeometry (" + params.getGeometry()[j] + ") specified in ElasticFoundationForce" + getName();
-                throw (Exception(errorMessage.c_str()));
-            }
-            ContactGeometry& geom = _model->updContactGeometrySet().get(
-                    params.getGeometry()[j]);
+        for (int j = 0; j < params.getGeometry().size(); ++j) {
+            // get the ContactGeometry from the Model
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
 
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to
@@ -82,7 +76,7 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
             const auto X_BP = X_BF * X_FP;
             contacts.addBody(set, geom.getFrame().getMobilizedBody(),
                     geom.createSimTKContactGeometry(), X_BP);
-            if (dynamic_cast<ContactMesh*>(&geom) != NULL) {
+            if (dynamic_cast<const ContactMesh*>(&geom) != NULL) {
                 force.setBodyParameters(
                         SimTK::ContactSurfaceIndex(contacts.getNumBodies(set)-1), 
                         params.getStiffness(), params.getDissipation(),
@@ -315,7 +309,7 @@ ElasticFoundationForce::ContactParametersSet::ContactParametersSet()
 //=============================================================================
 // Reporting
 //=============================================================================
-/** 
+/*
  * Provide names of the quantities (column labels) of the force value(s) reported
  * 
  */
@@ -331,8 +325,8 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            ContactGeometry& geom =
-                _model->updContactGeometrySet().get(params.getGeometry()[j]);
+            const ContactGeometry& geom =
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
             std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
@@ -345,7 +339,7 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
 
     return labels;
 }
-/**
+/*
  * Provide the value(s) to be reported that correspond to the labels
  */
 OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::State& state) const 
@@ -372,7 +366,7 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             const ContactGeometry& geom =
-                _model->getContactGeometrySet().get(params.getGeometry()[j]);
+                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
     
             const auto& mbi = geom.getFrame().getMobilizedBodyIndex();
             const auto& thisBodyForce = bodyForces(mbi);

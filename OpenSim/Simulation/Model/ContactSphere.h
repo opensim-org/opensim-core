@@ -76,7 +76,7 @@ public:
     ContactSphere(double radius, const SimTK::Vec3& location,
             const PhysicalFrame& frame, const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
 
     // ACCESSORS
     /**
@@ -90,7 +90,7 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // VISUALIZATION
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, 

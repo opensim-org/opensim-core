@@ -12,21 +12,23 @@ if(MSVC OR XCODE)
     foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
         set(_binary_dirs "${CMAKE_BINARY_DIR}/${cfg}\n${_binary_dirs}")
     endforeach()
-    file(WRITE "${matlab_output_dir}/javalibrarypath.txt"
-        "${_binary_dirs}"
-        )
+else() # Single-configuration generator.
+    set(_binary_dirs "${CMAKE_BINARY_DIR}")
 endif()
+file(WRITE "${matlab_output_dir}/javalibrarypath.txt"
+    "${_binary_dirs}"
+    )
 
-macro(OpenSimAddMatlabTest MFILE)
+macro(OpenSimAddMatlabTest TESTNAME MFILE)
     get_filename_component(_full_path_to_mfile "${MFILE}" ABSOLUTE)
     if(WIN32)
         # On Windows, must set ADDITIONAL_PATH to find the opensim
         # libraries.
         set(_additional_path "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     endif()
-    matlab_add_unit_test(NAME Matlab_TugOfWar
+    matlab_add_unit_test(NAME Matlab_${TESTNAME}
         UNITTEST_FILE "${_full_path_to_mfile}"
-        TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+        TEST_ARGS "CONFIGURATIONS Release RelWithDebInfo MinSizeRel"
         ADDITIONAL_PATH "${_additional_path}"
         NO_UNITTEST_FRAMEWORK
         )
@@ -53,4 +55,10 @@ add_dependencies(RunMatlabTests JavaBindings)
 # Tests.
 # ------
 
-OpenSimAddMatlabTest(../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
+OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
+
+# Copy resources.
+file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+     DESTINATION "${matlab_output_dir}")

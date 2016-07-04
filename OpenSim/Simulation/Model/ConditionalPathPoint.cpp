@@ -43,7 +43,7 @@ using namespace OpenSim;
  */
 ConditionalPathPoint::ConditionalPathPoint() : PathPoint()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -88,11 +88,6 @@ void ConditionalPathPoint::constructProperties()
     constructProperty_range(defaultRange);
 }
 
-
-void ConditionalPathPoint::constructConnectors()
-{
-    constructConnector<Coordinate>("coordinate");
-}
 
 //_____________________________________________________________________________
 /*

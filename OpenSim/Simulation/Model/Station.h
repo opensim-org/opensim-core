@@ -88,7 +88,7 @@ private:
     SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 //=============================================================================
 };  // END of class Station

@@ -44,13 +44,13 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 PathSpring::PathSpring(const string& name, double restLength, 
                        double stiffness, double dissipation)
 {
-    constructInfrastructure();
+    constructProperties();
     setName(name);
     set_resting_length(restLength);
     set_stiffness(stiffness);
@@ -229,7 +229,7 @@ void PathSpring::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
                           tension*PFDs[i]->direction(), bodyForces);
     }
 

@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -41,7 +42,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
@@ -478,9 +478,23 @@ public:
     //--------------------------------------------------------------------------
     // CREATE THE MULTIBODY SYSTEM
     //--------------------------------------------------------------------------
-    /**
-     * Add ModelComponents to the Model. Model takes ownership of the objects.
+    /** @name Add components to the model
+     * Model takes ownership of the Components.
+     * @note these are legacy methods and remain as a convenience alternative to
+     * using Component::addComponent(). Model will maintain Components added
+     * using these methods in separate %Sets of the corresponding type and they
+     * will serialize as part of type specific %Sets. In contrast, components
+     * added using addComponent() are not stored in the model's %Sets but live in
+     * a flat components list (which is also serialized). Component provides
+     * access via getComponentList<%SpecificType> or getComponent<%SpecificType> 
+     * to get any subcomponent, including those that are contained in Model's %Sets.
+     * Future versions of OpenSim are likely to deprecate the use of Sets and
+     * these methods, because they cannot support new types without modifying the
+     * API (for more add####() methods), whereas getComponentList<%SpecificType>()
+     * and getComponent<%SpecificType> are more general: they do not have these
+     * limitations and are applicable for any Component not just Model.
      */
+    // @{
     void addModelComponent(ModelComponent* adoptee);
     void addBody(Body *adoptee);
     void addJoint(Joint *adoptee);
@@ -490,6 +504,8 @@ public:
     void addContactGeometry(ContactGeometry *adoptee);
     void addFrame(Frame* adoptee);
     void addMarker(Marker *adoptee);
+    // @}
+
     /** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
     //--------------------------------------------------------------------------
@@ -904,7 +920,8 @@ public:
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
      * ContactGeometry and so on. That means the freeing of the memory of these objects is up
-     * to the caller.
+     * to the caller. This only affects components stored in the Model's Sets,
+     * and does not affect those added via Component::addComponent().
      */
     void disownAllComponents();
     /**
@@ -984,7 +1001,7 @@ private:
     void setNull();
 
     // Construct the properties of a Model.
-    void constructProperties() override;
+    void constructProperties();
     void setDefaultProperties();
 
     // Utility to build a connected graph (tree) of the multibody system

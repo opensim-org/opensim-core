@@ -45,7 +45,6 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 #include "Simbody.h"
 
 namespace OpenSim {
@@ -83,12 +82,6 @@ class Model;
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 //==============================================================================
-// PROPERTIES
-//==============================================================================
-public:
-    OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
-        "List of Geometry that is attached to this Model Component.");
-//==============================================================================
 // METHODS
 //==============================================================================
 public:
@@ -116,23 +109,9 @@ public:
      * Get a modifiable reference to the Model this component is part of.
      */
     Model& updModel();
-    /**
-     * returns the number of published Geometry objects 
-     * maintained by the ModelComponent.
-     */
-    int getNumGeometry() const {
-        return getProperty_geometry().size();
-    }
-    /**
-     * Copy the passed in Geometry and add the copy to the visualization of 
-     * this ModelComponent as subcomponent.
-     */
-    void addGeometry(OpenSim::Geometry& aGeometry);
 
-    void extendFinalizeFromProperties() override;
 protected:
 template <class T> friend class ModelComponentSet;
-
     /** @name           ModelComponent Basic Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
@@ -163,6 +142,7 @@ template <class T> friend class ModelComponentSet;
     particular the fact that all your subcomponents will be invoked before you
     are may be surprising. **/ 
     //@{
+    void extendFinalizeFromProperties() override;
 
     /** Perform any necessary initializations required to connect the 
     component into the Model, and check for error conditions. extendConnectToModel() 
@@ -189,14 +169,6 @@ template <class T> friend class ModelComponentSet;
                             %ModelComponent should be connected. **/
     virtual void extendConnectToModel(Model& model) {};
 
-    /** Perform initialization on the passed in Geometry before adding it to
-     the list of subcomponents and Properties of this ModelComponent. For 
-     example, Frames can set the frame name on the Geometry to themselves. 
-
-     @param[in,out]  geometry to be added to current ModelComponent   
-     **/
-    virtual void extendAddGeometry(OpenSim::Geometry& geometry) {};
-
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
@@ -212,6 +184,9 @@ template <class T> friend class ModelComponentSet;
 
     // End of System Creation and Access Methods.
     //@} 
+
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber) override;
 
 
 private:
@@ -229,10 +204,6 @@ private:
         _model = NULL;
     }
 protected:
-
-    /* Component Construction Interface */
-    void constructProperties() override;
-
     /** The model this component belongs to. */
     // TODO: this should be private; all components should use getModel()
     // and updModel() to get access. This is just a reference; don't delete!

@@ -92,10 +92,10 @@ public:
     void setActuators(const Set<Actuator>& actuators );
     /** add to the current set of actuators */
     void addActuator(const Actuator& actuator);
-    /** get a const reference to the current set of actuators */
-    const Set<Actuator>& getActuatorSet() const;
-    /** get a writable reference to the set of actuators for this controller */
-    Set<Actuator>& updActuators();
+    /** get a const reference to the current set of const actuators */
+    const Set<const Actuator>& getActuatorSet() const;
+    /** get a writable reference to the set of const actuators for this controller */
+    Set<const Actuator>& updActuators();
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 
@@ -128,10 +128,10 @@ private:
     int _numControls;
 
     // the (sub)set of Model actuators that this controller controls */ 
-    Set<Actuator> _actuatorSet;
+    Set<const Actuator> _actuatorSet;
 
     // construct and initialize properties
-    void constructProperties() override;
+    void constructProperties();
 
     //friend class ControlSet;
     friend class ControllerSet;

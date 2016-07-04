@@ -43,12 +43,7 @@ OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
-    constructInfrastructure();
-}
-
-void Geometry::setFrameName(const std::string& name)
-{
-    updConnector<Frame>("frame").setConnecteeName(name);
+    constructProperties();
 }
 
 void Geometry::setFrame(const Frame& frame)
@@ -56,21 +51,42 @@ void Geometry::setFrame(const Frame& frame)
     updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
-
-const std::string& Geometry::getFrameName() const
-{
-    return getConnector<Frame>("frame").getConnecteeName();
-}
-
 const OpenSim::Frame& Geometry::getFrame() const
 {
     return getConnector<Frame>("frame").getConnectee();
 }
 
-void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+void Geometry::extendConnect(Component& root)
+{
+    Super::extendConnect(root);
+
+    bool attachedToFrame = getConnector<Frame>("frame").isConnected();
+    bool hasInputTransform = getInput("transform").isConnected();
+    // Being both attached to a Frame (i.e. Connector<Frame> connected) 
+    // and the Input transform connected has ambiguous behavior so disallow it
+    if (attachedToFrame && hasInputTransform ) {
+        OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()
+            + "' cannot be attached to a Frame and have its "
+                "Input `transform` set.");
+    }
+    else if (!attachedToFrame && !hasInputTransform) {
+        OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()
+            + "' must be attached to a Frame OR have its "
+                "Input `transform` set.");
+    }
+}
+
+void Geometry::generateDecorations(bool fixed, 
+    const ModelDisplayHints& hints,
+    const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    if (!fixed) return; // serialized Geometry is assumed fixed
+    // serialized Geometry is assumed fixed
+    // if it has a Transform input then it is not "attached" geometry
+    // and fixed to a body but floating w.r.t Ground.
+    if (!fixed && !getInput("transform").isConnected())
+        return; 
+    
     SimTK::Array_<SimTK::DecorativeGeometry> decos;
     implementCreateDecorativeGeometry(decos);
     if (decos.size() == 0) return;
@@ -81,28 +97,45 @@ void Geometry::generateDecorations(bool fixed, const ModelDisplayHints& hints, c
     }
 }
 
-/**
- * Compute Transform of a Geometry w.r.t. passed in Frame
- * Both Frame(s) could be Bodies, state is assumed to be realized to position
+/*
+ * Apply the Transform of the Frame the Geometry is attached to,
+ * OR use the Transform supplied to the Geometry via its Input.
 */
-void Geometry::setDecorativeGeometryTransform(SimTK::Array_<SimTK::DecorativeGeometry>& decorations, const SimTK::State& state) const
+void Geometry::setDecorativeGeometryTransform(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
+    const SimTK::State& state) const
 {
-    const Frame& myFrame = getFrame();
-    const Frame& bFrame = myFrame.findBaseFrame();
-    const PhysicalFrame* bPhysicalFrame = dynamic_cast<const PhysicalFrame*>(&bFrame);
-    if (bPhysicalFrame == nullptr){
-        // throw exception something is wrong
-        throw (Exception("Frame for Geometry " + getName() + " is not attached to a PhysicalFrame."));
+    auto& input = getInput<SimTK::Transform>("transform");
+
+    SimTK::Transform transformInBaseFrame;
+    SimTK::MobilizedBodyIndex mbidx;
+
+    if (input.isConnected()) {
+        transformInBaseFrame = input.getValue(state);
+        mbidx = SimTK::MobilizedBodyIndex(0);
     }
-    const SimTK::MobilizedBodyIndex& idx = bPhysicalFrame->getMobilizedBodyIndex();
-    SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    else {
+        const Frame& myFrame = getFrame();
+        const Frame& bFrame = myFrame.findBaseFrame();
+        const PhysicalFrame* bPhysicalFrame =
+            dynamic_cast<const PhysicalFrame*>(&bFrame);
+        if (bPhysicalFrame == nullptr) {
+            // throw exception something is wrong
+            throw (Exception("Frame for Geometry " + getName() +
+                " is not attached to a PhysicalFrame."));
+        }
+        mbidx = bPhysicalFrame->getMobilizedBodyIndex();
+        transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    }
+
     for (unsigned i = 0; i < decorations.size(); i++){
-        decorations[i].setBodyId(idx);
+        decorations[i].setBodyId(mbidx);
         decorations[i].setTransform(transformInBaseFrame);
         decorations[i].setIndexOnBody(i);
     }
 }
-void Sphere::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Sphere::implementCreateDecorativeGeometry(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeSphere deco(get_radius());
@@ -110,7 +143,8 @@ void Sphere::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGe
     decoGeoms.push_back(deco);
 }
 
-void Cylinder::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Cylinder::implementCreateDecorativeGeometry(
+    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
     DecorativeCylinder deco(get_radius(), get_half_height());
