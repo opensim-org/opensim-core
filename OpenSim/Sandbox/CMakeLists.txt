@@ -9,7 +9,7 @@ include_directories(${OpenSim_SOURCE_DIR}
                     ${OpenSim_SOURCE_DIR}/Vendors)
 
 add_subdirectory(ExampleHopperDevice)
-add_subdirectory(TestbedStretchController)
+add_subdirectory(DelayedStretchController)
 
 
 set(SANDBOX_FILES
