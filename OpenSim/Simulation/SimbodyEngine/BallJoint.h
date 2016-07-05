@@ -60,6 +60,18 @@ public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
 
+    /** Indices of Coordinates; can be used with getCoordinate() for
+        convenience. */
+    enum class BallJointCoordIdx {Rotation1, Rotation2, Rotation3};
+
+    /** Get the Coordinates associated with this Joint. */
+    const Coordinate& getCoordinate(BallJointCoordIdx idx) const {
+        if (idx==BallJointCoordIdx::Rotation1) { return Super::getCoordinate(rx); }
+        if (idx==BallJointCoordIdx::Rotation2) { return Super::getCoordinate(ry); }
+        if (idx==BallJointCoordIdx::Rotation3) { return Super::getCoordinate(rz); }
+        OPENSIM_THROW(Exception, "Invalid Coordinate index");
+    }
+
 protected:
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

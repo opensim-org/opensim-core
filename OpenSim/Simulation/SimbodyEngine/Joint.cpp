@@ -207,6 +207,30 @@ const OpenSim::PhysicalFrame& Joint::getParentFrame() const
     return getConnector<PhysicalFrame>("parent_frame").getConnectee();
 }
 
+const Coordinate& Joint::getCoordinate() const
+{
+    auto& coordSet = get_CoordinateSet();
+
+    OPENSIM_THROW_IF(coordSet.getSize() < 1, Exception,
+        "There are no Coordinates for Joint::getCoordinate() to return");
+    OPENSIM_THROW_IF(coordSet.getSize() > 1, Exception,
+        "Joint::getCoordinate() requires an argument for this Joint type");
+
+    return coordSet[0];
+}
+
+const Coordinate& Joint::getCoordinate(unsigned idx) const
+{
+    auto& coordSet = get_CoordinateSet();
+
+    OPENSIM_THROW_IF(coordSet.getSize() < 1, Exception,
+        "There are no Coordinates for Joint::getCoordinate() to return");
+    OPENSIM_THROW_IF(idx > coordSet.getSize()-1, Exception,
+        "The index passed to Joint::getCoordinate() is too large");
+
+    return coordSet[idx];
+}
+
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
 {
     OPENSIM_THROW_IF(cix >= _motionTypes.size(), Exception,

@@ -1206,6 +1206,16 @@ void testBallJoint()
     errorMessage << "testBallJoint using Euler angles FAILED\n";
     compareSimulations(system, state, &osimModel, osim_state, errorMessage.str());
 
+    // Test accessors.
+    //TODO: Ideally, "hip.getCoordinate(BallJoint::Rotation1)"
+    ASSERT(hip.getCoordinate(0)==hip.getCoordinate(BallJoint::BallJointCoordIdx::Rotation1),
+        __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT(hip.getCoordinate(1)==hip.getCoordinate(BallJoint::BallJointCoordIdx::Rotation2),
+        __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT(hip.getCoordinate(2)==hip.getCoordinate(BallJoint::BallJointCoordIdx::Rotation3),
+        __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::Exception, hip.getCoordinate());
+
 } // end testBallJoint
 
 void testPinJoint()

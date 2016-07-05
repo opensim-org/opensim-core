@@ -226,6 +226,11 @@ public:
     // Coordinate Set
     const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
 
+    /** Get the Coordinate(s) associated with this Joint. If there is only one
+        Coordinate, you can call getCoordinate() with no argument. */
+    const Coordinate& getCoordinate() const;
+    const Coordinate& getCoordinate(unsigned idx) const;
+
     bool getReverse() const { return get_reverse(); }
 
     //Model building
