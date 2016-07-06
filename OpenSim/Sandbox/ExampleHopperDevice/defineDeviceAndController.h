@@ -45,7 +45,7 @@ namespace OpenSim {
 // [Step 2, Task A]
 //------------------------------------------------------------------------------
 class Device : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Device, Component);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
 
 public:
     // Outputs that report quantities in which we are interested.
