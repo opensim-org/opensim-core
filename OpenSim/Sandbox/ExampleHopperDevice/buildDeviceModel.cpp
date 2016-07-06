@@ -63,8 +63,8 @@ Device* buildDevice() {
     auto sphere = new Sphere(0.01);
     sphere->setName("sphere");
     sphere->setColor(SimTK::Red);
-    sphere->setFrame(*cuffA); cuffA->attachGeometry(sphere);
-    //sphere->setFrame(*cuffB); cuffB->attachGeometry(sphere->clone());
+    cuffA->attachGeometry(sphere);
+    //cuffB->attachGeometry(sphere->clone());
 
     // Create a WeldJoint to anchor cuffA to the hopper.
     auto anchorA = new WeldJoint();
