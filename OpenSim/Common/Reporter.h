@@ -120,7 +120,13 @@ public:
     // Allow overloading of updInput
     using AbstractReporter::updInput;
 
-    /** Convenience method that can be used in place of updInput("inputs"). **/
+    /** Convenience method that can be used in place of `updInput("inputs")`. 
+    @code
+    auto* reporter = new ConsoleReporter();
+    auto* src = new DataSource();
+    reporter->updInput().connect(src->getOutput("outputName"));
+    @endcode
+    */
     AbstractInput& updInput()
     {
         return updInput("inputs");
