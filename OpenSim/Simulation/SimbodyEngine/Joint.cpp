@@ -207,26 +207,23 @@ const OpenSim::PhysicalFrame& Joint::getParentFrame() const
     return getConnector<PhysicalFrame>("parent_frame").getConnectee();
 }
 
-const Coordinate& Joint::getCoordinate() const
-{
-    auto& coordSet = get_CoordinateSet();
+const Coordinate& Joint::getCoordinate() const {
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Coordinate set has more than 1 coordinate. Use "
+                     "getCoordinate(unsigned) instead.");
 
-    OPENSIM_THROW_IF(coordSet.getSize() < 1, Exception,
-        "There are no Coordinates for Joint::getCoordinate() to return");
-    OPENSIM_THROW_IF(coordSet.getSize() > 1, Exception,
-        "Joint::getCoordinate() requires an argument for this Joint type");
-
-    return coordSet[0];
+    return getCoordinate(0);
 }
 
-const Coordinate& Joint::getCoordinate(unsigned idx) const
-{
-    auto& coordSet = get_CoordinateSet();
+const Coordinate& Joint::getCoordinate(unsigned idx) const {
+    const auto& coordSet = get_CoordinateSet();
 
-    OPENSIM_THROW_IF(coordSet.getSize() < 1, Exception,
-        "There are no Coordinates for Joint::getCoordinate() to return");
-    OPENSIM_THROW_IF(idx > coordSet.getSize()-1, Exception,
-        "The index passed to Joint::getCoordinate() is too large");
+    OPENSIM_THROW_IF(coordSet.getSize() == 0, 
+                     EmptyCoordinateSet);
+    OPENSIM_THROW_IF(idx >= coordSet.getSize(), 
+                     IndexOutOfRange,
+                     idx, 0, static_cast<unsigned>(coordSet.getSize() - 1));
 
     return coordSet[idx];
 }
