@@ -52,23 +52,33 @@ class OSIMSIMULATION_API BallJoint : public Joint {
     OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
     /** Specify the Coordinates of the BallJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{constructCoordinate(Coordinate::MotionType::Rotational)};
+    CoordinateIndex ry{constructCoordinate(Coordinate::MotionType::Rotational)};
+    CoordinateIndex rz{constructCoordinate(Coordinate::MotionType::Rotational)};
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
 
+    using Joint::getCoordinate;
+
     /** Indices of Coordinates; can be used with getCoordinate() for
         convenience. */
-    enum class BallJointCoordIdx {Rotation1, Rotation2, Rotation3};
+    enum class Coord {
+        Rotation1, 
+        Rotation2, 
+        Rotation3
+    };
 
     /** Get the Coordinates associated with this Joint. */
-    const Coordinate& getCoordinate(BallJointCoordIdx idx) const {
-        if (idx==BallJointCoordIdx::Rotation1) { return Super::getCoordinate(rx); }
-        if (idx==BallJointCoordIdx::Rotation2) { return Super::getCoordinate(ry); }
-        if (idx==BallJointCoordIdx::Rotation3) { return Super::getCoordinate(rz); }
+    const Coordinate& getCoordinate(Coord idx) const {
+        if(idx == Coord::Rotation1)
+            return Super::getCoordinate(rx);
+        if(idx == Coord::Rotation2)
+            return Super::getCoordinate(ry);
+        if(idx == Coord::Rotation3)
+           return Super::getCoordinate(rz);
+
         OPENSIM_THROW(Exception, "Invalid Coordinate index");
     }
 
