@@ -65,8 +65,8 @@ public:
     /** Indices of Coordinates; can be used with getCoordinate() for
         convenience. */
     enum class Coord {
-        Rotation1, 
-        Rotation2, 
+        Rotation1,
+        Rotation2,
         Rotation3
     };
 
@@ -77,7 +77,7 @@ public:
         if(idx == Coord::Rotation2)
             return Super::getCoordinate(ry);
         if(idx == Coord::Rotation3)
-           return Super::getCoordinate(rz);
+            return Super::getCoordinate(rz);
 
         OPENSIM_THROW(Exception, "Invalid Coordinate index");
     }

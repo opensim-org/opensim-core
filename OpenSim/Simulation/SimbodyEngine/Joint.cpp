@@ -219,9 +219,9 @@ const Coordinate& Joint::getCoordinate() const {
 const Coordinate& Joint::getCoordinate(unsigned idx) const {
     const auto& coordSet = get_CoordinateSet();
 
-    OPENSIM_THROW_IF(coordSet.getSize() == 0, 
+    OPENSIM_THROW_IF(coordSet.getSize() == 0,
                      EmptyCoordinateSet);
-    OPENSIM_THROW_IF(idx >= coordSet.getSize(), 
+    OPENSIM_THROW_IF(idx >= coordSet.getSize(),
                      IndexOutOfRange,
                      idx, 0, static_cast<unsigned>(coordSet.getSize() - 1));
 
