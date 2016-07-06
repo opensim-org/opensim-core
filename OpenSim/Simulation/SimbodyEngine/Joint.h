@@ -573,6 +573,17 @@ inline int Joint::getNumMobilities(const SimTK::MobilizedBody::Free& mobod) cons
     return 6;
 }
 
+class EmptyCoordinateSet : public Exception {
+public:
+    EmptyCoordinateSet(const std::string& file,
+                       size_t line,
+                       const std::string& func) :
+        Exception(file, line, func) {
+        std::string mesg = "Coordinate set is empty.";
+
+        addMessage(mesg);
+    }
+};
 
 } // end of namespace OpenSim
 
