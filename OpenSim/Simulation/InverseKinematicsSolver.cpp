@@ -24,6 +24,7 @@
 #include "InverseKinematicsSolver.h"
 #include "CoordinateReference.h"
 #include "MarkersReference.h"
+#include "OrientationsReference.h"
 #include "Model/Model.h"
 #include "Model/MarkerSet.h"
 
@@ -38,10 +39,14 @@ namespace OpenSim {
  *
  * @param model to assemble
  */
-InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
+InverseKinematicsSolver::
+    InverseKinematicsSolver(const Model &model, 
+                            MarkersReference &markersReference,
                             SimTK::Array_<CoordinateReference> &coordinateReferences,
-                            double constraintWeight) : AssemblySolver(model, coordinateReferences, constraintWeight),
-                            _markersReference(markersReference) 
+                            double constraintWeight)
+        : AssemblySolver(model, coordinateReferences, constraintWeight),
+            _markersReference(markersReference),
+            _orientationsReference(*new OrientationsReference())
 {
     setAuthors("Ajay Seth");
 
@@ -206,29 +211,35 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     // Setup coordinates performed by the base class
     AssemblySolver::setupGoals(s);
 
+    setupMarkersGoal(s);
+
+    updateGoals(s);
+}
+
+void InverseKinematicsSolver::setupMarkersGoal(SimTK::State &s) {
     std::unique_ptr<SimTK::Markers> condOwner(new SimTK::Markers());
     _markerAssemblyCondition.reset(condOwner.get());
 
     // Setup markers goals
     // Get lists of all markers by names and corresponding weights from the MarkersReference
     const SimTK::Array_<SimTK::String> &markerNames = _markersReference.getNames();
-    SimTK::Array_<double> markerWeights;  
+    SimTK::Array_<double> markerWeights;
     _markersReference.getWeights(s, markerWeights);
     // get markers defined by the model 
     const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
     // get markers with specified tasks/weights
     const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
-    
+
     int index = -1;
     int wIndex = -1;
     SimTK::Transform X_BF;
     //Loop through all markers in the reference
-    for(unsigned int i=0; i < markerNames.size(); ++i){
+    for (unsigned int i = 0; i < markerNames.size(); ++i) {
         // Check if we have this marker in the model, else ignore it
         index = modelMarkerSet.getIndex(markerNames[i], index);
-        wIndex = mwSet.getIndex(markerNames[i],wIndex);
-        if((index >= 0) && (wIndex >=0)){
+        wIndex = mwSet.getIndex(markerNames[i], wIndex);
+        if ((index >= 0) && (wIndex >= 0)) {
             Marker &marker = modelMarkerSet[index];
             const SimTK::MobilizedBody& mobod =
                 marker.getParentFrame().getMobilizedBody();
@@ -236,7 +247,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
             X_BF = marker.getParentFrame().findTransformInBaseFrame();
             _markerAssemblyCondition->
                 addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
-                          markerWeights[i]);
+                    markerWeights[i]);
         }
     }
 
@@ -246,8 +257,50 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
     // and we can use an array of just the data for updating
     _markerAssemblyCondition->defineObservationOrder(markerNames);
+}
 
-    updateGoals(s);
+void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s) {
+    std::unique_ptr<SimTK::OrientationSensors> 
+        condOwner(new SimTK::OrientationSensors());
+    _orientationAssemblyCondition.reset(condOwner.get());
+
+    // Setup markers goals
+    // Get lists of all markers by names and corresponding weights from the MarkersReference
+    const SimTK::Array_<SimTK::String> &markerNames = _markersReference.getNames();
+    SimTK::Array_<double> markerWeights;
+    _markersReference.getWeights(s, markerWeights);
+    // get markers defined by the model 
+    const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
+
+    // get markers with specified tasks/weights
+    const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
+
+    int index = -1;
+    int wIndex = -1;
+    SimTK::Transform X_BF;
+    //Loop through all markers in the reference
+    for (unsigned int i = 0; i < markerNames.size(); ++i) {
+        // Check if we have this marker in the model, else ignore it
+        index = modelMarkerSet.getIndex(markerNames[i], index);
+        wIndex = mwSet.getIndex(markerNames[i], wIndex);
+        if ((index >= 0) && (wIndex >= 0)) {
+            Marker &marker = modelMarkerSet[index];
+            const SimTK::MobilizedBody& mobod =
+                marker.getParentFrame().getMobilizedBody();
+
+            X_BF = marker.getParentFrame().findTransformInBaseFrame();
+            _markerAssemblyCondition->
+                addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
+                    markerWeights[i]);
+        }
+    }
+
+    // Add marker goal to the ik objective and transfer ownership of the 
+    // goal (AssemblyCondition) to Assembler
+    updAssembler().adoptAssemblyGoal(condOwner.release());
+    // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
+    // and we can use an array of just the data for updating
+    _markerAssemblyCondition->defineObservationOrder(markerNames);
 }
 
 /* Internal method to update the time, reference values and/or their weights based
@@ -257,9 +310,13 @@ void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
     // update coordinates performed by the base class
     AssemblySolver::updateGoals(s);
 
-    // specify the (initial) observations to be matched
+    // specify the marker observations to be matched
     _markersReference.getValues(s, _markerValues);
     _markerAssemblyCondition->moveAllObservations(_markerValues);
+
+    // specify the orientation observations to be matched
+    //_orientationsReference.getValues(s, _orientationValues);
+    //_orientationAssemblyCondition->moveAllObservations(_orientationValues);
 }
 
 } // end of namespace OpenSim

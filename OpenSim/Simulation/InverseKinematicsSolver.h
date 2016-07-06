@@ -30,6 +30,7 @@ namespace OpenSim {
 
 class CoordinateReference;
 class MarkersReference;
+class OrientationsReference;
 
 //=============================================================================
 //=============================================================================
@@ -124,25 +125,41 @@ public:
     std::string getMarkerNameForIndex(int markerIndex) const;
 
 protected:
-    /** Internal method to convert the CoordinateReferences into goals of the 
-        assembly solver. Subclasses can override to include other goals  
-        such as point of interest matching (Marker tracking). This method is
-        automatically called by assemble. */
+    /** Override to include point of interest matching (Marker tracking)
+        as well ad Frame orientation (OSensor) tracking.
+        This method extends the set of goals used by the AssemblySolver. */
     void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state */
     void updateGoals(const SimTK::State &s) override;
 
 private:
+    /** Define and apply marker tracking goal to the assembly problem. */
+    void setupMarkersGoal(SimTK::State &s);
+
+    /** Define and apply Orientations of Frames to be tracked to the
+        assembly problem. */
+    void setupOrientationsGoal(SimTK::State &s);
+
     // The marker reference values and weightings
     MarkersReference &_markersReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
 
-    // Markers collectively form a single assembly condition for the SimTK::Assembler
-    // and the memory is managed by the Assembler
+    // Markers collectively form a single assembly condition for the 
+    // SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
+
+    // The orientation reference values and weightings
+    OrientationsReference &_orientationsReference;
+
+    // Private cache of the orientation values to be matched at a given state
+    SimTK::Array_<SimTK::Rotation> _orientationValues;
+
+    // OrientationSensors collectively form a single assembly condition for
+    // the SimTK::Assembler and the memory is managed by the Assembler
+    SimTK::ReferencePtr<SimTK::OrientationSensors> _orientationAssemblyCondition;
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver
