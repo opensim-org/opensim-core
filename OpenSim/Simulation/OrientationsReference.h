@@ -64,8 +64,8 @@ private:
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Vec3> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(OrientationsReference, Reference_<SimTK::Vec3>);
+class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotation> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(OrientationsReference, Reference_<SimTK::Rotation>);
 //=============================================================================
 // Properties
 //=============================================================================
@@ -89,7 +89,8 @@ public:
     //--------------------------------------------------------------------------
     OrientationsReference();
 
-    /** Convenience load Orientations from a file */
+    /** Convenience load Orientations data from a file in the form of XYZ 
+        body-fixed Euler angles. Units default to Radians.*/
     OrientationsReference(const std::string& orientationFileName,
                      Units modelUnits=Units(Units::Radians));
     /** Form a Reference from TimeSeriesData of Euler angles (Vec3) and corres-
@@ -97,7 +98,7 @@ public:
     ship of the pointer to the orientationData. The orientation weights are used
     to initialize the weightings of the Orientations provided by the Reference.
     Orientation weights are associated to Orientations by name.*/
-    OrientationsReference(TimeSeriesTableVec3* orientationData,
+    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>* orientationData,
         const Set<OrientationWeight>* orientationWeightSet=nullptr);
 
     virtual ~OrientationsReference() {}
@@ -117,7 +118,7 @@ public:
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
     void getValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &values) const override;
+        SimTK::Array_<SimTK::Rotation> &values) const override;
     /** get the speed value of the OrientationsReference */
     virtual void getSpeedValues(const SimTK::State &s,
         SimTK::Array_<SimTK::Vec3> &speedValues) const;
@@ -133,7 +134,8 @@ public:
     // Convenience Access
     //--------------------------------------------------------------------------
     double getSamplingFrequency() const;
-    Set<OrientationWeight> &updOrientationWeightSet() {return upd_orientation_weights(); }
+    Set<OrientationWeight> &updOrientationWeightSet()
+        { return upd_orientation_weights(); }
     /** %Set the orientation weights from a set of OrientationWeights, which is
     const and a copy of the Set is used internally. Therefore, subsequent changes
     to the Set of OrientationWeights will have no effect on the orientation weights
@@ -144,11 +146,12 @@ public:
 
 private:
     void constructProperties();
-    void populateFromOrientationData(const TimeSeriesTableVec3& orientationData);
+    void populateFromOrientationData(
+        const TimeSeriesTable_<SimTK::Rotation>& orientationData);
 
 private:
     // Use a specialized data structure for holding the orientation data
-    TimeSeriesTableVec3 _orientationData;
+    TimeSeriesTable_<SimTK::Rotation> _orientationData;
     // orientation names inside the orientation data
     SimTK::Array_<std::string> _orientationNames;
     // corresponding list of weights guaranteed to be in the same order as names above

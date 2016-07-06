@@ -30,7 +30,7 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-OrientationsReference::OrientationsReference() : Reference_<SimTK::Vec3>()
+OrientationsReference::OrientationsReference() : Reference_<SimTK::Rotation>()
 {
     constructProperties();
     setAuthors("Ajay Seth");
@@ -43,11 +43,14 @@ OrientationsReference::OrientationsReference(const std::string& orientationFile,
 }
 
 
-OrientationsReference::OrientationsReference(TimeSeriesTableVec3* orientationData,
-    const Set<OrientationWeight>* orientationWeightSet) : OrientationsReference()
+OrientationsReference::OrientationsReference(
+    const TimeSeriesTable_<Rotation>* orientationData,
+    const Set<OrientationWeight>* orientationWeightSet) 
+        : OrientationsReference()
 {
     _orientationData = *orientationData;
-    if (orientationWeightSet!=nullptr) upd_orientation_weights()= *orientationWeightSet;
+    if (orientationWeightSet!=nullptr)
+        upd_orientation_weights()= *orientationWeightSet;
     populateFromOrientationData(*orientationData);
 }
 
@@ -57,10 +60,27 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
 {
     upd_orientation_file() = orientationFile;
 
-    _orientationData = TRCFileAdapter::read(get_orientation_file());
+    auto xyzEulerData = TRCFileAdapter::read(get_orientation_file());
 
-    // Convert the orientation data into the model's units
-    //_orientationData.convertToUnits(modelUnits);
+    _orientationData.updTableMetaData() = xyzEulerData.getTableMetaData();
+    _orientationData.setDependentsMetaData(xyzEulerData.getDependentsMetaData());
+
+    const auto& times = xyzEulerData.getIndependentColumn();
+
+    size_t nt = xyzEulerData.getNumRows();
+    size_t nc = xyzEulerData.getNumColumns();
+
+    RowVector_<Rotation> row(nc);
+
+    for (size_t i = 0; i < nt; ++i) {
+        const auto& xyzRow = xyzEulerData.getRow(i);
+        for (size_t j = 0; j < nc; ++j) {
+            const Vec3& xyzO = xyzRow[j];
+            row[j] = Rotation(BodyOrSpaceType::BodyRotationSequence,
+                xyzO[0], XAxis, xyzO[1], YAxis, xyzO[2], ZAxis);
+        }
+        _orientationData.appendRow(times[i], row);
+    }
 
     populateFromOrientationData(_orientationData);
 }
@@ -68,7 +88,7 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
 
 /** A convenience method yo populate OrientationsReference from OrientationData **/
 void OrientationsReference::populateFromOrientationData(
-    const TimeSeriesTableVec3& orientationData)
+    const TimeSeriesTable_<Rotation>& orientationData)
 {
     const std::vector<std::string> &tempNames = orientationData.getColumnLabels();
     size_t no = tempNames.size();
@@ -129,12 +149,13 @@ const SimTK::Array_<std::string>& OrientationsReference::getNames() const
 }
 
 /** get the values of the OrientationsReference */
-void  OrientationsReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &values) const
+void  OrientationsReference::getValues(const SimTK::State &s,
+    SimTK::Array_<Rotation> &values) const
 {
     double time =  s.getTime();
 
     // get values for time
-    SimTK::RowVector_<Vec3> row = _orientationData.getRow(time);
+    SimTK::RowVector_<Rotation> row = _orientationData.getRow(time);
 
     int n = row.size();
     values.resize(n);
