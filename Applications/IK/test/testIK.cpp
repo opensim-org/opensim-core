@@ -37,11 +37,14 @@ using namespace OpenSim;
 using namespace std;
 
 void testInverseKinematicsSolverWithOrientations();
+void testInverseKinematicsSolverWithEulerAnglesFromFile();
 
 int main()
 {
     try {
         testInverseKinematicsSolverWithOrientations();
+
+        testInverseKinematicsSolverWithEulerAnglesFromFile();
         
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
@@ -191,3 +194,32 @@ void testInverseKinematicsSolverWithOrientations()
     }
 }
 
+void testInverseKinematicsSolverWithEulerAnglesFromFile()
+{
+    Model model("subject01_simbody.osim");
+    // visualize for debugging
+    model.setUseVisualizer(true);
+
+    SimTK::State& s0 = model.initSystem();
+
+    OrientationsReference oRefs("subject1_walk_euler_angles.trc");
+
+    SimTK::Array_<CoordinateReference> coordinateReferences;
+
+    // create the solver given the input data
+    InverseKinematicsSolver ikSolver(model, nullptr, &oRefs,
+        coordinateReferences);
+    ikSolver.setAccuracy(1e-4);
+
+    auto& times = oRefs.getTimes();
+
+    s0.updTime() = times[0];
+    ikSolver.assemble(s0);
+    model.getVisualizer().show(s0);
+
+    for (auto time : times) {
+        s0.updTime() = time;
+        ikSolver.track(s0);
+        model.getVisualizer().show(s0);
+    }
+}
