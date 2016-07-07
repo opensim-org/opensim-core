@@ -213,6 +213,8 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 
     setupMarkersGoal(s);
 
+    setupOrientationsGoal(s);
+
     updateGoals(s);
 }
 
@@ -259,48 +261,47 @@ void InverseKinematicsSolver::setupMarkersGoal(SimTK::State &s) {
     _markerAssemblyCondition->defineObservationOrder(markerNames);
 }
 
-void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s) {
+void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s)
+{
     std::unique_ptr<SimTK::OrientationSensors> 
         condOwner(new SimTK::OrientationSensors());
     _orientationAssemblyCondition.reset(condOwner.get());
 
-    // Setup markers goals
-    // Get lists of all markers by names and corresponding weights from the MarkersReference
-    const SimTK::Array_<SimTK::String> &markerNames = _markersReference.getNames();
-    SimTK::Array_<double> markerWeights;
-    _markersReference.getWeights(s, markerWeights);
-    // get markers defined by the model 
-    const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
+    // Setup orientations tracking goal
+    // Get lists of orientations by name and corresponding weights 
+    const SimTK::Array_<SimTK::String> &osensorNames =
+        _orientationsReference.getNames();
 
-    // get markers with specified tasks/weights
-    const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
+    // If no orientations in the reference to be trackes, then no goal
+    // to add and we can stop.
+    if (osensorNames.size() < 1) {
+        return;
+    }
 
-    int index = -1;
-    int wIndex = -1;
-    SimTK::Transform X_BF;
-    //Loop through all markers in the reference
-    for (unsigned int i = 0; i < markerNames.size(); ++i) {
-        // Check if we have this marker in the model, else ignore it
-        index = modelMarkerSet.getIndex(markerNames[i], index);
-        wIndex = mwSet.getIndex(markerNames[i], wIndex);
-        if ((index >= 0) && (wIndex >= 0)) {
-            Marker &marker = modelMarkerSet[index];
-            const SimTK::MobilizedBody& mobod =
-                marker.getParentFrame().getMobilizedBody();
+    SimTK::Array_<double> orientationWeights;
+    _orientationsReference.getWeights(s, orientationWeights);
+    // get orientation sensors defined by the model 
+    const auto onFrames = getModel().getComponentList<PhysicalFrame>();
 
-            X_BF = marker.getParentFrame().findTransformInBaseFrame();
-            _markerAssemblyCondition->
-                addMarker(marker.getName(), mobod, X_BF*marker.get_location(),
-                    markerWeights[i]);
+    for (const auto& modelFrame : onFrames) {
+        const std::string& modelFrameName = modelFrame.getName();
+        auto found = std::find(osensorNames.begin(), osensorNames.end(), modelFrameName);
+        if (found) {
+            int index = (int)std::distance(osensorNames.begin(), found);
+            _orientationAssemblyCondition->addOSensor(modelFrameName,
+                modelFrame.getMobilizedBodyIndex(),
+                modelFrame.findTransformInBaseFrame().R(),
+                orientationWeights[index]);
         }
     }
 
-    // Add marker goal to the ik objective and transfer ownership of the 
+    // Add orientations goal to the ik objective and transfer ownership of the 
     // goal (AssemblyCondition) to Assembler
     updAssembler().adoptAssemblyGoal(condOwner.release());
-    // lock-in the order that the observations (markers) are in and this cannot change from frame to frame
-    // and we can use an array of just the data for updating
-    _markerAssemblyCondition->defineObservationOrder(markerNames);
+    // lock-in the order that the observations (orientations) are in and this
+    // cannot change from frame to frame and we can use an array of just the
+    // data for updating
+    _markerAssemblyCondition->defineObservationOrder(osensorNames);
 }
 
 /* Internal method to update the time, reference values and/or their weights based
