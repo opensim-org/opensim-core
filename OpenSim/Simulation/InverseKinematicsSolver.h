@@ -74,9 +74,16 @@ public:
     //--------------------------------------------------------------------------
     virtual ~InverseKinematicsSolver() {}
 
-    InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
-                            SimTK::Array_<CoordinateReference> &coordinateReferences,
-                            double constraintWeight = SimTK::Infinity);
+    InverseKinematicsSolver(const Model &model, 
+                        const MarkersReference &markersReference,
+                        SimTK::Array_<CoordinateReference> &coordinateReferences,
+                        double constraintWeight = SimTK::Infinity);
+
+    InverseKinematicsSolver(const Model &model,
+                        const MarkersReference *markersReference,
+                        const OrientationsReference *orientationsReference,
+                        SimTK::Array_<CoordinateReference> &coordinateReferences,
+                        double constraintWeight = SimTK::Infinity);
     
     /** Assemble a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) starting from an initial state that  
@@ -142,7 +149,7 @@ private:
     void setupOrientationsGoal(SimTK::State &s);
 
     // The marker reference values and weightings
-    MarkersReference &_markersReference;
+    SimTK::ReferencePtr<const MarkersReference> _markersReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
@@ -152,7 +159,7 @@ private:
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
 
     // The orientation reference values and weightings
-    OrientationsReference &_orientationsReference;
+    SimTK::ReferencePtr<const OrientationsReference> _orientationsReference;
 
     // Private cache of the orientation values to be matched at a given state
     SimTK::Array_<SimTK::Rotation> _orientationValues;
