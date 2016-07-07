@@ -25,17 +25,22 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/OrientationsReference.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
+void testInverseKinematicsSolverWithOrientations();
+
 int main()
 {
     try {
+        testInverseKinematicsSolverWithOrientations();
 
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
@@ -62,4 +67,70 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
+}
+
+void testInverseKinematicsSolverWithOrientations()
+{
+    Model model("subject01_simbody.osim");
+    // visualize for debugging
+    model.setUseVisualizer(true);
+    
+    SimTK::State& s0 = model.initSystem();
+
+    auto anglesTable = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+
+    size_t nt = anglesTable.getNumRows();
+    const auto& coordNames = anglesTable.getColumnLabels();
+
+    // get the coordinates of the model
+    const auto& coordinates = model.getComponentList<Coordinate>();
+
+    // get bodies as frames that we want to "sense" rotations
+    const auto& bodies = model.getComponentList<Body>();
+
+    std::vector<int> mapDataToModel;
+
+    for (auto& coord : coordinates) {
+        int index = -1;
+        auto found = std::find(coordNames.begin(), coordNames.end(), coord.getName());
+        if(found != coordNames.end())
+            index = (int)std::distance(coordNames.begin(), found);
+        mapDataToModel.push_back(index);
+    }
+
+    TimeSeriesTable_<SimTK::Rotation> orientationsData;
+    std::vector<std::string> bodyLabels;
+    for (auto& body : bodies) {
+        bodyLabels.push_back(body.getName());
+    }
+    orientationsData.setColumnLabels(bodyLabels);
+
+    cout << "Read in std_subject01_walk1_ik.mot with " << nt << " rows." << endl;
+    cout << "Num coordinates in file: " << coordNames.size() << endl;
+    cout << "Num of matched coordinates in model: " << mapDataToModel.size() << endl;
+
+    SimTK::RowVector_<SimTK::Rotation> row(bodyLabels.size());
+
+    auto times = anglesTable.getIndependentColumn();
+    for (size_t i = 0; i < nt; ++i) {
+        const auto& values = anglesTable.getRowAtIndex(i);
+        int cnt = 0;
+        for (auto& coord : coordinates) {
+            if (mapDataToModel[cnt] >= 0) {
+                if(coord.getMotionType() == Coordinate::MotionType::Rotational)
+                    coord.setValue(s0, 
+                        SimTK::convertDegreesToRadians(values(mapDataToModel[cnt++])));
+                else
+                    coord.setValue(s0, values(mapDataToModel[cnt++]));
+            }
+        }
+        model.realizePosition(s0);
+        model.getVisualizer().show(s0);
+
+        size_t nb = 0;
+        for (auto& body : bodies) {
+            row[nb++] = body.getTransformInGround(s0).R();
+        }
+        orientationsData.appendRow(times[i], row);
+    }
 }
