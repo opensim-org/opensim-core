@@ -1,0 +1,1370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" assignedExecutableTargets="true" buildAllGenerated="true">
+    <generated>
+      <config projectName="OpenSim" targetName="testDataTable" />
+      <config projectName="OpenSim" targetName="testTRCFileAdapter" />
+      <config projectName="OpenSim" targetName="testFrames" />
+      <config projectName="OpenSim" targetName="ContinuousMemCheck" />
+      <config projectName="OpenSim" targetName="NightlyStart" />
+      <config projectName="OpenSim" targetName="ContinuousTest" />
+      <config projectName="OpenSim" targetName="cmc" />
+      <config projectName="OpenSim" targetName="testProbes" />
+      <config projectName="OpenSim" targetName="testREADME" />
+      <config projectName="OpenSim" targetName="futureOrientationInverseKinematics" />
+      <config projectName="OpenSim" targetName="ContinuousSubmit" />
+      <config projectName="OpenSim" targetName="testSerializableMuscleCurves" />
+      <config projectName="OpenSim" targetName="testStorage" />
+      <config projectName="OpenSim" targetName="ExperimentalBuild" />
+      <config projectName="OpenSim" targetName="example2DataTable" />
+      <config projectName="OpenSim" targetName="testContactGeometry" />
+      <config projectName="OpenSim" targetName="exampleCustomActuator" />
+      <config projectName="OpenSim" targetName="ExperimentalConfigure" />
+      <config projectName="OpenSim" targetName="osimSimulation" />
+      <config projectName="OpenSim" targetName="ExperimentalCoverage" />
+      <config projectName="OpenSim" targetName="testAssemblySolver" />
+      <config projectName="OpenSim" targetName="testSmoothSegmentedFunctionFactory" />
+      <config projectName="OpenSim" targetName="exampleMain" />
+      <config projectName="OpenSim" targetName="futureOutputVectorsAndChannels" />
+      <config projectName="OpenSim" targetName="testRootSolver" />
+      <config projectName="OpenSim" targetName="testInitState" />
+      <config projectName="OpenSim" targetName="testOptimizationExample" />
+      <config projectName="OpenSim" targetName="testCMCWithControlConstraintsGait2354" />
+      <config projectName="OpenSim" targetName="forward" />
+      <config projectName="OpenSim" targetName="testInducedAccelerations" />
+      <config projectName="OpenSim" targetName="exampleController" />
+      <config projectName="OpenSim" targetName="testAddComponents" />
+      <config projectName="OpenSim" targetName="exampleOptimizationSimple" />
+      <config projectName="OpenSim" targetName="testRRA" />
+      <config projectName="OpenSim" targetName="futureMuscleMetabolicsResponse" />
+      <config projectName="OpenSim" targetName="testExampleMain" />
+      <config projectName="OpenSim" targetName="ImuStreaming" />
+      <config projectName="OpenSim" targetName="RUN_TESTS_PARALLEL" />
+      <config projectName="OpenSim" targetName="versionUpdate" />
+      <config projectName="OpenSim" targetName="ContinuousCoverage" />
+      <config projectName="OpenSim" targetName="NightlyTest" />
+      <config projectName="OpenSim" targetName="testNCSpline" />
+      <config projectName="OpenSim" targetName="testComponents" />
+      <config projectName="OpenSim" targetName="testIterators" />
+      <config projectName="OpenSim" targetName="testMuscles" />
+      <config projectName="OpenSim" targetName="testAnalyzeTutorialOne" />
+      <config projectName="OpenSim" targetName="testLepton" />
+      <config projectName="OpenSim" targetName="testMarkerData" />
+      <config projectName="OpenSim" targetName="testForward" />
+      <config projectName="OpenSim" targetName="doxygen" />
+      <config projectName="OpenSim" targetName="testConstraints" />
+      <config projectName="OpenSim" targetName="ExperimentalUpdate" />
+      <config projectName="OpenSim" targetName="testMomentArms" />
+      <config projectName="OpenSim" targetName="testJointReactions" />
+      <config projectName="OpenSim" targetName="id" />
+      <config projectName="OpenSim" targetName="testStatesTrajectory" />
+      <config projectName="OpenSim" targetName="ExperimentalSubmit" />
+      <config projectName="OpenSim" targetName="ik" />
+      <config projectName="OpenSim" targetName="ExperimentalStart" />
+      <config projectName="OpenSim" targetName="testWrapping" />
+      <config projectName="OpenSim" targetName="NightlyCoverage" />
+      <config projectName="OpenSim" targetName="rra" />
+      <config projectName="OpenSim" targetName="testCustomActuatorExample" />
+      <config projectName="OpenSim" targetName="exampleMuscle" />
+      <config projectName="OpenSim" targetName="osimActuators" />
+      <config projectName="OpenSim" targetName="testCMCEMGDrivenArm" />
+      <config projectName="OpenSim" targetName="checkEnvironment" />
+      <config projectName="OpenSim" targetName="testSTOFileAdapter" />
+      <config projectName="OpenSim" targetName="testActuators" />
+      <config projectName="OpenSim" targetName="testCMCSingleRigidTendonMuscle" />
+      <config projectName="OpenSim" targetName="testPrescribedForce" />
+      <config projectName="OpenSim" targetName="exampleExpressionReporterPlugin" />
+      <config projectName="OpenSim" targetName="NightlyMemCheck" />
+      <config projectName="OpenSim" targetName="testComponentInterface" />
+      <config projectName="OpenSim" targetName="osimAnalyses" />
+      <config projectName="OpenSim" targetName="testModelCopy" />
+      <config projectName="OpenSim" targetName="futureStatesTrajectoryUsage" />
+      <config projectName="OpenSim" targetName="scale" />
+      <config projectName="OpenSim" targetName="testCMCTwoMusclesOnBlock" />
+      <config projectName="OpenSim" targetName="osimTools" />
+      <config projectName="OpenSim" targetName="analyze" />
+      <config projectName="OpenSim" targetName="testMuscleFirstOrderActivationDynamicModel" />
+      <config projectName="OpenSim" targetName="osimLepton" />
+      <config projectName="OpenSim" targetName="NightlyConfigure" />
+      <config projectName="OpenSim" targetName="ExperimentalMemCheck" />
+      <config projectName="OpenSim" targetName="visualizeModel" />
+      <config projectName="OpenSim" targetName="ContinuousStart" />
+      <config projectName="OpenSim" targetName="ContinuousBuild" />
+      <config projectName="OpenSim" targetName="ContinuousUpdate" />
+      <config projectName="OpenSim" targetName="NightlyMemoryCheck" />
+      <config projectName="OpenSim" targetName="testMuscleMetabolicsProbes" />
+      <config projectName="OpenSim" targetName="testIK" />
+      <config projectName="OpenSim" targetName="testStaticOptimization" />
+      <config projectName="OpenSim" targetName="testControllers" />
+      <config projectName="OpenSim" targetName="testID" />
+      <config projectName="OpenSim" targetName="testCMCGait10dof18musc" />
+      <config projectName="OpenSim" targetName="exampleHopperDevice" />
+      <config projectName="OpenSim" targetName="osimCommon" />
+      <config projectName="OpenSim" targetName="ExperimentalTest" />
+      <config projectName="OpenSim" targetName="testControllerExample" />
+      <config projectName="OpenSim" targetName="testSimpleOptimizationExample" />
+      <config projectName="OpenSim" targetName="testSerializeOpenSimObjects" />
+      <config projectName="OpenSim" targetName="testExternalLoads" />
+      <config projectName="OpenSim" targetName="testGCVSpline" />
+      <config projectName="OpenSim" targetName="testScale" />
+      <config projectName="OpenSim" targetName="exampleOptimization" />
+      <config projectName="OpenSim" targetName="exampleHopperDeviceAnswers" />
+      <config projectName="OpenSim" targetName="NightlyUpdate" />
+      <config projectName="OpenSim" targetName="ContinuousConfigure" />
+      <config projectName="OpenSim" targetName="testVisualization" />
+      <config projectName="OpenSim" targetName="testFunctionAdapter" />
+      <config projectName="OpenSim" targetName="testForces" />
+      <config projectName="OpenSim" targetName="testCMCArm26" />
+      <config projectName="OpenSim" targetName="Experimental" />
+      <config projectName="OpenSim" targetName="futureIKListOutputs" />
+      <config projectName="OpenSim" targetName="testCMCSingleMuscle" />
+      <config projectName="OpenSim" targetName="testSerialization" />
+      <config projectName="OpenSim" targetName="testMuscleFixedWidthPennationModel" />
+      <config projectName="OpenSim" targetName="NightlySubmit" />
+      <config projectName="OpenSim" targetName="Nightly" />
+      <config projectName="OpenSim" targetName="testCMCWithControlConstraintsRunningModel" />
+      <config projectName="OpenSim" targetName="futureTaskSpace" />
+      <config projectName="OpenSim" targetName="testMuscleExample" />
+      <config projectName="OpenSim" targetName="Continuous" />
+      <config projectName="OpenSim" targetName="testJoints" />
+      <config projectName="OpenSim" targetName="NightlyBuild" />
+      <config projectName="OpenSim" targetName="exampleCoupledBushingForcePlugin" />
+      <config projectName="OpenSim" targetName="testPoints" />
+      <config projectName="OpenSim" targetName="example1DataTable" />
+    </generated>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="false" GENERATION_PASS_SYSTEM_ENVIRONMENT="true">
+    <ADDITIONAL_GENERATION_ENVIRONMENT>
+      <envs />
+    </ADDITIONAL_GENERATION_ENVIRONMENT>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8197daf1-ef01-4301-bcf1-90ae19dc4eca" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" afterPath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" afterPath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" />
+    </list>
+    <ignored path="opensim-core-source.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="opensim-core-source" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5364">
+              <caret line="298" column="0" selection-start-line="298" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VandenBogert2011Muscle.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="364">
+              <caret line="122" column="32" selection-start-line="122" selection-start-column="32" selection-end-line="122" selection-end-column="32" />
+              <folding>
+                <element signature="e#338#385#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/vandenBogert2016Muscle.h" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/Millard2012AccelerationMuscle.h" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.h" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.cpp" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-1" />
+    <option name="y" value="26" />
+    <option name="width" value="1922" />
+    <option name="height" value="1055" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="opensim-core-source" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="opensim-core-source" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="opensim-core-source" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.cpp" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.appearance" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/OpenSim/Actuators" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.osimActuators">
+    <configuration default="true" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="Continuous" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run-script" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="opensim-core-source" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="testToRun" value="" />
+      <option name="keywords" value="" />
+      <option name="params" value="" />
+      <option name="USE_PARAM" value="false" />
+      <option name="USE_KEYWORD" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Continuous" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="Continuous" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousBuild">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousConfigure">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousCoverage">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousMemCheck">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousStart">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousSubmit">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousTest">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ContinuousUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ContinuousUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ContinuousUpdate">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Experimental" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="Experimental" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalBuild">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalConfigure">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalCoverage">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalMemCheck">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalStart">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalSubmit">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalTest">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ExperimentalUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ExperimentalUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ExperimentalUpdate">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Nightly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="Nightly" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyBuild">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyConfigure">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyCoverage">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyMemCheck">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyMemoryCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyMemoryCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyMemoryCheck">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyStart">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlySubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlySubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlySubmit">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyTest">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="NightlyUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="NightlyUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="NightlyUpdate">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="RUN_TESTS_PARALLEL" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="RUN_TESTS_PARALLEL" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="analyze" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="analyze" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="analyze">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testAnalyzeTutorialOne" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testAnalyzeTutorialOne" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testAnalyzeTutorialOne">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testInducedAccelerations" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testInducedAccelerations" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testInducedAccelerations">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testJointReactions" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testJointReactions" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testJointReactions">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testStaticOptimization" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testStaticOptimization" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testStaticOptimization">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="cmc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="cmc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="cmc">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCArm26" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCArm26" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCArm26">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCEMGDrivenArm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCEMGDrivenArm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCEMGDrivenArm">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCGait10dof18musc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCGait10dof18musc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCGait10dof18musc">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCSingleMuscle" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCSingleMuscle" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCSingleMuscle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCSingleRigidTendonMuscle" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCSingleRigidTendonMuscle" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCSingleRigidTendonMuscle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCTwoMusclesOnBlock" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCTwoMusclesOnBlock" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCTwoMusclesOnBlock">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCWithControlConstraintsGait2354" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCWithControlConstraintsGait2354" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCWithControlConstraintsGait2354">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCMCWithControlConstraintsRunningModel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCMCWithControlConstraintsRunningModel" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCMCWithControlConstraintsRunningModel">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="forward" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="forward" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="forward">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testForward" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testForward" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testForward">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="id" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="id" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="id">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testID" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testID" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testID">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ik" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ik" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ik">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testIK" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testIK" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testIK">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="rra" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="rra" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="rra">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testRRA" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testRRA" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testRRA">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="scale" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="scale" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="scale">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testScale" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testScale" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testScale">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="versionUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="versionUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="versionUpdate">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="doxygen" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="doxygen" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimActuators" type="CMakeRunConfiguration" factoryName="Application" WORKING_DIR="" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimActuators" CONFIG_NAME="RelWithDebInfo">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testActuators" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testActuators" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testActuators">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMuscleFirstOrderActivationDynamicModel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMuscleFirstOrderActivationDynamicModel" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMuscleFirstOrderActivationDynamicModel">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMuscleFixedWidthPennationModel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMuscleFixedWidthPennationModel" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMuscleFixedWidthPennationModel">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMuscles" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMuscles" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMuscles">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSerializableMuscleCurves" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSerializableMuscleCurves" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSerializableMuscleCurves">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimAnalyses" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimAnalyses" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimCommon" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimCommon" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testComponentInterface" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testComponentInterface" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testComponentInterface">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testDataTable" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testDataTable" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testDataTable">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testFunctionAdapter" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testFunctionAdapter" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testFunctionAdapter">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testGCVSpline" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testGCVSpline" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testGCVSpline">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMarkerData" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMarkerData" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMarkerData">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testNCSpline" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testNCSpline" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testNCSpline">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testRootSolver" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testRootSolver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testRootSolver">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSerialization" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSerialization" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSerialization">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSmoothSegmentedFunctionFactory" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSmoothSegmentedFunctionFactory" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSmoothSegmentedFunctionFactory">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSTOFileAdapter" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSTOFileAdapter" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSTOFileAdapter">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testStorage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testStorage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testStorage">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testTRCFileAdapter" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testTRCFileAdapter" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testTRCFileAdapter">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="example1DataTable" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="example1DataTable" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="example1DataTable">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="example2DataTable" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="example2DataTable" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="example2DataTable">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleExpressionReporterPlugin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleExpressionReporterPlugin" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureIKListOutputs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureIKListOutputs" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureIKListOutputs">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureMuscleMetabolicsResponse" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureMuscleMetabolicsResponse" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureMuscleMetabolicsResponse">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureOrientationInverseKinematics" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureOrientationInverseKinematics" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureOrientationInverseKinematics">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureOutputVectorsAndChannels" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureOutputVectorsAndChannels" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureOutputVectorsAndChannels">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureStatesTrajectoryUsage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureStatesTrajectoryUsage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureStatesTrajectoryUsage">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="ImuStreaming" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="ImuStreaming" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="ImuStreaming">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleHopperDevice" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleHopperDevice" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleHopperDevice">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleHopperDeviceAnswers" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleHopperDeviceAnswers" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleHopperDeviceAnswers">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="futureTaskSpace" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="futureTaskSpace" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="futureTaskSpace">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimSimulation" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimSimulation" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testConstraints" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testConstraints" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testConstraints">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testJoints" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testJoints" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testJoints">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testAssemblySolver" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testAssemblySolver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testAssemblySolver">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testContactGeometry" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testContactGeometry" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testContactGeometry">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testForces" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testForces" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testForces">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testFrames" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testFrames" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testFrames">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testInitState" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testInitState" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testInitState">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMomentArms" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMomentArms" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMomentArms">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMuscleMetabolicsProbes" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMuscleMetabolicsProbes" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMuscleMetabolicsProbes">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testPoints" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testPoints" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testPoints">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testPrescribedForce" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testPrescribedForce" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testPrescribedForce">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testProbes" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testProbes" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testProbes">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testStatesTrajectory" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testStatesTrajectory" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testStatesTrajectory">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testAddComponents" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testAddComponents" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testAddComponents">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testComponents" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testComponents" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testComponents">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleController" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleController" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleController">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testControllerExample" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testControllerExample" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testControllerExample">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleCoupledBushingForcePlugin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleCoupledBushingForcePlugin" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleCustomActuator" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleCustomActuator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleCustomActuator">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testCustomActuatorExample" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testCustomActuatorExample" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testCustomActuatorExample">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="checkEnvironment" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="checkEnvironment" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="checkEnvironment">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleMain" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleMain" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleMain">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testExampleMain" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testExampleMain" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testExampleMain">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleMuscle" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleMuscle" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleMuscle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testMuscleExample" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testMuscleExample" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testMuscleExample">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleOptimization" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleOptimization" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleOptimization">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testOptimizationExample" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testOptimizationExample" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testOptimizationExample">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testREADME" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testREADME" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testREADME">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="exampleOptimizationSimple" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="exampleOptimizationSimple" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="exampleOptimizationSimple">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSimpleOptimizationExample" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSimpleOptimizationExample" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSimpleOptimizationExample">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testIterators" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testIterators" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testIterators">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="visualizeModel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="visualizeModel" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="visualizeModel">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testWrapping" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testWrapping" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testWrapping">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimTools" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimTools" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testControllers" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testControllers" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testControllers">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testExternalLoads" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testExternalLoads" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testExternalLoads">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testModelCopy" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testModelCopy" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testModelCopy">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testSerializeOpenSimObjects" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testSerializeOpenSimObjects" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testSerializeOpenSimObjects">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testVisualization" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testVisualization" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testVisualization">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="osimLepton" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="osimLepton" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="testLepton" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenSim" TARGET_NAME="testLepton" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenSim" RUN_TARGET_NAME="testLepton">
+      <envs />
+      <method />
+    </configuration>
+    <list size="130">
+      <item index="0" class="java.lang.String" itemvalue="Application.Build All" />
+      <item index="1" class="java.lang.String" itemvalue="Application.Continuous" />
+      <item index="2" class="java.lang.String" itemvalue="Application.ContinuousBuild" />
+      <item index="3" class="java.lang.String" itemvalue="Application.ContinuousConfigure" />
+      <item index="4" class="java.lang.String" itemvalue="Application.ContinuousCoverage" />
+      <item index="5" class="java.lang.String" itemvalue="Application.ContinuousMemCheck" />
+      <item index="6" class="java.lang.String" itemvalue="Application.ContinuousStart" />
+      <item index="7" class="java.lang.String" itemvalue="Application.ContinuousSubmit" />
+      <item index="8" class="java.lang.String" itemvalue="Application.ContinuousTest" />
+      <item index="9" class="java.lang.String" itemvalue="Application.ContinuousUpdate" />
+      <item index="10" class="java.lang.String" itemvalue="Application.Experimental" />
+      <item index="11" class="java.lang.String" itemvalue="Application.ExperimentalBuild" />
+      <item index="12" class="java.lang.String" itemvalue="Application.ExperimentalConfigure" />
+      <item index="13" class="java.lang.String" itemvalue="Application.ExperimentalCoverage" />
+      <item index="14" class="java.lang.String" itemvalue="Application.ExperimentalMemCheck" />
+      <item index="15" class="java.lang.String" itemvalue="Application.ExperimentalStart" />
+      <item index="16" class="java.lang.String" itemvalue="Application.ExperimentalSubmit" />
+      <item index="17" class="java.lang.String" itemvalue="Application.ExperimentalTest" />
+      <item index="18" class="java.lang.String" itemvalue="Application.ExperimentalUpdate" />
+      <item index="19" class="java.lang.String" itemvalue="Application.Nightly" />
+      <item index="20" class="java.lang.String" itemvalue="Application.NightlyBuild" />
+      <item index="21" class="java.lang.String" itemvalue="Application.NightlyConfigure" />
+      <item index="22" class="java.lang.String" itemvalue="Application.NightlyCoverage" />
+      <item index="23" class="java.lang.String" itemvalue="Application.NightlyMemCheck" />
+      <item index="24" class="java.lang.String" itemvalue="Application.NightlyMemoryCheck" />
+      <item index="25" class="java.lang.String" itemvalue="Application.NightlyStart" />
+      <item index="26" class="java.lang.String" itemvalue="Application.NightlySubmit" />
+      <item index="27" class="java.lang.String" itemvalue="Application.NightlyTest" />
+      <item index="28" class="java.lang.String" itemvalue="Application.NightlyUpdate" />
+      <item index="29" class="java.lang.String" itemvalue="Application.RUN_TESTS_PARALLEL" />
+      <item index="30" class="java.lang.String" itemvalue="Application.analyze" />
+      <item index="31" class="java.lang.String" itemvalue="Application.testAnalyzeTutorialOne" />
+      <item index="32" class="java.lang.String" itemvalue="Application.testInducedAccelerations" />
+      <item index="33" class="java.lang.String" itemvalue="Application.testJointReactions" />
+      <item index="34" class="java.lang.String" itemvalue="Application.testStaticOptimization" />
+      <item index="35" class="java.lang.String" itemvalue="Application.cmc" />
+      <item index="36" class="java.lang.String" itemvalue="Application.testCMCArm26" />
+      <item index="37" class="java.lang.String" itemvalue="Application.testCMCEMGDrivenArm" />
+      <item index="38" class="java.lang.String" itemvalue="Application.testCMCGait10dof18musc" />
+      <item index="39" class="java.lang.String" itemvalue="Application.testCMCSingleMuscle" />
+      <item index="40" class="java.lang.String" itemvalue="Application.testCMCSingleRigidTendonMuscle" />
+      <item index="41" class="java.lang.String" itemvalue="Application.testCMCTwoMusclesOnBlock" />
+      <item index="42" class="java.lang.String" itemvalue="Application.testCMCWithControlConstraintsGait2354" />
+      <item index="43" class="java.lang.String" itemvalue="Application.testCMCWithControlConstraintsRunningModel" />
+      <item index="44" class="java.lang.String" itemvalue="Application.forward" />
+      <item index="45" class="java.lang.String" itemvalue="Application.testForward" />
+      <item index="46" class="java.lang.String" itemvalue="Application.id" />
+      <item index="47" class="java.lang.String" itemvalue="Application.testID" />
+      <item index="48" class="java.lang.String" itemvalue="Application.ik" />
+      <item index="49" class="java.lang.String" itemvalue="Application.testIK" />
+      <item index="50" class="java.lang.String" itemvalue="Application.rra" />
+      <item index="51" class="java.lang.String" itemvalue="Application.testRRA" />
+      <item index="52" class="java.lang.String" itemvalue="Application.scale" />
+      <item index="53" class="java.lang.String" itemvalue="Application.testScale" />
+      <item index="54" class="java.lang.String" itemvalue="Application.versionUpdate" />
+      <item index="55" class="java.lang.String" itemvalue="Application.doxygen" />
+      <item index="56" class="java.lang.String" itemvalue="Application.osimActuators" />
+      <item index="57" class="java.lang.String" itemvalue="Application.testActuators" />
+      <item index="58" class="java.lang.String" itemvalue="Application.testMuscleFirstOrderActivationDynamicModel" />
+      <item index="59" class="java.lang.String" itemvalue="Application.testMuscleFixedWidthPennationModel" />
+      <item index="60" class="java.lang.String" itemvalue="Application.testMuscles" />
+      <item index="61" class="java.lang.String" itemvalue="Application.testSerializableMuscleCurves" />
+      <item index="62" class="java.lang.String" itemvalue="Application.osimAnalyses" />
+      <item index="63" class="java.lang.String" itemvalue="Application.osimCommon" />
+      <item index="64" class="java.lang.String" itemvalue="Application.testComponentInterface" />
+      <item index="65" class="java.lang.String" itemvalue="Application.testDataTable" />
+      <item index="66" class="java.lang.String" itemvalue="Application.testFunctionAdapter" />
+      <item index="67" class="java.lang.String" itemvalue="Application.testGCVSpline" />
+      <item index="68" class="java.lang.String" itemvalue="Application.testMarkerData" />
+      <item index="69" class="java.lang.String" itemvalue="Application.testNCSpline" />
+      <item index="70" class="java.lang.String" itemvalue="Application.testRootSolver" />
+      <item index="71" class="java.lang.String" itemvalue="Application.testSerialization" />
+      <item index="72" class="java.lang.String" itemvalue="Application.testSmoothSegmentedFunctionFactory" />
+      <item index="73" class="java.lang.String" itemvalue="Application.testSTOFileAdapter" />
+      <item index="74" class="java.lang.String" itemvalue="Application.testStorage" />
+      <item index="75" class="java.lang.String" itemvalue="Application.testTRCFileAdapter" />
+      <item index="76" class="java.lang.String" itemvalue="Application.example1DataTable" />
+      <item index="77" class="java.lang.String" itemvalue="Application.example2DataTable" />
+      <item index="78" class="java.lang.String" itemvalue="Application.exampleExpressionReporterPlugin" />
+      <item index="79" class="java.lang.String" itemvalue="Application.futureIKListOutputs" />
+      <item index="80" class="java.lang.String" itemvalue="Application.futureMuscleMetabolicsResponse" />
+      <item index="81" class="java.lang.String" itemvalue="Application.futureOrientationInverseKinematics" />
+      <item index="82" class="java.lang.String" itemvalue="Application.futureOutputVectorsAndChannels" />
+      <item index="83" class="java.lang.String" itemvalue="Application.futureStatesTrajectoryUsage" />
+      <item index="84" class="java.lang.String" itemvalue="Application.ImuStreaming" />
+      <item index="85" class="java.lang.String" itemvalue="Application.exampleHopperDevice" />
+      <item index="86" class="java.lang.String" itemvalue="Application.exampleHopperDeviceAnswers" />
+      <item index="87" class="java.lang.String" itemvalue="Application.futureTaskSpace" />
+      <item index="88" class="java.lang.String" itemvalue="Application.osimSimulation" />
+      <item index="89" class="java.lang.String" itemvalue="Application.testConstraints" />
+      <item index="90" class="java.lang.String" itemvalue="Application.testJoints" />
+      <item index="91" class="java.lang.String" itemvalue="Application.testAssemblySolver" />
+      <item index="92" class="java.lang.String" itemvalue="Application.testContactGeometry" />
+      <item index="93" class="java.lang.String" itemvalue="Application.testForces" />
+      <item index="94" class="java.lang.String" itemvalue="Application.testFrames" />
+      <item index="95" class="java.lang.String" itemvalue="Application.testInitState" />
+      <item index="96" class="java.lang.String" itemvalue="Application.testMomentArms" />
+      <item index="97" class="java.lang.String" itemvalue="Application.testMuscleMetabolicsProbes" />
+      <item index="98" class="java.lang.String" itemvalue="Application.testPoints" />
+      <item index="99" class="java.lang.String" itemvalue="Application.testPrescribedForce" />
+      <item index="100" class="java.lang.String" itemvalue="Application.testProbes" />
+      <item index="101" class="java.lang.String" itemvalue="Application.testStatesTrajectory" />
+      <item index="102" class="java.lang.String" itemvalue="Application.testAddComponents" />
+      <item index="103" class="java.lang.String" itemvalue="Application.testComponents" />
+      <item index="104" class="java.lang.String" itemvalue="Application.exampleController" />
+      <item index="105" class="java.lang.String" itemvalue="Application.testControllerExample" />
+      <item index="106" class="java.lang.String" itemvalue="Application.exampleCoupledBushingForcePlugin" />
+      <item index="107" class="java.lang.String" itemvalue="Application.exampleCustomActuator" />
+      <item index="108" class="java.lang.String" itemvalue="Application.testCustomActuatorExample" />
+      <item index="109" class="java.lang.String" itemvalue="Application.checkEnvironment" />
+      <item index="110" class="java.lang.String" itemvalue="Application.exampleMain" />
+      <item index="111" class="java.lang.String" itemvalue="Application.testExampleMain" />
+      <item index="112" class="java.lang.String" itemvalue="Application.exampleMuscle" />
+      <item index="113" class="java.lang.String" itemvalue="Application.testMuscleExample" />
+      <item index="114" class="java.lang.String" itemvalue="Application.exampleOptimization" />
+      <item index="115" class="java.lang.String" itemvalue="Application.testOptimizationExample" />
+      <item index="116" class="java.lang.String" itemvalue="Application.testREADME" />
+      <item index="117" class="java.lang.String" itemvalue="Application.exampleOptimizationSimple" />
+      <item index="118" class="java.lang.String" itemvalue="Application.testSimpleOptimizationExample" />
+      <item index="119" class="java.lang.String" itemvalue="Application.testIterators" />
+      <item index="120" class="java.lang.String" itemvalue="Application.visualizeModel" />
+      <item index="121" class="java.lang.String" itemvalue="Application.testWrapping" />
+      <item index="122" class="java.lang.String" itemvalue="Application.osimTools" />
+      <item index="123" class="java.lang.String" itemvalue="Application.testControllers" />
+      <item index="124" class="java.lang.String" itemvalue="Application.testExternalLoads" />
+      <item index="125" class="java.lang.String" itemvalue="Application.testModelCopy" />
+      <item index="126" class="java.lang.String" itemvalue="Application.testSerializeOpenSimObjects" />
+      <item index="127" class="java.lang.String" itemvalue="Application.testVisualization" />
+      <item index="128" class="java.lang.String" itemvalue="Application.osimLepton" />
+      <item index="129" class="java.lang.String" itemvalue="Application.testLepton" />
+    </list>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8197daf1-ef01-4301-bcf1-90ae19dc4eca" name="Default" comment="" />
+      <created>1467305298891</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1467305298891</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-1" y="26" width="1922" height="1055" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09225092" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11700975" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31078225" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33802816" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31078225" sideWeight="0.49791667" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31078225" sideWeight="0.50208336" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20260416" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2484">
+          <caret line="138" column="10" selection-start-line="138" selection-start-column="10" selection-end-line="138" selection-end-column="16" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17712">
+          <caret line="984" column="19" selection-start-line="984" selection-start-column="16" selection-end-line="984" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12834">
+          <caret line="713" column="25" selection-start-line="713" selection-start-column="22" selection-end-line="713" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6588">
+          <caret line="366" column="24" selection-start-line="366" selection-start-column="8" selection-end-line="366" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10656">
+          <caret line="592" column="42" selection-start-line="592" selection-start-column="17" selection-end-line="592" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="864">
+          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="864">
+          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1422">
+          <caret line="79" column="0" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012AccelerationMuscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="586">
+          <caret line="1025" column="49" selection-start-line="1025" selection-start-column="49" selection-end-line="1025" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Examples/MuscleExample/FatigableMuscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="97" column="36" selection-start-line="97" selection-start-column="36" selection-end-line="97" selection-end-column="68" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="245">
+          <caret line="195" column="30" selection-start-line="195" selection-start-column="30" selection-end-line="195" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="137">
+          <caret line="325" column="33" selection-start-line="325" selection-start-column="33" selection-end-line="325" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Examples/MuscleExample/FatigableMuscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="71">
+          <caret line="50" column="33" selection-start-line="50" selection-start-column="33" selection-end-line="53" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10656">
+          <caret line="592" column="42" selection-start-line="592" selection-start-column="17" selection-end-line="592" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Simulation/Model/Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6588">
+          <caret line="366" column="24" selection-start-line="366" selection-start-column="8" selection-end-line="366" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17712">
+          <caret line="984" column="19" selection-start-line="984" selection-start-column="16" selection-end-line="984" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="479">
+          <caret line="713" column="25" selection-start-line="713" selection-start-column="22" selection-end-line="713" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="364">
+          <caret line="122" column="32" selection-start-line="122" selection-start-column="32" selection-end-line="122" selection-end-column="32" />
+          <folding>
+            <element signature="e#338#385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5364">
+          <caret line="298" column="0" selection-start-line="298" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

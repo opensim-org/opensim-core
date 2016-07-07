@@ -45,16 +45,16 @@ void VandenBogert2011Muscle::constructProperties()
 {
     setAuthors("A. van den Bogert, B. Humphreys");
     //constructProperty_max_isometric_force(1000);
-    constructProperty_strain_at_max_iso_force_SEE(0.04);
+    constructProperty_fMaxTendonStrain(0.04);
     constructProperty_fl_width(0.63);
     constructProperty_fv_AHill(0.25);
-    constructProperty_fv_max_multiplier(1.4);
+    constructProperty_fv_maxMultiplier(1.4);
     //constructProperty_optimal_fiber_length(0.1);
-    constructProperty_dampingCoeff_Pee(0.01);
-    constructProperty_length_slack_Pee(1.0);
+    constructProperty_dampingCoefficient(0.01);
+    constructProperty_normFiberSlackLength(1.0);
     //constructProperty_tendon_slack_length(0.2);
-    constructProperty_t_act(0.01);
-    constructProperty_t_deact(0.04);
+    constructProperty_activTimeConstant(0.01);
+    constructProperty_deactivTimeConstant(0.04);
 
 }
 
@@ -97,46 +97,46 @@ void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
 //--------------------------------------------------------------------------
 // GET & SET Properties
 //--------------------------------------------------------------------------
-void VandenBogert2011Muscle::setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee) {
-        set_strain_at_max_iso_force_SEE(StrainAtMaxIsoForceSee);
+void VandenBogert2011Muscle::setfMaxTendonStrain(double fMaxTendonStrain) {
+    setfMaxTendonStrain(fMaxTendonStrain);
     }
-double VandenBogert2011Muscle::getStrainAtMaxIsoForceSee() const
-    { return get_strain_at_max_iso_force_SEE(); }
+double VandenBogert2011Muscle::getfMaxTendonStrain() const
+    { return getfMaxTendonStrain(); }
 
-void VandenBogert2011Muscle::setFlWidth(double FlWidth)
-    { set_fl_width(FlWidth); }
-double VandenBogert2011Muscle::getFlWidth() const
-    { return get_fl_width(); }
+void VandenBogert2011Muscle::setfl_width(double fl_width)
+    { setfl_width(fl_width); }
+double VandenBogert2011Muscle::getfl_width() const
+    { return getfl_width(); }
 
-void VandenBogert2011Muscle::setFvAHill(double FvAHill)
-    { set_fv_AHill(FvAHill); }
-double VandenBogert2011Muscle::getFvAHill() const
-    { return get_fv_AHill(); }
+void VandenBogert2011Muscle::setfv_AHill(double fv_AHill)
+    { setfv_AHill(fv_AHill); }
+double VandenBogert2011Muscle::getfv_AHill() const
+    { return getfv_AHill(); }
 
-void VandenBogert2011Muscle::setFvMaxMultiplier(double FvMaxMultiplier)
-    { set_fv_max_multiplier(FvMaxMultiplier); }
-double VandenBogert2011Muscle::getFvMaxMultiplier() const
-    { return get_fv_max_multiplier(); }
+void VandenBogert2011Muscle::setfv_maxMultiplier(double fv_maxMultiplier)
+    { setfv_maxMultiplier(fv_maxMultiplier); }
+double VandenBogert2011Muscle::getfv_maxMultiplier() const
+    { return getfv_maxMultiplier(); }
 
-void VandenBogert2011Muscle::setDampingCoeffPee(double DampingCoeffPee)
-    { set_dampingCoeff_Pee(DampingCoeffPee); }
-double VandenBogert2011Muscle::getDampingCoeffPee() const
-    { return get_dampingCoeff_Pee(); }
+void VandenBogert2011Muscle::setdampingCoefficient(double dampingCoefficient)
+    { setdampingCoefficient(dampingCoefficient); }
+double VandenBogert2011Muscle::getdampingCoefficient() const
+    { return getdampingCoefficient(); }
 
-void VandenBogert2011Muscle::setLengthSlackPee(double LengthSlackPee)
-    { set_length_slack_Pee(LengthSlackPee); }
-double VandenBogert2011Muscle::getLengthSlackPee() const
-    { return get_length_slack_Pee(); }
+void VandenBogert2011Muscle::setnormFiberSlackLength(double normFiberSlackLength)
+    { setnormFiberSlackLength(normFiberSlackLength); }
+double VandenBogert2011Muscle::getnormFiberSlackLength() const
+    { return getnormFiberSlackLength(); }
 
-void VandenBogert2011Muscle::setTact(double Tact)
-    { set_t_act(Tact); }
-double VandenBogert2011Muscle::getTact() const
-    { return get_t_act(); }
+void VandenBogert2011Muscle::setactivTimeConstant(double activTimeConstant)
+    { setactivTimeConstant(activTimeConstant); }
+double VandenBogert2011Muscle::getactivTimeConstant() const
+    { return getactivTimeConstant(); }
 
-void VandenBogert2011Muscle::setTdeact(double Tdeact)
-    { set_t_deact(Tdeact); }
-double VandenBogert2011Muscle::getTdeact() const
-    { return get_t_deact(); }
+void VandenBogert2011Muscle::setdeactivTimeConstant(double deactivTimeConstant)
+    { setdeactivTimeConstant(deactivTimeConstant); }
+double VandenBogert2011Muscle::getdeactivTimeConstant() const
+    { return getdeactivTimeConstant(); }
 
 
 
@@ -226,7 +226,7 @@ void VandenBogert2011Muscle::computeInitialFiberEquilibrium(SimTK::State& s) con
 //SimTK::Vec3 VandenBogert2011Muscle::calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const {
 
 
-VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const {
+VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const {
 
     // Later when using state variables:
     //State Variables
@@ -235,80 +235,104 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
     //double a = getActivation(s);
     //double Lcedot = getNormalizedFiberVelocity(s);
 
-    // Parameters
-    double Fmax = getMaxIsometricForce();  //Maximum isometric force that the fibers can generate
-    double umax = getStrainAtMaxIsoForceSee(); //Strain in the series elastic element at load of Fmax
-    double W = getFlWidth();   //Width parameter of the force-length relationship of the contractile element
-    double AHill = getFvAHill();        //Hill parameter of the force-velocity relationship
-    double FVmax = getFvMaxMultiplier(); //Maximal eccentric force multiplier
-    double Lceopt = getOptimalFiberLength();  //Optimal Length of Contractile Element
-    double b = getDampingCoeffPee();     //Damping coefficient of damper parallel to the CE (normalized to Fmax)
-    double SEELslack = getTendonSlackLength(); //Slack length of the series elastic element
-    double PEELslack = getLengthSlackPee();  //Slack length of the parallel elastic element, divided by Lceopt
-    double Tact = getTact();  // Activation time(s)
-    double Tdeact = getTdeact();  // Deactivation time(s)
+    //TODO: Match symbols to doxygen diagram
+    // -------------------------Parameters----------------------------//
+    //F_{iso} Maximum isometric force that the fibers can generate
+    double maxIsoForce = getMaxIsometricForce();
 
+    //u_{max} (dimensionless) strain in the series elastic element at load of maxIsometricForce
+    double fMaxTendonStrain = getfMaxTendonStrain(); //Strain in the series elastic element at load of Fmax
+
+    //W (dimensionless) width parameter of the force-length relationship of the muscle fiber
+    double fl_width = getfl_width();
+
+    //AHill (dimensionless) Hill parameter of the force-velocity relationship
+    double fv_AHill= getfv_AHill();        //Hill parameter of the force-velocity relationship
+
+    //FV_{max} (dimensionless) maximal eccentric force
+    double fv_maxMultiplier = getfv_maxMultiplier(); //Maximal eccentric force multiplier
+
+    // L_{opt}  (m) Optimal Length of Contractile Element;
+    double optFiberLength = getOptimalFiberLength();  //Optimal Length of Contractile Element
+
+    //b (s/m) damping coefficient of damper parallel to the fiber (normalized to maxIsometricForce)
+    double dampingCoeff = getdampingCoefficient();
+
+    //L_{slack,fiber} Slack length of the parallel elastic element, divided by Lceopt
+    double fiberSlackLength= getnormFiberSlackLength();
+
+    //L_{slack,tendon} (dimensionless) slack length of the tendon
+    double tendonSlackLength = get_tendon_slack_length();
+
+    //T_{act} (s) Activation time
+    double activTimeConstant = getactivTimeConstant();
+
+    //T_{deact} (s) Deactivation time
+    double deactivTimeConstant = getdeactivTimeConstant();
+
+    //TODO: Make these constants
     // constants derived from the muscle parameters
-    double Vmax = 10 * Lceopt;                 //Maximum shortening velocity (m/s) is 10 fiber lengths per sec
-    double d1 = Vmax * AHill * (FVmax - 1) / (AHill + 1);  // parameter in the eccentric force-velocity equation
+    double Vmax = 10 * optFiberLength;                 //Maximum shortening velocity (m/s) is 10 fiber lengths per sec
 
 
-    double kPEE2 = 1 / pow(W, 2);                       // PEE quadratic stiffness, so Fpee = Fmax when Lce = Lce*(1+W)
-    double kSEE2 = 1 / pow(SEELslack * umax, 2);  // SEE quadratic stiffness, so Fsee = Fmax at strain of umax
+    double kPEE2 = 1 / pow(fl_width, 2);                       // Fiber (PEE) quadratic stiffness, so Fpee = Fmax when Lce = Lce*(1+W)
+    double kSEE2 = 1 / pow(fiberSlackLength * fMaxTendonStrain, 2);  // Tendon (SEE) quadratic stiffness, so Fsee = Fmax at strain of umax
 
 
     // Jacobian Matrices
-    SimTK::Mat23 dfdy;
-    SimTK::Mat23 dfdydot;
+    SimTK::Mat23 df_dy;
+    SimTK::Mat23 df_dydot;
 
 
 
 
     //----------------F1 is the normalized isometric force-length relationship at maximum activation--------------//
-    double ff = (Lce - 1.0) / W;   // [dimensionless]
-    double F1 = exp(pow(-ff, 2));        // Gaussian force-length curve
+    double fiberExp = (fiberLength - 1.0) / fl_width;   // [dimensionless]
+    double F1 = exp(pow(-fiberExp, 2));        // Gaussian force-length curve
 
     double dF1_dLce = 0;
     if (returnJacobians) {
-        double dF1_dLce = -2.0 * ff * F1 / W;
+        double dF1_dfiberLength = -2.0 * fiberExp * F1 / fl_width;
     }
 
-    double F2 = 0.0;
+
 
 
 
     //----------------- F2 is the dimensionless force-velocity relationship --------------------------------//
-    double dF2_dLcedot = 0;
-    if (Lcedot < 0) {
-        //concentric contraction
-        ff = Vmax - Lcedot / AHill;
-        F2 = (Vmax + Lcedot) / ff;
+    double F2 = 0.0;
+    double dF2_dfiberVelocity = 0;
+    if (fiberVelocity < 0) {
+        //Hill's equation for concentric contraction
+        // F2 = (V_{max} + V_{fiber}) / (V_{max} - V_{fiber}/a_{Hill})
+        F2 = (Vmax + fiberVelocity ) / (Vmax - fiberVelocity  / fv_AHill);
         if (returnJacobians) {
-            double dF2_dLcedot = (1.0 + F2 / AHill) / ff;
+            dF2_dfiberVelocity  = (1.0 + F2 / fv_AHill) / (Vmax - fiberVelocity  / fv_AHill);
         }
     }
     else {
-        //eccentric contraction
-        double c = Vmax * AHill * (FVmax - 1.0) / (AHill + 1.0); // parameter in the eccentric force-velocity equation
-        ff = Lcedot + c;
-        F2 = (FVmax * Lcedot + c) / ff;
+        //Katz Curve for eccentric contraction
+        // c is Katz Constant
+        double c = Vmax * fv_AHill * (fv_maxMultiplier - 1.0) / (fv_AHill + 1.0); // parameter in the eccentric force-velocity equation
+        //F2 = (g_{max} * V_{fiber} + c) / (V_{fiber} + c)
+        F2 = (fv_maxMultiplier * fiberVelocity  + c) / (fiberVelocity  + c);
         if (returnJacobians) {
-            double dF2_dLcedot = (FVmax - F2) / ff;
+            dF2_dfiberVelocity = (fv_maxMultiplier - F2) / (fiberVelocity  + c);
         }
     }
 
 
 
-    //----------F3 is the dimensionless PEE force (in units of Fmax)-------------//
-    double kPEE = 1.0 / Fmax * Lceopt;      // stiffness of the linear term is 1 N/m, convert to Fmax/Lceopt units
-    ff = (Lce - PEELslack);             // elongation of PEE, relative to Lceopt
-    double F3 = kPEE * ff;                // low stiffness linear term
-    double dF3_dLce = kPEE;
-    if (ff > 0) {
+    //----------F3 is the dimensionless fiber (PEE) force (in units of Fmax)-------------//
+    double kPEE = 1.0 / maxIsoForce * optFiberLength;      // stiffness of the linear term is 1 N/m, convert to Fmax/Lceopt units
+    double elongationFiber = (fiberLength - fiberSlackLength);  // elongation of fiber (PEE), relative to Lceopt
+    double F3 = kPEE * elongationFiber;                // low stiffness linear term
+    double dF3_dfiberLength = kPEE;
+    if (elongationFiber > 0) {
         //add quadratic term for positive elongation
-        F3 = F3 + kPEE2 * pow(ff, 2);
+        F3 = F3 + kPEE2 * pow(elongationFiber, 2);
         if (returnJacobians) {
-            double F3_dLce = dF3_dLce + 2 * kPEE2 * ff;
+            dF3_dfiberLength = dF3_dfiberLength + 2 * kPEE2 * elongationFiber;
         }
     }
 
@@ -316,21 +340,21 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
 
 
     //---------------F4 is the dimensionless SEE force (in units of Fmax)----------//
-    double kSEE = 1.0 / Fmax;                     // stiffness of the linear term is 1 N/m, convert to Fmax/m
-    ff = Lm - Lce * Lceopt - SEELslack;  // elongation of SEE, in meters
-    double F4 = kSEE * ff;              //  low stiffness linear term
-    double dF4_dLce = 0;
-    double dF4_dLm = 0;
+    double kSEE = 1.0 / maxIsoForce;                  // stiffness of the linear term is 1 N/m, convert to Fmax/m
+    double elongationTendon = muslceLength - fiberLength * optFiberLength - tendonSlackLength;  // elongation of tendon (SEE), in meters
+    double F4 = kSEE * elongationTendon;              //  low stiffness linear term
+    double dF4_dfiberLength = 0;
+    double dF4_dmuscleLength = 0;
     if (returnJacobians) {
-        double dF4_dLce = -kSEE * Lceopt;
-        double dF4_dLm = kSEE;
+         dF4_dfiberLength = -kSEE * optFiberLength;
+         dF4_dmuscleLength = kSEE;
     }
-    if (ff > 0) {
+    if (elongationTendon > 0) {
         // add quadratic term for positive deformation
-        F4 = F4 + kSEE2 * pow(ff, 2);
+        F4 = F4 + kSEE2 * pow(elongationTendon, 2);
         if (returnJacobians) {
-            double dF4_dLce = dF4_dLce - 2 * kSEE2 * Lceopt * ff;
-            double dF4_dLm = dF4_dLm + 2 * kSEE2 * ff;
+             dF4_dfiberLength = dF4_dfiberLength - 2 * kSEE2 * optFiberLength* elongationTendon;
+             dF4_dmuscleLength = dF4_dmuscleLength + 2 * kSEE2 * elongationTendon;
         }
     }
 
@@ -338,26 +362,29 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
 
     //-------------- F5 is viscous damping parallel to the CE (0.001 of Fmax at 1 Lceopt/s) to  -----------//
     // ensure that df/dLcedot is never zero
-    double F5 = 0.001 * Lcedot;    // TODO:  is 0.001 suppossed to b?
-    double dF5_dLcedot = 0.001;
+    double F5 = dampingCoeff * fiberVelocity ;
+    double dF5_dfiberVelocity  = dampingCoeff;
 
-    //The muscle dynamics equation: f = Fsee - Fce - Fpee - Fdamping = 0
-    double muscleForceResidual = F4 - a * F1 * F2 - F3 - F5;
+    //The muscle dynamics equation: f = Fsee - a*Fce - Fpee - Fdamping = 0
+    double muscleForceResidual = F4 - activ * F1 * F2 - F3 - F5;
 
 
+
+
+    //---------------------Assemble Jacobians---------------------------//
     if (returnJacobians) {
-        dfdy[0][2] = -F1 * F2;                              // df/da
-        dfdy[0][1] = dF4_dLce - a * dF1_dLce * F2 - dF3_dLce;    // df/dLce
-        dfdydot[0][1] = -a * F1 * dF2_dLcedot - dF5_dLcedot;        // df/dLcedot
-        double df_dLm = dF4_dLm;
-        //dfdy[1][1] = -(d / L) * df_dLm;                      // derivative of f with respect to muscle length
-        dfdy[0][0] = -df_dLm;
+        df_dy[0][2] = -F1 * F2;                              // df/da
+        df_dy[0][1] = dF4_dfiberLength - activ * dF1_dLce * F2 - dF3_dfiberLength;    // df/dLce
+        df_dydot[0][1] = -activ * F1 * dF2_dfiberVelocity  - dF5_dfiberVelocity ;        // df/dLcedot
+        double df_dLm = dF4_dmuscleLength;
+        //dfdy[0][0] = -(d / L) * df_dLm;                      // derivative of f with respect to muscle length
+        df_dy[0][0] = -df_dLm;
     }
 
 
 
-    // ---------------- Force in SEE is Fmax*F4 ---------------------------- //
-    double Fsee = Fmax * F4;
+    // ---------------- Force in tendon (SEE) is maxIsoForce*F4 ---------------------------- //
+    double Fsee = maxIsoForce * F4;
 
     // TODO: I don't think we need to implement dFsee_.....
     /*if (nargout > 1)
@@ -369,11 +396,12 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
 
 
     //----------------------Activation dynamics equation-------------------//
-    double activationResidual = adot - (u - a) * (u / Tact + (1 - u) / Tdeact);
+    double df_du = 0;
+    double activationResidual = activ_dot - (u - activ) * (u / activTimeConstant + (1 - u) / deactivTimeConstant );
     if (returnJacobians) {
-        dfdy[1][2] = (u / Tact + (1 - u) / Tdeact);
-        double dfdu = -(u / Tact + (1 - u) / Tdeact) - (u - a) * (1 / Tact - 1 / Tdeact);
-        dfdydot[1][2] = 1;
+        df_dy[1][2] = (u / activTimeConstant + (1 - u) / deactivTimeConstant );
+        double df_du = -(u / activTimeConstant + (1 - u) / deactivTimeConstant ) - (u - activ) * (1 / activTimeConstant - 1 / deactivTimeConstant );
+        df_dydot[1][2] = 1;
     }
 
 
@@ -381,10 +409,11 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
     VandenBogert2011Muscle::ImplicitResults Results;
 
     Results.forceResidual=muscleForceResidual;
-    Results.activationResidual=activationResidual;
-    Results.forceSee=Fsee;
-    Results.df_dy=dfdy;
-    Results.df_dydot=dfdydot;
+    Results.activResidual=activationResidual;
+    Results.forceTendon=Fsee;
+    Results.df_dy=df_dy;
+    Results.df_dydot=df_dydot;
+    Results.df_du=df_du;
 
 
 return Results;

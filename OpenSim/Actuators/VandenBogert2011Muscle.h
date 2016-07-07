@@ -33,41 +33,44 @@ The parent class, Muscle.h, provides
 */
 
 //OpenSim_DECLARE_PROPERTY(max_isometric_force, double,  <-----Comes from parent class, Muscle.h
-//    "Maximum isometric force that the fibers can generate");                                  //Fmax (N)
+//    "Maximum isometric force that the fibers can generate");
+// F_{max} (N)
 
-        OpenSim_DECLARE_PROPERTY(strain_at_max_iso_force_SEE, double,
-        "Strain in the series elastic element at load of Fmax");                                    //umax (dimensionless)
+        OpenSim_DECLARE_PROPERTY(fMaxTendonStrain, double,
+        "tendon strain at maximum isometric muscle force");
+        //u_{max} (dimensionless) strain in the series elastic element at load of maxIsometricForce
 
         OpenSim_DECLARE_PROPERTY(fl_width, double,
-        "Width parameter of the force-length relationship of the contractile element");             //W (dimensionless)
+        "force-length shape factor");
+        //W (dimensionless) width parameter of the force-length relationship of the muscle fiber
 
         OpenSim_DECLARE_PROPERTY(fv_AHill, double,
-        "Hill parameter of the force-velocity relationship");                                       //AHill
+        "force-velocity shape factor");
+        //AHill (dimensionless) Hill parameter of the force-velocity relationship
 
-        OpenSim_DECLARE_PROPERTY(fv_max_multiplier, double,
-        "Maximal eccentric force multiplier");                                                      //FVmax
+        OpenSim_DECLARE_PROPERTY(fv_maxMultiplier, double,
+        "maximum normalized lengthening force");
+        //FV_{max} (dimensionless) maximal eccentric force
 
         //OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,    <-----Comes from parent class, Muscle.h
-        //    "Optimal Length of Contractile Element");                                                 //Lceopt (m)
+        //    "Optimal Length of Contractile Element"                                               //Lceopt (m)
 
-        OpenSim_DECLARE_PROPERTY(dampingCoeff_Pee, double,
-        "Damping coefficient of damper parallel to the CE (normalized to Fmax)");                   //b (s/m)
+        OpenSim_DECLARE_PROPERTY(dampingCoefficient, double,
+        "The linear damping of the fiber");
+        //b (s/m) damping coefficient of damper parallel to the fiber (normalized to maxIsometricForce)
 
-        //OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,     <-----Comes from parent class, Muscle.h
-        //   "Slack length of the series elastic element");                                            //SEELslack (m)
-
-
-        OpenSim_DECLARE_PROPERTY(length_slack_Pee, double,
-                                 "(dimensionless) slack length of the parallel elastic element, divided by Lceopt");                   //b (s/m)
+        OpenSim_DECLARE_PROPERTY(normFiberSlackLength, double,
+                                 "(dimensionless) slack length of the parallel elastic element, divided by Lceopt");
+        //L_{slack,fiber}(dimensionless) slack length of the fiber (PEE)
 
 
+        OpenSim_DECLARE_PROPERTY(activTimeConstant, double,
+        "Activation time(s)");
+        //T_{act} (s) Activation time
 
-
-        OpenSim_DECLARE_PROPERTY(t_act, double,
-        "Activation time(s)");                         //Tact (s)
-
-        OpenSim_DECLARE_PROPERTY(t_deact, double,
-        "Deactivation time(s)");                         //Tdeact (s)
+        OpenSim_DECLARE_PROPERTY(deactivTimeConstant, double,
+        "Deactivation time(s)");
+        //T_{deact} (s) Deactivation time
 
 //==============================================================================
 // PUBLIC METHODS
@@ -91,45 +94,40 @@ The parent class, Muscle.h, provides
 // GET & SET Properties
 //-------------------------------------------------------------------------
         // Properties
-        void setStrainAtMaxIsoForceSee(double StrainAtMaxIsoForceSee);
-        double getStrainAtMaxIsoForceSee() const;
+        void setfMaxTendonStrain(double fMaxTendonStrain);
+        double getfMaxTendonStrain() const;
 
-        void setFlWidth(double FlWidth);
-        double getFlWidth() const;
+        void setfl_width(double fl_width);
+        double getfl_width() const;
 
-        void setFvAHill(double FvAHill);
-        double getFvAHill() const;
+        void setfv_AHill(double fv_AHill);
+        double getfv_AHill() const;
 
-        void setFvMaxMultiplier(double FvMaxMultiplier);
-        double getFvMaxMultiplier() const;
+        void setfv_maxMultiplier(double fv_maxMultiplier);
+        double getfv_maxMultiplier() const;
 
-        void setDampingCoeffPee(double DampingCoeffPee);
-        double getDampingCoeffPee() const;
+        void setdampingCoefficient(double dampingCoefficient);
+        double getdampingCoefficient() const;
 
-        void setLengthSlackPee(double LengthSlackPee);
-        double getLengthSlackPee() const;
+        void setnormFiberSlackLength(double normFiberSlackLength);
+        double getnormFiberSlackLength() const;
 
-        void setTact(double Tact);
-        double getTact() const;
+        void setactivTimeConstant(double activTimeConstant);
+        double getactivTimeConstant() const;
 
-        void setTdeact(double Tdeact);
-        double getTdeact() const;
+        void setdeactivTimeConstant(double deactivTimeConstant);
+        double getdeactivTimeConstant() const;
 
         //struct ImplicitResults;
 
-        struct ImplicitResults {              //DIMENSION             UNITS
-            double forceResidual = SimTK::NaN;               //length/time           m/s
-            double activationResidual = SimTK::NaN;   //length/time           m/s
-            double forceSee = SimTK::NaN;
+        struct ImplicitResults {
+            double forceResidual = SimTK::NaN;
+            double activResidual = SimTK::NaN;
+            double forceTendon = SimTK::NaN;
             SimTK::Mat23 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
-            SimTK::Mat23 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN}; };
+            SimTK::Mat23 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            double df_du = SimTK::NaN;};
 
-
-/** default values for states
-        double getDefaultActiveMotorUnits() const;
-        void setDefaultActiveMotorUnits(double activeMotorUnits);
-        double getDefaultFatiguedMotorUnits() const;
-        void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);*/
 
 //=============================================================================
 // COMPUTATION
@@ -137,7 +135,7 @@ The parent class, Muscle.h, provides
 
 //std::array<double, 3> calcImplicitResidual(const SimTK::State& s) const;
         //SimTK::Vec3 calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const;
-        ImplicitResults calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const;
+        ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
 protected:
 //=============================================================================
 // PROTECTED METHODS
