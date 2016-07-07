@@ -26,6 +26,7 @@
 #include <string>
 #include <OpenSim/Common/Storage.h>
 #include "OpenSim/Common/STOFileAdapter.h"
+#include "OpenSim/Common/TRCFileAdapter.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
@@ -41,7 +42,7 @@ int main()
 {
     try {
         testInverseKinematicsSolverWithOrientations();
-
+        
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
         Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
@@ -60,6 +61,7 @@ int main()
         InverseKinematicsTool ik3("constraintTest_setup_ik.xml");
         ik3.run();
         cout << "testInverseKinematicsCosntraintTest passed" << endl;
+        
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -81,15 +83,22 @@ void testInverseKinematicsSolverWithOrientations()
 
     size_t nt = anglesTable.getNumRows();
     const auto& coordNames = anglesTable.getColumnLabels();
-
+    // Vector of times is just the independent column of a TimeSeriesTable
+    auto times = anglesTable.getIndependentColumn();
+    
+    int dataRate = int(round(double(nt - 1) / (times[nt-1] - times[0])));
     // get the coordinates of the model
     const auto& coordinates = model.getComponentList<Coordinate>();
 
     // get bodies as frames that we want to "sense" rotations
     const auto& bodies = model.getComponentList<Body>();
 
+    // Coordinate values in the data file may not correspond to the order
+    // of coordinates in the Model. Therefore it is necessary to build a
+    // mapping between the data and the model order
     std::vector<int> mapDataToModel;
-
+    // cycle through the coodinates in the model order and store the
+    // corresponding column index in the table according to column name
     for (auto& coord : coordinates) {
         int index = -1;
         auto found = std::find(coordNames.begin(), coordNames.end(), coord.getName());
@@ -98,20 +107,39 @@ void testInverseKinematicsSolverWithOrientations()
         mapDataToModel.push_back(index);
     }
 
+    cout << "Read in std_subject01_walk1_ik.mot with " << nt << " rows." << endl;
+    cout << "Num coordinates in file: " << coordNames.size() << endl;
+    cout << "Num of matched coordinates in model: " << mapDataToModel.size() << endl;
+
+    // Feed Orientationation tracking orientations as Rotation matrices
     TimeSeriesTable_<SimTK::Rotation> orientationsData;
+    // Also store orientation as Vec3 of XYZ Euler angles
+    TimeSeriesTable_<SimTK::Vec3> eulerData;
+
     std::vector<std::string> bodyLabels;
     for (auto& body : bodies) {
         bodyLabels.push_back(body.getName());
     }
     orientationsData.setColumnLabels(bodyLabels);
+    eulerData.setColumnLabels(bodyLabels);
 
-    cout << "Read in std_subject01_walk1_ik.mot with " << nt << " rows." << endl;
-    cout << "Num coordinates in file: " << coordNames.size() << endl;
-    cout << "Num of matched coordinates in model: " << mapDataToModel.size() << endl;
+    // DataRate should be a numerical type and NOT a string,
+    // but appease the requirement of the TRC FileAdapter for now
+    orientationsData.updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    eulerData.updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    eulerData.updTableMetaData()
+        .setValueForKey("Units", std::string("Radians"));
 
-    SimTK::RowVector_<SimTK::Rotation> row(bodyLabels.size());
+    // Writable row for creating table of Rotations 
+    SimTK::RowVector_<SimTK::Rotation> rowRots(bodyLabels.size());
+    // Writable row for creating table of Euler angles as Vec3 elements
+    SimTK::RowVector_<SimTK::Vec3> rowEuler(bodyLabels.size());
 
-    auto times = anglesTable.getIndependentColumn();
+    // Apply the read in coordinate values to the model.
+    // Then get the rotation of the Bodies in the model and 
+    // store them as Rotations and Euler angles in separate tables.
     for (size_t i = 0; i < nt; ++i) {
         const auto& values = anglesTable.getRowAtIndex(i);
         int cnt = 0;
@@ -129,8 +157,37 @@ void testInverseKinematicsSolverWithOrientations()
 
         size_t nb = 0;
         for (auto& body : bodies) {
-            row[nb++] = body.getTransformInGround(s0).R();
+            const SimTK::Rotation& rot = body.getTransformInGround(s0).R();
+            rowRots[nb] = rot;
+            rowEuler[nb++] = rot.convertRotationToBodyFixedXYZ();
         }
-        orientationsData.appendRow(times[i], row);
+        orientationsData.appendRow(times[i], rowRots);
+        eulerData.appendRow(times[i], rowEuler);
+    }
+
+    TRCFileAdapter::write(eulerData, "subject1_walk_euler_angles.trc");
+
+    //cout << orientationsData << endl;
+    OrientationsReference oRefs(&orientationsData);
+    oRefs.set_default_weight(1.0);
+
+    SimTK::Array_<CoordinateReference> coordinateReferences;
+
+    // create the solver given the input data
+    InverseKinematicsSolver ikSolver(model, nullptr, &oRefs, 
+        coordinateReferences);
+    ikSolver.setAccuracy(1e-4);
+
+    auto timeRange = oRefs.getValidTimeRange();
+    cout << "Time range from: " << timeRange[0] << " to " << timeRange[1] << "s." << endl;
+    
+    s0.updTime() = timeRange[0];
+    ikSolver.assemble(s0);
+
+    for (double time : times) {
+        s0.updTime() = time;
+        ikSolver.track(s0);
+        model.getVisualizer().show(s0);
     }
 }
+
