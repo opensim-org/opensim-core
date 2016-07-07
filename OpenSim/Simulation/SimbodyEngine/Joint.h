@@ -226,9 +226,12 @@ public:
     // Coordinate Set
     const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
 
-    /** Get the Coordinate(s) associated with this Joint. If there is only one
-        Coordinate, you can call getCoordinate() with no argument. */
+    /** Get the Coordinate associated with a single-degree-of-freedom Joint. If
+        the Joint has more than one Coordinate, use getCoordinate(unsigned)
+        instead. */
     const Coordinate& getCoordinate() const;
+
+    /** Get the Coordinate(s) associated with this Joint. */
     const Coordinate& getCoordinate(unsigned idx) const;
 
     bool getReverse() const { return get_reverse(); }

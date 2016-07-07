@@ -60,17 +60,25 @@ public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
 
+    /** Exposes getCoordinate() methods defined in base class (overloaded
+        below). @see Joint */
     using Joint::getCoordinate;
 
-    /** Indices of Coordinates; can be used with getCoordinate() for
-        convenience. */
+    /** Indices of Coordinates; can be used as arguments to getCoordinate() for
+        convenience.
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1);
+        \endcode
+    */
     enum class Coord {
         Rotation1,
         Rotation2,
         Rotation3
     };
 
-    /** Get the Coordinates associated with this Joint. */
+    /** Get the Coordinates associated with this Joint. @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
         if(idx == Coord::Rotation1)
             return Super::getCoordinate(rx);
