@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Storage.h>
 #include "OpenSim/Common/STOFileAdapter.h"
 #include "OpenSim/Common/TRCFileAdapter.h"
+#include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
@@ -200,6 +201,17 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     // visualize for debugging
     model.setUseVisualizer(true);
 
+    // Add a reporter to get IK computed coordinate values out
+    TableReporter* ikReporter = new TableReporter();
+    ikReporter->setName("ik_reporter");
+    auto coordinates = model.getComponentList<Coordinate>();
+    // Hookup reporter inputs to the individual coordinate outputs
+    for (auto& coord : coordinates) {
+        ikReporter->updInput("inputs").connect(
+            coord.getOutput("value"), coord.getName());
+    }
+    model.addComponent(ikReporter);
+
     SimTK::State& s0 = model.initSystem();
 
     OrientationsReference oRefs("subject1_walk_euler_angles.trc");
@@ -221,5 +233,10 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
         s0.updTime() = time;
         ikSolver.track(s0);
         model.getVisualizer().show(s0);
+        // realize to report to get reporter to pull values from model
+        model.realizeReport(s0);
     }
+
+    auto table = ikReporter->getReport();
+    STOFileAdapter::write(table, "ik_euler_tracking_results.sto");
 }
