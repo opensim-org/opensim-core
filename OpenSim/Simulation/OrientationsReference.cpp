@@ -73,7 +73,7 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
     RowVector_<Rotation> row(nc);
 
     for (size_t i = 0; i < nt; ++i) {
-        const auto& xyzRow = xyzEulerData.getRow(i);
+        const auto& xyzRow = xyzEulerData.getRowAtIndex(i);
         for (size_t j = 0; j < nc; ++j) {
             const Vec3& xyzO = xyzRow[j];
             row[j] = Rotation(BodyOrSpaceType::BodyRotationSequence,
@@ -122,14 +122,19 @@ int OrientationsReference::getNumRefs() const
 
 double OrientationsReference::getSamplingFrequency() const
 {
-    return _orientationData.getTableMetaData().getValueForKey("DataRate")
-        .getValue<double>();
+    return std::atoi(_orientationData.getTableMetaData().getValueForKey("DataRate")
+        .getValue<std::string>().c_str());
 }
 
 SimTK::Vec2 OrientationsReference::getValidTimeRange() const
 {
     auto& times = _orientationData.getIndependentColumn();
-    return Vec2(times[0], times[1]);
+    return Vec2(*times.begin(), *(--times.end()));
+}
+
+const std::vector<double>& OrientationsReference::getTimes() const
+{
+    return _orientationData.getIndependentColumn();
 }
 
 // utility to define object properties including their tags, comments and 
