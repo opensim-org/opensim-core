@@ -115,6 +115,16 @@ The parent class, Muscle.h, provides
         void setTdeact(double Tdeact);
         double getTdeact() const;
 
+        //struct ImplicitResults;
+
+        struct ImplicitResults {              //DIMENSION             UNITS
+            double forceResidual = SimTK::NaN;               //length/time           m/s
+            double activationResidual = SimTK::NaN;   //length/time           m/s
+            double forceSee = SimTK::NaN;
+            SimTK::Mat23 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            SimTK::Mat23 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN}; };
+
+
 /** default values for states
         double getDefaultActiveMotorUnits() const;
         void setDefaultActiveMotorUnits(double activeMotorUnits);
@@ -126,8 +136,8 @@ The parent class, Muscle.h, provides
 //=============================================================================
 
 //std::array<double, 3> calcImplicitResidual(const SimTK::State& s) const;
-        SimTK::Vec3 calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u) const;
-
+        //SimTK::Vec3 calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const;
+        ImplicitResults calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const;
 protected:
 //=============================================================================
 // PROTECTED METHODS
@@ -147,6 +157,17 @@ protected:
         /** use the current values in the state to update any properties such as
             default values for state variables */
         void extendSetPropertiesFromState(const SimTK::State &s) override;
+
+
+
+
+
+
+//=============================================================================
+// DATA
+//=============================================================================
+
+
 
     private:
         /** construct the new properties and set their default values */
