@@ -72,6 +72,11 @@ The parent class, Muscle.h, provides
         "Deactivation time(s)");
         //T_{deact} (s) Deactivation time
 
+        OpenSim_DECLARE_PROPERTY(pennAtOptFiberLength, double,
+                                 "pennation at optimal fiber length equilbrium");
+        // phi_opt
+
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -118,6 +123,9 @@ The parent class, Muscle.h, provides
         void setdeactivTimeConstant(double deactivTimeConstant);
         double getdeactivTimeConstant() const;
 
+        void setpennAtOptFiberLength(double pennAtOptFiberLength);
+        double getpennAtOptFiberLength() const;
+
         //struct ImplicitResults;
 
         struct ImplicitResults {
@@ -133,10 +141,10 @@ The parent class, Muscle.h, provides
 // COMPUTATION
 //=============================================================================
 
-//std::array<double, 3> calcImplicitResidual(const SimTK::State& s) const;
-        //SimTK::Vec3 calcImplicitResidual(double Lm, double Lce, double a, double Lcedot, double adot, double u, int returnJacobians) const;
-        ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
-protected:
+        //ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
+        ImplicitResults calcImplicitResidual(double muslceLength, double projFiberLength, double activ, double projFiberVelocity, double activ_dot, double u, int returnJacobians) const;
+
+    protected:
 //=============================================================================
 // PROTECTED METHODS
 //=============================================================================
