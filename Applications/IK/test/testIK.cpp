@@ -23,7 +23,6 @@
 
 
 // INCLUDES
-#include <string>
 #include <OpenSim/Common/Storage.h>
 #include "OpenSim/Common/STOFileAdapter.h"
 #include "OpenSim/Common/TRCFileAdapter.h"
@@ -42,17 +41,39 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile();
 
 int main()
 {
-    try {
-        testInverseKinematicsSolverWithOrientations();
+    int itc = 0;
+    SimTK::Array_<std::string> failures;
 
+    try { ++itc;
+        testInverseKinematicsSolverWithOrientations(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsSolverWithOrientations");
+    }
+
+    try {
+        ++itc;
         testInverseKinematicsSolverWithEulerAnglesFromFile();
-        
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsSolverWithEulerAnglesFromFile");
+    }
+
+    Storage  standard("std_subject01_walk1_ik.mot");
+    try {
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
-        Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
+        Storage result1(ik1.getOutputMotionFileName());
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
         cout << "testInverseKinematicsGait2354 passed" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsGait2354");
+    }
 
+    try {
         InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
         Model mdl("subject01_simbody.osim");
         mdl.initSystem();
@@ -61,17 +82,30 @@ int main()
         Storage result2(ik2.getOutputMotionFileName());
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
         cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsGait2354_GUI_workflow");
+    }
 
+    try {
         InverseKinematicsTool ik3("constraintTest_setup_ik.xml");
         ik3.run();
         cout << "testInverseKinematicsConstraintTest passed" << endl;
-        
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsConstraintTest");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with " << failures.size() << " failure(s) out of ";
+        cout << itc << " test cases." << endl;
+        cout << "Failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+    cout << "Done. All cases passed." << endl;
     return 0;
 }
 
@@ -79,7 +113,7 @@ void testInverseKinematicsSolverWithOrientations()
 {
     Model model("subject01_simbody.osim");
     // visualize for debugging
-    model.setUseVisualizer(true);
+    //model.setUseVisualizer(true);
     
     SimTK::State& s0 = model.initSystem();
 
@@ -157,7 +191,7 @@ void testInverseKinematicsSolverWithOrientations()
             }
         }
         model.realizePosition(s0);
-        model.getVisualizer().show(s0);
+        //model.getVisualizer().show(s0);
 
         size_t nb = 0;
         for (auto& body : bodies) {
@@ -191,7 +225,7 @@ void testInverseKinematicsSolverWithOrientations()
     for (double time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        model.getVisualizer().show(s0);
+        //model.getVisualizer().show(s0);
     }
 }
 
@@ -199,7 +233,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 {
     Model model("subject01_simbody.osim");
     // visualize for debugging
-    model.setUseVisualizer(true);
+    //model.setUseVisualizer(true);
 
     // Add a reporter to get IK computed coordinate values out
     TableReporter* ikReporter = new TableReporter();
@@ -219,24 +253,57 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // create the solver given the input data
+    const double accuracy = 1e-4;
     InverseKinematicsSolver ikSolver(model, nullptr, &oRefs,
         coordinateReferences);
-    ikSolver.setAccuracy(1e-4);
+    ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
 
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
-    model.getVisualizer().show(s0);
+    //model.getVisualizer().show(s0);
 
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        model.getVisualizer().show(s0);
+        //model.getVisualizer().show(s0);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
 
-    auto table = ikReporter->getReport();
-    STOFileAdapter::write(table, "ik_euler_tracking_results.sto");
+    auto report = ikReporter->getReport();
+    STOFileAdapter::write(report, "ik_euler_tracking_results.sto");
+
+    const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+
+    ASSERT(report.getNumRows() == standard.getNumRows());
+    ASSERT(report.getNumColumns() == standard.getNumColumns());
+
+    auto& reportLabels = report.getColumnLabels();
+    auto& stdLabels = standard.getColumnLabels();
+
+    std::vector<int> mapStdToReport;
+    // cycle through the coodinates in the model order and store the
+    // corresponding column index in the table according to column name
+    for (auto& label : reportLabels) {
+        int index = -1;
+        auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
+        if (found != stdLabels.end())
+            index = (int)std::distance(stdLabels.begin(), found);
+        mapStdToReport.push_back(index);
+        //cout << "Index for '" << label << "' = " << index << endl;
+    }
+
+    //Ignore pelvis coordinates 0-5
+    for (int i = 6; i < 23; ++i) {
+        auto& repVec = report.getDependentColumnAtIndex(i);
+        auto& stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
+        auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
+        cout << "Column '" << reportLabels[i] << "' has RMSE = "
+            << sqrt(error.norm()/17) << "degrees" << endl;
+        SimTK_ASSERT1_ALWAYS(sqrt(error.norm()/17) < 0.1,
+            "Column '%s' FAILED to meet accuracy of 0.1 degree RMS.",
+            reportLabels[i]);
+    }
 }
