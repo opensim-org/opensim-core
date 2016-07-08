@@ -134,7 +134,16 @@ The parent class, Muscle.h, provides
             double forceTendon = SimTK::NaN;
             SimTK::Mat23 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
             SimTK::Mat23 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
-            double df_du = SimTK::NaN;};
+            double df_du = SimTK::NaN;
+            double F1 = SimTK::NaN;
+            double F2 = SimTK::NaN;
+            double F3 = SimTK::NaN;
+            double F4 = SimTK::NaN;
+            double F5 = SimTK::NaN;
+
+
+        
+        };
 
 
 //=============================================================================

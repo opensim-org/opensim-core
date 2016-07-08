@@ -478,6 +478,12 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
     Results.df_dy=df_dy;
     Results.df_dydot=df_dydot;
     Results.df_du=df_du;
+    Results.F1=F1;    //Output these for troubleshooting
+    Results.F2=F2;
+    Results.F3=F3;
+    Results.F4=F4;
+    Results.F5=F5;
+
 
 
 return Results;
