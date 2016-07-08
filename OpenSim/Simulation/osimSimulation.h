@@ -69,7 +69,7 @@
 #include "Model/PhysicalFrame.h"
 #include "Model/PhysicalOffsetFrame.h"
 #include "Model/Ground.h"
-
+#include "Model/Delay.h"
 #include "Manager/Manager.h"
 
 #include "Control/ControlSet.h"

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include "Component.h"
+
+
 
 namespace OpenSim {
 

@@ -21,7 +21,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include "OpenSim/Simulation/osimSimulation.h"
+#include "OpenSim/Actuators/osimActuators.h"
+
+//#include "OpenSim/Common/osimCommon.h"
+//#include "OpenSim/Analyses/osimAnalyses.h"
 
 using namespace SimTK;
 using namespace OpenSim;
