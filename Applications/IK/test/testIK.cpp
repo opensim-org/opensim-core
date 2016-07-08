@@ -64,7 +64,7 @@ int main()
 
         InverseKinematicsTool ik3("constraintTest_setup_ik.xml");
         ik3.run();
-        cout << "testInverseKinematicsCosntraintTest passed" << endl;
+        cout << "testInverseKinematicsConstraintTest passed" << endl;
         
     }
     catch (const Exception& e) {
