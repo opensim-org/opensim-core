@@ -79,6 +79,7 @@
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
 #include "Model/ModelVisualPreferences.h"
+#include "Model/Delay.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -261,6 +262,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
     Object::registerType( StatesTrajectoryReporter() );
+
+	Object::registerType( Delay());
+	Object::registerType( DelayVector());
 
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<Frame>());
