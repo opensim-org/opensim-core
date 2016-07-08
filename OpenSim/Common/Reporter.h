@@ -169,13 +169,11 @@ protected:
 
         std::vector<std::string> labels;
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-            // Always set the label to the full path name.
-            // TODO: Currently, a default annotation is set by Input::connect()
-            //       if none was provided by the user. Because the user may have
-            //       explicitly specified an annotation equal to the default, it
-            //       is impossible to determine whether the annotation should be
-            //       used here instead of the full path name.
-            labels.push_back( input.getChannel(idx).getPathName() );
+            const auto& label = input.getAnnotation(idx);
+            if (label.empty()) // Use the fullpathname
+                labels.push_back(input.getChannel(idx).getPathName());
+            else
+                labels.push_back(label);
         }
         const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
     }
