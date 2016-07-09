@@ -140,7 +140,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8197daf1-ef01-4301-bcf1-90ae19dc4eca" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m" afterPath="$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" afterPath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" afterPath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" />
     </list>
@@ -163,11 +162,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="VandenBogert2011Muscle.h" pinned="false" current-in-tab="true">
+      <file leaf-file-name="VandenBogert2011Muscle.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1232">
-              <caret line="144" column="8" selection-start-line="144" selection-start-column="8" selection-end-line="144" selection-end-column="8" />
+            <state relative-caret-position="-306">
+              <caret line="110" column="56" selection-start-line="110" selection-start-column="56" selection-end-line="110" selection-end-column="56" />
               <folding>
                 <element signature="e#338#385#0" expanded="true" />
               </folding>
@@ -180,16 +179,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-488">
               <caret line="65" column="27" selection-start-line="65" selection-start-column="27" selection-end-line="65" selection-end-column="27" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="556">
-              <caret line="484" column="18" selection-start-line="484" selection-start-column="18" selection-end-line="484" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -235,6 +224,16 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="173">
+              <caret line="325" column="21" selection-start-line="325" selection-start-column="21" selection-end-line="325" selection-end-column="21" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="Git.Settings">
@@ -248,8 +247,8 @@
         <option value="$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.h" />
         <option value="$PROJECT_DIR$/OpenSim/Actuators/Thelen2003Muscle.cpp" />
         <option value="$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m" />
-        <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
         <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" />
+        <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
       </list>
     </option>
   </component>
@@ -260,10 +259,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1" />
-    <option name="y" value="26" />
-    <option name="width" value="1922" />
-    <option name="height" value="1055" />
+    <option name="x" value="1102" />
+    <option name="y" value="465" />
+    <option name="width" value="1711" />
+    <option name="height" value="956" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -1227,12 +1226,12 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="26" width="1922" height="1055" extended-state="6" />
+    <frame x="1102" y="465" width="1711" height="956" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20558777" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09608541" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11700975" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13106796" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31078225" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -1480,14 +1479,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="7" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Bindings/actuators.i">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1512,14 +1503,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="556">
-          <caret line="484" column="18" selection-start-line="484" selection-start-column="18" selection-end-line="484" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Bindings/OpenSimHeaders_actuators.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1536,13 +1519,29 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="4" column="7" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1232">
-          <caret line="144" column="8" selection-start-line="144" selection-start-column="8" selection-end-line="144" selection-end-column="8" />
+        <state relative-caret-position="-306">
+          <caret line="110" column="56" selection-start-line="110" selection-start-column="56" selection-end-line="110" selection-end-column="56" />
           <folding>
             <element signature="e#338#385#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="325" column="21" selection-start-line="325" selection-start-column="21" selection-end-line="325" selection-end-column="21" />
+          <folding />
         </state>
       </provider>
     </entry>

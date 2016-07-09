@@ -99,32 +99,32 @@ The parent class, Muscle.h, provides
 // GET & SET Properties
 //-------------------------------------------------------------------------
         // Properties
-        void setfMaxTendonStrain(double fMaxTendonStrain);
-        double getfMaxTendonStrain() const;
+        void setFMaxTendonStrain(double fMaxTendonStrain);
+        double getFMaxTendonStrain() const;
 
-        void setfl_width(double fl_width);
-        double getfl_width() const;
+        void setFlWidth(double flWidth);
+        double getFlWidth() const;
 
-        void setfv_AHill(double fv_AHill);
-        double getfv_AHill() const;
+        void setFvAHill(double fvAHill);
+        double getFvAHill() const;
 
-        void setfv_maxMultiplier(double fv_maxMultiplier);
-        double getfv_maxMultiplier() const;
+        void setFvmaxMultiplier(double fvMaxMultiplier);
+        double getFvmaxMultiplier() const;
 
-        void setdampingCoefficient(double dampingCoefficient);
-        double getdampingCoefficient() const;
+        void setDampingCoefficient(double dampingCoefficient);
+        double getDampingCoefficient() const;
 
-        void setnormFiberSlackLength(double normFiberSlackLength);
-        double getnormFiberSlackLength() const;
+        void setNormFiberSlackLength(double normFiberSlackLength);
+        double getNormFiberSlackLength() const;
 
-        void setactivTimeConstant(double activTimeConstant);
-        double getactivTimeConstant() const;
+        void setActivTimeConstant(double activTimeConstant);
+        double getActivTimeConstant() const;
 
-        void setdeactivTimeConstant(double deactivTimeConstant);
-        double getdeactivTimeConstant() const;
+        void setDeactivTimeConstant(double deactivTimeConstant);
+        double getDeactivTimeConstant() const;
 
-        void setpennAtOptFiberLength(double pennAtOptFiberLength);
-        double getpennAtOptFiberLength() const;
+        void setPennAtOptFiberLength(double pennAtOptFiberLength);
+        double getPennAtOptFiberLength() const;
 
         //struct ImplicitResults;
 
@@ -142,7 +142,7 @@ The parent class, Muscle.h, provides
             double F5 = SimTK::NaN;
 
 
-        
+
         };
 
 

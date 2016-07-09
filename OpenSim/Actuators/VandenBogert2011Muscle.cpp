@@ -45,17 +45,17 @@ void VandenBogert2011Muscle::constructProperties()
 {
     setAuthors("A. van den Bogert, B. Humphreys");
     //constructProperty_max_isometric_force(1000);
-    constructProperty_fMaxTendonStrain(0.04);
+    constructProperty_fMaxTendonStrain(0.033);
     constructProperty_fl_width(0.63);
     constructProperty_fv_AHill(0.25);
-    constructProperty_fv_maxMultiplier(1.4);
+    constructProperty_fv_maxMultiplier(1.5);
     //constructProperty_optimal_fiber_length(0.1);
     constructProperty_dampingCoefficient(0.01);
     constructProperty_normFiberSlackLength(1.0);
     //constructProperty_tendon_slack_length(0.2);
     constructProperty_activTimeConstant(0.01);
     constructProperty_deactivTimeConstant(0.04);
-    constructProperty_pennAtOptFiberLength(0.0);
+    constructProperty_pennAtOptFiberLength(0.1745);
 }
 
 // Define new states and their derivatives in the underlying system
@@ -97,51 +97,52 @@ void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
 //--------------------------------------------------------------------------
 // GET & SET Properties
 //--------------------------------------------------------------------------
-void VandenBogert2011Muscle::setfMaxTendonStrain(double fMaxTendonStrain) {
-    setfMaxTendonStrain(fMaxTendonStrain);
-    }
-double VandenBogert2011Muscle::getfMaxTendonStrain() const
-    { return getfMaxTendonStrain(); }
 
-void VandenBogert2011Muscle::setfl_width(double fl_width)
-    { setfl_width(fl_width); }
-double VandenBogert2011Muscle::getfl_width() const
-    { return getfl_width(); }
 
-void VandenBogert2011Muscle::setfv_AHill(double fv_AHill)
-    { setfv_AHill(fv_AHill); }
-double VandenBogert2011Muscle::getfv_AHill() const
-    { return getfv_AHill(); }
+void VandenBogert2011Muscle::setFMaxTendonStrain(double fMaxTendonStrain) {
+    set_fMaxTendonStrain(fMaxTendonStrain); }
+double VandenBogert2011Muscle::getFMaxTendonStrain() const {
+     return get_fMaxTendonStrain(); }
 
-void VandenBogert2011Muscle::setfv_maxMultiplier(double fv_maxMultiplier)
-    { setfv_maxMultiplier(fv_maxMultiplier); }
-double VandenBogert2011Muscle::getfv_maxMultiplier() const
-    { return getfv_maxMultiplier(); }
+void VandenBogert2011Muscle::setFlWidth(double flWidth) {
+     set_fl_width(flWidth); }
+double VandenBogert2011Muscle::getFlWidth() const
+    { return get_fl_width(); }
 
-void VandenBogert2011Muscle::setdampingCoefficient(double dampingCoefficient)
-    { setdampingCoefficient(dampingCoefficient); }
-double VandenBogert2011Muscle::getdampingCoefficient() const
-    { return getdampingCoefficient(); }
+void VandenBogert2011Muscle::setFvAHill(double fvAHill) {
+    set_fv_AHill(fvAHill); }
+double VandenBogert2011Muscle::getFvAHill() const {
+     return get_fv_AHill(); }
 
-void VandenBogert2011Muscle::setnormFiberSlackLength(double normFiberSlackLength)
-    { setnormFiberSlackLength(normFiberSlackLength); }
-double VandenBogert2011Muscle::getnormFiberSlackLength() const
-    { return getnormFiberSlackLength(); }
+void VandenBogert2011Muscle::setFvmaxMultiplier(double fvMaxMultiplier) {
+     set_fv_maxMultiplier(fvMaxMultiplier); }
+double VandenBogert2011Muscle::getFvmaxMultiplier() const {
+     return get_fv_maxMultiplier(); }
 
-void VandenBogert2011Muscle::setactivTimeConstant(double activTimeConstant)
-    { setactivTimeConstant(activTimeConstant); }
-double VandenBogert2011Muscle::getactivTimeConstant() const
-    { return getactivTimeConstant(); }
+void VandenBogert2011Muscle::setDampingCoefficient(double dampingCoefficient) {
+     set_dampingCoefficient(dampingCoefficient); }
+double VandenBogert2011Muscle::getDampingCoefficient() const {
+     return get_dampingCoefficient(); }
 
-void VandenBogert2011Muscle::setdeactivTimeConstant(double deactivTimeConstant)
-    { setdeactivTimeConstant(deactivTimeConstant); }
-double VandenBogert2011Muscle::getdeactivTimeConstant() const
-    { return getdeactivTimeConstant(); }
+void VandenBogert2011Muscle::setNormFiberSlackLength(double normFiberSlackLength) {
+     set_normFiberSlackLength(normFiberSlackLength); }
+double VandenBogert2011Muscle::getNormFiberSlackLength() const {
+     return get_normFiberSlackLength(); }
 
-void VandenBogert2011Muscle::setpennAtOptFiberLength(double pennAtOptFiberLength)
-{ setpennAtOptFiberLength(pennAtOptFiberLength); }
-double VandenBogert2011Muscle::getpennAtOptFiberLength() const
-{ return getpennAtOptFiberLength(); }
+void VandenBogert2011Muscle::setActivTimeConstant(double activTimeConstant) {
+     set_activTimeConstant(activTimeConstant); }
+double VandenBogert2011Muscle::getActivTimeConstant() const {
+     return get_activTimeConstant(); }
+
+void VandenBogert2011Muscle::setDeactivTimeConstant(double deactivTimeConstant) {
+     set_deactivTimeConstant(deactivTimeConstant); }
+double VandenBogert2011Muscle::getDeactivTimeConstant() const {
+     return get_deactivTimeConstant(); }
+
+void VandenBogert2011Muscle::setPennAtOptFiberLength(double pennAtOptFiberLength) {
+    set_pennAtOptFiberLength(pennAtOptFiberLength); }
+double VandenBogert2011Muscle::getPennAtOptFiberLength() const {
+    return get_pennAtOptFiberLength(); }
 
 
 //--------------------------------------------------------------------------
@@ -244,37 +245,37 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
     double maxIsoForce = getMaxIsometricForce();
 
     //u_{max} (dimensionless) strain in the series elastic element at load of maxIsometricForce
-    double fMaxTendonStrain = getfMaxTendonStrain(); //Strain in the series elastic element at load of Fmax
+    double fMaxTendonStrain = getFMaxTendonStrain(); //Strain in the series elastic element at load of Fmax
 
     //W (dimensionless) width parameter of the force-length relationship of the muscle fiber
-    double fl_width = getfl_width();
+    double fl_width = getFlWidth();
 
     //AHill (dimensionless) Hill parameter of the force-velocity relationship
-    double fv_AHill= getfv_AHill();        //Hill parameter of the force-velocity relationship
+    double fv_AHill= getFvAHill();        //Hill parameter of the force-velocity relationship
 
     //FV_{max} (dimensionless) maximal eccentric force
-    double fv_maxMultiplier = getfv_maxMultiplier(); //Maximal eccentric force multiplier
+    double fv_maxMultiplier = getFvmaxMultiplier(); //Maximal eccentric force multiplier
 
     // L_{opt}  (m) Optimal Length of Contractile Element;
     double optFiberLength = getOptimalFiberLength();  //Optimal Length of Contractile Element
 
     //b (s/m) damping coefficient of damper parallel to the fiber (normalized to maxIsometricForce)
-    double dampingCoeff = getdampingCoefficient();
+    double dampingCoeff = getDampingCoefficient();
 
     //L_{slack,fiber} Slack length of the parallel elastic element, divided by Lceopt
-    double fiberSlackLength= getnormFiberSlackLength();
+    double fiberSlackLength= getNormFiberSlackLength();
 
     //L_{slack,tendon} (dimensionless) slack length of the tendon
-    double tendonSlackLength = get_tendon_slack_length();
+    double tendonSlackLength = getTendonSlackLength();
 
     //T_{act} (s) Activation time
-    double activTimeConstant = getactivTimeConstant();
+    double activTimeConstant = getActivTimeConstant();
 
     //T_{deact} (s) Deactivation time
-    double deactivTimeConstant = getdeactivTimeConstant();
+    double deactivTimeConstant = getDeactivTimeConstant();
 
     //phi_{opt} pennation at Optimal Fiber Length
-    double pennAtOptFiberLength = getpennAtOptFiberLength();
+    double pennAtOptFiberLength = getPennAtOptFiberLength();
 
 
     // constants derived from the muscle parameters
@@ -322,7 +323,7 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
 
     //----------------F1 is the normalized isometric force-length relationship at maximum activation--------------//
     double fiberExp = (fiberLength - 1.0) / fl_width;   // [dimensionless]
-    double F1 = exp(pow(-fiberExp, 2));        // Gaussian force-length curve
+    double F1 = exp(-pow(fiberExp, 2));        // Gaussian force-length curve
 
     double dF1_dfiberLength = 0;
     if (returnJacobians) {
@@ -481,8 +482,8 @@ VandenBogert2011Muscle::ImplicitResults VandenBogert2011Muscle::calcImplicitResi
     Results.F1=F1;    //Output these for troubleshooting
     Results.F2=F2;
     Results.F3=F3;
-    Results.F4=F4;
-    Results.F5=F5;
+    Results.F4=fl_width;
+    Results.F5=fiberExp;
 
 
 
