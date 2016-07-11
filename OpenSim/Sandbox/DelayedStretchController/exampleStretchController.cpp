@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                     OpenSim:  exampleHopperDevice.cpp                      *
+ *                 OpenSim:  exampleStretchController.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,8 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
- *            Thomas Uchida                                                   *
+ * Author(s): Ian Stavness, Mohammad Shabani, Thomas Uchida                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -39,7 +38,7 @@ using namespace std;
 namespace OpenSim {
 
 // Forward declarations for methods used below.
-Model buildTestbed();   //defined in defineStretchController.h
+Model buildTestbed();   //defined in helperMethods.h
 
 //------------------------------------------------------------------------------
 // Build the StretchController.
@@ -66,22 +65,6 @@ StretchController* buildStretchController(Model& model, PathActuator& pa) {
 		controller->updConnector("actuator").connect(pa); 
 		model.addComponent(controller);
 
-		return controller;
-	}
-	catch (Exception e) {
-		cout << e.what() << endl;
-	}
-}
-
-Controller* buildStretchController(const Muscle& m) {
-	try {
-		cout << "building controller for muscle " << m.getName() << endl;
-		auto controller = new StretchController();
-		controller->setName("stretchCon");
-		controller->set_length_gain(LENGTH_GAIN);
-
-		controller->updInput("length").connect(m.getOutput("fiber_length"));
-		controller->updConnector("actuator").connect(m);
 		return controller;
 	}
 	catch (Exception e) {
