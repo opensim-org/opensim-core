@@ -253,11 +253,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 // colors? Not sure how to scale. Muscles could still override that with 
 // activation level.
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
-	const double actuation =
-		SimTK::clamp(0., getActuation(state), 1.);
-	double gray = 0.3; // gray value at zero actuation
-	const SimTK::Vec3 color(gray + (1 - gray)*actuation); // gray to white
-	return color;
+    return SimTK::Vec3(SimTK::NaN);
 }
 
 
