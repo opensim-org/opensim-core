@@ -1,6 +1,5 @@
 
 file(GLOB TEST_PROGS "*est*.cpp")
-
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
 file(GLOB TRC_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/test/*.trc")
 file(GLOB MOT_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/test/*.mot")
@@ -18,4 +17,3 @@ OpenSimAddTests(
               ${MOT_TEST_FILES}
     LINKLIBS ${BTK_LIBRARIES} osimCommon ${SIMTK_ALL_LIBS} 
     )
-
