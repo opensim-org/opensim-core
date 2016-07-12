@@ -462,10 +462,11 @@ void testNegativeDelayDurationException() {
     PendulumController* controller = new PendulumController();
     controller->addActuator(*act);
     controller->set_delay(-0.35); // this should cause the exception.
-    model.addController(controller);
+	SimTK_TEST_MUST_THROW_EXC(model.addController(controller), 
+		SimTK::Exception::ValueWasNegative); // exception thrown in finalizeFromProperty
 	
-	//SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
-    //                          SimTK::Exception::ValueWasNegative);
+	SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
+                              SimTK::Exception::ValueWasNegative);
 }
 
 // Has an output that is a step function. Used to see if the delay can
@@ -647,18 +648,18 @@ void testDiscontinuousInput() {
     // so the delay output should still be 1.5.
     //std::cout << comp->stepDelay.getValue(ts.getState()) << " " << std::endl;
 	
-	Delay* stepDelay = dynamic_cast<Delay*> (&(comp->updComponent("/discontinuousInputTesting/stepDelay")));
-	Delay* discontDelay = dynamic_cast<Delay*> (&(comp->updComponent("/discontinuousInputTesting/discontDelay")));
+	const Delay& stepDelay = comp->getComponent<Delay>("/discontinuousInputTesting/stepDelay");
+	const Delay& discontDelay = comp->getComponent<Delay>("/discontinuousInputTesting/discontDelay");
 
-	SimTK_TEST_EQ(stepDelay->getValue(ts.getState()), 1.5);
+	SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 1.5);
     
 	//std::cout << comp->discontDelay.getValue(ts.getState()) << " " << std::endl;
-    SimTK_TEST_EQ(discontDelay->getValue(ts.getState()), 0.46);
+    SimTK_TEST_EQ(discontDelay.getValue(ts.getState()), 0.46);
     // At the discontinuity. :)
     ts.stepTo(0.70);
     
-	SimTK_TEST_EQ(stepDelay->getValue(ts.getState()), 4.3);
-    SimTK_TEST_EQ(discontDelay->getValue(ts.getState()), 1.500);
+	SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 4.3);
+    SimTK_TEST_EQ(discontDelay.getValue(ts.getState()), 1.500);
 }
 
 int main() {
@@ -672,9 +673,9 @@ int main() {
 
         SimTK_SUBTEST(testWithController);
 
-		//SimTK_SUBTEST(testNegativeDelayDurationException); tested below done above
-		SimTK_TEST_MUST_THROW_EXC(testNegativeDelayDurationException(),
-			SimTK::Exception::ValueWasNegative);
+		SimTK_SUBTEST(testNegativeDelayDurationException); //tested below done above
+		//SimTK_TEST_MUST_THROW_EXC(testNegativeDelayDurationException(),
+		//	SimTK::Exception::ValueWasNegative);
 		
         // TODO SimTK_SUBTEST(testStages); see test for why it's omitted.
         SimTK_SUBTEST(testDiscontinuousInput);
