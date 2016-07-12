@@ -101,19 +101,19 @@ private:
         
 		const auto& coord = model.getCoordinateSet()[0];
         if (!updInput("coord_value").isConnected())
-		    updInput("coord_value").connect(coord.getOutput("value"));
+            updInput("coord_value").connect(coord.getOutput("value"));
         
-		auto& delay = updMemberSubcomponent<Delay>(_delayIdx);
+        auto& delay = updMemberSubcomponent<Delay>(_delayIdx);
         auto& vectorDelay = updMemberSubcomponent<DelayVector>(_delayVectorIdx);
         auto& comVelocityDelay = updMemberSubcomponent<Delay_<SimTK::Vec3>>(_comVelocityDelayIdx);
         
-		if (!delay.updInput("input").isConnected())
-		    delay.updInput("input").connect(coord.getOutput("value"));
+        if (!delay.updInput("input").isConnected())
+            delay.updInput("input").connect(coord.getOutput("value"));
         if (!vectorDelay.updInput("input").isConnected())
-		    vectorDelay.updInput("input").connect(getOutput("coord_value_vector"));
+            vectorDelay.updInput("input").connect(getOutput("coord_value_vector"));
         if (!comVelocityDelay.updInput("input").isConnected())
-            comVelocityDelay.updInput("input").connect(
-            model.getOutput("com_velocity"));
+            comVelocityDelay.updInput("input")
+            .connect(model.getOutput("com_velocity"));
     }
 
     MemberSubcomponentIndex _delayIdx
