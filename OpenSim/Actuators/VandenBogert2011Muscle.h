@@ -128,7 +128,7 @@ The parent class, Muscle.h, provides
 
         //struct ImplicitResults;
 
-        struct ImplicitResults {
+        struct ImplicitResidual {
             double forceResidual = SimTK::NaN;
             double activResidual = SimTK::NaN;
             double forceTendon = SimTK::NaN;
@@ -151,7 +151,10 @@ The parent class, Muscle.h, provides
 //=============================================================================
 
         //ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
-        ImplicitResults calcImplicitResidual(double muslceLength, double projFiberLength, double activ, double projFiberVelocity, double activ_dot, double u, int returnJacobians) const;
+        ImplicitResidual calcImplicitResidual(double muslceLength, double projFiberLength, double activ, double projFiberVelocity, double activ_dot, double u, int returnJacobians) const;
+        ImplicitResidual calcImplicitResidual(SimTK::Vec3 y,SimTK::Vec3 ydot, double u, int returnJacobians=0) const;
+
+        ImplicitResidual    calcJacobianByFiniteDiff(SimTK::Vec3 y,SimTK::Vec3 ydot, double u, double h=1e-7 ) const;
 
     protected:
 //=============================================================================
