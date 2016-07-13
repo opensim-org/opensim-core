@@ -98,8 +98,8 @@ private:
     }
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
-        
-		const auto& coord = model.getCoordinateSet()[0];
+
+        const auto& coord = model.getCoordinateSet()[0];
         if (!updInput("coord_value").isConnected())
             updInput("coord_value").connect(coord.getOutput("value"));
         
@@ -115,7 +115,7 @@ private:
             comVelocityDelay.updInput("input")
             .connect(model.getOutput("com_velocity"));
     }
-
+    
     MemberSubcomponentIndex _delayIdx
     { constructSubcomponent<Delay>("coordinate_delay") };
     MemberSubcomponentIndex _delayVectorIdx
@@ -462,7 +462,7 @@ void testNegativeDelayDurationException() {
     controller->set_delay(-0.35); // this should cause the exception.
     SimTK_TEST_MUST_THROW_EXC(model.addController(controller), 
                               SimTK::Exception::ValueWasNegative); // exception thrown in finalizeFromProperty
-	
+
     SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
                               SimTK::Exception::ValueWasNegative);
 }
@@ -483,10 +483,6 @@ public:
     DiscontinuousInputTesting() {
         setName("discontinuousInputTesting");
     }
-	
-    //Delay timeDelay{0.2}; 
-    //Delay stepDelay{0.2};
-    //Delay discontDelay{0.2};
 
     double getTime(const SimTK::State& s) const
     { return s.getTime(); }
@@ -498,7 +494,7 @@ public:
 private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
-		
+
         updMemberSubcomponent<Delay>(_timeDelay).set_delay(0.2);
         updMemberSubcomponent<Delay>(_stepDelay).set_delay(0.2);
         updMemberSubcomponent<Delay>(_discontDelay).set_delay(0.2);
@@ -518,15 +514,15 @@ private:
             stepDelay.updInput("input").connect(getOutput("step"));
         if (!discontDelay.updInput("input").isConnected())
             discontDelay.updInput("input").connect(getOutput("discont"));
-		
+	
     }
 
-	MemberSubcomponentIndex _timeDelay
-	{ constructSubcomponent<Delay>("timeDelay") };
-	MemberSubcomponentIndex _stepDelay
-	{ constructSubcomponent<Delay>("stepDelay") };
-	MemberSubcomponentIndex _discontDelay
-	{ constructSubcomponent<Delay>("discontDelay") };
+    MemberSubcomponentIndex _timeDelay
+    { constructSubcomponent<Delay>("timeDelay") };
+    MemberSubcomponentIndex _stepDelay
+    { constructSubcomponent<Delay>("stepDelay") };
+    MemberSubcomponentIndex _discontDelay
+    { constructSubcomponent<Delay>("discontDelay") };
 
 
     // This event gets triggered at 0.5 seconds, which matches the
@@ -598,19 +594,19 @@ void testDiscontinuousInput() {
     model.addJoint(joint);
     model.addForce(spring);
 
-	
+
     // Add Delay-related components.
     auto* comp = new DiscontinuousInputTesting();
-	model.addComponent(comp);
-	
+    model.addComponent(comp);
+
     // Integrate past 3.0 seconds.
     State& s = model.initSystem();
-	
+
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     integrator.setAccuracy(tol);
     SimTK::TimeStepper ts(model.getSystem(), integrator);
     ts.initialize(s);
-	
+
     /*
     // This block was used for developing the test, but is not part of the
     // test. You may want to use this if you edit the test.
@@ -636,18 +632,18 @@ void testDiscontinuousInput() {
     // The "step" output switches at 0.5 seconds, but the delay is 0.2 seconds,
     // so the delay output should still be 1.5.
     //std::cout << comp->stepDelay.getValue(ts.getState()) << " " << std::endl;
-	
-	const Delay& stepDelay = comp->getComponent<Delay>("/discontinuousInputTesting/stepDelay");
-	const Delay& discontDelay = comp->getComponent<Delay>("/discontinuousInputTesting/discontDelay");
 
-	SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 1.5);
+    const Delay& stepDelay = comp->getComponent<Delay>("/discontinuousInputTesting/stepDelay");
+    const Delay& discontDelay = comp->getComponent<Delay>("/discontinuousInputTesting/discontDelay");
+
+    SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 1.5);
     
-	//std::cout << comp->discontDelay.getValue(ts.getState()) << " " << std::endl;
+    //std::cout << comp->discontDelay.getValue(ts.getState()) << " " << std::endl;
     SimTK_TEST_EQ(discontDelay.getValue(ts.getState()), 0.46);
     // At the discontinuity. :)
     ts.stepTo(0.70);
-    
-	SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 4.3);
+
+    SimTK_TEST_EQ(stepDelay.getValue(ts.getState()), 4.3);
     SimTK_TEST_EQ(discontDelay.getValue(ts.getState()), 1.500);
 }
 
@@ -663,14 +659,12 @@ int main() {
         SimTK_SUBTEST(testWithController);
 
         SimTK_SUBTEST(testNegativeDelayDurationException); //tested below done above
-		//SimTK_TEST_MUST_THROW_EXC(testNegativeDelayDurationException(),
-		//	SimTK::Exception::ValueWasNegative);
 		
         // TODO SimTK_SUBTEST(testStages); see test for why it's omitted.
         SimTK_SUBTEST(testDiscontinuousInput);
     SimTK_END_TEST();
 
-	return 0;
+    return 0;
 }
 
 
