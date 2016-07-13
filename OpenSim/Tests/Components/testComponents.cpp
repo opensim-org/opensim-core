@@ -215,11 +215,9 @@ void testComponent(const Component& instanceToTest)
             Object* dependency =
                 Object::newInstanceOfType(dependencyTypeName);
 
-            if (dependency == nullptr){
-                // Get a concrete instance of a PhysicalFrame, which is a Body
-                if (dependencyTypeName == "PhysicalFrame"){
-                    dependency = Object::newInstanceOfType("Body");
-                }
+            if (dynamic_cast< Connector<Frame>*>(&connector) ||
+                dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
+                dependency = Object::newInstanceOfType("Body");
             }
 
             if (dependency) {
@@ -467,40 +465,28 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     const string& className = instance->getConcreteClassName();
     cout << "Adding " << className << " to the model." << endl;
 
-    try{
-        if (Object::isObjectTypeDerivedFrom< Analysis >(className))
-            model.addAnalysis(dynamic_cast<Analysis*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Body >(className))
-            model.addBody(dynamic_cast<Body*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
-            model.addConstraint(dynamic_cast<Constraint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
-            model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Controller >(className))
-            model.addController(dynamic_cast<Controller*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Force >(className))
-            model.addForce(dynamic_cast<Force*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Probe >(className))
-            model.addProbe(dynamic_cast<Probe*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Joint >(className))
-            model.addJoint(dynamic_cast<Joint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Frame >(className))
-            model.addFrame(dynamic_cast<Frame*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
-            model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
-        else
-        {
-            throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
-        }
-    }
-    // It is more than likely that connect() will fail, but the subcomponents tree
-    // will be traversable, so we can continue to resolve dependencies by visiting
-    // subcomponents' connectors
-    catch (const std::exception& e) {
-        cout << "testComponents: Model unable to connect after adding ";
-        cout << instance->getName() << endl;
-        cout << "ERROR: " << e.what() << "'" << endl;
-        cout << "Possible that dependency was not added yet. Continuing...." << endl;
+    if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+        throw Exception("Analysis is not a Component.", __FILE__, __LINE__);
+    else if (Object::isObjectTypeDerivedFrom< Body >(className))
+        model.addBody(dynamic_cast<Body*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+        model.addConstraint(dynamic_cast<Constraint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+        model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+        model.addController(dynamic_cast<Controller*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Force >(className))
+        model.addForce(dynamic_cast<Force*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+        model.addProbe(dynamic_cast<Probe*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+        model.addJoint(dynamic_cast<Joint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+        model.addFrame(dynamic_cast<Frame*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Component >(className))
+        model.addComponent(dynamic_cast<Component*>(instance));
+    else {
+        throw Exception(className + " is not a Component.",
+            __FILE__, __LINE__);
     }
 }

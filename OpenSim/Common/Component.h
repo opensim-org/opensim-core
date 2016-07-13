@@ -878,7 +878,7 @@ public:
 
 
     /**
-    * Get a concrete Input that you can direclty ask for its values.
+    * Get a concrete Input that you can directly ask for its values.
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
@@ -1105,7 +1105,7 @@ public:
      * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
-     * @param name   the name of the dsicrete variable
+     * @param name   the name of the discrete variable
      * @param value  the value to set
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
@@ -1587,7 +1587,7 @@ protected:
     Override to set the derivatives of state variables added to the system 
     by this component. (also see extendAddToSystem()). If the component adds states
     and computeStateVariableDerivatives is not implemented by the component,
-    an exception is thrown when the system tries to evaluate its derivates.
+    an exception is thrown when the system tries to evaluate its derivatives.
 
     Implement like this:
     @code
@@ -2170,7 +2170,7 @@ protected:
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
      * non-existant. The also specifies at what stage the output must be valid
-     * for the the component to consume it as an input.  if the Output's
+     * for the component to consume it as an input.  if the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>

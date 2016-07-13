@@ -53,7 +53,7 @@ static const std::string testbedAttachment2{"load"};
 //static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
 #pragma region Step1_TaskA_solution
 
-static const std::string hopperHeightOutput{"/Dennis/slider/height/value"};
+static const std::string hopperHeightOutput{"/Dennis/slider/yCoord/value"};
 
 #pragma endregion
 
