@@ -24,9 +24,6 @@
 #include "OpenSim/Simulation/osimSimulation.h"
 #include "OpenSim/Actuators/osimActuators.h"
 
-//#include "OpenSim/Common/osimCommon.h"
-//#include "OpenSim/Analyses/osimAnalyses.h"
-
 using namespace SimTK;
 using namespace OpenSim;
 
@@ -58,8 +55,7 @@ public:
     OpenSim_DECLARE_OUTPUT(coord_value_vector, Vector, getCoordValueVector,
             SimTK::Stage::Model);
     PendulumController() {
-        //constructInfrastructure();
-		constructProperties();
+        constructProperties();
     }
     PendulumController(double delay) : PendulumController() {
         set_delay(delay);
@@ -105,17 +101,19 @@ private:
         
 		const auto& coord = model.getCoordinateSet()[0];
         if (!updInput("coord_value").isConnected())
-			updInput("coord_value").connect(coord.getOutput("value"));
+            updInput("coord_value").connect(coord.getOutput("value"));
+        
         auto& delay = updMemberSubcomponent<Delay>(_delayIdx);
         auto& vectorDelay = updMemberSubcomponent<DelayVector>(_delayVectorIdx);
         auto& comVelocityDelay = updMemberSubcomponent<Delay_<SimTK::Vec3>>(_comVelocityDelayIdx);
-		if (!delay.updInput("input").isConnected())
-			delay.updInput("input").connect(coord.getOutput("value"));
+        
+        if (!delay.updInput("input").isConnected())
+            delay.updInput("input").connect(coord.getOutput("value"));
         if (!vectorDelay.updInput("input").isConnected())
-			vectorDelay.updInput("input").connect(getOutput("coord_value_vector"));
+            vectorDelay.updInput("input").connect(getOutput("coord_value_vector"));
         if (!comVelocityDelay.updInput("input").isConnected())
-			comVelocityDelay.updInput("input").connect(
-                model.getOutput("com_velocity"));
+            comVelocityDelay.updInput("input")
+            .connect(model.getOutput("com_velocity"));
     }
 
     MemberSubcomponentIndex _delayIdx
@@ -143,7 +141,7 @@ public:
             SimTK::Stage::Dynamics);
 
     DelayStageTesting() {
-        //constructInfrastructure();
+        //constructProperties();
     }
     // This also tests the convenience constructor.
     Delay posDelay{0.01};
@@ -462,10 +460,10 @@ void testNegativeDelayDurationException() {
     PendulumController* controller = new PendulumController();
     controller->addActuator(*act);
     controller->set_delay(-0.35); // this should cause the exception.
-	SimTK_TEST_MUST_THROW_EXC(model.addController(controller), 
-		SimTK::Exception::ValueWasNegative); // exception thrown in finalizeFromProperty
+    SimTK_TEST_MUST_THROW_EXC(model.addController(controller), 
+                              SimTK::Exception::ValueWasNegative); // exception thrown in finalizeFromProperty
 	
-	SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
+    SimTK_TEST_MUST_THROW_EXC(model.initSystem(),
                               SimTK::Exception::ValueWasNegative);
 }
 
@@ -483,8 +481,7 @@ public:
     OpenSim_DECLARE_OUTPUT(discont, double, getDiscont, SimTK::Stage::Time);
 
     DiscontinuousInputTesting() {
-		setName("discontinuousInputTesting");
-        //constructInfrastructure();
+        setName("discontinuousInputTesting");
     }
 	
     //Delay timeDelay{0.2}; 
@@ -501,29 +498,27 @@ public:
 private:
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
-		auto& timeDelay = updMemberSubcomponent<Delay>(_timeDelay);
-		auto& stepDelay = updMemberSubcomponent<Delay>(_stepDelay);
-		auto& discontDelay = updMemberSubcomponent<Delay>(_discontDelay);
+		
+        updMemberSubcomponent<Delay>(_timeDelay).set_delay(0.2);
+        updMemberSubcomponent<Delay>(_stepDelay).set_delay(0.2);
+        updMemberSubcomponent<Delay>(_discontDelay).set_delay(0.2);
 
-		timeDelay.set_delay(0.2);
-		stepDelay.set_delay(0.2);
-		discontDelay.set_delay(0.2);
-        //addComponent(&timeDelay);
-        //addComponent(&stepDelay);
-        //addComponent(&discontDelay);
     }
+
     void extendConnectToModel(Model& model) override {
         Super::extendConnectToModel(model);
 
-		auto& timeDelay = updMemberSubcomponent<Delay>(_timeDelay);
-		auto& stepDelay = updMemberSubcomponent<Delay>(_stepDelay);
-		auto& discontDelay = updMemberSubcomponent<Delay>(_discontDelay);
+        auto& timeDelay = updMemberSubcomponent<Delay>(_timeDelay);
+        auto& stepDelay = updMemberSubcomponent<Delay>(_stepDelay);
+        auto& discontDelay = updMemberSubcomponent<Delay>(_discontDelay);
 
-		if (!timeDelay.updInput("input").isConnected()) {
-			timeDelay.updInput("input").connect(getOutput("time"));
-			stepDelay.updInput("input").connect(getOutput("step"));
-			discontDelay.updInput("input").connect(getOutput("discont"));
-		}
+        if (!timeDelay.updInput("input").isConnected()) 
+            timeDelay.updInput("input").connect(getOutput("time"));
+        if (!stepDelay.updInput("input").isConnected())
+            stepDelay.updInput("input").connect(getOutput("step"));
+        if (!discontDelay.updInput("input").isConnected())
+            discontDelay.updInput("input").connect(getOutput("discont"));
+		
     }
 
 	MemberSubcomponentIndex _timeDelay
@@ -606,13 +601,7 @@ void testDiscontinuousInput() {
 	
     // Add Delay-related components.
     auto* comp = new DiscontinuousInputTesting();
-	
-	try {
-		model.addComponent(comp);
-	}
-	catch (OpenSim::Exception& e) {
-		std::cout << e.what() << std::endl;
-	}
+	model.addComponent(comp);
 	
     // Integrate past 3.0 seconds.
     State& s = model.initSystem();
@@ -673,7 +662,7 @@ int main() {
 
         SimTK_SUBTEST(testWithController);
 
-		SimTK_SUBTEST(testNegativeDelayDurationException); //tested below done above
+        SimTK_SUBTEST(testNegativeDelayDurationException); //tested below done above
 		//SimTK_TEST_MUST_THROW_EXC(testNegativeDelayDurationException(),
 		//	SimTK::Exception::ValueWasNegative);
 		
