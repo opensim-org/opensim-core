@@ -115,7 +115,7 @@ private:
             comVelocityDelay.updInput("input")
             .connect(model.getOutput("com_velocity"));
     }
-    
+
     MemberSubcomponentIndex _delayIdx
     { constructSubcomponent<Delay>("coordinate_delay") };
     MemberSubcomponentIndex _delayVectorIdx
