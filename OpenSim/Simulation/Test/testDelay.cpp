@@ -514,7 +514,7 @@ private:
             stepDelay.updInput("input").connect(getOutput("step"));
         if (!discontDelay.updInput("input").isConnected())
             discontDelay.updInput("input").connect(getOutput("discont"));
-	
+    
     }
 
     MemberSubcomponentIndex _timeDelay
@@ -659,7 +659,7 @@ int main() {
         SimTK_SUBTEST(testWithController);
 
         SimTK_SUBTEST(testNegativeDelayDurationException); //tested below done above
-		
+        
         // TODO SimTK_SUBTEST(testStages); see test for why it's omitted.
         SimTK_SUBTEST(testDiscontinuousInput);
     SimTK_END_TEST();
