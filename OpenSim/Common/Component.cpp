@@ -200,8 +200,8 @@ void Component::componentsFinalizeFromProperties() const
             ->finalizeFromProperties();
     }
     for (auto& comp : _propertySubcomponents) {
-		const_cast<Component*>(comp.get())
-			->finalizeFromProperties();
+        const_cast<Component*>(comp.get())
+            ->finalizeFromProperties();
     }
     for (auto& comp : _adoptedSubcomponents) {
         const_cast<Component*>(comp.get())
