@@ -126,7 +126,10 @@ macro(OpenSimAddPythonModule)
         set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
     elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
         # TODO disable optimization on Windows.
-        set(_COMPILE_FLAGS "/wd4996")
+        # Don't warn about:
+        # 4996: deprecated functions.
+        # 4114: "const const T"
+        set(_COMPILE_FLAGS "/wd4996 /wd4114")
     endif()
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")

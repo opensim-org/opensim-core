@@ -38,6 +38,27 @@ namespace OpenSim {
 
 class Component;
 
+/** One of the values of an Output. */
+class AbstractChannel {
+public:
+    virtual ~AbstractChannel() = default;
+    /** The name of this channel, or the name of the output that
+    contains this Channel if it's in a single-value Output. */
+    virtual const std::string& getChannelName() const = 0;
+    /** The name of this channel appended to the name of the output that
+     * contains this channel. The output name and channel name are separated by
+     * a colon (e.g., "markers:medial_knee"). If the output that contains
+     * this channel is a single-value Output, then this is just the Output's 
+     * name. */
+    virtual std::string getName() const = 0;
+    /** This returns the full path name of the component to which this channel
+     * belongs prepended to the channel's name. For example, this 
+     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     */
+    virtual std::string getPathName() const = 0;
+};
+
+
 //=============================================================================
 //                           OPENSIM COMPONENT OUTPUT
 //=============================================================================
@@ -67,26 +88,6 @@ class Component;
  * to Inputs.
  * @author  Ajay Seth
  */
-
-/** One of the values of an Output. */
-class AbstractChannel {
-public:
-    virtual ~AbstractChannel() = default;
-    /** The name of this channel, or the name of the output that
-    contains this Channel if it's in a single-value Output. */
-    virtual const std::string& getChannelName() const = 0;
-    /** The name of this channel appended to the name of the output that
-     * contains this channel. The output name and channel name are separated by
-     * a colon (e.g., "markers:medial_knee"). If the output that contains
-     * this channel is a single-value Output, then this is just the Output's 
-     * name. */
-    virtual std::string getName() const = 0;
-    /** This returns the full path name of the component to which this channel
-     * belongs prepended to the channel's name. For example, this 
-     * method might return something like "/model/metabolics/heat_rate:soleus_r".
-     */
-    virtual std::string getPathName() const = 0;
-};
 
 class OSIMCOMMON_API AbstractOutput {
 public:
@@ -167,7 +168,8 @@ public:
     valid at a given realization Stage.
     @param name             The name of the output.
     @param outputFunction   The output function to be invoked (returns Output T)
-    @param dependsOnStage   Stage at which Output can be evaluated. */
+    @param dependsOnStage   Stage at which Output can be evaluated.
+    @param isList           Can this Output have more than one channel? */
     explicit Output(const std::string& name,
         const std::function<void (const Component* comp,
                                  const SimTK::State&,
@@ -292,6 +294,12 @@ public:
     Output<T>* clone() const override { return new Output(*this); }
     SimTK_DOWNCAST(Output, AbstractOutput);
 
+    /** For use in python/java/MATLAB bindings. */
+    // This method exists for consistency with Object's safeDownCast.
+    static Output<T>* safeDownCast(AbstractOutput* parent) {
+        return dynamic_cast<Output<T>*>(parent);
+    }
+
 private:
     mutable T _result;
     std::function<void (const Component*,
@@ -334,9 +342,11 @@ private:
     SimTK::ReferencePtr<const Output<T>> _output;
     std::string _channelName;
     
+#ifndef SWIG // These declarations cause a warning in SWIG.
     // To allow Output<T> to set the _output pointer upon copy.
     friend Output<T>::Output(const Output&);
     friend Output<T>& Output<T>::operator=(const Output&);
+#endif
 };
 
 // TODO consider using std::reference_wrapper<T> as type for _output_##oname,
@@ -410,7 +420,7 @@ private:
  *     }
  * };
  * @endcode
- *
+ * @relates OpenSim::Output
  */
 #define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
     /** @name Outputs (list)                                             */ \

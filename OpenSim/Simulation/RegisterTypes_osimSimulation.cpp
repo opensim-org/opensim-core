@@ -143,7 +143,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
   try {
 
     Object::registerType( AnalysisSet() );
-    Object::registerType( ModelDisplayHints());
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
@@ -267,6 +266,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType(Connector<Frame>());
     Object::registerType(Connector<PhysicalFrame>());
     Object::registerType(Connector<Body>());
+    Object::registerType(Connector<Coordinate>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

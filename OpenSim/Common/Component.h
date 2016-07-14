@@ -356,7 +356,7 @@ public:
     @endcode
 
     @param[in]      fixed   
-        If \c true, generate only geometry that is independent of time, 
+        If \c true, generate only geometry that is fixed to a PhysicalFrame, 
         configuration, and velocity. Otherwise generate only such dependent 
         geometry.
     @param[in]      hints   
@@ -400,35 +400,91 @@ public:
     bool hasSystem() const { return !_system.empty(); }
 
     /**
-    * Add a Component to this component's property list.
-    * This component takes ownership of the added component.
-    * 
-    * TODO rename to adoptComponent() when Model::add#ModelComponent#()
-    * methods are also renamed. For the time being remain consistent. -aseth 
+    * Add a Component (as a subcomponent) of this component.
+    * This component takes ownership of the subcomponent and it will be
+    * serialized (appear in XML) as part of this component. Specifically,
+    * it will appear in the `<components>` list for this Component.
+    * If the subcomponent is already owned by this component or exists
+    * in the same hierarchy (tree) as this component, an Exception
+    * is thrown.
+    * @note addComponent is intended to replace existing addBody(), addJoint,
+    *       ... on Model or the requirement for specific add###() methods to
+    *       subcomponents to a Component.
     *
-    * @throws ComponentAlreadyPartOfOwnershipTree  */
-    void addComponent(Component* comp);
+    * Typical usage is:
+    @code
+        // Start with an empty Model (which is a Component)
+        Model myModel;
+        // Create any Component type on the heap
+        Body* newBody = new Body();
+        // Customize the Component by setting its properties
+        newBody->setName("newBody");
+        newBody->setMass(10.0);
+        newBody->setMassCenter(SimTK::Vec3(0));
+        // ... 
+        // Now add it to your model, which will take ownership of it
+        myModel.addComponent(newBody);
+        // 
+        // Keep creating and adding new components, like Joints, Forces, etc..
+    @endcode
+    *
+    * @throws ComponentAlreadyPartOfOwnershipTree
+    * @param subcomponent is the Component to be added. */
+    void addComponent(Component* subcomponent);
 
     /**
-     * Get an iterator through the underlying subcomponents that this component is 
-     * composed of. The hierarchy of Components/subComponents forms a tree. The 
-     * tree structure is fixed when the system is created.
+     * Get an iterator through the underlying subcomponents that this component is
+     * composed of. The hierarchy of Components/subComponents forms a tree.
      * The order of the Components is that of tree preorder traversal so that a
-     * component is traversed before its subcomponents. */
+     * component is traversed before its subcomponents.
+     *
+     * @code{.cpp}
+     * for (const auto& muscle : model.getComponentList<Muscle>()) {
+     *     muscle.get_max_isometric_force();
+     * }
+     * @endcode
+     *
+     * The returned ComponentList does not permit modifying any components; if
+     * you want to modify the components, see updComponentList().
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
     template <typename T = Component>
-    ComponentList<T> getComponentList() const {
+    ComponentList<const T> getComponentList() const {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
+        initComponentTreeTraversal(*this);
+        return ComponentList<const T>(*this);
+    }
+    
+    /** Similar to getComponentList(), except the resulting list allows one to
+    modify the components. For example, you could use this method to change
+    the max isometric force of all muscles:
+    
+    @code{.cpp}
+    for (auto& muscle : model.updComponentList<Muscle>()) {
+        muscle.set_max_isometric_force(...);
+    }
+    @endcode
+    
+    @note Do NOT use this method to add (or remove) (sub)components from any
+    component. The tree structure of the components should not be altered
+    through this ComponentList.
+    
+    @tparam T A subclass of Component (e.g., Body, Muscle). */
+    template <typename T = Component>
+    ComponentList<T> updComponentList() {
+        static_assert(std::is_base_of<Component, T>::value,
+                "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
         return ComponentList<T>(*this);
     }
 
-    /**
-     * Class to hold the list of components/subcomponents to iterate over.
-     */
+    /** Class that permits iterating over components/subcomponents (but does
+     * not actually contain the components themselves). */
     template <typename T>
     friend class ComponentList;
-    /**
-     * Class to iterate over ComponentList returned by getComponentList() call
-     */
+    /** Class to iterate over ComponentList returned by getComponentList(). */
     template <typename T>
     friend class ComponentListIterator;
 
@@ -444,6 +500,34 @@ public:
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
 
+    /** Query if there is a component (of any type) at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion." */
+    bool hasComponent(const std::string& pathname) const {
+        return hasComponent<Component>(pathname);
+    }
+
+    /** Query if there is a component of a given type at the specified
+     * path name. For example,
+     * @code 
+     * bool exists = model.hasComponent<Coordinate>("right_elbow/elbow_flexion");
+     * @endcode
+     * checks if `model` has a subcomponent "right_elbow," which has a
+     * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
+     * Coordinate. This method cannot be used from scripting; see the
+     * non-templatized hasComponent(). */
+    template <class C = Component>
+    bool hasComponent(const std::string& pathname) const {
+        static_assert(std::is_base_of<Component, C>::value, 
+            "Template parameter 'C' must be derived from Component.");
+        const C* comp = this->template traversePathToComponent<C>(pathname);
+        return comp != nullptr;
+    }
+
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
      * Throws ComponentNotFoundOnSpecifiedPath exception if the component at
@@ -455,14 +539,20 @@ public:
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
      * If unsure of a Component's path or whether or not it exists in the model,
-     * use findComponent() 
+     * use printComponentsMatching() or hasComponent().
      *
-     * @param  pathname        a pathname (string) of a Component of interest
+     * This template function cannot be used in Python/Java/MATLAB; see the
+     * non-templatized getComponent().
+     *
+     * @param  pathname        a pathname of a Component of interest
      * @return const reference to component of type C at 
      * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
     template <class C = Component>
     const C& getComponent(const std::string& pathname) const {
+        static_assert(std::is_base_of<Component, C>::value, 
+            "Template parameter 'CompType' must be derived from Component.");
+
         const C* comp = this->template traversePathToComponent<C>(pathname);
         if (comp) {
             return *comp;
@@ -474,8 +564,28 @@ public:
                                                        getName());
     }
 
+    /** Similar to the templatized getComponent(), except this returns the
+     * component as the generic Component type. This can be used in
+     * Python/Java/MATLAB. Here is an example of using this in MATLAB:
+     * @code
+     * coord = model.getComponent('right_elbow/elbow_flexion')
+     * coord.getNumConnectees() % okay; this is a Component method.
+     * coord.getDefaultClamped() % inaccessible; method on Coordinate.
+     * Coordinate.safeDownCast(coord).getDefaultClamped() % now accessible.
+     * @endcode
+     *
+     * %Exception: in Python, you will get the concrete type (in most cases):
+     * @code{.py}
+     * coord = model.getComponent('right_elbow/elbow_flexion')
+     * coord.getDefaultClamped() # works; no downcasting necessary. 
+     * @endcode
+     */
+    const Component& getComponent(const std::string& pathname) const {
+        return getComponent<Component>(pathname);
+    }
+
     /** Get a writable reference to a subcomponent.
-    * @param name       the name(string) of the Component of interest
+    * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
     * @see getComponent()
@@ -484,6 +594,37 @@ public:
     C& updComponent(const std::string& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+
+    /** Similar to the templatized updComponent(), except this returns the
+     * component as the generic Component type. As with the non-templatized
+     * getComponent(), though, this will give the concrete type in Python in
+     * most cases.
+     * @see getComponent()
+     */
+    Component& updComponent(const std::string& pathname) {
+        return updComponent<Component>(pathname);
+    }
+
+
+    /** Print a list to the console of all components whose full path name
+     * contains the given string. You might use this if (a) you know the name of
+     * a component in your model but don't know its full path, (b) if you want
+     * to find all components with a given name, or (c) to get a list of all
+     * components on the right leg of a model (if all components on the right
+     * side have "_r" in their name).
+     *
+     * A function call like:
+     * @code{.cpp}
+     * unsigned num = comp.printComponentsMatching("rotation");
+     * @endcode
+     * may produce output like:
+     * @verbatim
+     * /leg_model/right_hip/rotation
+     * /leg_model/left_hip/rotation
+     * @endverbatim
+     *
+     * @returns The number of matches. */
+    unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
      * Get the number of "Continuous" state variables maintained by the Component
@@ -523,53 +664,83 @@ public:
         return getProperty_connectors().size();
     }
 
-    /** Access the number of Inputs that this component has. */
-    int getNumInputs() const {
-        return int(_inputsTable.size());
-    }
-
-    /** Access the number of Outputs that this component has. */
-    int getNumOutputs() const {
-        return int(_outputsTable.size());
-    }
-
-    /** Collect and return the names of Outputs as an std::vector. */
-    std::vector<std::string> getOutputNames() const {
-        std::vector<std::string> names;
-        for (auto it = getOutputsBegin(); it != getOutputsEnd(); it++)
-            names.push_back(it->first);
+    /** Collect and return the names of the connectors in this
+     * component. The names are in the same order as the connectors. */
+    std::vector<std::string> getConnectorNames() {
+        std::vector<std::string> names(getNumConnectors());
+        for (int i = 0; i < getNumConnectors(); ++i) {
+            names[i] = get_connectors(i).getName(); 
+        }
         return names;
     }
 
-    /** Access a read-only Connector by index.
-    @see getNumConnectors()
-     */
-    const AbstractConnector& getConnector(int i) const {
-        return get_connectors(i);
-    }
-
-    /** Access a writeable Connector by index.
-    @see getNumConnectors()
-    */
-    AbstractConnector& updConnector(int i) {
-        return upd_connectors(i);
-    }
-
     /**
-    * Get the Connector provided by this Component by name.
+    * Get the "connectee" object that the Component's Connector
+    * is bound to. Guaranteed to be valid only after the Component
+    * has been connected (that is connect() has been invoked).
+    * If the Connector has not been connected, an exception is thrown.
     *
-    * @param name       the name of the Connector
-    * @return const reference to the (Abstract)Connector
+    * This method is for getting the concrete connectee object, and is not
+    * available in scripting. If you want generic access to the connectee as an
+    * Object, use the non-templated version.
+    *
+    * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
+    * @param name       the name of the connector
+    * @return T         const reference to object that satisfies
+    *                   the Connector
+    *
+    * Example:
+    * @code
+    * const PhysicalFrame& frame = joint.getConnectee<PhysicalFrame>("parent_frame");
+    * frame.getMobilizedBody();
+    * @endcode
     */
-    template<typename T> Connector<T>&
-        updConnector(const std::string& name)
-    {
-        return *const_cast<Connector<T>*>(&getConnector<T>(name));
+    template<typename T>
+    const T& getConnectee(const std::string& name) const {
+        // get the Connector and check if it is connected.
+        const Connector<T>& connector = getConnector<T>(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnectee();
     }
 
-    template<typename T>
-    const Connector<T>& getConnector(const std::string& name) const
-    {
+    /** Get the connectee as an Object. This means you will not have
+    * access to the methods on the concrete connectee. This is the method you
+    * must use in MATLAB to access the connectee.
+    *
+    * Example:
+    * @code{.cpp}
+    * const Object& obj = joint.getConnectee("parent_frame");
+    * obj.getName(); // method on Object works.
+    * obj.getMobilizedBody(); // error: not available.
+    * @endcode
+    *
+    * In MATLAB, if you want the concrete type, you need to downcast the
+    * Object. Here is an example where you know the "parent_frame" is a Body:
+    * @code
+    * f = joint.getConnectee('parent_frame');
+    * m = Body.safeDownCast(f).getMass();
+    * @endcode
+    *
+    * Exception: in Python, you will get the concrete type (in most cases):
+    * @code{.py}
+    * f = joint.getConnectee("parent_frame"); 
+    * m = f.getMass() # works (if the parent frame is a body)
+    * @endcode
+    */
+    const Object& getConnectee(const std::string& name) const {
+        const AbstractConnector& connector = getConnector(name);
+        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
+                "Connector '" + name + "' not connected.");
+        return connector.getConnecteeAsObject();
+    }
+
+    /** Get an AbstractConnector for the given connector name. This
+     * lets you get information about the connection (like if the connector is
+     * connected), but does not give you access to the connector's connectee.
+     * For that, use getConnectee().
+     */
+    const AbstractConnector& getConnector(const std::string& name) const {
         const AbstractConnector* found = findConnector(name);
 
         if (!found){
@@ -580,43 +751,96 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        return (Connector<T>::downcast(*found));
+        return *found;
+    }
+
+    /** Get a writable reference to the AbstractConnector for the given
+     * connector name. Use this method to connect the Connector to something.
+     * @code
+     * joint.updConnector("parent_frame").connect(model.getGround());
+     * @endcode
+     */
+    AbstractConnector& updConnector(const std::string& name) {
+        return const_cast<AbstractConnector&>(getConnector(name));
     }
 
     /**
-    * Get the "connectee" object that the Component's Connector
-    * is bound to. Guaranteed to be valid only after the Component
-    * has been connected (that is connect() has been invoked).
-    * If Connector has not been connected an exception is thrown.
+    * Get a const reference to the concrete Connector provided by this
+    * Component by name.
     *
-    * @param name       the name of the connector
-    * @return T         const reference to object that satisfies
-    *                   the Connector
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
     */
     template<typename T>
-    const T& getConnectee(const std::string& name) const    {
-        // get the Connector and check if it is connected.
-        const AbstractConnector& connector = getConnector<T>(name);
-        if (connector.isConnected()){
-            return (Connector<T>::downcast(connector)).getConnectee();
-        }
-        else{
-            std::stringstream msg;
-            msg << "Component::getConnectee() ERR- Connector '" << name << "' not connected.\n "
-                << "for component '" << getName() << "' of type " << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
+    const Connector<T>& getConnector(const std::string& name) const {
+        return Connector<T>::downcast(getConnector(name));
     }
-    //@} end of Component Connector Access methods
 
-    /** Define OutputsIterator for convenience */
-    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput> >::
-        const_iterator OutputsIterator;
+    /**
+    * Get a writable reference to the concrete Connector provided by this
+    * Component by name.
+    *
+    * @param name       the name of the Connector
+    * @return const reference to the (Abstract)Connector
+    */
+    template<typename T> Connector<T>& updConnector(const std::string& name) {
+        return const_cast<Connector<T>&>(getConnector<T>(name));
+    }
+
+    /** Access a read-only Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see getConnector(const std::string& name)
+     */
+    const AbstractConnector& getConnector(int i) const {
+        return get_connectors(i);
+    }
+
+    /** Access a writeable Connector by index. Make sure to provide a valid
+    index; this function does not check that the index is valid.
+    @see getNumConnectors()
+    @see updConnector(const std::string& name)
+    */
+    AbstractConnector& updConnector(int i) {
+        return upd_connectors(i);
+    }
+
+    //@} end of Component Connector Access methods
 
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
     */
     //@{ 
+
+    /** Access the number of Inputs that this component has. */
+    int getNumInputs() const {
+        return int(_inputsTable.size());
+    }
+
+    /** Access the number of Outputs that this component has. */
+    int getNumOutputs() const {
+        return int(_outputsTable.size());
+    }
+
+    /** Collect and return the names of Inputs in this component as an
+     * std::vector. */
+    std::vector<std::string> getInputNames() const {
+        std::vector<std::string> names;
+        for (const auto& it : _inputsTable) {
+            names.push_back(it.first);
+        }
+        return names;
+    }
+
+    /** Collect and return the names of Outputs in this component as an
+     * std::vector. */
+    std::vector<std::string> getOutputNames() const {
+        std::vector<std::string> names;
+        for (const auto& entry : getOutputs()) {
+            names.push_back(entry.first);
+        }
+        return names;
+    }
 
     /**
     * Get an Input provided by this Component by name.
@@ -654,7 +878,7 @@ public:
 
 
     /**
-    * Get a concrete Input that you can direclty ask for its values.
+    * Get a concrete Input that you can directly ask for its values.
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
@@ -679,22 +903,31 @@ public:
         }
         else {
             std::string::size_type back = name.rfind("/");
+            // no prefix found then no prefix (path) to locate Component
+            OPENSIM_THROW_IF( back == std::string::npos, Exception,
+                "Component::getOutput has no output '" + name
+                    + "' for component '" + getName() + "' of type "
+                    + getConcreteClassName() );
+
             std::string prefix = name.substr(0, back);
             std::string outName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            // if found is this component again, no point trying to find
-            // output again, otherwise we would not have reached here 
-            if (found && (found != this)) {
-                return found->getOutput(outName);
+            try {
+                const Component& found = getComponent<Component>(prefix);
+                // if found is this component again, no point trying to find
+                // output again, otherwise we would not have reached here 
+                return found.getOutput(outName);
+            }
+            catch (const std::exception& x) {
+                std::stringstream msg;
+                msg << "Component::getOutput: ERR-  no output '" << name
+                    << "' found.\n " "for component '" << getName() << "' of type "
+                    << getConcreteClassName() << ". Details:\n" << x.what() 
+                    << std::endl;
+
+                 throw Exception(msg.str(), __FILE__, __LINE__);
             }
         }
-        
-        std::stringstream msg;
-        msg << "Component::getOutput: ERR-  no output '" << name << "' found.\n "
-        << "for component '" << getName() << "' of type "
-        << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
     /**
@@ -708,30 +941,28 @@ public:
         return *const_cast<AbstractOutput *>(&getOutput(name));
     }
 
-    /** An iterator to traverse all the Outputs of this component, pointing at the
-    * first Output. This can be used in a loop as such:
-     *
-     *  @code
-    *  OutputsIterator it;
-     *  for (it = myComp.getOutputsBegin(); it != myComp.getOutputsEnd(); it++)
-     *  { ... }
-     *  @endcode
-     *
-     * @see getOutputsEnd()
-     */
-    OutputsIterator getOutputsBegin() const {
-        return _outputsTable.begin();
-    }
+    /** Define OutputConstIterator for convenience */
+    typedef std::map<std::string, SimTK::ClonePtr<AbstractOutput>>::
+        const_iterator OutputConstIterator;
 
-    /** An iterator for the map of Outputs of this component, pointing at the
-     * end of the map. This can be used in a loop as such:
-     *
-     * @see getOutputsBegin()
+    /** Iterate through all Outputs of this component. The intent is to use
+     * this in a loop as such:
+     * @code
+     * for (const auto& entry : comp.getOutputs()) {
+     *     const std::string& name = entry.first;
+     *     const AbstractOutput* output = entry.second.get();
+     *     std::cout << output->getTypeName() << std::endl;
+     * }
+     * @endcode
+     * This provides access to the outputs as AbstractOutput%s, not as the
+     * concrete type. This also does not permit modifying the outputs.
+     * 
+     * Not available in Python/Java/MATLAB; use getOutputNames() and
+     * getOutput() instead.
      */
-    OutputsIterator getOutputsEnd() const {
-        return _outputsTable.end();
+    SimTK::IteratorRange<OutputConstIterator> getOutputs() const {
+        return {_outputsTable.cbegin(), _outputsTable.cend()};
     }
-
     //@} end of Component Inputs and Outputs Access methods
 
 
@@ -874,7 +1105,7 @@ public:
      * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
-     * @param name   the name of the dsicrete variable
+     * @param name   the name of the discrete variable
      * @param value  the value to set
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
@@ -1109,18 +1340,6 @@ protected:
     }
 #endif //SWIG
 
-  /** Single call to construct the underlying infrastructure of a Component, which
-     include: 1) its properties, 2) its structural connectors (to other components),
-     3) its Inputs (slots) for expected Output(s) of other components and, 4) its 
-     own Outputs (wires) that it provides for other components to access its values.
-     Override the corresponding private virtual method to customize any of them. */ 
-    void constructInfrastructure() {
-        constructProperties();
-        constructConnectors();
-        constructInputs();
-        constructOutputs();
-    }
-
     /**
     * Adopt a component as a subcomponent of this Component. Component
     * methods (e.g. addToSystem(), initStateFromProperties(), ...) are
@@ -1170,6 +1389,24 @@ protected:
     You should consider this ordering when designing a %Component.  **/ 
 
     ///@{
+
+    /** Perform any secondary operations, e.g. to investigate the component or 
+    to insert it into a particular internal list (for grouping), after adding
+    the subcomponent to this component. This is intended primarily for composites
+    like Model to have more control over the handling of a component being added
+    to it.
+
+    If you override this method, be sure to invoke the base class method first,
+    using code like this :
+    @code
+    void MyComponent::extendAddComponent(Component* subcomponent) {
+        Super::extendAddComponent(); // invoke parent class method
+        // ... your code goes here
+        // ... initialize any internal data structures
+    }
+    @endcode   */
+    virtual void extendAddComponent(Component* subcomponent) {};
+
     /** Perform any time invariant calculation, data structure initializations or
     other component configuration based on its properties necessary to form a  
     functioning, yet not connected component. It also marks the Component
@@ -1350,7 +1587,7 @@ protected:
     Override to set the derivatives of state variables added to the system 
     by this component. (also see extendAddToSystem()). If the component adds states
     and computeStateVariableDerivatives is not implemented by the component,
-    an exception is thrown when the system tries to evaluate its derivates.
+    an exception is thrown when the system tries to evaluate its derivatives.
 
     Implement like this:
     @code
@@ -1460,19 +1697,6 @@ protected:
      **/
 
     //@{
-    /**
-    * Construct a specialized Connector for this Component's dependence on an another
-    * Component. It serves as a placeholder for the Component and its type and enables
-    * the Component to automatically traverse its dependencies and provide a meaningful 
-    * message if the provided Component is incompatible or non-existant.
-    */
-    template <typename T>
-    void constructConnector(const std::string& name, bool isList = false) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, *this));
-        //add pointer to connectorsTable so we can access connectors easily by name
-        _connectorsTable[name] = ix;
-    }
 
     /** Add a modeling option (integer flag stored in the State) for use by 
     this Component. Each modeling option is identified by its own 
@@ -1619,7 +1843,6 @@ protected:
     friend void Connector<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
-public:
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
         The search can be sped up considerably if the "path" or even partial path name
@@ -1664,7 +1887,7 @@ public:
                 foundCs.push_back(found);
         }
 
-        ComponentList<C> compsList = this->template getComponentList<C>();
+        ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
@@ -1684,12 +1907,14 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                std::string details = msg + " Found '" + compFullPathName + 
-                    "' as a match for:\n Component '" + name + "' of type " + 
-                    comp.getConcreteClassName() + ", but it "
-                    "is not on specified path.\n";
-                //throw Exception(details, __FILE__, __LINE__);
-                std::cout << details << std::endl;
+                if (comp.getDebugLevel() > 0) {
+                    std::string details = msg + " Found '" + compFullPathName + 
+                        "' as a match for:\n Component '" + name + "' of type " + 
+                        comp.getConcreteClassName() + ", but it "
+                        "is not on specified path.\n";
+                    //throw Exception(details, __FILE__, __LINE__);
+                    std::cout << details << std::endl;
+                }
             }
         }
 
@@ -1720,6 +1945,7 @@ public:
     }
 #endif
 
+public:
     /** Similarly find a Connector of this Component (includes its subcomponents) */
     const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
@@ -1750,7 +1976,7 @@ protected:
         std::string currentPath = "";
         const Component* current = this;
 
-        std::string compName = back < std::string::npos ? path.substr(back) : path;
+        const std::string compName = back < std::string::npos ? path.substr(back+1) : path;
         back = 0;
 
         while (back < std::string::npos && current) {
@@ -1794,16 +2020,21 @@ protected:
             }
             front = back + 1;
         }
-        return dynamic_cast<const C*>(current);
+
+        if (dir == compName)
+            return dynamic_cast<const C*>(current);
+
+        return nullptr;
     }
 
     //@} 
 
-    /** @name Internal methods for constructing Outputs, Inputs
-     * To declare Outputs and Inputs for your component,
+    /** @name Internal methods for constructing Connectors, Outputs, Inputs
+     * To declare Connector%s, Output%s, and Input%s for your component,
      * use the following macros within your class declaration (ideally at
      * the top near property declarations):
      *
+     *  - #OpenSim_DECLARE_CONNECTOR
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -1814,7 +2045,24 @@ protected:
      * methods yourself.
      */
     /// @{
-    /** Construct an output for a member function of the same component. 
+    /**
+    * Construct a specialized Connector for this Component's dependence on an
+    * another Component. It serves as a placeholder for the Component and its
+    * type and enables the Component to automatically traverse its dependencies
+    * and provide a meaningful message if the provided Component is
+    * incompatible or non-existant.
+    */
+    template <typename T>
+    int constructConnector(const std::string& name, bool isList = false) {
+        int ix = updProperty_connectors().adoptAndAppendValue(
+            new Connector<T>(name, SimTK::Stage::Topology, *this));
+        // Add pointer to connectorsTable so we can access connectors easily by
+        // name.
+        _connectorsTable[name] = ix;
+        return ix;
+    }
+    
+    /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
 
@@ -1917,15 +2165,14 @@ protected:
      * the corresponding state variable. */
     bool constructOutputForStateVariable(const std::string& name);
 
-    /**
-    * Construct an Input (socket) for this Component's dependence on an Output signal.
-    * It is a placeholder for the Output and its type and enables the Component
-    * to automatically traverse its dependencies and provide a meaningful message
-    * if the provided Output is incompatible or non-existant. The also specifies at what
-    * stage the output must be valid for the the component to consume it as an input.
-    * if the Output's dependsOnStage is above the Input's requiredAtStage, an Exception
-    * is thrown because the output cannot satisfy the Input's requirement.
-    */
+    /** Construct an Input (socket) for this Component's dependence on an
+     * Output signal.  It is a placeholder for the Output and its type and
+     * enables the Component to automatically traverse its dependencies and
+     * provide a meaningful message if the provided Output is incompatible or
+     * non-existant. The also specifies at what stage the output must be valid
+     * for the component to consume it as an input.  if the Output's
+     * dependsOnStage is above the Input's requiredAtStage, an Exception is
+     * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
     bool constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
@@ -1938,35 +2185,6 @@ protected:
     /// @}
 
 private:
-    // Construct the table of serializeable properties for a Component.
-    // Base constructs property that contains the structural connectors.
-    virtual void constructProperties() {}
-
-    //Construct the table of structural Connectors this component requires to
-    //hookup to other components in order to function. For example, a Joint needs 
-    //a parent body in order to join its owning body to the model. A Connector
-    //formalizes this dependency. The Component is inoperable until the Connector
-    //is satisfied. Connectors are not to be confused with subcomponents, with the key 
-    //difference being that a subcomponent is part of and owned by the component, 
-    //whereas a Connector is a requirement or a "slot" that must be satisfied by
-    //the time the system is ready to simulate. 
-    //Connectors are resolved in Component's connect().
-    //constructStructuralDependencies is a series of calls to constrcuctConnector()
-    //which adds a component by name and type to a dependency Connectors table.
-    virtual void constructConnectors() {}
-
-    //Construct the table of Inputs for this component. A Component::Input is a
-    //dependency on the Output of another Component. Unlike a structural 
-    //connector, an input specifies the required flow of data into the component.
-    //@see Component::Input
-    virtual void constructInputs() {}
-
-    //Construct the table of Outputs provided by this component. An Output is
-    //a data signal generated by this Component. It can be any response or 
-    //calculation made by the Component as a function of the state. Specifically,
-    //an Output is a redirect to a method on the Component and a specification of 
-    //the return type, @see addOutput()
-    virtual void constructOutputs() {}
 
     //Mark components that are properties of this Component as subcomponents of
     //this Component. This happens automatically upon construction of the 
@@ -2272,8 +2490,9 @@ private:
     // bookkeeping of component variables (state variables and cache entries) with 
     // their index in the computational system. The earliest time we have a valid 
     // index is when we ask the system to allocate the resources and that only
-    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not alter the
-    // Component in any way that would effect its behavior- that is why it it const!
+    // happens in extendAddToSystem. Furthermore, extendAddToSystem may not
+    // alter the Component in any way that would effect its behavior- that is
+    // why it is const!
     // The setting of the variable indices is not in the public interface and is 
     // not polymorphic.
 
@@ -2300,7 +2519,8 @@ private:
 //==============================================================================
 };  // END of class Component
 //==============================================================================
-
+//==============================================================================
+    
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
 /// the next valid entry.
@@ -2406,7 +2626,12 @@ void Input<T>::connect(const AbstractOutput& output,
             //update the connectee_name as /<OwnerPath>/<Output:Channel> name
             std::string pathName =
                 output.getOwner().getRelativePathName(getOwner());
-            pathName = pathName + "/" + chan.second.getName();
+            if (pathName.rfind("/") == (pathName.length()-1)) { 
+                pathName = pathName + chan.second.getName();
+            }
+            else {
+                pathName = pathName + "/" + chan.second.getName();
+            }
             if (!annotation.empty() && annotation != chan.second.getChannelName()) {
                 pathName += "(" + annotation + ")";
             }
@@ -2453,7 +2678,13 @@ void Input<T>::connect(const AbstractChannel& channel,
         // /<OwnerPath>/<Output>:<Channel><(annotation)>
         const auto& outputsOwner = chanT->getOutput().getOwner();
         std::string pathName = outputsOwner.getRelativePathName(getOwner());
-        pathName += "/" + chanT->getName();
+
+        if (pathName.rfind("/") == (pathName.length() - 1)) {
+            pathName = pathName + chanT->getName();
+        }
+        else {
+            pathName = pathName + "/" + chanT->getName();
+        }
         if (!annotation.empty() && annotation != chanT->getChannelName()) {
             pathName += "(" + annotation + ")";
         }
@@ -2486,8 +2717,14 @@ void Input<T>::findAndConnect(const Component& root) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
         try {
-            const auto& output = root.getOutput(outputPath);
-            const auto& channel = output.getChannel(channelName);
+            const AbstractOutput* output = nullptr;
+            if (outputPath[0] == '/') { //absolute path name
+                output = &root.getOutput(outputPath);
+            }
+            else { // relative path name
+                output = &getOwner().getOutput(outputPath);
+            }
+            const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);
         }
         catch (const Exception& ex) {

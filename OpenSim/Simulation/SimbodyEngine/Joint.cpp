@@ -54,7 +54,7 @@ Joint::~Joint()
 Joint::Joint() : Super()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /* API constructor. */
@@ -175,12 +175,6 @@ void Joint::constructProperties()
 
     //Default frames list is empty
     constructProperty_frames();
-}
-
-void Joint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("parent_frame");
-    constructConnector<PhysicalFrame>("child_frame");
 }
 
 void Joint::extendFinalizeFromProperties()

@@ -53,10 +53,10 @@ int main()
         // Get a reference to the model's ground frame
         Ground& ground = osimModel.updGround();
 
-        // Add display geometry to the ground to visualize in the GUI
-        ground.attachMeshGeometry("ground.vtp");
-        ground.attachMeshGeometry("anchor1.vtp");
-        ground.attachMeshGeometry("anchor2.vtp");
+        // Attach geometry to the ground to visualize in the GUI
+        ground.attachGeometry(new Mesh("ground.vtp"));
+        ground.attachGeometry(new Mesh("anchor1.vtp"));
+        ground.attachGeometry(new Mesh("anchor2.vtp"));
 
         // BLOCK BODY
 
@@ -69,7 +69,7 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        block->attachGeometry(Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
+        block->attachGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // FREE JOINT
 

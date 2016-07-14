@@ -229,8 +229,8 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     SimTK::Vector actControls(1, 0.0);
 
     for(int i=0; i< getActuatorSet().getSize(); i++){
-        CoordinateActuator* act = 
-            dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
+        auto act = 
+            dynamic_cast<const CoordinateActuator*>(&getActuatorSet().get(i));
         SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
         Coordinate *aCoord = act->getCoordinate();

@@ -37,6 +37,23 @@ Converting from v3.x to v4.0
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
 
+Composing a Component from other components
+-------------------------------------------
+Component now maintains a list property of *components* which it owns. You add
+a (sub) Component to a *parent* Component by calling `addComponent` and passing
+a heap allocated (`new Component`) to the parent which you want to take
+ownership of the new subcomponent. Ownership determines how the subcomponent is serialized
+(appears within the parent) and the order in which of Component interface methods (above)
+are propagated to the subcomponent. Access to contained components is provided through
+`getComponent<C>(path)` or `getComponentList<C>` where `C` is any Component type (default
+is `Component` to get all subcomponents). These methods always traverse down into
+a Component's list of components.  All subcomponents that are properties of (and thus owned by)
+a parent Component are accessible this way. The Model's typed %Sets and `add####()` methods
+are no longer necessary to compose a Model, since any Component can now be composed of
+components. `Model` still supports `addd####()` methods and de/serialization of Sets,
+but components added via `addComponent` are NOT included in the Sets but contained
+in the Component's *components* property list. Details in PR#1014.
+
 Bug Fixes
 ---------
 - Fixed a typo in one of the method names for AbstractTool verifyUniqueComulnLabels -> verifyUniqueColumnLabels (PR #130)

@@ -138,3 +138,28 @@ class TestStatesTrajectory(unittest.TestCase):
         self.assertFalse(states.hasIntegrity())
 
         # TODO check violating isConsistent() (might need a different model).
+
+    def test_reporter(self):
+
+        model = osim.Model(os.path.join(test_dir,
+            "gait10dof18musc_subject01.osim"))
+
+        rep = osim.StatesTrajectoryReporter()
+        rep.setName('reporter')
+        rep.set_report_time_interval(0.01)
+        model.addComponent(rep)
+
+        model.initSystem()
+
+        forward = osim.ForwardTool()
+        forward.setModel(model)
+        forward.setName('test_states_trajectory_reporter_gait1018')
+        forward.setFinalTime(0.05)
+        forward.run()
+
+        states = rep.getStates()
+        assert states.getSize() == 6
+        for i in range(6):
+            assert states[i].getTime() == i * 0.01
+
+

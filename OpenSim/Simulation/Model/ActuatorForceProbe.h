@@ -129,7 +129,7 @@ private:
     // ModelComponent Interface
     //--------------------------------------------------------------------------
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     //==============================================================================
 };  // END of class ActuatorForceProbe

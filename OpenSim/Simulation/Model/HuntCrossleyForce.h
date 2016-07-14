@@ -113,7 +113,7 @@ protected:
 
 private:
     // INITIALIZATION
-    void constructProperties() override;
+    void constructProperties();
 
 //==============================================================================
 };  // END of class HuntCrossleyForce

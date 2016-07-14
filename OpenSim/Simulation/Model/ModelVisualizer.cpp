@@ -29,7 +29,7 @@
 #include <OpenSim/version.h>
 
 #include "Model.h"
-#include "ModelDisplayHints.h"
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include "ModelVisualizer.h"
 #include "MarkerSet.h"
 #include "BodySet.h"
@@ -132,98 +132,6 @@ void DefaultGeometry::generateDecorations
    (const State&                         state, 
     Array_<SimTK::DecorativeGeometry>&   geometry) 
 {
-    const SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
-    const ModelDisplayHints&      hints  = _model.getDisplayHints();
-
-
-    // Display wrap objects.
-    if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
-        Transform ztoy;
-        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
-        const BodySet& bodies = _model.getBodySet();
-        for (int i = 0; i < bodies.getSize(); i++) {
-            const OpenSim::Body& body = bodies[i];
-            const Transform& X_GB =
-                body.getMobilizedBody().getBodyTransform(state);
-            const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
-            for (int j = 0; j < wrapObjects.getSize(); j++) {
-                const string type = wrapObjects[j].getConcreteClassName();
-                if (type == "WrapCylinder") {
-                    const WrapCylinder* cylinder = 
-                        dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
-                    if (cylinder != NULL) {
-                        Transform X_GW = X_GB*cylinder->getTransform()*ztoy;
-                        geometry.push_back(
-                            DecorativeCylinder(cylinder->get_radius(), 
-                                               cylinder->get_length()/2)
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-                else if (type == "WrapEllipsoid") {
-                    const WrapEllipsoid* ellipsoid = 
-                        dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
-                    if (ellipsoid != NULL) {
-                        Transform X_GW = X_GB*ellipsoid->getTransform();
-                        geometry.push_back(
-                            DecorativeEllipsoid(ellipsoid->getRadii())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-                else if (type == "WrapSphere") {
-                    const WrapSphere* sphere = 
-                        dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
-                    if (sphere != NULL) {
-                        Transform X_GW = X_GB*sphere->getTransform();
-                        geometry.push_back(
-                            DecorativeSphere(sphere->getRadius())
-                                .setTransform(X_GW).setResolution(_dispWrapResolution)
-                                .setColor(color).setOpacity(_dispWrapOpacity));
-                    }
-                }
-            }
-        }
-    }
-
-
-    // Display contact geometry objects.
-    if (hints.get_show_contact_geometry()) {
-        const Vec3 color(SimTK::Green);
-        Transform ztoy;
-        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
-        const ContactGeometrySet& contactGeometries = _model.getContactGeometrySet();
-
-        for (int i = 0; i < contactGeometries.getSize(); i++) {
-            const PhysicalFrame& frame = contactGeometries.get(i).getFrame();
-            const string type = contactGeometries.get(i).getConcreteClassName();
-            const int displayPref = contactGeometries.get(i).getDisplayPreference();
-            //cout << type << ": " << contactGeometries.get(i).getName() << ": disp pref = " << displayPref << endl;
-
-            if (type == "ContactSphere" && displayPref == 4) {
-                ContactSphere* sphere = 
-                    dynamic_cast<ContactSphere*>(&contactGeometries.get(i));
-                if (sphere != NULL) {
-                    // G: Ground
-                    // F: PhysicalFrame that this ContactGeometry is connected
-                    //    to
-                    // P: the frame defined (relative to F) by the location and
-                    //    orientation properties.
-                    const auto& X_GF =
-                        sphere->getFrame().getTransformInGround(state);
-                    const auto& X_FP = sphere->getTransform();
-                    Transform X_GP = X_GF * X_FP;
-                    geometry.push_back(
-                        DecorativeSphere(sphere->getRadius())
-                            .setTransform(X_GP).setResolution(_dispContactResolution)
-                            .setColor(color).setOpacity(_dispContactOpacity));
-                }
-            }
-        }
-    }
-
-
     // Ask all the ModelComponents to generate dynamic geometry.
     _model.generateDecorations(false, _model.getDisplayHints(),
                                state, geometry);

@@ -53,8 +53,12 @@
 #include "DataTable.h"
 #include "TimeSeriesTable.h"
 
+#include "Adapters.h"
+
 #include "TableSource.h"
 
 #include "Reporter.h"
+
+#include "ModelDisplayHints.h"
 
 #endif // _osimCommon_h_

@@ -39,6 +39,7 @@
 #include <OpenSim/Common/FunctionSet.h>
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Component.h>
 
 #include <OpenSim/Common/MarkerData.h>
@@ -52,6 +53,10 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
+
+#include <OpenSim/Common/TableSource.h>
+
+#include <OpenSim/Common/Reporter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 

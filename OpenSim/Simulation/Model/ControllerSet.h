@@ -29,8 +29,6 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include "SimTKsimbody.h"
-
 #include <memory>
 
 namespace OpenSim {
@@ -73,13 +71,6 @@ public:
 #ifndef SWIG
     ControllerSet& operator=(const ControllerSet &aSet);
 #endif
-    //--------------------------------------------------------------------------
-    // GET AND SET
-    //--------------------------------------------------------------------------
-
-    bool set(int aIndex, Controller *aController);
-    bool addController(Controller *aController);
-
 
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );

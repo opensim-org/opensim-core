@@ -232,6 +232,18 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 	}
 }
 
+// This method takes ownership of the passed-in object; make sure the bindings
+// don't try to handle ownership.
+%javamethodmodifiers OpenSim::Component::addComponent "private";
+%rename OpenSim::Component::addComponent private_addComponent;
+%typemap(javacode) OpenSim::Component %{
+  public void addComponent(Component comp) {
+      comp.markAdopted();
+      private_addComponent(comp);
+  }
+%}
+
+
 %import "java_simbody.i"
 
 %include <Bindings/common.i>

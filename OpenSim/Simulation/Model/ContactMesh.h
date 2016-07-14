@@ -27,6 +27,8 @@
 
 namespace OpenSim {
 
+// TODO update doxygen comments to mention connector.
+
 /**
  * This class represents a polygonal mesh for use in contact modeling.
  *
@@ -64,7 +66,7 @@ public:
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame);
+                const PhysicalFrame& frame);
     /**
      * Construct a ContactMesh.
      *
@@ -78,9 +80,9 @@ public:
      */
     ContactMesh(const std::string& filename,
                 const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                PhysicalFrame& frame, const std::string& name);
+                const PhysicalFrame& frame, const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
 
     // ACCESSORS
     /**
@@ -94,18 +96,17 @@ public:
 private:
     // INITIALIZATION
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
     void extendFinalizeFromProperties() override;
-    /**
-     * Load the mesh from disk.
-     */
-    void loadMesh(const std::string& filename);
-    
-    
+
+    /** Load the mesh from a file.
+    @param filename   string containing the file to be loaded
+    @return SimTK::ContactGeometry::TriangleMesh* heap allocated Contact mesh */
+    SimTK::ContactGeometry::TriangleMesh* loadMesh(const std::string& filename) const;
 //=============================================================================
 // DATA
 //=============================================================================
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
         _geometry;
 
 //=============================================================================

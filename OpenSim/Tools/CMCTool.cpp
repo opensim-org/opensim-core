@@ -1116,7 +1116,7 @@ Set<Actuator> CMCTool::
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
                     actuatorsForCMC.remove((Actuator *)members[j]);
                 actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);

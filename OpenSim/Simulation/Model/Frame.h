@@ -26,6 +26,7 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 
 namespace OpenSim {
 
@@ -79,18 +80,19 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API Frame : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Frame, ModelComponent);
-
 public:
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-    Frame();
-
-    virtual ~Frame() {};
-
-    //=============================================================================
-    // OUTPUTS
-    //=============================================================================
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(frame_geometry, FrameGeometry,
+        "The geometry used to display the axes of this Frame.");
+    OpenSim_DECLARE_LIST_PROPERTY(attached_geometry, Geometry,
+        "List of geometry attached to this Frame. Note, the geometry "
+        "are treated as fixed to the frame and they share the transform "
+        "of the frame when visualized");
+//=============================================================================
+// OUTPUTS
+//=============================================================================
     OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3, getPositionInGround,
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getTransformInGround,
@@ -99,6 +101,12 @@ public:
         SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(acceleration, SimTK::SpatialVec, getAccelerationInGround,
         SimTK::Stage::Acceleration);
+
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    Frame();
+    virtual ~Frame() {};
 
     /** @name Spatial Operations for Frames
     These methods allow access to the frame's transform and some convenient
@@ -223,20 +231,11 @@ public:
     // End of Base Frame and Transform accessors
     ///@}
 
-    /** Add a Mesh specified by file name to the list of Geometry owned by the Frame.
-    Scale defaults to 1.0 but can be changed on the call line for convenience.
-    */
-    void attachMeshGeometry(const std::string &aGeometryFileName,
-        const SimTK::Vec3 scale = SimTK::Vec3(1));
-    /** Add a piece of Geometry to the list of Geometry owned by the Frame.
-    This function is a convenience for ModelComponent::addGeometry() for the case 
-    of adding Geometry directly to a Frame, and thus sets the "frame name" of the 
-    Geometry to this frame. The provided geom is copied into the Frame, which will
-    own a copy of the Geometry so any changes you make to geom after calling this 
-    method will not have an effect.
-    */
-    void attachGeometry(const OpenSim::Geometry& geom,
-        const SimTK::Vec3 scale = SimTK::Vec3(1));
+    /** Attach Geometry to this Frame and have this Frame take ownership of
+        it by adding it to this Frame's <attached_geometry> property list.
+        The Geometry is treated as being fixed to this Frame such that the
+        transform used to position the Geometry is that of this Frame. */
+    void attachGeometry(OpenSim::Geometry* geom);
 
 protected:
     /** @name Extension of calculations of Frame kinematics.
@@ -266,11 +265,10 @@ protected:
     /** @name Component Extension methods.
     Frame types override these Component methods. */
     /**@{**/
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& s) const override;
 
-    /// override default extendAddGeometry to set Frame to this Object
-    void extendAddGeometry(OpenSim::Geometry& geom) override;
     /**@}**/
 
 private:
@@ -278,11 +276,9 @@ private:
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
 
-
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
-
 //=============================================================================
 };  // END of class Frame
 //=============================================================================
