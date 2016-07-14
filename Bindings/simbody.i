@@ -19,6 +19,7 @@ namespace SimTK {
 // Mat33
 %include <SWIGSimTK/Mat.h>
 namespace SimTK {
+%template(Mat22) Mat<2, 2>;
 %template(Mat33) Mat<3, 3>;
 }
 %include <SWIGSimTK/CoordinateAxis.h>

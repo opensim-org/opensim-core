@@ -132,9 +132,10 @@ The parent class, Muscle.h, provides
             double forceResidual = SimTK::NaN;
             double activResidual = SimTK::NaN;
             double forceTendon = SimTK::NaN;
-            SimTK::Mat23 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
-            SimTK::Mat23 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            SimTK::Mat33 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            SimTK::Mat33 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
             double df_du = SimTK::NaN;
+            double df_dmuscleLength = SimTK::NaN;
             double F1 = SimTK::NaN;
             double F2 = SimTK::NaN;
             double F3 = SimTK::NaN;
@@ -152,9 +153,16 @@ The parent class, Muscle.h, provides
 
         //ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
         ImplicitResidual calcImplicitResidual(double muslceLength, double projFiberLength, double activ, double projFiberVelocity, double activ_dot, double u, int returnJacobians) const;
-        ImplicitResidual calcImplicitResidual(SimTK::Vec3 y,SimTK::Vec3 ydot, double u, int returnJacobians=0) const;
+        ImplicitResidual calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians=0) const;
+        ImplicitResidual calcImplicitResidual(SimTK::State s, double projFibVel_guess, double activdot_guess, double u, int returnJacobians) const;
 
-        ImplicitResidual    calcJacobianByFiniteDiff(SimTK::Vec3 y,SimTK::Vec3 ydot, double u, double h=1e-7 ) const;
+
+        SimTK::Vec2 fiberLengthToProjectedLength(double fiberLength, double fiberVelocity) const;
+
+        ImplicitResidual calcJacobianByFiniteDiff(SimTK::Vec2 y,SimTK::Vec2 ydot, double muscleLength, double u, double h ) const;
+        SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;
+
+
 
     protected:
 //=============================================================================

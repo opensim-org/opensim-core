@@ -24,3 +24,6 @@
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 
 %include <OpenSim/Actuators/VandenBogert2011Muscle.h>
+namespace OpenSim{
+%rename(VandenBogert2011MuscleImplicitResiduals) VandenBogert2011Muscle::ImplicitResiduals;
+}
