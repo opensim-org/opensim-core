@@ -27,6 +27,12 @@
 #include "AbstractProperty.h"
 #include "Exception.h"
 
+#include "SimTKcommon/SmallMatrix.h"
+#include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/Transform.h"
+#include "SimTKcommon/internal/Array.h"
+#include "SimTKcommon/internal/ClonePtr.h"
+
 namespace OpenSim {
 
 template <class T> class SimpleProperty;
