@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include "Component.h"
+
+
 
 namespace OpenSim {
 
@@ -150,7 +150,7 @@ public:
 
 private:
 
-    void constructProperties() override;
+    void constructProperties();
 
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -160,7 +160,7 @@ private:
 
 template<class T>
 Delay_<T>::Delay_() {
-    constructInfrastructure();
+    constructProperties();
 }
 
 template<class T>

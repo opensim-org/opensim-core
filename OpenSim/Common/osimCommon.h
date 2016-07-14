@@ -43,7 +43,6 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
-#include "Delay.h"
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
