@@ -94,6 +94,8 @@ int main() {
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
+    
+    return 0;
 };
 ```
 
