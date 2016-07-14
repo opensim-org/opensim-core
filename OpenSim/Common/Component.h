@@ -47,9 +47,7 @@
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "ComponentList.h"
-#include "Simbody.h"
 #include <functional>
-#include <memory>
 
 namespace OpenSim {
 
