@@ -722,3 +722,15 @@ const {
          }}
      return matFixed;
  }
+
+SimTK::Mat33 VandenBogert2011Muscle::quickMat33() const {
+    SimTK::Mat33 m;
+    m[1][1]=1;
+    return m;
+}
+
+SimTK::Mat22 VandenBogert2011Muscle::quickMat22() const {
+    SimTK::Mat22 m;
+    m[1][1]=2;
+    return m;
+}

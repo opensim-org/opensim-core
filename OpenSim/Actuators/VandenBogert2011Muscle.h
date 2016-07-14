@@ -161,7 +161,8 @@ The parent class, Muscle.h, provides
 
         ImplicitResidual calcJacobianByFiniteDiff(SimTK::Vec2 y,SimTK::Vec2 ydot, double muscleLength, double u, double h ) const;
         SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;
-
+        SimTK::Mat33 quickMat33() const;
+        SimTK::Mat33 quickMat22() const;
 
 
     protected:
