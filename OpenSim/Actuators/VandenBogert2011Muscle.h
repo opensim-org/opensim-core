@@ -164,9 +164,11 @@ The parent class, Muscle.h, provides
                                                                                                   double projFibVelNorm, double activdot, double u,
                                                                                                   double h) const;
 
-        SimTK::Vec2 calcImplicitResidual(double projFibLen, double muscleLength) const;
 
-        SimTK::Vec1  calcStatic(double muscleLength) const;
+        SimTK::Vec3 calcFiberStaticEquilbirum(double muscleLength, double activ) const;
+        SimTK::Vec3 calcFiberStaticEquilibResidual(double projFibLen, double muscleLength, double activ) const;
+
+
 
         //Hacks for troubleshooting Mat22:
         SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;

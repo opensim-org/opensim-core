@@ -296,35 +296,21 @@ else {
 };
 
 
+
+
+
+
+
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians) const {
 
     // Overload method for state vectors as parameters
 
-VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, y[0], y[1],
-            ydot_guess[0], ydot_guess[1], u, returnJacobians);
+    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, y[0], y[1],
+                                                                           ydot_guess[0], ydot_guess[1], u, returnJacobians);
 
-return Results;
+    return Results;
 
-
-}
-
-
-//------------------------------------------------------------------------------
-SimTK::Vec2 VandenBogert2011Muscle::calcImplicitResidual(double projFibLen, double muscleLength) const {
-
-    // Overload method for when calculating static equilibrium
-
-
-    VandenBogert2011Muscle::ImplicitResidual Results = calcImplicitResidual(
-            muscleLength, projFibLen, 0.0, 0.0, 0.0, 0.0, 1.0);
-
-    SimTK::Vec2 forceResAndDerivative;
-
-    forceResAndDerivative[0]=Results.forceResidual;
-    forceResAndDerivative[1]=Results.df_dy[0][0];
-
-    return forceResAndDerivative;
 
 }
 
@@ -584,7 +570,10 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     // ---------Calculate the Muscle Force Residual ---------------------- //
     //The muscle dynamics equation: f = Fsee - (a*Fce - Fpee)*cos(Penn) -
     //                                                          Fdamping = 0
+
     double fRes = F4 - (activ * F1 * F2 + F3)*cosPenn - F5;
+   //cout << fRes << "=" << F4 << "-(" << activ << "*" << F1 << "*" << F2 << "+" << F3 << ")*" << cosPenn << "-" << F5 << endl;
+
 
 
 
@@ -786,12 +775,37 @@ const {
 }
 
 
+//------------------------------------------------------------------------------
+SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(double projFibLen, double muscleLength, double activ) const {
 
+    // Just a quick convience method to get the force residual under static conditions
+
+    VandenBogert2011Muscle::ImplicitResidual Results = calcImplicitResidual(
+            muscleLength, projFibLen, activ, 0.0, 0.0, activ, 1.0);
+
+    SimTK::Vec3 resAndDerivative;
+
+    resAndDerivative[0]=Results.forceResidual;
+    resAndDerivative[1]=Results.df_dy[0][0];
+    resAndDerivative[2]=Results.forceTendon;
+
+    return resAndDerivative;
+
+}
 
 //------------------------------------------------------------------------------
-SimTK::Vec1 VandenBogert2011Muscle::calcStatic(double muscleLength ) const {
+SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLength, double activ) const {
 
-double tol=1e-4;
+
+
+    //TODO: Code is optimized.  Specifically the number of calls to
+    //calcImplicitResidual can be reduced
+
+    //TODO: Generalize with a Lambda function (will need help with that).
+    //TODO: calcImplicitResidual really only needs to calculate df_ds (single element) for this function
+
+
+double tol=1e-5;
 double a=0;
 double b=10;
 
@@ -800,53 +814,56 @@ double dx=2*tol;
 
 int neval=0;
 
-while (abs(x)>=tol){
+SimTK::Vec3 forceResAndDerivative;
 
-neval++;
+while ((abs(dx)>=tol) && (neval<100)) {
 
-// Set a to be lower value and b to be upper value
-a=min(a,b);
-b=max(a,b);
+    neval++;
 
-
-SimTK::Vec2 forceResAndDerivative = calcImplicitResidual(x, muscleLength);
-double fx = forceResAndDerivative[0];
+    // Set a to be lower value and b to be upper value
+    a=min(a,b);
+    b=max(a,b);
 
 
+    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength,activ);
+    double fx = forceResAndDerivative[0];
 
-forceResAndDerivative = calcImplicitResidual(a, muscleLength);
-double funcA = forceResAndDerivative[0];
+    //After the 1st iteration, use the new guess as a new upper or lower bound
+    if (neval>1) {
+        forceResAndDerivative = calcFiberStaticEquilibResidual(a, muscleLength,activ);
+        double funcA = forceResAndDerivative[0];
 
-//After the 1st iteration, use the new guess as a new upper or lower bound
-if (neval>1) {
-    if (funcA *fx>0){
-        a = x;}
-    else { b = x;}}
+        if ((funcA *fx)>0){
+            a = x;}
+        else { b = x;}}
+
+    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength,activ);
+    double dfx= forceResAndDerivative[1];
+    //double forceRes=forceResAndDerivative[0];
+
+    dx =-fx/dfx;
+    double xdx=x-dx;
+
+    bool inInterval=((xdx>=a) && (xdx<=b));
+
+    forceResAndDerivative = calcFiberStaticEquilibResidual(xdx, muscleLength,activ);
+    bool largeDeriv=abs(forceResAndDerivative[0])> (0.5*abs(fx));
+
+    if (~inInterval || largeDeriv) {
+        x=(a+b)/2;
+        dx=(a-b)/2;}
+    else
+        {x=xdx;};
+
+    //cout << x << "    " << dx << "    " << fx << "    "  << dfx << endl;
+
+    };
 
 
-
-forceResAndDerivative = calcImplicitResidual(x, muscleLength);
-double dfx= forceResAndDerivative[1];
-double forceRes=forceResAndDerivative[0];
-
-double dx =-fx/dfx;
-double xdx=x-dx;
-
-
-bool inInterval=((xdx>=a) && (xdx<=b));
-forceResAndDerivative = calcImplicitResidual(xdx, muscleLength);
-bool largeDeriv=abs(forceResAndDerivative[0])> 0.5*abs(fx);
-
-if (~inInterval || largeDeriv){
-x=(a+b)/2;
-dx=(a-b)/2;}
-else
-{x=xdx;};
-
-
-};
-    SimTK::Vec1 vout;
+    SimTK::Vec3 vout;
     vout[0]=x;
+    vout[1]=neval;
+    vout[2]=forceResAndDerivative[2];
     return vout;
 }
 
