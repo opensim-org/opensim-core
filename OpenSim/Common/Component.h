@@ -46,6 +46,7 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
 #include <functional>
 
