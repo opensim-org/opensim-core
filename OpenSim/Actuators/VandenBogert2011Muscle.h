@@ -132,9 +132,9 @@ The parent class, Muscle.h, provides
             double forceResidual = SimTK::NaN;
             double activResidual = SimTK::NaN;
             double forceTendon = SimTK::NaN;
-            SimTK::Mat33 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
-            SimTK::Mat33 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
-            double df_du = SimTK::NaN;
+            SimTK::Mat22 df_dy = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            SimTK::Mat22 df_dydot = {SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN,SimTK::NaN};
+            SimTK::Vec2 df_du = {SimTK::NaN,SimTK::NaN};
             double df_dmuscleLength = SimTK::NaN;
             double F1 = SimTK::NaN;
             double F2 = SimTK::NaN;
@@ -160,10 +160,20 @@ The parent class, Muscle.h, provides
         SimTK::Vec2 fiberLengthToProjectedLength(double fiberLength, double fiberVelocity) const;
 
         ImplicitResidual calcJacobianByFiniteDiff(SimTK::Vec2 y,SimTK::Vec2 ydot, double muscleLength, double u, double h ) const;
+        ImplicitResidual calcJacobianByFiniteDiff(double muscleLength, double projFibLenNorm, double activ,
+                                                                                                  double projFibVelNorm, double activdot, double u,
+                                                                                                  double h) const;
+
+        SimTK::Vec2 calcImplicitResidual(double projFibLen, double muscleLength) const;
+
+        SimTK::Vec1  calcStatic(double muscleLength) const;
+
+        //Hacks for troubleshooting Mat22:
         SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;
         SimTK::Mat33 quickMat33() const;
-        SimTK::Mat33 quickMat22() const;
-
+        SimTK::Mat22 quickMat22() const;
+        SimTK::Vec4 quickVec4() const;
+        SimTK::Vec4 flattenMat22(SimTK::Mat22 matIn) const;
 
     protected:
 //=============================================================================

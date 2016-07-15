@@ -305,8 +305,28 @@ VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLen
             ydot_guess[0], ydot_guess[1], u, returnJacobians);
 
 return Results;
+
+
 }
 
+
+//------------------------------------------------------------------------------
+SimTK::Vec2 VandenBogert2011Muscle::calcImplicitResidual(double projFibLen, double muscleLength) const {
+
+    // Overload method for when calculating static equilibrium
+
+
+    VandenBogert2011Muscle::ImplicitResidual Results = calcImplicitResidual(
+            muscleLength, projFibLen, 0.0, 0.0, 0.0, 0.0, 1.0);
+
+    SimTK::Vec2 forceResAndDerivative;
+
+    forceResAndDerivative[0]=Results.forceResidual;
+    forceResAndDerivative[1]=Results.df_dy[0][0];
+
+    return forceResAndDerivative;
+
+}
 
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::State s, double projFibVel_guess, double activdot_guess, double u, int returnJacobians) const {
@@ -410,8 +430,8 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
 
     // Jacobian Matrices
-    SimTK::Mat33 df_dy;
-    SimTK::Mat33 df_dydot;
+    SimTK::Mat22 df_dy;
+    SimTK::Mat22 df_dydot;
 
 
     //-------Convert projFiberLength & Velocity to fiberLength & Velocity------/
@@ -584,7 +604,7 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
     double activationResidual = activdot - (u - activ) *
                     (u / activTimeConstant + (1 - u) / deactivTimeConstant );
-    double df_du = 0;
+    SimTK::Vec2 df_du;
     double dActRes_dactiv=0;
     double dActRes_dactivdot = 0;
 
@@ -593,7 +613,9 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
         dActRes_dactivdot = 1;
 
-        df_du = -(u / activTimeConstant + (1 - u) / deactivTimeConstant )
+
+        df_du[0]=0;
+        df_du[1] = -(u / activTimeConstant + (1 - u) / deactivTimeConstant )
                        - (u - activ) * (1 / activTimeConstant - 1 /
                                                 deactivTimeConstant );
     }
@@ -661,6 +683,32 @@ return Results; }
 
 
 
+
+
+
+//------------------------------------------------------------------------------
+VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcJacobianByFiniteDiff(double muscleLength, double projFibLenNorm, double activ,
+                                                                                          double projFibVelNorm, double activdot, double u,
+                                                                                          double h) const {
+
+    SimTK::Vec2 y;
+    SimTK::Vec2 ydot;
+    y[0]=projFibLenNorm;
+    y[1]=activ;
+    ydot[0]=projFibVelNorm;
+    ydot[1]=activdot;
+
+    // Overload method for state vectors as parameters
+    VandenBogert2011Muscle::ImplicitResidual Results= calcJacobianByFiniteDiff(y, ydot, muscleLength, u, h );
+
+    return Results;
+}
+
+
+
+
+
+
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual    VandenBogert2011Muscle::
 calcJacobianByFiniteDiff(SimTK::Vec2 y, SimTK::Vec2 ydot, double muscleLength, double u, double h )
@@ -668,8 +716,9 @@ calcJacobianByFiniteDiff(SimTK::Vec2 y, SimTK::Vec2 ydot, double muscleLength, d
 const {
 
     // Jacobian Matrices
-    SimTK::Mat33 df_dy;
-    SimTK::Mat33 df_dydot;
+    SimTK::Mat22 df_dy;
+    SimTK::Mat22 df_dydot;
+    SimTK::Vec2 df_du;
 
     VandenBogert2011Muscle::ImplicitResidual opPoint;
     opPoint=calcImplicitResidual (y,ydot,muscleLength,u,0);
@@ -678,12 +727,34 @@ const {
 
     VandenBogert2011Muscle::ImplicitResidual del;
 
-    // Make copies so we can modify them
-    SimTK::Vec2 yTemp = y;
-    SimTK::Vec2 ydotTemp = ydot;
+    //----------df_dy------------//
+    SimTK::Vec2 dh = {h,0};
+    del = calcImplicitResidual(y+dh,ydot,muscleLength,u,0);
+    df_dy[0][0]= (del.forceResidual-opForceResidual)/h;
+    df_dy[1][0]= (del.activResidual-opActivResidual)/h;
 
+    dh = {0,h};
+    del = calcImplicitResidual(y+dh,ydot,muscleLength,u,0);
+    df_dy[1][0]= (del.forceResidual-opForceResidual)/h;
+    df_dy[1][1]= (del.activResidual-opActivResidual)/h;
 
+    //----------df_dydot------------//
+    dh = {h,0};
+    del = calcImplicitResidual(y,ydot+dh,muscleLength,u,0);
+    df_dydot[0][0]= (del.forceResidual-opForceResidual)/h;
+    df_dydot[1][0]= (del.activResidual-opActivResidual)/h;
 
+    dh = {0,h};
+    del = calcImplicitResidual(y,ydot+dh,muscleLength,u,0);
+    df_dydot[1][0]= (del.forceResidual-opForceResidual)/h;
+    df_dydot[1][1]= (del.activResidual-opActivResidual)/h;
+
+    //----------df_du----------------//
+    del = calcImplicitResidual(y,ydot,muscleLength,u+h,0);
+    df_du[0]= (del.forceResidual-opForceResidual)/h;
+    df_du[1]= (del.activResidual-opActivResidual)/h;
+
+/*
     for (int i =0; i<=1; i=i+1) {
         yTemp[i]=y[i]+h;
         del = calcImplicitResidual(yTemp,ydot,u,0);
@@ -700,18 +771,85 @@ const {
         yTemp=y;
         ydotTemp=ydot;
 
-    }
+    }*/
 
 
-    del = calcImplicitResidual(y,ydot,u+h,0);
-    double df_du = (del.forceResidual-opForceResidual)/h;
+    //del = calcImplicitResidual(y,ydot,u+h,0);
+    //double df_du = (del.forceResidual-opForceResidual)/h;
 
     opPoint.df_dy=df_dy;
     opPoint.df_dydot=df_dydot;
+    opPoint.df_du=df_du;
 
     return opPoint;
 
 }
+
+
+
+
+//------------------------------------------------------------------------------
+SimTK::Vec1 VandenBogert2011Muscle::calcStatic(double muscleLength ) const {
+
+double tol=1e-4;
+double a=0;
+double b=10;
+
+double x=(a+b)/2.0;
+double dx=2*tol;
+
+int neval=0;
+
+while (abs(x)>=tol){
+
+neval++;
+
+// Set a to be lower value and b to be upper value
+a=min(a,b);
+b=max(a,b);
+
+
+SimTK::Vec2 forceResAndDerivative = calcImplicitResidual(x, muscleLength);
+double fx = forceResAndDerivative[0];
+
+
+
+forceResAndDerivative = calcImplicitResidual(a, muscleLength);
+double funcA = forceResAndDerivative[0];
+
+//After the 1st iteration, use the new guess as a new upper or lower bound
+if (neval>1) {
+    if (funcA *fx>0){
+        a = x;}
+    else { b = x;}}
+
+
+
+forceResAndDerivative = calcImplicitResidual(x, muscleLength);
+double dfx= forceResAndDerivative[1];
+double forceRes=forceResAndDerivative[0];
+
+double dx =-fx/dfx;
+double xdx=x-dx;
+
+
+bool inInterval=((xdx>=a) && (xdx<=b));
+forceResAndDerivative = calcImplicitResidual(xdx, muscleLength);
+bool largeDeriv=abs(forceResAndDerivative[0])> 0.5*abs(fx);
+
+if (~inInterval || largeDeriv){
+x=(a+b)/2;
+dx=(a-b)/2;}
+else
+{x=xdx;};
+
+
+};
+    SimTK::Vec1 vout;
+    vout[0]=x;
+    return vout;
+}
+
 
 
 
@@ -733,4 +871,20 @@ SimTK::Mat22 VandenBogert2011Muscle::quickMat22() const {
     SimTK::Mat22 m;
     m[1][1]=2;
     return m;
+}
+
+
+SimTK::Vec4 VandenBogert2011Muscle::quickVec4() const {
+    SimTK::Vec4 m;
+    m[1]=2;
+    return m;
+}
+
+SimTK::Vec4 VandenBogert2011Muscle::flattenMat22(SimTK::Mat22 matIn) const {
+    SimTK::Vec4 vecOut;
+    vecOut[0]=matIn[0][0];
+    vecOut[1]=matIn[0][1];
+    vecOut[2]=matIn[1][0];
+    vecOut[3]=matIn[1][1];
+    return vecOut;
 }
