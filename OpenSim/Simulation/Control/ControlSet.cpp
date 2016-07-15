@@ -35,7 +35,7 @@
 #include "ControlSet.h"
 #include "ControlLinear.h"
 
-
+#include <OpenSim/Common/XMLDocument.h>
 
 
 using namespace OpenSim;

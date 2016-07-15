@@ -36,7 +36,7 @@
 // INCLUDES
 
 #include "osimCommonDLL.h"
-#include "XMLDocument.h"
+//#include "XMLDocument.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property.h"
