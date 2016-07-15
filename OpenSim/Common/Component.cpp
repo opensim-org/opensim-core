@@ -419,6 +419,11 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
     }
 }
 
+void Component::computeImplicitResiduals(const SimTK::State& s) const
+{
+    // OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+}
+
 
 void Component::
 addModelingOption(const std::string& optionName, int maxFlagValue) const 
@@ -438,6 +443,7 @@ addModelingOption(const std::string& optionName, int maxFlagValue) const
 
 void Component::addStateVariable(const std::string&  stateVariableName,
                                  const SimTK::Stage& invalidatesStage,
+                                 bool hasImplicitForm,
                                  bool isHidden) const
 {
     if( (invalidatesStage < Stage::Position) ||
@@ -447,7 +453,7 @@ void Component::addStateVariable(const std::string&  stateVariableName,
     }
     // Allocate space for a new state variable
     AddedStateVariable* asv =
-        new AddedStateVariable(stateVariableName, *this, invalidatesStage, isHidden);
+        new AddedStateVariable(stateVariableName, *this, invalidatesStage, hasImplicitForm, isHidden);
     // Add it to the Component and let it take ownership
     addStateVariable(asv);
 }
@@ -876,6 +882,71 @@ double Component::
     return SimTK::NaN;
 }
 
+double Component::getStateVariableDerivativeGuess(const SimTK::State& state,
+                                                  const std::string& name) const
+{
+    // TODO make sure the guess exists?
+    
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    if (it == _namedStateVariableInfo.end()) {
+        return it->second.stateVariable->getDerivativeGuess(state);
+    }
+    else {
+        const StateVariable* rsv = findStateVariable(name);
+        if (rsv) {
+            return rsv->getDerivativeGuess(state);
+        }
+    }
+ 
+    OPENSIM_THROW_FRMOBJ(Exception, "State variable '" + name + "' not found.");
+    return SimTK::NaN;
+}
+
+void Component::setStateVariableDerivativeGuess(SimTK::State& state,
+                                                const std::string& name,
+                                                double derivGuess) const
+{
+    // TODO make sure the guess exists?
+    
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    if (it == _namedStateVariableInfo.end()) {
+        return it->second.stateVariable->setDerivativeGuess(state, derivGuess);
+    }
+    else {
+        const StateVariable* rsv = findStateVariable(name);
+        if (rsv) {
+            return rsv->setDerivativeGuess(state, derivGuess);
+        }
+    }
+ 
+    OPENSIM_THROW_FRMOBJ(Exception, "State variable '" + name + "' not found.");
+}
+
+double Component::getImplicitResidual(const SimTK::State& state,
+                                      const std::string& name) const
+{
+    // TODO compute residual?
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    if (it == _namedStateVariableInfo.end()) {
+        return it->second.stateVariable->getImplicitResidual(state);
+    }
+    else {
+        const StateVariable* rsv = findStateVariable(name);
+        if (rsv) {
+            return rsv->getImplicitResidual(state);
+        }
+    }
+ 
+    OPENSIM_THROW_FRMOBJ(Exception, "State variable '" + name + "' not found.");
+    return SimTK::NaN;
+}
+
 // Set the value of a state variable allocated by this Component given its name
 // for this component.
 void Component::
@@ -1036,6 +1107,19 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
             << getConcreteClassName();
         throw Exception(msg.str(),__FILE__,__LINE__);
     }
+}
+
+void Component::setImplicitResidual(const State& state,
+                               const std::string& name, double residual) const
+{
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    OPENSIM_THROW_IF_FRMOBJ(it == _namedStateVariableInfo.end(),
+            Exception, "State variable '" + name + "' not found.");
+
+    const StateVariable& sv = *it->second.stateVariable;
+    sv.setImplicitResidual(state, residual);
 }
 
 bool Component::constructOutputForStateVariable(const std::string& name)
@@ -1286,9 +1370,9 @@ void Component::extendRealizeTopology(SimTK::State& s) const
              it != _namedStateVariableInfo.end(); ++it)
         {
             const StateVariable& sv = *it->second.stateVariable;
-            const AddedStateVariable* asv 
+            const AddedStateVariable* asv
                 = dynamic_cast<const AddedStateVariable *>(&sv);
-
+            
             if(asv){// add index information for added state variables
                 // make mutable just to update system allocated index ONLY!
                 AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
@@ -1322,6 +1406,28 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     }
 }
 
+// Update global indices for state variables.
+void Component::extendRealizeInstance(const SimTK::State& s) const
+{
+    for (auto& entry : _namedStateVariableInfo) {
+        const StateVariable& sv = *entry.second.stateVariable;
+        const AddedStateVariable* asv 
+            = dynamic_cast<const AddedStateVariable *>(&sv);
+        // TODO asv->setSystemYIndexFromTODO();
+        if(asv){// add index information for added state variables
+            // make mutable just to update system allocated index ONLY!
+            AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
+            // This is only known at Model stage:
+            const int systemYIdxOfFirstZ = int(s.getZStart());
+            const SubsystemIndex subsysIdx = masv->getSubsysIndex();
+            const int systemZIdxOfFirstSubsystemZ = s.getZStart(subsysIdx);
+            const int subsystemZIdx = masv->getVarIndex();
+            masv->setSystemYIndex(SystemYIndex(systemYIdxOfFirstZ +
+                                               systemZIdxOfFirstSubsystemZ +
+                                               subsystemZIdx)); // TODO
+        }
+    }
+}
 
 //------------------------------------------------------------------------------
 //                         REALIZE ACCELERATION
@@ -1372,8 +1478,7 @@ const SimTK::MultibodySystem& Component::getSystem() const
 // Base class implementations of these virtual methods do nothing now but
 // could do something in the future. Users must still invoke Super::realizeXXX()
 // as the first line in their overrides to ensure future compatibility.
-void Component::extendRealizeModel(SimTK::State& state) const {}
-void Component::extendRealizeInstance(const SimTK::State& state) const {}
+void Component::extendRealizeModel(SimTK::State& s) const {}
 void Component::extendRealizeTime(const SimTK::State& state) const {}
 void Component::extendRealizePosition(const SimTK::State& state) const {}
 void Component::extendRealizeVelocity(const SimTK::State& state) const {}
@@ -1426,6 +1531,74 @@ void Component::AddedStateVariable::
     return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
+double Component::AddedStateVariable::
+    getImplicitResidual(const SimTK::State& state) const
+{
+    // TODO find another way to get the residual.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    // TODO should returning a single entry of the residual require
+    // evaluating the entire vector? If not, might need a local cache variable.
+    const SimTK::Vector& residual = root->getImplicitResidual(state);
+    return residual[getSystemYIndex()];
+    
+    // TODO OPENSIM_THROW(Exception, "TODO");
+}
+
+void Component::AddedStateVariable::
+    setImplicitResidual(const SimTK::State& state, double residual) const
+{
+    // TODO find another way to get the residual.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    root->updImplicitResidual(state)[getSystemYIndex()] = residual;
+    
+    // TODO OPENSIM_THROW(Exception, "TODO");
+}
+
+double Component::AddedStateVariable::
+    getDerivativeGuess(const SimTK::State& state) const
+{
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    return root->getYDotGuess(state)[getSystemYIndex()];
+    // TODO OPENSIM_THROW(Exception, "TODO");
+}
+
+void Component::AddedStateVariable::
+    setDerivativeGuess(SimTK::State& state, double derivGuess) const
+{
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    // TODO very inefficient.
+    SimTK::Vector yDotGuess = root->getYDotGuess(state);
+    yDotGuess[getSystemYIndex()] = derivGuess;
+    root->setYDotGuess(state, yDotGuess);
+    
+    // TODO OPENSIM_THROW(Exception, "TODO");
+}
 
 void Component::dumpSubcomponents(int depth) const
 {

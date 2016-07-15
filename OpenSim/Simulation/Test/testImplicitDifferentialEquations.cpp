@@ -24,9 +24,18 @@
 /** TODO
 */
 
+// Tests:
 // TODO component w/multiple state vars, only some of which have implicit form.
 // TODO model containing components with and without explicit form.
 // TODO write custom implicit form solver.
+// TODO copying and (de)serializing models with implicit forms.
+// TODO model containing multiple components with implicit form.
+// TODO editing yDotGuess or lambdaGuess invalidates the residual cache.
+// TODO calculation of YIndex must be correct.
+
+// Implementation:
+// TODO Only create implicit cache/discrete vars if any components have an
+// implicit form (place in extendAddToSystemAfterComponents()).
 
 
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -35,39 +44,42 @@ using namespace OpenSim;
 using namespace SimTK;
 
 /** TODO */
-class TrigDynamics : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(TrigDynamics, Component);
+class LinearDynamics : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(LinearDynamics, Component);
 public:
-    OpenSim_DECLARE_PROPERTY(default_sine, double,
+    OpenSim_DECLARE_PROPERTY(default_activ, double,
         "Default value of state variable.");
-    OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(sine);
-    TrigDynamics() {
-        constructProperty_default_sine(0);
+    OpenSim_DECLARE_PROPERTY(coeff, double,
+        "Coefficient in the differential equation.");
+    OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE(activ);
+    LinearDynamics() {
+        constructProperty_default_activ(0.0);
+        constructProperty_coeff(-1.0);
     }
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("sine" /* , true has implicit form */);
+        addStateVariable("activ" /* , true has implicit form */);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        // TODO Super::computeStateVariableDerivatives(s);
-        setStateVariableDerivativeValue(s, "sine", cos(s.getTime()));
+        // TODO invokes false error msg. Super::computeStateVariableDerivatives(s);
+        const Real& activ = getStateVariableValue(s, "activ");
+        setStateVariableDerivativeValue(s, "activ", get_coeff() * activ);
     }
-    /* TODO
-    void computeStateVariableImplicitResiduals(const SimTK::State& s)
+    void computeImplicitResiduals(const SimTK::State& s)
             const override {
-        Super::computeStateVariableDerivatives(s);
-        yDotGuess = getStateVariableDerivativeGuess(s, "sine");
-        setStateVariableImplicitResidual(s, "sine", cos(s.getTime()) - yDotGuess);
+        // TODO Super::computeStateVariableDerivatives(s);
+        const Real& activ = getStateVariableValue(s, "activ");
+        double activDotGuess = getStateVariableDerivativeGuess(s, "activ");
+        setImplicitResidual(s, "activ", get_coeff() * activ - activDotGuess);
     }
-    */
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "sine", get_default_sine());
+        setStateVariableValue(s, "activ", get_default_activ());
     }
     void extendSetPropertiesFromState(const SimTK::State& s) override {
         Super::extendSetPropertiesFromState(s);
-        set_default_sine(getStateVariableValue(s, "sine"));
+        set_default_activ(getStateVariableValue(s, "activ"));
     }
 };
 
@@ -77,40 +89,72 @@ void simulate(const Model& model, State& state, Real finalTime) {
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     SimTK::TimeStepper ts(model.getSystem(), integrator);
     ts.initialize(state);
-    // TODO ts.setReportAllSignificantStates(true);
-    // TODO integrator.setReturnEveryInternalStep(true);
     ts.stepTo(finalTime);
     state = ts.getState();
 }
 
 // Ensure that explicit forward integration works for a component that also
-// provides an implicit form.
+// provides an implicit form. The model contains only one component, which
+// contains one state variable.
 void testExplicitFormOfImplicitComponent() {
+    // Create model.
     Model model; model.setName("model");
-    auto* trig = new TrigDynamics();
-    trig->setName("foo");
+    auto* comp = new LinearDynamics();
+    comp->setName("foo");
     const Real initialValue = 3.5;
-    trig->set_default_sine(initialValue);
-    model.addComponent(trig);
+    comp->set_default_activ(initialValue);
+    const Real coeff = -0.28;
+    comp->set_coeff(coeff);
+    model.addComponent(comp);
     
     // TODO auto* rep = new ConsoleReporter();
     // TODO rep->set_report_time_interval(0.01);
     // TODO model.addComponent(rep);
-    // TODO rep->updInput("inputs").connect(trig->getOutput("sine"));
+    // TODO rep->updInput("inputs").connect(comp->getOutput("activ"));
     
     auto s = model.initSystem();
-    SimTK_TEST(trig->getStateVariableValue(s, "sine") == initialValue);
-    model.realizeAcceleration(s);
-    SimTK_TEST(trig->getStateVariableDerivativeValue(s, "sine") == cos(s.getTime()));
     
+    // Check initial values.
+    SimTK_TEST(comp->getStateVariableValue(s, "activ") == initialValue);
+    model.realizeAcceleration(s);
+    SimTK_TEST_EQ(comp->getStateVariableDerivativeValue(s, "activ"),
+                  coeff * initialValue);
+    
+    // Simulate and check resulting value of state variable.
     const double finalTime = 0.23;
     simulate(model, s, finalTime);
-    SimTK_TEST_EQ_TOL(trig->getStateVariableValue(s, "sine"),
-                      initialValue + sin(finalTime), 1e-5);
+    SimTK_TEST_EQ_TOL(comp->getStateVariableValue(s, "activ"),
+                      initialValue * exp(coeff * finalTime), 1e-5);
+}
+
+void testTODO() {
+    Model model; model.setName("model");
+    auto* comp = new LinearDynamics();
+    comp->setName("foo");
+    const Real initialValue = 3.5;
+    comp->set_default_activ(initialValue);
+    const Real coeff = -0.28;
+    comp->set_coeff(coeff);
+    model.addComponent(comp);
+    auto s = model.initSystem();
+    
+    // Access residual from the component:
+    model.realizeDynamics(s); // Must realize to dynamics to get residuals.
+    // TODO set yGuess.
+    const Real activDotGuess = 5.3;
+    comp->setStateVariableDerivativeGuess(s, "activ", activDotGuess);
+    SimTK_TEST(comp->getImplicitResidual(s, "activ") ==
+               coeff * initialValue - activDotGuess);
+    
+    // TODO set derivative guess in one sweep.
+    // TODO SimTK_TEST(model.getImplicitResiduals(s) == Vector(1, activDotGuess));
+    /* TODO
+    */
 }
 
 int main() {
     SimTK_START_TEST("testImplicitDifferentialEquatiosns");
         SimTK_SUBTEST(testExplicitFormOfImplicitComponent);
+        SimTK_SUBTEST(testTODO);
     SimTK_END_TEST();
 }

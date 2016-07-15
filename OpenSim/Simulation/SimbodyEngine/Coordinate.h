@@ -255,6 +255,13 @@ private:
         void setValue(SimTK::State& state, double value) const override;
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
+        
+        double getImplicitResidual(const SimTK::State& state) const override;
+        // TODO
+        void setImplicitResidual(const SimTK::State& state, double residual) const override;
+        // TODO get/set guess.
+        double getDerivativeGuess(const SimTK::State& state) const override;
+        void setDerivativeGuess(SimTK::State& state, double residual) const override;
     };
 
     // Class for handling state variable added (allocated) by this Component
@@ -273,6 +280,13 @@ private:
         void setValue(SimTK::State& state, double value) const override;
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
+        
+        double getImplicitResidual(const SimTK::State& state) const override;
+        // TODO
+        void setImplicitResidual(const SimTK::State& state, double residual) const override;
+        // TODO get/set guess.
+        double getDerivativeGuess(const SimTK::State& state) const override;
+        void setDerivativeGuess(SimTK::State& state, double residual) const override;
     };
 
     // All coordinates (Simbody mobility) have associated constraints that

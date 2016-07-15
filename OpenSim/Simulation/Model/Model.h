@@ -876,7 +876,14 @@ public:
 
     //--------------------------------------------------------------------------
     // DERIVATIVES
-    //--------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------
+    const SimTK::Vector& getImplicitResidual(const SimTK::State& state) const
+            override;
+    const SimTK::Vector& getYDotGuess(const SimTK::State& state) const override;
+    SimTK::Vector& updImplicitResidual(const SimTK::State& state) const override;
+    void setYDotGuess(SimTK::State& state,
+                              const SimTK::Vector& yDotGuess) const override;
+    
     //--------------------------------------------------------------------------
     // OPERATIONS
     //--------------------------------------------------------------------------
@@ -970,7 +977,10 @@ public:
     void extendFinalizeFromProperties() override;
 
     void extendConnectToModel(Model& model)  override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    // TODO
+    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
+            const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     /**@}**/
 
@@ -1101,6 +1111,11 @@ private:
     SimTK::MeasureIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.
     mutable SimTK::Vector _defaultControls;
+    
+    // TODO
+    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _yDotGuessIndex;
+    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _lambdaGuessIndex;
+    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _implicitResidualIndex;
 
 
     //                          VISUALIZATION

@@ -768,7 +768,98 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 }
 
+// TODO so that 
+void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystemAfterSubcomponents(system);
+    // TODO determine if we have any state variables with an implicit form.
+    
+    // TODO would rather do s.getNY() but can't do that till after
+    // realizeTopology().
+    // TODO what if Simbody has state variables that OpenSim doesn't know about?
+    const int numStateVars = getNumStateVariables();
+    Vector nans(numStateVars, SimTK::NaN);
+    nans.lockShape(); // TODO where is the right place for this?
+    
+    // This Measure is basically a discrete state variable.
+    // Acceleration cache is invalid if this is updated.
+    // TODO what should default value be? what size should it have?
+    Measure_<Vector>::Variable yDotGuess(_system->updDefaultSubsystem(),
+        Stage::Acceleration, nans);
+    _yDotGuessIndex = yDotGuess.getSubsystemMeasureIndex();
+    
+    Measure_<Vector>::Variable lambdaGuess(_system->updDefaultSubsystem(),
+        Stage::Acceleration, nans);
+    _lambdaGuessIndex = lambdaGuess.getSubsystemMeasureIndex();
+    
+    // Storing the residual.
+    // We can only compute the residual once realized to Dynamics, since
+    // we will need to apply forces.
+    // None of the acceleration-level calculations depend on the residual
+    // (nothing should depend on the residual) so there is nothing to
+    // invalidate when the residual is changed (invalidated = Infinity).
+    // TODO do we depend on Acceleration stage, for constraint forces?
+    Measure_<Vector>::Result implicitResidual(_system->updDefaultSubsystem(),
+        Stage::Dynamics, Stage::Infinity);
+    implicitResidual.setDefaultValue(nans);
+    _implicitResidualIndex = implicitResidual.getSubsystemMeasureIndex();
+}
 
+const SimTK::Vector& Model::getImplicitResidual(const SimTK::State& state) const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    // TODO must make sure we are realized to Dynamics.
+    auto implicitResidual = Measure_<Vector>::Result::getAs(
+            _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
+
+    if (!implicitResidual.isValid(state)) {
+        // TODO should put this in a separate "realizeImplicitResidual"?
+        // TODO perhaps this is not the best way to invoke the actual calculation
+        // of residuals.
+        for (const auto& comp : getComponentList()) {
+            comp.computeImplicitResiduals(state);
+        }
+        implicitResidual.markAsValid(state); // TODO
+    }
+
+    return implicitResidual.getValue(state);
+}
+
+SimTK::Vector& Model::updImplicitResidual(const SimTK::State& state)
+        const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    auto implicitResidual = Measure_<Vector>::Result::getAs(
+            _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
+    return implicitResidual.updValue(state);
+    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+}
+
+const SimTK::Vector& Model::getYDotGuess(const SimTK::State& state) const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_yDotGuessIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    
+    auto yDotGuess = Measure_<Vector>::Variable::getAs(
+            _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
+    
+    return yDotGuess.getValue(state);
+    
+    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+}
+
+void Model::setYDotGuess(SimTK::State& state,
+                          const SimTK::Vector& yDotGuess) const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_yDotGuessIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    
+    auto measure = Measure_<Vector>::Variable::getAs(
+            _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
+    
+    // TODO ensure yDotGuess has the correct length.
+    return measure.setValue(state, yDotGuess);
+    
+    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+}
 //_____________________________________________________________________________
 /**
  * Add any Component derived from ModelComponent to the Model.

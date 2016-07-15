@@ -645,6 +645,29 @@ void Coordinate::CoordinateStateVariable::
     throw Exception(msg);
 }
 
+double Coordinate::CoordinateStateVariable::
+    getImplicitResidual(const SimTK::State& state) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+void Coordinate::CoordinateStateVariable::
+    setImplicitResidual(const SimTK::State& state, double residual) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+double Coordinate::CoordinateStateVariable::
+    getDerivativeGuess(const SimTK::State& state) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+void Coordinate::CoordinateStateVariable::
+    setDerivativeGuess(SimTK::State& state, double derivGuess) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
 
 //-----------------------------------------------------------------------------
 // Coordinate::SpeedStateVariable
@@ -679,4 +702,28 @@ void Coordinate::SpeedStateVariable::
     string msg = "SpeedStateVariable::setDerivative() - ERROR \n";
     msg +=  "Generalized speed derivative (udot) can only be set by the Multibody system.";
     throw Exception(msg);
+}
+
+double Coordinate::SpeedStateVariable::
+    getImplicitResidual(const SimTK::State& state) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+void Coordinate::SpeedStateVariable::
+    setImplicitResidual(const SimTK::State& state, double residual) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+double Coordinate::SpeedStateVariable::
+    getDerivativeGuess(const SimTK::State& state) const
+{
+    OPENSIM_THROW(Exception, "TODO");
+}
+
+void Coordinate::SpeedStateVariable::
+    setDerivativeGuess(SimTK::State& state, double derivGuess) const
+{
+    OPENSIM_THROW(Exception, "TODO");
 }
