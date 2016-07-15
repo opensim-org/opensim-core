@@ -877,10 +877,11 @@ public:
     //--------------------------------------------------------------------------
     // DERIVATIVES
     //--------------------------------------------------------------------------
-    const SimTK::Vector& getImplicitResidual(const SimTK::State& state) const
+    // TODO rearrange according to public/private.
+    const SimTK::Vector& getImplicitResiduals(const SimTK::State& state) const
             override;
     const SimTK::Vector& getYDotGuess(const SimTK::State& state) const override;
-    SimTK::Vector& updImplicitResidual(const SimTK::State& state) const override;
+    SimTK::Vector& updImplicitResiduals(const SimTK::State& state) const override;
     void setYDotGuess(SimTK::State& state,
                               const SimTK::Vector& yDotGuess) const override;
     

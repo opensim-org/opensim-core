@@ -143,13 +143,14 @@ void testTODO() {
     // TODO set yGuess.
     const Real activDotGuess = 5.3;
     comp->setStateVariableDerivativeGuess(s, "activ", activDotGuess);
-    SimTK_TEST(comp->getImplicitResidual(s, "activ") ==
-               coeff * initialValue - activDotGuess);
+    double expectedResidual = coeff * initialValue - activDotGuess;
+    SimTK_TEST(comp->getImplicitResidual(s, "activ") == expectedResidual);
     
-    // TODO set derivative guess in one sweep.
-    // TODO SimTK_TEST(model.getImplicitResiduals(s) == Vector(1, activDotGuess));
+    // Make sure the residual is accessible from the entire residual vector.
+    SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
     /* TODO
     */
+    // TODO set derivative guess in one sweep.
 }
 
 int main() {

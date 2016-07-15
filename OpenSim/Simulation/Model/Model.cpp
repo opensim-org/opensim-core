@@ -805,7 +805,7 @@ void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
     _implicitResidualIndex = implicitResidual.getSubsystemMeasureIndex();
 }
 
-const SimTK::Vector& Model::getImplicitResidual(const SimTK::State& state) const {
+const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) const {
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");
     // TODO must make sure we are realized to Dynamics.
@@ -825,7 +825,7 @@ const SimTK::Vector& Model::getImplicitResidual(const SimTK::State& state) const
     return implicitResidual.getValue(state);
 }
 
-SimTK::Vector& Model::updImplicitResidual(const SimTK::State& state)
+SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state)
         const {
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");

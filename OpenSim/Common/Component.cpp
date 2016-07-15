@@ -1544,8 +1544,7 @@ double Component::AddedStateVariable::
     
     // TODO should returning a single entry of the residual require
     // evaluating the entire vector? If not, might need a local cache variable.
-    const SimTK::Vector& residual = root->getImplicitResidual(state);
-    return residual[getSystemYIndex()];
+    return root->getImplicitResiduals(state)[getSystemYIndex()];
     
     // TODO OPENSIM_THROW(Exception, "TODO");
 }
@@ -1561,7 +1560,7 @@ void Component::AddedStateVariable::
         root = comp;
     }
     
-    root->updImplicitResidual(state)[getSystemYIndex()] = residual;
+    root->updImplicitResiduals(state)[getSystemYIndex()] = residual;
     
     // TODO OPENSIM_THROW(Exception, "TODO");
 }

@@ -1073,7 +1073,7 @@ public:
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
     
-    virtual const SimTK::Vector& getImplicitResidual(const SimTK::State& state)
+    virtual const SimTK::Vector& getImplicitResiduals(const SimTK::State& state)
             const {
         OPENSIM_THROW_FRMOBJ(Exception,
             "Can only call on a root component (e.g., Model).");
@@ -1083,7 +1083,7 @@ public:
             "Can only call on a root component (e.g., Model).");
     }
 protected: // TODO move this around.
-    virtual SimTK::Vector& updImplicitResidual(const SimTK::State& state)
+    virtual SimTK::Vector& updImplicitResiduals(const SimTK::State& state)
             const {
         OPENSIM_THROW_FRMOBJ(Exception,
             "Can only call on a root component (e.g., Model).");
