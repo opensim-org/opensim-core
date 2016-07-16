@@ -3,6 +3,7 @@ include_directories(${OpenSim_SOURCE_DIR}
 
 if(BUILD_TESTING)
     add_subdirectory(Components)
+    add_subdirectory(AddComponents)
     add_subdirectory(ControllerExample)
     add_subdirectory(CoupledBushingForceExample)
     add_subdirectory(ExampleMain)

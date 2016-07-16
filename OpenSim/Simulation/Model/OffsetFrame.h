@@ -73,6 +73,11 @@ public:
     "Orientation offset of this frame in its parent frame, expressed as a "
     "frame-fixed x-y-z rotation sequence.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(parent, C, "The parent frame to this frame.");
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -159,8 +164,8 @@ protected:
     /** @name Component Interface
     These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     /**@}**/
 
     // The transform X_GO for this OffsetFrame, O, in Ground, G.
@@ -176,7 +181,7 @@ protected:
 private:
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     // the Offset transform in its parent frame
     SimTK::Transform _offsetTransform;
@@ -192,7 +197,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame() : C()
 {
     setNull();
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors
@@ -240,12 +245,6 @@ void OffsetFrame<C>::constructProperties()
     // transform at default
 }
 
-template <class C>
-void OffsetFrame<C>::constructConnectors()
-{
-    this->template constructConnector<C>("parent");
-}
-
 //=============================================================================
 // FRAME COMPUTATIONS must be specialized by concrete derived Offsets
 //=============================================================================
@@ -276,6 +275,7 @@ template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcAccelerationInGround(const SimTK::State& state) const
 {
+    std::cout << getConcreteClassName() << "::calcAccelerationInGround" << std::endl;
     // The rigid offset of the OffsetFrame expressed in ground
     const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
         getOffsetTransform().p();
@@ -348,6 +348,13 @@ void OffsetFrame<C>::extendFinalizeFromProperties()
     _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
 }
 
+template<class C>
+void OffsetFrame<C>::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    OPENSIM_THROW_IF(*this == getParentFrame(), Exception,
+        getConcreteClassName() + " cannot connect to itself!");
+}
 
 } // end of namespace OpenSim
 

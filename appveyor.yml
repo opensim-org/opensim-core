@@ -17,7 +17,7 @@
   
 shallow_clone: true
 
-os: Visual Studio 2015
+os: Previous Visual Studio 2015
 
 platform: x64
 
@@ -57,7 +57,7 @@ nuget:
 install:
 
   ## Use Chocolatey to install SWIG.
-  - choco install swig --version 3.0.6 -y
+  - choco install swig --version 3.0.6 --yes > $null
   
   ## Install python-nose for python testing.
   - "%PYTHON_DIR%\\Scripts\\pip install nose"

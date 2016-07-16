@@ -41,9 +41,6 @@
 #include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
 #include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 
-#include <OpenSim/Simulation/Model/ModelDisplayHints.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
-
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
@@ -139,6 +136,7 @@
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

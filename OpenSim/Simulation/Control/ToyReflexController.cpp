@@ -67,12 +67,12 @@ void ToyReflexController::extendConnectToModel(Model &model)
     Super::extendConnectToModel(model);
 
     // get the list of actuators assigned to the reflex controller
-    Set<Actuator>& actuators = updActuators();
+    Set<const Actuator>& actuators = updActuators();
 
     int cnt=0;
  
     while(cnt < actuators.getSize()){
-        Muscle *musc = dynamic_cast<Muscle*>(&actuators[cnt]);
+        const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[cnt]);
         // control muscles only
         if(!musc){
             cout << "ToyReflexController:: WARNING- controller assigned a non-muscle actuator ";
@@ -99,7 +99,7 @@ void ToyReflexController::computeControls(const State& s, Vector &controls) cons
     s.getTime();
 
     // get the list of actuators assigned to the reflex controller
-    const Set<Actuator>& actuators = getActuatorSet();
+    const Set<const Actuator>& actuators = getActuatorSet();
 
     // muscle lengthening speed
     double speed = 0;

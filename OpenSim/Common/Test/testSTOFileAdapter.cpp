@@ -98,9 +98,9 @@ int main() {
     std::string tmpfile{"testmotfileadapter.mot"};
 
     for(const auto& filename : filenames) {
-        STOFileAdapter motfileadapter{};
-        auto table = motfileadapter.read(filename);
-        motfileadapter.write(table, tmpfile);
+        STOFileAdapter stofileadapter{};
+        auto table = stofileadapter.read(filename);
+        stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
@@ -109,6 +109,12 @@ int main() {
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);
+        compareFiles(filename, tmpfile);
+    }
+
+    for(const auto& filename : filenames) {
+        TimeSeriesTable table{filename};
+        STOFileAdapter::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 

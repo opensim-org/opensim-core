@@ -222,7 +222,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
 
 //==============================================================================

@@ -546,7 +546,7 @@ public:
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::getAs(): Property " + prop.getName() 
-            + " was not of type " 
+            + " was not of type "
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
@@ -559,7 +559,7 @@ public:
         if (p) return *p;
         throw OpenSim::Exception
            ("Property<T>::updAs(): Property " + prop.getName() 
-            + " was not of type " 
+            + " was not of type "
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
 

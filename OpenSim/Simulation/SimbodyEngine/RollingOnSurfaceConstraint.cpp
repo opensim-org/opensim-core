@@ -51,7 +51,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
     UnilateralConstraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //=============================================================================
@@ -84,12 +84,6 @@ void RollingOnSurfaceConstraint::constructProperties()
     constructProperty_friction_coefficient(0.5);
 
     constructProperty_contact_radius(0.01);
-}
-
-void RollingOnSurfaceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("rolling_body");
-    constructConnector<PhysicalFrame>("surface_body");
 }
 
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)

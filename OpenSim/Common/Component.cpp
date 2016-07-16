@@ -127,7 +127,8 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_components();
 }
 
-void Component::addComponent(Component* comp) {
+void Component::addComponent(Component* subcomponent)
+{
     //get to the root Component
     const Component* root = this;
     while (root->hasParent()) {
@@ -136,14 +137,18 @@ void Component::addComponent(Component* comp) {
 
     auto components = root->getComponentList<Component>();
     for (auto& c : components) {
-        if (comp == &c) {
+        if (subcomponent == &c) {
             OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                comp->getName(), getName());
+                subcomponent->getName(), getName());
         }
     }
 
-    updProperty_components().adoptAndAppendValue(comp);
+    updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
+
+    // allow the derived Component to perform secondary operations
+    // in response to the inclusion of the subcomponent
+    extendAddComponent(subcomponent);
 }
 
 void Component::finalizeFromProperties()
@@ -234,10 +239,15 @@ void Component::connect(Component &root)
         AbstractInput& input = inputPair.second.updRef();
 
         if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+            // TODO When we support verbose/debug logging we should include
+            // message about unspecified Outputs but generally this OK
+            // if the Input's value is not required.
+            /**
             std::cout << getConcreteClassName() << "'" << getName() << "'";
             std::cout << "::connect() Input<" << input.getConnecteeTypeName();
             std::cout << ">`" << input.getName();
             std::cout << "' Output has not been specified." << std::endl;
+            */
             continue;
         }
 
@@ -541,6 +551,17 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
     }
 }
 
+unsigned Component::printComponentsMatching(const std::string& substring) const
+{
+    auto components = getComponentList();
+    components.setFilter(ComponentFilterFullPathNameContainsString(substring));
+    unsigned count = 0;
+    for (const auto& comp : components) {
+        std::cout << comp.getFullPathName() << std::endl;
+        ++count;
+    }
+    return count;
+}
 
 int Component::getNumStateVariables() const
 {
@@ -745,6 +766,21 @@ Array<std::string> Component::getStateVariableNames() const
 {
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
 
+/** TODO: Use component iterator  like below
+    for (int i = 0; i < stateNames.size(); ++i) {
+        stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
+    }
+
+    for (auto& comp : getComponentList<Component>()) {
+        const std::string& pathName = comp.getFullPathName();// *this);
+        Array<std::string> subStateNames = 
+            comp.getStateVariablesNamesAddedByComponent();
+        for (int i = 0; i < subStateNames.size(); ++i) {
+            stateNames.append(pathName + "/" + subStateNames[i]);
+        }
+    }
+*/
+
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
         Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
@@ -859,17 +895,53 @@ void Component::
     throw Exception(msg.str(),__FILE__,__LINE__);
 }
 
+bool Component::isAllStatesVariablesListValid() const
+{
+    int nsv = getNumStateVariables();
+    // Consider the list of all StateVariables to be valid if all of 
+    // the following conditions are true:
+    // 1. Component is up-to-date with its Properties
+    // 2. a System has been associated with the list of StateVariables
+    // 3. The list of all StateVariables is correctly sized (initialized)
+    // 4. The System associated with the StateVariables is the current System
+    // TODO: Enable the isObjectUpToDateWithProperties() check when computing
+    // the path of the GeomtryPath does not involve updating its PathPointSet.
+    // This change dirties the GeometryPath which is a property of a Muscle which
+    // is property of the Model. Therefore, during integration the Model is not 
+    // up-to-date and this causes a rebuilding of the cached StateVariables list.
+    // See GeometryPath::computePath() for the corresponding TODO that must be
+    // addressed before we can re-enable the isObjectUpToDateWithProperties
+    // check.
+    // It has been verified that the adding Components will invalidate the state
+    // variables associated with the Model and force the list to be rebuilt.
+    bool valid = //isObjectUpToDateWithProperties() &&                  // 1.
+        !_statesAssociatedSystem.empty() &&                             // 2.
+        _allStateVariables.size() == nsv &&                             // 3.
+        getSystem().isSameSystem(_statesAssociatedSystem.getRef());     // 4.
+
+    return valid;
+}
+
+
 // Get all values of the state variables allocated by this Component. Includes
 // state variables allocated by its subcomponents.
 SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
     int nsv = getNumStateVariables();
-    Array<std::string> names = getStateVariableNames();
+    // if the StateVariables are invalid (see above) rebuild the list
+    if (!isAllStatesVariablesListValid()) {
+        _statesAssociatedSystem.reset(&getSystem());
+        _allStateVariables.clear();
+        _allStateVariables.resize(nsv);
+        Array<std::string> names = getStateVariableNames();
+        for (int i = 0; i < nsv; ++i)
+            _allStateVariables[i].reset(findStateVariable(names[i]));
+    }
 
     Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
-        stateVariableValues[i]=getStateVariableValue(state, names[i]);
+        stateVariableValues[i]= _allStateVariables[i]->getValue(state);
     }
 
     return stateVariableValues;
@@ -881,13 +953,23 @@ void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
     int nsv = getNumStateVariables();
-    SimTK_ASSERT(values.size() == nsv, 
-        "Component::setStateVariableValues() number values does not match number of state variables."); 
-    Array<std::string> names = getStateVariableNames();
 
-    Vector stateVariableValues(nsv, SimTK::NaN);
+    SimTK_ASSERT(values.size() == nsv,
+        "Component::setStateVariableValues() number values does not match the "
+        "number of state variables.");
+
+    // if the StateVariables are invalid (see above) rebuild the list 
+    if (!isAllStatesVariablesListValid()) {
+        _statesAssociatedSystem.reset(&getSystem());
+        _allStateVariables.clear();
+        _allStateVariables.resize(nsv);
+        Array<std::string> names = getStateVariableNames();
+        for (int i = 0; i < nsv; ++i)
+            _allStateVariables[i].reset(findStateVariable(names[i]));
+    }
+
     for(int i=0; i<nsv; ++i){
-        setStateVariableValue(state, names[i], values[i]);
+        _allStateVariables[i]->setValue(state, values[i]);
     }
 }
 
@@ -1172,15 +1254,14 @@ getStateVariablesNamesAddedByComponent() const
 //------------------------------------------------------------------------------
 // This is the base class implementation of a virtual method that can be
 // overridden by derived model components, but they *must* invoke
-// Super::extendRealizeTopology() as the first line in the overriding method so that
-// this code is executed before theirs.
+// Super::extendRealizeTopology() as the first line in the overriding method so
+// that this code is executed before theirs.
 // This method is invoked from the ComponentMeasure associated with this
 // Component.
 // Note that subcomponent realize() methods will be invoked by their own
 // ComponentMeasures, so we do not need to forward to subcomponents here.
 void Component::extendRealizeTopology(SimTK::State& s) const
 {
-
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
     
     Component *mutableThis = const_cast<Component*>(this);

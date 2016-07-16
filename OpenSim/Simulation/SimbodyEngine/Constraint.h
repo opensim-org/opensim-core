@@ -105,7 +105,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
     /** ID for the constraint in Simbody. */
     SimTK::ResetOnCopy<SimTK::ConstraintIndex> _index;

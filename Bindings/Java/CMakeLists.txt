@@ -61,7 +61,7 @@ add_subdirectory(OpenSimJNI)
 
 # Compile java sources.
 # ---------------------
-find_package(Java 1.6 REQUIRED)
+find_package(Java 1.7 REQUIRED)
 
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"

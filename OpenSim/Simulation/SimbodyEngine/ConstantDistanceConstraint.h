@@ -34,7 +34,7 @@ namespace OpenSim {
 /**
  * A class implementing a constraint that maintains a constant distance between
  * between two points on separate PhysicalFrames. 
- * The underlying SimTK::Constraint in Simbody is a Constraint::Rod
+ * The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.
  *
  * @author Matt DeMers
  */
@@ -54,6 +54,12 @@ public:
     OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance "
         "to be rigidly maintained between the two points "
         "fixed on each body.");
+
+    OpenSim_DECLARE_CONNECTOR(body_1, PhysicalFrame,
+        "The first body participating in this constraint.");
+    OpenSim_DECLARE_CONNECTOR(body_2, PhysicalFrame,
+        "The second body participating in this constraint.");
+
 
 //=============================================================================
 // METHODS
@@ -101,20 +107,18 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
         override;
 
-    /** Updating XML formating to latest revision */
+    /** Updating XML formatting to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 
 private:
     /** Construct ConstantDistanceConstraint's properties */
-    void constructProperties() override;
-    /** Construct ConstantDistanceConstraint's connectors */
-    void constructConnectors() override;
+    void constructProperties();
 
     void setNull();
 
 //=============================================================================
-};  // END of class ConstantDistanceConstraint
+}; // END of class ConstantDistanceConstraint
 //=============================================================================
 //=============================================================================
 

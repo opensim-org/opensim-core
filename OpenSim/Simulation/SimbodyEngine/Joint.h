@@ -61,28 +61,31 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 
 <b>C++ example</b>
 \code{.cpp}
-    // Define a Pin joint between ground and platform.
-    PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                              "ground", "platform");
+// Define a pin joint that attaches pendulum (an OpenSim::Body) to ground.
+PinJoint* myPin = new PinJoint("pendulumToGround", myModel.getGround(),
+                               pendulum);
 \endcode
 
 <b>Python example</b>
 \code{.py}
     # Define a ball joint between blockA and blockB.
-    abJoint  = osim.BallJoint('JointName', 'blockA', 'blockB')
+    abJoint = osim.BallJoint('JointName', blockA, blockB)
 \endcode
 
-In the case that you want to connect to an existing PhysicalFrame, like
-a Body or Ground, but not to their origins you can create
-PhysicalOffsetFrames to connect to and add them to the Joint.
+If you want to connect to an existing PhysicalFrame (e.g., a Body or Ground)
+but not to its origin, you can create and connect to a PhysicalOffsetFrame; the
+following convenience constructor does this for you:
 
 <b>C++ example</b>
 \code{.cpp}
-// Define a Pin joint between ground and platform with offsets.
-PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                          "groundOffset", "platformOffset");
-platformToGround.append_frames(new PhysicalOffsetFrame("groundOffset", ...));
-platformToGround.append_frames(new PhysicalOffsetFrame("platformOffset", ...));
+// Define a pin joint that attaches the end of pendulum to the ground origin.
+PinJoint* myPin = new PinJoint("pendulumToGround",
+                               myModel.getGround(),   //parent PhysicalFrame
+                               Vec3(0),               //location in parent
+                               Vec3(0),               //orientation in parent
+                               pendulum,              //child PhysicalFrame
+                               Vec3(0,-length/2.,0),  //location in child
+                               Vec3(0));              //orientation in child
 \endcode
 
 
@@ -110,6 +113,14 @@ public:
         "are often used to offset the connection from a Body's origin to another "
         "location of interest (e.g. the joint center). That offset can be added "
         "to the Joint. When the joint is delete so are the Frames in this list.");
+
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+        "The parent frame for the joint.");
+    OpenSim_DECLARE_CONNECTOR(child_frame, PhysicalFrame,
+        "The child frame for the joint.");
 
 //=============================================================================
 // OUTPUTS
@@ -475,11 +486,7 @@ private:
 
     /** Construct the infrastructure of the Joint component.
         Begin with its properties. */
-    void constructProperties() override;
-
-    /** Next define its structural dependencies on other components.
-        These will be the parent and child frames of the Joint.*/
-    void constructConnectors() override;
+    void constructProperties();
 
     /** Utility method for accessing the number of mobilities provided by
         an underlying MobilizedBody */

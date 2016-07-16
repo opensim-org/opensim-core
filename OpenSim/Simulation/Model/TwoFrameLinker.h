@@ -59,6 +59,15 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
+//==============================================================================
+// CONNECTORS
+//==============================================================================
+
+    OpenSim_DECLARE_CONNECTOR(frame1, F,
+            "The first frame participating in this linker.");
+    OpenSim_DECLARE_CONNECTOR(frame2, F,
+            "The second frame participating in this linker.");
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -183,7 +192,6 @@ protected:
     /** @name Component Interface
         These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
@@ -231,7 +239,7 @@ protected:
 
 private:
     // create the frames property
-    void constructProperties() override;
+    void constructProperties();
 
     //hang on to references to the individual frames for fast access
     mutable SimTK::ReferencePtr<const F> _frame1;
@@ -251,7 +259,7 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors
@@ -338,13 +346,6 @@ void TwoFrameLinker<C, F>::constructProperties()
 {
     //Default frames list is empty
     this->constructProperty_frames();
-}
-
-template <class C, class F>
-void TwoFrameLinker<C,F>::constructConnectors()
-{
-    this->template constructConnector<F>("frame1");
-    this->template constructConnector<F>("frame2");
 }
 
 template <class C, class F>

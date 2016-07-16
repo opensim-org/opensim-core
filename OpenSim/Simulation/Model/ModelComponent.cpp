@@ -32,28 +32,15 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : Component()
-{
-    constructInfrastructure();
-}
-
+ModelComponent::ModelComponent() : Component() {}
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
 :   Component(fileName, updFromXMLNode)
-{
-    constructInfrastructure();
-}
+{}
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
 :   Component(element)
-{
-    constructInfrastructure();
-}
-
-void ModelComponent::constructProperties()
-{
-    constructProperty_geometry();
-}
+{}
 
 const Model& ModelComponent::getModel() const
 {
@@ -97,40 +84,6 @@ void ModelComponent::connectToModel(Model& model)
     extendConnectToModel(model);
 }
 
-void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
-    // Check that name exists and is unique as it's used to form PathName
-    if (geom.getName().empty()){
-        bool nameFound = false;
-        int index = 1;
-        while (!nameFound){
-            std::stringstream ss;
-            // generate candidate name
-            ss << getName() << "_geom_" << index;
-            std::string candidate = ss.str();
-            bool exists = false;
-            for (int idx = 0; idx < getProperty_geometry().size() && !exists; idx++){
-                if (get_geometry(idx).getName() == candidate){
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists){
-                nameFound = true;
-                geom.setName(candidate);
-            }
-            else
-                index++;
-        }
-        
-    }
-
-    int ix = append_geometry(geom);
-    finalizeFromProperties();
-
-    extendAddGeometry(upd_geometry(ix));
-}
-
-
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
 {   return getModel().getDefaultSubsystem(); }
@@ -138,5 +91,40 @@ getDefaultSubsystem() const
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 updDefaultSubsystem()
 {   return updModel().updDefaultSubsystem(); }
+
+
+void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber) {
+
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30506) {
+            // geometry list property removed. Everything that was in this list
+            // should be moved to the components list property.
+            SimTK::Xml::element_iterator geometry = aNode.element_begin("geometry");
+            if (geometry != aNode.element_end()) {
+                // We found a list property of geometry.
+                SimTK::Xml::Element componentsNode;
+                SimTK::Xml::element_iterator componentsIt = aNode.element_begin("components");
+                if (componentsIt == aNode.element_end()) {
+                    // This component does not yet have a list property of
+                    // components, so we'll create one.
+                    componentsNode = SimTK::Xml::Element("components");
+                    aNode.insertNodeBefore(aNode.element_begin(), componentsNode);
+                } else {
+                    componentsNode = *componentsIt;
+                }
+                // Copy each node under <geometry> into <components>.
+                for (auto geomIt = geometry->element_begin();
+                        geomIt != geometry->element_end(); ++geomIt) {
+                    componentsNode.appendNode(geomIt->clone());
+                }
+                // Now that we moved over the geometry, we can delete the
+                // <geometry> element.
+                aNode.eraseNode(geometry);
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
 
 } // end of namespace OpenSim

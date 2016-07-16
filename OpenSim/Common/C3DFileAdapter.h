@@ -25,6 +25,7 @@
 #ifdef WITH_BTK
 
 #include "FileAdapter.h"
+#include "TimeSeriesTable.h"
 #include "Event.h"
 
 template<typename> class shrik;

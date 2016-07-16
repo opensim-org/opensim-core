@@ -49,8 +49,8 @@ class OSIMSIMULATION_API PointForceDirection
 private:
     /** Point of "contact" with a body, defined in the body frame */
     SimTK::Vec3 _point;
-    /** The body in which the point is defined */
-    const Body &_body;
+    /** The frame in which the point is defined */
+    const PhysicalFrame &_frame;
     /** Direction of the force at the point, defined in ground */
     SimTK::Vec3 _direction;
     /** Optional parameter to scale the force that results from a scalar 
@@ -66,18 +66,19 @@ public:
     virtual ~PointForceDirection() {};
     /** Default constructor takes the point, body, direction and scale
         as arguments */
-    PointForceDirection(SimTK::Vec3 point, Body &body, SimTK::Vec3 direction, double scale=1):
-        _point(point), _body(body), _direction(direction), _scale(scale) 
-    {};
+    PointForceDirection(SimTK::Vec3 point, const PhysicalFrame &frame, 
+        SimTK::Vec3 direction, double scale=1):
+            _point(point), _frame(frame), _direction(direction), _scale(scale)
+    {}
 
     /** get point of "contact" with on a body defined in the body frame */
-    SimTK::Vec3 point() {return _point; };
+    SimTK::Vec3 point() {return _point; }
     /** get the body in which the point is defined */
-    const Body& body() {return _body; };
+    const PhysicalFrame& frame() {return _frame; }
     /** get direction of the force at the point defined in ground */
-    SimTK::Vec3 direction() {return _direction; };
+    SimTK::Vec3 direction() {return _direction; }
     /** get the scale factor on the force */
-    double scale() {return _scale; };
+    double scale() {return _scale; }
 
     /** replace the current direction with the resultant with a new direction */
     void addToDirection(SimTK::Vec3 newDirection) {_direction+=newDirection;}
