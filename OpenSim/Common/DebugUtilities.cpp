@@ -24,7 +24,6 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
-#include <stdexcept>
 #include <cstdlib>
 
 namespace OpenSim {

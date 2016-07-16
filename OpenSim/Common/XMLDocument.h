@@ -29,7 +29,6 @@
 
 
 // INCLUDES
-#include <iostream> // Ayman: Remove .h extension per .NET 2003
 #include "osimCommonDLL.h"
 #include <SimTKcommon.h>
 #include "Array.h"
