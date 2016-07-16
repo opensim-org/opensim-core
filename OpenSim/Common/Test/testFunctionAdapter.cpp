@@ -20,6 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 

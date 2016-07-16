@@ -26,7 +26,6 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <string>
 #include "PropertyObjPtr.h"
 #include "PropertyDbl.h"
 #include "Function.h"
