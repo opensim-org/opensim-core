@@ -43,6 +43,7 @@
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 
 #include "SimTKcommon/internal/SystemGuts.h"
@@ -809,20 +810,56 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");
     // TODO must make sure we are realized to Dynamics.
-    auto implicitResidual = Measure_<Vector>::Result::getAs(
+    auto measure = Measure_<Vector>::Result::getAs(
             _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
+    
+    // Multibody states.
+    
 
-    if (!implicitResidual.isValid(state)) {
+    if (!measure.isValid(state)) {
+        getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+       
+        // Multibody states.
+        // =================
+        if (state.getNQ() > 0) { // Are there multibody states?
+            const auto& yDotGuess = getYDotGuess(state);
+            SimTK::Vector& residuals = measure.updValue(state);
+            
+            // qdot - N u
+            // ----------
+            // Get a view into YDotGuess[0:nq].
+            const auto& qDotGuess = yDotGuess(0, state.getNQ());
+            VectorView qResiduals = residuals(0, state.getNQ());
+            qResiduals = state.getQDot() - qDotGuess;
+            // TODO do we want to use QDot here?? I think so, otherwise
+            // we are recomputing something that should already be cached for us.
+            // The alternative:
+            // TODO getMatterSubsystem().multiplybyN(state, state.getU(), qResiduals);
+            
+            // M u_dot - f
+            // -----------
+            // Get a view into YDotGuess[nq:nq+nu].
+            const auto& uDotGuess = yDotGuess(state.getNQ(), state.getNU());
+            InverseDynamicsSolver idSolver(*this);
+            // TODO improve InverseDynamicsSolver to take a lambda.
+            VectorView uResiduals = residuals(state.getNQ(), state.getNU());
+            // TODO is there an unnecessary copy here, and is it expensive?
+            uResiduals = idSolver.solve(state, uDotGuess);
+        }
+    
+        // Auxiliary states.
+        // =================
         // TODO should put this in a separate "realizeImplicitResidual"?
         // TODO perhaps this is not the best way to invoke the actual calculation
         // of residuals.
         for (const auto& comp : getComponentList()) {
             comp.computeImplicitResiduals(state);
         }
-        implicitResidual.markAsValid(state); // TODO
+        
+        measure.markAsValid(state); // TODO
     }
 
-    return implicitResidual.getValue(state);
+    return measure.getValue(state);
 }
 
 SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state)

@@ -1073,6 +1073,8 @@ public:
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
     
+    /** TODO 
+    */
     virtual const SimTK::Vector& getImplicitResiduals(const SimTK::State& state)
             const {
         OPENSIM_THROW_FRMOBJ(Exception,
@@ -2366,7 +2368,9 @@ protected:
         void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix) {
             subsysIndex = sbsysix;
         }
-        void setSystemYIndex(const SimTK::SystemYIndex& ix) { sysYIndex = ix; }
+        void determineSystemYIndex(const SimTK::State& s) {
+            sysYIndex = implementDetermineSystemYIndex(s);
+        }
 
         //Concrete Components implement how the state variable value is evaluated
         virtual double getValue(const SimTK::State& state) const = 0;
@@ -2383,8 +2387,11 @@ protected:
         // TODO get/set guess.
         virtual double getDerivativeGuess(const SimTK::State& state) const = 0;
         virtual void setDerivativeGuess(SimTK::State& state, double residual) const = 0;
-
+        
     private:
+        virtual SimTK::SystemYIndex implementDetermineSystemYIndex(
+                                const SimTK::State& s) const = 0;
+        
         std::string name;
         SimTK::ReferencePtr<const Component> owner;
 
@@ -2464,7 +2471,7 @@ private:
 
     // Class for handling state variable added (allocated) by this Component
     class AddedStateVariable : public StateVariable {
-        public:
+    public:
         // Constructors
         AddedStateVariable() : StateVariable(),
             invalidatesStage(SimTK::Stage::Empty) {}
@@ -2494,8 +2501,11 @@ private:
         // TODO get/set guess.
         double getDerivativeGuess(const SimTK::State& state) const override;
         void setDerivativeGuess(SimTK::State& state, double residual) const override;
+        
+        SimTK::SystemYIndex implementDetermineSystemYIndex(
+                                const SimTK::State& s) const override;
 
-        private: // DATA
+    private: // DATA
         // Changes in state variables trigger recalculation of appropriate cache 
         // variables by automatically invalidating the realization stage specified
         // upon allocation of the state variable.

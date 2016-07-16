@@ -32,6 +32,10 @@
 // TODO model containing multiple components with implicit form.
 // TODO editing yDotGuess or lambdaGuess invalidates the residual cache.
 // TODO calculation of YIndex must be correct.
+// TODO test implicit form with multibody system but no auxiliary dynamics, as
+//      well as only explicit auxiliary dynamics.
+// TODO test given lambda.
+// TODO debug by comparing directly to result of calcResidualForce().
 
 // Implementation:
 // TODO Only create implicit cache/discrete vars if any components have an
@@ -127,7 +131,7 @@ void testExplicitFormOfImplicitComponent() {
                       initialValue * exp(coeff * finalTime), 1e-5);
 }
 
-void testTODO() {
+void testSingleCustomImplicitEquation() {
     Model model; model.setName("model");
     auto* comp = new LinearDynamics();
     comp->setName("foo");
@@ -137,6 +141,22 @@ void testTODO() {
     comp->set_coeff(coeff);
     model.addComponent(comp);
     auto s = model.initSystem();
+    
+    // TODO now doing the realize internally to getImplicitResidual();
+    // no need to do this check.
+    // If not realized to Velocity, can't call getQDot(), which is needed
+    // when computing the residuals.
+    //SimTK_TEST_MUST_THROW_EXC(comp->getImplicitResidual(s, "activ"),
+    //                          SimTK::Exception::StageTooLow);
+    //SimTK_TEST_MUST_THROW_EXC(model.getImplicitResiduals(s),
+    //                          SimTK::Exception::StageTooLow);
+    //
+    //// If not realized to Dynamics, get exception for trying to access residual.
+    //model.realizeVelocity(s);
+    //SimTK_TEST_MUST_THROW_EXC(comp->getImplicitResidual(s, "activ"),
+    //                          SimTK::Exception::ErrorCheck);
+    //SimTK_TEST_MUST_THROW_EXC(model.getImplicitResiduals(s),
+    //                          SimTK::Exception::ErrorCheck);
     
     // Access residual from the component:
     model.realizeDynamics(s); // Must realize to dynamics to get residuals.
@@ -151,11 +171,70 @@ void testTODO() {
     /* TODO
     */
     // TODO set derivative guess in one sweep.
+    // TODO model.setYDotGuess(s, Vector(1, activDotGuess));
+}
+
+// Test implicit multibody dynamics (i.e., inverse dynamics) with a point
+// mass that can move along the direction of gravity.
+void testImplicitMultibodyDynamics1DOF() {
+    const double g = 9.81;
+    const double mass = 7.2;
+    const double u_i    = 3.9;
+    
+    // Build model.
+    // ------------
+    Model model; model.setName("ball");
+    model.setGravity(Vec3(-g, 0, 0)); // gravity pulls in the -x direction.
+    auto* body = new OpenSim::Body("ptmass", mass, Vec3(0), Inertia(0));
+    auto* slider = new SliderJoint(); slider->setName("slider");
+    model.addBody(body);
+    model.addJoint(slider);
+    slider->updConnector("parent_frame").connect(model.getGround());
+    slider->updConnector("child_frame").connect(*body);
+    
+    State s = model.initSystem();
+    const auto& coord = slider->getCoordinateSet()[0];
+    coord.setSpeedValue(s, u_i);
+    
+    const double qDotGuess = 5.6; const double uDotGuess = 8.3;
+    
+    // Check implicit form.
+    // --------------------
+    // Set derivative guess.
+    coord.setStateVariableDerivativeGuess(s, "value", qDotGuess);
+    coord.setStateVariableDerivativeGuess(s, "speed", uDotGuess);
+   
+    // Get residual.
+    Vector expectedResiduals(2);
+    expectedResiduals[0] = u_i - qDotGuess;
+    expectedResiduals[1] = mass * uDotGuess - mass * (-g); // M u_dot-f_applied
+    model.realizeDynamics(s);
+    // Check individual elements of the residual.
+    SimTK_TEST_EQ(coord.getImplicitResidual(s, "value"), expectedResiduals[0]);
+    SimTK_TEST_EQ(coord.getImplicitResidual(s, "speed"), expectedResiduals[1]);
+    // Check the entire residuals vector.
+    SimTK_TEST_EQ(model.getImplicitResiduals(s), expectedResiduals);
+    
+    // TODO set YDotGuess all at once.
+    
+    
+    // Check explicit form.
+    // --------------------
+    model.realizeAcceleration(s);
+    Vector expectedYDot(2);
+    expectedYDot[0] /* = qdot*/ = u_i; expectedYDot[1] /* = udot*/ = -g;
+    SimTK_TEST_EQ(s.getYDot(), expectedYDot);
 }
 
 int main() {
     SimTK_START_TEST("testImplicitDifferentialEquatiosns");
         SimTK_SUBTEST(testExplicitFormOfImplicitComponent);
-        SimTK_SUBTEST(testTODO);
+        SimTK_SUBTEST(testSingleCustomImplicitEquation);
+        SimTK_SUBTEST(testImplicitMultibodyDynamics1DOF);
     SimTK_END_TEST();
 }
+
+
+
+
+

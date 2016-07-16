@@ -421,6 +421,11 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
 
 void Component::computeImplicitResiduals(const SimTK::State& s) const
 {
+    // TODO it's really bad if obtaining the trivial implicit form of
+    // auxiliary state variables requires realizing to acceleration (if
+    // the explicit fiber velocity is only available at acceleration); then
+    // computing the residual will still require computing the explicit
+    // multibody dynamics.
     // OPENSIM_THROW_FRMOBJ(Exception, "TODO");
 }
 
@@ -1410,22 +1415,12 @@ void Component::extendRealizeTopology(SimTK::State& s) const
 void Component::extendRealizeInstance(const SimTK::State& s) const
 {
     for (auto& entry : _namedStateVariableInfo) {
-        const StateVariable& sv = *entry.second.stateVariable;
-        const AddedStateVariable* asv 
-            = dynamic_cast<const AddedStateVariable *>(&sv);
-        // TODO asv->setSystemYIndexFromTODO();
-        if(asv){// add index information for added state variables
-            // make mutable just to update system allocated index ONLY!
-            AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
-            // This is only known at Model stage:
-            const int systemYIdxOfFirstZ = int(s.getZStart());
-            const SubsystemIndex subsysIdx = masv->getSubsysIndex();
-            const int systemZIdxOfFirstSubsystemZ = s.getZStart(subsysIdx);
-            const int subsystemZIdx = masv->getVarIndex();
-            masv->setSystemYIndex(SystemYIndex(systemYIdxOfFirstZ +
-                                               systemZIdxOfFirstSubsystemZ +
-                                               subsystemZIdx)); // TODO
-        }
+        // make mutable just to update system allocated index ONLY!
+        auto* msv = const_cast<StateVariable*>(entry.second.stateVariable.get());
+        // This must be called after Model stage has been realized
+        // b/c that's when getZStart(), etc. is available and those methods
+        // need to be used to determine the SystemYIndex.
+        msv->determineSystemYIndex(s);
     }
 }
 
@@ -1597,6 +1592,16 @@ void Component::AddedStateVariable::
     root->setYDotGuess(state, yDotGuess);
     
     // TODO OPENSIM_THROW(Exception, "TODO");
+}
+
+SimTK::SystemYIndex Component::AddedStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    // TODO explain why this is so.
+    const int systemYIdxOfFirstZ = int(s.getZStart());
+    const int systemZIdxOfFirstSubsystemZ = s.getZStart(getSubsysIndex());
+    const int subsystemZIdx = getVarIndex();
+    return SystemYIndex(systemYIdxOfFirstZ + systemZIdxOfFirstSubsystemZ
+                                           + subsystemZIdx);
 }
 
 void Component::dumpSubcomponents(int depth) const

@@ -878,6 +878,9 @@ public:
     // DERIVATIVES
     //--------------------------------------------------------------------------
     // TODO rearrange according to public/private.
+    /** TODO 
+    @ingroup implicitdiffeq
+    */
     const SimTK::Vector& getImplicitResiduals(const SimTK::State& state) const
             override;
     const SimTK::Vector& getYDotGuess(const SimTK::State& state) const override;

@@ -226,15 +226,15 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable(ssv);
 }
 
-void Coordinate::extendRealizeInstance(const SimTK::State& state) const
-{
-    //const MobilizedBody& mb
-    //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
-
-    //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
-
-    /* Set the YIndex on the StateVariable */
-}
+// void Coordinate::extendRealizeInstance(const SimTK::State& state) const
+// {
+//     //const MobilizedBody& mb
+//     //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
+// 
+//     //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
+// 
+//     /* Set the YIndex on the StateVariable */
+// }
 
 void Coordinate::extendInitStateFromProperties(State& s) const
 {
@@ -648,25 +648,77 @@ void Coordinate::CoordinateStateVariable::
 double Coordinate::CoordinateStateVariable::
     getImplicitResidual(const SimTK::State& state) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO find another way to get the residual.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    return root->getImplicitResiduals(state)[getSystemYIndex()];
+    
+    // TODO OPENSIM_THROW(Exception, "TODO");
 }
 
 void Coordinate::CoordinateStateVariable::
     setImplicitResidual(const SimTK::State& state, double residual) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    OPENSIM_THROW(Exception, "Residual is computed by the Model.");
 }
 
 double Coordinate::CoordinateStateVariable::
     getDerivativeGuess(const SimTK::State& state) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO could this method be implemented in the base StateVariable class?
+    
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+   
+    return root->getYDotGuess(state)[getSystemYIndex()];
+    
+    // OPENSIM_THROW(Exception, "TODO");
 }
 
 void Coordinate::CoordinateStateVariable::
     setDerivativeGuess(SimTK::State& state, double derivGuess) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    // TODO very inefficient!
+    SimTK::Vector yDotGuess = root->getYDotGuess(state);
+    yDotGuess[getSystemYIndex()] = derivGuess;
+    root->setYDotGuess(state, yDotGuess);
+    
+    // OPENSIM_THROW(Exception, "TODO");
+}
+
+SimTK::SystemYIndex Coordinate::CoordinateStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    const Coordinate& owner = *((Coordinate *)&getOwner());
+    const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+                                .getMobilizedBody(owner.getBodyIndex());
+    
+    const int systemYIdxOfFirstQ = int(s.getQStart());
+    const int systemQIdxOfFirstSubsystemQ = s.getQStart(getSubsysIndex());
+    const int qIdxOfFirstMobilizerQ = mb.getFirstQIndex(s); // local to subsys.
+    const int mobilizerQIdx = getVarIndex();
+    
+    return SystemYIndex(systemYIdxOfFirstQ +
+                        systemQIdxOfFirstSubsystemQ +
+                        qIdxOfFirstMobilizerQ +
+                        mobilizerQIdx);
 }
 
 //-----------------------------------------------------------------------------
@@ -707,23 +759,70 @@ void Coordinate::SpeedStateVariable::
 double Coordinate::SpeedStateVariable::
     getImplicitResidual(const SimTK::State& state) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO find another way to get the residual.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    return root->getImplicitResiduals(state)[getSystemYIndex()];
 }
 
 void Coordinate::SpeedStateVariable::
     setImplicitResidual(const SimTK::State& state, double residual) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    OPENSIM_THROW(Exception,
+        "Residual (inverse dynamics) is computed by the Model.");
 }
 
 double Coordinate::SpeedStateVariable::
     getDerivativeGuess(const SimTK::State& state) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO could this method be implemented in the base StateVariable class?
+    
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+   
+    return root->getYDotGuess(state)[getSystemYIndex()];
 }
 
 void Coordinate::SpeedStateVariable::
     setDerivativeGuess(SimTK::State& state, double derivGuess) const
 {
-    OPENSIM_THROW(Exception, "TODO");
+    // TODO find another way to get the guess.
+    const Component* root = nullptr;
+    {
+        const Component* comp = &getOwner();
+        while (comp->hasParent()) comp = &comp->getParent();
+        root = comp;
+    }
+    
+    // TODO very inefficient!
+    SimTK::Vector yDotGuess = root->getYDotGuess(state);
+    yDotGuess[getSystemYIndex()] = derivGuess;
+    root->setYDotGuess(state, yDotGuess);
+}
+
+SimTK::SystemYIndex Coordinate::SpeedStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    const Coordinate& owner = *((Coordinate *)&getOwner());
+    const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+                                .getMobilizedBody(owner.getBodyIndex());
+    
+    const int systemYIdxOfFirstU = int(s.getUStart());
+    const int systemUIdxOfFirstSubsystemU = s.getUStart(getSubsysIndex());
+    const int uIdxOfFirstMobilizerU = mb.getFirstUIndex(s); // local to subsys.
+    const int mobilizerUIdx = getVarIndex();
+    
+    return SystemYIndex(systemYIdxOfFirstU +
+                        systemUIdxOfFirstSubsystemU +
+                        uIdxOfFirstMobilizerU +
+                        mobilizerUIdx);
 }
