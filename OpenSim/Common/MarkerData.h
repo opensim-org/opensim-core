@@ -28,13 +28,15 @@
 #include <iostream>
 #include <string>
 #include "osimCommonDLL.h"
-#include "Object.h"
-#include "Storage.h"
+#include "Array.h"
 #include "ArrayPtrs.h"
 #include "MarkerFrame.h"
+#include "Object.h"
 #include "Units.h"
 
 namespace OpenSim {
+
+class Storage;
 
 //=============================================================================
 //=============================================================================

@@ -32,6 +32,7 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
+#include "Storage.h"
 
 //=============================================================================
 // STATICS
