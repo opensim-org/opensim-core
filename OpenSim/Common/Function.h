@@ -29,13 +29,8 @@
 
 
 // INCLUDES
-#include <stdlib.h>
-#include <stdio.h>
-#include <fstream>
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "PropertyDbl.h"
-#include "Property.h"
 #include "SimTKmath.h"
 
 

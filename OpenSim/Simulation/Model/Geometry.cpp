@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <fstream>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
