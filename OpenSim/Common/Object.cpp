@@ -1551,6 +1551,7 @@ makeObjectFromFile(const std::string &aFileName)
             IO::chDir(saveWorkingDirectory);
             throw; // re-issue the exception
         }
+        IO::chDir(saveWorkingDirectory);
         return (newObject);
     }
 
