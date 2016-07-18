@@ -27,6 +27,9 @@
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <fstream>
+#include <thread>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -66,11 +69,38 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
+    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+
+    std::ifstream inFile{"arm26_Setup_CMC.xml"};
+    std::ofstream outFile{"arm26_Setup_CMC_Millard.xml"};
+    std::string line{};
+    while(std::getline(inFile, line)) {
+        // Find and replace muscle name.
+        {
+            std::string orig{"Thelen2003Muscle"};
+            std::string repl{"Millard2012EquilibriumMuscle"};
+            auto pos = line.find(orig);
+            if(pos != std::string::npos)
+                line.replace(pos, orig.length(), repl);
+        }
+        // Find and replace result directory.
+        {
+            std::string orig{"Results_Arm26"};
+            std::string repl{"Results_Arm26_Millard"};
+            auto pos = line.find(orig);
+            if(pos != std::string::npos)
+                line.replace(pos, orig.length(), repl);
+        }
+        outFile << line << "\n";
+    }
+    inFile.close();
+    outFile.close();
+
     try{
-        testArm26("arm26_Setup_CMC.xml", 
-                  "Results_Arm26/arm26_states.sto");
-    } catch(const std::exception& e) {  
-        cout << e.what() <<endl; failures.push_back("testArm26"); 
+        testArm26("arm26_Setup_CMC_Millard.xml", 
+                  "Results_Arm26_Millard/arm26_states.sto");
+    }catch (const std::exception& e) { 
+        cout << e.what() <<endl; failures.push_back("testArm26_Millard"); 
     }
 
     if (!failures.empty()) {
