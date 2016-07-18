@@ -43,9 +43,8 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
-#include "Simbody.h"
+//#include "Simbody.h"
 
 namespace OpenSim {
 
