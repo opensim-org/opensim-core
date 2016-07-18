@@ -24,16 +24,12 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include "OpenSim/Simulation/osimSimulationDLL.h"
-#include <OpenSim/Common/PropertyBool.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <Simbody.h>
 
 namespace OpenSim {
 
-class Model;
 class PhysicalFrame;
 class Coordinate;
-class ForceAdapter;
 
 
 /**

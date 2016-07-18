@@ -1,5 +1,5 @@
-#ifndef __ModelComponentSet_h__
-#define __ModelComponentSet_h__
+#ifndef OPENSIM_MODEL_COMPONENT_SET_H
+#define OPENSIM_MODEL_COMPONENT_SET_H
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  ModelComponentSet.h                        *
  * -------------------------------------------------------------------------- *
@@ -26,8 +26,6 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Set.h"
-#include "Simbody.h"
-#include "ModelComponent.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -39,6 +37,7 @@
 namespace OpenSim {
 
 class Model;
+class ModelComponent;
 class ModelDisplayHints;
 
 //=============================================================================
@@ -201,5 +200,5 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __ModelComponentSet_h__
+#endif // OPENSIM_MODEL_COMPONENT_SET_H
 
