@@ -30,13 +30,13 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <string>
 #include "Array.h"
 #include "VectorFunctionUncoupledNxN.h"
-#include "SimTKsimbody.h"
 
 
 //template class OSIMCOMMON_API Array<double>;
+
+namespace SimTK { class State; }
 
 namespace OpenSim { 
 
