@@ -49,13 +49,11 @@ void testArm26(const std::string& setupFile,
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testArm26 "+ muscleType;
 
-    if(muscleType != "Thelen2003Muscle"){
-        rms_tols[6] = 0.05;
-        rms_tols[8] = 0.05;
-        rms_tols[10] = 0.05;
-        rms_tols[12] = 0.05;
-        rms_tols[14] = 0.05;
-    }
+    rms_tols[6] = 0.05;
+    rms_tols[8] = 0.05;
+    rms_tols[10] = 0.05;
+    rms_tols[12] = 0.05;
+    rms_tols[14] = 0.05;
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
         base+" failed");
