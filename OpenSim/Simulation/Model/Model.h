@@ -30,53 +30,51 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
-#include <OpenSim/Simulation/Model/ProbeSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <OpenSim/Simulation/Model/ProbeSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "Simbody.h"
 
 
 
 namespace OpenSim {
 
+class Actuator;
 class Analysis;
 class Body;
-class Frame;
-class BodySet;
-class JointSet;
+class ComponentSet;
 class Constraint;
 class ConstraintSet;
+class ContactGeometry;
+class ContactGeometrySet;
+class Controller;
+class ControllerSet;
 class CoordinateSet;
 class Force;
 class ForceSet;
+class Frame;
+class FrameSet;
+class JointSet;
+class MarkerSet;
+class ModelDisplayHints;
+class Muscle;
 class Probe;
 class ProbeSet;
-class MarkerSet;
-class Muscle;
-class ContactGeometry;
-class Actuator;
-class ContactGeometrySet;
 class Storage;
 class ScaleSet;
-class Controller;
-class ControllerSet;
-class ModelDisplayHints;
-class ComponentSet;
-class FrameSet;
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API

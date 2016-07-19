@@ -27,6 +27,12 @@
 #include "OpenSim/Simulation/CoordinateReference.h"
 #include <OpenSim/Common/Set.h>
 
+namespace SimTK { 
+class Assembler;
+class QValue;
+class State;
+}
+
 namespace OpenSim {
 
 class Model;
