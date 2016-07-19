@@ -30,15 +30,14 @@
 using namespace OpenSim;
 using namespace std;
 
-void testArm26(const std::string& setupFile, 
-               const std::string& resultFile) {
+void testArm26() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                             testArm26                          *" << endl;
     cout << "******************************************************************\n" << endl;
-    CMCTool cmc(setupFile);
+    CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.run();
 
-    Storage results(resultFile), temp("std_arm26_states.sto");
+    Storage results("Results_Arm26/arm26_states.sto"), temp("std_arm26_states.sto");
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
@@ -59,8 +58,7 @@ int main() {
     SimTK::Array_<std::string> failures;
 
     try{
-        testArm26("arm26_Setup_CMC.xml", 
-                  "Results_Arm26/arm26_states.sto");
+        testArm26();
     } catch(const std::exception& e) {  
         cout << e.what() <<endl; failures.push_back("testArm26"); 
     }

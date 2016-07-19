@@ -33,15 +33,15 @@
 using namespace OpenSim;
 using namespace std;
 
-void testArm26(const std::string& setupFile, 
-               const std::string& resultFile) {
+void testArm26() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                             testArm26                          *" << endl;
     cout << "******************************************************************\n" << endl;
-    CMCTool cmc(setupFile);
+    CMCTool cmc("arm26_Setup_CMC.xml");
+    cmc.setResultsDir("Results_Arm26_Millard");
     cmc.run();
 
-    Storage results(resultFile), temp("std_arm26_states.sto");
+    Storage results("Results_Arm26_Millard/arm26_states.sto"), temp("std_arm26_states.sto");
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
@@ -69,34 +69,8 @@ int main() {
 
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
-    std::ifstream inFile{"arm26_Setup_CMC.xml"};
-    std::ofstream outFile{"arm26_Setup_CMC_Millard.xml"};
-    std::string line{};
-    while(std::getline(inFile, line)) {
-        // Find and replace muscle name.
-        {
-            std::string orig{"Thelen2003Muscle"};
-            std::string repl{"Millard2012EquilibriumMuscle"};
-            auto pos = line.find(orig);
-            if(pos != std::string::npos)
-                line.replace(pos, orig.length(), repl);
-        }
-        // Find and replace result directory.
-        {
-            std::string orig{"Results_Arm26"};
-            std::string repl{"Results_Arm26_Millard"};
-            auto pos = line.find(orig);
-            if(pos != std::string::npos)
-                line.replace(pos, orig.length(), repl);
-        }
-        outFile << line << "\n";
-    }
-    inFile.close();
-    outFile.close();
-
     try{
-        testArm26("arm26_Setup_CMC_Millard.xml", 
-                  "Results_Arm26_Millard/arm26_states.sto");
+        testArm26();
     }catch (const std::exception& e) { 
         cout << e.what() <<endl; failures.push_back("testArm26_Millard"); 
     }
