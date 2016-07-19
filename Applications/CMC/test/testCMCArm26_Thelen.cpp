@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  testCMCArm26.cpp                       *
+ *                    OpenSim:  testCMCArm26_Thelen.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -32,7 +32,7 @@ using namespace std;
 
 void testArm26() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                             testArm26                          *" << endl;
+    cout << "*                      testArm26_Thelen                          *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.run();

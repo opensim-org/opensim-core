@@ -35,7 +35,7 @@ using namespace std;
 
 void testArm26() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                             testArm26                          *" << endl;
+    cout << "*                     testArm26_Millard                          *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.setResultsDir("Results_Arm26_Millard");
