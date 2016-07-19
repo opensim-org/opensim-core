@@ -30,9 +30,9 @@
 using namespace OpenSim;
 using namespace std;
 
-void testEMGDrivenArm() {
+void testCMCEMGDrivenArm() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                 testEMGDrivenArm_Millard                       *" << endl;
+    cout << "*                 testCMCEMGDrivenArm_Millard                    *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
     cmc.setResultsDir("Results_Arm26_EMG_Millard");
@@ -49,10 +49,10 @@ void testEMGDrivenArm() {
     rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
     rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    cout << "\ntestCMCEMGDrivenArm "+muscleType+ " passed\n" << endl;
 }
 
 int main() {
@@ -62,9 +62,9 @@ int main() {
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try{
-        testEMGDrivenArm();
+        testCMCEMGDrivenArm();
     } catch (const std::exception& e) {  
-        cout << e.what() <<endl; failures.push_back("testEMGDrivenArm_Millard"); 
+        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm_Millard"); 
     }
 
     if (!failures.empty()) {
