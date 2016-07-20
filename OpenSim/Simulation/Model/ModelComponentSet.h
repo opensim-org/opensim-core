@@ -26,6 +26,7 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Set.h"
+#include "ModelComponent.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -37,7 +38,6 @@
 namespace OpenSim {
 
 class Model;
-class ModelComponent;
 class ModelDisplayHints;
 
 //=============================================================================

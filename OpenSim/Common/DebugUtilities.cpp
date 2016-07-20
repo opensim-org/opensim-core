@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <stdexcept>
 
 namespace OpenSim {
 namespace DebugUtilities {
