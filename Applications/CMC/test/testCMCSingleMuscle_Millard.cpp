@@ -30,9 +30,9 @@
 using namespace OpenSim;
 using namespace std;
 
-void testSingleMuscle() {
+void testCMCSingleMuscle() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                 testSingleMuscle_Millard                       *" << endl;
+    cout << "*                 testCMCSingleMuscle_Millard                     *" << endl;
     cout << "******************************************************************\n" << endl;
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
     forward.setResultsDir("block_hanging_from_muscle_ForwardResults_Millard");
@@ -48,7 +48,7 @@ void testSingleMuscle() {
 
     Array<double> tols(0.0005, 4);
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testSingleMuscle "+ muscleType;
+    string base = "testCMCSingleMuscle "+ muscleType;
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
     
@@ -62,10 +62,10 @@ int main() {
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try{
-        testSingleMuscle();
+        testCMCSingleMuscle();
     } catch(const std::exception& e) {   
         cout << e.what() <<endl; 
-        failures.push_back("testSingleMuscle_Millard"); 
+        failures.push_back("testCMCSingleMuscle_Millard"); 
     }
     
     if (!failures.empty()) {
