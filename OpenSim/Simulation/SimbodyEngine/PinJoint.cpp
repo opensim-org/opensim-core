@@ -26,6 +26,7 @@
 //=============================================================================
 #include "PinJoint.h"
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <simbody/internal/MobilizedBody_Pin.h>
 
 //=============================================================================
 // STATICS

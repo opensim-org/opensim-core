@@ -26,6 +26,10 @@
 #include "Force.h"
 #include <Vendors/lepton/include/Lepton.h>
 
+namespace SimTK {
+class MobilizedBody;
+}
+
 //==============================================================================
 //==============================================================================
 namespace OpenSim { 

@@ -26,6 +26,7 @@
 //=============================================================================
 #include "UniversalJoint.h"
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <simbody/internal/MobilizedBody_Universal.h>
 
 //=============================================================================
 // STATICS

@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//#include "SimTKcommon.h"
 #include <OpenSim/Common/Component.h>
 #include "Appearance.h"
 

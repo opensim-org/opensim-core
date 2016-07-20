@@ -50,6 +50,8 @@
 #include "ComponentList.h"
 #include <functional>
 
+#include "simbody/internal/MultibodySystem.h"
+
 namespace OpenSim {
 
 class ModelDisplayHints;
