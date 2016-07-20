@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  testCMCSingleRigidTendonMuscle.cpp     *
+ *               OpenSim:  testCMCSingleRigidTendonMuscle_Thelen.cpp          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -30,38 +30,9 @@
 using namespace OpenSim;
 using namespace std;
 
-void testSingleRigidTendonMuscle();
-void testSingleMillardRigidTendonMuscle();
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    try {testSingleRigidTendonMuscle();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
-
-    // redo with the Millard2012EquilibriumMuscle 
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try {testSingleMillardRigidTendonMuscle();}
-    catch (const std::exception& e)
-        {   cout << e.what() <<endl;
-            failures.push_back("testSingleMillardRigidTendonMuscle"); }
-    
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
 void testSingleRigidTendonMuscle() {
     cout << "\n******************************************************************" << endl;
-    cout << "*                   testSingleRigidTendonMuscle                  *" << endl;
+    cout << "*               testSingleRigidTendonMuscle_Thelen                  *" << endl;
     cout << "******************************************************************\n" << endl;
 
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
@@ -81,35 +52,25 @@ void testSingleRigidTendonMuscle() {
     Storage cmc_result("block_hanging_from_rigid_thelen_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
     // Tolerance of 2mm or position error and 2mm/s translational velocity of the block
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle failed");
+    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 4), __FILE__, __LINE__, "testSingleRigidTendonMuscle_Thelen failed");
     
-    cout << "testSingleRigidTendonMuscle passed\n" << endl;
+    cout << "testSingleRigidTendonMuscle_Thelen passed\n" << endl;
 }
 
+int main() {
 
-void testSingleMillardRigidTendonMuscle() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*               testSingleMillardRigidTendonMuscle               *" << endl;
-    cout << "******************************************************************\n" << endl;
-    ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    forward.setResultsDir("block_hanging_from_rigid_millard_muscle_ForwardResults");
-    Model& fwdModel = forward.getModel();
-    fwdModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    forward.run();
+    SimTK::Array_<std::string> failures;
 
-    CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    cmc.setResultsDir("block_hanging_from_rigid_millard_muscle_ResultsCMC");
-    cmc.setDesiredKinematicsFileName(
-            "block_hanging_from_rigid_millard_muscle_ForwardResults/"
-            "block_hanging_from_muscle_states.sto");
-    Model& cmcModel = cmc.getModel();
-    cmcModel.getMuscles()[0].set_ignore_tendon_compliance(true); //make tendon rigid
-    cmc.run();
+    try {testSingleRigidTendonMuscle();}
+    catch (const std::exception& e)
+        {  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle_Thelen"); }
 
-    Storage fwd_result("block_hanging_from_rigid_millard_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_result("block_hanging_from_rigid_millard_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
+        return 1;
+    }
 
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.002, 3), __FILE__, __LINE__, "testSingleMillardRigidTendonMuscle failed");
+    cout << "Done" << endl;
 
-    cout << "testSingleMillardRigidTendonMuscle passed\n" << endl;
+    return 0;
 }
