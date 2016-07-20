@@ -30,9 +30,9 @@
 using namespace OpenSim;
 using namespace std;
 
-void testArm26() {
+void testCMCArm26() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                      testArm26_Thelen                          *" << endl;
+    cout << "*                      testCMCArm26_Thelen                          *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.run();
@@ -43,7 +43,7 @@ void testArm26() {
 
     Array<double> rms_tols(0.02, 2*2+2*6); // activations within 2%, angles within .6 degrees
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testArm26 "+ muscleType;
+    string base = "testCMCArm26 "+ muscleType;
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
         base+" failed");
@@ -58,9 +58,9 @@ int main() {
     SimTK::Array_<std::string> failures;
 
     try{
-        testArm26();
+        testCMCArm26();
     } catch(const std::exception& e) {  
-        cout << e.what() <<endl; failures.push_back("testArm26"); 
+        cout << e.what() <<endl; failures.push_back("testCMCArm26"); 
     }
 
     if (!failures.empty()) {

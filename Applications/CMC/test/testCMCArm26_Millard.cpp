@@ -33,9 +33,9 @@
 using namespace OpenSim;
 using namespace std;
 
-void testArm26() {
+void testCMCArm26() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                     testArm26_Millard                          *" << endl;
+    cout << "*                     testCMCArm26_Millard                          *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("arm26_Setup_CMC.xml");
     cmc.setResultsDir("Results_Arm26_Millard");
@@ -47,7 +47,7 @@ void testArm26() {
 
     Array<double> rms_tols(0.02, 2*2+2*6); // activations within 2%, angles within .6 degrees
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testArm26 "+ muscleType;
+    string base = "testCMCArm26 "+ muscleType;
 
     rms_tols[6] = 0.05;
     rms_tols[8] = 0.05;
@@ -70,9 +70,9 @@ int main() {
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try{
-        testArm26();
+        testCMCArm26();
     }catch (const std::exception& e) { 
-        cout << e.what() <<endl; failures.push_back("testArm26_Millard"); 
+        cout << e.what() <<endl; failures.push_back("testCMCArm26_Millard"); 
     }
 
     if (!failures.empty()) {
