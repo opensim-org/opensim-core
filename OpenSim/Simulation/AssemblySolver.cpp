@@ -22,14 +22,16 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
-#include "Model/Model.h"
-#include "Model/Geometry.h"
+#include "Opensim/Simulation/SimbodyEngine/Coordinate.h"
+#include "OpenSim/Simulation/Model/Model.h"
 #include <OpenSim/Common/Constant.h>
 
 using namespace std;
 using namespace SimTK;
 
 namespace OpenSim {
+
+class CoordinateSet;
 
 //______________________________________________________________________________
 /**

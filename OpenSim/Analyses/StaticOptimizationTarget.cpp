@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include "StaticOptimizationTarget.h"
 #include <iostream>
+#include <OpenSim/Common/Storage.h>
 
 using namespace OpenSim;
 using namespace std;

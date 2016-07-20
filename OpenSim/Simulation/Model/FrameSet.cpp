@@ -22,8 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "FrameSet.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;

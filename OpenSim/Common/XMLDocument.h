@@ -1,5 +1,5 @@
-#ifndef _XMLDocument_h_
-#define _XMLDocument_h_
+#ifndef OPENSIM_XMLDOCUMENT_H
+#define OPENSIM_XMLDOCUMENT_H
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  XMLDocument.h                           *
  * -------------------------------------------------------------------------- *
@@ -30,8 +30,9 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <SimTKcommon.h>
 #include "Array.h"
+#include "SimTKcommon/internal/Xml.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 //using namespace std;  // Ayman:per .NET 2003
 
@@ -124,4 +125,4 @@ public:
 //=============================================================================
 
 
-#endif // __XMLDocument_h__
+#endif // OPENSIM_XMLDOCUMENT_H

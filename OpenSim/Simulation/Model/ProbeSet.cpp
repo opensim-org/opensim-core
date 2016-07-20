@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "ProbeSet.h"
-#include <OpenSim/Simulation/Model/Probe.h>
 
 using namespace std;
 using namespace OpenSim;

@@ -25,7 +25,6 @@
 
 #include "Solver.h"
 #include "OpenSim/Simulation/CoordinateReference.h"
-#include <OpenSim/Common/Set.h>
 
 namespace SimTK { 
 class Assembler;

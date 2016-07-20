@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <vector>
-#include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>

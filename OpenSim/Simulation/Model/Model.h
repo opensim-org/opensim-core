@@ -26,8 +26,6 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -46,7 +44,6 @@
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "Simbody.h"
 
 
 
@@ -64,15 +61,9 @@ class Controller;
 class ControllerSet;
 class CoordinateSet;
 class Force;
-class ForceSet;
 class Frame;
-class FrameSet;
-class JointSet;
-class MarkerSet;
 class ModelDisplayHints;
 class Muscle;
-class Probe;
-class ProbeSet;
 class Storage;
 class ScaleSet;
 

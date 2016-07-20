@@ -25,10 +25,10 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
+class Body;
 class Model;
 
 //=============================================================================
