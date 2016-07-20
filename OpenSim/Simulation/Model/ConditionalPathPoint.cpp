@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "ConditionalPathPoint.h"
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 //=============================================================================

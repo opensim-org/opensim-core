@@ -24,7 +24,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
 #include "MovingPathPoint.h"
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
