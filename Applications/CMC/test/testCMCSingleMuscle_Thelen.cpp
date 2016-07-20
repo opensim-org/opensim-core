@@ -35,15 +35,16 @@ void testSingleMuscle() {
     cout << "*                  testSingleMuscle_Thelen                       *" << endl;
     cout << "******************************************************************\n" << endl;
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    // forward.setResultsDir("block_hanging_from_muscle_ForwardResults_Thelen");
+    forward.setResultsDir("block_hanging_from_muscle_ForwardResults_Thelen");
     forward.run();
 
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    // cmc.setResultsDir("block_hanging_from_muscle_ResultsCMC_Thelen");
+    cmc.setResultsDir("block_hanging_from_muscle_ResultsCMC_Thelen");
+    cmc.setDesiredKinematicsFileName("block_hanging_from_muscle_ForwardResults_Thelen/block_hanging_from_muscle_states.sto");
     cmc.run();
 
-    Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+    Storage fwd_result("block_hanging_from_muscle_ForwardResults_Thelen/block_hanging_from_muscle_states.sto");
+    Storage cmc_result("block_hanging_from_muscle_ResultsCMC_Thelen/block_hanging_from_muscle_states.sto");
 
     Array<double> tols(0.0005, 4);
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();

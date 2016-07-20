@@ -40,6 +40,7 @@ void testSingleMuscle() {
 
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
     cmc.setResultsDir("block_hanging_from_muscle_ResultsCMC_Millard");
+    cmc.setDesiredKinematicsFileName("block_hanging_from_muscle_ForwardResults_Millard/block_hanging_from_muscle_states.sto");
     cmc.run();
 
     Storage fwd_result("block_hanging_from_muscle_ForwardResults_Millard/block_hanging_from_muscle_states.sto");
