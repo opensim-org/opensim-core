@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include <fstream>
-#include <OpenSim/Common/Component.h>
 #include "Frame.h"
 #include "Geometry.h"
 #include "Model.h"
