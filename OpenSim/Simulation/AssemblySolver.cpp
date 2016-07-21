@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
-//#include "OpenSim/Simulation/SimbodyEngine/Coordinate.h"
 #include "OpenSim/Simulation/Model/Model.h"
 #include <OpenSim/Common/Constant.h>
 
