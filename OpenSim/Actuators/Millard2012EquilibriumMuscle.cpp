@@ -21,12 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "Millard2012EquilibriumMuscle.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <iostream>
-#include <OpenSim/Common/Exception.h>
-#include <SimTKcommon/internal/ExceptionMacros.h>
 
 using namespace std;
 using namespace OpenSim;

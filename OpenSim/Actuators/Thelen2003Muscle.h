@@ -25,8 +25,6 @@
 
 
 // INCLUDE
-#include <simbody/internal/common.h>
-
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
