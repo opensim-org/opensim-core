@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Joint.h"
 
 namespace OpenSim {

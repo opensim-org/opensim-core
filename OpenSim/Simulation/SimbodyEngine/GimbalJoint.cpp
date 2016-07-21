@@ -26,7 +26,6 @@
 //=============================================================================
 #include "GimbalJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
 // STATICS
