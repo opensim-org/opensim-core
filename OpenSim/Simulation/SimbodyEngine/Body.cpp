@@ -24,11 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Simbody.h"
 #include "Body.h"
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
 //=============================================================================
 // STATICS
