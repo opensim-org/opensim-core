@@ -222,15 +222,99 @@ void testImplicitMultibodyDynamics1DOF() {
     // --------------------
     model.realizeAcceleration(s);
     Vector expectedYDot(2);
-    expectedYDot[0] /* = qdot*/ = u_i; expectedYDot[1] /* = udot*/ = -g;
+    expectedYDot[0] = u_i /* = qdot*/; expectedYDot[1] = -g /* = udot*/;
     SimTK_TEST_EQ(s.getYDot(), expectedYDot);
 }
 
+// =============================================================================
+// ImplicitSystemDerivativeSolver
+// =============================================================================
+// TODO clarify: just solving system of nonlinear equations; no cost function.
+// Given a state y and constraints f(y, ydot) = 0, solve for ydot.
+class ImplicitSystemDerivativeSolver {
+public:
+    class Problem; // Defined below.
+    ImplicitSystemDerivativeSolver(const Model& model);
+    // Solve for the derivatives of the system, ydot.
+    Vector solve(const State& s);
+private:
+    Model m_model;
+    State m_state;
+    std::unique_ptr<Problem> m_problem;
+    std::unique_ptr<Optimizer> m_opt;
+};
+class ImplicitSystemDerivativeSolver::Problem : public SimTK::OptimizerSystem {
+public:
+    Problem(const ImplicitSystemDerivativeSolver& parent) : m_parent(parent) {
+    }
+    int objectiveFunc(const Vector& yDotGuess, bool newParams,
+                      Real& f) const override {
+        f = 0; return 0;
+    }
+    int constraintFunc(const Vector& yDotGuess, bool newParams,
+                       Vector& constraints) const override {
+        // Must create a copy of the state, since this is a const method.
+        State workingState = m_parent.m_state; // TODO expensive?
+        m_parent.m_model.setYDotGuess(workingState, yDotGuess);
+        constraints = m_parent.m_model.getImplicitResiduals(workingState);
+        // TODO lambdas will be NaN? residuals will be bad
+        // what to do with lambdas for a system without constraints?
+        return 0;
+    }
+private:
+    const ImplicitSystemDerivativeSolver& m_parent;
+};
+ImplicitSystemDerivativeSolver::ImplicitSystemDerivativeSolver(
+        const Model& model) : m_model(model), m_problem(new Problem(*this)) {
+    // Set up Problem.
+    m_state = m_model.initSystem();
+    m_problem->setNumParameters(m_state.getNY());
+    m_problem->setNumEqualityConstraints(m_state.getNY());
+    Vector limits(m_state.getNY(), 10.0); // TODO arbitrary.
+    m_problem->setParameterLimits(-limits, limits);
+    
+    // Set up Optimizer.
+    m_opt.reset(new Optimizer(*m_problem));
+    m_opt->useNumericalGradient(true); m_opt->useNumericalJacobian(true);
+}
+Vector ImplicitSystemDerivativeSolver::solve(const State& s) {
+    m_state = s;
+    Vector results(m_problem->getNumParameters(), 0.0); // TODO inefficient
+    m_opt->optimize(results);
+    return results;
+}
+// end ImplicitSystemDerivativeSolver...........................................
+
+void testGenericInterfaceForImplicitSolver() /*TODO rename test */ {
+    Model model;
+    auto* comp = new LinearDynamics();
+    comp->setName("foo");
+    const Real initialValue = 3.5;
+    comp->set_default_activ(initialValue);
+    const Real coeff = -0.28;
+    comp->set_coeff(coeff);
+    model.addComponent(comp);
+    State s = model.initSystem();
+    
+    // Computing yDot using implicit form.
+    ImplicitSystemDerivativeSolver solver(model);
+    Vector yDotImplicit = solver.solve(s);
+    
+    // Computing yDot using explicit form.
+    model.realizeAcceleration(s);
+    const Vector& yDotExplicit = s.getYDot();
+    
+    // Implicit and explicit forms give same yDot.
+    SimTK_TEST_EQ_TOL(yDotImplicit, yDotExplicit, 1e-11);
+}
+
 int main() {
-    SimTK_START_TEST("testImplicitDifferentialEquatiosns");
+    SimTK_START_TEST("testImplicitDifferentialEquations");
         SimTK_SUBTEST(testExplicitFormOfImplicitComponent);
         SimTK_SUBTEST(testSingleCustomImplicitEquation);
         SimTK_SUBTEST(testImplicitMultibodyDynamics1DOF);
+        // TODO SimTK_SUBTEST(testMultibody1DOFAndCustomComponent);
+        SimTK_SUBTEST(testGenericInterfaceForImplicitSolver);
     SimTK_END_TEST();
 }
 
