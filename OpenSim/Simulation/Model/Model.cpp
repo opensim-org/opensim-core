@@ -783,19 +783,23 @@ void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
     nans.lockShape(); // TODO where is the right place for this?
     
     // This Measure is basically a discrete state variable.
-    // Acceleration cache is invalid if this is updated.
+    // Acceleration cache is invalid if this is updated, since acceleration-
+    // dependent quantities should be computed with uDotGuess.
+    // Dynamics stage must also be invalidated, since residuals cache var
+    // depends on Dynamics stage.
     // TODO what should default value be? what size should it have?
     Measure_<Vector>::Variable yDotGuess(_system->updDefaultSubsystem(),
-        Stage::Acceleration, nans);
+        Stage::Dynamics, nans);
     _yDotGuessIndex = yDotGuess.getSubsystemMeasureIndex();
     
     Measure_<Vector>::Variable lambdaGuess(_system->updDefaultSubsystem(),
-        Stage::Acceleration, nans);
+        Stage::Dynamics, nans);
     _lambdaGuessIndex = lambdaGuess.getSubsystemMeasureIndex();
     
     // Storing the residual.
     // We can only compute the residual once realized to Dynamics, since
-    // we will need to apply forces.
+    // we will need to apply forces. Residual does not depend on accelerations.
+    // TODO this would change if realizeAcceleration() simply uses uDotGuess.
     // None of the acceleration-level calculations depend on the residual
     // (nothing should depend on the residual) so there is nothing to
     // invalidate when the residual is changed (invalidated = Infinity).
@@ -833,7 +837,8 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
             qResiduals = state.getQDot() - qDotGuess;
             // TODO do we want to use QDot here?? I think so, otherwise
             // we are recomputing something that should already be cached for us.
-            // The alternative:
+            // The alternatives:
+            // TODO getMatterSubsystem().calcQDot(...)
             // TODO getMatterSubsystem().multiplybyN(state, state.getU(), qResiduals);
             
             // M u_dot - f
@@ -888,6 +893,10 @@ void Model::setYDotGuess(SimTK::State& state,
                           const SimTK::Vector& yDotGuess) const {
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_yDotGuessIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");
+    
+    SimTK_ASSERT2_ALWAYS(yDotGuess.size()==state.getNY(),
+        "Expected size of yDotGuess to be the number of state variables, %i, "
+        "but it was %i.", state.getNY(), yDotGuess.size());
     
     auto measure = Measure_<Vector>::Variable::getAs(
             _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
