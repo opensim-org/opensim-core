@@ -263,8 +263,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( StatesTrajectoryReporter() );
 
-	Object::registerType( Delay());
-	Object::registerType( DelayVector());
+    Object::registerType( Delay());
+    Object::registerType( DelayVector());
 
     // Register commonly used Connectors for de/serialization
     Object::registerType(Connector<Frame>());
