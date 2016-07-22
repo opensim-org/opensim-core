@@ -247,11 +247,13 @@ void testImplicitMultibodyDynamics1DOF() {
     // ---------------
     // Size of yDotGuess must be correct.
     SimTK_TEST_MUST_THROW_EXC(model.setYDotGuess(s, Vector(1, 0.)), // too small.
-                              SimTK::Exception::Base);
+                              SimTK::Exception::Assert);
     SimTK_TEST_MUST_THROW_EXC(model.setYDotGuess(s, Vector(3, 0.)), // too large.
-                              SimTK::Exception::Base);
+                              SimTK::Exception::Assert);
     
-    // TODO test size of residuals.
+    // Size of residuals must be correct.
+    SimTK_TEST_MUST_THROW_EXC(model.updImplicitResiduals(s) = Vector(3, 0.),
+                              SimTK::Exception::Cant);
     
     // TODO test size of lambdaGuess.
 }

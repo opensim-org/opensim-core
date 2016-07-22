@@ -873,8 +873,8 @@ SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state)
         Exception, "Prior call to Model::initSystem() is required.");
     auto implicitResidual = Measure_<Vector>::Result::getAs(
             _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
+    implicitResidual.updValue(state).lockShape(); // TODO relocate.
     return implicitResidual.updValue(state);
-    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
 }
 
 const SimTK::Vector& Model::getYDotGuess(const SimTK::State& state) const {
@@ -885,8 +885,6 @@ const SimTK::Vector& Model::getYDotGuess(const SimTK::State& state) const {
             _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
     
     return yDotGuess.getValue(state);
-    
-    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
 }
 
 void Model::setYDotGuess(SimTK::State& state,
@@ -901,10 +899,7 @@ void Model::setYDotGuess(SimTK::State& state,
     auto measure = Measure_<Vector>::Variable::getAs(
             _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
     
-    // TODO ensure yDotGuess has the correct length.
     return measure.setValue(state, yDotGuess);
-    
-    // TODO OPENSIM_THROW_FRMOBJ(Exception, "TODO");
 }
 //_____________________________________________________________________________
 /**
