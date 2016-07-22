@@ -26,7 +26,7 @@
 
 // INCLUDE
 #include "UnilateralConstraint.h"
-#include "Body.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 

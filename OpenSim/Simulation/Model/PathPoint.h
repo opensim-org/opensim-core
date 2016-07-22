@@ -26,7 +26,6 @@
 
 // INCLUDE
 #include "OpenSim/Simulation/Model/Station.h"
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 namespace OpenSim {
 

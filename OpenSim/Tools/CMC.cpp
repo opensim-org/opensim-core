@@ -52,6 +52,7 @@
 #include <OpenSim/Tools/ForwardTool.h>
 #include "SimTKcommon.h" 
 #include "MuscleStateTrackingTask.h"
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 
 using namespace std;
 using SimTK::Vector;

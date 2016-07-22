@@ -25,13 +25,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <SimTKsimbody.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 

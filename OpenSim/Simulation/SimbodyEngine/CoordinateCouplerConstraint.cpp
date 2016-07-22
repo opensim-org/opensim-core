@@ -25,8 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "CoordinateCouplerConstraint.h"
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 // Helper class to construct functions when user's specify a dependency as qd = f(qi)
