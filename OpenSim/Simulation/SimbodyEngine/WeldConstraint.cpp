@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "WeldConstraint.h"
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <simbody/internal/Constraint_Weld.h>
 #include <simbody/internal/MobilizedBody.h>
 
