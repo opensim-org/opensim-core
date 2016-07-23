@@ -280,8 +280,8 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     ASSERT(report.getNumRows() == standard.getNumRows());
     ASSERT(report.getNumColumns() == standard.getNumColumns());
 
-    auto& reportLabels = report.getColumnLabels();
-    auto& stdLabels = standard.getColumnLabels();
+    auto reportLabels = report.getColumnLabels();
+    auto stdLabels = standard.getColumnLabels();
 
     std::vector<int> mapStdToReport;
     // cycle through the coodinates in the model order and store the
@@ -297,8 +297,8 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     //Ignore pelvis coordinates 0-5
     for (int i = 6; i < 23; ++i) {
-        auto& repVec = report.getDependentColumnAtIndex(i);
-        auto& stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
+        auto repVec = report.getDependentColumnAtIndex(i);
+        auto stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
         auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
         cout << "Column '" << reportLabels[i] << "' has RMSE = "
             << sqrt(error.norm()/17) << "degrees" << endl;
