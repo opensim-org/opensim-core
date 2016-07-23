@@ -36,8 +36,9 @@ Converting from v3.x to v4.0
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
-- We are replacing the old command line executables (`scale`, `ik`, `id`,
-  `rra`, `cmc`, etc.) with a new unified command line interface.
+- We created a new unified command line interface that will replace the
+  single-tool command line executables (`scale`, `ik`, `id`, `rra`, `cmc`,
+  etc.).
 
 Composing a Component from other components
 -------------------------------------------
