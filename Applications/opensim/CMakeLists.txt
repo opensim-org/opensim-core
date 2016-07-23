@@ -1,6 +1,6 @@
 
-# We put "-cli" in the name of the executable in the build directory; "opensim"
-# since it conflicts with the "OpenSim" folder in the build directory (on
+# We put "-cli" in the name of the executable in the build directory; the name
+# "opensim" would conflict with the "OpenSim" folder in the build directory (on
 # case-insensitive filesystems). However, the executable is renamed to
 # "opensim" when it is installed.
 OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim

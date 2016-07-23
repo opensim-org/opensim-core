@@ -222,44 +222,16 @@ function(OpenSimAddTests)
 endfunction()
 
 
-# Create an OpenSim API library. Here are the arguments:
-# VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
-#   argument. Otherwise, omit.
-# LOWERINCLUDEDIRNAME: When installing the headers for this library, make the
-#   name of the library all lower-case (e.g., Lepton -> lepton).
-# KIT: Name of the library (e.g., Common).
-# AUTHORS: A string listing authors of the library.
-# LINKLIBS: List of libraries (targets) to link against.
-# INCLUDES: List of header files for the library (obtain via file(GLOB ...)).
-# SOURCES: List of cpp files for the library (obtain via file(GLOB ...)).
-# TESTDIRS: List of subdirectories that contain tests (and a CMakeLists.txt).
-# INCLUDEDIRS (optional): Affects how header files are installed. Use this if
-#   the library directory contains subdirectories with header files. If this is
-#   the case, this variable should be a list of those subdirectories (relative
-#   paths). See OpenSim/Simulation/CMakeLists.txt for an example. If omitted,
-#   all the headers specified under INCLUDES are installed into the same
-#   directory in the installation tree.
-#
-# Here's an example from OpenSim/Common/CMakeLists.txt:
-#
-#   OpenSimAddLibrary(
-#       KIT Common
-#       AUTHORS "Clay_Anderson-Ayman_Habib_and_Peter_Loan"
-#       LINKLIBS ${Simbody_LIBRARIES}
-#       INCLUDES ${INCLUDES}
-#       SOURCES ${SOURCES}
-#       TESTDIRS "Test"
-#       )
-
 # Create an application/executable. To be used in the Appliations directory.
 # NAME: Name of the application. Must also be the name of the source file
-# containing main().
+#   containing main() (without the .cpp extension).
 # INSTALL_AS (optional): Name for the executable file when it is installed. On
-#   Windows, we append ".exe" to the provided name.
+#   Windows, we append ".exe" to the provided name. By default, the application
+#   is installed as NAME.
 # SOURCES: Additional header/source files to compile into this target. 
 #
 # Here's an example:
-#   OpenSimAddApplication(NAME opensim-cli RENAME opensim
+#   OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim
 #                         SOURCES opensim_run_tool.h)
 function(OpenSimAddApplication)
 
@@ -286,13 +258,13 @@ function(OpenSimAddApplication)
             set(OSIMADDAPP_INSTALL_AS "${OSIMADDAPP_INSTALL_AS}.exe")
         endif()
         if(${CMAKE_VERSION} VERSION_LESS 3.0)
-            get_target_property(target_path opensim-cli LOCATION)
+            get_target_property(target_path ${OSIMADDAPP_NAME} LOCATION)
         else()
             # We prefer to use generator expressions, but these are only
             # available in more recent versions of CMake.
             set(target_path "$<TARGET_FILE:${OSIMADDAPP_NAME}>")
         endif()
-        # RENAME does not work with install(TARGETS)
+        # install(TARGETS) does not have a RENAME; must use install(PROGRAMS).
         install(PROGRAMS "${target_path}" DESTINATION ${CMAKE_INSTALL_BINDIR}
                                           RENAME ${OSIMADDAPP_INSTALL_AS})
     else()

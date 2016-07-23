@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <Simbody.h>
+#include <SimTKcommon/Testing.h>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
