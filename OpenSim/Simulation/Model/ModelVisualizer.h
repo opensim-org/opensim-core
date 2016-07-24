@@ -29,6 +29,7 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKsimbody.h>
 
 #ifndef SWIG
 namespace SimTK {

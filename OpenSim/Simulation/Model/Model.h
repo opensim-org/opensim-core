@@ -46,7 +46,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
 
-
 namespace OpenSim {
 
 class Actuator;
