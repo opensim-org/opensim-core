@@ -28,8 +28,8 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ComponentSet.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
@@ -45,23 +45,21 @@
 #include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
+#include <SimTKsimbody.h>
+
 
 namespace OpenSim {
 
 class Actuator;
 class Analysis;
 class Body;
-class ComponentSet;
 class Constraint;
 class ConstraintSet;
 class ContactGeometry;
-class ContactGeometrySet;
 class Controller;
-class ControllerSet;
 class CoordinateSet;
 class Force;
 class Frame;
-class ModelDisplayHints;
 class Muscle;
 class Storage;
 class ScaleSet;

@@ -57,6 +57,8 @@
 #include <iostream>
 #include <string>
 
+#include <OpenSim/Simulation/AssemblySolver.h>
+
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
