@@ -26,11 +26,12 @@
 
 // INCLUDE
 #include "OpenSim/Simulation/Model/Point.h"
-#include "OpenSim/Simulation/Model/PhysicalFrame.h"
+//#include "OpenSim/Simulation/Model/PhysicalFrame.h"
 
 namespace OpenSim {
 
 class Body;
+class PhysicalFrame;
 
 //=============================================================================
 //=============================================================================
