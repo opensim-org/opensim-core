@@ -24,15 +24,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimTKsimbody.h"
 #include "WrapSphere.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
 #include "WrapResult.h"
 #include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
 #include <OpenSim/Common/ModelDisplayHints.h>
 
 //=============================================================================
