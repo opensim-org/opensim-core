@@ -166,10 +166,6 @@ Proposal
 All states must have an explicit form, and can optionally also have an implicit
 form.
 
-TODO schemes: discrete state var for `yDotGuess` and `lambaGuess`,
-and cache variable for `residual`.
-TODO or return the residual directly.
-
 Computing the residuals requires having `yDotGuess` and `lambdaGuess`. We
 present two schemes for passing this information around. These two schemes
 arose from a discussion with Sherm on 6 July 2016.
@@ -190,7 +186,7 @@ be serialized as part of a states trajectory, but there is no need to store
 an optimizer's guesses for `ydot` and `lambda`--it's a detail of the solver,
 not part of the model or its state.
 
-### Interface for Component users
+#### Interface for Component users
 
 1. The most important method is the one that actually gives all the residuals
    to the user:
@@ -222,7 +218,7 @@ not part of the model or its state.
   I'm not sure this last method is well-defined. Can you say that each
   state variable has a corresponding residual?
 
-2. The Model has a method to determine if the Model can be used in implicit
+3. The Model has a method to determine if the Model can be used in implicit
    form. At first, models with multibody constraints or prescribed motion would
    return `false`.
 
@@ -241,7 +237,7 @@ Alternate terms to use for these methods:
 2. `ImplicitForm`.
 
 
-### Interface for Component developers
+#### Interface for Component developers
 
 1. When adding the StateVariable, the developer should notify the Component
    internals that it intends to provide an implicit residual:
@@ -292,7 +288,7 @@ that could be used to obtain the guess from some other component. But this looku
 could be inefficient. To avoid the string lookup, the component could first grab the 
 appropriate index with something like `int Component::getDerivativeGuessIndex(...)`.
 
-### OpenSim internals
+#### OpenSim internals
 
 As in the Background section, we start from the top.
 
@@ -304,7 +300,15 @@ As in the Background section, we start from the top.
    ```cpp
    class Model : .... {
    public:
-       void calcImplicitResidual(const SimTK::State& s) {
+       void extendRealizeTopology(SimTK::State& s) {
+           // OpenSim only supports scalar discrete state variables.
+           const auto& subsys = getSystem().getDefaultSubsystem();
+           idxYdotGuess = subsys.allocateDiscreteVariable(s, SimTK::Stage::TODO,
+                new SimTK::Value<SimTK::Vector>(...));
+           idxLambdaGuess = subsys.allocateDiscreteVariable(s, SimTK::Stage::TODO,
+                new SimTK::Value<SimTK::Vector>(...));
+       }
+       SimTK::Vector calcImplicitResidual(const SimTK::State& s) {
            if (!this->_residualCache.isValid(s)) {
                for (const auto& comp : getComponentList()) {
                    comp.computeStateVariableImplicitResidual(s);
@@ -314,7 +318,9 @@ As in the Background section, we start from the top.
        }
        void computeStateVariableImplicitResidual(const SimTK::State& s) {
            // Handle multibody residuals.
-           // TODO
+           qDotGuess = s.getYDotGuess()(0, s.getNQ()); // kinematics
+           qResidual = qDotGuess - s.getQDot(); 
+           getMatterSubsystem().calcResidualForce(s, ...); // dynamics
        }
    private:
        void extendAddToSystem(SimTK::MultibodySystem& sys) const {
@@ -351,6 +357,148 @@ As in the Background section, we start from the top.
    Here, we see that the `StateVariable` class could know the index of its own guess
    in the `yDotGuess` discrete state variable, allowing a call like
    `stateVar.getDerivativeGuess(s)`.
+3. The StateVariable class would gain:
+     1. boolean for whether or not it has an implicit residual
+     2. member variable for the index of its yDotGuess in the
+        discrete state variable, and
+     3. getter for the value of the residual.
+
+An alternative to centralized cache variable and discrete state variable vectors,
+each AddedStateVariable can create its own scalar cache for the residual and yDotGuess.
+
+---
+
+### Scheme B: Pass around yDotGuess and lambdaGuess as arguments everywhere
+
+In this scheme, we follow the syntax of `SimbodyMatterSubsystem::calcResidualForce()`, which
+simply requires `knownUdot` and `knownLambda` as inputs, and returns the residual (without
+ caching it). This is also similar to "solver"-like methods on `SimTK::System`, like `projectQ()`.
+
+ The biggest problem with this scheme is that acceleration- and lambda-dependent quantities
+ will likely use the `udot` and `lambda` from forward dynamics rather than from `yDotGuess`
+ and `lambdaGuess`. For example, it wouldn't work to compute constraint forces (to use
+ in an objective function).
+
+#### Interface for Component users
+
+1. Rather than calling two methods to obtain the residual (first setting the guesses, then updating
+   and accessing the cache variable), there's just one call:
+
+   ```cpp
+   SimTK::Vector Model::calcImplicitResidual(const SimTK::State& s,
+                                             const SimTK::Vector& yDotGuess,
+                                             const SimTK::Vector& lambdaGuess) const;
+   ```
+2. Just as with Scheme A, each Component has a few methods related to its own state variables:
+
+   ```cpp
+   bool hasImplicitResidual(const std::string& stateVarName) const;
+   bool hasFullImplicitResidual() const;
+   double getStateVariableImplicitResidual(const SimTK::State&, const std::string&,
+                                           const SimTK::Vector& yDotGuess,
+                                           const SimTK::Vector& lambdaGuess);
+   ```
+
+  The difference with Scheme A is that this last function now takes the guesses as arguments.
+  TODO this last function may not be possible if there is no underlying cache variable.
+
+3. Just as with Scheme A:
+
+   ```cpp
+   bool Model::isImplicitResidualAvailable() const;
+   ```
+
+#### Interface for Component developers
+
+1. Same as with Scheme A:
+
+    ```cpp
+    void extendAddToSystem(SimTK::MultibodySystem& sys) const {
+        bool activationHasImplicitForm = true;
+        this->_aDotGuessIndex = addStateVariable("activation", activationHasImplictForm);
+        addStateVariable("foo"); // not all state vars need implicit form.
+    }
+    ```
+
+2. The method for providing the implicit residual would be different:
+
+   ```cpp
+   void computeStateVariableImplicitResidual(const SimTK::State& s,
+                                             const SimTK::Vector& yDotGuess,
+                                             const SimTK::Vector& lambdaGuess,
+                                             SimTK::VectorView& residual) {
+      double e = getExcitation(e); double a = getActivation(s);
+      double tau = getTimeConstant();
+      double adot = yDotGuess[this->_aDotGuessIndex]; 
+      // or this->getDerivativeGuess(yDotGuess, "activation");
+      residual[0] = e - a - adot*tau;
+   }
+   ```
+
+   Two main things to discuss:
+     1. How to get the desired entry out of yDotGuess? `addStateVariable` can give back an index
+        into this vector, or one could call a method that uses a string lookup and accesses
+        the correct element internally.
+     2. How do we collect all the residuals? The current proposal is that this method is provided
+        with a view into the vector of all the residuals, and must know the proper local indices
+        to use for storing the residuals. The size of `residual` is chosen based on how many calls
+        to `addStateVariable()` have a `true` value for `hasImplicitForm`.
+
+#### OpenSim internals
+
+1. What's inside of `Model::calcImplicitResidual(const SimTK::State& s)`? No cache or discrete
+   state variables this time.
+
+   ```cpp
+   class Model : .... {
+   public:
+       SimTK::Vector calcImplicitResidual(const SimTK::State& s,
+                                          const SimTK::Vector& yDotGuess,
+                                          const SimTK::Vector& lambdaGuess) {
+           SimTK::Vector residual(s.getNY()); int count = 0;
+           for (const auto& comp : getComponentList()) {
+               int numImplicit = comp.getNumImplicitResidual();
+               comp.computeStateVariableImplicitResidual(s, yDotGuess, lambdaGuess,
+                    residual.updElt(count, numImplicit));
+               count += numImplicit;
+           }
+       }
+       void computeStateVariableImplicitResidual(const SimTK::State& s,
+                                          const SimTK::Vector& yDotGuess,
+                                          const SimTK::Vector& lambdaGuess,
+                                          SimTK::VectorView& residual) {
+           // Handle multibody residuals.
+           qDotGuess = s.getYDotGuess()(0, s.getNQ()); // kinematics
+           residual.updElt(0, s.getNQ()) = qDotGuess - s.getQDot(); 
+           getMatterSubsystem().calcResidualForce(s, ...); // dynamics
+       }
+   };
+   ```
+2. For Components that do not provide an implicit form:
+    
+   ```cpp
+   void computeStateVariableImplicitResidual(const SimTK::State& s,
+                                          const SimTK::Vector& yDotGuess,
+                                          const SimTK::Vector& lambdaGuess,
+                                          SimTK::VectorView& residual) const {
+   for (const StateVariable& stateVar : addedStateVariables) {
+       if (!stateVar.hasImplicitForm()) {
+           // Use trivial implicit form.
+           double ydot = stateVar.getDerivative(s);
+           residual[TODO] = ydot - ydotGuess[TODO];
+       } else {
+           if (implictResidualNotProvided) {
+               throw Exception("Component developer forgot to provide "
+                   "implicit residual.");
+           }
+        }
+    }
+   ```
+   The main challenge here is that the idea is that `residual` would be of the correct size,
+   for each implicit residual the component can provide, but this method is supposed to 
+   handle all the remaining state variables. Perhaps the explicit-only state variables
+   should be handled elsewhere.
+
 
 TODO note: do not need `deriv` if multibody, since can also set YDot?
 TODO cannot simply set `deriv`; need ydot for all states to compute a single
@@ -375,6 +523,9 @@ would be ugly.
 
 
 
+
+TODO UDotErr as well as acceleration and lambda-dependent quantities (angular acceleration, 
+reaction forces) currently use UDot, but they would need to use UDotGuess instead.
 
 
 
@@ -456,7 +607,8 @@ then get the constraint violations on their own in a consistent way (
 
 I think, in Simbody, the `lambda` vector has `np+nv+na` constraints
 (that is, position, velocity, and acceleration level constraints), so this
-may make the decision for us!
+may make the decision for us! TODO I think lambda is still all acceleration-level constraints,
+just including the ones originating from the position and velocity levels.
 
 Obtaining `QErr` and `UErr` from a State should be straightforward, but
 the `UDotErr` constraint errors depend on `UDot`--the `UDot` here should be from

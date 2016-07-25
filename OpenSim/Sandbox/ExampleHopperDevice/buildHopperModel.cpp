@@ -89,7 +89,7 @@ Model buildHopper() {
     // Set the coordinate names and default values. Note that we need "auto&"
     // here so that we get a reference to the CoordinateSet rather than a copy.
     auto& sliderCoord = sliderToGround->upd_CoordinateSet()[0];
-    sliderCoord.setName("height");
+    sliderCoord.setName("yCoord");
     sliderCoord.setDefaultValue(1.);
 
     auto& hipCoord = hip->upd_CoordinateSet()[0];

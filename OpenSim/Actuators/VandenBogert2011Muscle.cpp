@@ -55,7 +55,7 @@ void VandenBogert2011Muscle::constructProperties()
     //constructProperty_tendon_slack_length(0.2);
     constructProperty_activTimeConstant(0.01);
     constructProperty_deactivTimeConstant(0.04);
-    constructProperty_pennAtOptFiberLength(0.1745);
+    constructProperty_pennAtOptFiberLength(0);
 }
 
 // Define new states and their derivatives in the underlying system
@@ -389,9 +389,9 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
     //L_{slack,fiber} Slack length of the parallel elastic element, divided by
     //          Lceopt
-    double fiberSlackLength= getNormFiberSlackLength();
+    double fiberSlackLengthNorm= getNormFiberSlackLength();
 
-    //L_{slack,tendon} (dimensionless) slack length of the tendon
+    //L_{slack,tendon} (m) slack length of the tendon
     double tendonSlackLength = getTendonSlackLength();
 
     //T_{act} (s) Activation time
@@ -405,14 +405,11 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
 
     // constants derived from the muscle parameters
-    double Vmax = 10 * optFiberLength;
-    //Maximum shortening velocity (m/s) is 10 fiber lengths per sec
+    double vMaxNorm = 10 * optFiberLength;
+    //Maximum shortening velocity in optimal fiber lengths per sec
 
 
-    double kPEE2 = 1 / pow(fl_width, 2);   // Fiber (PEE) quadratic stiffness,
-    //          so Fpee = Fmax when Lce = Lce*(1+W)
-    double kSEE2 = 1 / pow(fiberSlackLength * fMaxTendonStrain, 2);
-    // Tendon (SEE) quadratic stiffness, so Fsee = Fmax at strain of umax
+
 
 
     // Jacobian Matrices
@@ -423,51 +420,51 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     //-------Convert projFiberLength & Velocity to fiberLength & Velocity------/
     double cosPenn;
     double dcosPenn_dprojFibLen;
-    double fiberLength;
+    double fiberLengthNorm;
     double dfiberLength_dprojFibLen;
     if (pennAtOptFiberLength<0.01)  {
         // If pennation is zero, we can't do this because volume is zero,
         //      and fiberLength ~ projFiberLength
         cosPenn=1.0;
-        fiberLength=projFibLenNorm;
+        fiberLengthNorm=projFibLenNorm;
         dfiberLength_dprojFibLen=1;
         dcosPenn_dprojFibLen=0;
     }
     else {
         double b=sin(pennAtOptFiberLength);
-        fiberLength=sqrt(pow(projFibLenNorm,2) + pow(b,2));
-        cosPenn = projFibLenNorm/fiberLength;
+        fiberLengthNorm=sqrt(pow(projFibLenNorm,2) + pow(b,2));
+        cosPenn = projFibLenNorm/fiberLengthNorm;
         dfiberLength_dprojFibLen=cosPenn;
-        dcosPenn_dprojFibLen=pow(b,2) / pow(fiberLength,3);
+        dcosPenn_dprojFibLen=pow(b,2) / pow(fiberLengthNorm,3);
 
     }
 
     // Compute fiberVelocity and its derivatives wrt projFibLen and projFibVel
-    double fiberVelocity = projFibVelNorm*cosPenn;
-    double dfiberVelocity_dprojFibVelNorm = cosPenn;
-    double dfiberVelocity_dprojFibLen = projFibVelNorm * dcosPenn_dprojFibLen;
+    double fiberVelocityNorm = projFibVelNorm*cosPenn;
+    double dfiberVelocityNorm_dprojFibVelNorm = cosPenn;
+    double dfiberVelocityNorm_dprojFibLenNorm = projFibVelNorm * dcosPenn_dprojFibLen;
 
 
 
     //---F1 is the normalized isometric force-length relationship at maximum
     //                                               activation--------------//
-    double fiberExp = (fiberLength - 1.0) / fl_width;   // [dimensionless]
+    double fiberExp = (fiberLengthNorm - 1.0) / fl_width;   // [dimensionless]
     double F1 = exp(-pow(fiberExp, 2));        // Gaussian force-length curve
 
-    double dF1_dfiberLength = 0;
+    double dF1_dfiberLengthNorm = 0;
     if (returnJacobians) {
-        double dF1_dfiberLength = -2.0 * fiberExp * F1 / fl_width;
-        double dF1_dprojFibLen = dF1_dfiberLength * dfiberLength_dprojFibLen;
+        dF1_dfiberLengthNorm = -2.0 * fiberExp * F1 / fl_width;
+        double dF1_dprojFibLenNorm = dF1_dfiberLengthNorm * dfiberLength_dprojFibLen;
     }
 
 
 
     //-------- F2 is the dimensionless force-velocity relationship -------//
     double F2;
-    double dF2_dfiberVelocity;
+    double dF2_dfiberVelocityNorm;
     double dF2_dactiv;
     double dF2_dprojFibVelNorm;
-    double dF2_dprojFibLen;
+    double dF2_dprojFibLenNorm;
     double df_dmuscleLength;
 
     // Chow/Darling Vel-Activation Relationship //TODO:  Add full reference
@@ -477,79 +474,93 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
                         // with negative force large concentric vel
     double dlambda_da =0;
 
-    if (fiberVelocity < 0) {
+    if (fiberVelocityNorm < 0) {
         //Hill's equation for concentric contraction
         // F2 = (V_{max} + V_{fiber}) / (V_{max} - V_{fiber}/a_{Hill})
-        double hillDenom = (lambda*Vmax - fiberVelocity/fv_AHill);
-        F2 = (lambda*Vmax + fiberVelocity) / hillDenom;
+
+        double hillDenom = (lambda*vMaxNorm - fiberVelocityNorm/fv_AHill);
+        F2 = (lambda*vMaxNorm + fiberVelocityNorm) / hillDenom;
+
         if (returnJacobians) {
-            dF2_dfiberVelocity  = (1.0 + F2 / fv_AHill) / hillDenom;
-            dF2_dactiv = - dlambda_da * Vmax * fiberVelocity *
-                    (1 + 1/fv_AHill) / pow(hillDenom,2);
+            dF2_dfiberVelocityNorm  = (1.0 + F2 / fv_AHill) / hillDenom;
+            dF2_dactiv = - dlambda_da * vMaxNorm * fiberVelocityNorm *
+                    (1.0 + 1.0/fv_AHill) / pow(hillDenom,2);
         }
     }
     else {
         //Katz Curve for eccentric contraction
         // c is Katz Constant
-        double c3 = Vmax * fv_AHill * (fv_maxMultiplier - 1.0) /
+        double c3 = vMaxNorm * fv_AHill * (fv_maxMultiplier - 1.0) /
                 (fv_AHill + 1.0); // parameter in the eccentric f-v equation
         double c = lambda*c3;
         //F2 = (g_{max} * V_{fiber} + c) / (V_{fiber} + c)
-        double katzDenom = (fiberVelocity  + c);
-        F2 = (fv_maxMultiplier * fiberVelocity  + c) / katzDenom ;
+        double katzDenom = (fiberVelocityNorm  + c);
+        F2 = (fv_maxMultiplier * fiberVelocityNorm  + c) / katzDenom ;
         if (returnJacobians) {
-            dF2_dfiberVelocity = (fv_maxMultiplier - F2) / katzDenom ;
-            dF2_dactiv = dlambda_da * c3 * fiberVelocity *
+            dF2_dfiberVelocityNorm = (fv_maxMultiplier - F2) / katzDenom ;
+            dF2_dactiv = dlambda_da * c3 * fiberVelocityNorm *
                     (1-fv_maxMultiplier) / pow(katzDenom,2);
         }
     }
     if (returnJacobians){
-        dF2_dprojFibVelNorm = dF2_dfiberVelocity * dfiberVelocity_dprojFibVelNorm;
-        dF2_dprojFibLen = dF2_dfiberVelocity * dfiberVelocity_dprojFibLen;
+        dF2_dprojFibVelNorm = dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibVelNorm;
+        dF2_dprojFibLenNorm = dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibLenNorm;
     }
 
 
     //------F3 is the dimensionless fiber (PEE) force (in units of Fmax)------//
-    double dF3_dprojFibLen;
+
+
+
+    double dF3_dprojFibLenNorm;
+
     // stiffness of the linear term is 1 N/m, convert to Fmax/Lceopt units
     double kPEE = 1.0 / maxIsoForce * optFiberLength;
     // elongation of fiber (PEE), relative to Lceopt
-    double elongationFiber = (fiberLength - fiberSlackLength);
-    double F3 = kPEE * elongationFiber;
+    double kPEE2Norm = 1 / pow(fl_width, 2);   // Fiber (PEE) quadratic stiffness,
+    //          so Fpee = Fmax when Lce = Lce*(1+W)
+    double elongationFiberNorm = (fiberLengthNorm - fiberSlackLengthNorm);
+    double F3 = kPEE * elongationFiberNorm;
     // low stiffness linear term
-    double dF3_dfiberLength = kPEE;
-    if (elongationFiber > 0) {
+    double dF3_dfiberLengthNorm = kPEE;
+    if (elongationFiberNorm > 0) {
         //add quadratic term for positive elongation
-        F3 = F3 + kPEE2 * pow(elongationFiber, 2);
+        F3 = F3 + kPEE2Norm * pow(elongationFiberNorm, 2);
         if (returnJacobians) {
-            dF3_dfiberLength = dF3_dfiberLength + 2 * kPEE2 * elongationFiber;
+            dF3_dfiberLengthNorm = dF3_dfiberLengthNorm + 2 * kPEE2Norm * elongationFiberNorm;
         }
     }
     if (returnJacobians) {
-        dF3_dprojFibLen = dF3_dfiberLength * dfiberLength_dprojFibLen;
+        dF3_dprojFibLenNorm = dF3_dfiberLengthNorm * dfiberLength_dprojFibLen;
     }
 
 
     //--------F4 is the dimensionless SEE force (in units of Fmax)----------//
-    // stiffness of the linear term is 1 N/m, convert to Fmax/m
+
+
+    // stiffness of the linear term is 1 N/m, convert to Fmax/m (so normalized by Fmax)
     double kSEE = 1.0 / maxIsoForce;
+
+    // Tendon (SEE) quadratic stiffness, so Fsee = Fmax at strain of umax
+    // This is normalized by Fmax
+    double kSEE2 = maxIsoForce / pow(tendonSlackLength * fMaxTendonStrain, 2);
+
     // elongation of tendon (SEE), in meters
-    double elongationTendon = muscleLength - fiberLength *
+    double elongationTendon = muscleLength - projFibLenNorm *
                                              optFiberLength - tendonSlackLength;
     //  low stiffness linear term
     double F4 = kSEE * elongationTendon;
-    double dF4_dfiberLength;
     double dF4_dmuscleLength;
-    double dF4_dprojFibLen;
+    double dF4_dprojFibLenNorm;
     if (returnJacobians) {
-         double dF4_dprojFibLen = -kSEE * optFiberLength;
+         dF4_dprojFibLenNorm = -kSEE * optFiberLength;
          dF4_dmuscleLength = kSEE;
     }
     if (elongationTendon > 0) {
         // add quadratic term for positive deformation
-        F4 = F4 + kSEE2 * pow(elongationTendon, 2);
+        F4 = F4 + (kSEE2 * pow(elongationTendon, 2))/maxIsoForce;
         if (returnJacobians) {
-             dF4_dprojFibLen = dF4_dprojFibLen - 2 * kSEE2 *
+             dF4_dprojFibLenNorm = dF4_dprojFibLenNorm - 2 * kSEE2 *
                                              optFiberLength* elongationTendon;
              dF4_dmuscleLength = dF4_dmuscleLength + 2 * kSEE2 *
                                                              elongationTendon;
@@ -567,6 +578,7 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
 
 
+
     // ---------Calculate the Muscle Force Residual ---------------------- //
     //The muscle dynamics equation: f = Fsee - (a*Fce - Fpee)*cos(Penn) -
     //                                                          Fdamping = 0
@@ -576,6 +588,31 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
 
 
 
+if (returnJacobians==2){
+    cout << "-------------------------" << endl;
+    cout << "activ: " << activ << endl;
+    cout << "F1 (FL): " << F1 << endl;
+    cout << "F2 (FV): " << F2 << endl;
+    cout << "F3 (PEE) : " << F3 << endl;
+    cout << "F4 (SEE): " << F4 << endl;
+    cout << "F5 (Damping): " << F5 << endl;
+    cout << "fRes: " << fRes << endl;
+    cout << "------------------" << endl;
+    cout << "cosPenn: " << cosPenn << endl;
+    cout << "muscleLength: " << muscleLength << endl;
+    cout << " SEE" << endl;
+    cout << "   kSEE: " << kSEE << endl;
+    cout << "   kSEE2: " << kSEE2 << endl;
+    cout << "   elongationTendon: " << elongationTendon << endl;
+    cout << "   tendonSlackLength: " << tendonSlackLength << endl;
+    cout << " PEE" << endl;
+    cout << "   fiberLengthNorm: " << fiberLengthNorm << endl;
+    cout << "   optFiberLength: " << optFiberLength << endl;
+    cout << "   projFibLenNorm: " << projFibLenNorm << endl;
+    cout << "   kPEE: " << kPEE << endl;
+    cout << "   kPEE2Norm: " << kPEE2Norm << endl;
+    cout << "   elongationFiberNorm: " <<  elongationFiberNorm << endl;
+    cout << "" << endl;};
 
     // --------------- Force in tendon (SEE) is maxIsoForce*F4 -------------- //
     double Fsee = maxIsoForce * F4;
@@ -615,9 +652,9 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     if (returnJacobians) {
 
         double dfRes_dactiv = -(F1*F2 + activ*F1*dF2_dactiv )*cosPenn;
-        double dfRes_dprojFibLengthNorm = dF4_dprojFibLen -
-                      (activ*(dF1_dfiberLength*F2 + F1*dF2_dprojFibLen) +
-                       dF3_dprojFibLen) * cosPenn - (activ*F1*F2 + F3) *
+        double dfRes_dprojFibLengthNorm = dF4_dprojFibLenNorm -
+                      (activ*(dF1_dfiberLengthNorm*F2 + F1*dF2_dprojFibLenNorm) +
+                       dF3_dprojFibLenNorm) * cosPenn - (activ*F1*F2 + F3) *
                         dcosPenn_dprojFibLen;
         double dfRes_dprojFibVelNorm = - activ*F1*dF2_dprojFibVelNorm - dF5_dprojFibVelNorm;
         double dfRes_dmuscleLength = dF4_dmuscleLength;
@@ -798,14 +835,14 @@ SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLengt
 
 
 
-    //TODO: Code is optimized.  Specifically the number of calls to
+    //TODO: Code is not optimized.  Specifically the number of calls to
     //calcImplicitResidual can be reduced
 
     //TODO: Generalize with a Lambda function (will need help with that).
     //TODO: calcImplicitResidual really only needs to calculate df_ds (single element) for this function
 
 
-double tol=1e-5;
+double tol=1e-8;
 double a=0;
 double b=10;
 
