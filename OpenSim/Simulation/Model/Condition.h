@@ -29,6 +29,10 @@
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/Object.h>
 
+namespace SimTK {
+class State;
+}
+
 namespace OpenSim {
 
 class Model;
