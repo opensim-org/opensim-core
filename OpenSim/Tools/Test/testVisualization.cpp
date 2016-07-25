@@ -114,7 +114,9 @@ void testVisModel(string fileName)
 {
 
     Model* model = new Model(fileName, true);
+    //model->setUseVisualizer(true);
     SimTK::State& si = model->initSystem();
+    // model->getVisualizer().show(si);
     ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model->generateDecorations(true, mdh, si, geometryToDisplay);

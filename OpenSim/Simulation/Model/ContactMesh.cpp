@@ -141,15 +141,17 @@ void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation
     //    properties.
-    const auto& X_BF = getFrame().findTransformInBaseFrame();
-    const auto& X_FP = getTransform();
-    const auto X_BP = X_BF * X_FP;
-    geometry.push_back(SimTK::DecorativeMeshFile(get_filename())
-        .setTransform(X_BP)
-        .setRepresentation(get_Appearance().get_representation())
-        .setBodyId(getFrame().getMobilizedBodyIndex())
-        .setColor(get_Appearance().get_color())
-        .setOpacity(get_Appearance().get_opacity()));
+    if (hints.get_show_contact_geometry()) {
+        const auto& X_BF = getFrame().findTransformInBaseFrame();
+        const auto& X_FP = getTransform();
+        const auto X_BP = X_BF * X_FP;
+        geometry.push_back(SimTK::DecorativeMeshFile(get_filename())
+            .setTransform(X_BP)
+            .setRepresentation(get_Appearance().get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex())
+            .setColor(get_Appearance().get_color())
+            .setOpacity(get_Appearance().get_opacity()));
+    }
 }
 
 } // end of namespace OpenSim
