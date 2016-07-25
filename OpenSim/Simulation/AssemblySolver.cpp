@@ -24,6 +24,7 @@
 #include "AssemblySolver.h"
 #include "OpenSim/Simulation/Model/Model.h"
 #include <OpenSim/Common/Constant.h>
+#include "simbody/internal/AssemblyCondition_QValue.h"
 
 using namespace std;
 using namespace SimTK;

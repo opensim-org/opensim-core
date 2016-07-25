@@ -27,6 +27,8 @@
 #include "Model/Model.h"
 #include "Model/MarkerSet.h"
 
+#include "simbody/internal/AssemblyCondition_Markers.h"
+
 using namespace std;
 using namespace SimTK;
 

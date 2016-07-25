@@ -26,6 +26,8 @@
 #include "ContactMesh.h"
 #include "Model.h"
 
+#include "simbody/internal/ElasticFoundationForce.h"
+
 namespace OpenSim {
 
 //==============================================================================

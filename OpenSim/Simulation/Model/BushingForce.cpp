@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/Force_LinearBushing.h"
 
 #include "BushingForce.h"
 

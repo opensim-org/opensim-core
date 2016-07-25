@@ -26,6 +26,7 @@
 //=============================================================================
 #include "BallJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/MobilizedBody_Ball.h"
 
 //=============================================================================
 // STATICS

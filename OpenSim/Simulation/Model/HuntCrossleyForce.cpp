@@ -25,6 +25,8 @@
 #include "ContactGeometry.h"
 #include "Model.h"
 
+#include "simbody/internal/HuntCrossleyForce.h"
+
 namespace OpenSim {
 
 //==============================================================================

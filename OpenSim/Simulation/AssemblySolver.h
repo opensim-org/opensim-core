@@ -25,9 +25,9 @@
 
 #include "Solver.h"
 #include "OpenSim/Simulation/CoordinateReference.h"
+#include "simbody/internal/Assembler.h"
 
 namespace SimTK { 
-class Assembler;
 class QValue;
 class State;
 }

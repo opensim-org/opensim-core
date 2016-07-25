@@ -29,6 +29,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include "simbody/internal/MobilizedBody_FunctionBased.h"
 
 
 //=============================================================================

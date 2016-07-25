@@ -45,7 +45,9 @@
 #include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
-#include <SimTKsimbody.h>
+
+#include "simbody/internal/Force_Gravity.h"
+#include "simbody/internal/GeneralContactSubsystem.h"
 
 
 namespace OpenSim {

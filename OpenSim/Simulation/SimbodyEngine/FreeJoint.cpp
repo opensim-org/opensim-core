@@ -26,6 +26,7 @@
 //=============================================================================
 #include "FreeJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/MobilizedBody_Free.h"
 
 //=============================================================================
 // STATICS
