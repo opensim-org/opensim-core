@@ -103,11 +103,11 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
     OPENSIM_THROW_IF(aFileName.empty(), Exception,
-        "Object::Cannot construct from empty filename. No filename specified.");
+        "Object: Cannot construct from empty filename. No filename specified.");
 
     OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
         Exception,
-        "Object::Cannot not open file " + aFileName +
+        "Object: Cannot not open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
