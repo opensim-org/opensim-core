@@ -1,5 +1,5 @@
-#ifndef _LoadOpenSimLibrary_h_
-#define _LoadOpenSimLibrary_h_
+#ifndef OPENSIM_LOAD_OPENSIM_LIBRARY_H_
+#define OPENSIM_LOAD_OPENSIM_LIBRARY_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  LoadOpenSimLibrary.h                       *
  * -------------------------------------------------------------------------- *
@@ -40,10 +40,26 @@
 namespace OpenSim
 {
 
-OSIMCOMMON_API OPENSIM_PORTABLE_HMODULE WINAPI LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose);
+/** Load an OpenSim (plugin) library, using a path to a library (relative or
+ * absolute) but *without* the file extension (.dll, .so, .dylib). This method
+ * will prefer a debug variant of the library if OpenSim was built in debug. */
+OSIMCOMMON_API OPENSIM_PORTABLE_HMODULE WINAPI LoadOpenSimLibrary(
+        const std::string &lpLibFileName, bool verbose);
+/** Uses LoadOpenSimLibrary(const std::string&, bool) without verbosity. */
 OSIMCOMMON_API void LoadOpenSimLibrary(const std::string &aLibraryName);
-OSIMCOMMON_API void LoadOpenSimLibraries(int argc,char **argv);
+/** Load an OpenSim (plugin) library using the exact path specified. Therefore,
+ * you must supply an exact path to the library (either relative or absolute),
+ * including the file extension (.dll, .so, .dylib). The only change that may
+ * be made to the path is to convert forward slashes to backslashes on Windows
+ * (and vice versa on UNIX).
+ * @returns true if the library was successfully loaded; false otherwise. */
+OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &exactPath,
+                                            bool verbose = true);
+/** Used to process legacy command line arguments that specify plugin libraries
+ * to load. Internally uses LoadOpenSimLibrary(const std::string&, bool) with
+ * verbosity. */
+OSIMCOMMON_API void LoadOpenSimLibraries(int argc, char **argv);
 
 }
 
-#endif // __LoadOpenSimLibrary_h__
+#endif // OPENSIM_LOAD_OPENSIM_LIBRARY_H_

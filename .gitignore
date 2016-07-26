@@ -8,6 +8,8 @@
 tmp
 # Ignore build trees.
 build*
+# Ignore settings from the CLion IDE (from JetBrains).
+.idea
 
 # python
 *.pyc
