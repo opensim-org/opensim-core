@@ -29,12 +29,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
 #include "ControlLinear.h"
-
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/XMLDocument.h>
 
 

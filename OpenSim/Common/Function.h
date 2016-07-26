@@ -29,7 +29,6 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include "Object.h"
 #include "SimTKmath.h"
 
