@@ -427,8 +427,58 @@ void Component::computeImplicitResiduals(const SimTK::State& s) const
     // computing the residual will still require computing the explicit
     // multibody dynamics.
     // OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+    bool requireExplicitForm = false;
+    for (const auto& it : _namedStateVariableInfo) {
+        const StateVariable& sv = *it.second.stateVariable;
+        if (!sv.hasImplicitForm()) requireExplicitForm = true; break;
+    }
+    // TODO
+    if (!hasFullImplicitForm()) computeStateVariableDerivatives(s);
+    
+    // TODO it seems that if you want implicit form, you should define all state
+    // variables implicitly. Otherwise, we will need to evaluate the explicit
+    // dynamics, which will waste time. TODO what about going up the inheritance
+    // hierarchy?
+    
+    extendComputeImplicitResiduals(s);
+    
+    
+    // TODO do this before or after extendCompute...()?
+    for (const auto& it : _namedStateVariableInfo) {
+        const StateVariable& sv = *it.second.stateVariable;
+        if (!sv.hasImplicitForm()) {
+            const Real yDot = sv.getDerivative(s);
+            const Real yDotGuess = sv.getDerivativeGuess(s);
+            sv.setImplicitResidual(s, yDot - yDotGuess);
+        }
+        // TODO set implicit residual for explicit components.
+        // TODO ensure that the user set the residual for those providing one.
+    }
 }
 
+bool Component::hasFullImplicitFormThisComponent() const {
+    // TODO compute this once in baseAddToSystem().
+    for (const auto& it : _namedStateVariableInfo) {
+        const StateVariable& sv = *it.second.stateVariable;
+        if (!sv.hasImplicitForm()) return false;
+    }
+    return true;
+}
+
+bool Component::hasFullImplicitForm() const {
+    if (!hasFullImplicitFormThisComponent()) return false;
+    
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++)
+        if (!_memberSubcomponents[i]->hasFullImplicitForm()) return false;
+
+    for(unsigned int i=0; i<_propertySubcomponents.size(); i++)
+        if (!_propertySubcomponents[i]->hasFullImplicitForm()) return false;
+
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++)
+        if (!_adoptedSubcomponents[i]->hasFullImplicitForm()) return false;
+    
+    return true;
+}
 
 void Component::
 addModelingOption(const std::string& optionName, int maxFlagValue) const 
@@ -1547,6 +1597,8 @@ double Component::AddedStateVariable::
 void Component::AddedStateVariable::
     setImplicitResidual(const SimTK::State& state, double residual) const
 {
+    // TODO be clever about whether hasImplicitResidual() is set.
+
     // TODO find another way to get the residual.
     const Component* root = nullptr;
     {

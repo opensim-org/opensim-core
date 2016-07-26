@@ -824,6 +824,8 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
     if (!measure.isValid(state)) {
         getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
        
+        // TODO do all of this in extendComputeImplicitResiduals().
+        
         // Multibody states.
         // =================
         if (state.getNQ() > 0) { // Are there multibody states?

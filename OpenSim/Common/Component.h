@@ -1084,6 +1084,11 @@ public:
         OPENSIM_THROW_FRMOBJ(Exception,
             "Can only call on a root component (e.g., Model).");
     }
+    
+    /** TODO */
+    bool hasFullImplicitFormThisComponent() const;
+    /** TODO */
+    bool hasFullImplicitForm() const;
 protected: // TODO move this around.
     virtual SimTK::Vector& updImplicitResiduals(const SimTK::State& state)
             const {
@@ -1096,6 +1101,7 @@ protected: // TODO move this around.
         OPENSIM_THROW_FRMOBJ(Exception,
             "Can only call on a root component (e.g., Model).");
     }
+    
 public:
 
     /**
@@ -1665,7 +1671,8 @@ protected:
                             const std::string& name, double deriv) const;
 
     /** TODO */
-    virtual void computeImplicitResiduals(const SimTK::State& s) const;
+    void computeImplicitResiduals(const SimTK::State& s) const;
+    virtual void extendComputeImplicitResiduals(const SimTK::State& s) const {}
     
     /** TODO */
     void setImplicitResidual(const SimTK::State& state,
