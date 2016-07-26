@@ -151,7 +151,7 @@ private:
         constructProperty_visible(true);
         constructProperty_opacity(1.0);
         // White by default, shows as a shade of gray
-        constructProperty_color(SimTK::Vec3(1.0)); 
+        constructProperty_color(SimTK::White); 
         constructProperty_SurfaceProperties(SurfaceProperties());
     }
     //=========================================================================

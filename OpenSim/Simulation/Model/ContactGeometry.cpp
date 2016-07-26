@@ -68,7 +68,7 @@ void ContactGeometry::constructProperties()
     constructProperty_location(Vec3(0));
     constructProperty_orientation(Vec3(0));
     Appearance defaultAppearance;
-    defaultAppearance.set_color(SimTK::Vec3(0., 1.0, 1.0));
+    defaultAppearance.set_color(SimTK::Cyan);
     defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
     constructProperty_Appearance(defaultAppearance);
 
