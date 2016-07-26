@@ -887,6 +887,16 @@ public:
     SimTK::Vector& updImplicitResiduals(const SimTK::State& state) const override;
     void setYDotGuess(SimTK::State& state,
                               const SimTK::Vector& yDotGuess) const override;
+    const SimTK::Vector& getMultipliersGuess(const SimTK::State& state) const;
+    void setMultipliersGuess(SimTK::State& state,
+                             const SimTK::Vector& lambdaGuess) const;
+    /** TODO for this implementation, it sets the discrete state variables.
+    */
+    void calcImplicitResidualsAndConstraintErrors(SimTK::State& state,
+            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
+            SimTK::Vector& residuals, SimTK::Vector& constraintAErrs) const;
+                                                 
+                                                 
     
     //--------------------------------------------------------------------------
     // OPERATIONS

@@ -792,8 +792,9 @@ void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
         Stage::Dynamics, nans);
     _yDotGuessIndex = yDotGuess.getSubsystemMeasureIndex();
     
+    // TODO how to set size of lambdaGuess? shouldn't be numStateVars.
     Measure_<Vector>::Variable lambdaGuess(_system->updDefaultSubsystem(),
-        Stage::Dynamics, nans);
+        Stage::Dynamics, Vector(0));
     _lambdaGuessIndex = lambdaGuess.getSubsystemMeasureIndex();
     
     // Storing the residual.
@@ -827,6 +828,7 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
         // =================
         if (state.getNQ() > 0) { // Are there multibody states?
             const auto& yDotGuess = getYDotGuess(state);
+            const auto& lambdaGuess = getMultipliersGuess(state);
             SimTK::Vector& residuals = measure.updValue(state);
             
             // qdot - N u
@@ -849,7 +851,7 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
             // TODO improve InverseDynamicsSolver to take a lambda.
             VectorView uResiduals = residuals(state.getNQ(), state.getNU());
             // TODO is there an unnecessary copy here, and is it expensive?
-            uResiduals = idSolver.solve(state, uDotGuess);
+            uResiduals = idSolver.solve(state, uDotGuess, lambdaGuess);
         }
     
         // Auxiliary states.
@@ -867,8 +869,7 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
     return measure.getValue(state);
 }
 
-SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state)
-        const {
+SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state) const {
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");
     auto implicitResidual = Measure_<Vector>::Result::getAs(
@@ -899,8 +900,56 @@ void Model::setYDotGuess(SimTK::State& state,
     auto measure = Measure_<Vector>::Variable::getAs(
             _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
     
-    return measure.setValue(state, yDotGuess);
+    measure.setValue(state, yDotGuess);
 }
+
+const SimTK::Vector& Model::getMultipliersGuess(const SimTK::State& state) const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_lambdaGuessIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    
+    auto lambdaGuess = Measure_<Vector>::Variable::getAs(
+            _system->getDefaultSubsystem().getMeasure(_lambdaGuessIndex));
+    
+    return lambdaGuess.getValue(state);
+}
+
+void Model::setMultipliersGuess(SimTK::State& state,
+                                const SimTK::Vector& lambdaGuess) const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_lambdaGuessIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    
+    SimTK_ASSERT2_ALWAYS(lambdaGuess.size()==state.getNMultipliers(),
+        "Expected size of lambdaGuess to be the number of multipliers, %i, "
+        "but it was %i.", state.getNMultipliers(), lambdaGuess.size());
+    
+    auto measure = Measure_<Vector>::Variable::getAs(
+            _system->getDefaultSubsystem().getMeasure(_lambdaGuessIndex));
+    
+    measure.setValue(state, lambdaGuess);
+}
+
+void Model::calcImplicitResidualsAndConstraintErrors(SimTK::State& state,
+        const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
+        SimTK::Vector& residuals, SimTK::Vector& constraintAErrs) const {
+    
+    setYDotGuess(state, yDotGuess);
+    setMultipliersGuess(state, lambdaGuess);
+    residuals = getImplicitResiduals(state);
+    
+    const auto& matter = getMatterSubsystem();
+    
+    // TODO best place to put this constraint-error code?
+    // TODO constraintAErrs.setToNaN();
+    const auto& uDotGuess = yDotGuess(state.getNQ(), state.getNU());
+    Vector_<SpatialVec> A_GB;
+    matter.calcBodyAccelerationFromUDot(state, uDotGuess, A_GB);
+    Vector qDotDotGuess;
+    matter.calcQDotDot(state, uDotGuess, qDotDotGuess);
+    matter.calcConstraintAccelerationErrors(state,
+            A_GB, uDotGuess, qDotDotGuess, constraintAErrs);
+}
+
 //_____________________________________________________________________________
 /**
  * Add any Component derived from ModelComponent to the Model.

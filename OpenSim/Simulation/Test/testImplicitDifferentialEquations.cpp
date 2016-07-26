@@ -40,6 +40,16 @@
 //      auxiliary dynamics).
 // TODO trying to set a yDotGuess or Lambda that is of the wrong size.
 // smss.getRep().calcConstraintAccelerationErrors
+// TODO ensure residuals are NaN if lambdas are not set to 0, unless the system
+//      does not have any constraints.
+// TODO test calcImplicitResidualsAndConstraintErrors(); make sure constraintErrs
+//      is empty if there are no constraints. Make sure lambdaGuess is the
+//      correct size.
+// TODO test prescribedmotion, model with non-implicit dynamics.
+
+// TODO mock up the situation where we are minimizing joint contact load
+//      while obeying dynamics (in direct collocation fashion--the entire
+//      trajectory).
 
 // Implementation:
 // TODO Only create implicit cache/discrete vars if any components have an
@@ -48,10 +58,12 @@
 // then we have to be clear to implementors of the residual equation that they
 // CANNOT depend on qdot, udot, zdot or ydot vectors in the state; that will
 // invoke forward dynamics!
+// TODO handle quaternion constraints.
 
 // TODO sketch out solver-like interface (using IPOPT).
 
 
+#include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
@@ -202,7 +214,7 @@ void testImplicitMultibodyDynamics1DOF() {
     
     // Build model.
     // ------------
-    Model model; model.setName("ball");
+    Model model; model.setName("model");
     model.setGravity(Vec3(-g, 0, 0)); // gravity pulls in the -x direction.
     auto* body = new OpenSim::Body("ptmass", mass, Vec3(0), Inertia(0));
     auto* slider = new SliderJoint(); slider->setName("slider");
@@ -267,8 +279,9 @@ class ImplicitSystemDerivativeSolver {
 public:
     class Problem; // Defined below.
     ImplicitSystemDerivativeSolver(const Model& model);
-    // Solve for the derivatives of the system, ydot.
-    Vector solve(const State& s);
+    // Solve for the derivatives of the system, ydot, and the Lagrange
+    // multipliers, lambda.
+    void solve(const State& s, Vector& yDot, Vector& lambda);
 private:
     Model m_model;
     std::unique_ptr<Problem> m_problem;
@@ -278,14 +291,22 @@ class ImplicitSystemDerivativeSolver::Problem : public SimTK::OptimizerSystem {
 public:
     Problem(const ImplicitSystemDerivativeSolver& parent): m_parent(parent) {}
     void setWorkingState(const State& s) { m_workingState = s; }
-    int objectiveFunc(const Vector& yDotGuess, bool newParams,
+    int objectiveFunc(const Vector& guess, bool newParams,
                       Real& f) const override {
         f = 0; return 0;
     }
-    int constraintFunc(const Vector& yDotGuess, bool newParams,
+    int constraintFunc(const Vector& guess, bool newParams,
                        Vector& constraints) const override {
-        m_parent.m_model.setYDotGuess(m_workingState, yDotGuess);
-        constraints = m_parent.m_model.getImplicitResiduals(m_workingState);
+        const int ny = m_workingState.getNY();
+        Vector yDotGuess; yDotGuess.viewAssign(guess(0, ny));
+        Vector lambdaGuess; lambdaGuess.viewAssign(guess(ny, guess.size() - ny));
+        
+        Vector residuals; residuals.viewAssign(constraints(0, ny));
+        Vector pvaerrs; pvaerrs.viewAssign(constraints(ny, guess.size() - ny));
+        
+        m_parent.m_model.calcImplicitResidualsAndConstraintErrors(m_workingState,
+                    yDotGuess, lambdaGuess, // inputs
+                    residuals, pvaerrs);    // outputs
         // TODO lambdas will be NaN? residuals will be bad
         // what to do with lambdas for a system without constraints?
         return 0;
@@ -299,45 +320,172 @@ ImplicitSystemDerivativeSolver::ImplicitSystemDerivativeSolver(
         const Model& model) : m_model(model), m_problem(new Problem(*this)) {
     // Set up Problem.
     State state = m_model.initSystem();
-    m_problem->setNumParameters(state.getNY());
-    m_problem->setNumEqualityConstraints(state.getNY());
-    Vector limits(state.getNY(), 10.0); // TODO arbitrary.
+    const int N = state.getNY() + state.getNMultipliers();
+    m_problem->setNumParameters(N);
+    m_problem->setNumEqualityConstraints(N);
+    Vector limits(N, 50.0); // TODO arbitrary.
     m_problem->setParameterLimits(-limits, limits);
     
     // Set up Optimizer.
-    m_opt.reset(new Optimizer(*m_problem));
+    m_opt.reset(new Optimizer(*m_problem, SimTK::InteriorPoint));
     m_opt->useNumericalGradient(true); m_opt->useNumericalJacobian(true);
 }
-Vector ImplicitSystemDerivativeSolver::solve(const State& s) {
+void ImplicitSystemDerivativeSolver::solve(const State& s,
+                                           Vector& yDot, Vector& lambda) {
     m_problem->setWorkingState(s);
     Vector results(m_problem->getNumParameters(), 0.0); // TODO inefficient
     m_opt->optimize(results);
     m_opt->setDiagnosticsLevel(1);
-    return results;
+    yDot = results(0, s.getNY());
+    lambda = results(s.getNY(), results.size() - s.getNY());
 }
 // end ImplicitSystemDerivativeSolver...........................................
 
+// TODO explain purpose of this test.
 void testGenericInterfaceForImplicitSolver() /*TODO rename test */ {
     Model model;
     auto* comp = new LinearDynamics();
     comp->setName("foo");
     const Real initialValue = 3.5;
     comp->set_default_activ(initialValue);
-    const Real coeff = -0.28;
+    const Real coeff = -0.21;
     comp->set_coeff(coeff);
     model.addComponent(comp);
     State s = model.initSystem();
     
     // Computing yDot using implicit form.
-    ImplicitSystemDerivativeSolver solver(model);
-    Vector yDotImplicit = solver.solve(s);
+    Vector yDotImplicit;
+    {
+        State sImplicit = s;
+        ImplicitSystemDerivativeSolver solver(model);
+        Vector lambda;
+        solver.solve(sImplicit, yDotImplicit, lambda);
+        // There should be no multipliers.
+        SimTK_TEST(lambda.size() == 0);
+    }
     
     // Computing yDot using explicit form.
-    model.realizeAcceleration(s);
-    const Vector& yDotExplicit = s.getYDot();
+    Vector yDotExplicit;
+    {
+        State sExplicit = s;
+        model.realizeAcceleration(sExplicit);
+        yDotExplicit = sExplicit.getYDot();
+    }
     
     // Implicit and explicit forms give same yDot.
     SimTK_TEST_EQ_TOL(yDotImplicit, yDotExplicit, 1e-11);
+    // Also make sure the test is actually testing something.
+    SimTK_TEST(yDotExplicit.size() == 1);
+    SimTK_TEST_NOTEQ(yDotExplicit.norm(), 0);
+}
+
+void testImplicitSystemDerivativeSolverMultibody1DOF() {
+    Model model; model.setName("model");
+    model.setGravity(Vec3(-9.81, 0, 0)); // gravity pulls in the -x direction.
+    auto* body = new OpenSim::Body("ptmass", 1.3, Vec3(0), Inertia(0));
+    auto* slider = new SliderJoint(); slider->setName("slider");
+    model.addBody(body);
+    model.addJoint(slider);
+    slider->updConnector("parent_frame").connect(model.getGround());
+    slider->updConnector("child_frame").connect(*body);
+    
+    State s = model.initSystem();
+    const auto& coord = slider->getCoordinateSet()[0];
+    coord.setSpeedValue(s, 1.7);
+    
+    // Computing yDot using implicit form.
+    Vector yDotImplicit;
+    {
+        State sImplicit = s;
+        ImplicitSystemDerivativeSolver solver(model);
+        Vector lambda; // unused.
+        solver.solve(sImplicit, yDotImplicit, lambda);
+    }
+    
+    // Computing yDot using explicit form.
+    Vector yDotExplicit;
+    {
+        State sExplicit = s;
+        model.realizeAcceleration(sExplicit);
+        yDotExplicit = sExplicit.getYDot();
+    }
+    
+    // Implicit and explicit forms give same yDot.
+    SimTK_TEST_EQ_TOL(yDotImplicit, yDotExplicit, 1e-8);
+    
+    // Also make sure the test is actually testing something.
+    SimTK_TEST(yDotExplicit.size() == 2);
+    SimTK_TEST_NOTEQ(yDotExplicit.norm(), 0);
+}
+
+void testCoordinateCouplerConstraint() {
+    Model model; model.setName("twodof");
+    auto* body = new OpenSim::Body("ptmass", 1.5, Vec3(0.7, 0, 0),
+                                   Inertia::ellipsoid(1, 2, 3));
+    // TODO BallJoint() causes issues.
+    auto* joint = new GimbalJoint(); joint->setName("joint");
+    auto& c0 = joint->upd_CoordinateSet()[0]; c0.setName("c0");
+    auto& c1 = joint->upd_CoordinateSet()[1]; c1.setName("c1");
+    auto& c2 = joint->upd_CoordinateSet()[2]; c2.setName("c2");
+    model.addBody(body);
+    model.addJoint(joint);
+    joint->updConnector("parent_frame").connect(model.getGround());
+    joint->updConnector("child_frame").connect(*body);
+    
+    // Set up constraint using a linear relation between c0 and c1.
+    auto* coupler = new CoordinateCouplerConstraint(); coupler->setName("cplr");
+    model.addConstraint(coupler);
+    Array<std::string> indepCoords; indepCoords.append("c0");
+    coupler->setIndependentCoordinateNames(indepCoords);
+    coupler->setDependentCoordinateName("c1");
+    const Real slope = 5.1; const Real intercept = 2.31;
+    coupler->setFunction(LinearFunction(slope, intercept));
+    
+    State s = model.initSystem();
+    c0.setValue(s, 0.51, false); // We'll enforce constraints all at once.
+    c2.setValue(s, 0.36, false);
+    c0.setSpeedValue(s, 1.5); // The projection will change this value.
+    c2.setSpeedValue(s, 2.8);
+    model.assemble(s);
+    model.getSystem().projectU(s); // Enforce velocity constraints.
+    
+    // Ensure that the constraints are obeyed in the current state.
+    SimTK_TEST_EQ(c1.getValue(s), slope * c0.getValue(s) + intercept);
+    // Check the velocity-level constraint:
+    SimTK_TEST_EQ(c1.getSpeedValue(s), slope * c0.getSpeedValue(s));
+    
+    // Computing yDot and lambda using implicit form.
+    Vector yDotImplicit, lambdaImplicit;
+    {
+        State sImplicit = s;
+        ImplicitSystemDerivativeSolver solver(model);
+        solver.solve(sImplicit, yDotImplicit, lambdaImplicit);
+        
+        // Acceleration-level constraint equation is satisfied.
+        SimTK_TEST_EQ_TOL(yDotImplicit[1], slope * yDotImplicit[0], 1e-12);
+    }
+    
+    // Computing yDot and lambda using explicit form.
+    Vector yDotExplicit, lambdaExplicit;
+    {
+        State sExplicit = s;
+        model.realizeAcceleration(sExplicit);
+        yDotExplicit = sExplicit.getYDot();
+        lambdaExplicit = sExplicit.getMultipliers();
+        
+        // Acceleration-level constraint equation is satisfied.
+        SimTK_TEST_EQ_TOL(c1.getAccelerationValue(sExplicit),
+                          slope * c0.getAccelerationValue(sExplicit), 1e-9);
+    }
+    
+    
+    // Implicit and explicit forms give same yDot and lambda.
+    SimTK_TEST_EQ_TOL(yDotImplicit, yDotExplicit, 1e-9);
+    SimTK_TEST_EQ_TOL(lambdaImplicit, lambdaExplicit, 1e-9);
+    
+    // Also make sure the test is actually testing something.
+    SimTK_TEST(yDotExplicit.size() == 6); // 3 DOFs, 2 states per DOF.
+    SimTK_TEST(lambdaExplicit.size() == 1);
 }
 
 void testErrorsForUnsupportedModels() {
@@ -352,6 +500,8 @@ int main() {
         SimTK_SUBTEST(testImplicitMultibodyDynamics1DOF);
         // TODO SimTK_SUBTEST(testMultibody1DOFAndCustomComponent);
         SimTK_SUBTEST(testGenericInterfaceForImplicitSolver);
+        SimTK_SUBTEST(testImplicitSystemDerivativeSolverMultibody1DOF);
+        SimTK_SUBTEST(testCoordinateCouplerConstraint);
         SimTK_SUBTEST(testErrorsForUnsupportedModels);
     SimTK_END_TEST();
 }

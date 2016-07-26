@@ -73,16 +73,25 @@ public:
         according to the state.
         @param[in] s    the system state specifying time, coordinates and speeds
         @param[in] udot the vector of generalized accelerations in the order
+        @param[in] lambda TODO
         */
     virtual SimTK::Vector solve(const SimTK::State& s, 
-        const SimTK::Vector& udot = SimTK::Vector(0));
+        const SimTK::Vector& udot = SimTK::Vector(0),
+        const SimTK::Vector& lambda = SimTK::Vector(0));
+    
+    // TODO if you call calcResidualForce with lambda.size() == 0, then
+    // it'll call the "ignoringConstraints" version. So we could do that here
+    // too!
 
     /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
         Applied loads are explicitly provided as generalized coordinate forces (MobilityForces)
-        and/or a Vector of Spatial-body forces */
+        and/or a Vector of Spatial-body forces 
+        TODO lambda if lambda is empty, then it'll call calcResidualForceIgnoringConstraints().
+        */
     virtual SimTK::Vector solve(const SimTK::State& s, const SimTK::Vector& udot, 
         const SimTK::Vector& appliedMobilityForces, 
-        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces);
+        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces,
+        const SimTK::Vector& lambda);
     
     /** Solve the inverse dynamics system of equations for generalized coordinate 
         forces, Tau. Now the state is updated from known coordinates, q, as 
