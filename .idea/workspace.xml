@@ -140,27 +140,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8197daf1-ef01-4301-bcf1-90ae19dc4eca" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Applications/CMC/test/testCMCArm26_Millard.cpp" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Applications/CMC/test/testCMCArm26.cpp" afterPath="$PROJECT_DIR$/Applications/CMC/test/testCMCArm26_Thelen.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Bindings/Java/OpenSimJNI/CMakeLists.txt" afterPath="$PROJECT_DIR$/Bindings/Java/OpenSimJNI/CMakeLists.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Bindings/Python/CMakeLists.txt" afterPath="$PROJECT_DIR$/Bindings/Python/CMakeLists.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Bindings/simbody.i" afterPath="$PROJECT_DIR$/Bindings/simbody.i" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" afterPath="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Common/ArrayPtrs.h" afterPath="$PROJECT_DIR$/OpenSim/Common/ArrayPtrs.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Common/ComponentList.h" afterPath="$PROJECT_DIR$/OpenSim/Common/ComponentList.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Common/LoadOpenSimLibrary.cpp" afterPath="$PROJECT_DIR$/OpenSim/Common/LoadOpenSimLibrary.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Common/LoadOpenSimLibrary.h" afterPath="$PROJECT_DIR$/OpenSim/Common/LoadOpenSimLibrary.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildDeviceModel.cpp" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildDeviceModel.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildDeviceModel_answers.cpp" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildDeviceModel_answers.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildHopperModel.cpp" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/buildHopperModel.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/defineDeviceAndController.h" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/defineDeviceAndController.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/defineDeviceAndController_answers.h" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/defineDeviceAndController_answers.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/exampleHopperDevice_answers.cpp" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ExampleHopperDevice/exampleHopperDevice_answers.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Sandbox/ImplicitDifferentialEquations/ImplicitDifferentialEquations.md" afterPath="$PROJECT_DIR$/OpenSim/Sandbox/ImplicitDifferentialEquations/ImplicitDifferentialEquations.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OpenSim/Tests/Components/testComponents.cpp" afterPath="$PROJECT_DIR$/OpenSim/Tests/Components/testComponents.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/appveyor.yml" afterPath="$PROJECT_DIR$/appveyor.yml" />
     </list>
     <ignored path="opensim-core-source.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -180,118 +162,80 @@
     <favorites_list name="opensim-core-source" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.21766561">
-      <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="VandenBogert2011Muscle.h" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3060">
-                  <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#338#385#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="9684">
-                  <caret line="538" column="0" selection-start-line="538" selection-start-column="0" selection-end-line="538" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="muscle_dynamics.c" pinned="false" current-in-tab="true">
-            <entry file="file://$USER_HOME$/Documents/Data/GitRepo/OpenSimImplicitDynamics/TugOfWarWithInvDyn/muscle_dynamics.c">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1800">
-                  <caret line="103" column="4" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="38" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="Millard2012EquilibriumMuscle.h" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7290">
-                  <caret line="405" column="9" selection-start-line="405" selection-start-column="9" selection-end-line="405" selection-end-column="46" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="Millard2012EquilibriumMuscle.cpp" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="8478">
-                  <caret line="471" column="45" selection-start-line="471" selection-start-column="45" selection-end-line="471" selection-end-column="45" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="401">
-                  <caret line="664" column="16" selection-start-line="664" selection-start-column="16" selection-end-line="664" selection-end-column="16" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="testComponentInterface.cpp" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/OpenSim/Common/Test/testComponentInterface.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="262">
-                  <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="SimbodyMatterSubsystem.h" pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/opensim_dependencies_install/simbody/include/simbody/simbody/internal/SimbodyMatterSubsystem.h">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="172">
-                  <caret line="145" column="0" selection-start-line="145" selection-start-column="0" selection-end-line="145" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="SimbodyMatterSubsystemRep.cpp" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.cpp">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="144">
-                  <caret line="3632" column="48" selection-start-line="3632" selection-start-column="48" selection-end-line="3632" selection-end-column="48" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="SimbodyMatterSubsystemRep.h" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.h">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="262">
-                  <caret line="936" column="9" selection-start-line="936" selection-start-column="9" selection-end-line="936" selection-end-column="9" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="VandenBogert2011Muscle.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3060">
+              <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
+              <folding>
+                <element signature="e#338#385#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VandenBogert2011Muscle.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1296">
+              <caret line="591" column="4" selection-start-line="591" selection-start-column="4" selection-end-line="591" selection-end-column="48" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="vanDenBogertMuscleTest.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/vanDenBogertMuscleTestSource/vanDenBogertMuscleTest.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3636">
+              <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OptimizationExample.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/vanDenBogertMuscleTestSource/OptimizationExample.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="810">
+              <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="muscle_dynamics.c" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/Documents/Data/GitRepo/OpenSimImplicitDynamics/TugOfWarWithInvDyn/muscle_dynamics.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1080">
+              <caret line="60" column="0" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Millard2012EquilibriumMuscle.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="7290">
+              <caret line="405" column="9" selection-start-line="405" selection-start-column="9" selection-end-line="405" selection-end-column="46" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Millard2012EquilibriumMuscle.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8478">
+              <caret line="471" column="45" selection-start-line="471" selection-start-column="45" selection-end-line="471" selection-end-column="45" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -306,6 +250,7 @@
         <option value="$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m" />
         <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h" />
         <option value="$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp" />
+        <option value="$USER_HOME$/vanDenBogertMuscleTestSource/vanDenBogertMuscleTest.cpp" />
       </list>
     </option>
   </component>
@@ -363,27 +308,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="opensim-core-source" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="opensim-core-source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="OpenSim" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h" />
+    <property name="last_opened_file_path" value="$USER_HOME$/vanDenBogertMuscleTestSource/OptimizationExample.cpp" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="full.screen.before.presentation.mode" value="false" />
@@ -1230,7 +1161,7 @@
     <editor active="true" />
     <layout>
       <window_info id="GfmBrowser" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26009792" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25397795" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.10990207" sideWeight="0.49791667" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31078225" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
@@ -1289,21 +1220,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Bindings/Java/Matlab/tests/testVandenBogert2011Muscle.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="7" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1980">
@@ -1622,6 +1538,58 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/opensim_dependencies_install/simbody/include/simbody/simbody/internal/SimbodyMatterSubsystem.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2610">
+          <caret line="145" column="0" selection-start-line="145" selection-start-column="0" selection-end-line="145" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16848">
+          <caret line="936" column="9" selection-start-line="936" selection-start-column="9" selection-end-line="936" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="36">
+          <caret line="3626" column="0" selection-start-line="3626" selection-start-column="0" selection-end-line="3626" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OpenSim/Common/Test/testComponentInterface.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="262">
+          <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/vanDenBogertMuscleTestSource/vanDenBogertMuscleTest.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3636">
+          <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/vanDenBogertMuscleTestSource/OptimizationExample.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Documents/Data/GitRepo/OpenSimImplicitDynamics/TugOfWarWithInvDyn/muscle_dynamics.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1080">
+          <caret line="60" column="0" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/Millard2012EquilibriumMuscle.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7290">
@@ -1638,50 +1606,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Documents/Data/GitRepo/OpenSimImplicitDynamics/TugOfWarWithInvDyn/muscle_dynamics.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1800">
-          <caret line="103" column="4" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/OpenSim/Actuators/VandenBogert2011Muscle.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="664" column="16" selection-start-line="664" selection-start-column="16" selection-end-line="664" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/OpenSim/Common/Test/testComponentInterface.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/opensim_dependencies_install/simbody/include/simbody/simbody/internal/SimbodyMatterSubsystem.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="145" column="0" selection-start-line="145" selection-start-column="0" selection-end-line="145" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="936" column="9" selection-start-line="936" selection-start-column="9" selection-end-line="936" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dependencies/simbody/Simbody/src/SimbodyMatterSubsystemRep.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="3632" column="48" selection-start-line="3632" selection-start-column="48" selection-end-line="3632" selection-end-column="48" />
+        <state relative-caret-position="-1296">
+          <caret line="591" column="4" selection-start-line="591" selection-start-column="4" selection-end-line="591" selection-end-column="48" />
           <folding />
         </state>
       </provider>

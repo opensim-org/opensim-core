@@ -18,11 +18,7 @@ namespace SimTK {
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
-<<<<<<< HEAD
-%include <SimTKcommon/SmallMatrix.h>
-=======
 %include <SimTKcommon/SmallMatrix.h> // for typedefs like Mat33.
->>>>>>> 44464d4874fe70086e43a637affa4c058779a29d
 namespace SimTK {
 %template(Mat22) Mat<2, 2>;
 %template(Mat33) Mat<3, 3>;

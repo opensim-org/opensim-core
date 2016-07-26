@@ -833,7 +833,7 @@ SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(double projFi
 //------------------------------------------------------------------------------
 SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLength, double activ) const {
 
-
+    //Calculate the
 
     //TODO: Code is not optimized.  Specifically the number of calls to
     //calcImplicitResidual can be reduced
@@ -862,19 +862,19 @@ while ((abs(dx)>=tol) && (neval<100)) {
     b=max(a,b);
 
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength,activ);
+    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength, activ);
     double fx = forceResAndDerivative[0];
 
     //After the 1st iteration, use the new guess as a new upper or lower bound
     if (neval>1) {
-        forceResAndDerivative = calcFiberStaticEquilibResidual(a, muscleLength,activ);
+        forceResAndDerivative = calcFiberStaticEquilibResidual(a, muscleLength, activ);
         double funcA = forceResAndDerivative[0];
 
         if ((funcA *fx)>0){
             a = x;}
         else { b = x;}}
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength,activ);
+    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength, activ);
     double dfx= forceResAndDerivative[1];
     //double forceRes=forceResAndDerivative[0];
 
@@ -883,7 +883,7 @@ while ((abs(dx)>=tol) && (neval<100)) {
 
     bool inInterval=((xdx>=a) && (xdx<=b));
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(xdx, muscleLength,activ);
+    forceResAndDerivative = calcFiberStaticEquilibResidual(xdx, muscleLength, activ);
     bool largeDeriv=abs(forceResAndDerivative[0])> (0.5*abs(fx));
 
     if (~inInterval || largeDeriv) {
@@ -896,13 +896,18 @@ while ((abs(dx)>=tol) && (neval<100)) {
 
     };
 
+    // TODO:  Need to handle condition when number of loop iterations reaches neval limit
 
     SimTK::Vec3 vout;
-    vout[0]=x;
-    vout[1]=neval;
-    vout[2]=forceResAndDerivative[2];
+    vout[0]=x;   //projFiberLengthNorm
+    vout[1]=neval;  //Number of Evaluations
+    vout[2]=forceResAndDerivative[2];  // muscleForce
     return vout;
 }
+
+
+
+
 
 
 
