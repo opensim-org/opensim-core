@@ -37,6 +37,10 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
 
+namespace SimTK {
+class State;
+}
+
 namespace OpenSim { 
 
 class Model;

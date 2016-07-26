@@ -29,7 +29,6 @@ This file defines the AbstractDataTable class, which is used by OpenSim to
 provide an in-memory container for data access and manipulation.              */
 
 // Non-standard headers.
-#include "SimTKcommon.h"
 #include "OpenSim/Common/Exception.h"
 #include "OpenSim/Common/ValueArrayDictionary.h"
 
