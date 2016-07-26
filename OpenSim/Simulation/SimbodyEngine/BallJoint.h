@@ -69,22 +69,22 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1);
+        const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X);
         \endcode
     */
     enum class Coord {
-        Rotation1,
-        Rotation2,
-        Rotation3
+        Rotation1X,
+        Rotation2Y,
+        Rotation3Z
     };
 
     /** Get the Coordinates associated with this Joint. @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
-        if(idx == Coord::Rotation1)
+        if(idx == Coord::Rotation1X)
             return Super::getCoordinate(rx);
-        if(idx == Coord::Rotation2)
+        if(idx == Coord::Rotation2Y)
             return Super::getCoordinate(ry);
-        if(idx == Coord::Rotation3)
+        if(idx == Coord::Rotation3Z)
             return Super::getCoordinate(rz);
 
         OPENSIM_THROW(Exception, "Invalid Coordinate index");

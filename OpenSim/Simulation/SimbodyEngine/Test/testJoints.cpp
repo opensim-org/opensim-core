@@ -1208,13 +1208,13 @@ void testBallJoint()
 
     // Test accessors.
     ASSERT(hip.getCoordinate(0) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation1),
+           hip.getCoordinate(BallJoint::Coord::Rotation1X),
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT(hip.getCoordinate(1) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation2),
+           hip.getCoordinate(BallJoint::Coord::Rotation2Y),
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT(hip.getCoordinate(2) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation3),
+           hip.getCoordinate(BallJoint::Coord::Rotation3Z),
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall,     hip.getCoordinate());
     ASSERT_THROW(OpenSim::IndexOutOfRange, hip.getCoordinate(3));
