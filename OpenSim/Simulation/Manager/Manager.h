@@ -1,5 +1,5 @@
-#ifndef _Manager_h_
-#define _Manager_h_
+#ifndef OPENSIM_MANAGER_H
+#define OPENSIM_MANAGER_H
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Manager.h                             *
  * -------------------------------------------------------------------------- *
@@ -30,11 +30,14 @@
 
 // INCLUDES
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Object.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKsimbody.h"
 
+namespace SimTK {
+class Integrator;
+class State;
+class System;
+}
 
 namespace OpenSim { 
 
@@ -210,5 +213,5 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // __Manager_h__
+#endif  // OPENSIM_MANAGER_H
 
