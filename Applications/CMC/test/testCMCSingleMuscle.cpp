@@ -68,14 +68,23 @@ void testSingleMuscle() {
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
     cmc.run();
 
+    Storage fwd_controls("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_controls.sto");
+    Storage cmc_controls("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_controls.sto");
+
     Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
     Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-    Array<double> tols(0.0005, 4);
+    Array<double> control_tols(2.5e-3, 1); 
+    Array<double> state_tols(1.0e-3, 4);
+
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testSingleMuscle "+ muscleType;
 
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, tols, __FILE__, __LINE__, base+" failed");
+    CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
+        __FILE__, __LINE__, base + " controls failed");
+
+    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, state_tols,
+        __FILE__, __LINE__, base+" states failed");
     
     cout << "\n" << base << " passed\n" << endl;
 }
