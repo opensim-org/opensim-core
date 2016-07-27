@@ -1,5 +1,5 @@
-#ifndef __MarkerData_h__
-#define __MarkerData_h__
+#ifndef OPENSIM_MARKER_DATA_H_
+#define OPENSIM_MARKER_DATA_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  MarkerData.h                           *
  * -------------------------------------------------------------------------- *
@@ -27,7 +27,6 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include "osimCommonDLL.h"
 #include "Array.h"
 #include "ArrayPtrs.h"
 #include "MarkerFrame.h"
@@ -107,6 +106,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __MarkerData_h__
+#endif // OPENSIM_MARKER_DATA_H_
 
 

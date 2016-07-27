@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
-#include <OpenSim/Common/Set.h>
 
 namespace SimTK {
 class Markers;
@@ -32,7 +31,6 @@ class Markers;
 
 namespace OpenSim {
 
-class CoordinateReference;
 class MarkersReference;
 
 //=============================================================================

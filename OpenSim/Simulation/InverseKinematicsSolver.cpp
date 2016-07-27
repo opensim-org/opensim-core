@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "InverseKinematicsSolver.h"
-#include "CoordinateReference.h"
 #include "MarkersReference.h"
 #include "Model/Model.h"
 #include "Model/MarkerSet.h"
