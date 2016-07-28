@@ -50,10 +50,13 @@
 // TODO test what happens when you provide an implicit from but don't set hasImplicitForm.
 // TODO test what happens when you set hasImplicitForm() but don't provide it.
 // TODO test inheritance hierarchy: multiple subclasses add state vars.
+// TODO test passing empty lambdas treats them as 0, same for ydot.
 
 // TODO mock up the situation where we are minimizing joint contact load
 //      while obeying dynamics (in direct collocation fashion--the entire
 //      trajectory).
+
+// TODO yDotGuess vs ydotGuess
 
 // Implementation:
 // TODO Only create implicit cache/discrete vars if any components have an
@@ -102,7 +105,19 @@ protected:
         Super::extendComputeImplicitResiduals(s);
         const Real& activ = getStateVariableValue(s, "activ");
         double activDotGuess = getStateVariableDerivativeGuess(s, "activ");
-        setImplicitResidual(s, "activ", get_coeff() * activ - activDotGuess);
+        const Real residual = get_coeff() * activ - activDotGuess;
+        setImplicitResidual(s, "activ", residual);
+    }
+    void extendComputeImplicitResiduals2(const SimTK::State& s,
+                                        const SimTK::Vector& yDotGuess,
+                                        SimTK::VectorView& componentResiduals
+                                        ) const override {
+        const Real& activ = getStateVariableValue(s, "activ");
+        double activDotGuess = getStateVariableDerivativeGuess2("activ", yDotGuess);
+        // TODO yDotGuess[_activIndex]
+        const Real activResidual = get_coeff() * activ - activDotGuess;
+        setImplicitResidual2("activ", activResidual, componentResiduals);
+        // TODO residuals[0] = ...;
     }
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
@@ -244,16 +259,29 @@ void testSingleCustomImplicitEquation() {
         const auto& comp = model.getComponent("foo");
         
         // Set guess.
-        comp.setStateVariableDerivativeGuess(s, "activ", activDotGuess);
+        Vector yDotGuess(s.getNY());
+        comp.setStateVariableDerivativeGuess2("activ", activDotGuess, yDotGuess);
+        // TODO comp.setStateVariableDerivativeGuess(s, "activ", activDotGuess);
         
-        // Access residual by name from the component:
-        SimTK_TEST(comp.getImplicitResidual(s, "activ") == expectedResidual);
+        // TODO resizing yDotGuess appropriately?
+        SimTK_TEST_EQ(yDotGuess, Vector(1, activDotGuess));
         
         // Access residual from the entire residual vector.
-        SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
+        Vector residuals;
+        model.calcImplicitResiduals2(s, yDotGuess, Vector(), residuals);
+        SimTK_TEST_EQ(residuals, Vector(1, expectedResidual));
+        // TODO SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
+        
+        // Access specific residual by name from the component:
+        SimTK_TEST(comp.getImplicitResidual2("activ", residuals) ==
+                   expectedResidual);
     }
     
-    { // Setting entire guess vector at once.
+    // TODO compute the residual from the component itself.
+    // TODO would have to make the appropriate view.
+    // comp.computeImplicitResiduals(state, componentResiduals);
+    
+    /* TODO { // Setting entire guess vector at once.
         Model model = createModel(initialValue, coeff);
         State s = model.initSystem();
         const auto& comp = model.getComponent("foo");
@@ -271,7 +299,7 @@ void testSingleCustomImplicitEquation() {
         model.setYDotGuess(s, Vector(1, NaN)); // different guess.
         SimTK_TEST_NOTEQ(model.getImplicitResiduals(s),
                          Vector(1, expectedResidual));
-    }
+    }*/
 }
 
 // Test implicit multibody dynamics (i.e., inverse dynamics) with a point
@@ -306,18 +334,25 @@ void testImplicitMultibodyDynamics1DOF() {
     // Check implicit form.
     // --------------------
     // Set derivative guess.
-    coord.setStateVariableDerivativeGuess(s, "value", qDotGuess);
-    coord.setStateVariableDerivativeGuess(s, "speed", uDotGuess);
+    Vector yDotGuess(s.getNY());
+    // TODO be consistent with "addInControls()" etc.
+    coord.setStateVariableDerivativeGuess2("value", qDotGuess, yDotGuess);
+    coord.setStateVariableDerivativeGuess2("speed", uDotGuess, yDotGuess);
    
-    // Get residual.
+    // Calculate residual.
     Vector expectedResiduals(2);
     expectedResiduals[0] = u_i - qDotGuess;
     expectedResiduals[1] = mass * uDotGuess - mass * (-g); // M u_dot-f_applied
-    // Check individual elements of the residual.
-    SimTK_TEST_EQ(coord.getImplicitResidual(s, "value"), expectedResiduals[0]);
-    SimTK_TEST_EQ(coord.getImplicitResidual(s, "speed"), expectedResiduals[1]);
+    Vector residuals;
+    model.realizeDynamics(s); // TODO test this requirement.
+    model.calcImplicitResiduals2(s, yDotGuess, Vector(), residuals);
     // Check the entire residuals vector.
-    SimTK_TEST_EQ(model.getImplicitResiduals(s), expectedResiduals);
+    SimTK_TEST_EQ(residuals, expectedResiduals);
+    // Check individual elements of the residual.
+    SimTK_TEST_EQ(coord.getImplicitResidual2("value", residuals),
+                  expectedResiduals[0]);
+    SimTK_TEST_EQ(coord.getImplicitResidual2("speed", residuals),
+                  expectedResiduals[1]);
     
     // TODO set YDotGuess all at once.
     
@@ -329,20 +364,33 @@ void testImplicitMultibodyDynamics1DOF() {
     expectedYDot[0] = u_i /* = qdot*/; expectedYDot[1] = -g /* = udot*/;
     SimTK_TEST_EQ(s.getYDot(), expectedYDot);
     
+    // Passing empty yDotGuess treats them as zeros.
+    // ---------------------------------------------
+    {
+        Vector resEmptyYDot;
+        model.calcImplicitResiduals2(s, Vector(), Vector(), resEmptyYDot);
+        Vector resZerosYDot;
+        model.calcImplicitResiduals2(s, Vector(2, 0.), Vector(), resZerosYDot);
+        SimTK_TEST_EQ(resEmptyYDot, resZerosYDot);
+    }
+    
     // Error-checking.
     // ---------------
+    Vector output;
     // Size of yDotGuess must be correct.
-    SimTK_TEST_MUST_THROW_EXC(model.setYDotGuess(s, Vector(1, 0.)), // too small.
-                              SimTK::Exception::Assert);
-    SimTK_TEST_MUST_THROW_EXC(model.setYDotGuess(s, Vector(3, 0.)), // too large.
-                              SimTK::Exception::Assert);
-    
-    // Size of residuals must be correct.
-    SimTK_TEST_MUST_THROW_EXC(model.updImplicitResiduals(s) = Vector(3, 0.),
-                              SimTK::Exception::Cant);
-    
-    // TODO test size of lambdaGuess.
+    SimTK_TEST_MUST_THROW_EXC( // yDotGuess too small.
+        model.calcImplicitResiduals2(s, Vector(1, 0.), Vector(), output),
+        OpenSim::Exception);
+    SimTK_TEST_MUST_THROW_EXC( // yDotGuess too large.
+        model.calcImplicitResiduals2(s, Vector(3, 0.), Vector(), output),
+        OpenSim::Exception);
+    // Size of lambdaGuess must be correct.
+    SimTK_TEST_MUST_THROW_EXC( // lambdaGuess too large.
+        model.calcImplicitResiduals2(s, Vector(2, 0.), Vector(1, 0.), output),
+        OpenSim::Exception);
 }
+
+// TODO test model with constraints here!
 
 // When components provide dynamics in explicit form only, we compute the
 // implicit form by using the explicit form.
@@ -434,15 +482,25 @@ public:
     int constraintFunc(const Vector& guess, bool newParams,
                        Vector& constraints) const override {
         const int ny = m_workingState.getNY();
+        const int nu = m_workingState.getNU();
+        
         Vector yDotGuess; yDotGuess.viewAssign(guess(0, ny));
         Vector lambdaGuess; lambdaGuess.viewAssign(guess(ny, guess.size() - ny));
         
         Vector residuals; residuals.viewAssign(constraints(0, ny));
         Vector pvaerrs; pvaerrs.viewAssign(constraints(ny, guess.size() - ny));
         
-        m_parent.m_model.calcImplicitResidualsAndConstraintErrors(m_workingState,
-                    yDotGuess, lambdaGuess, // inputs
-                    residuals, pvaerrs);    // outputs
+        // Differential equations.
+        m_parent.m_model.calcImplicitResiduals(m_workingState,
+                                               yDotGuess, lambdaGuess,
+                                               residuals);
+        
+        // Constraints.
+        const auto& matter = m_parent.m_model.getMatterSubsystem();
+        const auto& uDotGuess = yDotGuess(m_workingState.getUStart(), nu);
+        matter.calcConstraintAccelerationErrors(m_workingState, uDotGuess,
+                                                pvaerrs);
+                                                
         // TODO lambdas will be NaN? residuals will be bad
         // what to do with lambdas for a system without constraints?
         return 0;

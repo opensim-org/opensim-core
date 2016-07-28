@@ -892,9 +892,16 @@ public:
                              const SimTK::Vector& lambdaGuess) const;
     /** TODO for this implementation, it sets the discrete state variables.
     */
-    void calcImplicitResidualsAndConstraintErrors(SimTK::State& state,
-            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
-            SimTK::Vector& residuals, SimTK::Vector& constraintAErrs) const;
+    void calcImplicitResiduals(SimTK::State& state,
+                               const SimTK::Vector& yDotGuess,
+                               const SimTK::Vector& lambdaGuess,
+                               SimTK::Vector& residuals) const;
+    // TODO required stage depends on whether there is a full implicit form or
+    // not.
+    void calcImplicitResiduals2(const SimTK::State& state,
+                                const SimTK::Vector& yDotGuess,
+                                const SimTK::Vector& lambdaGuess,
+                                SimTK::Vector& residuals) const;
                                                  
                                                  
     

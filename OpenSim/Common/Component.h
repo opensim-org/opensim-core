@@ -1126,14 +1126,24 @@ public:
     /** TODO */
     double getStateVariableDerivativeGuess(const SimTK::State& state,
         const std::string& name) const;
+    const double& getStateVariableDerivativeGuess2(
+        const std::string& name, const SimTK::Vector& allYDotGuess) const;
     
     /** TODO where to put this? */
     void setStateVariableDerivativeGuess(SimTK::State& state,
-        const std::string& name, double derivGuess) const;
+                                         const std::string& name,
+                                         double derivGuess) const;
+    void setStateVariableDerivativeGuess2(const std::string& name,
+                                          const double& derivGuess,
+                                          SimTK::Vector& allYDotGuess) const;
     
     /** TODO where to put this? */
     double getImplicitResidual(const SimTK::State& state,
         const std::string& name) const;
+        // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
+        // TODO getImplicitResidualByName().
+    const double& getImplicitResidual2(const std::string& name,
+                                       const SimTK::Vector& allResiduals) const;
 
     /**
      * Get the value of a discrete variable allocated by this Component by name.
@@ -1672,11 +1682,19 @@ protected:
 
     /** TODO */
     void computeImplicitResiduals(const SimTK::State& s) const;
+    void computeImplicitResiduals2(const SimTK::State& s,
+            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
+            SimTK::Vector& residuals) const;
     virtual void extendComputeImplicitResiduals(const SimTK::State& s) const {}
+    virtual void extendComputeImplicitResiduals2(const SimTK::State& s,
+            const SimTK::Vector& allYDotGuess,
+            SimTK::VectorView& componentResiduals) const {}
     
     /** TODO */
     void setImplicitResidual(const SimTK::State& state,
                             const std::string& name, double residual) const;
+    void setImplicitResidual2(const std::string& name, const double& thisResidual,
+                              SimTK::VectorView& componentResiduals) const;
 
 
     // End of Component Extension Interface (protected virtuals).
@@ -2375,6 +2393,7 @@ protected:
         void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix) {
             subsysIndex = sbsysix;
         }
+        // TODO void setComponentVarIndex(int index) { componentVarIndex = index; }
         void determineSystemYIndex(const SimTK::State& s) {
             sysYIndex = implementDetermineSystemYIndex(s);
         }
@@ -2391,8 +2410,11 @@ protected:
         virtual double getImplicitResidual(const SimTK::State& state) const = 0;
         // TODO
         virtual void setImplicitResidual(const SimTK::State& state, double residual) const = 0;
+        // TODO void setImplicitResidual2(const double& thisResidual,
+        // TODO                           SimTK::VectorView& componentResiduals) const;
         // TODO get/set guess.
         virtual double getDerivativeGuess(const SimTK::State& state) const = 0;
+        // TODO const double& getDerivativeGuess2(const SimTK::Vector& allYDotGuess) const;
         virtual void setDerivativeGuess(SimTK::State& state, double residual) const = 0;
         
     private:
@@ -2411,6 +2433,9 @@ protected:
         // Once allocated a state in the system will have a global index
         // and that can be stored here as well
         SimTK::SystemYIndex sysYIndex;
+        // TODO The index of this state variable in the Component that contains it.
+        // TODO Used for setting the appropriate entry of the residual.
+        // TODO int componentVarIndex = SimTK::NaN;
         
         // TODO
         bool implicitForm;
