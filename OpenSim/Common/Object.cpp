@@ -95,16 +95,13 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // This maybe slower than we like but definitely faster than 
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
-    if(aFileName.empty()) {
-        string msg =
-            "Object: ERR- Empty filename encountered.";
-        throw Exception(msg,__FILE__,__LINE__);
-    } else 
-        if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
-        string msg =
-            "Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
-        throw Exception(msg,__FILE__,__LINE__);
-    }   
+    OPENSIM_THROW_IF(aFileName.empty(), Exception,
+        "Object: Cannot construct from empty filename. No filename specified.");
+
+    OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
+        Exception,
+        "Object: Cannot not open file " + aFileName +
+        ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
 

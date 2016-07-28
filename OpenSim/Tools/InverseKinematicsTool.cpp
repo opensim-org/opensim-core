@@ -254,8 +254,11 @@ bool InverseKinematicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.");
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
 
