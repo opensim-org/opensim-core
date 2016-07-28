@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -32,6 +33,7 @@ using namespace std;
 using namespace SimTK;
 
 void testVisModel(string fileName);
+void createModel4AppearanceTest(const std::string& filename);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -101,6 +103,9 @@ int main()
     try {
         LoadOpenSimLibrary("osimActuators");
         testVisModel("BuiltinGeometry.osim");
+        std::string testAppearanceModelFile = "AppearanceTest.osim";
+        createModel4AppearanceTest(testAppearanceModelFile);
+        testVisModel(testAppearanceModelFile);
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -116,7 +121,7 @@ void testVisModel(string fileName)
     Model* model = new Model(fileName, true);
     //model->setUseVisualizer(true);
     SimTK::State& si = model->initSystem();
-    // model->getVisualizer().show(si);
+    //model->getVisualizer().show(si);
     ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model->generateDecorations(true, mdh, si, geometryToDisplay);
@@ -141,4 +146,34 @@ void testVisModel(string fileName)
     int same = fromFile.compare(fromModel);
     delete model;
     ASSERT(same == 0, __FILE__, __LINE__, "Files do not match.");
+}
+
+void createModel4AppearanceTest(const std::string& filename)
+{
+    Model modelWithGroundOnly;
+    Sphere* unitSphere = new Sphere(1.0);
+    const Ground& ground = modelWithGroundOnly.getGround();
+    modelWithGroundOnly.updGround().attachGeometry(unitSphere);
+    // Create offset frame and add to model
+    SimTK::Transform translate(Vec3(1.0, 0., 0.));
+    PhysicalOffsetFrame* oframe = new PhysicalOffsetFrame(ground, translate);
+    modelWithGroundOnly.addFrame(oframe);
+    // Change color and opacity
+    Sphere* offsetSphere = unitSphere->clone();
+    offsetSphere->upd_Appearance().set_color(SimTK::Cyan);
+    offsetSphere->upd_Appearance().set_opacity(0.5);
+    oframe->attachGeometry(offsetSphere);
+    PhysicalOffsetFrame* ooframe = new PhysicalOffsetFrame(ground, Vec3(2.0, 0., 0.));
+    modelWithGroundOnly.addFrame(ooframe);
+    // invisible Sphere
+    Sphere* ooffsetSphere = unitSphere->clone();
+    ooffsetSphere->upd_Appearance().set_visible(false);
+    ooframe->attachGeometry(ooffsetSphere);
+    PhysicalOffsetFrame* oooframe = new PhysicalOffsetFrame(ground, Vec3(3.0, 0., 0.));
+    modelWithGroundOnly.addFrame(oooframe);
+    // Wireframe Sphere
+    Sphere* oooffsetSphere = unitSphere->clone();
+    oooffsetSphere->upd_Appearance().set_representation(DecorativeGeometry::DrawWireframe);
+    oooframe->attachGeometry(oooffsetSphere);
+    modelWithGroundOnly.print(filename);
 }

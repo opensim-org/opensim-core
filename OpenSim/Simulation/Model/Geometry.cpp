@@ -87,6 +87,8 @@ void Geometry::generateDecorations(bool fixed,
     if (!fixed && !getInput("transform").isConnected())
         return; 
     
+    if (!get_Appearance().get_visible()) return;
+
     SimTK::Array_<SimTK::DecorativeGeometry> decos;
     implementCreateDecorativeGeometry(decos);
     if (decos.size() == 0) return;
