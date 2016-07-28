@@ -30,9 +30,8 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Task.h"
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 

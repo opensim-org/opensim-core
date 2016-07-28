@@ -29,15 +29,8 @@
 #define CMCTool_h__
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -48,6 +41,8 @@
 
 namespace OpenSim {
 
+class ControlSet;
+class Storage;
 
 //=============================================================================
 //=============================================================================

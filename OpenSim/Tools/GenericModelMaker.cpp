@@ -26,7 +26,6 @@
 //=============================================================================
 #include "GenericModelMaker.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Marker.h>
 
 //=============================================================================
 // STATICS

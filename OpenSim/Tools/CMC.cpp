@@ -29,30 +29,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <iostream>
-#include <string>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/RootSolver.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
+#include "CMC.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Common/OptimizationTarget.h>
-#include <simmath/Optimizer.h>
-#include "CMC.h"
-#include  <OpenSim/Tools/CMC_Point.h>
 #include <OpenSim/Tools/CMC_Joint.h>
 #include <OpenSim/Tools/CMC_TaskSet.h>
 #include <OpenSim/Tools/ActuatorForceTarget.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include "SimTKcommon.h" 
-#include "MuscleStateTrackingTask.h"
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using SimTK::Vector;

@@ -24,12 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "InverseKinematicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 #include <OpenSim/Common/IO.h>
@@ -44,8 +39,6 @@
 #include "IKTaskSet.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
-
-#include "SimTKsimbody.h"
 
 
 using namespace OpenSim;

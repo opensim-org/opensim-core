@@ -25,20 +25,13 @@
 // INCLUDES
 //=============================================================================
 #include "InverseDynamicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
-#include "AnalyzeTool.h"
 
 using namespace OpenSim;
 using namespace std;

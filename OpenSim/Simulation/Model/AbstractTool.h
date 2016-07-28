@@ -31,7 +31,7 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include "ControllerSet.h"
 #include "AnalysisSet.h"
-#include "ForceSet.h" // Breaks ComponentConnector if removed?
+#include "ForceSet.h"
 #include "ExternalLoads.h"
 
 namespace OpenSim { 
