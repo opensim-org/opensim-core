@@ -43,7 +43,7 @@ int main() {
     // redo with the Millard2012EquilibriumMuscle 
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
-    try {testSingleMuscle();}
+    try { testSingleMuscle();}
     catch (const std::exception& e)
         {   cout << e.what() <<endl; 
             failures.push_back("testSingleMuscle_Millard"); }
@@ -63,27 +63,37 @@ void testSingleMuscle() {
     cout << "*                         testSingleMuscle                       *" << endl;
     cout << "******************************************************************\n" << endl;
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-    forward.run();
-
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-    cmc.run();
+
+    const string& muscleType = 
+        cmc.getModel().getMuscles()[0].getConcreteClassName();
+    string base = "testSingleMuscle_" + muscleType;
+
+    // test MUST fail if forward simulation fails to run to completion.
+    OPENSIM_THROW_IF(!forward.run(), Exception, base + ": Failed running ForwardTool.");
+    // test MUST fail if CMC fails to track to completion.
+    OPENSIM_THROW_IF(!cmc.run(), Exception, base + ": Failed running CMCTool.");
 
     Storage fwd_controls("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_controls.sto");
     Storage cmc_controls("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_controls.sto");
 
-    Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
-    Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+    Storage fwd_force("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_ForceReporter_forces.sto");
+    Storage cmc_force("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_Actuation_force.sto");
 
-    Array<double> control_tols(2.5e-3, 1); 
-    Array<double> state_tols(1.0e-3, 4);
+    Storage fwd_states("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+    Storage cmc_states("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    string base = "testSingleMuscle "+ muscleType;
+    Array<double> control_tols(4.0e-3, 1); // peak control is 0.2 so this is 2% or peaj
+    Array<double> force_tols(1.0e-1, 1);   // 0.1 N 
+    Array<double> state_tols(1.0e-3, 4);   // q<1mm, u<1mm/s, a<0.001, fl < 0.001
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
         __FILE__, __LINE__, base + " controls failed");
 
-    CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, state_tols,
+    CHECK_STORAGE_AGAINST_STANDARD(cmc_force, fwd_force, force_tols,
+        __FILE__, __LINE__, base + " forces failed");
+
+    CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols,
         __FILE__, __LINE__, base+" states failed");
     
     cout << "\n" << base << " passed\n" << endl;
