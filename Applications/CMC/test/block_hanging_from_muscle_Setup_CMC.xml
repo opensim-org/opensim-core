@@ -14,7 +14,7 @@
 		<!--Initial time for the simulation.-->
 		<initial_time>0</initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>1</final_time>
+		<final_time>0.9</final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for states other than the coordinates or speeds.  For example, equilibrium muscle fiber lengths or muscle forces.-->
 		<solve_for_equilibrium_for_auxiliary_states>false</solve_for_equilibrium_for_auxiliary_states>
 		<!--Maximum number of integrator steps.-->
@@ -22,9 +22,9 @@
 		<!--Maximum integration step size.-->
 		<maximum_integrator_step_size>1</maximum_integrator_step_size>
 		<!--Minimum integration step size.-->
-		<minimum_integrator_step_size>1e-008</minimum_integrator_step_size>
+		<minimum_integrator_step_size>0</minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator step size is decreased.-->
-		<integrator_error_tolerance>1e-007</integrator_error_tolerance>
+		<integrator_error_tolerance>1e-008</integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 			<objects />
@@ -60,7 +60,7 @@
 		<!--Step size used by the optimizer to compute numerical derivatives. A value between 1.0e-4 and 1.0e-8 is usually appropriate.-->
 		<numerical_derivative_step_size>0.0001</numerical_derivative_step_size>
 		<!--Convergence tolerance for the optimizer. The smaller this value, the deeper the convergence. Decreasing this number can improve a solution, but will also likely increase computation time.-->
-		<optimization_convergence_tolerance>0.0001</optimization_convergence_tolerance>
+		<optimization_convergence_tolerance>0.001</optimization_convergence_tolerance>
 		<!--Maximum number of iterations for the optimizer.-->
 		<optimizer_max_iterations>1000</optimizer_max_iterations>
 		<!--Print level for the optimizer, 0 - 3. 0=no printing, 3=detailed printing, 2=in between-->
