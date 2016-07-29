@@ -76,47 +76,46 @@
 using namespace OpenSim;
 using namespace SimTK;
 
-/** TODO change this to have a different explicit vs implicit form.
-TODO otherwise we can't tell if we are using the default implicit form or
-the provided one. */
-class LinearDynamicsExplicitImplicit : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(LinearDynamicsExplicitImplicit, Component);
+
+/** This component provides the differential equation ydot*y = c. In its
+implicit form, it has no singularities. In its explicit form ydot = c/y, it 
+has a singularity at y = 0. The solutions are:
+
+        y(t) = +/-sqrt(y0^2 + 2*c*t).
+                                                                              
+It is important that the explicit and implicit forms for this component are
+different so that we can ensure the implicit form is used when provided
+(in lieu of the trivial implicit form ydot - ydotguess). */
+class DynamicsExplicitImplicit : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(DynamicsExplicitImplicit, Component);
 public:
     OpenSim_DECLARE_PROPERTY(default_activ, double,
         "Default value of state variable.");
     OpenSim_DECLARE_PROPERTY(coeff, double,
         "Coefficient in the differential equation.");
-    LinearDynamicsExplicitImplicit() {
-        constructProperty_default_activ(0.0);
-        constructProperty_coeff(-1.0);
+    DynamicsExplicitImplicit() {
+        constructProperty_default_activ(1.0);
+        constructProperty_coeff(-2.0);
     }
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("activ", SimTK::Stage::Dynamics, true
-         /* TODO , true has implicit form */);
+        addStateVariable("activ", SimTK::Stage::Dynamics, true);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        // TODO invokes false error msg. Super::computeStateVariableDerivatives(s);
         const Real& activ = getStateVariableValue(s, "activ");
-        setStateVariableDerivativeValue(s, "activ", get_coeff() * activ);
+        setStateVariableDerivativeValue(s, "activ", get_coeff() / activ);
     }
-    void extendComputeImplicitResiduals(const SimTK::State& s) const override {
-        Super::extendComputeImplicitResiduals(s);
-        const Real& activ = getStateVariableValue(s, "activ");
-        double activDotGuess = getStateVariableDerivativeGuess(s, "activ");
-        const Real residual = get_coeff() * activ - activDotGuess;
-        setImplicitResidual(s, "activ", residual);
-    }
-    void extendComputeImplicitResiduals2(const SimTK::State& s,
+    // TODO rename to implementComputeImplicitResiduals?
+    void computeImplicitResiduals(const SimTK::State& s,
                                         const SimTK::Vector& yDotGuess,
-                                        SimTK::VectorView& componentResiduals
+                                        SimTK::Vector& componentResiduals
                                         ) const override {
         const Real& activ = getStateVariableValue(s, "activ");
-        double activDotGuess = getStateVariableDerivativeGuess2("activ", yDotGuess);
+        double activDotGuess = getStateVariableDerivativeGuess("activ", yDotGuess);
         // TODO yDotGuess[_activIndex]
-        const Real activResidual = get_coeff() * activ - activDotGuess;
-        setImplicitResidual2("activ", activResidual, componentResiduals);
+        const Real activResidual = activ * activDotGuess - get_coeff();
+        setImplicitResidual("activ", activResidual, componentResiduals);
         // TODO residuals[0] = ...;
     }
     void extendInitStateFromProperties(SimTK::State& s) const override {
@@ -129,7 +128,9 @@ protected:
     }
 };
 
-// TODO
+/** Differential equation: ydot = y^2. Only explicit form is provided.
+We use this to test that the Component interface is able to produce a 
+trivial implicit form when the component does not provide an implicit form. */
 class QuadraticDynamicsExplicitOnly : public Component {
 OpenSim_DECLARE_CONCRETE_OBJECT(QuadraticDynamicsExplicitOnly, Component);
 public:
@@ -160,38 +161,6 @@ protected:
     }
 };
 
-/** // TODO
-class MixedExplicitImplicitDynamics : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(MixedExplicitImplicitDynamics, Component);
-public:
-    OpenSim_DECLARE_PROPERTY(default_length, double,
-        "Default value of state variable.");
-    OpenSim_DECLARE_PROPERTY(coeff, double,
-        "Coefficient in the differential equation.");
-    MixedExplicitImplicitDynamics() {
-        constructProperty_default_length(0.0);
-        constructProperty_coeff(-1.0);
-    }
-protected:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-        Super::extendAddToSystem(system);
-        addStateVariable("length");
-    }
-    void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        const Real& activ = getStateVariableValue(s, "length");
-        setStateVariableDerivativeValue(s, "length", get_coeff() * activ * activ);
-    }
-    void extendInitStateFromProperties(SimTK::State& s) const override {
-        Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "length", get_default_length());
-    }
-    void extendSetPropertiesFromState(const SimTK::State& s) override {
-        Super::extendSetPropertiesFromState(s);
-        set_default_length(getStateVariableValue(s, "length"));
-    }
-};
-*/
-
 /// Integrates the given system and returns the final state via the `state`
 /// argument.
 void simulate(const Model& model, State& state, Real finalTime) {
@@ -208,98 +177,85 @@ void simulate(const Model& model, State& state, Real finalTime) {
 void testExplicitFormOfImplicitComponent() {
     // Create model.
     Model model; model.setName("model");
-    auto* comp = new LinearDynamicsExplicitImplicit();
+    auto* comp = new DynamicsExplicitImplicit();
     comp->setName("foo");
     const Real initialValue = 3.5;
     comp->set_default_activ(initialValue);
-    const Real coeff = -0.28;
+    const Real coeff = 0.28;
     comp->set_coeff(coeff);
     model.addComponent(comp);
     
     auto s = model.initSystem();
     
     // Check boolean indicators.
-    SimTK_TEST(comp->hasFullImplicitFormThisComponent());
-    SimTK_TEST(comp->hasFullImplicitForm());
-    SimTK_TEST(model.hasFullImplicitFormThisComponent());
-    SimTK_TEST(model.hasFullImplicitForm());
+    // TODO rename to "hasImplicitForm()"
+    SimTK_TEST(comp->hasImplicitFormLocal());
+    SimTK_TEST(comp->hasImplicitForm());
+    SimTK_TEST(model.hasImplicitFormLocal());
+    SimTK_TEST(model.hasImplicitForm());
     
     // Check initial values.
     SimTK_TEST(comp->getStateVariableValue(s, "activ") == initialValue);
     model.realizeAcceleration(s);
     SimTK_TEST_EQ(comp->getStateVariableDerivativeValue(s, "activ"),
-                  coeff * initialValue);
+                  coeff / initialValue);
     
     // Simulate and check resulting value of state variable.
     const double finalTime = 0.23;
     simulate(model, s, finalTime);
+    // Solution is sqrt(y0^2 + 2*c*t).
     SimTK_TEST_EQ_TOL(comp->getStateVariableValue(s, "activ"),
-                      initialValue * exp(coeff * finalTime), 1e-5);
+            sqrt(pow(initialValue, 2) + 2 * coeff * finalTime), 1e-5);
+}
+
+void testEmptyResidualsIfNoDynamics() {
+    Model model;
+    State s = model.initSystem();
+    Vector residuals(5, 0.0);
+    model.calcImplicitResiduals(s, Vector(), Vector(), residuals);
+    SimTK_TEST(residuals.size() == 0);
 }
 
 void testSingleCustomImplicitEquation() {
-    auto createModel = [](double initialValue, double coeff) -> Model {
-        Model model; model.setName("model");
-        auto* comp = new LinearDynamicsExplicitImplicit();
-        comp->setName("foo");
-        comp->set_default_activ(initialValue);
-        comp->set_coeff(coeff);
-        model.addComponent(comp);
-        return model;
-    };
-    
     const Real initialValue = 3.5;
     const Real coeff = -0.28;
     const Real activDotGuess = 5.3;
-    const Real expectedResidual = coeff * initialValue - activDotGuess;
+    const Real expectedResidual = initialValue * activDotGuess - coeff;
     
-    { // Setting elements of guess by name.
-        Model model = createModel(initialValue, coeff);
-        State s = model.initSystem();
-        const auto& comp = model.getComponent("foo");
-        
-        // Set guess.
-        Vector yDotGuess(s.getNY());
-        comp.setStateVariableDerivativeGuess2("activ", activDotGuess, yDotGuess);
-        // TODO comp.setStateVariableDerivativeGuess(s, "activ", activDotGuess);
-        
-        // TODO resizing yDotGuess appropriately?
-        SimTK_TEST_EQ(yDotGuess, Vector(1, activDotGuess));
-        
-        // Access residual from the entire residual vector.
+    Model model; model.setName("model");
+    auto* comp = new DynamicsExplicitImplicit();
+    comp->setName("foo");
+    comp->set_default_activ(initialValue);
+    comp->set_coeff(coeff);
+    model.addComponent(comp);
+    
+    State s = model.initSystem();
+    
+    // Set guess.
+    Vector yDotGuess(s.getNY());
+    comp->setStateVariableDerivativeGuess("activ", activDotGuess, yDotGuess);
+    
+    // TODO resizing yDotGuess appropriately?
+    SimTK_TEST_EQ(yDotGuess, Vector(1, activDotGuess));
+    
+    // Compute the entire residual vector.
+    {
         Vector residuals;
-        model.calcImplicitResiduals2(s, yDotGuess, Vector(), residuals);
+        // TODO rename calcAllImplicitResiduals().
+        model.calcImplicitResiduals(s, yDotGuess, Vector(), residuals);
         SimTK_TEST_EQ(residuals, Vector(1, expectedResidual));
-        // TODO SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
         
         // Access specific residual by name from the component:
-        SimTK_TEST(comp.getImplicitResidual2("activ", residuals) ==
+        SimTK_TEST(comp->getImplicitResidual("activ", residuals) ==
                    expectedResidual);
     }
     
-    // TODO compute the residual from the component itself.
-    // TODO would have to make the appropriate view.
-    // comp.computeImplicitResiduals(state, componentResiduals);
-    
-    /* TODO { // Setting entire guess vector at once.
-        Model model = createModel(initialValue, coeff);
-        State s = model.initSystem();
-        const auto& comp = model.getComponent("foo");
-        
-        // Set guess.
-        model.setYDotGuess(s, Vector(1, activDotGuess));
-        
-        // Access residual by name from the component.
-        SimTK_TEST(comp.getImplicitResidual(s, "activ") == expectedResidual);
-        
-        // Access residual from the entire residual vector.
-        SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
-        
-        // Editing guesses causes residual to be recalculated.
-        model.setYDotGuess(s, Vector(1, NaN)); // different guess.
-        SimTK_TEST_NOTEQ(model.getImplicitResiduals(s),
-                         Vector(1, expectedResidual));
-    }*/
+    // Compute the residuals for just the one component.
+    {
+        Vector componentResiduals =
+                comp->calcImplicitResidualsLocal(s, yDotGuess, Vector());
+        SimTK_TEST_EQ(componentResiduals, Vector(1, expectedResidual));
+    }
 }
 
 // Test implicit multibody dynamics (i.e., inverse dynamics) with a point
@@ -324,8 +280,8 @@ void testImplicitMultibodyDynamics1DOF() {
     
     const auto& coord = slider->getCoordinateSet()[0];
     
-    SimTK_TEST(coord.hasFullImplicitFormThisComponent());
-    SimTK_TEST(model.hasFullImplicitForm());
+    SimTK_TEST(coord.hasImplicitFormLocal());
+    SimTK_TEST(model.hasImplicitForm());
     
     coord.setSpeedValue(s, u_i);
     
@@ -336,8 +292,8 @@ void testImplicitMultibodyDynamics1DOF() {
     // Set derivative guess.
     Vector yDotGuess(s.getNY());
     // TODO be consistent with "addInControls()" etc.
-    coord.setStateVariableDerivativeGuess2("value", qDotGuess, yDotGuess);
-    coord.setStateVariableDerivativeGuess2("speed", uDotGuess, yDotGuess);
+    coord.setStateVariableDerivativeGuess("value", qDotGuess, yDotGuess);
+    coord.setStateVariableDerivativeGuess("speed", uDotGuess, yDotGuess);
    
     // Calculate residual.
     Vector expectedResiduals(2);
@@ -345,13 +301,13 @@ void testImplicitMultibodyDynamics1DOF() {
     expectedResiduals[1] = mass * uDotGuess - mass * (-g); // M u_dot-f_applied
     Vector residuals;
     model.realizeDynamics(s); // TODO test this requirement.
-    model.calcImplicitResiduals2(s, yDotGuess, Vector(), residuals);
+    model.calcImplicitResiduals(s, yDotGuess, Vector(), residuals);
     // Check the entire residuals vector.
     SimTK_TEST_EQ(residuals, expectedResiduals);
     // Check individual elements of the residual.
-    SimTK_TEST_EQ(coord.getImplicitResidual2("value", residuals),
+    SimTK_TEST_EQ(coord.getImplicitResidual("value", residuals),
                   expectedResiduals[0]);
-    SimTK_TEST_EQ(coord.getImplicitResidual2("speed", residuals),
+    SimTK_TEST_EQ(coord.getImplicitResidual("speed", residuals),
                   expectedResiduals[1]);
     
     // TODO set YDotGuess all at once.
@@ -368,9 +324,9 @@ void testImplicitMultibodyDynamics1DOF() {
     // ---------------------------------------------
     {
         Vector resEmptyYDot;
-        model.calcImplicitResiduals2(s, Vector(), Vector(), resEmptyYDot);
+        model.calcImplicitResiduals(s, Vector(), Vector(), resEmptyYDot);
         Vector resZerosYDot;
-        model.calcImplicitResiduals2(s, Vector(2, 0.), Vector(), resZerosYDot);
+        model.calcImplicitResiduals(s, Vector(2, 0.), Vector(), resZerosYDot);
         SimTK_TEST_EQ(resEmptyYDot, resZerosYDot);
     }
     
@@ -379,14 +335,14 @@ void testImplicitMultibodyDynamics1DOF() {
     Vector output;
     // Size of yDotGuess must be correct.
     SimTK_TEST_MUST_THROW_EXC( // yDotGuess too small.
-        model.calcImplicitResiduals2(s, Vector(1, 0.), Vector(), output),
+        model.calcImplicitResiduals(s, Vector(1, 0.), Vector(), output),
         OpenSim::Exception);
     SimTK_TEST_MUST_THROW_EXC( // yDotGuess too large.
-        model.calcImplicitResiduals2(s, Vector(3, 0.), Vector(), output),
+        model.calcImplicitResiduals(s, Vector(3, 0.), Vector(), output),
         OpenSim::Exception);
     // Size of lambdaGuess must be correct.
     SimTK_TEST_MUST_THROW_EXC( // lambdaGuess too large.
-        model.calcImplicitResiduals2(s, Vector(2, 0.), Vector(1, 0.), output),
+        model.calcImplicitResiduals(s, Vector(2, 0.), Vector(1, 0.), output),
         OpenSim::Exception);
 }
 
@@ -418,41 +374,79 @@ void testImplicitFormOfExplicitOnlyComponent() {
         const auto& comp = model.getComponent("foo");
         
         // Check boolean indicators.
-        SimTK_TEST(!comp.hasFullImplicitFormThisComponent());
-        SimTK_TEST(!comp.hasFullImplicitForm());
-        SimTK_TEST(model.hasFullImplicitFormThisComponent());
-        SimTK_TEST(!model.hasFullImplicitForm());
+        SimTK_TEST(!comp.hasImplicitFormLocal());
+        SimTK_TEST(!comp.hasImplicitForm());
+        SimTK_TEST(model.hasImplicitFormLocal());
+        SimTK_TEST(!model.hasImplicitForm());
         
         // Set guess.
-        comp.setStateVariableDerivativeGuess(s, "length", lengthDotGuess);
+        Vector yDotGuess(s.getNY());
+        comp.setStateVariableDerivativeGuess("length", lengthDotGuess, yDotGuess);
         
-        // Access residual by name from the component.
-        SimTK_TEST(comp.getImplicitResidual(s, "length") == expectedResidual);
+        // Calculate residual.
+        model.realizeDynamics(s);
+        Vector residuals;
+        model.calcImplicitResiduals(s, yDotGuess, Vector(), residuals);
         
-        // Access residual from the entire residual vector.
-        SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
-    }
-    
-    { // Setting entire guess vector at once.
-        Model model = createModel(initialValue, coeff);
-        State s = model.initSystem();
-        const auto& comp = model.getComponent("foo");
+        // Check the entire residuals vector.
+        SimTK_TEST_EQ(residuals, Vector(1, expectedResidual));
         
-        // Set guess.
-        model.setYDotGuess(s, Vector(1, lengthDotGuess));
-        
-        // Access residual by name from the component.
-        SimTK_TEST(comp.getImplicitResidual(s, "length") == expectedResidual);
-        
-        // Access residual from the entire residual vector.
-        SimTK_TEST_EQ(model.getImplicitResiduals(s), Vector(1, expectedResidual));
-        
-        // Editing guesses causes residual to be recalculated.
-        model.setYDotGuess(s, Vector(1, NaN));
-        SimTK_TEST_NOTEQ(model.getImplicitResiduals(s),
-                         Vector(1, expectedResidual));
+        // Check individual elements of the residual by name.
+        SimTK_TEST(comp.getImplicitResidual("length", residuals) ==
+                   expectedResidual);
     }
 }
+
+/** If only some of a component's state variables provide an explicit form,
+the user should get an error .*/
+void testMustHaveFullImplicitForm() {
+
+    // Explicit-only and implicit state var in a single component.
+    // -----------------------------------------------------------
+    class NotFullImplicitForm : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(NotFullImplicitForm, Component);
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("var_explicit_only");
+            addStateVariable("var_explicit_implicit", SimTK::Stage::Dynamics,
+                             true);
+        }
+    };
+    
+    {
+        Model model;
+        model.addComponent(new NotFullImplicitForm());
+        SimTK_TEST_MUST_THROW_EXC(model.initSystem(), OpenSim::Exception);
+    }
+    
+    
+    // Base component does not have implicit form.
+    // -------------------------------------------
+    class ExplicitOnlyBase : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExplicitOnlyBase, Component);
+    protected:
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("var_explicit_only");
+        }
+    };
+    class FullImplicitDerived : public ExplicitOnlyBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(FullImplicitDerived, ExplicitOnlyBase);
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("var_explicit_implicit", SimTK::Stage::Dynamics,
+                             true);
+        }
+    };
+    
+    {
+        Model model;
+        model.addComponent(new FullImplicitDerived());
+        SimTK_TEST_MUST_THROW_EXC(model.initSystem(), OpenSim::Exception);
+    }
+}
+
+
 
 // =============================================================================
 // ImplicitSystemDerivativeSolver
@@ -491,9 +485,10 @@ public:
         Vector pvaerrs; pvaerrs.viewAssign(constraints(ny, guess.size() - ny));
         
         // Differential equations.
+        m_parent.m_model.realizeDynamics(m_workingState);
         m_parent.m_model.calcImplicitResiduals(m_workingState,
-                                               yDotGuess, lambdaGuess,
-                                               residuals);
+                                                yDotGuess, lambdaGuess,
+                                                residuals);
         
         // Constraints.
         const auto& matter = m_parent.m_model.getMatterSubsystem();
@@ -507,8 +502,7 @@ public:
     }
 private:
     const ImplicitSystemDerivativeSolver& m_parent;
-    // Mutable since we edit the yDotGuess discrete state var in constraintFunc.
-    mutable State m_workingState;
+    State m_workingState;
 };
 ImplicitSystemDerivativeSolver::ImplicitSystemDerivativeSolver(
         const Model& model) : m_model(model), m_problem(new Problem(*this)) {
@@ -538,7 +532,7 @@ void ImplicitSystemDerivativeSolver::solve(const State& s,
 // TODO explain purpose of this test.
 void testGenericInterfaceForImplicitSolver() /*TODO rename test */ {
     Model model;
-    auto* comp = new LinearDynamicsExplicitImplicit();
+    auto* comp = new DynamicsExplicitImplicit();
     comp->setName("foo");
     const Real initialValue = 3.5;
     comp->set_default_activ(initialValue);
@@ -690,14 +684,16 @@ void testErrorsForUnsupportedModels() {
 int main() {
     SimTK_START_TEST("testImplicitDifferentialEquations");
         SimTK_SUBTEST(testExplicitFormOfImplicitComponent);
+        SimTK_SUBTEST(testEmptyResidualsIfNoDynamics);
         SimTK_SUBTEST(testSingleCustomImplicitEquation);
         SimTK_SUBTEST(testImplicitMultibodyDynamics1DOF);
         SimTK_SUBTEST(testImplicitFormOfExplicitOnlyComponent);
+        SimTK_SUBTEST(testMustHaveFullImplicitForm);
         // TODO SimTK_SUBTEST(testImplicitFormOfCombinedImplicitAndExplicitComponents);
         // TODO SimTK_SUBTEST(testMultibody1DOFAndCustomComponent);
         SimTK_SUBTEST(testGenericInterfaceForImplicitSolver);
         SimTK_SUBTEST(testImplicitSystemDerivativeSolverMultibody1DOF);
-        SimTK_SUBTEST(testCoordinateCouplerConstraint);
+        SimTK_SUBTEST(testCoordinateCouplerConstraint); // TODO rename
         SimTK_SUBTEST(testErrorsForUnsupportedModels);
     SimTK_END_TEST();
 }

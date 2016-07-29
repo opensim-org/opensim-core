@@ -769,7 +769,8 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 }
 
-// TODO so that 
+// TODO so that
+/*
 void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystemAfterSubcomponents(system);
@@ -810,7 +811,9 @@ void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
     implicitResidual.setDefaultValue(nans);
     _implicitResidualIndex = implicitResidual.getSubsystemMeasureIndex();
 }
+*/
 
+/*
 const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) const {
     OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
         Exception, "Prior call to Model::initSystem() is required.");
@@ -930,7 +933,9 @@ void Model::setMultipliersGuess(SimTK::State& state,
     
     measure.setValue(state, lambdaGuess);
 }
+*/
 
+/*
 void Model::calcImplicitResiduals(SimTK::State& state,
         const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
         SimTK::Vector& residuals) const {
@@ -946,19 +951,10 @@ void Model::calcImplicitResiduals(SimTK::State& state,
     // constraint errors here; users can compute them on their own if they'd like.
     // But different methods may require different ways of solving the constraint
     // errors, so we shouldn't try to do it here.
-    // TODO best place to put this constraint-error code?
-    // TODO constraintAErrs.setToNaN();
-    // const auto& uDotGuess = yDotGuess(state.getNQ(), state.getNU());
-    // matter.calcConstraintAccelerationErrors(state, uDotGuess, constraintAErrs);
-    // TODO Vector_<SpatialVec> A_GB;
-    // TODO matter.calcBodyAccelerationFromUDot(state, uDotGuess, A_GB);
-    // TODO Vector qDotDotGuess;
-    // TODO matter.calcQDotDot(state, uDotGuess, qDotDotGuess);
-    // TODO matter.calcConstraintAccelerationErrors(state,
-    // TODO         A_GB, uDotGuess, qDotDotGuess, constraintAErrs);
 }
+*/
 
-void Model::calcImplicitResiduals2(const SimTK::State& state,
+void Model::calcImplicitResiduals(const SimTK::State& state,
         const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
         SimTK::Vector& residuals) const {
     
@@ -1042,8 +1038,8 @@ void Model::calcImplicitResiduals2(const SimTK::State& state,
         
         // Compute residuals for auxiliary state variables.
         for (const auto& comp : getComponentList()) {
-            comp.computeImplicitResiduals2(state, yDotGuess, lambdaGuess,
-                                           residuals);
+            comp.calcImplicitResidualsInternal(state, yDotGuess, lambdaGuess,
+                                               residuals);
         }
     }
 }

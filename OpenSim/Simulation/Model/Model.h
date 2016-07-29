@@ -881,6 +881,7 @@ public:
     /** TODO 
     @ingroup implicitdiffeq
     */
+    /*
     const SimTK::Vector& getImplicitResiduals(const SimTK::State& state) const
             override;
     const SimTK::Vector& getYDotGuess(const SimTK::State& state) const override;
@@ -890,15 +891,20 @@ public:
     const SimTK::Vector& getMultipliersGuess(const SimTK::State& state) const;
     void setMultipliersGuess(SimTK::State& state,
                              const SimTK::Vector& lambdaGuess) const;
-    /** TODO for this implementation, it sets the discrete state variables.
     */
+    /** TODO for this implementation, it sets the discrete state variables.
     void calcImplicitResiduals(SimTK::State& state,
                                const SimTK::Vector& yDotGuess,
                                const SimTK::Vector& lambdaGuess,
                                SimTK::Vector& residuals) const;
-    // TODO required stage depends on whether there is a full implicit form or
-    // not.
-    void calcImplicitResiduals2(const SimTK::State& state,
+    */
+    /**
+    TODO required stage depends on whether there is a full implicit form or
+    not.
+    TODO realizeDynamics() internally?
+    @ingroup implicitdiffeq
+    */
+    void calcImplicitResiduals(const SimTK::State& state,
                                 const SimTK::Vector& yDotGuess,
                                 const SimTK::Vector& lambdaGuess,
                                 SimTK::Vector& residuals) const;
@@ -999,9 +1005,6 @@ public:
 
     void extendConnectToModel(Model& model)  override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    // TODO
-    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)
-            const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     /**@}**/
 

@@ -1073,36 +1073,12 @@ public:
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
     
-    /** TODO 
-    */
-    virtual const SimTK::Vector& getImplicitResiduals(const SimTK::State& state)
-            const {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Can only call on a root component (e.g., Model).");
-    }
-    virtual const SimTK::Vector& getYDotGuess(const SimTK::State& state) const {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Can only call on a root component (e.g., Model).");
-    }
-    
-    /** TODO */
-    bool hasFullImplicitFormThisComponent() const;
-    /** TODO */
-    bool hasFullImplicitForm() const;
-protected: // TODO move this around.
-    virtual SimTK::Vector& updImplicitResiduals(const SimTK::State& state)
-            const {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Can only call on a root component (e.g., Model).");
-    }
-    // TODO really want "updYDotGuess". really inefficient this way...
-    virtual void setYDotGuess(SimTK::State& state,
-                              const SimTK::Vector& yDotGuess) const {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Can only call on a root component (e.g., Model).");
-    }
-    
-public:
+    /** Does this component provide implicit differential equations for each
+    of its state variables? This method does not check subcomponents. */
+    bool hasImplicitFormLocal() const;
+    /** Do this component and its subcomponents provide implicit differential
+    equations for each of their state variables? */
+    bool hasImplicitForm() const;
 
     /**
      * %Set all values of the state variables allocated by this Component.
@@ -1124,26 +1100,21 @@ public:
         const std::string& name) const;
     
     /** TODO */
-    double getStateVariableDerivativeGuess(const SimTK::State& state,
-        const std::string& name) const;
-    const double& getStateVariableDerivativeGuess2(
+    // double getStateVariableDerivativeGuess(const SimTK::State& state,
+    //     const std::string& name) const;
+    const double& getStateVariableDerivativeGuess(
         const std::string& name, const SimTK::Vector& allYDotGuess) const;
     
     /** TODO where to put this? */
-    void setStateVariableDerivativeGuess(SimTK::State& state,
-                                         const std::string& name,
-                                         double derivGuess) const;
-    void setStateVariableDerivativeGuess2(const std::string& name,
+    void setStateVariableDerivativeGuess(const std::string& name,
                                           const double& derivGuess,
                                           SimTK::Vector& allYDotGuess) const;
     
     /** TODO where to put this? */
-    double getImplicitResidual(const SimTK::State& state,
-        const std::string& name) const;
-        // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
-        // TODO getImplicitResidualByName().
-    const double& getImplicitResidual2(const std::string& name,
-                                       const SimTK::Vector& allResiduals) const;
+    // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
+    // TODO getImplicitResidualByName().
+    const double& getImplicitResidual(const std::string& name,
+                                      const SimTK::Vector& allResiduals) const;
 
     /**
      * Get the value of a discrete variable allocated by this Component by name.
@@ -1681,19 +1652,18 @@ protected:
                             const std::string& name, double deriv) const;
 
     /** TODO */
-    void computeImplicitResiduals(const SimTK::State& s) const;
-    void computeImplicitResiduals2(const SimTK::State& s,
+    void calcImplicitResidualsInternal(const SimTK::State& s,
             const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
             SimTK::Vector& residuals) const;
-    virtual void extendComputeImplicitResiduals(const SimTK::State& s) const {}
-    virtual void extendComputeImplicitResiduals2(const SimTK::State& s,
+    SimTK::Vector calcImplicitResidualsLocal(const SimTK::State& s,
+            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess)
+            const;
+    virtual void computeImplicitResiduals(const SimTK::State& s,
             const SimTK::Vector& allYDotGuess,
-            SimTK::VectorView& componentResiduals) const {}
+            SimTK::Vector& componentResiduals) const {}
     
     /** TODO */
-    void setImplicitResidual(const SimTK::State& state,
-                            const std::string& name, double residual) const;
-    void setImplicitResidual2(const std::string& name, const double& thisResidual,
+    void setImplicitResidual(const std::string& name, const double& thisResidual,
                               SimTK::VectorView& componentResiduals) const;
 
 
@@ -2406,17 +2376,6 @@ protected:
         // change the state
         virtual void setDerivative(const SimTK::State& state, double deriv) const = 0;
         
-        // TODO
-        virtual double getImplicitResidual(const SimTK::State& state) const = 0;
-        // TODO
-        virtual void setImplicitResidual(const SimTK::State& state, double residual) const = 0;
-        // TODO void setImplicitResidual2(const double& thisResidual,
-        // TODO                           SimTK::VectorView& componentResiduals) const;
-        // TODO get/set guess.
-        virtual double getDerivativeGuess(const SimTK::State& state) const = 0;
-        // TODO const double& getDerivativeGuess2(const SimTK::Vector& allYDotGuess) const;
-        virtual void setDerivativeGuess(SimTK::State& state, double residual) const = 0;
-        
     private:
         virtual SimTK::SystemYIndex implementDetermineSystemYIndex(
                                 const SimTK::State& s) const = 0;
@@ -2525,14 +2484,6 @@ private:
 
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
-        
-        // TODO
-        double getImplicitResidual(const SimTK::State& state) const override;
-        // TODO
-        void setImplicitResidual(const SimTK::State& state, double residual) const override;
-        // TODO get/set guess.
-        double getDerivativeGuess(const SimTK::State& state) const override;
-        void setDerivativeGuess(SimTK::State& state, double residual) const override;
         
         SimTK::SystemYIndex implementDetermineSystemYIndex(
                                 const SimTK::State& s) const override;
