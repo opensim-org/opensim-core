@@ -793,6 +793,17 @@ public:
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
+    /**
+    TODO required stage depends on whether there is a full implicit form or
+    not.
+    TODO realizeDynamics() internally?
+    @ingroup implicitdiffeq
+    */
+    void calcImplicitResiduals(const SimTK::State& state,
+                                const SimTK::Vector& yDotGuess,
+                                const SimTK::Vector& lambdaGuess,
+                                SimTK::Vector& residuals) const;
+    
     //--------------------------------------------------------------------------
     // STATES
     //--------------------------------------------------------------------------
@@ -873,43 +884,7 @@ public:
     void removeAnalysis(Analysis* analysis, bool deleteIt=true);
     /** Remove a Controller from the %Model. **/
     void removeController(Controller *aController);
-
-    //--------------------------------------------------------------------------
-    // DERIVATIVES
-    //--------------------------------------------------------------------------
-    // TODO rearrange according to public/private.
-    /** TODO 
-    @ingroup implicitdiffeq
-    */
-    /*
-    const SimTK::Vector& getImplicitResiduals(const SimTK::State& state) const
-            override;
-    const SimTK::Vector& getYDotGuess(const SimTK::State& state) const override;
-    SimTK::Vector& updImplicitResiduals(const SimTK::State& state) const override;
-    void setYDotGuess(SimTK::State& state,
-                              const SimTK::Vector& yDotGuess) const override;
-    const SimTK::Vector& getMultipliersGuess(const SimTK::State& state) const;
-    void setMultipliersGuess(SimTK::State& state,
-                             const SimTK::Vector& lambdaGuess) const;
-    */
-    /** TODO for this implementation, it sets the discrete state variables.
-    void calcImplicitResiduals(SimTK::State& state,
-                               const SimTK::Vector& yDotGuess,
-                               const SimTK::Vector& lambdaGuess,
-                               SimTK::Vector& residuals) const;
-    */
-    /**
-    TODO required stage depends on whether there is a full implicit form or
-    not.
-    TODO realizeDynamics() internally?
-    @ingroup implicitdiffeq
-    */
-    void calcImplicitResiduals(const SimTK::State& state,
-                                const SimTK::Vector& yDotGuess,
-                                const SimTK::Vector& lambdaGuess,
-                                SimTK::Vector& residuals) const;
-                                                 
-                                                 
+    
     
     //--------------------------------------------------------------------------
     // OPERATIONS
@@ -1135,11 +1110,6 @@ private:
     SimTK::MeasureIndex   _modelControlsIndex;
     // Default values pooled from Actuators upon system creation.
     mutable SimTK::Vector _defaultControls;
-    
-    // TODO
-    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _yDotGuessIndex;
-    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _lambdaGuessIndex;
-    mutable SimTK::ResetOnCopy<SimTK::MeasureIndex> _implicitResidualIndex;
 
 
     //                          VISUALIZATION

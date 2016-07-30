@@ -67,6 +67,24 @@
 // invoke forward dynamics!
 // TODO handle quaternion constraints.
 
+//  SparseMatrix jacobian;
+//  model.calcImplicitResidualsJacobian(state, yDotGuess, lambdaGuess,
+//                                      jacobian);
+// 
+//  // IN MODEL
+// calcPartsOfJacobian(s, dMultibody_dudot, dKinematics_du, dKinematics_dqdot)
+//  for (comp : all components) {
+//      n, I, J, compJac = comp.computeJacobian(state, yDotGuess);
+// 
+//      I = [1];
+//      J = [10];
+// 
+//      J = comp.getYIndexForStateVariable("fiber_length");
+//      for (k = 1:n) {
+//          jacobian[I[k], J[k]] = compJac[k]
+//      }
+//  }
+
 // TODO sketch out solver-like interface (using IPOPT).
 
 
@@ -107,6 +125,7 @@ protected:
         setStateVariableDerivativeValue(s, "activ", get_coeff() / activ);
     }
     // TODO rename to implementComputeImplicitResiduals?
+    // TODO provide lambdaGuess?
     void computeImplicitResiduals(const SimTK::State& s,
                                         const SimTK::Vector& yDotGuess,
                                         SimTK::Vector& componentResiduals
@@ -483,13 +502,13 @@ public:
         
         Vector residuals; residuals.viewAssign(constraints(0, ny));
         Vector pvaerrs; pvaerrs.viewAssign(constraints(ny, guess.size() - ny));
-        
+
         // Differential equations.
         m_parent.m_model.realizeDynamics(m_workingState);
         m_parent.m_model.calcImplicitResiduals(m_workingState,
                                                 yDotGuess, lambdaGuess,
                                                 residuals);
-        
+
         // Constraints.
         const auto& matter = m_parent.m_model.getMatterSubsystem();
         const auto& uDotGuess = yDotGuess(m_workingState.getUStart(), nu);
@@ -511,7 +530,7 @@ ImplicitSystemDerivativeSolver::ImplicitSystemDerivativeSolver(
     const int N = state.getNY() + state.getNMultipliers();
     m_problem->setNumParameters(N);
     m_problem->setNumEqualityConstraints(N);
-    Vector limits(N, 50.0); // TODO arbitrary.
+    Vector limits(N, 50.0); // arbitrary.
     m_problem->setParameterLimits(-limits, limits);
     
     // Set up Optimizer.
@@ -521,9 +540,8 @@ ImplicitSystemDerivativeSolver::ImplicitSystemDerivativeSolver(
 void ImplicitSystemDerivativeSolver::solve(const State& s,
                                            Vector& yDot, Vector& lambda) {
     m_problem->setWorkingState(s);
-    Vector results(m_problem->getNumParameters(), 0.0); // TODO inefficient
+    Vector results(m_problem->getNumParameters(), 0.0);
     m_opt->optimize(results);
-    m_opt->setDiagnosticsLevel(1);
     yDot = results(0, s.getNY());
     lambda = results(s.getNY(), results.size() - s.getNY());
 }

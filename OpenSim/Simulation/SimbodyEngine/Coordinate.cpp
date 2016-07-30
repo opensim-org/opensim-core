@@ -226,16 +226,6 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable(ssv);
 }
 
-// void Coordinate::extendRealizeInstance(const SimTK::State& state) const
-// {
-//     //const MobilizedBody& mb
-//     //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
-// 
-//     //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
-// 
-//     /* Set the YIndex on the StateVariable */
-// }
-
 void Coordinate::extendInitStateFromProperties(State& s) const
 {
     // Cannot enforce the constraint, since state of constraints may still be undefined
@@ -645,6 +635,7 @@ void Coordinate::CoordinateStateVariable::
     throw Exception(msg);
 }
 
+// Invoked by Model::extendRealizeInstance().
 SimTK::SystemYIndex Coordinate::CoordinateStateVariable::
 implementDetermineSystemYIndex(const SimTK::State& s) const {
     const Coordinate& owner = *((Coordinate *)&getOwner());
@@ -697,6 +688,7 @@ void Coordinate::SpeedStateVariable::
     throw Exception(msg);
 }
 
+// Invoked by Model::extendRealizeInstance().
 SimTK::SystemYIndex Coordinate::SpeedStateVariable::
 implementDetermineSystemYIndex(const SimTK::State& s) const {
     const Coordinate& owner = *((Coordinate *)&getOwner());

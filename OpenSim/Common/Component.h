@@ -1072,13 +1072,6 @@ public:
      *                in the order returned by getStateVariableNames()
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
-    
-    /** Does this component provide implicit differential equations for each
-    of its state variables? This method does not check subcomponents. */
-    bool hasImplicitFormLocal() const;
-    /** Do this component and its subcomponents provide implicit differential
-    equations for each of their state variables? */
-    bool hasImplicitForm() const;
 
     /**
      * %Set all values of the state variables allocated by this Component.
@@ -1098,23 +1091,6 @@ public:
      */
     double getStateVariableDerivativeValue(const SimTK::State& state, 
         const std::string& name) const;
-    
-    /** TODO */
-    // double getStateVariableDerivativeGuess(const SimTK::State& state,
-    //     const std::string& name) const;
-    const double& getStateVariableDerivativeGuess(
-        const std::string& name, const SimTK::Vector& allYDotGuess) const;
-    
-    /** TODO where to put this? */
-    void setStateVariableDerivativeGuess(const std::string& name,
-                                          const double& derivGuess,
-                                          SimTK::Vector& allYDotGuess) const;
-    
-    /** TODO where to put this? */
-    // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
-    // TODO getImplicitResidualByName().
-    const double& getImplicitResidual(const std::string& name,
-                                      const SimTK::Vector& allResiduals) const;
 
     /**
      * Get the value of a discrete variable allocated by this Component by name.
@@ -1313,7 +1289,47 @@ public:
         }   
     }
     // End of Model Component State Accessors.
-    //@} 
+    //@}
+    
+    
+    /** @name Component interface for implicit form of dynamics */
+    // @{
+    /** Does this component provide implicit differential equations for each
+    of its state variables? This method does not check subcomponents. 
+    @ingroup implicitdiffeq */
+    bool hasImplicitFormLocal() const;
+    /** Do this component and its subcomponents provide implicit differential
+    equations for each of their state variables?
+    @ingroup implicitdiffeq */
+    bool hasImplicitForm() const;
+
+    /** TODO 
+    @ingroup implicitdiffeq */
+    SimTK::Vector calcImplicitResidualsLocal(const SimTK::State& s,
+            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess)
+            const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this?
+    const double& getStateVariableDerivativeGuess(
+        const std::string& name, const SimTK::Vector& allYDotGuess) const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this?
+    void setStateVariableDerivativeGuess(const std::string& name,
+                                          const double& derivGuess,
+                                          SimTK::Vector& allYDotGuess) const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this method?
+    // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
+    // TODO getImplicitResidualByName().
+    const double& getImplicitResidual(const std::string& name,
+                                      const SimTK::Vector& allResiduals) const;
+    // @}
 
     /** @name Dump debugging information to the console */
     /// @{
@@ -1650,21 +1666,22 @@ protected:
      */
     void setStateVariableDerivativeValue(const SimTK::State& state, 
                             const std::string& name, double deriv) const;
-
-    /** TODO */
-    void calcImplicitResidualsInternal(const SimTK::State& s,
-            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
-            SimTK::Vector& residuals) const;
-    SimTK::Vector calcImplicitResidualsLocal(const SimTK::State& s,
-            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess)
-            const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
     virtual void computeImplicitResiduals(const SimTK::State& s,
             const SimTK::Vector& allYDotGuess,
             SimTK::Vector& componentResiduals) const {}
-    
-    /** TODO */
+    /** TODO 
+    @ingroup implicitdiffeq */
     void setImplicitResidual(const std::string& name, const double& thisResidual,
                               SimTK::VectorView& componentResiduals) const;
+    /** TODO don't document?
+    @ingroup implicitdiffeq */
+    void calcImplicitResidualsInternal(const SimTK::State& s,
+                                       const SimTK::Vector& yDotGuess,
+                                       const SimTK::Vector& lambdaGuess,
+                                       SimTK::Vector& residuals) const;
 
 
     // End of Component Extension Interface (protected virtuals).

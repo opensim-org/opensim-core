@@ -227,7 +227,6 @@ protected:
     //State structure is locked and now we can assign names to state variables
     //allocated by underlying components after modeling options have been 
     //factored in.
-    // TODO void extendRealizeInstance(const SimTK::State& state) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
