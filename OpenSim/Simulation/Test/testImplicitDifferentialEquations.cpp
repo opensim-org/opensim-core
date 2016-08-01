@@ -50,11 +50,14 @@
 // TODO test what happens when you provide an implicit from but don't set hasImplicitForm.
 // TODO test what happens when you set hasImplicitForm() but don't provide it.
 // TODO test inheritance hierarchy: multiple subclasses add state vars.
-// TODO test passing empty lambdas treats them as 0, same for ydot.
+// TODO test passing empty lambdas treats them as 0, same for ydot, with
+//      and without constraints.
 
 // TODO mock up the situation where we are minimizing joint contact load
 //      while obeying dynamics (in direct collocation fashion--the entire
 //      trajectory).
+
+// TODO make sure residual using forward dynamics yDot and lambda gives 0 residual.
 
 // TODO yDotGuess vs ydotGuess
 

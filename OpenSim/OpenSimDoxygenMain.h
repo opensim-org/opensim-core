@@ -37,15 +37,18 @@ OpenSim source and it is not installed with OpenSim. **/
  */
 
 /** @defgroup implicitdiffeq Implicit form of dynamics
- * Some components may provide their dynamics (e.g., activation dynamics, fiber
- * dynamics) as implicit differential equations in addition to the
- * traditional explicit form.
- * This feature was added in OpenSim 4.0 (TODO).
- *
- * TODO only use with unconstrained systems.
- * TODO not even prescribed motion or locked joints!
- * TODO
- */
+Some components may provide their dynamics (e.g., activation dynamics, fiber
+dynamics) as implicit differential equations in addition to the
+traditional explicit form.
+This feature was added in OpenSim 4.0 (TODO).
+
+TODO only use with unconstrained systems.
+TODO not even prescribed motion or locked joints!
+TODO
+
+ @see OpenSim::InverseDynamicsSolver
+      SimTK::SimbodyMatterSubsystem::calcResidualForce
+*/
 
 /** @mainpage Overview
 

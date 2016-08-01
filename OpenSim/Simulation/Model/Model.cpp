@@ -873,86 +873,11 @@ const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) cons
 
     return measure.getValue(state);
 }
-
-SimTK::Vector& Model::updImplicitResiduals(const SimTK::State& state) const {
-    OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
-        Exception, "Prior call to Model::initSystem() is required.");
-    auto implicitResidual = Measure_<Vector>::Result::getAs(
-            _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
-    implicitResidual.updValue(state).lockShape(); // TODO relocate.
-    return implicitResidual.updValue(state);
-}
-
-const SimTK::Vector& Model::getYDotGuess(const SimTK::State& state) const {
-    OPENSIM_THROW_IF_FRMOBJ(!_system || !_yDotGuessIndex.isValid(),
-        Exception, "Prior call to Model::initSystem() is required.");
-    
-    auto yDotGuess = Measure_<Vector>::Variable::getAs(
-            _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
-    
-    return yDotGuess.getValue(state);
-}
-
-void Model::setYDotGuess(SimTK::State& state,
-                          const SimTK::Vector& yDotGuess) const {
-    OPENSIM_THROW_IF_FRMOBJ(!_system || !_yDotGuessIndex.isValid(),
-        Exception, "Prior call to Model::initSystem() is required.");
-    
-    SimTK_ASSERT2_ALWAYS(yDotGuess.size()==state.getNY(),
-        "Expected size of yDotGuess to be the number of state variables, %i, "
-        "but it was %i.", state.getNY(), yDotGuess.size());
-    
-    auto measure = Measure_<Vector>::Variable::getAs(
-            _system->getDefaultSubsystem().getMeasure(_yDotGuessIndex));
-    
-    measure.setValue(state, yDotGuess);
-}
-
-const SimTK::Vector& Model::getMultipliersGuess(const SimTK::State& state) const
-{
-    OPENSIM_THROW_IF_FRMOBJ(!_system || !_lambdaGuessIndex.isValid(),
-        Exception, "Prior call to Model::initSystem() is required.");
-    
-    auto lambdaGuess = Measure_<Vector>::Variable::getAs(
-            _system->getDefaultSubsystem().getMeasure(_lambdaGuessIndex));
-    
-    return lambdaGuess.getValue(state);
-}
-
-void Model::setMultipliersGuess(SimTK::State& state,
-                                const SimTK::Vector& lambdaGuess) const {
-    OPENSIM_THROW_IF_FRMOBJ(!_system || !_lambdaGuessIndex.isValid(),
-        Exception, "Prior call to Model::initSystem() is required.");
-    
-    SimTK_ASSERT2_ALWAYS(lambdaGuess.size()==state.getNMultipliers(),
-        "Expected size of lambdaGuess to be the number of multipliers, %i, "
-        "but it was %i.", state.getNMultipliers(), lambdaGuess.size());
-    
-    auto measure = Measure_<Vector>::Variable::getAs(
-            _system->getDefaultSubsystem().getMeasure(_lambdaGuessIndex));
-    
-    measure.setValue(state, lambdaGuess);
-}
 */
-
-/*
-void Model::calcImplicitResiduals(SimTK::State& state,
-        const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
-        SimTK::Vector& residuals) const {
-    
-    // TODO separate into "calcMatterResiduals()" and "calcAuxiliaryResiduals()"
-    setYDotGuess(state, yDotGuess);
-    setMultipliersGuess(state, lambdaGuess);
-    residuals = getImplicitResiduals(state);
-    
-    // const auto& matter = getMatterSubsystem();
-    
-    // TODO based on conversations with Sherm and Brad, we should not compute
-    // constraint errors here; users can compute them on their own if they'd like.
-    // But different methods may require different ways of solving the constraint
-    // errors, so we shouldn't try to do it here.
-}
-*/
+// TODO based on conversations with Sherm and Brad, we should not compute
+// constraint errors here; users can compute them on their own if they'd like.
+// But different methods may require different ways of solving the constraint
+// errors, so we shouldn't try to do it here.
 
 void Model::calcImplicitResiduals(const SimTK::State& state,
         const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
