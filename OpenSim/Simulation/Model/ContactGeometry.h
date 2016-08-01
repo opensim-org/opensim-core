@@ -96,7 +96,7 @@ public:
     /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
     /** %Set the PhysicalFrame this geometry is attached to. */
-    void setFrame(const PhysicalFrame& body);
+    void setFrame(const PhysicalFrame& frame);
 
     /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
@@ -105,7 +105,7 @@ public:
      * geometry relative to the PhysicalFrame `F` to which this geometry is
      * connected.
      *
-     * If you want the transform of this geometry relative to the Body (or
+     * If you want the transform of this geometry relative to the Frame (or
      * Ground) `B` in which this geometry is fixed, you can use the following
      * code:
      * @code{.cpp}
