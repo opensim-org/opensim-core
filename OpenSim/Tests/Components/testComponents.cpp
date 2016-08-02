@@ -309,21 +309,22 @@ void testComponent(const Component& instanceToTest)
 
         // Catch a possible decrease in the memory footprint, which will cause
         // size_t (unsigned int) to wrap through zero.
-        const size_t increaseInMemory = getCurrentRSS() > initMemory ?
-                                        getCurrentRSS() - initMemory : 0;
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
         const long double leakPercent = (100.0*increaseInMemory/instanceSize)
                                         /nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
-            << setprecision(3) << leakPercent << "%";
+            << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-            msg.str() + "exceeds acceptable tolerance (" + 
-            to_string(acceptableMemoryLeakPercent) + ").\n Instance size: " +
+            msg.str() + "\nExceeds acceptable tolerance of " +
+            to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str()  << endl;
@@ -342,8 +343,14 @@ void testComponent(const Component& instanceToTest)
         {
             finalInitState = model.initSystem();
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
+
+        // Catch a possible decrease in the memory footprint, which will cause
+        // size_t (unsigned int) to wrap through zero.
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)
+                                        /nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
@@ -360,7 +367,7 @@ void testComponent(const Component& instanceToTest)
             to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str() << endl;
