@@ -163,12 +163,28 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 } // namespace OpenSim
 
 
+void executeExample();
+
+int main()
+{
+    try {
+        executeExample();
+    }
+    catch (const std::exception& ex) {
+        std::cout << "Hopper Example Failed to run due to the following Exception: " 
+            << ex.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+
 //------------------------------------------------------------------------------
 // START HERE! Toggle "if (false)" to "if (true)" to enable/disable each step in
 // the exercise. The project should execute without making any changes (you
 // should see the unassisted hopper hop slightly).
 //------------------------------------------------------------------------------
-int main()
+void executeExample()
 {
     using namespace OpenSim;
 
@@ -303,6 +319,4 @@ int main()
         SimTK::State& sHD = assistedHopper.initSystem();
         simulate(assistedHopper, sHD);
     }
-
-    return 0;
 };
