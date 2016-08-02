@@ -226,16 +226,6 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable(ssv);
 }
 
-void Coordinate::extendRealizeInstance(const SimTK::State& state) const
-{
-    //const MobilizedBody& mb
-    //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
-
-    //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
-
-    /* Set the YIndex on the StateVariable */
-}
-
 void Coordinate::extendInitStateFromProperties(State& s) const
 {
     // Cannot enforce the constraint, since state of constraints may still be undefined
@@ -645,6 +635,23 @@ void Coordinate::CoordinateStateVariable::
     throw Exception(msg);
 }
 
+// Invoked by Model::extendRealizeInstance().
+SimTK::SystemYIndex Coordinate::CoordinateStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    const Coordinate& owner = *((Coordinate *)&getOwner());
+    const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+                                .getMobilizedBody(owner.getBodyIndex());
+    
+    const int systemYIdxOfFirstQ = int(s.getQStart());
+    const int systemQIdxOfFirstSubsystemQ = s.getQStart(getSubsysIndex());
+    const int qIdxOfFirstMobilizerQ = mb.getFirstQIndex(s); // local to subsys.
+    const int mobilizerQIdx = getVarIndex();
+    
+    return SystemYIndex(systemYIdxOfFirstQ +
+                        systemQIdxOfFirstSubsystemQ +
+                        qIdxOfFirstMobilizerQ +
+                        mobilizerQIdx);
+}
 
 //-----------------------------------------------------------------------------
 // Coordinate::SpeedStateVariable
@@ -679,4 +686,22 @@ void Coordinate::SpeedStateVariable::
     string msg = "SpeedStateVariable::setDerivative() - ERROR \n";
     msg +=  "Generalized speed derivative (udot) can only be set by the Multibody system.";
     throw Exception(msg);
+}
+
+// Invoked by Model::extendRealizeInstance().
+SimTK::SystemYIndex Coordinate::SpeedStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    const Coordinate& owner = *((Coordinate *)&getOwner());
+    const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+                                .getMobilizedBody(owner.getBodyIndex());
+    
+    const int systemYIdxOfFirstU = int(s.getUStart());
+    const int systemUIdxOfFirstSubsystemU = s.getUStart(getSubsysIndex());
+    const int uIdxOfFirstMobilizerU = mb.getFirstUIndex(s); // local to subsys.
+    const int mobilizerUIdx = getVarIndex();
+    
+    return SystemYIndex(systemYIdxOfFirstU +
+                        systemUIdxOfFirstSubsystemU +
+                        uIdxOfFirstMobilizerU +
+                        mobilizerUIdx);
 }

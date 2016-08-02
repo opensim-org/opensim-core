@@ -227,7 +227,6 @@ protected:
     //State structure is locked and now we can assign names to state variables
     //allocated by underlying components after modeling options have been 
     //factored in.
-    void extendRealizeInstance(const SimTK::State& state) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
 
@@ -241,38 +240,44 @@ protected:
 private:
     // Class for handling state variable added (allocated) by this Component
     class CoordinateStateVariable : public StateVariable {
-        public:
+    public:
         // Constructors
         /** Convenience constructor for defining a Component added state variable */ 
-        explicit CoordinateStateVariable(const std::string& name, //state var name
-                        const Component& owner,       //owning component
-                        SimTK::SubsystemIndex subSysIndex,
-                        int index) : 
-                    StateVariable(name, owner, subSysIndex, index, false) {}
+        CoordinateStateVariable(const std::string& name, //state var name
+                                const Component& owner,  //owning component
+                                SimTK::SubsystemIndex subSysIndex,
+                                int index) : 
+                    StateVariable(name, owner, subSysIndex, index, true) {}
 
         //override StateVariable virtual methods
         double getValue(const SimTK::State& state) const override;
         void setValue(SimTK::State& state, double value) const override;
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
+        
+        SimTK::SystemYIndex implementDetermineSystemYIndex(const SimTK::State& s)
+                const override;
     };
 
     // Class for handling state variable added (allocated) by this Component
     class SpeedStateVariable : public StateVariable {
-        public:
+    public:
         // Constructors
         /** Convenience constructor for defining a Component added state variable */ 
-        explicit SpeedStateVariable(const std::string& name, //state var name
-                        const Component& owner,       //owning component
-                        SimTK::SubsystemIndex subSysIndex,
-                        int index) : 
-                    StateVariable(name, owner, subSysIndex, index, false) {}
+        SpeedStateVariable(const std::string& name, //state var name
+                           const Component& owner,  //owning component
+                           SimTK::SubsystemIndex subSysIndex,
+                           int index) : 
+                    StateVariable(name, owner, subSysIndex, index, true) {}
 
         //override StateVariable virtual methods
         double getValue(const SimTK::State& state) const override;
         void setValue(SimTK::State& state, double value) const override;
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
+        
+        SimTK::SystemYIndex implementDetermineSystemYIndex(const SimTK::State& s)
+                const override;
     };
 
     // All coordinates (Simbody mobility) have associated constraints that
