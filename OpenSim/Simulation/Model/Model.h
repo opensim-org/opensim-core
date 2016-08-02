@@ -793,6 +793,81 @@ public:
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
+    
+    /** Computes the residual (error) in the implicit form of all of the
+    dynamics for this model. The dynamics of a model are typically expressed in
+    explicit form as \f$ \dot{y} = f_\mathrm{exp}(t, y) \f$.
+    It is sometimes preferable to express the dynamics in implicit form
+    \f$ f_\mathrm{imp}(t, y, \dot{y}) = 0 \f$.
+    This function returns \f$ f_\mathrm{imp} \f$. So instead of getting the
+    derivative, you provide an estimate of the derivative and this function
+    tells you how wrong you are. For the multibody system, this is the same as
+    inverse dynamics.
+    
+    This is an operator and does not affect the state's cache. This function
+    does not use SimTK::State::getYDot() or SimTK::State::getMultipliers().
+
+    Most components provide their (auxiliary) dynamics only in explicit form
+    \f$ \dot{z} = f_\mathrm{z,exp}(t, y) \f$; for those components, OpenSim
+    computes a trivial implicit form as
+    \f$ f_\mathrm{z,imp}(t,y,\dot{y}) = f_\mathrm{z,exp}(t,y) - \dot{z} \f$.
+    All models can provide an implicit form, but it is much more useful if
+    its components provide their own implicit form.
+    
+    @see implicitdiffeq
+
+    @par Examples
+
+    @code{.cpp}
+    model.realizeDynamics(state); // Must compute forces to apply to model.
+    Vector yDotGuess = createYDotGuess(); // Perhaps a guess from an optimizer.
+    Vector lambdaGuess = createMultipliersGuess(); // Guess from an optimizer.
+    Vector residuals; // This will hold the output.
+    model.calcImplicitResiduals(state, yDotGuess, lambdaGuess, residuals);
+    assert(residuals.size() == state.getNY());
+    @endcode
+
+    If you provide the state derivatives and multipliers from forward dynamics,
+    then the residual should be zero.
+    @code{.cpp}
+    model.realizeAcceleration(state);
+    Vector residuals;
+    model.calcImplicitResiduals(state, state.getYDot(), state.getMultipliers(),
+                                residuals);
+    @endcode
+
+    
+    @param[in]  state
+        The state at which the residual is computed. The state must be realized
+        to SimTK::Stage::Dynamics. This function does not affect the state
+        cache, and does not use or modify the YDot or (Lagrange) Multipliers
+        contained in the state cache---those are for the reuslts from forward
+        dynamics.
+    @param[in]  yDotGuess
+        The value of the derivatives of the continuous state variables to be
+        used when computing the implicit form. If this is zero length it will
+        be treated as all-zero; otherwise the length must be the number of
+        continuous state variables; SimTK::State::getNY().
+    @param[in]  lambdaGuess
+        The value of the Lagrange multipliers, used when computing the residual
+        for the generalized accelerations (inverse dynamics) to account for the
+        forces applied by the constraints. Provide an empty vector for models
+        that do not have constraints. If this is zero length it will be
+        treated as all-zero; otherwise, the length must be the number of
+        acceleration-level constraints; SimTK::State::getNMultipliers().
+    @param[out] residuals
+        The residuals are in the same order as the state variables in the 
+        SimTK::State: \f$ q, u, z \f$.
+        This will be resized so that its length is the number of continuous 
+        state variables; SimTK::State::getNY().
+
+    @see InverseDynamicsSolver
+    @ingroup implicitdiffeq */
+    void calcImplicitResiduals(const SimTK::State& state,
+                               const SimTK::Vector& yDotGuess,
+                               const SimTK::Vector& lambdaGuess,
+                               SimTK::Vector& residuals) const;
+    
     //--------------------------------------------------------------------------
     // STATES
     //--------------------------------------------------------------------------
@@ -873,10 +948,8 @@ public:
     void removeAnalysis(Analysis* analysis, bool deleteIt=true);
     /** Remove a Controller from the %Model. **/
     void removeController(Controller *aController);
-
-    //--------------------------------------------------------------------------
-    // DERIVATIVES
-    //--------------------------------------------------------------------------    
+    
+    
     //--------------------------------------------------------------------------
     // OPERATIONS
     //--------------------------------------------------------------------------
@@ -970,7 +1043,7 @@ public:
     void extendFinalizeFromProperties() override;
 
     void extendConnectToModel(Model& model)  override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override; 
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     /**@}**/
 

@@ -1289,7 +1289,47 @@ public:
         }   
     }
     // End of Model Component State Accessors.
-    //@} 
+    //@}
+    
+    
+    /** @name Component interface for implicit form of dynamics */
+    // @{
+    /** Does this component provide implicit differential equations for each
+    of its state variables? This method does not check subcomponents. 
+    @ingroup implicitdiffeq */
+    bool hasImplicitFormLocal() const;
+    /** Do this component and its subcomponents provide implicit differential
+    equations for each of their state variables?
+    @ingroup implicitdiffeq */
+    bool hasImplicitForm() const;
+
+    /** TODO 
+    @ingroup implicitdiffeq */
+    SimTK::Vector calcImplicitResidualsLocal(const SimTK::State& s,
+            const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess)
+            const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this?
+    const double& getStateVariableDerivativeGuess(
+        const std::string& name, const SimTK::Vector& allYDotGuess) const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this?
+    void setStateVariableDerivativeGuess(const std::string& name,
+                                          const double& derivGuess,
+                                          SimTK::Vector& allYDotGuess) const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    // TODO where to put this method?
+    // TODO "getSingleImplicitResidual"? getImplicitResidualEntry? ByName
+    // TODO getImplicitResidualByName().
+    const double& getImplicitResidual(const std::string& name,
+                                      const SimTK::Vector& allResiduals) const;
+    // @}
 
     /** @name Dump debugging information to the console */
     /// @{
@@ -1626,6 +1666,22 @@ protected:
      */
     void setStateVariableDerivativeValue(const SimTK::State& state, 
                             const std::string& name, double deriv) const;
+    
+    /** TODO
+    @ingroup implicitdiffeq */
+    virtual void computeImplicitResiduals(const SimTK::State& s,
+            const SimTK::Vector& allYDotGuess,
+            SimTK::Vector& componentResiduals) const {}
+    /** TODO 
+    @ingroup implicitdiffeq */
+    void setImplicitResidual(const std::string& name, const double& thisResidual,
+                              SimTK::VectorView& componentResiduals) const;
+    /** TODO don't document?
+    @ingroup implicitdiffeq */
+    void calcImplicitResidualsInternal(const SimTK::State& s,
+                                       const SimTK::Vector& yDotGuess,
+                                       const SimTK::Vector& lambdaGuess,
+                                       SimTK::Vector& residuals) const;
 
 
     // End of Component Extension Interface (protected virtuals).
@@ -1730,12 +1786,14 @@ protected:
     @param[in] stateVariableName     string value to access variable by name
     @param[in] invalidatesStage      the system realization stage that is
                                      invalidated when variable value is changed
+    @param[in] hasImplicitForm       TODO
     @param[in] isHidden              flag (bool) to optionally hide this state
                                      variable from being accessed outside this
                                      component as an Output
     */
     void addStateVariable(const std::string&  stateVariableName,
          const SimTK::Stage& invalidatesStage=SimTK::Stage::Dynamics,
+         bool hasImplicitForm = false,
          bool isHidden = false) const;
 
     /** The above method provides a convenient interface to this method, which
@@ -2287,15 +2345,18 @@ protected:
     public:
         StateVariable() : name(""), owner(nullptr),
             subsysIndex(SimTK::InvalidIndex), varIndex(SimTK::InvalidIndex),
-            sysYIndex(SimTK::InvalidIndex), hidden(true) {}
-        explicit StateVariable(const std::string& name, //state var name
+            sysYIndex(SimTK::InvalidIndex), implicitForm(false),
+            hidden(true) {}
+        StateVariable(const std::string& name, //state var name
             const Component& owner,     //owning component
             SimTK::SubsystemIndex sbsix,//subsystem for allocation
             int varIndex,               //variable's index in subsystem
+            bool hasImplicitForm = false, //TODO
             bool hide = false)          //state variable is hidden or not
             : name(name), owner(&owner),
             subsysIndex(sbsix), varIndex(varIndex),
-            sysYIndex(SimTK::InvalidIndex), hidden(hide)  {}
+            sysYIndex(SimTK::InvalidIndex), implicitForm(hasImplicitForm),
+            hidden(hide)  {}
 
         virtual ~StateVariable() {}
 
@@ -2307,14 +2368,21 @@ protected:
         const SimTK::SubsystemIndex& getSubsysIndex() const { return subsysIndex; }
         // return the index in the global list of continuous state variables, Y 
         const SimTK::SystemYIndex& getSystemYIndex() const { return sysYIndex; }
+        
+        bool hasImplicitForm() const { return implicitForm; }
 
         bool isHidden() const { return hidden; }
         void hide()  { hidden = true; }
         void show()  { hidden = false; }
 
+        // These setters are called in realizeTopology, realizeModel.
         void setVarIndex(int index) { varIndex = index; }
         void setSubsystemIndex(const SimTK::SubsystemIndex& sbsysix) {
             subsysIndex = sbsysix;
+        }
+        // TODO void setComponentVarIndex(int index) { componentVarIndex = index; }
+        void determineSystemYIndex(const SimTK::State& s) {
+            sysYIndex = implementDetermineSystemYIndex(s);
         }
 
         //Concrete Components implement how the state variable value is evaluated
@@ -2324,8 +2392,11 @@ protected:
         // The derivative a state should be a cache entry and thus does not
         // change the state
         virtual void setDerivative(const SimTK::State& state, double deriv) const = 0;
-
+        
     private:
+        virtual SimTK::SystemYIndex implementDetermineSystemYIndex(
+                                const SimTK::State& s) const = 0;
+        
         std::string name;
         SimTK::ReferencePtr<const Component> owner;
 
@@ -2338,6 +2409,12 @@ protected:
         // Once allocated a state in the system will have a global index
         // and that can be stored here as well
         SimTK::SystemYIndex sysYIndex;
+        // TODO The index of this state variable in the Component that contains it.
+        // TODO Used for setting the appropriate entry of the residual.
+        // TODO int componentVarIndex = SimTK::NaN;
+        
+        // TODO
+        bool implicitForm;
 
         // flag indicating if state variable is hidden to the outside world
         bool hidden;
@@ -2402,19 +2479,20 @@ private:
 
     // Class for handling state variable added (allocated) by this Component
     class AddedStateVariable : public StateVariable {
-        public:
+    public:
         // Constructors
         AddedStateVariable() : StateVariable(),
-            invalidatesStage(SimTK::Stage::Empty)  {}
+            invalidatesStage(SimTK::Stage::Empty) {}
 
         /** Convenience constructor for defining a Component added state variable */ 
-        explicit AddedStateVariable(const std::string& name, //state var name
+        AddedStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::Stage invalidatesStage,//stage this variable invalidates
+                        bool hasImplicitForm=false,
                         bool hide=false) : 
                     StateVariable(name, owner,
                             SimTK::SubsystemIndex(SimTK::InvalidIndex),
-                            SimTK::InvalidIndex, hide), 
+                            SimTK::InvalidIndex, hasImplicitForm, hide),
                         invalidatesStage(SimTK::Stage::Empty) {}
 
         //override virtual methods
@@ -2423,15 +2501,18 @@ private:
 
         double getDerivative(const SimTK::State& state) const override;
         void setDerivative(const SimTK::State& state, double deriv) const override;
+        
+        SimTK::SystemYIndex implementDetermineSystemYIndex(
+                                const SimTK::State& s) const override;
 
-        private: // DATA
+    private: // DATA
         // Changes in state variables trigger recalculation of appropriate cache 
         // variables by automatically invalidating the realization stage specified
         // upon allocation of the state variable.
         SimTK::Stage    invalidatesStage;
     };
 
-    // Structure to hold related info about discrete variables 
+    // Structure to hold related info about state variables
     struct StateVariableInfo {
         StateVariableInfo() {}
         explicit StateVariableInfo(Component::StateVariable* sv, int order) :
