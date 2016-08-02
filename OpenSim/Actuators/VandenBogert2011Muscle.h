@@ -7,7 +7,6 @@
 
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-
 #include <simbody/internal/common.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 
@@ -16,7 +15,7 @@
 namespace OpenSim {
 
 // Derive new class from Muscle.h
-class VandenBogert2011Muscle : public Muscle {    //TODO Do I need: class OSIMACTUATORS_API VandenBogert2011Muscle......
+class OSIMACTUATORS_API VandenBogert2011Muscle : public Muscle {    //TODO Do I need: class OSIMACTUATORS_API VandenBogert2011Muscle......
         OpenSim_DECLARE_CONCRETE_OBJECT(VandenBogert2011Muscle, Muscle);
 
 public:
@@ -74,25 +73,25 @@ The parent class, Muscle.h, provides
 
         OpenSim_DECLARE_PROPERTY(pennAtOptFiberLength, double,
                                  "pennation at optimal fiber length equilbrium");
-        // phi_opt
 
+        OpenSim_DECLARE_PROPERTY(defaultActivation, double,
+                                 "default activation");
 
-//==============================================================================
-// PUBLIC METHODS
-//==============================================================================
-        double computeActuation(const SimTK::State& s) const override;
-        void computeInitialFiberEquilibrium(SimTK::State& s) const override;
-        void setActivation(SimTK::State& s,double activation) const override;
+        OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
+                                 "Assumed initial fiber length if none is assigned.");
+
 
 //=============================================================================
 // Construction
 //=============================================================================
         /**Default constructor: produces a non-functional empty muscle*/
         VandenBogert2011Muscle();
-        explicit VandenBogert2011Muscle(const std::string &name);
 
 
-        // TODO: Uses default (compiler-generated) destructor, copy constructor, copy assignment operator?
+
+        VandenBogert2011Muscle(const std::string& name);
+
+        // TODO: Uses default destructor, copy constructor, copy assignment operator?
 
 
 //-------------------------------------------------------------------------
@@ -126,7 +125,14 @@ The parent class, Muscle.h, provides
         void setPennAtOptFiberLength(double pennAtOptFiberLength);
         double getPennAtOptFiberLength() const;
 
-        //struct ImplicitResults;
+        void setDefaultActivation(double defaultActivation);
+        double getDefaultActivation() const;
+
+        void setDefaultFiberLength(double fiberLength);
+        double getDefaultFiberLength() const;
+
+        void setActivation(SimTK::State& s,double activation) const override;
+        void setFiberLength(SimTK::State& s,double fiberLength) const;
 
         struct ImplicitResidual {
             double forceResidual = SimTK::NaN;
@@ -146,26 +152,49 @@ The parent class, Muscle.h, provides
 
         };
 
+//==============================================================================
+// MUSCLE.H INTERFACE
+//==============================================================================
+        double computeActuation(const SimTK::State& s) const override final;
+
+        void computeInitialFiberEquilibrium(SimTK::State& s) const override;
+
+        void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
+                override;
+
 
 //=============================================================================
 // COMPUTATION
 //=============================================================================
 
+    // TODO: These should move to protected at some point
+
         //ImplicitResults calcImplicitResidual(double muslceLength, double fiberLength, double activ, double fiberVelocity, double activ_dot, double u, int returnJacobians) const;
         ImplicitResidual calcImplicitResidual(double muslceLength, double projFiberLength, double activ, double projFiberVelocity, double activ_dot, double u, int returnJacobians) const;
-        ImplicitResidual calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians=0) const;
-        ImplicitResidual calcImplicitResidual(SimTK::State s, double projFibVel_guess, double activdot_guess, double u, int returnJacobians) const;
+        ImplicitResidual calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians) const;
+        ImplicitResidual calcImplicitResidual(const SimTK::State& s, double projFibVel_guess, double activdot_guess, double u, int returnJacobians) const;
 
 
-        SimTK::Vec2 fiberLengthToProjectedLength(double fiberLength, double fiberVelocity) const;
+        double fiberLengthToProjectedLength (double fiberLength , bool normalizedValues) const;
+        double projFibLenToFiberLength (double projFibLen, bool normalizedValues) const;
+
+        double fiberVelocityToProjFibVel (double fiberVelocity, double fiberLength, double projFiberLength, bool normalizedValues) const;
+        double fiberVelocityToProjFibVel (double fiberVelocity, double fiberLength,  bool normalizedValues) const;
+
+        double projFibVelToFiberVelocity(double projFibVel, double fiberLength, double projFiberLength, bool normalizedValues) const;
+        double projFibVelToFiberVelocity(double projFibVel, double projFiberLength, bool normalizedValues) const;
+
+
+
+
 
         ImplicitResidual calcJacobianByFiniteDiff(SimTK::Vec2 y,SimTK::Vec2 ydot, double muscleLength, double u, double h ) const;
         ImplicitResidual calcJacobianByFiniteDiff(double muscleLength, double projFibLenNorm, double activ,
-                                                                                                  double projFibVelNorm, double activdot, double u,
-                                                                                                  double h) const;
+                                                  double projFibVelNorm, double activdot, double u,
+                                                  double h) const;
 
 
-        SimTK::Vec3 calcFiberStaticEquilbirum(double muscleLength, double activ) const;
+        SimTK::Vec2 calcFiberStaticEquilbirum(double muscleLength, double activ) const;
         SimTK::Vec3 calcFiberStaticEquilibResidual(double projFibLen, double muscleLength, double activ) const;
 
 
@@ -177,14 +206,43 @@ The parent class, Muscle.h, provides
         SimTK::Vec4 quickVec4() const;
         SimTK::Vec4 flattenMat22(SimTK::Mat22 matIn) const;
 
-    protected:
+
+
 //=============================================================================
 // PROTECTED METHODS
 //=============================================================================
+    protected:
 
 
 
-        // Model Component Interface
+//==============================================================================
+// MUSCLE INTERFACE REQUIREMENTS
+//==============================================================================
+
+    /* Not implmented
+        void calcMuscleLengthInfo(const SimTK::State& s,
+                                  MuscleLengthInfo& mli) const override;
+
+
+        void calcFiberVelocityInfo(const SimTK::State& s,
+                                   FiberVelocityInfo& fvi) const override;
+
+
+        void calcMuscleDynamicsInfo(const SimTK::State& s,
+                                    MuscleDynamicsInfo& mdi) const override;
+
+
+        void  calcMusclePotentialEnergyInfo(const SimTK::State& s,
+                                            MusclePotentialEnergyInfo& mpei) const override;
+     */
+
+//==============================================================================
+// MODELCOMPONENT INTERFACE REQUIREMENTS
+//==============================================================================
+
+        /** Sets up the ModelComponent from the model, if necessary */
+        void extendConnectToModel(Model& model) override;
+
         /** add new dynamical states to the multibody system corresponding
             to this muscle */
         void extendAddToSystem(SimTK::MultibodySystem &system) const override;
@@ -197,9 +255,13 @@ The parent class, Muscle.h, provides
             default values for state variables */
         void extendSetPropertiesFromState(const SimTK::State &s) override;
 
+        /** Computes state variable derivatives */
+        void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 
 
+        // this is a hack to work around not using mdi/mli......
+        //SimTK::Vec2 getStateVariables(const SimTK::State& s);
 
 
 //=============================================================================

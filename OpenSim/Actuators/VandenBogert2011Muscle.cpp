@@ -7,12 +7,16 @@
 // INCLUDES
 //=============================================================================
 #include "VandenBogert2011Muscle.h"
+#include <OpenSim/Simulation/Model/Model.h>
+
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+
+
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -30,8 +34,10 @@ VandenBogert2011Muscle::VandenBogert2011Muscle()
 /*
  * Constructor.
  */
-VandenBogert2011Muscle::VandenBogert2011Muscle(const std::string &name)
+
+VandenBogert2011Muscle::VandenBogert2011Muscle(const std::string& aName)
 {
+    setName(aName);
     constructProperties();
 }
 
@@ -56,46 +62,10 @@ void VandenBogert2011Muscle::constructProperties()
     constructProperty_activTimeConstant(0.01);
     constructProperty_deactivTimeConstant(0.04);
     constructProperty_pennAtOptFiberLength(0);
+    constructProperty_defaultActivation(0.1);
+    constructProperty_default_fiber_length(1.0);
 }
 
-// Define new states and their derivatives in the underlying system
-void VandenBogert2011Muscle::extendAddToSystem(SimTK::MultibodySystem& system)
-const
-{
-
-    // No States to add, yet
-    /* Allow Millard2012EquilibriumMuscle to add its states, before extending
-    Super::extendAddToSystem(system);
-
-    // Now add the states necessary to implement the fatigable behavior
-    addStateVariable("target_activation");
-    addStateVariable("active_motor_units");
-    addStateVariable("fatigued_motor_units");
-    // and their corresponding derivatives
-    addCacheVariable("target_activation_deriv", 0.0, SimTK::Stage::Dynamics);
-    addCacheVariable("active_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
-    addCacheVariable("fatigued_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
-     */
-}
-
-void VandenBogert2011Muscle::extendInitStateFromProperties(SimTK::State& s)
-const
-{
-    // No States Yet
-    /*Super::extendInitStateFromProperties(s);
-    setTargetActivation(s, getDefaultTargetActivation());
-    setActiveMotorUnits(s, getDefaultActiveMotorUnits());
-    setFatiguedMotorUnits(s, getDefaultFatiguedMotorUnits());*/
-}
-
-void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
-{
-    // No States Yet
-    /*Super::extendSetPropertiesFromState(s);
-    setDefaultTargetActivation(getTargetActivation(s));
-    setDefaultActiveMotorUnits(getActiveMotorUnits(s));
-    setDefaultFatiguedMotorUnits(getFatiguedMotorUnits(s));*/
-}
 
 //--------------------------------------------------------------------------
 // GET & SET Properties
@@ -151,60 +121,41 @@ double VandenBogert2011Muscle::getPennAtOptFiberLength() const {
     return get_pennAtOptFiberLength(); }
 
 
-//--------------------------------------------------------------------------
-// GET & SET States and their derivatives
-//--------------------------------------------------------------------------
+void VandenBogert2011Muscle::setDefaultActivation(double
+                                                     defaultActivation) {
+    set_defaultActivation(defaultActivation); }
+double VandenBogert2011Muscle::getDefaultActivation() const {
+    return get_defaultActivation(); }
 
-//No states yet
-/*double FatigableMuscle::getTargetActivation(const SimTK::State& s) const
-{   return getStateVariableValue(s, "target_activation"); }
+void VandenBogert2011Muscle::setDefaultFiberLength(double fiberLength)
+{
+    set_default_fiber_length(fiberLength);
+}
 
-void FatigableMuscle::setTargetActivation(SimTK::State& s,
-                                          double fatiguedAct) const
-{   setStateVariableValue(s, "target_activation", fatiguedAct); }
+double VandenBogert2011Muscle::getDefaultFiberLength() const
+{   return get_default_fiber_length(); }
 
-double FatigableMuscle::getTargetActivationDeriv(const SimTK::State& s) const
-{   return getStateVariableDerivativeValue(s, "target_activation"); }
 
-void FatigableMuscle::setTargetActivationDeriv(const SimTK::State& s,
-                                               double fatiguedActDeriv) const
-{   setStateVariableDerivativeValue(s, "target_activation", fatiguedActDeriv); }
+void VandenBogert2011Muscle::setFiberLength(SimTK::State& s, double fiberLength) const
+{
 
-double FatigableMuscle::getActiveMotorUnits(const SimTK::State& s) const
-{   return getStateVariableValue(s, "active_motor_units"); }
-
-void FatigableMuscle::setActiveMotorUnits(SimTK::State& s,
-                                          double activeMotorUnits) const
-{   setStateVariableValue(s, "active_motor_units", activeMotorUnits); }
-
-double FatigableMuscle::getActiveMotorUnitsDeriv(const SimTK::State& s) const
-{   return getStateVariableDerivativeValue(s, "active_motor_units"); }
-
-void FatigableMuscle::setActiveMotorUnitsDeriv(const SimTK::State& s,
-                                           double activeMotorUnitsDeriv) const
-{   setStateVariableDerivativeValue(s, "active_motor_units",
- activeMotorUnitsDeriv); }
-
-double FatigableMuscle::getFatiguedMotorUnits(const SimTK::State& s) const
-{   return getStateVariableValue(s, "fatigued_motor_units"); }
-
-void FatigableMuscle::setFatiguedMotorUnits(SimTK::State& s,
-                                            double fatiguedMotorUnits) const
-{   setStateVariableValue(s, "fatigued_motor_units", fatiguedMotorUnits); }
-
-double FatigableMuscle::getFatiguedMotorUnitsDeriv(const SimTK::State& s) const
-{    return getStateVariableDerivativeValue(s, "fatigued_motor_units"); }
-
-void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
-                                                 double fatiguedMotorUnitsDeriv)
-                                                 const
-{   setStateVariableDerivativeValue(s, "fatigued_motor_units",
- fatiguedMotorUnitsDeriv);
- }*/
+        setStateVariableValue(s, "fiber_length",fiberLength);
+        //markCacheVariableInvalid(s,"lengthInfo");
+        //markCacheVariableInvalid(s,"velInfo");
+        //markCacheVariableInvalid(s,"dynamicsInfo");
+    }
 
 
 
+void VandenBogert2011Muscle::setActivation(SimTK::State& s,double activation)
+const
+//TODO: Add clamping?  Add ignore_activation_dynamics
+{
+    setStateVariableValue(s, "activation", activation);
 
+    //markCacheVariableInvalid(s,"velInfo");
+    //markCacheVariableInvalid(s,"dynamicsInfo");
+}
 
 //==============================================================================
 // Muscle.h Interface
@@ -212,17 +163,127 @@ void FatigableMuscle::setFatiguedMotorUnitsDeriv(const SimTK::State& s,
 
 
 double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
-{return( 0.0);}
+{return( 42.0);}
 
-void VandenBogert2011Muscle::setActivation(SimTK::State& s,double activation)
-const
-{}
+
 
 void VandenBogert2011Muscle::computeInitialFiberEquilibrium(SimTK::State& s)
 const
+{
+    // TODO:  this is the same code as computeFiberEquilibriumAtZeroVelocity
+    //Need to update for v~=0
+    //Let's start with the default activation and the fiberVelocity=0
+    double activation = getDefaultActivation();
+    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s), activation);
+
+    double projFibLenNorm=lenghAndForce[0];
+    double tendonForce=lenghAndForce[1];
+
+    //TODO:  Millard Muscle handles non-convergence here and zero muscle length.
+    //     Need to consider adding.
+
+    setActuation(s, tendonForce);
+    double fiberLength = projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
+    setStateVariableValue(s, "fiber_length", fiberLength);
+    setStateVariableValue(s, "activation",  activation);
+
+}
+
+
+
+void VandenBogert2011Muscle::
+computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
+{
+    double activation = getDefaultActivation();
+    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s), activation);
+
+    double projFibLenNorm=lenghAndForce[0];
+    double tendonForce=lenghAndForce[1];
+
+    //TODO:  Millard Muscle handles non-convergence here and zero muscle length.
+    //     Need to consider adding.
+
+    setActuation(s, tendonForce);
+    double fiberLength = projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
+    setStateVariableValue(s, "fiber_length", fiberLength);
+    setStateVariableValue(s, "activation",  activation);
+
+}
+// I am cheating here.  Instead of using mli and mdi caches
+/*
+SimTK::Vec2 VandenBogert2011Muscle::getStateVariables(const SimTK::State& s) {
+    double fiberLength = getStateVariableValue(s, "fiber_length");
+    double activ = getStateVariableValue(s, "activation");
+    SimTK::Vec2 stateVariables = {fiberLength, activ};
+    return stateVariables;};
+
+*/
+
+
+/*
+void VandenBogert2011Muscle::calcMuscleLengthInfo(const SimTK::State& s,
+                                                        MuscleLengthInfo& mli) const
 {}
+*/
 
 
+//==============================================================================
+// MODELCOMPONENT INTERFACE REQUIREMENTS
+//==============================================================================
+
+void VandenBogert2011Muscle::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+}
+
+// Define new states and their derivatives in the underlying system
+void VandenBogert2011Muscle::extendAddToSystem(SimTK::MultibodySystem& system)
+const
+{
+
+    Super::extendAddToSystem(system);
+
+    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+                 "VandenBogert2011Muscle: Muscle properties not up-to-date");
+
+    addStateVariable("fiber_length");
+    addStateVariable("activation");
+
+}
+
+void VandenBogert2011Muscle::extendInitStateFromProperties(SimTK::State& s)
+const
+{
+    Super::extendInitStateFromProperties(s);
+
+        setActivation(s, getDefaultActivation());
+        setFiberLength(s, getDefaultFiberLength());
+}
+
+void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
+{
+    Super::extendSetPropertiesFromState(s);
+
+        setDefaultActivation(getStateVariableValue(s,"activation"));
+        setDefaultFiberLength(getStateVariableValue(s,"fiber_length"));
+
+}
+
+
+void VandenBogert2011Muscle::
+computeStateVariableDerivatives(const SimTK::State& s) const
+{
+// TODO: !!!!!!!!!!!!!!!!!!!!!!!!1
+        //double adot =getActivationDerivative(s);
+        double adot = 0.0;
+        setStateVariableDerivativeValue(s, "activation", adot);
+
+// TODO: !!!!!!!!!!!!!!!!!!!!!!!!1
+        //double ldot = getFiberVelocity(s);
+        double ldot = 0.0;
+        setStateVariableDerivativeValue(s, "fiber_length", ldot);
+
+}
 
 
 //=============================================================================
@@ -246,63 +307,152 @@ const
 
 
 
-
 //------------------------------------------------------------------------------
-SimTK::Vec2 VandenBogert2011Muscle::fiberLengthToProjectedLength
-        (double fiberLength, double fiberVelocity) const
-        /* fiberLengthToProject - calculates the projected fiber length
-                        & velocity of the contractile element.
+double VandenBogert2011Muscle::fiberLengthToProjectedLength
+        (double fiberLength , bool normalizedValues=0) const {
 
-         @param fiberLength - normalized length of the contractile fiber.
-                       (Normalized by the optimal fiber length.) [fiber Lengths]
-         @param fiberVelocity - normalized velocity of the contractile fiber.
-                          [optimal fiberLengths per sec]
+    double pennAtOptFiberLength = getPennAtOptFiberLength();
+    double projFibLen = 0;
 
-         @return - a SIMTK:Vec2:
-                projFiberLength - normailzed length of the contractile fiber
-                            projected in line with tendon [fiber Lengths]
-                projFiberVelocity - normailzed velocity of the contractile fiber
-                            projected in line with tendon
-                            [optimal fiberLengths per sec]                  */
+    if (pennAtOptFiberLength < 0.01) {
+        projFibLen = fiberLength;
+    }
 
-{
-double pennAtOptFiberLength = getPennAtOptFiberLength();
-
-    double projFiberLength=0;
-    double projFiberVelocity=0;
-if (pennAtOptFiberLength<0.01) {
-    projFiberLength=fiberLength; }
-else {
-    double b=sin(pennAtOptFiberLength);  //b is the fixed distance of the fiber
-                                         //perpindicular to the tendon (width)
-
-    // The fiber can not be shorter than b; if it is, the projected length
-    // equation below will return a complex value.  It also physically can not
-    //happen (the fiber being shorter than the fixed width
-    if (fiberLength >= b ) {
-        projFiberLength=sqrt(pow(fiberLength,2) + pow(b,2));}
     else {
-        projFiberLength= SimTK::NaN;}  //TODO: Doing this for now, but need to
-                           // come up with a clamping scheme (Millard has one)
 
-    if (fiberVelocity!=0) {
-        projFiberVelocity=fiberVelocity/cos(projFiberLength/fiberLength);}
+        double optimalFiberLength=getOptimalFiberLength();
+
+        if (normalizedValues) {fiberLength=fiberLength*optimalFiberLength;};
+
+
+        double muscleWidth = sin(
+                pennAtOptFiberLength);  //b is the fixed distance of the fiber
+        //perpindicular to the tendon (width)
+
+        /*TODO: muscleWidth is a constant that should not need to be recalculated. Should
+          be moved info muslceLengthInfo cache */
+
+        // The fiber can not be shorter than b; if it is, the projected length
+        // equation below will return a complex value.  It also physically can not
+        //happen (the fiber being shorter than the fixed width)
+        if (fiberLength >= muscleWidth) {
+            projFibLen = sqrt(pow(fiberLength, 2) - pow(muscleWidth, 2));   //   What gives here - why was this +
+        }
+        else {
+            projFibLen = SimTK::NaN;
+        }  //TODO: Doing this for now, but need to
+        // come up with a clamping scheme (Millard has one)
+
+        if (normalizedValues) {projFibLen=projFibLen/optimalFiberLength;};
+
 
     };
-    SimTK::Vec2 output;
-    output[0] = projFiberLength;
-    output[1] = projFiberVelocity;
-    return output;
+    return projFibLen;
 };
 
 
 
+double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen, bool normalizedValues=0) const {
+
+    double pennAtOptFiberLength=getPennAtOptFiberLength();
+    double fiberLength=0;
+
+    double optimalFiberLength=getOptimalFiberLength();
+
+    if (normalizedValues){
+        projFibLen=projFibLen * optimalFiberLength;  //Convert from Norm
+    }
+
+    if (pennAtOptFiberLength < 0.01) {
+        fiberLength = projFibLen; }
+    else {
+        double static muscleWidth = sin(pennAtOptFiberLength);
+        fiberLength = sqrt(pow(projFibLen, 2) + pow(muscleWidth, 2));}
+
+    if (normalizedValues){                      //Convert back to Norm if needed
+        fiberLength=fiberLength / optimalFiberLength;
+    }
+
+    return fiberLength;
+}
+
+//-------------------------------------------
+double VandenBogert2011Muscle::fiberVelocityToProjFibVel
+        (double fiberVelocity, double fiberLength, double projFiberLength, bool normalizedValues=0) const {
 
 
+    // Note that this normalized by fiber optimal length (not by max velocity)
+    double optimalFiberLength = getOptimalFiberLength();
 
+    if (normalizedValues) {
+        fiberLength = fiberLength * getOptimalFiberLength();
+        fiberVelocity = fiberVelocity * optimalFiberLength;
+        projFiberLength = projFiberLength * optimalFiberLength;
+    }
+
+    double projFibVel = 0;
+
+    if (fiberVelocity != 0) {
+        projFibVel = fiberVelocity / cos(projFiberLength / fiberLength);
+    }
+    else { projFibVel = 0; }
+
+    if (normalizedValues) {projFibVel
+                                   = projFibVel / optimalFiberLength; };
+
+    return projFibVel;
+};
+
+double VandenBogert2011Muscle::fiberVelocityToProjFibVel
+        (double fiberVelocity, double fiberLength, bool normalizedValues=0) const {
+
+    //overload method when projFiberLength is not known/provided
+
+    double projFiberLength=fiberLengthToProjectedLength(fiberLength ,normalizedValues);
+    double projFiberVelocity = fiberVelocityToProjFibVel (fiberVelocity, fiberLength,  projFiberLength, normalizedValues);
+
+    return projFiberVelocity;
+};
+
+//-------------------------------------------------------------
+
+double VandenBogert2011Muscle::projFibVelToFiberVelocity(double projFibVel, double fiberLength, double projFiberLength, bool normalizedValues=0) const {
+// Note that this normalized by fiber optimal length (not by max velocity)
+    double optimalFiberLength = getOptimalFiberLength();
+
+if (normalizedValues) {
+fiberLength = fiberLength * getOptimalFiberLength();
+projFibVel = projFibVel * optimalFiberLength;
+projFiberLength = projFiberLength * optimalFiberLength;
+}
+
+double fiberVelocity = 0;
+
+if (projFibVel != 0) {
+    fiberVelocity = projFibVel * cos(projFiberLength / fiberLength);
+
+}
+else { fiberVelocity = 0; }
+
+if (normalizedValues) {fiberVelocity
+= fiberVelocity / optimalFiberLength; };
+
+return fiberVelocity;}
+
+
+double VandenBogert2011Muscle::projFibVelToFiberVelocity
+        (double projFibVel, double projFibLength, bool normalizedValues=0) const {
+
+    //overload method when fiberLength is not known/provided
+
+    double fiberLength=projFibLenToFiberLength(fiberLength ,normalizedValues);
+    double fiberVelocity = projFibVelToFiberVelocity(projFibVel, fiberLength, projFibLength, normalizedValues);
+
+    return fiberVelocity;
+};
 
 //------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians) const {
+VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians=0) const {
 
     // Overload method for state vectors as parameters
 
@@ -315,16 +465,28 @@ VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitRes
 }
 
 //------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::State s, double projFibVel_guess, double activdot_guess, double u, int returnJacobians) const {
+VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(const SimTK::State& s, double projFibVelNorm_guess, double activdot_guess, double u, int returnJacobians) const {
 
-    // Overload method for SimTK as parameter
+    // Overload method for state as parameters
 
     double muscleLength = getLength(s);
-    double projFibLen = getNormalizedFiberLength(s);
-    double activ = getActivation(s);
 
-    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, projFibLen, activ,
-            projFibVel_guess, activdot_guess, u, returnJacobians);
+    //double activ =getActivations(s); // Does not work because info not implmented
+    //double activ = getStateVariableValues(s,"activation");  // does not work
+    //double fiberLength = getStateVariableValues(s,"fiber_length");
+
+    SimTK::Vector stateVec =getStateVariableValues(s);
+    double fiberLength =stateVec[0];
+    double activ =stateVec[1];
+
+
+    double projFibLenNorm=fiberLengthToProjectedLength(fiberLength/getOptimalFiberLength() , 1);
+
+    //std::cout << "ml: " << muscleLength <<" a:" << activ << ", fl:  " << fiberLength << endl;
+
+    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, projFibLenNorm, activ,
+            projFibVelNorm_guess, activdot_guess, u, 0);
+
 
     return Results;
 }
@@ -831,9 +993,10 @@ SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(double projFi
 }
 
 //------------------------------------------------------------------------------
-SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLength, double activ) const {
+SimTK::Vec2 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLength, double activ) const {
 
-    //Calculate the
+    // This code assumes that the muscle lengthing speed is 0.
+
 
     //TODO: Code is not optimized.  Specifically the number of calls to
     //calcImplicitResidual can be reduced
@@ -842,9 +1005,9 @@ SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLengt
     //TODO: calcImplicitResidual really only needs to calculate df_ds (single element) for this function
 
 
-double tol=1e-8;
+double tol=1e-8; //TODO : Look at changing to propotional of eps
 double a=0;
-double b=10;
+double b=10;  //10 muscle lengths (more will slow convergence by adding steps)
 
 double x=(a+b)/2.0;
 double dx=2*tol;
@@ -853,6 +1016,7 @@ int neval=0;
 
 SimTK::Vec3 forceResAndDerivative;
 
+    //Perform a Newton Line Search
 while ((abs(dx)>=tol) && (neval<100)) {
 
     neval++;
@@ -897,11 +1061,11 @@ while ((abs(dx)>=tol) && (neval<100)) {
     };
 
     // TODO:  Need to handle condition when number of loop iterations reaches neval limit
+    //      See Millard2012 Muscle Error Handling
 
-    SimTK::Vec3 vout;
+    SimTK::Vec2 vout;
     vout[0]=x;   //projFiberLengthNorm
-    vout[1]=neval;  //Number of Evaluations
-    vout[2]=forceResAndDerivative[2];  // muscleForce
+    vout[1]=forceResAndDerivative[2];  // muscleForce
     return vout;
 }
 
