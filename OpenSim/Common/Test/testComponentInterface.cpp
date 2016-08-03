@@ -388,6 +388,42 @@ void testMisc() {
     theWorld.setName("World");
     theWorld.finalizeFromProperties();
 
+    // ComponentHasNoSystem exception should be thrown if user attempts to read
+    // or write state, discrete, or cache variables before Component has an
+    // underlying MultibodySystem.
+    {
+        SimTK::State sBlank;
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable("waldo"));
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValue(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValue(sBlank, "waldo", 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValues(sBlank));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValues(sBlank, SimTK::Vector(1, 0.)));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableDerivativeValue(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getDiscreteVariableValue(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setDiscreteVariableValue(sBlank, "waldo", 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getCacheVariableValue<double>(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setCacheVariableValue(sBlank, "waldo", 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.updCacheVariableValue<double>(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableValid(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableInvalid(sBlank, "waldo"));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.isCacheVariableValid(sBlank, "waldo"));
+    }
+
     TheWorld* cloneWorld = theWorld.clone();
     cloneWorld->setName("ClonedWorld");
     cloneWorld->finalizeFromProperties();
