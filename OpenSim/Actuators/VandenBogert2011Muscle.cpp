@@ -157,6 +157,30 @@ const
     //markCacheVariableInvalid(s,"dynamicsInfo");
 }
 
+
+
+SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s, double projFibVelNorm_guess, double activdot_guess, double u) const
+{
+    ImplicitResidual residualStruct = calcImplicitResidual(s, projFibVelNorm_guess, activdot_guess, u, 0);
+
+    SimTK::Vec2 residual = {residualStruct.forceResidual,residualStruct.activResidual};
+    return(residual);
+}
+
+//These are hacks because I am not using muscle.h mli cache variables, yet:
+double  VandenBogert2011Muscle::getFiberLength(SimTK::State& s) const
+{
+    double fiberLength=getStateVariableValue(s, "fiber_length");
+    return fiberLength;
+}
+double  VandenBogert2011Muscle::getActivation(SimTK::State& s) const
+{
+    double activ=getStateVariableValue(s, "activation");
+    return activ;
+}
+
+
+
 //==============================================================================
 // Muscle.h Interface
 //==============================================================================
@@ -173,7 +197,7 @@ const
     // TODO:  this is the same code as computeFiberEquilibriumAtZeroVelocity
     //Need to update for v~=0
     //Let's start with the default activation and the fiberVelocity=0
-    double activation = getDefaultActivation();
+    double activation = getStateVariableValue(s,"activation");
     SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s), activation);
 
     double projFibLenNorm=lenghAndForce[0];

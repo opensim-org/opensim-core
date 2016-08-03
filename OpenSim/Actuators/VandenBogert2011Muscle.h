@@ -134,6 +134,15 @@ The parent class, Muscle.h, provides
         void setActivation(SimTK::State& s,double activation) const override;
         void setFiberLength(SimTK::State& s,double fiberLength) const;
 
+
+        SimTK::Vec2 getResidual(const SimTK::State& s, double projFibVelNorm_guess, double activdot_guess, double u) const;
+
+        //Hacks because cache variables not implmented yet
+        double  getFiberLength(SimTK::State& s) const;
+        double  getActivation(SimTK::State& s) const;
+
+
+
         struct ImplicitResidual {
             double forceResidual = SimTK::NaN;
             double activResidual = SimTK::NaN;
