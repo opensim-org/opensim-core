@@ -896,6 +896,9 @@ double Component::
 void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
 
@@ -999,9 +1002,6 @@ void Component::
     setStateVariableDerivativeValue(const State& state, 
                                const std::string& name, double value) const
 {
-    // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
-
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(name);
 
