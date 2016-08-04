@@ -147,7 +147,7 @@ void VandenBogert2011Muscle::setFiberLength(SimTK::State& s, double fiberLength)
     }
 
 
-
+// Set the activation
 void VandenBogert2011Muscle::setActivation(SimTK::State& s,double activation)
 const
 //TODO: Add clamping?  Add ignore_activation_dynamics
@@ -158,8 +158,11 @@ const
     //markCacheVariableInvalid(s,"dynamicsInfo");
 }
 
-
-
+// Get the Residual of muscle
+// TODO:  This breaks naming convention in that it does not get an already
+// evaluated constant, it actually performs the calcualtion.  Without using a
+// state variable or adding to the cache variables, I think I have to do it this
+// way?
 SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s,
                                                 double projFibVelNorm_guess,
                                                 double activdot_guess, double u)
@@ -174,6 +177,8 @@ SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s,
                             residualStruct.activResidual};
     return(residual);
 }
+
+
 
 //These are hacks because I am not using muscle.h mli cache variables, yet:
 double  VandenBogert2011Muscle::getFiberLength(SimTK::State& s) const
@@ -195,7 +200,9 @@ double  VandenBogert2011Muscle::getActivation(SimTK::State& s) const
 
 
 double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
-{return( SimTK::NaN);}
+
+{  // TODO: Copy back in this code after troubleshooting
+    return( SimTK::NaN);}
 
 
 
@@ -205,21 +212,8 @@ const
     // TODO:  this is the same code as computeFiberEquilibriumAtZeroVelocity
     //Need to update for v~=0
     //Let's start with the default activation and the fiberVelocity=0
-    double activation = getStateVariableValue(s,"activation");
-    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s),
-                                                        activation);
 
-    double projFibLenNorm=lenghAndForce[0];
-    double tendonForce=lenghAndForce[1];
-
-    //TODO:  Millard Muscle handles non-convergence here and zero muscle length.
-    //     Need to consider adding.
-
-    setActuation(s, tendonForce);
-    double fiberLength =
-            projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
-    setStateVariableValue(s, "fiber_length", fiberLength);
-    setStateVariableValue(s, "activation",  activation);
+    computeFiberEquilibriumAtZeroVelocity(s);
 
 }
 
@@ -253,14 +247,6 @@ SimTK::Vec2 VandenBogert2011Muscle::getStateVariables(const SimTK::State& s) {
     SimTK::Vec2 stateVariables = {fiberLength, activ};
     return stateVariables;};
 
-*/
-
-
-/*
-void VandenBogert2011Muscle::calcMuscleLengthInfo(const SimTK::State& s,
-                                                        MuscleLengthInfo& mli)
-                                                        const
-{}
 */
 
 
@@ -326,15 +312,6 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Compute the derivatives of the muscle states.
- *
- * @param s  system state
- */
-
-
-//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::fiberLengthToProjectedLength
         (double fiberLength , bool normalizedValues=0) const {
 
@@ -378,7 +355,7 @@ double VandenBogert2011Muscle::fiberLengthToProjectedLength
 };
 
 
-
+//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen,
                                                         bool normalizedValues=0)
                                                         const
@@ -405,7 +382,7 @@ double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen,
     return fiberLength;
 }
 
-//-------------------------------------------
+//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::fiberVelocityToProjFibVel
         (double fiberVelocity, double fiberLength, double projFiberLength,
          bool normalizedValues=0) const
@@ -432,8 +409,10 @@ double VandenBogert2011Muscle::fiberVelocityToProjFibVel
     return projFibVel;
 };
 
+//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::fiberVelocityToProjFibVel
-        (double fiberVelocity, double fiberLength, bool normalizedValues=0) const {
+        (double fiberVelocity, double fiberLength, bool normalizedValues=0)
+                const {
 
     //overload method when projFiberLength is not known/provided
 
@@ -446,8 +425,8 @@ double VandenBogert2011Muscle::fiberVelocityToProjFibVel
     return projFiberVelocity;
 };
 
-//-------------------------------------------------------------
 
+//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::projFibVelToFiberVelocity(double projFibVel,
                                                          double fiberLength,
                                                          double projFiberLength,
@@ -479,9 +458,10 @@ double VandenBogert2011Muscle::projFibVelToFiberVelocity(double projFibVel,
 
     return fiberVelocity;}
 
-
+//------------------------------------------------------------------------------
 double VandenBogert2011Muscle::projFibVelToFiberVelocity
-        (double projFibVel, double projFibLength, bool normalizedValues=0) const {
+        (double projFibVel, double projFibLength, bool normalizedValues=0)
+                        const {
 
     //overload method when fiberLength is not known/provided
 
@@ -547,22 +527,6 @@ VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::
 calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
                      double projFibVelNorm, double activdot, double u,
                      int returnJacobians=0) const {
-
-
-    /*
-     @param muscleLength - muscle length (tendon + fiber) [m]
-     @param projFibLengthNorm - length of contractile element projected along line
-            of tendon.  Normalized by optimal Fiber Length.
-            [unitless:  length/optimal length]
-     @param activ - muscle activation: 0 to 1 [unitless]
-     @param projFibVelNorm - velocity of contractile element projected along line
-            of tendon.  Normalized by optimal fiber length.
-            [length/optimal length/sec]
-     @param activdot - rate of change of muscle activation [1/sec]
-     @param u - control signal (neural excitation) 0.0 to 1.0 [unitless]
-
-
-     */
 
 
     //TODO: Match symbols to doxygen diagram and Add symbolic equations comments
