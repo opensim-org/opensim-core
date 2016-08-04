@@ -22,6 +22,7 @@
 
 #include "OpenSim/Common/Adapters.h"
 
+#include <unordered_set>
 #include <fstream>
 #include <cstdio>
 
@@ -57,6 +58,47 @@ void testFailed(const std::string& filename,
             "Copied token = " + copiedtoken + "."};
 }
 
+void compareHeaders(std::ifstream& filenameA,
+                    std::ifstream& filenameB) {
+    using namespace OpenSim;
+
+    std::unordered_set<std::string> headerA{}, headerB{};
+
+    std::string line{};
+    while(std::getline(filenameA, line)) {
+        if(line.find("endheader") != std::string::npos)
+            break;
+
+        if(line.empty())
+            continue;
+
+        // Ignore the key-value pair specifying the datatype. It may not be 
+        // present in old files.
+        if(line.find("DataType") != std::string::npos)
+            continue;
+
+        headerA.insert(line);
+    }
+    while(std::getline(filenameB, line)) {
+        if(line.find("endheader") != std::string::npos)
+            break;
+        
+        if(line.empty())
+            continue;
+
+        // Ignore the key-value pair specifying the datatype. It may not be 
+        // present in old files.
+        if(line.find("DataType") != std::string::npos)
+            continue;
+
+        headerB.insert(line);
+    }
+
+    if(headerA != headerB)
+        throw Exception{"Test failed: Original and copied headers do not "
+                        "match."};
+}
+
 void compareFiles(const std::string& filenameA, 
                   const std::string& filenameB) {
     // Delimiters include newline.
@@ -64,6 +106,9 @@ void compareFiles(const std::string& filenameA,
 
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
+
+    compareHeaders(fileA, fileB);
+
     while(fileA && fileB) {
         const auto tokenA = getNextToken(fileA, delims);
         const auto tokenB = getNextToken(fileB, delims);
@@ -98,7 +143,7 @@ int main() {
     std::string tmpfile{"testmotfileadapter.mot"};
 
     for(const auto& filename : filenames) {
-        STOFileAdapter stofileadapter{};
+        STOFileAdapter<double> stofileadapter{};
         auto table = stofileadapter.read(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
@@ -114,11 +159,77 @@ int main() {
 
     for(const auto& filename : filenames) {
         TimeSeriesTable table{filename};
-        STOFileAdapter::write(table, tmpfile);
+        STOFileAdapter<double>::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     std::remove(tmpfile.c_str());
+
+    // Test reading/writing -- STOFileAdapter<SimTK::Vec3>.
+    {
+    std::string fileA{"testSTOFileAdapter_A.sto"};
+    std::string fileB{"testSTOFileAdapter_B.sto"};
+    TimeSeriesTable_<SimTK::Vec3> tableVec3{};
+    SimTK::Vec3 elem{0, 1, 2};
+    tableVec3.setColumnLabels({"c0", "c1", "c2"});
+    for(auto t = 0; t < 10; ++t) {
+        elem += 1;
+        tableVec3.appendRow(t, {elem, elem, elem});
+    }
+    STOFileAdapter<SimTK::Vec3>::write(tableVec3, fileA);
+    auto tableVec3_copy = STOFileAdapter<SimTK::Vec3>::read(fileA);
+    auto tableVec3_ptr = FileAdapter::readFile(fileA).at("table");
+    DataAdapter::InputTables inputTables{};
+    inputTables.emplace(std::string{"table"}, tableVec3_ptr.get());
+    FileAdapter::writeFile(inputTables, fileB);
+    compareFiles(fileA, fileB);
+    std::remove(fileA.c_str());
+    std::remove(fileB.c_str());
+    }
+
+    // Test reading/writing -- STOFileAdapter<SimTK::Vec6>.
+    {
+    std::string fileA{"testSTOFileAdapter_A.sto"};
+    std::string fileB{"testSTOFileAdapter_B.sto"};
+    TimeSeriesTable_<SimTK::Vec6> tableVec6{};
+    SimTK::Vec6 elem{0, 1, 2, 3, 4, 5};
+    tableVec6.setColumnLabels({"c0", "c1", "c2"});
+    for(auto t = 0; t < 10; ++t) {
+        elem += 1;
+        tableVec6.appendRow(t, {elem, elem, elem});
+    }
+    STOFileAdapter<SimTK::Vec6>::write(tableVec6, fileA);
+    auto tableVec6_copy = STOFileAdapter<SimTK::Vec6>::read(fileA);
+    auto tableVec6_ptr = FileAdapter::readFile(fileA).at("table");
+    DataAdapter::InputTables inputTables{};
+    inputTables.emplace(std::string{"table"}, tableVec6_ptr.get());
+    FileAdapter::writeFile(inputTables, fileB);
+    compareFiles(fileA, fileB);
+    std::remove(fileA.c_str());
+    std::remove(fileB.c_str());
+    }
+
+    // Test reading/writing -- STOFileAdapter<SimTK::SpatialVec>.
+    {
+    std::string fileA{"testSTOFileAdapter_A.sto"};
+    std::string fileB{"testSTOFileAdapter_B.sto"};
+    TimeSeriesTable_<SimTK::SpatialVec> tableSpatialVec{};
+    SimTK::SpatialVec elem{{0, 1, 2}, {3, 4, 5}};
+    tableSpatialVec.setColumnLabels({"c0", "c1", "c2"});
+    for(auto t = 0; t < 10; ++t) {
+        elem += 1;
+        tableSpatialVec.appendRow(t, {elem, elem, elem});
+    }
+    STOFileAdapter<SimTK::SpatialVec>::write(tableSpatialVec, fileA);
+    auto tableSpatialVec_copy = STOFileAdapter<SimTK::SpatialVec>::read(fileA);
+    auto tableSpatialVec_ptr = FileAdapter::readFile(fileA).at("table");
+    DataAdapter::InputTables inputTables{};
+    inputTables.emplace(std::string{"table"}, tableSpatialVec_ptr.get());
+    FileAdapter::writeFile(inputTables, fileB);
+    compareFiles(fileA, fileB);
+    std::remove(fileA.c_str());
+    std::remove(fileB.c_str());
+    }
 
     return 0;
 }
