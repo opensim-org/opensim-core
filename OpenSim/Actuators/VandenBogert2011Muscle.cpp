@@ -136,7 +136,8 @@ double VandenBogert2011Muscle::getDefaultFiberLength() const
 {   return get_default_fiber_length(); }
 
 
-void VandenBogert2011Muscle::setFiberLength(SimTK::State& s, double fiberLength) const
+void VandenBogert2011Muscle::setFiberLength(SimTK::State& s, double fiberLength)
+            const
 {
 
         setStateVariableValue(s, "fiber_length",fiberLength);
@@ -159,11 +160,18 @@ const
 
 
 
-SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s, double projFibVelNorm_guess, double activdot_guess, double u) const
+SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s,
+                                                double projFibVelNorm_guess,
+                                                double activdot_guess, double u)
+                                                const
 {
-    ImplicitResidual residualStruct = calcImplicitResidual(s, projFibVelNorm_guess, activdot_guess, u, 0);
+    ImplicitResidual residualStruct = calcImplicitResidual(s,
+                                                           projFibVelNorm_guess,
+                                                           activdot_guess,
+                                                           u, 0);
 
-    SimTK::Vec2 residual = {residualStruct.forceResidual,residualStruct.activResidual};
+    SimTK::Vec2 residual = {residualStruct.forceResidual,
+                            residualStruct.activResidual};
     return(residual);
 }
 
@@ -187,7 +195,7 @@ double  VandenBogert2011Muscle::getActivation(SimTK::State& s) const
 
 
 double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
-{return( 42.0);}
+{return( SimTK::NaN);}
 
 
 
@@ -198,7 +206,8 @@ const
     //Need to update for v~=0
     //Let's start with the default activation and the fiberVelocity=0
     double activation = getStateVariableValue(s,"activation");
-    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s), activation);
+    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s),
+                                                        activation);
 
     double projFibLenNorm=lenghAndForce[0];
     double tendonForce=lenghAndForce[1];
@@ -207,7 +216,8 @@ const
     //     Need to consider adding.
 
     setActuation(s, tendonForce);
-    double fiberLength = projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
+    double fiberLength =
+            projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
     setStateVariableValue(s, "fiber_length", fiberLength);
     setStateVariableValue(s, "activation",  activation);
 
@@ -219,7 +229,8 @@ void VandenBogert2011Muscle::
 computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 {
     double activation = getDefaultActivation();
-    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s), activation);
+    SimTK::Vec2 lenghAndForce=calcFiberStaticEquilbirum(getLength(s),
+                                                        activation);
 
     double projFibLenNorm=lenghAndForce[0];
     double tendonForce=lenghAndForce[1];
@@ -228,7 +239,8 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
     //     Need to consider adding.
 
     setActuation(s, tendonForce);
-    double fiberLength = projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
+    double fiberLength =
+            projFibLenToFiberLength(projFibLenNorm,1)*getOptimalFiberLength();
     setStateVariableValue(s, "fiber_length", fiberLength);
     setStateVariableValue(s, "activation",  activation);
 
@@ -246,7 +258,8 @@ SimTK::Vec2 VandenBogert2011Muscle::getStateVariables(const SimTK::State& s) {
 
 /*
 void VandenBogert2011Muscle::calcMuscleLengthInfo(const SimTK::State& s,
-                                                        MuscleLengthInfo& mli) const
+                                                        MuscleLengthInfo& mli)
+                                                        const
 {}
 */
 
@@ -321,16 +334,6 @@ computeStateVariableDerivatives(const SimTK::State& s) const
  */
 
 
-//array<double,3> calcImplicitResidual(const SimTK::State& s) const
-
-//SimTK::Vec3 VandenBogert2011Muscle::calcImplicitResidual(double Lm,
-// double Lce, double a, double Lcedot, double adot, double u,
-// int returnJacobians) const {
-
-
-
-
-
 //------------------------------------------------------------------------------
 double VandenBogert2011Muscle::fiberLengthToProjectedLength
         (double fiberLength , bool normalizedValues=0) const {
@@ -353,14 +356,14 @@ double VandenBogert2011Muscle::fiberLengthToProjectedLength
                 pennAtOptFiberLength);  //b is the fixed distance of the fiber
         //perpindicular to the tendon (width)
 
-        /*TODO: muscleWidth is a constant that should not need to be recalculated. Should
-          be moved info muslceLengthInfo cache */
+        /*TODO: muscleWidth is a constant that should not need to be
+         * recalculated. Should be moved info muslceLengthInfo cache */
 
         // The fiber can not be shorter than b; if it is, the projected length
-        // equation below will return a complex value.  It also physically can not
-        //happen (the fiber being shorter than the fixed width)
+        // equation below will return a complex value.  It also physically can
+        // not happen (the fiber being shorter than the fixed width)
         if (fiberLength >= muscleWidth) {
-            projFibLen = sqrt(pow(fiberLength, 2) - pow(muscleWidth, 2));   //   What gives here - why was this +
+            projFibLen = sqrt(pow(fiberLength, 2) - pow(muscleWidth, 2));
         }
         else {
             projFibLen = SimTK::NaN;
@@ -376,8 +379,10 @@ double VandenBogert2011Muscle::fiberLengthToProjectedLength
 
 
 
-double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen, bool normalizedValues=0) const {
-
+double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen,
+                                                        bool normalizedValues=0)
+                                                        const
+{
     double pennAtOptFiberLength=getPennAtOptFiberLength();
     double fiberLength=0;
 
@@ -402,9 +407,9 @@ double VandenBogert2011Muscle::projFibLenToFiberLength (double projFibLen, bool 
 
 //-------------------------------------------
 double VandenBogert2011Muscle::fiberVelocityToProjFibVel
-        (double fiberVelocity, double fiberLength, double projFiberLength, bool normalizedValues=0) const {
-
-
+        (double fiberVelocity, double fiberLength, double projFiberLength,
+         bool normalizedValues=0) const
+{
     // Note that this normalized by fiber optimal length (not by max velocity)
     double optimalFiberLength = getOptimalFiberLength();
 
@@ -432,36 +437,47 @@ double VandenBogert2011Muscle::fiberVelocityToProjFibVel
 
     //overload method when projFiberLength is not known/provided
 
-    double projFiberLength=fiberLengthToProjectedLength(fiberLength ,normalizedValues);
-    double projFiberVelocity = fiberVelocityToProjFibVel (fiberVelocity, fiberLength,  projFiberLength, normalizedValues);
-
+    double projFiberLength=fiberLengthToProjectedLength(fiberLength,
+                                                        normalizedValues);
+    double projFiberVelocity = fiberVelocityToProjFibVel (fiberVelocity,
+                                                          fiberLength,
+                                                          projFiberLength,
+                                                          normalizedValues);
     return projFiberVelocity;
 };
 
 //-------------------------------------------------------------
 
-double VandenBogert2011Muscle::projFibVelToFiberVelocity(double projFibVel, double fiberLength, double projFiberLength, bool normalizedValues=0) const {
+double VandenBogert2011Muscle::projFibVelToFiberVelocity(double projFibVel,
+                                                         double fiberLength,
+                                                         double projFiberLength,
+                                                         bool normalizedValues=0)
+                                                         const
+{
 // Note that this normalized by fiber optimal length (not by max velocity)
     double optimalFiberLength = getOptimalFiberLength();
 
-if (normalizedValues) {
-fiberLength = fiberLength * getOptimalFiberLength();
-projFibVel = projFibVel * optimalFiberLength;
-projFiberLength = projFiberLength * optimalFiberLength;
-}
+    if (normalizedValues)
+    {
+        fiberLength = fiberLength * getOptimalFiberLength();
+        projFibVel = projFibVel * optimalFiberLength;
+        projFiberLength = projFiberLength * optimalFiberLength;
+    }
 
-double fiberVelocity = 0;
+    double fiberVelocity = 0;
 
-if (projFibVel != 0) {
-    fiberVelocity = projFibVel * cos(projFiberLength / fiberLength);
+    if (projFibVel != 0)
+    {
+        fiberVelocity = projFibVel * cos(projFiberLength / fiberLength);
+    }
+    else { fiberVelocity = 0; }
 
-}
-else { fiberVelocity = 0; }
+    if (normalizedValues)
+    {
+        fiberVelocity = fiberVelocity / optimalFiberLength;
+    };
 
-if (normalizedValues) {fiberVelocity
-= fiberVelocity / optimalFiberLength; };
-
-return fiberVelocity;}
+    return fiberVelocity;}
 
 
 double VandenBogert2011Muscle::projFibVelToFiberVelocity
@@ -470,32 +486,42 @@ double VandenBogert2011Muscle::projFibVelToFiberVelocity
     //overload method when fiberLength is not known/provided
 
     double fiberLength=projFibLenToFiberLength(fiberLength ,normalizedValues);
-    double fiberVelocity = projFibVelToFiberVelocity(projFibVel, fiberLength, projFibLength, normalizedValues);
+    double fiberVelocity = projFibVelToFiberVelocity(projFibVel, fiberLength,
+                                                     projFibLength,
+                                                     normalizedValues);
 
     return fiberVelocity;
 };
 
 //------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,SimTK::Vec2 ydot_guess, double muscleLength, double u, int returnJacobians=0) const {
-
+VandenBogert2011Muscle::ImplicitResidual
+VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,
+                                             SimTK::Vec2 ydot_guess,
+                                             double muscleLength,
+                                             double u, int returnJacobians=0)
+                                            const
+{
     // Overload method for state vectors as parameters
-
-    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, y[0], y[1],
-                                                                           ydot_guess[0], ydot_guess[1], u, returnJacobians);
-
+    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(
+            muscleLength, y[0], y[1], ydot_guess[0], ydot_guess[1], u,
+            returnJacobians);
     return Results;
-
 
 }
 
 //------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitResidual(const SimTK::State& s, double projFibVelNorm_guess, double activdot_guess, double u, int returnJacobians) const {
-
+VandenBogert2011Muscle::ImplicitResidual
+VandenBogert2011Muscle::calcImplicitResidual(const SimTK::State& s,
+                                             double projFibVelNorm_guess,
+                                             double activdot_guess,
+                                             double u, int returnJacobians)
+                                            const
+{
     // Overload method for state as parameters
 
     double muscleLength = getLength(s);
 
-    //double activ =getActivations(s); // Does not work because info not implmented
+    //double activ =getActivations(s); //Does not work because info not implemented
     //double activ = getStateVariableValues(s,"activation");  // does not work
     //double fiberLength = getStateVariableValues(s,"fiber_length");
 
@@ -504,13 +530,12 @@ VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcImplicitRes
     double activ =stateVec[1];
 
 
-    double projFibLenNorm=fiberLengthToProjectedLength(fiberLength/getOptimalFiberLength() , 1);
+    double projFibLenNorm =
+            fiberLengthToProjectedLength(fiberLength/getOptimalFiberLength(),1);
 
-    //std::cout << "ml: " << muscleLength <<" a:" << activ << ", fl:  " << fiberLength << endl;
-
-    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(muscleLength, projFibLenNorm, activ,
-            projFibVelNorm_guess, activdot_guess, u, 0);
-
+    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(
+            muscleLength, projFibLenNorm, activ, projFibVelNorm_guess,
+            activdot_guess, u, 0);
 
     return Results;
 }
@@ -535,8 +560,6 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
             [length/optimal length/sec]
      @param activdot - rate of change of muscle activation [1/sec]
      @param u - control signal (neural excitation) 0.0 to 1.0 [unitless]
-
-     @return - a structure:  //TODO: finish defining
 
 
      */
@@ -594,10 +617,6 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     double vMaxNorm = 10 * optFiberLength;
     //Maximum shortening velocity in optimal fiber lengths per sec
 
-
-
-
-
     // Jacobian Matrices
     SimTK::Mat22 df_dy;
     SimTK::Mat22 df_dydot;
@@ -628,8 +647,8 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     // Compute fiberVelocity and its derivatives wrt projFibLen and projFibVel
     double fiberVelocityNorm = projFibVelNorm*cosPenn;
     double dfiberVelocityNorm_dprojFibVelNorm = cosPenn;
-    double dfiberVelocityNorm_dprojFibLenNorm = projFibVelNorm * dcosPenn_dprojFibLen;
-
+    double dfiberVelocityNorm_dprojFibLenNorm =
+            projFibVelNorm * dcosPenn_dprojFibLen;
 
 
     //---F1 is the normalized isometric force-length relationship at maximum
@@ -640,7 +659,8 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     double dF1_dfiberLengthNorm = 0;
     if (returnJacobians) {
         dF1_dfiberLengthNorm = -2.0 * fiberExp * F1 / fl_width;
-        double dF1_dprojFibLenNorm = dF1_dfiberLengthNorm * dfiberLength_dprojFibLen;
+        double dF1_dprojFibLenNorm =
+                dF1_dfiberLengthNorm * dfiberLength_dprojFibLen;
     }
 
 
@@ -689,8 +709,10 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
         }
     }
     if (returnJacobians){
-        dF2_dprojFibVelNorm = dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibVelNorm;
-        dF2_dprojFibLenNorm = dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibLenNorm;
+        dF2_dprojFibVelNorm =
+                dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibVelNorm;
+        dF2_dprojFibLenNorm =
+                dF2_dfiberVelocityNorm * dfiberVelocityNorm_dprojFibLenNorm;
     }
 
 
@@ -703,7 +725,7 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     // stiffness of the linear term is 1 N/m, convert to Fmax/Lceopt units
     double kPEE = 1.0 / maxIsoForce * optFiberLength;
     // elongation of fiber (PEE), relative to Lceopt
-    double kPEE2Norm = 1 / pow(fl_width, 2);   // Fiber (PEE) quadratic stiffness,
+    double kPEE2Norm = 1 / pow(fl_width, 2);  //Fiber (PEE) quadratic stiffness,
     //          so Fpee = Fmax when Lce = Lce*(1+W)
     double elongationFiberNorm = (fiberLengthNorm - fiberSlackLengthNorm);
     double F3 = kPEE * elongationFiberNorm;
@@ -713,7 +735,8 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
         //add quadratic term for positive elongation
         F3 = F3 + kPEE2Norm * pow(elongationFiberNorm, 2);
         if (returnJacobians) {
-            dF3_dfiberLengthNorm = dF3_dfiberLengthNorm + 2 * kPEE2Norm * elongationFiberNorm;
+            dF3_dfiberLengthNorm =
+                    dF3_dfiberLengthNorm + 2 * kPEE2Norm * elongationFiberNorm;
         }
     }
     if (returnJacobians) {
@@ -724,7 +747,8 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     //--------F4 is the dimensionless SEE force (in units of Fmax)----------//
 
 
-    // stiffness of the linear term is 1 N/m, convert to Fmax/m (so normalized by Fmax)
+    // stiffness of the linear term is 1 N/m, convert to Fmax/m (so normalized
+    // by Fmax)
     double kSEE = 1.0 / maxIsoForce;
 
     // Tendon (SEE) quadratic stiffness, so Fsee = Fmax at strain of umax
@@ -754,7 +778,6 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     }
 
 
-
     //-- F5 is viscous damping parallel to the CE (0.001 of Fmax at 1 Lceopt/s)
     // to  ensure that df/dLcedot is never zero-----------//
     double F5 = dampingCoeff * projFibVelNorm ;
@@ -763,17 +786,14 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     double dF5_dprojFibVelNorm  = dampingCoeff;
 
 
-
-
     // ---------Calculate the Muscle Force Residual ---------------------- //
     //The muscle dynamics equation: f = Fsee - (a*Fce - Fpee)*cos(Penn) -
     //                                                          Fdamping = 0
 
     double fRes = F4 - (activ * F1 * F2 + F3)*cosPenn - F5;
-   //cout << fRes << "=" << F4 << "-(" << activ << "*" << F1 << "*" << F2 << "+" << F3 << ")*" << cosPenn << "-" << F5 << endl;
 
 
-
+// This is just here for troubleshooting
 if (returnJacobians==2){
     cout << "-------------------------" << endl;
     cout << "activ: " << activ << endl;
@@ -842,7 +862,8 @@ if (returnJacobians==2){
                       (activ*(dF1_dfiberLengthNorm*F2 + F1*dF2_dprojFibLenNorm) +
                        dF3_dprojFibLenNorm) * cosPenn - (activ*F1*F2 + F3) *
                         dcosPenn_dprojFibLen;
-        double dfRes_dprojFibVelNorm = - activ*F1*dF2_dprojFibVelNorm - dF5_dprojFibVelNorm;
+        double dfRes_dprojFibVelNorm =
+                - activ*F1*dF2_dprojFibVelNorm - dF5_dprojFibVelNorm;
         double dfRes_dmuscleLength = dF4_dmuscleLength;
 
 
@@ -899,10 +920,14 @@ return Results; }
 
 
 //------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcJacobianByFiniteDiff(double muscleLength, double projFibLenNorm, double activ,
-                                                                                          double projFibVelNorm, double activdot, double u,
-                                                                                          double h) const {
-
+VandenBogert2011Muscle::ImplicitResidual
+VandenBogert2011Muscle::calcJacobianByFiniteDiff(double muscleLength,
+                                                 double projFibLenNorm,
+                                                 double activ,
+                                                 double projFibVelNorm,
+                                                 double activdot, double u,
+                                                 double h) const
+{
     SimTK::Vec2 y;
     SimTK::Vec2 ydot;
     y[0]=projFibLenNorm;
@@ -911,19 +936,17 @@ VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::calcJacobianByF
     ydot[1]=activdot;
 
     // Overload method for state vectors as parameters
-    VandenBogert2011Muscle::ImplicitResidual Results= calcJacobianByFiniteDiff(y, ydot, muscleLength, u, h );
+    VandenBogert2011Muscle::ImplicitResidual Results =
+            calcJacobianByFiniteDiff(y, ydot, muscleLength, u, h );
 
     return Results;
 }
 
 
-
-
-
-
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual    VandenBogert2011Muscle::
-calcJacobianByFiniteDiff(SimTK::Vec2 y, SimTK::Vec2 ydot, double muscleLength, double u, double h )
+calcJacobianByFiniteDiff(SimTK::Vec2 y, SimTK::Vec2 ydot, double muscleLength,
+                         double u, double h )
 
 const {
 
@@ -999,9 +1022,11 @@ const {
 
 
 //------------------------------------------------------------------------------
-SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(double projFibLen, double muscleLength, double activ) const {
-
-    // Just a quick convience method to get the force residual under static conditions
+SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(
+        double projFibLen, double muscleLength, double activ) const
+{
+// Just a quick convience method to get the force residual
+// under static conditions
 
     VandenBogert2011Muscle::ImplicitResidual Results = calcImplicitResidual(
             muscleLength, projFibLen, activ, 0.0, 0.0, activ, 1.0);
@@ -1017,7 +1042,8 @@ SimTK::Vec3 VandenBogert2011Muscle::calcFiberStaticEquilibResidual(double projFi
 }
 
 //------------------------------------------------------------------------------
-SimTK::Vec2 VandenBogert2011Muscle::calcFiberStaticEquilbirum(double muscleLength, double activ) const {
+SimTK::Vec2 VandenBogert2011Muscle::calcFiberStaticEquilbirum(
+        double muscleLength, double activ) const {
 
     // This code assumes that the muscle lengthing speed is 0.
 
@@ -1050,19 +1076,22 @@ while ((abs(dx)>=tol) && (neval<100)) {
     b=max(a,b);
 
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength, activ);
+    forceResAndDerivative =
+            calcFiberStaticEquilibResidual(x, muscleLength, activ);
     double fx = forceResAndDerivative[0];
 
     //After the 1st iteration, use the new guess as a new upper or lower bound
     if (neval>1) {
-        forceResAndDerivative = calcFiberStaticEquilibResidual(a, muscleLength, activ);
+        forceResAndDerivative =
+                calcFiberStaticEquilibResidual(a, muscleLength, activ);
         double funcA = forceResAndDerivative[0];
 
         if ((funcA *fx)>0){
             a = x;}
         else { b = x;}}
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(x, muscleLength, activ);
+    forceResAndDerivative =
+            calcFiberStaticEquilibResidual(x, muscleLength, activ);
     double dfx= forceResAndDerivative[1];
     //double forceRes=forceResAndDerivative[0];
 
@@ -1071,7 +1100,8 @@ while ((abs(dx)>=tol) && (neval<100)) {
 
     bool inInterval=((xdx>=a) && (xdx<=b));
 
-    forceResAndDerivative = calcFiberStaticEquilibResidual(xdx, muscleLength, activ);
+    forceResAndDerivative =
+            calcFiberStaticEquilibResidual(xdx, muscleLength, activ);
     bool largeDeriv=abs(forceResAndDerivative[0])> (0.5*abs(fx));
 
     if (~inInterval || largeDeriv) {
@@ -1080,12 +1110,11 @@ while ((abs(dx)>=tol) && (neval<100)) {
     else
         {x=xdx;};
 
-    //cout << x << "    " << dx << "    " << fx << "    "  << dfx << endl;
 
     };
 
-    // TODO:  Need to handle condition when number of loop iterations reaches neval limit
-    //      See Millard2012 Muscle Error Handling
+    // TODO:  Need to handle condition when number of loop iterations reaches
+    // neval limit. See Millard2012 Muscle Error Handling
 
     SimTK::Vec2 vout;
     vout[0]=x;   //projFiberLengthNorm
@@ -1094,13 +1123,8 @@ while ((abs(dx)>=tol) && (neval<100)) {
 }
 
 
-
-
-
-
-
-
- SimTK::Mat22  VandenBogert2011Muscle::fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const{
+ SimTK::Mat22  VandenBogert2011Muscle::fixMat22(SimTK::Mat22 matIn,
+                                                SimTK::Mat22 matFixed) const{
      for (int m =0; m<=1; m=m+1) {
          for (int n =0; n<=1; n=n+1) {
              matFixed[m][n]=matIn[m][n];
