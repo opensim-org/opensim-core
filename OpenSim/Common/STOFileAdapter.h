@@ -27,9 +27,35 @@
 
 namespace OpenSim {
 
+class STODataTypeNotSupported : public Exception {
+public:
+    STODataTypeNotSupported(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const std::string& datatype) :
+        Exception(file, line, func) {
+        std::string msg = "Datatype '" + datatype + "' is not supported.";
+
+        addMessage(msg);
+    }
+};
+
+class STODataTypeNotFound : public Exception {
+public:
+    STODataTypeNotFound(const std::string& file,
+                        size_t line,
+                        const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "DataType not specified in the header.";
+
+        addMessage(msg);
+    }
+};
+
 /** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
 appropriately for STO files.                                                  */
-class OSIMCOMMON_API STOFileAdapter : public DelimFileAdapter {
+template<typename T>
+class OSIMCOMMON_API STOFileAdapter : public DelimFileAdapter<T> {
 public:
     STOFileAdapter();
     STOFileAdapter(const STOFileAdapter&)            = default;
@@ -42,12 +68,50 @@ public:
 
     /** Read a STO file.                                                      */
     static
-    TimeSeriesTable read(const std::string& fileName);
+    TimeSeriesTable_<T> read(const std::string& fileName);
 
     /** Write a STO file.                                                     */
     static
-    void write(const TimeSeriesTable& table, const std::string& fileName);
+    void write(const TimeSeriesTable_<T>& table, const std::string& fileName);
 };
+
+template<typename T>
+STOFileAdapter<T>::STOFileAdapter() :
+    DelimFileAdapter<T>(" \t", // delimites for read between elements
+                        "\t",  // delimiter for write between elements
+                        ",",   // delim for reading components(within element)
+                        ","    // delim for writing components(within element)
+                        ) {}
+
+template<typename T>
+STOFileAdapter<T>*
+STOFileAdapter<T>::clone() const {
+    return new STOFileAdapter{*this};
+}
+
+template<typename T>
+TimeSeriesTable_<T>
+STOFileAdapter<T>::read(const std::string& fileName) {
+    auto abs_table = STOFileAdapter{}.
+                     extendRead(fileName).
+                     at(DelimFileAdapter<T>::_table);
+    return static_cast<TimeSeriesTable_<T>&>(*abs_table);
+}
+
+template<typename T>
+void 
+STOFileAdapter<T>::write(const TimeSeriesTable_<T>& table, 
+                         const std::string& fileName) {
+    DataAdapter::InputTables tables{};
+    tables.emplace(DelimFileAdapter<T>::_table, &table);
+    STOFileAdapter{}.extendWrite(tables, fileName);
+}
+
+std::shared_ptr<DataAdapter> 
+createSTOFileAdapterForReading(const std::string& fileName);
+
+std::shared_ptr<DataAdapter>
+createSTOFileAdapterForWriting(const AbstractDataTable& table);
 
 }
 
