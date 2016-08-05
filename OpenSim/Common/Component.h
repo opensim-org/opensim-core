@@ -1356,6 +1356,10 @@ protected:
     /** Get the number of Subcomponents adopted by this Component */
     size_t getNumAdoptedSubcomponents() const;
 
+    /** Access this Component's immediate subcomponents (not those owned by
+        subcomponents) */
+    std::vector<SimTK::ReferencePtr<const Component>> getMySubcomponents() const;
+
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
@@ -2344,12 +2348,22 @@ protected:
     };
 
 
+    /// Helper method to enable Component maker to specify the order of
+    /// subcomponents to be added to the System used by addToSystem().
+    /// Use this method in extendConnect() of your Component to set the
+    /// order of your components. For example, Model orders subcomponents
+    /// according to the multibody tree and add bodies and joints in order
+    /// starting from Ground and growing outward.
+    /// Note: call resetSubcomponentOrder() prior to setting the first
+    /// subcomponent.
+    /// If the subcomponent already appears in the order list setting it
+    /// later in the list has no effect. The list remains unique.
+    void setNextSubcomponentInSystem(const Component& sub) const;
 
-    // Maintain pointers to subcomponents so we can invoke them automatically.
-    // These are just references, don't delete them!
-    // TODO: subcomponents should not be exposed to derived classes to trash.
-    //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    void resetSubcomponentOrder() {
+        _orderedSubcomponents.clear();
+    }
+
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -2382,10 +2396,17 @@ private:
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
+    // list of subomponents that are contained in this Component's properties
+    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
     // Keep fixed list of data member Components upon construction
     SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
     SimTK::Array_<SimTK::ClonePtr<Component> > _adoptedSubcomponents;
+
+    // A flat list of all the subcomponents that comprise this Component.
+    // The list must be complete and in the correct System order by 
+    // addToSystem().
+    mutable std::vector<SimTK::ReferencePtr<const Component> > _orderedSubcomponents;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
