@@ -540,6 +540,7 @@ void Model::createMultibodyTree()
     }
 
     Ground& ground = updGround();
+
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
     _multibodyTree.addBody(ground.getName(), 0, false, &ground);
@@ -550,23 +551,24 @@ void Model::createMultibodyTree()
                                 const_cast<Body*>(&body) );
     }
 
+    std::vector<SimTK::ReferencePtr<Joint>> joints;
+    for (auto& joint : updComponentList<Joint>()) {
+        joints.push_back(SimTK::ReferencePtr<Joint>(&joint));
+    }
+
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    auto joints = getComponentList<Joint>();
     for (auto& joint : joints) {
-        std::string name = joint.getName();
+        std::string name = joint->getName();
         IO::TrimWhitespace(name);
 
-        if (name.empty()) {
-            name = joint.getParentFrame().getName() + "_to_" +
-                    joint.getChildFrame().getName();
-        }
+        std::cout << "createMultibodyTree::Joint '" << name << "' present." << std::endl;
 
         // Currently we need to take a first pass at connecting the joints
         // in order to ask the joint for the frames that they attach to and
         // to determine their underlying base (physical) frames.
-        auto& mutableJoint = const_cast<Joint&>(joint);
-        mutableJoint.connect(*this);
+        joint->connect(*this);
+
         // hack to make sure underlying Frame is also connected so it can 
         // traverse to the base frame and get its name. This allows the
         // (offset) frames to satisfy the connectors of Joint to be added
@@ -574,18 +576,18 @@ void Model::createMultibodyTree()
         // TODO: try to create the multibody tree later when components
         // can already be expected to be connected then traverse those
         // relationships to create the multibody tree. -aseth
-        const_cast<PhysicalFrame&>(joint.getParentFrame()).connect(*this);
-        const_cast<PhysicalFrame&>(joint.getChildFrame()).connect(*this);
+        const_cast<PhysicalFrame&>(joint->getParentFrame()).connect(*this);
+        const_cast<PhysicalFrame&>(joint->getChildFrame()).connect(*this);
 
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
-            joint.getConcreteClassName(),
+            joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint.getParentFrame().findBaseFrame().getName(),
-            joint.getChildFrame().findBaseFrame().getName(),
+            joint->getParentFrame().findBaseFrame().getName(),
+            joint->getChildFrame().findBaseFrame().getName(),
             false,
-            &mutableJoint);
+            joint.get());
     }
 }
 
@@ -599,16 +601,24 @@ void Model::extendConnectToModel(Model &model)
             model.getName() << "." << endl;
     }
 
+    // Reset the list of all components and rebuild the list in the order
+    // that conforms to the MultibodyTree
+    resetSubcomponentOrder();
+
     createMultibodyTree();
 
     // Model is connected so build the Multibody tree to represent it
     _multibodyTree.generateGraph();
-    //_multibodyTree.dumpGraph(cout);
-    //cout << endl;
+    _multibodyTree.dumpGraph(cout);
+    cout << endl;
 
+    // Ground is the first component of any MultibodySystem
+    Ground& ground = updGround();
+    setNextSubcomponentInSystem(ground);
+
+    // The JointSet of the Model is only being manipulated for consistency with 
+    // Tool expectations. TODO fix Tools and remove
     JointSet& joints = upd_JointSet();
-    BodySet& bodies = upd_BodySet();
-    int nb = bodies.getSize();
 
     bool isMemoryOwner = joints.getMemoryOwner();
     //Temporarily set owner ship to false so we 
@@ -633,6 +643,7 @@ void Model::extendConnectToModel(Model &model)
 
             if (!outb) {
                 outb = outbMaster->addSlave();
+                setNextSubcomponentInSystem(*outb);
                 useJoint->setSlaveBodyForChild(*outb);
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
@@ -643,6 +654,7 @@ void Model::extendConnectToModel(Model &model)
 
                 // include within adopted list of owned components
                 adoptSubcomponent(weld);
+                setNextSubcomponentInSystem(*weld);
             }
         }
 
@@ -661,38 +673,34 @@ void Model::extendConnectToModel(Model &model)
             Joint* free = new FreeJoint(jname, *ground, *child);
             free->upd_reverse() = mob.isReversedFromJoint();
             addJoint(free);
+            setNextSubcomponentInSystem(*free);
         }
         else{
-            Component* compToMoveOut = _propertySubcomponents.at(m+nb).get();
-            // reorder the joint components in the order of the multibody tree
-            Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
-            auto it = std::find(_propertySubcomponents.begin(),
-                                _propertySubcomponents.end(), 
-                                SimTK::ReferencePtr<Component>(jointToSwap));
-            if (it != _propertySubcomponents.end()){
-                // Only if the joint is not in the correct sequence the swap
-                if (compToMoveOut != jointToSwap){
-                    _propertySubcomponents[m + nb].reset(jointToSwap);
-                    it->reset(compToMoveOut);
-                }
-            }
-            int jx = joints.getIndex(jointToSwap, m);
+            // Update the directionality of the joint according to tree's
+            // preferential direction
+            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
+                mob.isReversedFromJoint();
+
+            // order the joint components in the order of the multibody tree
+            Joint* joint = static_cast<Joint*>(mob.getJointRef());
+            //setNextSubcomponentInSystem(joint->getParentFrame());
+            setNextSubcomponentInSystem(*joint);
+            //setNextSubcomponentInSystem(joint->getChildFrame());
+
+            int jx = joints.getIndex(joint, m);
             //if in the set but not already in the right order
-            if ((jx >= 0) && (jx != m)) {
+            if ((jx >= 0) && (jx < joints.getSize()) && (jx != m)) {
                 // perform a move to put the joint in tree order
                 // this is necessary ONLY because some tools assume that the
                 // order or joints and specifically coordinates is the
                 // order of the mobility (generalized) forces.
                 // IDTool, StaticOptimization and RRA for example will fail.
                 // TODO: when the tools are fixed/removed remove this as well.
-                jointToSwap = &joints.get(jx);
+                joint = &joints.get(jx);
                 joints.set(jx, &joints.get(m));
-                joints.set(m, jointToSwap);
+                joints.set(m, joint);
             }
-            // Update the directionality of the joint according to tree's
-            // preferential direction
-            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
-                mob.isReversedFromJoint();
+
         }
     }
     joints.setMemoryOwner(isMemoryOwner);
@@ -711,6 +719,7 @@ void Model::extendConnectToModel(Model &model)
                 parent, joint.getParentFrame().findTransformInBaseFrame(),
                 child, joint.getChildFrame().findTransformInBaseFrame());
             adoptSubcomponent(weld);
+            setNextSubcomponentInSystem(*weld);
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
@@ -718,6 +727,7 @@ void Model::extendConnectToModel(Model &model)
                 child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
             adoptSubcomponent(point);
+            setNextSubcomponentInSystem(*point);
         }
         else if (joint.getConcreteClassName() == "FreeJoint") {
             // A "free" loop constraint is no constraint at all so we can
@@ -728,6 +738,20 @@ void Model::extendConnectToModel(Model &model)
         else
             throw std::runtime_error(
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
+    }
+
+    // Now include all remaining Components beginning with PhysicalFrames
+    // since Forces can only be applied to PhyicalFrames
+    auto poFrames = getComponentList<PhysicalOffsetFrame>();
+    for (const auto& pof : poFrames) {
+        setNextSubcomponentInSystem(pof);
+    }
+
+    // and everything else including Forces, Controllers, etc...
+    // belonging to the model
+    auto components = getMySubcomponents();
+    for (const auto& comp : components) {
+        setNextSubcomponentInSystem(comp.getRef());
     }
 
     // Reorder coordinates in order of the underlying mobilities
@@ -749,7 +773,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     Model *mutableThis = const_cast<Model *>(this);
 
     // Ensure Ground is added before all other Components
-    getGround().addToSystem(system);
+    //getGround().addToSystem(system);
     //Analyses are not Components so add them after legit 
     //Components have been wired-up correctly.
     mutableThis->updAnalysisSet().setModel(*mutableThis);
