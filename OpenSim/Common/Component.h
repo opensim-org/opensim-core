@@ -109,11 +109,11 @@ public:
     ComponentHasNoSystem(const std::string& file,
                          size_t line,
                          const std::string& func,
-                         const std::string& thisName) :
-        Exception(file, line, func) {
-        std::string msg = "Component '" + thisName;
-        msg += "' has not been added to a System.\nYou must call initSystem ";
-        msg += "on the top-level Component (i.e., Model) first.";
+                         const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "This Component has not been added to a System.\n";
+        msg += "You must call initSystem on the top-level Component ";
+        msg += "(i.e., Model) first.";
         addMessage(msg);
     }
 };
@@ -1155,7 +1155,7 @@ public:
     getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -1188,7 +1188,7 @@ public:
     updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -1224,7 +1224,7 @@ public:
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -1264,7 +1264,7 @@ public:
                                   const std::string& name) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -1297,7 +1297,7 @@ public:
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
@@ -1331,7 +1331,7 @@ public:
                      const T& value) const
     {
         // Must have already called initSystem.
-        OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);

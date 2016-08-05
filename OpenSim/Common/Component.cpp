@@ -566,7 +566,7 @@ unsigned Component::printComponentsMatching(const std::string& substring) const
 int Component::getNumStateVariables() const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     //Get the number of state variables added (or exposed) by this Component
     int ns = getNumStateVariablesAddedByComponent(); 
@@ -727,7 +727,7 @@ const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // first assume that the state variable named belongs to this
     // top level component
@@ -771,7 +771,7 @@ const Component::StateVariable* Component::
 Array<std::string> Component::getStateVariableNames() const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
 
@@ -842,7 +842,7 @@ double Component::
     getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
@@ -864,7 +864,7 @@ double Component::
                                 const std::string& name) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     computeStateVariableDerivatives(state);
     
@@ -897,7 +897,7 @@ void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
@@ -947,7 +947,7 @@ SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     int nsv = getNumStateVariables();
     // if the StateVariables are invalid (see above) rebuild the list
@@ -974,7 +974,7 @@ void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     int nsv = getNumStateVariables();
 
@@ -1024,7 +1024,7 @@ double Component::
 getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -1049,7 +1049,7 @@ void Component::
 setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
     // Must have already called initSystem.
-    OPENSIM_THROW_IF(!hasSystem(), ComponentHasNoSystem, getName().c_str());
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
