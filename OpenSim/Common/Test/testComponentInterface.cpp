@@ -393,35 +393,37 @@ void testMisc() {
     // underlying MultibodySystem.
     {
         SimTK::State sBlank;
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable("waldo"));
+        const std::string varName = "waldo"; //dummy name
+
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.getStateVariableValue(sBlank, "waldo"));
+            theWorld.getStateVariableValue(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.setStateVariableValue(sBlank, "waldo", 0.));
+            theWorld.setStateVariableValue(sBlank, varName, 0.));
         ASSERT_THROW(ComponentHasNoSystem,
             theWorld.getStateVariableValues(sBlank));
         ASSERT_THROW(ComponentHasNoSystem,
             theWorld.setStateVariableValues(sBlank, SimTK::Vector(1, 0.)));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.getStateVariableDerivativeValue(sBlank, "waldo"));
+            theWorld.getStateVariableDerivativeValue(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.getDiscreteVariableValue(sBlank, "waldo"));
+            theWorld.getDiscreteVariableValue(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.setDiscreteVariableValue(sBlank, "waldo", 0.));
+            theWorld.setDiscreteVariableValue(sBlank, varName, 0.));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.getCacheVariableValue<double>(sBlank, "waldo"));
+            theWorld.getCacheVariableValue<double>(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.setCacheVariableValue(sBlank, "waldo", 0.));
+            theWorld.setCacheVariableValue(sBlank, varName, 0.));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.updCacheVariableValue<double>(sBlank, "waldo"));
+            theWorld.updCacheVariableValue<double>(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.markCacheVariableValid(sBlank, "waldo"));
+            theWorld.markCacheVariableValid(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.markCacheVariableInvalid(sBlank, "waldo"));
+            theWorld.markCacheVariableInvalid(sBlank, varName));
         ASSERT_THROW(ComponentHasNoSystem,
-            theWorld.isCacheVariableValid(sBlank, "waldo"));
+            theWorld.isCacheVariableValid(sBlank, varName));
     }
 
     TheWorld* cloneWorld = theWorld.clone();
