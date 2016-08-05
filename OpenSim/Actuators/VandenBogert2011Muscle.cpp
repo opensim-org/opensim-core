@@ -160,7 +160,7 @@ const
 
 // Get the Residual of muscle
 // TODO:  This breaks naming convention in that it does not get an already
-// evaluated constant, it actually performs the calcualtion.  Without using a
+// evaluated constant, it actually performs the calculation.  Without using a
 // state variable or adding to the cache variables, I think I have to do it this
 // way?
 SimTK::Vec2 VandenBogert2011Muscle::getResidual(const SimTK::State& s,
@@ -200,9 +200,26 @@ double  VandenBogert2011Muscle::getActivation(SimTK::State& s) const
 
 
 double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
+{
+    double activ=getActivation(s);
+    // For now we will start with static guess
+    // TODO: figure out how to use previous state as guess
+    SimTK::Vector ydotInitialGuess(2);
+    ydotInitialGuess[0]=0.0;
+    ydotInitialGuess[1]=0.0;
+    SimTK::Vec2 sdot=calcSolveMuscle(s, activ, ydotInitialGuess);
 
-{  // TODO: Copy back in this code after troubleshooting
-    return( SimTK::NaN);}
+    VandenBogert2011Muscle::ImplicitResidual Result= calcImplicitResidual(s,
+                                          sdot[0],
+                                          sdot[1],
+                                          activ,
+                                          0);
+
+    //TODO: Could probably add a check here that residuals =0
+    double actuation=Result.forceTendon;
+
+    return(actuation);
+}
 
 
 
@@ -296,15 +313,18 @@ void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
 void VandenBogert2011Muscle::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
-// TODO: !!!!!!!!!!!!!!!!!!!!!!!!1
-        //double adot =getActivationDerivative(s);
-        double adot = 0.0;
-        setStateVariableDerivativeValue(s, "activation", adot);
 
-// TODO: !!!!!!!!!!!!!!!!!!!!!!!!1
-        //double ldot = getFiberVelocity(s);
-        double ldot = 0.0;
-        setStateVariableDerivativeValue(s, "fiber_length", ldot);
+    double activ=getActivation(s);
+    // For now we will start with static guess
+    // TODO: figure out how to use previous state as guess
+    SimTK::Vector ydotInitialGuess(2);
+    ydotInitialGuess[0]=0.0;
+    ydotInitialGuess[1]=0.0;
+    SimTK::Vec2 sdot=calcSolveMuscle(s, activ, ydotInitialGuess);
+
+    setStateVariableDerivativeValue(s, "fiber_length", sdot[0]);
+    setStateVariableDerivativeValue(s, "activation", sdot[1]);
+
 
 }
 
@@ -333,7 +353,7 @@ double VandenBogert2011Muscle::fiberLengthToProjectedLength
                 pennAtOptFiberLength);  //b is the fixed distance of the fiber
         //perpindicular to the tendon (width)
 
-        /*TODO: muscleWidth is a constant that should not need to be
+        /*TODO: muscleWidth as cache variable
          * recalculated. Should be moved info muslceLengthInfo cache */
 
         // The fiber can not be shorter than b; if it is, the projected length
@@ -473,21 +493,7 @@ double VandenBogert2011Muscle::projFibVelToFiberVelocity
     return fiberVelocity;
 };
 
-//------------------------------------------------------------------------------
-VandenBogert2011Muscle::ImplicitResidual
-VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,
-                                             SimTK::Vec2 ydot_guess,
-                                             double muscleLength,
-                                             double u, int returnJacobians=0)
-                                            const
-{
-    // Overload method for state vectors as parameters
-    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(
-            muscleLength, y[0], y[1], ydot_guess[0], ydot_guess[1], u,
-            returnJacobians);
-    return Results;
 
-}
 
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual
@@ -495,7 +501,8 @@ VandenBogert2011Muscle::calcImplicitResidual(const SimTK::State& s,
                                              double projFibVelNorm_guess,
                                              double activdot_guess,
                                              double u, int returnJacobians)
-                                            const
+
+
 {
     // Overload method for state as parameters
 
@@ -521,6 +528,21 @@ VandenBogert2011Muscle::calcImplicitResidual(const SimTK::State& s,
 }
 
 
+//------------------------------------------------------------------------------
+VandenBogert2011Muscle::ImplicitResidual
+VandenBogert2011Muscle::calcImplicitResidual(SimTK::Vec2 y,
+                                             SimTK::Vec2 ydot_guess,
+                                             double muscleLength,
+                                             double u, int returnJacobians=0)
+const
+{
+    // Overload method for state vectors as parameters
+    VandenBogert2011Muscle::ImplicitResidual Results= calcImplicitResidual(
+            muscleLength, y[0], y[1], ydot_guess[0], ydot_guess[1], u,
+            returnJacobians);
+    return Results;
+
+}
 
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual VandenBogert2011Muscle::
@@ -910,9 +932,13 @@ VandenBogert2011Muscle::calcJacobianByFiniteDiff(double muscleLength,
 //------------------------------------------------------------------------------
 VandenBogert2011Muscle::ImplicitResidual    VandenBogert2011Muscle::
 calcJacobianByFiniteDiff(SimTK::Vec2 y, SimTK::Vec2 ydot, double muscleLength,
-                         double u, double h )
+                         double u, double h ) const {
 
-const {
+
+
+    //TODO: In the optimizer class, you do not have to supply the Jacobian
+    // function.  The must mean there is code in Simbody that does finite diff.
+    // Should probably look at calling that in place of this code.
 
     // Jacobian Matrices
     SimTK::Mat22 df_dy;
@@ -1016,7 +1042,8 @@ SimTK::Vec2 VandenBogert2011Muscle::calcFiberStaticEquilbirum(
     //calcImplicitResidual can be reduced
 
     //TODO: Generalize with a Lambda function (will need help with that).
-    //TODO: calcImplicitResidual really only needs to calculate df_ds (single element) for this function
+    //TODO: calcImplicitResidual really only needs to calculate df_ds
+    //       (single element) for this function
 
 
 double tol=1e-8; //TODO : Look at changing to propotional of eps
@@ -1085,6 +1112,88 @@ while ((abs(dx)>=tol) && (neval<100)) {
     vout[1]=forceResAndDerivative[2];  // muscleForce
     return vout;
 }
+
+
+
+
+//------------------------------------------------------------------------------
+//Calculate the ydot values to drive the residuals to 0 and "balance" the muscle
+SimTK::Vector VandenBogert2011Muscle::calcSolveMuscle(SimTK::State& s,
+         double activ, SimTK::Vector yDotInitialGuess) const {
+
+
+    ImplicitSystemDerivativeSolver sys(2, s, activ);
+
+    //TODO:  Need come up with reasonable bounds
+    SimTK::Vector lower_bounds(2);
+    lower_bounds[0] = -SimTK::Infinity;
+    lower_bounds[1] = -SimTK::Infinity;
+
+    SimTK::Vector upper_bounds(2);
+    upper_bounds[0] = SimTK::Infinity;
+    upper_bounds[1] = SimTK::Infinity;
+
+    sys.setParameterLimits(lower_bounds, upper_bounds);
+
+    SimTK::Optimizer opt(sys, SimTK::InteriorPoint); //Create the optimizer
+
+    // Specify settings for the optimizer
+    opt.setConvergenceTolerance(0.1);
+    opt.useNumericalGradient(true, 1e-5);
+    opt.useNumericalJacobian(true);
+    opt.setMaxIterations(100);
+    opt.setLimitedMemoryHistory(500);
+
+    opt.optimize(yDotInitialGuess);  // Optimize
+
+    return yDotInitialGuess;
+}
+
+//------------------------------------------------------------------------------
+//Create a optimization solver to balance the muscle
+class ImplicitSystemDerivativeSolver : public SimTK::OptimizerSystem {
+public:
+
+    //TODO:  Add back in option to use NR solver (and perform benchmark)
+    /* Constructor class. Parameters passed are accessed in the objectiveFunc()
+     * class. */
+    ImplicitSystemDerivativeSolver(int numParameters, SimTK::State& s,
+                                   double& u):
+            OptimizerSystem(numParameters),
+            numControls(numParameters),
+            si(s),
+            excitation(u)
+    {}
+
+    int objectiveFunc(const SimTK::Vector &new_yDotGuess, bool new_params,
+                      SimTK::Real& f) const override {
+        // No objective function
+        f = 0;
+        return 0;
+    }
+
+    int constraintFunc(const SimTK::Vector &new_yDotGuess, bool newParams,
+                       SimTK::Vector& constraints)  override {
+        //The constraints function is the residuals
+
+        double projFibVelNorm_guess=new_yDotGuess[0];
+        double activdot_guess=new_yDotGuess[1];
+        VandenBogert2011Muscle::ImplicitResidual
+                Results = VandenBogert2011Muscle::calcImplicitResidual
+                (si,projFibVelNorm_guess,activdot_guess,excitation,0);
+
+        constraints[0]=Results.forceResidual;
+        constraints[1]=Results.activResidual;
+
+        return 0;
+    }
+
+private:
+    int numControls;
+    SimTK::State& si;
+    double& excitation;
+};
+
 
 
  SimTK::Mat22  VandenBogert2011Muscle::fixMat22(SimTK::Mat22 matIn,

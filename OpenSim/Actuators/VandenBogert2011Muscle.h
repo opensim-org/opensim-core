@@ -292,6 +292,8 @@ public:
     // TODO: These should move to protected at some point
 
         // Methods to calculate muscle residual:
+
+
         /** Calculates the muscle residuals.
                 @param muscleLength length of muscle (N)
                 @param projFibLength length of the muscle fiber projected inline
@@ -327,7 +329,8 @@ public:
                                               double muscleLength,
                                               double u,
                                               int returnJacobians) const;
-        /** Calculates the muscle residuals. (convience method for getting from
+
+        /** Calculates the muscle residuals. (method for getting from
         state)
                 @param s The state of the system. (provides projected fiber
                         length and muscle activation)
@@ -342,8 +345,7 @@ public:
                                               double projFibVel_guess,
                                               double activdot_guess,
                                               double u,
-                                              int returnJacobians) const;
-
+                                              int returnJacobians);
 
         //Convience methods for converting between muscle length, projected
         // muscle length, and normalized values.  Need to do this because I am
@@ -480,6 +482,13 @@ public:
                                                    double activ) const;
 
 
+
+
+        SimTK::Vector calcSolveMuscle(
+                SimTK::State& s, double activ, SimTK::Vector yDotInitialGuess)
+                                const;
+
+        class ImplicitSystemDerivativeSolver : public SimTK::OptimizerSystem {};
 
         //Hacks for troubleshooting Mat22:
         SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;
