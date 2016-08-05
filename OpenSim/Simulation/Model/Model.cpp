@@ -609,8 +609,8 @@ void Model::extendConnectToModel(Model &model)
 
     // Model is connected so build the Multibody tree to represent it
     _multibodyTree.generateGraph();
-    _multibodyTree.dumpGraph(cout);
-    cout << endl;
+    //_multibodyTree.dumpGraph(cout);
+    //cout << endl;
 
     // Ground is the first component of any MultibodySystem
     Ground& ground = updGround();
