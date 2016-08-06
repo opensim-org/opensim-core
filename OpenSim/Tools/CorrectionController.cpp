@@ -250,8 +250,6 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
             double vErrTerm = _kv*oneOverFmax*vErr;
             actControls = -vErrTerm - pErrTerm;
         }
-
-        
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 }
@@ -277,7 +275,11 @@ void CorrectionController::extendConnectToModel(Model& model)
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
-            _model->addForce(actuator);
+            // Since CorrectionController is creating these actuators for its
+            // own devices, it should take ownership of them, so that when
+            // the controller is removed, so are all the actuators it added.
+            adoptSubcomponent(actuator);
+            setNextSubcomponentInSystem(*actuator);
         }
             
         actuator->setOptimalForce(1.0);
