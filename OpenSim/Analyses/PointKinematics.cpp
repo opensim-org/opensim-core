@@ -51,7 +51,6 @@ const int PointKinematics::BUFFER_LENGTH = PointKinematicsBUFFER_LENGTH;
  */
 PointKinematics::~PointKinematics()
 {
-    if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
     deleteStorage();
 }
 //_____________________________________________________________________________
@@ -150,7 +149,6 @@ void PointKinematics::
 setNull()
 {
     // POINTERS
-    _dy = NULL;
     _kin = NULL;
     _pStore = NULL;
     _vStore = NULL;
@@ -314,12 +312,6 @@ setModel(Model& aModel)
     _body = &aModel.updBodySet().get(_bodyName);
     if (aModel.updBodySet().contains(_relativeToBodyName))
         _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
-
-    // ALLOCATIONS
-    if (_dy != 0)
-        delete[] _dy;
-
-    _dy = new double[_model->getNumStateVariables()];
 
     // DESCRIPTION AND LABELS
     constructDescription();

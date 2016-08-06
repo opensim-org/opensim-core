@@ -388,6 +388,44 @@ void testMisc() {
     theWorld.setName("World");
     theWorld.finalizeFromProperties();
 
+    // ComponentHasNoSystem exception should be thrown if user attempts to read
+    // or write state, discrete, or cache variables before Component has an
+    // underlying MultibodySystem.
+    {
+        SimTK::State sBlank;
+        const std::string varName = "waldo"; //dummy name
+
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValues(sBlank));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValues(sBlank, SimTK::Vector(1, 0.)));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableDerivativeValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getDiscreteVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setDiscreteVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setCacheVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.updCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableValid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableInvalid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.isCacheVariableValid(sBlank, varName));
+    }
+
     TheWorld* cloneWorld = theWorld.clone();
     cloneWorld->setName("ClonedWorld");
     cloneWorld->finalizeFromProperties();
