@@ -63,17 +63,8 @@ public:
 #ifndef SWIG
     CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
 #endif
-    void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
-{
-    for(int i=0;i<_objects.getSize();i++) {
-        Coordinate *obj = _objects[i];
-        if(obj==NULL) {
-            rNames.append("NULL");
-        } else {
-            rNames.append(obj->getSpeedName());
-        }
-    }
-}
+    void getSpeedNames(OpenSim::Array<std::string> &rNames) const;
+
 //=============================================================================
 };  // END of class CoordinateSet
 //=============================================================================
