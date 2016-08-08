@@ -96,6 +96,7 @@ Model::Model() : ModelComponent(),
     constructProperties();
     setNull();
     finalizeFromProperties();
+    updCoordinateSet().populate(*this);
 }
 //_____________________________________________________________________________
 /**
@@ -116,6 +117,7 @@ Model::Model(const string &aFileName, const bool finalize) :
 
     if (finalize) {
         finalizeFromProperties();
+        updCoordinateSet().populate(*this);
     }
 
     _fileName = aFileName;
@@ -330,6 +332,15 @@ SimTK::State& Model::initializeState() {
     // Process the modified modeling option.
     getMultibodySystem().realizeModel(_workingState);
 
+    // having added all Components to the system (some of which can have their
+    // own Joints with Coordinates) make sure the Model's Coordinates are now
+    // in System order to make it easy to map between System's State Qs and 
+    // Coordinates. The earliest this can be done is after realizeModel
+    // because that is the last opportunity to modify the system that could 
+    // modify the number of underlying states. After this point all
+    // indices in the State are fixed.
+    //reorderCoordinatesAccordingToSystemMobilities();
+
     // Invoke the ModelComponent interface for initializing the state.
     initStateFromProperties(_workingState);
 
@@ -472,7 +483,6 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-
     // We must reset these unique_ptr's before deleting the System (through
     // reset()), since deleting the System puts a null handle pointer inside
     // the subsystems (since System deletes the subsystems).
@@ -496,6 +506,46 @@ void Model::createMultibodySystem()
 }
 
 
+void Model::reorderCoordinatesAccordingToSystemMobilities()
+{
+    OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
+        "Attempting to reorder Coordinates according to an invalid System.");
+
+    auto& coordSet = updCoordinateSet();
+
+    // We have a valid MultibodySystem underlying the Coordinates
+    int nc = coordSet.getSize();
+    const SimTK::State& s = getModel().getWorkingState();
+    SimTK_ASSERT_ALWAYS(s.getNQ() == nc,
+        "CoordinateSet does not correspond to the number of mobilities in "
+        "the underlying MultibodySystem.");
+
+    auto& matter = getSystem().getMatterSubsystem();
+
+    for (int i = 0; i < nc; ++i) {
+        Coordinate* coord = &coordSet[i];
+        auto mbix = coord->getBodyIndex();
+        auto mqix = coord->getMobilizerQIndex();
+
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+
+        SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds number of Coordinates "
+            "in Set.");
+
+        //if in the set but not already in the right order
+        if (i != cix) {
+            // perform a move to put the Coordinate in tree order
+            // hold on to what is the slot already
+            coord = &coordSet[cix];
+            // set the current coordinate into its correct slot
+            coordSet.set(cix, &coordSet[i]);
+            // put the coordinate that was in the slot back in the set
+            coordSet.set(i, coord);
+        }
+    }
+}
+
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -512,8 +562,6 @@ void Model::extendFinalizeFromProperties()
         cout << "The following Errors/Warnings were encountered interpreting properties of the model. " <<
             getValidationLog() << endl;
     }
-
-    updCoordinateSet().populate(*this);
 }
 
 void Model::createMultibodyTree()
@@ -561,8 +609,6 @@ void Model::createMultibodyTree()
     for (auto& joint : joints) {
         std::string name = joint->getName();
         IO::TrimWhitespace(name);
-
-        std::cout << "createMultibodyTree::Joint '" << name << "' present." << std::endl;
 
         // Currently we need to take a first pass at connecting the joints
         // in order to ask the joint for the frames that they attach to and
@@ -641,9 +687,11 @@ void Model::extendConnectToModel(Model &model)
             Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
             Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
 
+            // the joint must be added to the system next
+            setNextSubcomponentInSystem(*useJoint);
+
             if (!outb) {
                 outb = outbMaster->addSlave();
-                setNextSubcomponentInSystem(*outb);
                 useJoint->setSlaveBodyForChild(*outb);
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
@@ -700,7 +748,6 @@ void Model::extendConnectToModel(Model &model)
                 joints.set(jx, &joints.get(m));
                 joints.set(m, joint);
             }
-
         }
     }
     joints.setMemoryOwner(isMemoryOwner);
