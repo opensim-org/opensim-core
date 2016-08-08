@@ -32,8 +32,8 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
-void testVisModel(string fileName);
-void createModel4AppearanceTest(const std::string& filename);
+void testVisModel(Model& model, const std::string filename_for_standard);
+Model createModel4AppearanceTest();
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -102,10 +102,10 @@ int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
-        testVisModel("BuiltinGeometry.osim");
-        std::string testAppearanceModelFile = "AppearanceTest.osim";
-        createModel4AppearanceTest(testAppearanceModelFile);
-        testVisModel(testAppearanceModelFile);
+        Model testModel("BuiltinGeometry.osim");
+        testVisModel(testModel, "vis_BuiltinGeometry.txt");
+        testModel = createModel4AppearanceTest();
+        testVisModel(testModel, "vis_AppearanceTest.txt");
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -115,26 +115,24 @@ int main()
     return 0;
 }
 
-void testVisModel(string fileName)
+void testVisModel(Model& model, const std::string standard_filename)
 {
 
-    Model* model = new Model(fileName, true);
-    //model->setUseVisualizer(true);
-    SimTK::State& si = model->initSystem();
-    //model->getVisualizer().show(si);
+    //model.setUseVisualizer(true);
+    SimTK::State& si = model.initSystem();
+    //model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
-    model->generateDecorations(true, mdh, si, geometryToDisplay);
+    model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
-    model->generateDecorations(false, mdh, si, geometryToDisplay);
+    model.generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     DecorativeGeometryImplementationText dgiText;
     for (unsigned i = 0; i < geometryToDisplay.size(); i++)
         geometryToDisplay[i].implementGeometry(dgiText);
 
-    std::string baseName = fileName.substr(0, fileName.find_last_of('.'));
-    std::ifstream t("vis_" + baseName + ".txt");
-    if (!t.good()) throw OpenSim::Exception("Could not open file.");
+    std::ifstream t(standard_filename);
+    if (!t.good()) throw OpenSim::Exception("Could not open file. "+ standard_filename);
     std::stringstream buffer;
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
@@ -144,11 +142,10 @@ void testVisModel(string fileName)
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
-    delete model;
-    ASSERT(same == 0, __FILE__, __LINE__, "Files do not match.");
+    ASSERT(same == 0, __FILE__, __LINE__, "Files containing visualization primitives do not match.");
 }
 
-void createModel4AppearanceTest(const std::string& filename)
+Model createModel4AppearanceTest()
 {
     Model modelWithGroundOnly;
     Sphere* unitSphere = new Sphere(1.0);
@@ -175,5 +172,5 @@ void createModel4AppearanceTest(const std::string& filename)
     Sphere* oooffsetSphere = unitSphere->clone();
     oooffsetSphere->upd_Appearance().set_representation(DecorativeGeometry::DrawWireframe);
     oooframe->attachGeometry(oooffsetSphere);
-    modelWithGroundOnly.print(filename);
+    return modelWithGroundOnly; // Return a copy
 }
