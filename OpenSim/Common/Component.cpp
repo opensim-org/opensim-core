@@ -579,6 +579,9 @@ unsigned Component::printComponentsMatching(const std::string& substring) const
 
 int Component::getNumStateVariables() const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     //Get the number of state variables added (or exposed) by this Component
     int ns = getNumStateVariablesAddedByComponent(); 
     // And then include the states of its subcomponents
@@ -737,6 +740,9 @@ const AbstractConnector* Component::findConnector(const std::string& name) const
 const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // first assume that the state variable named belongs to this
     // top level component
     std::string::size_type back = name.rfind("/");
@@ -778,6 +784,9 @@ const Component::StateVariable* Component::
 // its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
 
 /** TODO: Use component iterator  like below
@@ -846,6 +855,9 @@ Array<std::string> Component::getStateVariableNames() const
 double Component::
     getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
     if (rsv) {
@@ -865,6 +877,9 @@ double Component::
     getStateVariableDerivativeValue(const SimTK::State& state, 
                                 const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     computeStateVariableDerivatives(state);
     
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -895,6 +910,9 @@ double Component::
 void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
 
@@ -942,6 +960,9 @@ bool Component::isAllStatesVariablesListValid() const
 SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     int nsv = getNumStateVariables();
     // if the StateVariables are invalid (see above) rebuild the list
     if (!isAllStatesVariablesListValid()) {
@@ -966,6 +987,9 @@ SimTK::Vector Component::
 void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     int nsv = getNumStateVariables();
 
     SimTK_ASSERT(values.size() == nsv,
@@ -1013,6 +1037,9 @@ void Component::
 double Component::
 getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
 
@@ -1035,6 +1062,9 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 void Component::
 setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
 

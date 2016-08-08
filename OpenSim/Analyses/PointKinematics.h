@@ -85,7 +85,6 @@ protected:
     std::string &_pointName;
     std::string &_relativeToBodyName;
 
-    double *_dy;
     double *_kin;
     Storage *_pStore;
     Storage *_vStore;
