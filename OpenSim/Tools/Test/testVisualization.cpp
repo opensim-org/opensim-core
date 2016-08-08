@@ -104,8 +104,8 @@ int main()
         LoadOpenSimLibrary("osimActuators");
         Model testModel("BuiltinGeometry.osim");
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
-        testModel = createModel4AppearanceTest();
-        testVisModel(testModel, "vis_AppearanceTest.txt");
+        Model testModel2 = createModel4AppearanceTest();
+        testVisModel(testModel2, "vis_AppearanceTest.txt");
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
