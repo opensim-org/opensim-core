@@ -175,7 +175,7 @@ shows protected members, nested classes, etc. When writing doxygen comments,
 you can use `\internal` or `\if developer ... \endif`
 for documentation that is only intended for developers.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
