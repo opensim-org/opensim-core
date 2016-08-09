@@ -48,7 +48,7 @@ radius = osim.Body('radius',
 # ---------------------------------------------------------------------------
 
 shoulder = osim.PinJoint("shoulder",
-	arm.getGround(), 	    # PhysicalFrame
+	arm.getGround(), 	    		# PhysicalFrame
 	osim.Vec3(0, 0, 0),
 	osim.Vec3(0, 0, 0),
 	humerus, 				# PhysicalFrame
