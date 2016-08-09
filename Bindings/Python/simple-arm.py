@@ -69,16 +69,16 @@ elbow = osim.PinJoint("elbow",
 
 biceps = osim.Millard2012AccelerationMuscle("biceps", 	# 	Muscle name
    	200.0, 	 	#	Max isometric force
-    0.6, 		# 	Optimal fibre length
-    0.55, 		# 	Tendon slack length
-    0.0)		# 	Pennation angle
+    	0.6, 		# 	Optimal fibre length
+    	0.55, 		# 	Tendon slack length
+    	0.0)		# 	Pennation angle
 biceps.addNewPathPoint("origin",						
-   humerus, 						
-   osim.Vec3(0, 0.8, 0))			
+   	humerus, 						
+   	osim.Vec3(0, 0.8, 0))			
 
 biceps.addNewPathPoint("insertion",
-   radius,
-   osim.Vec3(0, 0.7, 0))
+   	radius,
+   	osim.Vec3(0, 0.7, 0))
 
 # # ---------------------------------------------------------------------------
 # # Add a controller that specifies the excitation of the muscle.
@@ -88,11 +88,7 @@ brain = osim.PrescribedController()
 brain.addActuator(biceps)
 brain.prescribeControlForActuator(1,					
 	osim.StepFunction(0.5,3.0,0.3,1.0))
-# chrisdembia: I'm also pretty sure "1" would be incorrect as the index.
-#              Why doesn't it work to pass a name?
-# neildhir: adding a string causes python to crash with this error:
-# neildhir: [Finished in 0.9s with exit code -11]
-
+	
 # ---------------------------------------------------------------------------
 # Build model with components created above.
 # ---------------------------------------------------------------------------
@@ -128,9 +124,9 @@ arm.equilibrateMuscles(state)
 
 # ---------------------------------------------------------------------------
 # We don't care about graphical simulation so we won't do that.
-# Python API currently lacking forward simulation.
+# Python API currently does not support forward simulation.
 # 
-# Print model file
+# Print/save model file
 # ---------------------------------------------------------------------------
 
 arm.printToXML("SimpleArm.osim")
