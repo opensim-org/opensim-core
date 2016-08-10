@@ -165,7 +165,7 @@ void Manager::
 setSessionName(const string &aSessionName)
 {
     _sessionName = aSessionName;
-    if(_integ==NULL) return;
+    if(_integ.get() == nullptr) return;
 
     // STORAGE NAMES
     string name;
