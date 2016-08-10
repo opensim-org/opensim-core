@@ -261,8 +261,11 @@ bool InverseKinematicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.");
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
 
@@ -516,8 +519,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 Xml::node_iterator p = trialIter->node_begin();
                 for (; p!= trialIter->node_end(); ++p) {
                     iter->insertNodeAfter( iter->node_end(), p->clone());
-            }
-                // Append constraint_weight of 100 and accuracy of 1e-5
+                }
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                 iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
@@ -552,7 +554,6 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     for (; p!= trialIter->node_end(); ++p) {
                         root.insertNodeAfter( root.node_end(), p->clone());
                     }
-                    // Append constraint_weight of 100 and accuracy of 1e-5
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                     root.insertNodeAfter( root.node_end(), Xml::Element("constraint_weight", "20.0"));
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_accuracyProp.getComment()));

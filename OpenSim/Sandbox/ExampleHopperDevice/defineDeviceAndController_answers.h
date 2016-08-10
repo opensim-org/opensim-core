@@ -45,7 +45,7 @@ namespace OpenSim {
 // [Step 2, Task A]
 //------------------------------------------------------------------------------
 class Device : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Device, Component);
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
 
 public:
     // Outputs that report quantities in which we are interested.
@@ -129,7 +129,7 @@ public:
         //const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
         #pragma region Step2_TaskA_solution
 
-        const std::string hopperHeightOutput = "/Dennis/slider/height/value";
+        const std::string hopperHeightOutput = "/Dennis/slider/yCoord/value";
 
         #pragma endregion
 

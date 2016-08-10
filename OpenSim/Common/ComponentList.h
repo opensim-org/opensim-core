@@ -112,12 +112,17 @@ public:
 
     static_assert(std::is_base_of<Component, T>::value,
         "Can only create a ComponentList of Components.");
+
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
     const references/pointers, and that components can't be modified 
     through this iterator. */
-    typedef ComponentListIterator<const T> const_iterator;
+    typedef ComponentListIterator<ConstT> const_iterator;
     
     /** If T is const (e.g., ComponentList<const Body>), then this is
     the same as const_iterator, and does not allow modifying the elements.
@@ -226,6 +231,10 @@ template <typename T>
 class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, Component>
 {
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     // The template argument T may be const or non-const; this typedef is
     // always the non-const variant of T. The typedef is useful for friend
     // declarations and casting.
@@ -322,7 +331,7 @@ public:
     
     /** @internal ComponentListIterator<const T> needs access to the members
     of ComponentListIterator<T> for the templated constructor above. */
-    friend class ComponentListIterator<const T>;
+    friend class ComponentListIterator<ConstT>;
     /** @internal Comparison operators for ComponentListIterator<T> need
     access to members of ComponentListIterator<const T> (e.g., when invoking
     operator==() with a ComponentListIterator<T> as the left operand and a
