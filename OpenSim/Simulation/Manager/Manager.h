@@ -66,7 +66,7 @@ private:
 
     // The integrator that is used when using the model-only constructor.
     // This is allocated only if necessary.
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::Integrator>> _defaultInteg;
+    std::unique_ptr<SimTK::Integrator> _defaultInteg;
 
     /** Initial time of the simulation. */
     double _ti;
@@ -76,7 +76,7 @@ private:
     double _firstDT;
     
     /** Storage for the states. */
-    SimTK::ResetOnCopy<std::unique_ptr<Storage>> _stateStore;
+    std::unique_ptr<Storage> _stateStore;
 
    int _steps;
    /** Number of integration step tries. */
@@ -139,6 +139,11 @@ public:
      * two constructors. */
     DEPRECATED_14("There will be no replacement for this constructor.")
     Manager();  
+
+    // This class would not behave properly if copied (we would need to write a
+    // complex custom copy constructor, etc.), so don't allow copies.
+    Manager(const Manager&) = delete;
+    void operator=(const Manager&) = delete;
 
 private:
     void setNull();
