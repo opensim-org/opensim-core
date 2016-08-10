@@ -119,14 +119,16 @@ AddDependency(NAME       BTK
               TAG        ae0d2a43de0fe6c9ef2acce34a87c944dd113829
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
-
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
               TAG        76ca55bcfc169a1ddf3b13903d3cd1aa15d6e957
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
 
-
+AddDependency(NAME       docopt
+              URL        https://github.com/docopt/docopt.cpp.git
+              TAG        0237c9adc88b1165d77b8303b1fb70d676d4d11e)
+ 
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
