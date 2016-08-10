@@ -622,13 +622,11 @@ void compareUmbergerProbeToPublishedResults()
 //   - total energy at final time equals integral of total rate
 //   - multiple muscles are correctly handled
 //   - less energy is liberated with lower activation
-Storage simulateModel(Model& model,double t0, double t1)
+Storage simulateModel(Model& model, double t0, double t1)
 {
     // Initialize model and state.
     cout << "- initializing" << endl;
     SimTK::State& state = model.initSystem();
-
-    
 
     for (int i=0; i<model.getMuscles().getSize(); ++i)
         model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
@@ -640,8 +638,7 @@ Storage simulateModel(Model& model,double t0, double t1)
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(integrationAccuracy);
 
-    Manager manager(model,integrator);
-
+    Manager manager(model, integrator);
     manager.setInitialTime(t0);
     manager.setFinalTime(t1);
 
@@ -1047,13 +1044,11 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     const double t0 = 0.0;
     const double t1 = 2.0;
-    Manager manager(model);
-    simulateModel(model, t0, t1);
+    auto stateStorage = simulateModel(model, t0, t1);
 
     // Output results files.
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_states.sto";
-        Storage stateStorage(manager.getStateStorage());
         stateStorage.print(fname);
         cout << "+ saved state storage file: " << fname << endl;
 
