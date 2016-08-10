@@ -1,27 +1,33 @@
-# ----------------------------------------------------------------------- %
-# The OpenSim API is a toolkit for musculoskeletal modeling and           %
-# simulation. See http://opensim.stanford.edu and the NOTICE file         %
-# for more information. OpenSim is developed at Stanford University       %
-# and supported by the US National Institutes of Health (U54 GM072970,    %
-# R24 HD065690) and by DARPA through the Warrior Web program.             %
-#                                                                         %   
-# Copyright (c) 2005-2012 Stanford University and the Authors             %
-# Author(s): Dominic Farris                                               %
-#                                                                         %
-# Licensed under the Apache License, Version 2.0 (the "License");         %
-# you may not use this file except in compliance with the License.        %
-# You may obtain a copy of the License at                                 %
-# http://www.apache.org/licenses/LICENSE-2.0.                             %
-#                                                                         % 
-# Unless required by applicable law or agreed to in writing, software     %
-# distributed under the License is distributed on an "AS IS" BASIS,       %
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
-# implied. See the License for the specific language governing            %
-# permissions and limitations under the License.                          %
-# ----------------------------------------------------------------------- %
+# ----------------------------------------------------------------------- #
+# The OpenSim API is a toolkit for musculoskeletal modeling and           #
+# simulation. See http://opensim.stanford.edu and the NOTICE file         #
+# for more information. OpenSim is developed at Stanford University       #
+# and supported by the US National Institutes of Health (U54 GM072970,    #
+# R24 HD065690) and by DARPA through the Warrior Web program.             #
+#                                                                         #   
+# Copyright (c) 2005-2012 Stanford University and the Authors             #
+# Author(s): Neil Dhir                                                    #
+#                                                                         #
+# Licensed under the Apache License, Version 2.0 (the "License");         #
+# you may not use this file except in compliance with the License.        #
+# You may obtain a copy of the License at                                 #
+# http://www.apache.org/licenses/LICENSE-2.0.                             #
+#                                                                         # 
+# Unless required by applicable law or agreed to in writing, software     #
+# distributed under the License is distributed on an "AS IS" BASIS,       #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         #
+# implied. See the License for the specific language governing            #
+# permissions and limitations under the License.                          #
+# ----------------------------------------------------------------------- #
 
 # simple-arm.py                                                        
 # Author: Neil Dhir
+# ------------------------------------------------------------------------#
+# ABSTRACT: This short piece of OpenSim python API example mimics         #
+# the simple-arm example found on the core landing page. Though it does   #
+# not include forward simulation, but instead saves the model to an .osim #
+# file which can be used in the GUI for further analysis.		  #
+# ------------------------------------------------------------------------#
 
 import opensim as osim
 
@@ -80,14 +86,14 @@ biceps.addNewPathPoint("insertion",
    	radius,
    	osim.Vec3(0, 0.7, 0))
 
-# # ---------------------------------------------------------------------------
-# # Add a controller that specifies the excitation of the muscle.
-# # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Add a controller that specifies the excitation of the muscle.
+# ---------------------------------------------------------------------------
 
 brain = osim.PrescribedController()
 brain.addActuator(biceps)
-brain.prescribeControlForActuator(1,					
-	osim.StepFunction(0.5,3.0,0.3,1.0))
+brain.prescribeControlForActuator(1, # Actuator's index in controller set					
+	osim.StepFunction(0.5, 3.0, 0.3, 1.0))
 	
 # ---------------------------------------------------------------------------
 # Build model with components created above.
@@ -104,12 +110,12 @@ arm.addController(brain)
 # Add a console reporter to print the muscle fibre force and elbow angle.
 # ---------------------------------------------------------------------------
 
-# We want to write our simulation to a file in the end
+# We want to write our simulation to a file in the end.
 reporter = osim.TableReporter()				
 reporter.set_report_time_interval(1.0)
 reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
-reporter.updInput("inputs").connect(elbow.getCoordinateSet().get(0)\
-	.getOutput("value"), "elbow_angle")
+elbow_cord = elbow.getCoordinateSet().get(0).getOutput("value")
+reporter.updInput("inputs").connect(elbow_cord, "elbow_angle")
 arm.addComponent(reporter)
 
 # ---------------------------------------------------------------------------
@@ -123,9 +129,6 @@ arm.updCoordinateSet().get(1).setValue(state, 0.5 * osim.SimTK_PI)
 arm.equilibrateMuscles(state)
 
 # ---------------------------------------------------------------------------
-# We don't care about graphical simulation so we won't do that.
-# Python API currently does not support forward simulation.
-# 
 # Print/save model file
 # ---------------------------------------------------------------------------
 
