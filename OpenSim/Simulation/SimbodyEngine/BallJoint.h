@@ -51,43 +51,40 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 class OSIMSIMULATION_API BallJoint : public Joint {
     OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
-    /** Specify the Coordinates of the BallJoint */
-    CoordinateIndex rx{constructCoordinate(Coordinate::MotionType::Rotational)};
-    CoordinateIndex ry{constructCoordinate(Coordinate::MotionType::Rotational)};
-    CoordinateIndex rz{constructCoordinate(Coordinate::MotionType::Rotational)};
-
 public:
-    /** Use Joint's constructors. @see Joint */
-    using Joint::Joint;
-
-    /** Exposes getCoordinate() methods defined in base class (overloaded
-        below). @see Joint */
-    using Joint::getCoordinate;
-
-    /** Indices of Coordinates; can be used as arguments to getCoordinate() for
-        convenience.
+    /** Indices of Coordinates for use as arguments to getCoordinate().
 
         <b>C++ example</b>
         \code{.cpp}
         const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X);
         \endcode
     */
-    enum class Coord {
+    enum class Coord: unsigned {
         Rotation1X,
         Rotation2Y,
         Rotation3Z
     };
 
+private:
+    /** Specify the Coordinates of the BallJoint. */
+    CoordinateIndex rx{constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X))};
+    CoordinateIndex ry{constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y))};
+    CoordinateIndex rz{constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z))};
+
+public:
+    /** Use Joint's constructors. @see Joint */
+    using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
     /** Get the Coordinates associated with this Joint. @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
-        if(idx == Coord::Rotation1X)
-            return Super::getCoordinate(rx);
-        if(idx == Coord::Rotation2Y)
-            return Super::getCoordinate(ry);
-        if(idx == Coord::Rotation3Z)
-            return Super::getCoordinate(rz);
-
-        OPENSIM_THROW(Exception, "Invalid Coordinate index");
+        return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
     }
 
 protected:

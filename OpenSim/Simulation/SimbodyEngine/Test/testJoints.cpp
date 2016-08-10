@@ -1207,17 +1207,16 @@ void testBallJoint()
     compareSimulations(system, state, &osimModel, osim_state, errorMessage.str());
 
     // Test accessors.
-    ASSERT(hip.getCoordinate(0) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation1X),
+    ASSERT(hip.getCoordinate(BallJoint::Coord::Rotation1X) ==
+           hip.get_CoordinateSet()[0],
            __FILE__, __LINE__, "Coordinate accessor failed");
-    ASSERT(hip.getCoordinate(1) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation2Y),
+    ASSERT(hip.getCoordinate(BallJoint::Coord::Rotation2Y) ==
+           hip.get_CoordinateSet()[1],
            __FILE__, __LINE__, "Coordinate accessor failed");
-    ASSERT(hip.getCoordinate(2) ==
-           hip.getCoordinate(BallJoint::Coord::Rotation3Z),
+    ASSERT(hip.getCoordinate(BallJoint::Coord::Rotation3Z) ==
+           hip.get_CoordinateSet()[2],
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall,     hip.getCoordinate());
-    ASSERT_THROW(OpenSim::IndexOutOfRange, hip.getCoordinate(3));
 
 } // end testBallJoint
 

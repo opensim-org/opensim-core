@@ -152,6 +152,17 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
     return cix;
 }
 
+Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
+                                                  unsigned idx)
+{
+    const auto cix = constructCoordinate(mt);
+    OPENSIM_THROW_IF(static_cast<unsigned>(cix) != idx,
+                     InvalidCall,
+                     "Joint::constructCoordinate() must be passed enumerations "
+                     "in the same order as they are defined");
+    return cix;
+}
+
 //_____________________________________________________________________________
 /**
  * Set the data members of this Joint to their null values.
@@ -208,24 +219,15 @@ const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 }
 
 const Coordinate& Joint::getCoordinate() const {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     EmptyCoordinateSet);
     OPENSIM_THROW_IF(numCoordinates() > 1,
                      InvalidCall,
-                     "Coordinate set has more than 1 coordinate. Use "
-                     "getCoordinate(unsigned) instead.");
+                     "Coordinate set has more than one coordinate. Use "
+                     "getCoordinate method defined in the concrete class "
+                     "instead.");
 
-    return getCoordinate(0);
-}
-
-const Coordinate& Joint::getCoordinate(unsigned idx) const {
-    const auto& coordSet = get_CoordinateSet();
-
-    OPENSIM_THROW_IF(coordSet.getSize() == 0,
-                     EmptyCoordinateSet);
-    OPENSIM_THROW_IF(idx >= coordSet.getSize(),
-                     IndexOutOfRange,
-                     idx, 0, static_cast<unsigned>(coordSet.getSize() - 1));
-
-    return coordSet[idx];
+    return get_CoordinateSet()[0];
 }
 
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const

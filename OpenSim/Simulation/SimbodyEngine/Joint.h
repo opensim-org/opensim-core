@@ -226,13 +226,11 @@ public:
     // Coordinate Set
     const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
 
-    /** Get the Coordinate associated with a single-degree-of-freedom Joint. If
-        the Joint has more than one Coordinate, use getCoordinate(unsigned)
-        instead. */
+    /** Convenience method to get the Coordinate associated with a
+        single-degree-of-freedom Joint. If the Joint has more than one
+        Coordinate, you must provide the appropriate argument to the
+        getCoordinate() method defined in the derived class. */
     const Coordinate& getCoordinate() const;
-
-    /** Get the Coordinate(s) associated with this Joint. */
-    const Coordinate& getCoordinate(unsigned idx) const;
 
     bool getReverse() const { return get_reverse(); }
 
@@ -330,8 +328,13 @@ protected:
     /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
     Derived Joints must construct as many Coordinates as reflected by the
     Mobilizer Qs. */
-    CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
+    CoordinateIndex constructCoordinate(Coordinate::MotionType mt);
 
+    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
+    Derived Joints must construct as many Coordinates as reflected by the
+    Mobilizer Qs. */
+    CoordinateIndex constructCoordinate(Coordinate::MotionType mt,
+                                        unsigned idx);
 
     // This is only intended to allow the CustomJoint to set the MotionTypes
     // of its Coordinates
