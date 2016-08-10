@@ -52,7 +52,7 @@ Options:
   -V, --version  Show the version number.
 
 Available commands:
-  run-tool     Run a Tool (IK, CMC, ...) from an XML setup file.
+  run-tool     Run a tool (e.g., Inverse Kinematics) from an XML setup file.
   print-xml    Print a template XML file for a Tool or class.
   info         Show description of properties in an OpenSim class.
   update-file  Update an .xml file (.osim or setup) to this version's format.

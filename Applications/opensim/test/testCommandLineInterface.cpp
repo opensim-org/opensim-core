@@ -343,6 +343,15 @@ void testPrintXML() {
     testCommand("print-xml cmc default_cmc_setup.xml", EXIT_SUCCESS,
             "Printing 'default_cmc_setup.xml'.\n");
 
+    // Tool names are case-insensitive.
+    // ================================
+    testCommand("print-xml CmC", EXIT_SUCCESS,
+            "Printing 'default_CMCTool.xml'.\n");
+    testCommand("print-xml FORwarD", EXIT_SUCCESS,
+            "Printing 'default_ForwardTool.xml'.\n");
+    testCommand("print-xml Analyze default_analyze_setup.xml", EXIT_SUCCESS,
+            "Printing 'default_analyze_setup.xml'.\n");
+
     // Library option.
     // ===============
     testLoadPluginLibraries("print-xml");

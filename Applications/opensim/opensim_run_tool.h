@@ -31,7 +31,7 @@
 #include <OpenSim/OpenSim.h>
 
 static const char HELP_RUN_TOOL[] = 
-R"(Run a tool (IK, CMC, ...) from an XML setup file.
+R"(Run a tool (e.g., Inverse Kinematics) from an XML setup file.
 
 Usage:
   opensim [options]... run-tool <setup-xml-file>
@@ -44,9 +44,17 @@ Description:
   The Tool to run is detected from the setup file you provide. Supported tools
   include the following:
   
-            scale  ik  id  rra  cmc  forward  analyze
+            Scale
+            Inverse Kinematics           (IK)
+            Inverse Dynamics             (ID)
+            Residual Reduction Algorithm (RRA)
+            Computed Muscle Control      (CMC)
+            Forward                      
+            Analyze
 
   This command will also recognize tools from plugins.
+
+  Use `opensim print-xml` to generate a template <setup-xml-file>.
 
 Examples:
   opensim run-tool CMC_setup.xml

@@ -43,16 +43,29 @@ Options:
 Description:
   The argument <tool-or-class> can be the name of a Tool
   
-            scale  ik  id  rra  cmc  forward  analyze
+         scale  ik  id  rra  cmc  forward  analyze     (case-insensitive)
 
-  or the name of any registered OpenSim class (even from a plugin).
+  or the name of any registered OpenSim class (even from a plugin). Here are
+  descriptions of the Tools listed above:
+  
+         scale    Create a subject-specific model.
+         ik       Inverse Kinematics
+         id       Inverse Dynamics
+         rra      Residual Reduction Algorithm
+         cmc      Computed Muscle Control
+         forward  Perform a forward simulation, using any controllers.
+         analyze  Obtain muscle-related quantites, joint loads; 
+                  perform Static Optimization; etc.
 
   The template file is written to <output-file> if provided; otherwise, the
   file is written with the name `default_<class-name>.xml` to the current
-  directory.
+  directory. 
+
+  You can run a Tool setup file with `opensim run-tool`.
 
 Examples:
   opensim print-xml cmc
+  opensim print-xml Analyze
   opensim print-xml Millard2012EquilibriumMuscle 
 )";
 
@@ -69,15 +82,16 @@ int print_xml(int argc, const char** argv) {
 
     // Tool or class.
     std::string toolOrClass = args["<tool-or-class>"].asString();
+    std::string toolLowerCase = SimTK::String::toLower(toolOrClass);
     std::string className;
-    if      (toolOrClass == "scale")   className = "ScaleTool";
-    else if (toolOrClass == "ik")      className = "InverseKinematicsTool";
-    else if (toolOrClass == "id")      className = "InverseDynamicsTool";
-    else if (toolOrClass == "rra")     className = "RRATool";
-    else if (toolOrClass == "cmc")     className = "CMCTool";
-    else if (toolOrClass == "forward") className = "ForwardTool";
-    else if (toolOrClass == "analyze") className = "AnalyzeTool";
-    else                               className = toolOrClass;
+    if      (toolLowerCase == "scale")   className = "ScaleTool";
+    else if (toolLowerCase == "ik")      className = "InverseKinematicsTool";
+    else if (toolLowerCase == "id")      className = "InverseDynamicsTool";
+    else if (toolLowerCase == "rra")     className = "RRATool";
+    else if (toolLowerCase == "cmc")     className = "CMCTool";
+    else if (toolLowerCase == "forward") className = "ForwardTool";
+    else if (toolLowerCase == "analyze") className = "AnalyzeTool";
+    else                                 className = toolOrClass;
 
     // Output file.
     std::string outputFile;
