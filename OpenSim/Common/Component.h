@@ -855,15 +855,7 @@ public:
         if (it != _inputsTable.end()) {
             return it->second.getRef(); 
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string inName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            if (found)
-                return found->getInput(inName);
-        }
         std::stringstream msg;
         msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
                 << "for component '" << getName() << "' of type "
@@ -901,33 +893,12 @@ public:
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            // no prefix found then no prefix (path) to locate Component
-            OPENSIM_THROW_IF( back == std::string::npos, Exception,
-                "Component::getOutput has no output '" + name
-                    + "' for component '" + getName() + "' of type "
-                    + getConcreteClassName() );
 
-            std::string prefix = name.substr(0, back);
-            std::string outName = name.substr(back + 1, name.length() - back);
-
-            try {
-                const Component& found = getComponent<Component>(prefix);
-                // if found is this component again, no point trying to find
-                // output again, otherwise we would not have reached here 
-                return found.getOutput(outName);
-            }
-            catch (const std::exception& x) {
-                std::stringstream msg;
-                msg << "Component::getOutput: ERR-  no output '" << name
-                    << "' found.\n " "for component '" << getName() << "' of type "
-                    << getConcreteClassName() << ". Details:\n" << x.what() 
-                    << std::endl;
-
-                 throw Exception(msg.str(), __FILE__, __LINE__);
-            }
-        }
+        std::stringstream msg;
+        msg << "Component::getOutput: ERR- no output '" << name << "' found.\n "
+            << "for component '" << getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
     /**
