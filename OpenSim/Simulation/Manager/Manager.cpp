@@ -537,7 +537,7 @@ getIntegrator() const
 void Manager::
 setIntegrator(SimTK::Integrator& integrator) 
 {   
-    if (_integ == &integrator) return;
+    if (_integ.get() == &integrator) return;
 
     _integ = &integrator;
     // If we had been using the _defaultInteg, we no longer need it.
