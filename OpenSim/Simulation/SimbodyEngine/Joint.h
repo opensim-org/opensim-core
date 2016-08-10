@@ -328,11 +328,6 @@ protected:
     /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
     Derived Joints must construct as many Coordinates as reflected by the
     Mobilizer Qs. */
-    CoordinateIndex constructCoordinate(Coordinate::MotionType mt);
-
-    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
-    Derived Joints must construct as many Coordinates as reflected by the
-    Mobilizer Qs. */
     CoordinateIndex constructCoordinate(Coordinate::MotionType mt,
                                         unsigned idx);
 

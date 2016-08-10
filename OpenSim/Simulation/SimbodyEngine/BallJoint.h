@@ -49,7 +49,7 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
+OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
 public:
     /** Indices of Coordinates for use as arguments to getCoordinate().
@@ -67,12 +67,12 @@ public:
 
 private:
     /** Specify the Coordinates of the BallJoint. */
-    CoordinateIndex rx{constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation1X))};
-    CoordinateIndex ry{constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation2Y))};
-    CoordinateIndex rz{constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation3Z))};
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
 
 public:
     /** Use Joint's constructors. @see Joint */

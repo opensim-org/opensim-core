@@ -46,12 +46,35 @@ are in the desired direction.
 class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
+public:
+    /** Index of Coordinate for use as an argument to getCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rz = myPinJoint.getCoordinate(PinJoint::Coord::RotationZ);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        RotationZ
+    };
+
+private:
     /** Specify the Coordinate of the PinJoint */
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                    static_cast<unsigned>(Coord::RotationZ)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Get the Coordinates associated with this Joint. @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
+    }
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

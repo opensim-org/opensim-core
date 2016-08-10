@@ -49,17 +49,50 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 class OSIMSIMULATION_API FreeJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
-/** Specify the Coordinates of the FreeJoint */
-CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
-CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
-CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
-CoordinateIndex tz{ constructCoordinate(Coordinate::MotionType::Translational) };
+public:
+    /** Indices of Coordinates for use as arguments to getCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rx = myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        Rotation1X,
+        Rotation2Y,
+        Rotation3Z,
+        TranslationX,
+        TranslationY,
+        TranslationZ
+    };
+
+private:
+    /** Specify the Coordinates of the FreeJoint */
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
+    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                                   static_cast<unsigned>(Coord::TranslationX)) };
+    CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational,
+                                   static_cast<unsigned>(Coord::TranslationY)) };
+    CoordinateIndex tz{ constructCoordinate(Coordinate::MotionType::Translational,
+                                   static_cast<unsigned>(Coord::TranslationZ)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Get the Coordinates associated with this Joint. @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
+    }
 
 protected:
     // ModelComponent interface.

@@ -135,7 +135,8 @@ Joint::Joint(const std::string &name,
 //=============================================================================
 // CONSTRUCTION Utility
 //=============================================================================
-Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
+Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
+                                                  unsigned idx)
 {
     Coordinate* coord = new Coordinate();
     coord->setName(getName() + "_coord_"
@@ -149,17 +150,10 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
                         _motionTypes.size(), 
                         "Joint::constructCoordinate() MotionTypes do not "
                         "correspond to coordinates");
-    return cix;
-}
-
-Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
-                                                  unsigned idx)
-{
-    const auto cix = constructCoordinate(mt);
-    OPENSIM_THROW_IF(static_cast<unsigned>(cix) != idx,
-                     InvalidCall,
-                     "Joint::constructCoordinate() must be passed enumerations "
-                     "in the same order as they are defined");
+    SimTK_ASSERT_ALWAYS(static_cast<unsigned>(cix) == idx,
+                        "Joint::constructCoordinate() must be passed "
+                        "enumerations in the same order as the enumerations "
+                        "have been defined");
     return cix;
 }
 
