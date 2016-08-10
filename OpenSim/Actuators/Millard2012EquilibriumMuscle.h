@@ -221,6 +221,18 @@ public:
         "Tendon-force-length curve.");
 
 //==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(passive_fiber_elastic_force, double,
+            getPassiveFiberElasticForce, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_elastic_force_along_tendon, double,
+            getPassiveFiberElasticForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_damping_force, double,
+            getPassiveFiberDampingForce, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_damping_force_along_tendon, double,
+            getPassiveFiberDampingForceAlongTendon, SimTK::Stage::Dynamics);
+
+//==============================================================================
 // CONSTRUCTORS
 //==============================================================================
     /** Default constructor. Produces a non-functional empty muscle. */
@@ -319,6 +331,17 @@ public:
     /** @param s The state of the system.
     @returns The time derivative of activation. */
     double getActivationDerivative(const SimTK::State& s) const;
+
+    /** get the passive elastic force in the fiber (N) */
+    double getPassiveFiberElasticForce(const SimTK::State& s) const;
+    /** get the passive elastic force in the fiber (N) projected onto the tendon
+        direction */
+    double getPassiveFiberElasticForceAlongTendon(const SimTK::State& s) const;
+    /** get the passive damping force in the fiber (N) */
+    double getPassiveFiberDampingForce(const SimTK::State& s) const;
+    /** get the passive damping force in the fiber (N) projected onto the tendon
+        direction */
+    double getPassiveFiberDampingForceAlongTendon(const SimTK::State& s) const;
 
 //==============================================================================
 // SET METHODS
@@ -491,7 +514,9 @@ protected:
 
     /** Calculate the dynamics-related values associated with the muscle state
     (from the active- and passive-force-length curves, the force-velocity curve,
-    and the tendon-force-length curve). */
+    and the tendon-force-length curve). The last entry is a SimTK::Vector
+    containing the passive conservative (elastic) fiber force and the passive
+    non-conservative (damping) fiber force. */
     void calcMuscleDynamicsInfo(const SimTK::State& s,
                                 MuscleDynamicsInfo& mdi) const override;
 

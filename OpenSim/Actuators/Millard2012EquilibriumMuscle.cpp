@@ -278,6 +278,32 @@ getActivationDerivative(const SimTK::State& s) const
     return activationDerivative;
 }
 
+double Millard2012EquilibriumMuscle::
+getPassiveFiberElasticForce(const SimTK::State& s) const
+{
+    return getMuscleDynamicsInfo(s).userDefinedDynamicsExtras[0];
+}
+
+double Millard2012EquilibriumMuscle::
+getPassiveFiberElasticForceAlongTendon(const SimTK::State& s) const
+{
+    return getMuscleDynamicsInfo(s).userDefinedDynamicsExtras[0] *
+           getMuscleLengthInfo(s).cosPennationAngle;
+}
+
+double Millard2012EquilibriumMuscle::
+getPassiveFiberDampingForce(const SimTK::State& s) const
+{
+    return getMuscleDynamicsInfo(s).userDefinedDynamicsExtras[1];
+}
+
+double Millard2012EquilibriumMuscle::
+getPassiveFiberDampingForceAlongTendon(const SimTK::State& s) const
+{
+    return getMuscleDynamicsInfo(s).userDefinedDynamicsExtras[1] *
+           getMuscleLengthInfo(s).cosPennationAngle;
+}
+
 
 //==============================================================================
 // SET METHODS
@@ -1076,6 +1102,14 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         mdi.fiberPassivePower = -(dFibPEdt);
         mdi.tendonPower       = -dTdnPEdt;
         mdi.musclePower       = -dBoundaryWdt;
+
+        // Store quantities unique to this Muscle: the passive conservative
+        // (elastic) fiber force and the passive non-conservative (damping)
+        // fiber force.
+        SimTK::Vector dynExtras = SimTK::Vector(2);
+        dynExtras[0] = p1Fm; //elastic
+        dynExtras[1] = p2Fm; //damping
+        mdi.userDefinedDynamicsExtras = dynExtras;
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
