@@ -103,7 +103,7 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get the Coordinates associated with this Joint. */
+    /** Get a Coordinate associated with this Joint. */
     const Coordinate& getCoordinate(unsigned idx) const {
         OPENSIM_THROW_IF(numCoordinates() == 0,
                          EmptyCoordinateSet);

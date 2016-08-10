@@ -89,7 +89,7 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get the Coordinates associated with this Joint. @see Coord */
+    /** Get a Coordinate associated with this Joint. @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
         return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
     }
