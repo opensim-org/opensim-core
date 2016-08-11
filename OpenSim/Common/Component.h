@@ -2687,13 +2687,29 @@ void Input<T>::findAndConnect(const Component& root) {
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
+        std::string::size_type back = outputPath.rfind("/");
+        std::string componentPath = outputPath.substr(0, back);
+        std::string outputName = outputPath.substr(back + 1);
         try {
             const AbstractOutput* output = nullptr;
+
             if (outputPath[0] == '/') { //absolute path name
-                output = &root.getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &root.getOutput(outputPath);
+                }
+                else {
+                    output = &root.getComponent(componentPath).getOutput(outputName);
+                }
             }
+
             else { // relative path name
-                output = &getOwner().getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &getOwner().getOutput(outputPath);
+                }
+                else {
+                    output = &getOwner().getComponent(componentPath).getOutput(outputName);
+                }
+                
             }
             const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);
