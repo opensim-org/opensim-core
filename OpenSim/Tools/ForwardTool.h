@@ -22,16 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 
 #include "osimToolsDLL.h"
@@ -46,8 +36,10 @@
 namespace OpenSim { 
 
 class Body;
-class PrescribedForce;
 class ControlSet;
+class Manager;
+class PrescribedForce;
+class Storage;
 
 
 //=============================================================================

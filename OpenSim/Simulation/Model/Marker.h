@@ -25,11 +25,7 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Station.h"
-#include "SimTKcommon.h"
 
 namespace OpenSim {
 

@@ -24,6 +24,11 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
+#include <simbody/internal/GeneralForceSubsystem.h>
+#include <simbody/internal/Force.h>
+#include <simbody/internal/MobilizedBody_Pin.h>
+#include <simbody/internal/MobilizedBody_Ground.h>
 
 using namespace OpenSim;
 using namespace std;

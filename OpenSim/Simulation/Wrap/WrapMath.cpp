@@ -32,7 +32,6 @@
 #include "WrapMath.h"
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include "SimTKcommon.h"
 
 
 using namespace OpenSim;

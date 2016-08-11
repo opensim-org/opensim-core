@@ -25,15 +25,14 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <string>
-#include <math.h>
 #include "osimCommonDLL.h"
 #include "PropertyStrArray.h"
-#include "ArrayPtrs.h"
 #include "Object.h"
 
 namespace OpenSim {
+
+template <class T> class ArrayPtrs;
 
 #ifdef SWIG
     #ifdef OSIMCOMMON_API

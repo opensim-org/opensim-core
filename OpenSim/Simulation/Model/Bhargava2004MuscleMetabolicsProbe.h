@@ -25,10 +25,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "Probe.h"
-#include "Model.h"
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
+#include <OpenSim/Common/Set.h>
 
-namespace OpenSim { 
+namespace OpenSim {
+
+class Muscle;
 
 // Helper classes defined below.
 class Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter;

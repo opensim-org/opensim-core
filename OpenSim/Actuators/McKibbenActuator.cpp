@@ -24,9 +24,6 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-
 #include "McKibbenActuator.h"
 
 using namespace OpenSim;

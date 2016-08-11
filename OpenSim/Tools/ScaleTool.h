@@ -25,20 +25,17 @@
 
 
 // INCLUDE
-#include <iostream>
-
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include "GenericModelMaker.h"
 #include "ModelScaler.h"
 #include "MarkerPlacer.h"
 
 namespace OpenSim {
+
+class GenericModelMaker;
+class Model;
 
 //=============================================================================
 //=============================================================================

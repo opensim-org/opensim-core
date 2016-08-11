@@ -29,9 +29,6 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include "SimTKsimbody.h"
 #include "CMC_Joint.h"
 
 namespace OpenSim {

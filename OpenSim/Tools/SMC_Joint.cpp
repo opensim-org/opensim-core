@@ -28,9 +28,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "SMC_Joint.h"
+#include <OpenSim/Common/Function.h>
 
 using namespace std;
 using namespace OpenSim;

@@ -24,10 +24,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
+#include "RigidTendonMuscle.h"
 #include <OpenSim/Common/SimmSpline.h>
 
-#include "RigidTendonMuscle.h"
+
 
 //==============================================================================
 // STATICS

@@ -24,6 +24,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "MuscleActiveFiberPowerProbe.h"
+#include "Model.h"
 
 
 using namespace std;

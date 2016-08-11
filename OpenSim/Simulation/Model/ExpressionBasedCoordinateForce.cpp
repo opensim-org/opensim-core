@@ -26,6 +26,8 @@
 //=============================================================================
 #include "ExpressionBasedCoordinateForce.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <Vendors/lepton/include/lepton/Parser.h>
+#include <Vendors/lepton/include/lepton/ParsedExpression.h>
 
 using namespace OpenSim;
 using namespace std;

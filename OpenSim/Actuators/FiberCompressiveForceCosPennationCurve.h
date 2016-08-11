@@ -25,11 +25,8 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 
-
 // INCLUDE
-#include <simbody/internal/common.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 
 #ifdef SWIG

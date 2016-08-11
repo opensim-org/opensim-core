@@ -29,6 +29,11 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <simbody/internal/Visualizer.h>
+
+namespace OpenSim {
+class Model;
+}
 
 #ifndef SWIG
 namespace SimTK {
@@ -49,7 +54,7 @@ public:
         _dispContactOpacity = 0.75;
         _dispContactResolution = 2.0;
     }
-     void generateDecorations(const SimTK::State& state, 
+    void generateDecorations(const SimTK::State& state, 
                              SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
@@ -87,8 +92,6 @@ private:
 #endif
 
 namespace OpenSim {
-
-class Model;
 
 /** This class manages runtime visualization of a Model that is being 
 manipulated through the OpenSim API. You should not allocate one of these

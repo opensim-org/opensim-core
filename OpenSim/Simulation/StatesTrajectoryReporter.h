@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "StatesTrajectory.h"
-#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
 
 #include "osimSimulationDLL.h"

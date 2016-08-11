@@ -25,7 +25,7 @@
 // INCLUDE
 //=============================================================================
 #include "JointInternalPowerProbe.h"
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include "Model.h"
 #include <OpenSim/Common/IO.h>
 
 using namespace std;

@@ -1,5 +1,6 @@
 #include "TRCFileAdapter.h"
 #include <fstream>
+#include <iomanip>
 
 namespace OpenSim {
 

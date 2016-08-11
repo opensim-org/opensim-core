@@ -29,7 +29,6 @@
 #include "osimAnalysesDLL.h"
 #include "OpenSim/Common/Array.h"
 #include <OpenSim/Common/GCVSplineSet.h>
-#include "SimTKsimbody.h"
 #include <simmath/Optimizer.h>
 
 //=============================================================================

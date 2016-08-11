@@ -36,14 +36,12 @@
 // INCLUDES
 
 #include "osimCommonDLL.h"
-#include "XMLDocument.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property.h"
 
 #include <cstring>
 #include <cassert>
-#include <map>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 

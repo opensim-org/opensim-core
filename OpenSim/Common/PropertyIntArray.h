@@ -32,6 +32,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
+#include "Array.h"
 #ifdef WIN32
 #pragma warning( disable : 4251 )
 #endif

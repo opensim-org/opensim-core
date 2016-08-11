@@ -23,16 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
-
 #include "SmoothSegmentedFunction.h"
-#include "SegmentedQuinticBezierToolkit.h"
-
-#include "Simbody.h"
-
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <cmath>
 
 namespace OpenSim {
 

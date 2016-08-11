@@ -25,11 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "ArrayPtrs.h"
 #include "Units.h"
 
 namespace OpenSim {

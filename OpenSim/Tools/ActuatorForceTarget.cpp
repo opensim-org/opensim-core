@@ -28,14 +28,9 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <iostream>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "CMC.h"
 #include "ActuatorForceTarget.h"
+#include "CMC.h"
 #include "CMC_TaskSet.h"
-#include <SimTKmath.h>
 #include <SimTKlapack.h>
 #include "StateTrackingTask.h"
 

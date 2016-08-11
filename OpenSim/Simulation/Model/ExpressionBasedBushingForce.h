@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Force.h"
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 

@@ -29,9 +29,6 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 
-#include <iostream>
-#include <cmath>
-
 //=============================================================================
 //=============================================================================
 namespace OpenSim {
