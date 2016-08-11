@@ -272,6 +272,30 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
         constr.setConstantDistance(1)
         a.addConstraint(constr)
+
+    def test_PrescribedController_prescribeControlForActuator(self):
+        # Test memory management for
+        # PrescribedController::prescribeControlForActuator().
+        model = osim.Model()
+        # Body.
+        body = osim.Body('b1', 1.0, osim.Vec3(0, 0, 0), osim.Inertia(0, 0, 0))
+        model.addBody(body)
+        # Joint.
+        joint = osim.PinJoint('j1', model.getGround(), body)
+        model.addJoint(joint)
+        # Actuator.
+        actu = osim.CoordinateActuator()
+        actu.setName('actu')
+        actu.setCoordinate(joint.getCoordinateSet().get(0))
+        model.addForce(actu)
+        # Controller.
+        contr = osim.PrescribedController()
+        contr.addActuator(actu)
+        self.assertRaises(RuntimeError,
+                contr.prescribeControlForActuator, 1, osim.Constant(3))
+        # The following calls should not cause a memory leak:
+        contr.prescribeControlForActuator(0, osim.Constant(2))
+        contr.prescribeControlForActuator('actu', osim.Constant(4))
     
     def test_vec3_operators(self):
         v1 = osim.Vec3(1, 2, 3)
