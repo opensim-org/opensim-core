@@ -741,17 +741,18 @@ public:
      * For that, use getConnectee().
      */
     const AbstractConnector& getConnector(const std::string& name) const {
-        const AbstractConnector* found = findConnector(name);
+        auto it = _connectorsTable.find(name);
 
-        if (!found){
-            std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::getConnector() ERROR- Connector '" << name;
-            msg << "' not found.\n" << std::endl;
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        if (it != _connectorsTable.end()) {
+            return get_connectors(it->second);
         }
 
-        return *found;
+        std::stringstream msg;
+        msg << getConcreteClassName() << " '" << getName();
+        msg << "Component::getConnector() ERR- no Connector '" << name;
+        msg << "' found.\n" << std::endl;
+        throw Exception(msg.str(), __FILE__, __LINE__);
+
     }
 
     /** Get a writable reference to the AbstractConnector for the given
@@ -857,7 +858,7 @@ public:
         }
 
         std::stringstream msg;
-        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
+        msg << "Component::getInput: ERR- no Input '" << name << "' found.\n "
                 << "for component '" << getName() << "' of type "
                 << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
@@ -895,7 +896,7 @@ public:
         }
 
         std::stringstream msg;
-        msg << "Component::getOutput: ERR- no output '" << name << "' found.\n "
+        msg << "Component::getOutput: ERR- no Output '" << name << "' found.\n "
             << "for component '" << getName() << "' of type "
             << getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
@@ -984,15 +985,16 @@ public:
         const AbstractInput& in = getInput(name);
         // TODO could maybe remove this check and have the Input do it. Or,
         // here, we could catch Input's exception and give a different message.
-        if (in.isConnected()){
+        if (in.isConnected()) {
             return (Input<T>::downcast(in)).getValue(state);
-            }
-        else{
+        }
+        
+        else {
         std::stringstream msg;
-            msg << "Component::getInputValue: ERR- input '" << name << "' not connected.\n "
+            msg << "Component::getInputValue: ERR- Input '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type "<< getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+        }
     }
 
     /**
@@ -1917,8 +1919,6 @@ protected:
 #endif
 
 public:
-    /** Similarly find a Connector of this Component (includes its subcomponents) */
-    const AbstractConnector* findConnector(const std::string& name) const;
     /** Similarly find a StateVariable of this Component (includes its subcomponents) */
 #ifndef SWIG // StateVariable is protected.
     const StateVariable* findStateVariable(const std::string& name) const;
