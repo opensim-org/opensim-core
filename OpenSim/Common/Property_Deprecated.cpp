@@ -30,7 +30,6 @@
 // INCLUDES
 //============================================================================
 #include "Property_Deprecated.h"
-#include <climits>
 
 
 

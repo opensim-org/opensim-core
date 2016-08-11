@@ -41,6 +41,7 @@
 
 #include <SimTKsimbody.h>
 #include <ctime>
+#include <fstream>
 #include <string>
 #include <stdio.h>
 

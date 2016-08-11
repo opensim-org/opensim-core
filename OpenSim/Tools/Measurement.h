@@ -25,17 +25,10 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Scale.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "MarkerPairSet.h"
-#include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -45,6 +38,9 @@
 #endif
 
 namespace OpenSim {
+
+class BodyScaleSet;
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================

@@ -29,11 +29,18 @@
 
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
-#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+
+namespace SimTK {
+class Integrator;
+class System;
+}
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class CMCActuatorSubsystem;
+class Model;
 
 /**
  * An abstract class for representing a vector function.

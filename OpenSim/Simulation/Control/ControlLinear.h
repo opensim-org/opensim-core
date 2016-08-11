@@ -1,5 +1,5 @@
-#ifndef _ControlLinear_h_
-#define _ControlLinear_h_
+#ifndef OPENSIM_CONTROL_LINEAR_H_
+#define OPENSIM_CONTROL_LINEAR_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  ControlLinear.h                          *
  * -------------------------------------------------------------------------- *
@@ -30,7 +30,6 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include "Control.h"
@@ -395,4 +394,4 @@ private:
 //=============================================================================
 //=============================================================================
 
-#endif // __ControlLinear_h__
+#endif // OPENSIM_CONTROL_LINEAR_H_

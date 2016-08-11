@@ -30,6 +30,7 @@
 // INCLUDES
 //============================================================================
 #include "PropertyDblArray.h"
+#include "Array.h"
 #include <cstdio>
 
 

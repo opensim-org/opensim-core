@@ -25,7 +25,6 @@
 //==============================================================================
 #include "Thelen2003Muscle_Deprecated.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 //==============================================================================

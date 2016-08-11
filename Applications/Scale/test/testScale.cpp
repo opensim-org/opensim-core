@@ -37,6 +37,7 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Tools/GenericModelMaker.h>
 
 using namespace OpenSim;
 using namespace std;

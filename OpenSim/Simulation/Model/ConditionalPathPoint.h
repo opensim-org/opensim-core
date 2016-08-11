@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 
 namespace OpenSim {

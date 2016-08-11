@@ -29,11 +29,15 @@
 
 
 // INCLUDES
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Array.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKsimbody.h"
 
+namespace SimTK {
+class Integrator;
+class State;
+class System;
+}
 
 namespace OpenSim { 
 

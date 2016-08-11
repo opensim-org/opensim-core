@@ -36,10 +36,6 @@
 
 namespace OpenSim {
 
-class Model;
-class Controller;
-class Coordinate;
-
 //=============================================================================
 //           ACTUATOR (base class to make a vector of control values)
 //=============================================================================

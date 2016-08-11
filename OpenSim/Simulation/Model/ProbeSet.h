@@ -24,9 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <OpenSim/Simulation/Model/Probe.h>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -36,7 +35,6 @@
 #endif
 
 namespace OpenSim {
-
 
 //=============================================================================
 //=============================================================================

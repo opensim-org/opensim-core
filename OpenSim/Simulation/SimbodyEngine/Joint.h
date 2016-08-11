@@ -25,8 +25,8 @@
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
 

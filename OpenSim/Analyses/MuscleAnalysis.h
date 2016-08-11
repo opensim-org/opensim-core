@@ -28,10 +28,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include "osimAnalysesDLL.h"
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include "osimAnalysesDLL.h"
 
 
 #ifdef SWIG
@@ -45,6 +44,7 @@
 
 namespace OpenSim { 
 
+class Coordinate;
 
 //=============================================================================
 //=============================================================================

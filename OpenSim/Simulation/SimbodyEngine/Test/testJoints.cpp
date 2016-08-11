@@ -69,6 +69,8 @@
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <simbody/internal/MobilizedBody_BuiltIns.h>
+
 using namespace OpenSim;
 using namespace std;
 

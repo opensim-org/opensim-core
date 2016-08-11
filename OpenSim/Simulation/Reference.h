@@ -25,7 +25,13 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Object.h"
-#include "SimTKcommon.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "SimTKcommon/internal/Array.h"
+#include "SimTKcommon/internal/ResetOnCopy.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 

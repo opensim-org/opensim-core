@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Solver.h"
+#include "SimTKcommon/internal/State.h"
 
 namespace OpenSim {
 

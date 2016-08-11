@@ -28,9 +28,6 @@
 #include "Manager.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Common/Array.h>
 

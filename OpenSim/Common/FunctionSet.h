@@ -28,15 +28,15 @@
  */
 
 // INCLUDES
+#include "Function.h"
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "PropertyDbl.h"
-#include "Function.h"
 #include "Set.h"
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
 
 /**
  * A class for holding a set of functions.

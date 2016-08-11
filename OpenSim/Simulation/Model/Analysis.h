@@ -1,5 +1,5 @@
-#ifndef _Analysis_h_
-#define _Analysis_h_
+#ifndef OPENSIM_ANALYSIS_H
+#define OPENSIM_ANALYSIS_H
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Analysis.h                            *
  * -------------------------------------------------------------------------- *
@@ -30,18 +30,20 @@
 //============================================================================
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim { 
 
 class Model;
-
 
 //=============================================================================
 //=============================================================================
@@ -239,6 +241,6 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __Analysis_h__
+#endif // OPENSIM_ANALYSIS_H
 
 

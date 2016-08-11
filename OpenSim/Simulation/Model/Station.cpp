@@ -25,7 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Station.h"
-#include "Model.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 //=============================================================================
 // STATICS

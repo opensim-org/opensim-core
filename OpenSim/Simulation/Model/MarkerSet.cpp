@@ -25,8 +25,6 @@
 #include "Marker.h"
 #include "Model.h"
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 using namespace std;
 using namespace OpenSim;

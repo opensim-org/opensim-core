@@ -28,6 +28,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Common/PropertyStrArray.h>
 #include "osimAnalysesDLL.h"
 
 

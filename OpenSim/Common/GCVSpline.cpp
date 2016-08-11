@@ -30,9 +30,6 @@
 // C++ INCLUDES
 #include "GCVSpline.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
 #include "gcvspl.h"
 #include "XYFunctionInterface.h"
 

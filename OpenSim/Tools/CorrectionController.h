@@ -28,12 +28,12 @@
 // INCLUDE
 //============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
 
 
 namespace OpenSim {
 
+class Model;
 //=============================================================================
 //=============================================================================
 /**
