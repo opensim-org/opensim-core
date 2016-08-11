@@ -323,6 +323,32 @@ void Component::addToSystem(SimTK::MultibodySystem& system) const
     extendAddToSystem(system);
     componentsAddToSystem(system);
     extendAddToSystemAfterSubcomponents(system);
+    
+    // Make sure, for this component (not including subcomponents), that either
+    // all state variables have an implicit form or that none of them do.
+    
+    // The reason is that the explicit form is computed for all state variables
+    // in a component at once--it is not possible to evaluate the explicit form
+    // for only a single state variable. So if we allowed only some of the
+    // state variables to have an implicit form, then when computing the trivial
+    // implicit form (ydot - ydotguess) for the ones that don't have an
+    // implicit form, we'll waste computation evaluating the explicit form for
+    // state variables that DO have an implicit form.
+    // TODO document elsewhere
+    int numStateVarsWithImplicitForm = 0;
+    int numStateVars = 0;
+    for (const auto& it : _namedStateVariableInfo) {
+        const auto& stateVar = it.second.stateVariable;
+        numStateVars += 1;
+        numStateVarsWithImplicitForm += stateVar->hasImplicitForm();
+    }
+    OPENSIM_THROW_IF_FRMOBJ(numStateVarsWithImplicitForm != 0 &&
+                            numStateVarsWithImplicitForm != numStateVars,
+        Exception, "Of the " + std::to_string(numStateVars) + " state variables"
+                + " in this component, "
+                + std::to_string(numStateVarsWithImplicitForm) + " have an"
+                + " implicit form. We require that either all of a component's"
+                + " state variables have an implicit form or none of them do.");
 }
 
 // Base class implementation of virtual method.
@@ -419,6 +445,73 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
     }
 }
 
+// TODO void Component::computeImplicitResiduals(const SimTK::State& s) const
+// TODO {
+// TODO     // TODO it's really bad if obtaining the trivial implicit form of
+// TODO     // auxiliary state variables requires realizing to acceleration (if
+// TODO     // the explicit fiber velocity is only available at acceleration); then
+// TODO     // computing the residual will still require computing the explicit
+// TODO     // multibody dynamics.
+// TODO     // OPENSIM_THROW_FRMOBJ(Exception, "TODO");
+// TODO     // TODO bool requireExplicitForm = false;
+// TODO     // TODO for (const auto& it : _namedStateVariableInfo) {
+// TODO     // TODO     const StateVariable& sv = *it.second.stateVariable;
+// TODO     // TODO     if (!sv.hasImplicitForm()) requireExplicitForm = true; break;
+// TODO     // TODO }
+// TODO     // TODO
+// TODO     if (!hasFullImplicitForm()) computeStateVariableDerivatives(s);
+// TODO     
+// TODO     // TODO it seems that if you want implicit form, you should define all state
+// TODO     // variables implicitly. Otherwise, we will need to evaluate the explicit
+// TODO     // dynamics, which will waste time. TODO what about going up the inheritance
+// TODO     // hierarchy?
+// TODO     
+// TODO     // TODO based on what Ajay said, you might actually want to override your base
+// TODO     // class and thus not call Super::extend...(). So this should maybe be
+// TODO     // implementCompute...().
+// TODO     extendComputeImplicitResiduals(s);
+// TODO     
+// TODO     
+// TODO     // TODO do this before or after extendCompute...()?
+// TODO     for (const auto& it : _namedStateVariableInfo) {
+// TODO         const StateVariable& sv = *it.second.stateVariable;
+// TODO         if (!sv.hasImplicitForm()) {
+// TODO             const Real yDot = sv.getDerivative(s);
+// TODO             const Real yDotGuess = sv.getDerivativeGuess(s);
+// TODO             sv.setImplicitResidual(s, yDot - yDotGuess);
+// TODO         }
+// TODO         // TODO set implicit residual for explicit components.
+// TODO         // TODO ensure that the user set the residual for those providing one.
+// TODO     }
+// TODO }
+
+void Component::calcImplicitResidualsInternal(const SimTK::State& s,
+                                              const SimTK::Vector& yDotGuess,
+                                              const SimTK::Vector& lambdaGuess,
+                                              SimTK::Vector& residuals) const {
+    // TODO check size of input arguments?
+    // TODO assert(residuals.size() ==
+    // TODO very awkward, maybe very inefficient!
+    SimTK::Array_<int> indices;
+    for (const auto& it : _namedStateVariableInfo) {
+        indices.push_back(it.second.stateVariable->getSystemYIndex());
+    }
+    SimTK::VectorView componentResiduals = residuals.updIndex(indices);
+    componentResiduals = calcImplicitResidualsLocal(s, yDotGuess, lambdaGuess);
+}
+
+void Component::setImplicitResidual(const std::string& name,
+        const double& thisResidual, SimTK::VectorView& componentResiduals)
+                const {
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    OPENSIM_THROW_IF_FRMOBJ(it == _namedStateVariableInfo.end(),
+            Exception, "State variable '" + name + "' not found.");
+            
+    assert(componentResiduals.size() > it->second.order);
+    componentResiduals[it->second.order] = thisResidual;
+}
 
 void Component::
 addModelingOption(const std::string& optionName, int maxFlagValue) const 
@@ -438,6 +531,7 @@ addModelingOption(const std::string& optionName, int maxFlagValue) const
 
 void Component::addStateVariable(const std::string&  stateVariableName,
                                  const SimTK::Stage& invalidatesStage,
+                                 bool hasImplicitForm,
                                  bool isHidden) const
 {
     if( (invalidatesStage < Stage::Position) ||
@@ -447,7 +541,7 @@ void Component::addStateVariable(const std::string&  stateVariableName,
     }
     // Allocate space for a new state variable
     AddedStateVariable* asv =
-        new AddedStateVariable(stateVariableName, *this, invalidatesStage, isHidden);
+        new AddedStateVariable(stateVariableName, *this, invalidatesStage, hasImplicitForm, isHidden);
     // Add it to the Component and let it take ownership
     addStateVariable(asv);
 }
@@ -466,6 +560,9 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     }
 
     int order = (int)_namedStateVariableInfo.size();
+    
+    // TODO "componentVarIndex" duplicates "order" in StateVariableInfo.
+    // TODO stateVariable->setComponentVarIndex(order);
     
     // assign a "slot" for a state variable by name
     // state variable index will be invalid by default
@@ -1068,6 +1165,127 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
+bool Component::hasImplicitFormLocal() const {
+    // TODO compute this once in baseAddToSystem().
+    for (const auto& it : _namedStateVariableInfo) {
+        const StateVariable& sv = *it.second.stateVariable;
+        if (!sv.hasImplicitForm()) return false;
+    }
+    return true;
+}
+
+bool Component::hasImplicitForm() const {
+    if (!hasImplicitFormLocal()) return false;
+    
+    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++)
+        if (!_memberSubcomponents[i]->hasImplicitForm()) return false;
+
+    for(unsigned int i=0; i<_propertySubcomponents.size(); i++)
+        if (!_propertySubcomponents[i]->hasImplicitForm()) return false;
+
+    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++)
+        if (!_adoptedSubcomponents[i]->hasImplicitForm()) return false;
+    
+    return true;
+}
+
+Vector Component::calcImplicitResidualsLocal(const SimTK::State& s,
+                                        const SimTK::Vector& yDotGuess,
+                                        const SimTK::Vector& lambdaGuess
+                                        ) const {
+    // TODO leave in these asserts?
+    assert(yDotGuess.size() == s.getNY());
+    assert(lambdaGuess.size() == s.getNMultipliers());
+    
+    Vector componentResiduals(getNumStateVariablesAddedByComponent());
+    computeImplicitResiduals(s, yDotGuess, componentResiduals);
+    
+    // Handle the case where the user has not provided the implicit form.
+    bool computedExplicitForm = false;
+    for (const auto& it : _namedStateVariableInfo) {
+        const StateVariable& sv = *it.second.stateVariable;
+        if (!sv.hasImplicitForm()) {
+            if (!computedExplicitForm) {
+                // Evaluate the explicit form for all of this component's
+                // state variables.
+                computeStateVariableDerivatives(s);
+            }
+            const Real svYDot = sv.getDerivative(s);
+            const Real svYDotGuess = yDotGuess[sv.getSystemYIndex()];
+            componentResiduals[it.second.order] = svYDot - svYDotGuess;
+            // TODO could be cleaner.
+        }
+    }
+    return componentResiduals;
+}
+
+const double& Component::getStateVariableDerivativeGuess(
+        const std::string& name, const SimTK::Vector& allYDotGuess) const {
+    // TODO make sure the guess exists?
+    
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    if (it == _namedStateVariableInfo.end()) {
+        const StateVariable* sv = it->second.stateVariable.get();
+        assert(allYDotGuess.size() > sv->getSystemYIndex());
+        return allYDotGuess[sv->getSystemYIndex()];
+        // TODO sv->getDerivativeGuess2(allYDotGuess);
+    }
+    else {
+        const StateVariable* rsv = findStateVariable(name);
+        if (rsv) {
+            assert(allYDotGuess.size() > rsv->getSystemYIndex());
+            return allYDotGuess[rsv->getSystemYIndex()];
+            // TODO rsv->getDerivativeGuess2(allYDotGuess);
+        }
+    }
+ 
+    OPENSIM_THROW_FRMOBJ(Exception, "State variable '" + name + "' not found.");
+}
+
+void Component::setStateVariableDerivativeGuess(const std::string& name,
+                                                 const double& derivGuess,
+                                                 SimTK::Vector& allYDotGuess
+                                                 ) const
+{
+    // TODO make sure the guess exists?
+    
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    if (it == _namedStateVariableInfo.end()) {
+        const StateVariable* sv = it->second.stateVariable.get();
+        assert(allYDotGuess.size() > sv->getSystemYIndex());
+        allYDotGuess[sv->getSystemYIndex()] = derivGuess;
+        return;
+    }
+    else {
+        const StateVariable* rsv = findStateVariable(name);
+        if (rsv) {
+            assert(allYDotGuess.size() > rsv->getSystemYIndex());
+            allYDotGuess[rsv->getSystemYIndex()] = derivGuess;
+            return;
+        }
+    }
+ 
+    OPENSIM_THROW_FRMOBJ(Exception, "State variable '" + name + "' not found.");
+}
+
+const double& Component::getImplicitResidual(const std::string& name,
+                                              const SimTK::Vector& allResiduals
+                                              ) const {
+    std::map<std::string, StateVariableInfo>::const_iterator it;
+    it = _namedStateVariableInfo.find(name);
+    
+    OPENSIM_THROW_IF_FRMOBJ(it == _namedStateVariableInfo.end(),
+            Exception, "State variable '" + name + "' not found.");
+    
+    // TODO should throw a real exception.
+    assert(allResiduals.size() > it->second.stateVariable->getSystemYIndex());
+    return allResiduals[it->second.stateVariable->getSystemYIndex()];
+}
+
 bool Component::constructOutputForStateVariable(const std::string& name)
 {
     auto func = [name](const Component* comp,
@@ -1316,9 +1534,9 @@ void Component::extendRealizeTopology(SimTK::State& s) const
              it != _namedStateVariableInfo.end(); ++it)
         {
             const StateVariable& sv = *it->second.stateVariable;
-            const AddedStateVariable* asv 
+            const AddedStateVariable* asv
                 = dynamic_cast<const AddedStateVariable *>(&sv);
-
+            
             if(asv){// add index information for added state variables
                 // make mutable just to update system allocated index ONLY!
                 AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
@@ -1352,6 +1570,18 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     }
 }
 
+// Update global indices for state variables.
+void Component::extendRealizeInstance(const SimTK::State& s) const
+{
+    for (auto& entry : _namedStateVariableInfo) {
+        // make mutable just to update system allocated index ONLY!
+        auto* msv = const_cast<StateVariable*>(entry.second.stateVariable.get());
+        // This must be called after Model stage has been realized
+        // b/c that's when getZStart(), etc. is available and those methods
+        // need to be used to determine the SystemYIndex.
+        msv->determineSystemYIndex(s);
+    }
+}
 
 //------------------------------------------------------------------------------
 //                         REALIZE ACCELERATION
@@ -1402,8 +1632,7 @@ const SimTK::MultibodySystem& Component::getSystem() const
 // Base class implementations of these virtual methods do nothing now but
 // could do something in the future. Users must still invoke Super::realizeXXX()
 // as the first line in their overrides to ensure future compatibility.
-void Component::extendRealizeModel(SimTK::State& state) const {}
-void Component::extendRealizeInstance(const SimTK::State& state) const {}
+void Component::extendRealizeModel(SimTK::State& s) const {}
 void Component::extendRealizeTime(const SimTK::State& state) const {}
 void Component::extendRealizePosition(const SimTK::State& state) const {}
 void Component::extendRealizeVelocity(const SimTK::State& state) const {}
@@ -1456,6 +1685,15 @@ void Component::AddedStateVariable::
     return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
+SimTK::SystemYIndex Component::AddedStateVariable::
+implementDetermineSystemYIndex(const SimTK::State& s) const {
+    // TODO explain why this is so.
+    const int systemYIdxOfFirstZ = int(s.getZStart());
+    const int systemZIdxOfFirstSubsystemZ = s.getZStart(getSubsysIndex());
+    const int subsystemZIdx = getVarIndex();
+    return SystemYIndex(systemYIdxOfFirstZ + systemZIdxOfFirstSubsystemZ
+                                           + subsystemZIdx);
+}
 
 void Component::dumpSubcomponents(int depth) const
 {

@@ -22,3 +22,7 @@
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
+
+%feature("flatnested") OpenSim::VandenBogert2011Muscle::ImplicitResidual;
+%rename(VandenBogert2011MuscleImplicitResidual) OpenSim::VandenBogert2011Muscle::ImplicitResidual;
+%include <OpenSim/Actuators/VandenBogert2011Muscle.h>

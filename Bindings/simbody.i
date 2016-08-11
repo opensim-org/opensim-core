@@ -20,6 +20,7 @@ namespace SimTK {
 %include <SWIGSimTK/Mat.h>
 %include <SimTKcommon/SmallMatrix.h> // for typedefs like Mat33.
 namespace SimTK {
+%template(Mat22) Mat<2, 2>;
 %template(Mat33) Mat<3, 3>;
 }
 %include <SWIGSimTK/CoordinateAxis.h>

@@ -17,4 +17,6 @@
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 
+#include <OpenSim/Actuators/VandenBogert2011Muscle.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_

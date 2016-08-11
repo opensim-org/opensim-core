@@ -43,6 +43,7 @@
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 
 #include "SimTKcommon/internal/SystemGuts.h"
@@ -768,6 +769,206 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 }
 
+// TODO so that
+/*
+void Model::extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystemAfterSubcomponents(system);
+    // TODO determine if we have any state variables with an implicit form.
+    
+    // TODO would rather do s.getNY() but can't do that till after
+    // realizeTopology().
+    // TODO what if Simbody has state variables that OpenSim doesn't know about?
+    const int numStateVars = getNumStateVariables();
+    Vector nans(numStateVars, SimTK::NaN);
+    nans.lockShape(); // TODO where is the right place for this?
+    
+    // This Measure is basically a discrete state variable.
+    // Acceleration cache is invalid if this is updated, since acceleration-
+    // dependent quantities should be computed with uDotGuess.
+    // Dynamics stage must also be invalidated, since residuals cache var
+    // depends on Dynamics stage.
+    // TODO what should default value be? what size should it have?
+    Measure_<Vector>::Variable yDotGuess(_system->updDefaultSubsystem(),
+        Stage::Dynamics, nans);
+    _yDotGuessIndex = yDotGuess.getSubsystemMeasureIndex();
+    
+    // TODO how to set size of lambdaGuess? shouldn't be numStateVars.
+    Measure_<Vector>::Variable lambdaGuess(_system->updDefaultSubsystem(),
+        Stage::Dynamics, Vector(0));
+    _lambdaGuessIndex = lambdaGuess.getSubsystemMeasureIndex();
+    
+    // Storing the residual.
+    // We can only compute the residual once realized to Dynamics, since
+    // we will need to apply forces. Residual does not depend on accelerations.
+    // TODO this would change if realizeAcceleration() simply uses uDotGuess.
+    // None of the acceleration-level calculations depend on the residual
+    // (nothing should depend on the residual) so there is nothing to
+    // invalidate when the residual is changed (invalidated = Infinity).
+    // TODO do we depend on Acceleration stage, for constraint forces?
+    Measure_<Vector>::Result implicitResidual(_system->updDefaultSubsystem(),
+        Stage::Dynamics, Stage::Infinity);
+    implicitResidual.setDefaultValue(nans);
+    _implicitResidualIndex = implicitResidual.getSubsystemMeasureIndex();
+}
+*/
+
+/*
+const SimTK::Vector& Model::getImplicitResiduals(const SimTK::State& state) const {
+    OPENSIM_THROW_IF_FRMOBJ(!_system || !_implicitResidualIndex.isValid(),
+        Exception, "Prior call to Model::initSystem() is required.");
+    // TODO must make sure we are realized to Dynamics.
+    auto measure = Measure_<Vector>::Result::getAs(
+            _system->getDefaultSubsystem().getMeasure(_implicitResidualIndex));
+    
+    // Multibody states.
+    
+
+    if (!measure.isValid(state)) {
+        getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+       
+        // TODO do all of this in extendComputeImplicitResiduals().
+        
+        // Multibody states.
+        // =================
+        if (state.getNQ() > 0) { // Are there multibody states?
+            const auto& yDotGuess = getYDotGuess(state);
+            const auto& lambdaGuess = getMultipliersGuess(state);
+            SimTK::Vector& residuals = measure.updValue(state);
+            
+            // qdot - N u
+            // ----------
+            // Get a view into YDotGuess[0:nq].
+            const auto& qDotGuess = yDotGuess(0, state.getNQ());
+            VectorView qResiduals = residuals(0, state.getNQ());
+            qResiduals = state.getQDot() - qDotGuess;
+            // TODO do we want to use QDot here?? I think so, otherwise
+            // we are recomputing something that should already be cached for us.
+            // The alternatives:
+            // TODO getMatterSubsystem().calcQDot(...)
+            // TODO getMatterSubsystem().multiplybyN(state, state.getU(), qResiduals);
+            
+            // M u_dot - f
+            // -----------
+            // Get a view into YDotGuess[nq:nq+nu].
+            const auto& uDotGuess = yDotGuess(state.getNQ(), state.getNU());
+            InverseDynamicsSolver idSolver(*this);
+            // TODO improve InverseDynamicsSolver to take a lambda.
+            VectorView uResiduals = residuals(state.getNQ(), state.getNU());
+            // TODO is there an unnecessary copy here, and is it expensive?
+            uResiduals = idSolver.solve(state, uDotGuess, lambdaGuess);
+        }
+    
+        // Auxiliary states.
+        // =================
+        // TODO should put this in a separate "realizeImplicitResidual"?
+        // TODO perhaps this is not the best way to invoke the actual calculation
+        // of residuals.
+        for (const auto& comp : getComponentList()) {
+            comp.computeImplicitResiduals(state);
+        }
+        
+        measure.markAsValid(state); // TODO
+    }
+
+    return measure.getValue(state);
+}
+*/
+// TODO based on conversations with Sherm and Brad, we should not compute
+// constraint errors here; users can compute them on their own if they'd like.
+// But different methods may require different ways of solving the constraint
+// errors, so we shouldn't try to do it here.
+
+void Model::calcImplicitResiduals(const SimTK::State& state,
+        const SimTK::Vector& yDotGuess, const SimTK::Vector& lambdaGuess,
+        SimTK::Vector& residuals) const {
+    
+    // Check sizes of yDotGuess and lambdaGuess.
+    OPENSIM_THROW_IF_FRMOBJ(   yDotGuess.size() != 0
+                            && yDotGuess.size() != state.getNY(),
+        Exception, "Length of yDotGuess argument was "
+                   + std::to_string(yDotGuess.size())
+                   + " but should have been either zero or the same as the"
+                   + " number of mobilities nu="
+                   + std::to_string(state.getNY()) + ".");
+    OPENSIM_THROW_IF_FRMOBJ(   lambdaGuess.size() != 0
+                            && lambdaGuess.size() != state.getNMultipliers(),
+        Exception, "Length of lambdaGuess argument was "
+                   + std::to_string(lambdaGuess.size())
+                   + " but should have been either zero or the same as the"
+                   + " number of acceleration-level constraints m="
+                   + std::to_string(state.getNMultipliers()) + ".");
+    
+    
+    residuals.resize(state.getNY());
+    if (state.getNY() == 0) return;
+    
+    // Multibody states.
+    // =================
+    if (state.getNQ() > 0) {
+    
+        // N u - qdot
+        // ----------
+        Vector qDot; // TODO = state.getQDot() TODO profile?
+        getMatterSubsystem().calcQDot(state, state.getU(), qDot);
+        VectorView qResiduals = residuals(state.getQStart(), state.getNQ());
+        if (yDotGuess.size() == 0) {
+            qResiduals = qDot; // interpret qDotGuess as 0.
+        } else {
+            const VectorView& qDotGuess = yDotGuess(0, state.getNQ());
+            qResiduals = qDot - qDotGuess;
+        }
+        // TODO does realizing to Velocity set QDot?
+        // TODO do we want to use QDot here?? I think so, otherwise
+        // we are recomputing something that should already be cached for us.
+        // The alternatives:
+        // TODO getMatterSubsystem().calcQDot(...)
+        
+        // M u_dot - f
+        // -----------
+        Vector uDotGuess;
+        if (yDotGuess.size() > 0) {
+            uDotGuess.viewAssign(yDotGuess(state.getUStart(), state.getNU()));
+        }
+        InverseDynamicsSolver idSolver(*this);
+        VectorView uResiduals = residuals(state.getUStart(), state.getNU());
+        // TODO is there an unnecessary copy here, and is it expensive?
+        uResiduals = idSolver.solve(state, uDotGuess, lambdaGuess);
+    }
+    
+    
+    // Auxiliary states
+    // ================
+    if (state.getNZ() > 0) {
+        // We can't expect the auxiliary states to handle empty guess vectors.
+        // So if the guess vectors are empty, we turn them into
+        // appropriately-sized vectors of 0.
+        Vector yDotGuessSpace;
+        Vector lambdaGuessSpace;
+        const Vector* yDotGuessp;
+        const Vector* lambdaGuessp;
+        
+        if (state.getNY() == 0 || yDotGuess.size() != 0) {
+            yDotGuessp = &yDotGuess;
+        } else {
+            yDotGuessSpace = Vector(state.getNY(), 0.0);
+            yDotGuessp = &yDotGuessSpace;
+        }
+        if (state.getNMultipliers() == 0 || lambdaGuess.size() != 0) {
+            lambdaGuessp = &lambdaGuess;
+        } else {
+            lambdaGuessSpace = Vector(state.getNMultipliers(), 0.0);
+            lambdaGuessp = &lambdaGuessSpace;
+        }
+        
+        // Compute residuals for auxiliary state variables.
+        for (const auto& comp : getComponentList()) {
+            comp.calcImplicitResidualsInternal(state, yDotGuess, lambdaGuess,
+                                               residuals);
+        }
+    }
+}
+    
 
 //_____________________________________________________________________________
 /**

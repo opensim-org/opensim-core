@@ -43,7 +43,9 @@ InverseDynamicsSolver::InverseDynamicsSolver(const Model &model) : Solver(model)
 
 /** Solve the inverse dynamics system of equations for generalized coordinate forces, Tau. 
     Applied loads are computed by the model from the state.  */
-Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &udot)
+Vector InverseDynamicsSolver::solve(const SimTK::State &s,
+                                    const SimTK::Vector &udot,
+                                    const SimTK::Vector& lambda)
 {
     // Default is a statics inverse dynamics analysis, udot = 0;
     Vector knownUdots(getModel().getNumSpeeds(), 0.0);
@@ -66,7 +68,7 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
     const Vector_<SpatialVec>& appliedBodyForces = getModel().getMultibodySystem().getRigidBodyForces(s, Stage::Dynamics);
     
     // Perform general inverse dynamics
-    return solve(s, knownUdots, appliedMobilityForces, appliedBodyForces);
+    return solve(s, knownUdots, appliedMobilityForces, appliedBodyForces, lambda);
 }
 
 
@@ -74,7 +76,9 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
     Applied loads are explicitly provided as generalized coordinate forces (MobilityForces)
     and/or a Vector of Spatial-body forces */
 Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &udot, 
-    const SimTK::Vector &appliedMobilityForces, const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces)
+                                    const SimTK::Vector& appliedMobilityForces,
+                                    const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces,
+                                    const SimTK::Vector& lambda)
 {
     //Results of the inverse dynamics for the generalized forces to satisfy accelerations
     Vector residualMobilityForces;
@@ -82,9 +86,16 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
     if(s.getSystemStage() < SimTK::Stage::Dynamics)
         getModel().getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
     
+    // If valid Lagrange multipliers provided then use for inverse dynamics
+    OPENSIM_THROW_IF(lambda.size() != 0 && lambda.size() != s.getNMultipliers(),
+        Exception, "lambda has " + std::to_string(lambda.size())
+                     + " elements but must have 0 or "
+                     + std::to_string(s.getNMultipliers()) + " element(s).");
+    
     // Perform inverse dynamics
-    getModel().getMultibodySystem().getMatterSubsystem().calcResidualForceIgnoringConstraints(s,
-            appliedMobilityForces, appliedBodyForces, udot, residualMobilityForces);
+    getModel().getMultibodySystem().getMatterSubsystem().calcResidualForce(s,
+            appliedMobilityForces, appliedBodyForces, udot, lambda,
+            residualMobilityForces);
 
     return residualMobilityForces;
 }
