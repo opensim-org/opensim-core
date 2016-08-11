@@ -25,12 +25,14 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "Joint.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class CustomJoint;
-class Coordinate;
+class Joint;
 
 //==============================================================================
 //                            TRANSFORM AXIS

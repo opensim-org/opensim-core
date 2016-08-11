@@ -28,8 +28,6 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Array.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
 #include "PropertyDblArray.h"
 #include "Function.h"
 

@@ -25,10 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <string>
 #include "osimCommonDLL.h"
-#include "SimTKcommon.h"
 
 namespace OpenSim {
 

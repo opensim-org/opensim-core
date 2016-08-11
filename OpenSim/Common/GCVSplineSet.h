@@ -31,13 +31,15 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "FunctionSet.h"
-#include "GCVSpline.h"
-#include "Storage.h"
+
 
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class GCVSpline;
+class Storage;
 
 /**
  * A class for holding a set of generalized cross-validated splines.

@@ -31,8 +31,6 @@
 // INCLUDES
 #include "Control.h"
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/Storage.h>
-
 
 
 //=============================================================================
@@ -40,6 +38,7 @@
 namespace OpenSim { 
 
 class ControlLinear;
+class Storage;
 
 /**
  * A class for holding and managing a set of controls for a dynamic

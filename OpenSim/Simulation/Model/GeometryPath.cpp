@@ -28,12 +28,9 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include "CoordinateSet.h"
 #include "Model.h"
-#include "ModelVisualizer.h"
+
 //=============================================================================
 // STATICS
 //=============================================================================

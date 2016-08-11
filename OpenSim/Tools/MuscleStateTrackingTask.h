@@ -25,10 +25,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include "osimToolsDLL.h"
 #include "StateTrackingTask.h"
 
 namespace OpenSim {

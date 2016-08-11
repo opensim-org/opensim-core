@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "PathWrapPoint.h"
 #include "WrapResult.h"
 
@@ -40,6 +39,7 @@ namespace OpenSim {
 class Model;
 class WrapObject;
 class GeometryPath;
+
 
 //=============================================================================
 //=============================================================================

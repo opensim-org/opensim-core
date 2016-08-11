@@ -23,14 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include "OpenSim/Common/Property.h"
-#include "OpenSim/Common/Set.h"
-
 #include "Force.h"
+#include "OpenSim/Common/Set.h"
 
 namespace OpenSim {
 
-class Model;
 //==============================================================================
 //                       ELASTIC FOUNDATION FORCE
 //==============================================================================

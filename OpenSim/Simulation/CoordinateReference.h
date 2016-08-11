@@ -26,6 +26,7 @@
 #include "Reference.h"
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 

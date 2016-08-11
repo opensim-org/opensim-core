@@ -46,10 +46,11 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
-#include "Simbody.h"
 #include <functional>
-#include <memory>
+
+#include "simbody/internal/MultibodySystem.h"
 
 namespace OpenSim {
 
@@ -89,7 +90,6 @@ public:
     }
 };
 
-
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -101,6 +101,20 @@ public:
         std::string msg = "Component '" + compName;
         msg += "' already owned by tree to which '" + thisName;
         msg += "' belongs. Clone the component to adopt a fresh copy.";
+        addMessage(msg);
+    }
+};
+
+class ComponentHasNoSystem : public Exception {
+public:
+    ComponentHasNoSystem(const std::string& file,
+                         size_t line,
+                         const std::string& func,
+                         const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "This Component has not been added to a System.\n";
+        msg += "You must call initSystem on the top-level Component ";
+        msg += "(i.e., Model) first.";
         addMessage(msg);
     }
 };
@@ -627,16 +641,18 @@ public:
     unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
-     * Get the number of "Continuous" state variables maintained by the Component
-     * and its subcomponents
+     * Get the number of "continuous" state variables maintained by the
+     * Component and its subcomponents.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     int getNumStateVariables() const;
 
     /**
      * Get the names of "continuous" state variables maintained by the Component
-     * and its subcomponents. Note that states are defined when the system is 
-     * created. Make sure to call initSystem on the top  level Component
-     * (e.g. Model)
+     * and its subcomponents.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     Array<std::string> getStateVariableNames() const;
 
@@ -1023,6 +1039,8 @@ public:
      *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
@@ -1032,6 +1050,8 @@ public:
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
      * @param value  the value to set
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
@@ -1043,6 +1063,8 @@ public:
      * @param state   the State for which to get the value
      * @return Vector of state variable values of length getNumStateVariables()
      *                in the order returned by getStateVariableNames()
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
@@ -1051,8 +1073,11 @@ public:
      * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
-     * @param values  Vector of state variable values of length getNumStateVariables()
-     *                in the order returned by getStateVariableNames()
+     * @param values  Vector of state variable values of length
+     *                getNumStateVariables() in the order returned by
+     *                getStateVariableNames()
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
 
@@ -1061,6 +1086,8 @@ public:
      *
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     double getStateVariableDerivativeValue(const SimTK::State& state, 
         const std::string& name) const;
@@ -1071,8 +1098,11 @@ public:
      * @param state   the State from which to get the value
      * @param name    the name of the state variable
      * @return value  the discrete variable value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
-    double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
+    double getDiscreteVariableValue(const SimTK::State& state,
+                                    const std::string& name) const;
 
     /**
      * %Set the value of a discrete variable allocated by this Component by name.
@@ -1080,8 +1110,11 @@ public:
      * @param state  the State for which to set the value
      * @param name   the name of the discrete variable
      * @param value  the value to set
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
-    void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
+                                  double value) const;
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -1089,10 +1122,15 @@ public:
      * @param state  the State from which to get the value
      * @param name   the name of the cache variable
      * @return T     const reference to the cache variable's value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> const T& 
     getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1109,18 +1147,23 @@ public:
         }
     }
     /**
-     * Obtain a writable cache variable value allocated by this Component by name.
-     * Do not forget to mark the cache value as valid after updating, otherwise it
-     * will force a reevaluation if the evaluation method is monitoring the 
-     * validity of the cache value.
+     * Obtain a writable cache variable value allocated by this Component by
+     * name. Do not forget to mark the cache value as valid after updating,
+     * otherwise it will force a re-evaluation if the evaluation method is
+     * monitoring the validity of the cache value.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
      * @return value modifiable reference to the cache variable's value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> T& 
     updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1140,17 +1183,23 @@ public:
     }
 
     /**
-     * After updating a cache variable value allocated by this Component, you can
-     * mark its value as valid, which will not change until the realization stage 
-     * falls below the minimum set at the time the cache variable was created. If 
-     * not marked as valid, the evaluation method monitoring this flag will force 
-     * a re-evaluation rather that just reading the value from the cache.
+     * After updating a cache variable value allocated by this Component, you
+     * can mark its value as valid, which will not change until the realization
+     * stage falls below the minimum set at the time the cache variable was
+     * created. If not marked as valid, the evaluation method monitoring this
+     * flag will force a re-evaluation rather that just reading the value from
+     * the cache.
      *
      * @param state  the State containing the cache variable
      * @param name   the name of the cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1168,24 +1217,29 @@ public:
     }
 
     /**
-     * Mark a cache variable value allocated by this Component as invalid.
-     * When the system realization drops to below the lowest valid stage, cache 
+     * Mark a cache variable value allocated by this Component as invalid. When
+     * the system realization drops to below the lowest valid stage, cache
      * variables are automatically marked as invalid. There are instances when
-     * component added state variables require invalidating a cache at a lower 
-     * stage. For example, a component may have a length state variable which 
-     * should invalidate calculations involving it and other positions when the 
-     * state variable is set. Changing the component state variable automatically
-     * invalidates Dynamics and higher realizations, but to force realizations
-     * at Position and Velocity requires setting the lowest valid stage to 
-     * Position and marking the cache variable as invalid whenver the length
-     * state variable value is set/changed.
+     * component-added state variables require invalidating a cache at a lower
+     * stage. For example, a component may have a "length" state variable which
+     * should invalidate calculations involving it and other positions when the
+     * state variable is set. Changing the component state variable
+     * automatically invalidates Dynamics and higher realizations, but to force
+     * realizations at Position and Velocity requires setting the lowest valid
+     * stage to Position and marking the cache variable as invalid whenever the
+     * "length" state variable value is set/changed.
      *
      * @param state  the State containing the cache variable
      * @param name   the name of the cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void markCacheVariableInvalid(const SimTK::State& state, 
                                   const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1203,17 +1257,22 @@ public:
     }
 
     /**
-     * Enables the user to monitor the validity of the cache variable value using the
-     * returned flag. For components performing a costly evaluation, use this 
-     * method to force a re-evaluation cache variable value only when necessary 
-     * (returns false).
+     * Enables the user to monitor the validity of the cache variable value
+     * using the returned flag. For components performing a costly evaluation,
+     * use this method to force a re-evaluation of a cache variable value only
+     * when necessary (i.e., returns false).
      *
      * @param state  the State in which the cache value resides
      * @param name   the name of the cache variable
      * @return bool  whether the cache variable value is valid or not
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1231,18 +1290,23 @@ public:
     }
 
     /**
-     *  %Set cache variable value allocated by this Component by name.
-     *  All cache entries are lazily evaluated (on a need basis) so a set
-     *  also marks the cache as valid.
+     * %Set cache variable value allocated by this Component by name. All cache
+     * entries are lazily evaluated (on a need basis) so a set also marks the
+     * cache as valid.
      *
      * @param state  the State in which to store the new value
      * @param name   the name of the cache variable
      * @param value  the new value for this cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> void 
     setCacheVariableValue(const SimTK::State& state, const std::string& name, 
                      const T& value) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1590,7 +1654,7 @@ protected:
     virtual void computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /**
-     * %Set the derivative of a state variable by name when computed inside of  
+     * %Set the derivative of a state variable by name when computed inside of
      * this Component's computeStateVariableDerivatives() method.
      *
      * @param state  the State for which to set the value
@@ -1788,17 +1852,19 @@ protected:
     const int getStateIndex(const std::string& name) const;
 
    /**
-     * Get the System Index of a state variable allocated by this Component.  
+     * Get the System Index of a state variable allocated by this Component.
      * Returns an InvalidIndex if no state variable with the name provided is
      * found.
-     * @param stateVariableName   the name of the state variable 
+     * @param stateVariableName   the name of the state variable
      */
     SimTK::SystemYIndex 
         getStateVariableSystemIndex(const std::string& stateVariableName) const;
 
-    /** Get the index of a Component's discrete variable in the Subsystem for allocations.
-        This method is intended for derived Components that may need direct access
-        to its underlying Subsystem.*/
+   /**
+     * Get the index of a Component's discrete variable in the Subsystem for
+     * allocations. This method is intended for derived Components that may need
+     * direct access to its underlying Subsystem.
+     */
     const SimTK::DiscreteVariableIndex 
     getDiscreteVariableIndex(const std::string& name) const;
 
@@ -1919,8 +1985,12 @@ protected:
 #endif
 
 public:
-    /** Similarly find a StateVariable of this Component (includes its subcomponents) */
 #ifndef SWIG // StateVariable is protected.
+    /**
+     * Find a StateVariable of this Component (includes its subcomponents).
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 

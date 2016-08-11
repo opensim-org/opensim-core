@@ -28,6 +28,7 @@
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
+#include <OpenSim/Common/Function.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API

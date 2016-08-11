@@ -25,8 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "SliderJoint.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <simbody/internal/MobilizedBody_Slider.h>
 
 //=============================================================================
 // STATICS
