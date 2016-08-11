@@ -256,11 +256,12 @@ public:
     double getFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current active fiber force (N) due to activation*force_length*force_velocity relationships */
     double getActiveFiberForce(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) passive_force_length relationship */
+    /** get the total force applied by all passive elements in the fiber (N) */
     double getPassiveFiberForce(const SimTK::State& s) const;
     /** get the current active fiber force (N) projected onto the tendon direction */
     double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) projected onto the tendon direction */
+    /** get the total force applied by all passive elements in the fiber (N)
+        projected onto the tendon direction */
     double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current tendon force (N) applied to bones */
     double getTendonForce(const SimTK::State& s) const;
