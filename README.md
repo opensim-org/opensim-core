@@ -584,13 +584,11 @@ On Ubuntu using Unix Makefiles
 Most dependencies can be obtained via the Ubuntu software repositories. On each
 line below, we show the corresponding package.
 
-* **operating system**: Ubuntu 13.10 or later.
+* **operating system**: Ubuntu 12.04 or later. *(See OS specific instructions under 'For the impatient' below)*
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
-  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
-  or from this [third party
-  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
-* **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2.3;
+  `cmake-gui`. 
+* **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -609,7 +607,7 @@ line below, we show the corresponding package.
 
 For example, you could get the required dependencies (except Simbody) via:
 
-    $ sudo apt-get install cmake-gui g++-4.8
+    $ sudo apt-get install cmake-gui g++-4.9
 
 And you could get all the optional dependencies via:
 
