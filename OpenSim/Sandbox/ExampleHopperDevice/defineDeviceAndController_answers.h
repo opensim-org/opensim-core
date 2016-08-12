@@ -129,7 +129,7 @@ public:
         //const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
         #pragma region Step2_TaskA_solution
 
-        const std::string hopperHeightOutput = "/Dennis/slider/yCoord/value";
+        static const std::string hopperHeightCoord{ "/Dennis/slider/yCoord" };
 
         #pragma endregion
 
@@ -137,7 +137,8 @@ public:
         //      output indicated by hopperHeightOutput.
         #pragma region Step2_TaskA_solution
 
-        return getModel().getOutputValue<double>(s, hopperHeightOutput);
+        return getModel().getComponent(hopperHeightCoord)
+            .getOutputValue<double>(s, "value");
 
         #pragma endregion
     }
