@@ -79,8 +79,14 @@ Removed Classes
 The following classes are no longer supported in OpenSim and are removed in OpenSim 4.0.
 - Muscle class `ContDerivMuscle_Depredated`.
 
-Python
-------
+MATLAB and Python interfaces
+----------------------------
+- The SimbodyMatterSubsystem class--which provides operators related to the mass
+matrix, jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
+Python (PR #930).
+
+Python interface
+----------------
 - Improved error handling. Now, OpenSim's error messages show up as exceptions
 in Python.
 

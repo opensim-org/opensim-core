@@ -40,11 +40,29 @@ class TestSimbody(unittest.TestCase):
         model.realizeDynamics(s)
         appliedMobilityForces = osim.Vector()
         appliedBodyForces = osim.VectorOfSpatialVec()
-        knownUdot = osim.Vector()
+        knownUdot = osim.Vector(s.getNU(), 0.0); knownUdot[0] = 1.0
         knownLambda = osim.Vector()
         residualMobilityForces = osim.Vector()
+        # For the given inputs, we will actually be computing the first column
+        # of the mass matrix.
+        #   f_residual = M udot + f_inertial + f_applied 
+        #              = M ~[1, 0, ...] + 0 + 0
         smss.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
                           knownUdot, knownLambda, residualMobilityForces)
 
+        # Explicitly compute the first column of the mass matrix, then copmare.
+        massMatrixFirstColumn = osim.Vector() 
+        smss.multiplyByM(s, knownUdot, massMatrixFirstColumn)
+        assert massMatrixFirstColumn.size() == residualMobilityForces.size()
+        for i in range(massMatrixFirstColumn.size()):
+            self.assertAlmostEqual(massMatrixFirstColumn[i],
+                                   residualMobilityForces[i])
+
+        # InverseDynamicsSolver.
+        # Using accelerations from forward dynamics should give 0 residual.
+        model.realizeAcceleration(s)
         idsolver = osim.InverseDynamicsSolver(model)
-        residual = idsolver.solve(s, knownUdot)
+        residual = idsolver.solve(s, s.getUDot())
+        assert residual.size() == s.getNU()
+        for i in range(residual.size()):
+            assert abs(residual[i]) < 1e-10
