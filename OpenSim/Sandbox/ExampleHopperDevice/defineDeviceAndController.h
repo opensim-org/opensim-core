@@ -88,10 +88,11 @@ public:
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the output corresponding to the hopper's
         //      height. You found this in Step 1, Task A.
-        const std::string hopperHeightOutput = "/Dennis/?????"; //fill this in
+        const std::string hopperHeightCoord = "/Dennis/?????"; //fill this in
 
-        //TODO: Use "getModel().getOutputValue<?????>(?????);" to return the
-        //      output indicated by hopperHeightOutput.
+        //TODO: Use "getModel().getComponent(hopperHeightCoord)
+        //               .getOutputValue<?????>(?????);"
+        //      to return the output vaue from hopperHeightCoord
         return 0;
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {

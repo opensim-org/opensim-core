@@ -46,11 +46,11 @@ static const double REPORTING_INTERVAL{ 0.2 };
 static const std::string testbedAttachment1{"ground"};
 static const std::string testbedAttachment2{"load"};
 
-//TODO: Provide the name of the output corresponding to the hopper's height.
+//TODO: Provide the name of the coordinate corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
 //      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
-//static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+//static const std::string hopperHeightCoord{"/Dennis/?????"}; //fill this in
 #pragma region Step1_TaskA_solution
 
 static const std::string hopperHeightCoord{"/Dennis/slider/yCoord"};
@@ -74,7 +74,7 @@ static const std::string shankAttachment{"/Dennis/shank/deviceAttachmentPoint"};
 //      muscle is active. To do this, we will need to connect the vastus
 //      muscle's "activation" output to the controller's "activation" input.
 // [Step 3, Task B]
-//static const std::string vastusActivationOutput{"/Dennis/?????"}; //fill this in
+//static const std::string vastus{"/Dennis/?????"}; //fill this in
 #pragma region Step3_TaskB_solution
 
 static const std::string vastus{"/Dennis/vastus"};
@@ -203,7 +203,7 @@ void addSignalGeneratorToDevice(Device& device)
     device.addComponent(signalGen);
 
     //TODO: Connect the signal generator's output signal to the controller's
-    //      activation input ("controller/activation").
+    //      activation input.
     #pragma region Step2_TaskE_solution
 
     device.updComponent("controller").updInput("activation")
@@ -270,7 +270,7 @@ int main()
         // Step 1, Task A
         // ==============
         // Determine the name of the output corresponding to the hopper's
-        // height. The hopperHeightOutput string (at the top of this file) must
+        // height. The hopperHeightCoord string (at the top of this file) must
         // be filled in.
 
         // Step 1, Task B
@@ -364,7 +364,7 @@ int main()
         // Step 3, Task B
         // ==============
         // Use the vastus muscle's activation as the control signal for the
-        // device. The signalForKneeDevice string (at the top of this file) must
+        // device. The vastus string (at the top of this file) must
         // be filled in.
         kneeDevice->updComponent("controller").updInput("activation")
             .connect(assistedHopper.getComponent(vastus).getOutput("activation"));

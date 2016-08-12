@@ -755,6 +755,11 @@ public:
      * lets you get information about the connection (like if the connector is
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
+     *
+     * Example:
+     * @code{.cpp}
+     * model.getComponent("/path/to/component").getConnector("connectorName");
+     * @endcode
      */
     const AbstractConnector& getConnector(const std::string& name) const {
         auto it = _connectorsTable.find(name);
@@ -862,6 +867,11 @@ public:
     /**
     * Get an Input provided by this Component by name.
     *
+    * Example: get an Input from a Component in the model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getInput("inputName");
+    * @endcode
+    *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
@@ -880,6 +890,17 @@ public:
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
     
+    /**
+    * Get a writable reference to an Input provided by this Component by name.
+    *
+    * Example: get a writeable reference to an Input of a Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updInput("inputName");
+    * @endcode
+
+    * @param name   the name of the cache variable
+    * @return       reference to the AbstractInput
+    */
     AbstractInput& updInput(const std::string& name)
     {
         return *const_cast<AbstractInput *>(&getInput(name));
@@ -899,6 +920,11 @@ public:
 
     /**
     * Get the Output provided by this Component by name.
+    *
+    * Example: get an Output from a Component in a model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getOutput("outputName");
+    * @endcode
     *
     * @param name   the name of the cache variable
     * @return       const reference to the AbstractOutput
@@ -921,6 +947,11 @@ public:
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
+    * Example: get a writeable reference to an Output of a Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updOutput("outputName");
+    * @endcode
+
     * @param name   the name of the cache variable
     * @return       reference to the AbstractOutput
     */
