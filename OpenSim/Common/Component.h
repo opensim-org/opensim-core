@@ -898,7 +898,7 @@ public:
     * model.updComponent("/path/to/component").updInput("inputName");
     * @endcode
 
-    * @param name   the name of the cache variable
+    * @param name   the name of the Input
     * @return       reference to the AbstractInput
     */
     AbstractInput& updInput(const std::string& name)
