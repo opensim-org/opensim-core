@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Array.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace SimTK {
 class Integrator;
