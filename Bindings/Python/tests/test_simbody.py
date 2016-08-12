@@ -49,6 +49,7 @@ class TestSimbody(unittest.TestCase):
         #              = M ~[1, 0, ...] + 0 + 0
         smss.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
                           knownUdot, knownLambda, residualMobilityForces)
+        assert residualMobilityForces.size() == s.getNU()
 
         # Explicitly compute the first column of the mass matrix, then copmare.
         massMatrixFirstColumn = osim.Vector() 
