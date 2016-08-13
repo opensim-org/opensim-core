@@ -60,8 +60,8 @@ static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
 static const std::string shankAttachment{"/Dennis/?????"}; //fill this in
 
 //TODO: To assist hopping, we will activate the knee device whenever the vastus
-//      muscle is active. To do this, we will need to connect the vastus
-//      muscle's "activation" output to the controller's "activation" input.
+//      muscle is active. For convenience, we define a string "vastus" which
+//      is the path to the vastus muscle.
 // [Step 3, Task B]
 static const std::string vastus{"/Dennis/?????"}; //fill this in
 
@@ -197,7 +197,7 @@ int main()
 
         // Step 1, Task A
         // ==============
-        // Determine the name of the output corresponding to the hopper's
+        // Determine the name of the coordinate corresponding to the hopper's
         // height. The hopperHeightCoord string (at the top of this file) must
         // be filled in.
 
@@ -299,7 +299,7 @@ int main()
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> kneeDeviceOutputs{ "tension", "height" };
-        std::vector<std::string> controllerOutputs{ "myo_control" };
+        std::vector<std::string> deviceControllerOutputs{ "myo_control" };
 
         // Add a ConsoleReporter to report deviceOutputs.
         //addDeviceConsoleReporterToModel(assistedHopper, *kneeDevice,

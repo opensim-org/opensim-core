@@ -756,7 +756,7 @@ public:
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
      *
-     * Example:
+     * <b>C++ example</b>
      * @code{.cpp}
      * model.getComponent("/path/to/component").getConnector("connectorName");
      * @endcode
@@ -778,6 +778,8 @@ public:
 
     /** Get a writable reference to the AbstractConnector for the given
      * connector name. Use this method to connect the Connector to something.
+     * 
+     * <b>C++ example</b>
      * @code
      * joint.updConnector("parent_frame").connect(model.getGround());
      * @endcode
@@ -867,7 +869,7 @@ public:
     /**
     * Get an Input provided by this Component by name.
     *
-    * Example: get an Input from a Component in the model
+    * <b>C++ example:</b> get an Input from a Component in the model
     * @code{.cpp}
     * model.getComponent("/path/to/component").getInput("inputName");
     * @endcode
@@ -893,7 +895,8 @@ public:
     /**
     * Get a writable reference to an Input provided by this Component by name.
     *
-    * Example: get a writeable reference to an Input of a Component in a model
+    * <b>C++ example:</b> get a writeable reference to an Input of a 
+    * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updInput("inputName");
     * @endcode
@@ -921,7 +924,7 @@ public:
     /**
     * Get the Output provided by this Component by name.
     *
-    * Example: get an Output from a Component in a model
+    * <b>C++ example:</b> get an Output from a Component in a model
     * @code{.cpp}
     * model.getComponent("/path/to/component").getOutput("outputName");
     * @endcode
@@ -947,7 +950,8 @@ public:
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
-    * Example: get a writeable reference to an Output of a Component in a model
+    * <b>C++ example:</b> get a writeable reference to an Output of a 
+    * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updOutput("outputName");
     * @endcode

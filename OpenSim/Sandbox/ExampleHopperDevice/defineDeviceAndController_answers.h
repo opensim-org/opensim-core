@@ -124,8 +124,8 @@ public:
         #pragma endregion
     }
     double getHeight(const SimTK::State& s) const {
-        //TODO: Provide the name of the output corresponding to the hopper's
-        //      height. You found this in Step 1, Task A.
+        //TODO: Provide the name of the coordinate corresponding to the
+        //      hopper's height. You found this in Step 1, Task A.
         //const std::string hopperHeightCoord = "/Dennis/?????"; //fill this in
         #pragma region Step2_TaskA_solution
 
@@ -135,7 +135,7 @@ public:
 
         //TODO: Use "getModel().getComponent(hopperHeightCoord)
         //               .getOutputValue<?????>(?????);"
-        //      to return the output vaue from hopperHeightCoord
+        //      to return the output value from hopperHeightCoord.
         #pragma region Step2_TaskA_solution
 
         return getModel().getComponent(hopperHeightCoord)
