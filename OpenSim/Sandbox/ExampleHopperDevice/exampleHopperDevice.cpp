@@ -146,7 +146,7 @@ void addSignalGeneratorToDevice(Device& device)
 //------------------------------------------------------------------------------
 void addDeviceConsoleReporterToModel(Model& model, Device& device,
     const std::vector<std::string>& deviceOutputs,
-    const std::vector<std::string>& controllerOutputs)
+    const std::vector<std::string>& deviceControllerOutputs)
 {
     // Create a new ConsoleReporter. Set its name and reporting interval.
     auto reporter = new ConsoleReporter();
@@ -157,7 +157,7 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
     for (auto thisOutputName : deviceOutputs)
         reporter->updInput("inputs").connect(device.getOutput(thisOutputName));
 
-    for (auto thisOutputName : controllerOutputs)
+    for (auto thisOutputName : deviceControllerOutputs)
         reporter->updInput("inputs").
         connect(device.getComponent("controller").getOutput(thisOutputName));
 
@@ -260,11 +260,11 @@ int main()
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> deviceOutputs{ "length", "tension", "power" };
-        std::vector<std::string> controllerOutputs{ "myo_control" };
+        std::vector<std::string> deviceControllerOutputs{ "myo_control" };
 
         // Add a ConsoleReporter to report deviceOutputs.
         //addDeviceConsoleReporterToModel(testbed, *device, deviceOutputs,
-        //                                controllerOutputs);
+        //                                deviceControllerOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
@@ -303,7 +303,7 @@ int main()
 
         // Add a ConsoleReporter to report deviceOutputs.
         //addDeviceConsoleReporterToModel(assistedHopper, *kneeDevice,
-        //                                kneeDeviceOutputs, controllerOutputs);
+        //                                kneeDeviceOutputs, deviceControllerOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
