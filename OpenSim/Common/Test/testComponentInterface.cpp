@@ -1034,17 +1034,16 @@ void testInputOutputConnections()
     // do any other input/output connections
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
 
-    // Must throw an exception since subState0 is not a state of internalSub.
-    ASSERT_THROW(OpenSim::Exception,
-        foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState0")));
-    // internalSub's state is "subState"
-    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
+    // Test various exceptions for inputs, outputs, connectors
+    ASSERT_THROW(ComponentNoInputFound, foo1->getInput("input0"));
+    ASSERT_THROW(ComponentNoConnectorFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(ComponentNoOutputFound, 
+        world.getComponent("./internalSub").getOutput("subState0"));
+    // Ensure that getOutput does not perform a "find"
+    ASSERT_THROW(ComponentNoOutputFound,
+        world.getOutput("./internalSub/subState"));
 
-    // Ensure that searching does not work for either a valid or invalid output
-    ASSERT_THROW(OpenSim::Exception,
-        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState")));
-    ASSERT_THROW(OpenSim::Exception,
-        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
+    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
 
     foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
     foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));

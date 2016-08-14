@@ -97,7 +97,7 @@ public:
                                         const std::string& func,
                                         const std::string& compName,
                                         const std::string& thisName) :
-            Exception(file, line, func) {
+        Exception(file, line, func) {
         std::string msg = "Component '" + compName;
         msg += "' already owned by tree to which '" + thisName;
         msg += "' belongs. Clone the component to adopt a fresh copy.";
@@ -115,6 +115,48 @@ public:
         std::string msg = "This Component has not been added to a System.\n";
         msg += "You must call initSystem on the top-level Component ";
         msg += "(i.e., Model) first.";
+        addMessage(msg);
+    }
+};
+
+class ComponentNoConnectorFound : public Exception {
+public:
+    ComponentNoConnectorFound(const std::string& file,
+                              size_t line,
+                              const std::string& func,
+                              const Object& obj,
+                              const std::string& connectorName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Connector '" + connectorName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentNoInputFound : public Exception {
+public:
+    ComponentNoInputFound(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const Object& obj,
+                          const std::string& inputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Input '" + inputName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentNoOutputFound : public Exception {
+public:
+    ComponentNoOutputFound(const std::string& file,
+                           size_t line,
+                           const std::string& func,
+                           const Object& obj,
+                           const std::string& outputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Output '" + outputName;
+        msg += "' found for this Component.";
         addMessage(msg);
     }
 };
@@ -768,12 +810,7 @@ public:
             return get_connectors(it->second);
         }
 
-        std::stringstream msg;
-        msg << getConcreteClassName() << " '" << getName();
-        msg << "Component::getConnector() ERR- no Connector '" << name;
-        msg << "' found.\n" << std::endl;
-        throw Exception(msg.str(), __FILE__, __LINE__);
-
+        OPENSIM_THROW_FRMOBJ(ComponentNoConnectorFound, name);
     }
 
     /** Get a writable reference to the AbstractConnector for the given
@@ -885,11 +922,7 @@ public:
             return it->second.getRef(); 
         }
 
-        std::stringstream msg;
-        msg << "Component::getInput: ERR- no Input '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW_FRMOBJ(ComponentNoInputFound, name);
     }
     
     /**
@@ -940,11 +973,7 @@ public:
             return it->second.getRef();
         }
 
-        std::stringstream msg;
-        msg << "Component::getOutput: ERR- no Output '" << name << "' found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW_FRMOBJ(ComponentNoOutputFound, name);
     }
 
     /**
