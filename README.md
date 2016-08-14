@@ -139,7 +139,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able
@@ -398,7 +398,7 @@ ctest -j8
 
 * **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
@@ -586,7 +586,7 @@ line below, we show the corresponding package.
 
 * **operating system**: Ubuntu 12.04 or later. *(See OS specific instructions under 'For the impatient' below)*
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2.3;
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
   `cmake-gui`. 
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
