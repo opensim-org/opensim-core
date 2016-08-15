@@ -118,10 +118,12 @@ int main()
 
 void testVisModel(Model& model, const std::string standard_filename)
 {
-
-    model.setUseVisualizer(true);
+    bool visualDebug = false; // Turn on only if you want to see API visualizer live
+    if (visualDebug) 
+        model.setUseVisualizer(true);
     SimTK::State& si = model.initSystem();
-    model.getVisualizer().show(si);
+    if (visualDebug) 
+        model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
