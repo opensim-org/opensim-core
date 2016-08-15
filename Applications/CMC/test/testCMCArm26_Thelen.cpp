@@ -41,9 +41,26 @@ void testCMCArm26() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*2+2*6); // activations within 2%, angles within .6 degrees
+    Array<double> rms_tols(0, 2*2+2*6); // activations within 2%, angles within .6 degrees
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testCMCArm26 "+ muscleType;
+
+    rms_tols[0]  = 0.0002;    // r_shoulder/r_shoulder_elev/value
+    rms_tols[1]  = 0.002;     // r_shoulder/r_shoulder_elev/speed
+    rms_tols[2]  = 0.0006;    // r_elbow/r_elbow_flex/value
+    rms_tols[3]  = 0.006;     // r_elbow/r_elbow_flex/speed
+    rms_tols[4]  = 0.0000001; // TRIlong/activation
+    rms_tols[5]  = 0.00001;   // TRIlong/fiber_length
+    rms_tols[6]  = 0.0009;    // TRIlat/activation
+    rms_tols[7]  = 0.0001;    // TRIlat/fiber_length
+    rms_tols[8]  = 0.0008;    // TRImed/activation
+    rms_tols[9]  = 0.0001;    // TRImed/fiber_length
+    rms_tols[10] = 0.0009;    // BIClong/activation
+    rms_tols[11] = 0.0001;    // BIClong/fiber_length
+    rms_tols[12] = 0.004;     // BICshort/activation
+    rms_tols[13] = 0.0001;    // BICshort/fiber_length
+    rms_tols[14] = 0.0003;    // BRA/activation
+    rms_tols[15] = 0.00001;   // BRA/fiber_length
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
         base+" failed");
