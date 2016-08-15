@@ -82,7 +82,7 @@ The following classes are no longer supported in OpenSim and are removed in Open
 MATLAB and Python interfaces
 ----------------------------
 - The SimbodyMatterSubsystem class--which provides operators related to the mass
-matrix, jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
+matrix, Jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
 Python (PR #930).
 
 Python interface
