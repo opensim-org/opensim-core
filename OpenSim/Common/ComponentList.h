@@ -26,7 +26,9 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
-#include "Simbody.h"
+#include <string>
+#include <type_traits>
+#include "SimTKcommon/basics.h"
 
 namespace OpenSim {
 

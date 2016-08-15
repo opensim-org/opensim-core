@@ -22,14 +22,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 //
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKsimbody.h"
-#include "SimTKcommon/internal/SubsystemGuts.h"
-#include "SimTKcommon/internal/SystemGuts.h"
+#include <OpenSim/Common/Array.h>
+#include <SimTKcommon/internal/System.h>
+#include <SimTKcommon/internal/SystemGuts.h>
 
 namespace OpenSim {
 
+class FunctionSet;
 class Model;
 
 #ifdef SWIG

@@ -22,8 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactGeometry.h"
-#include "PhysicalOffsetFrame.h"
-#include <OpenSim/Common/ScaleSet.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;

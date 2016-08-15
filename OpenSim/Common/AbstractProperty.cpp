@@ -26,7 +26,6 @@
 #include "AbstractProperty.h"
 #include "Object.h"
 
-#include <string>
 #include <limits>
 
 using namespace OpenSim;

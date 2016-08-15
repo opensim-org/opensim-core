@@ -24,10 +24,8 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Common/Object.h"
-#include "OpenSim/Simulation/SimbodyEngine/Body.h"
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <SimTKsimbody.h>
+#include "OpenSim/Simulation/Model/PhysicalFrame.h"
 #include "Appearance.h"
 
 namespace OpenSim {

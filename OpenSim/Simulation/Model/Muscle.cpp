@@ -26,14 +26,8 @@
 //=============================================================================
 #include "Muscle.h"
 
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "ConditionalPathPoint.h"
-#include "PointForceDirection.h"
 #include "GeometryPath.h"
-
 #include "Model.h"
-
 #include <OpenSim/Common/XMLDocument.h>
 
 //=============================================================================
@@ -387,7 +381,7 @@ double Muscle::getActiveFiberForce(const SimTK::State& s) const
     return getMuscleDynamicsInfo(s).activeFiberForce;
 }
 
-/* get the current passive fiber force (N) passive_force_length relationship */
+/* get the total force applied by all passive elements in the fiber (N) */
 double Muscle::getPassiveFiberForce(const SimTK::State& s) const 
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce;
@@ -399,7 +393,8 @@ double Muscle::getActiveFiberForceAlongTendon(const SimTK::State& s) const
     return getMuscleDynamicsInfo(s).activeFiberForce * getMuscleLengthInfo(s).cosPennationAngle;
 }
 
-/* get the current passive fiber force (N) projected onto the tendon direction */
+/* get the total force applied by all passive elements in the fiber (N)
+   projected onto the tendon direction */
 double Muscle::getPassiveFiberForceAlongTendon(const SimTK::State& s) const 
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce * getMuscleLengthInfo(s).cosPennationAngle;

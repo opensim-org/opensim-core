@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "FunctionThresholdCondition.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Function.h>
 
 

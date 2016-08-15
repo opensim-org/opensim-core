@@ -25,6 +25,9 @@
 // INCLUDES
 //=============================================================================
 #include "RollingOnSurfaceConstraint.h"
+#include "simbody/internal/SimbodyMatterSubsystem.h"
+#include "simbody/internal/Constraint_PointInPlane.h"
+#include "simbody/internal/MobilizedBody_Weld.h"
 
 //=============================================================================
 // STATICS

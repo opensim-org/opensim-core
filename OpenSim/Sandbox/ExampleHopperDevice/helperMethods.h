@@ -28,6 +28,7 @@
 anything in this file, but you should know what each of these methods does. */
 
 #include <OpenSim/OpenSim.h>
+#include <simbody/internal/Visualizer_InputListener.h>
 
 namespace OpenSim {
 

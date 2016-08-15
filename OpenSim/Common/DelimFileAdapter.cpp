@@ -1,5 +1,6 @@
 #include "DelimFileAdapter.h"
 #include <fstream>
+#include <iomanip>
 #include <regex>
 
 namespace OpenSim {

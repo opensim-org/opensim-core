@@ -26,6 +26,7 @@
 
 #include "simbody/internal/CableTrackerSubsystem.h"
 #include "simbody/internal/CablePath.h"
+#include "simbody/internal/Force_Custom.h"
 
 #include <set>
 #include <string>

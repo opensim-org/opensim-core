@@ -28,7 +28,6 @@
 #include <OpenSim/Simulation/Model/Appearance.h>
 namespace OpenSim {
 
-class Body;
 class PathPoint;
 class PathWrap;
 class WrapResult;

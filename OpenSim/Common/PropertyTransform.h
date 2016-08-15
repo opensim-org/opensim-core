@@ -28,9 +28,8 @@
 
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property_Deprecated.h"
 #include "PropertyDblArray.h"
-#include "SimTKcommon.h"
+#include "SimTKcommon/Orientation.h"
 
 //=============================================================================
 //=============================================================================

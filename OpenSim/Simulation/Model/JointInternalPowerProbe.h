@@ -26,10 +26,11 @@
 
 // INCLUDE
 #include "Probe.h"
-#include "Model.h"
 
 
 namespace OpenSim {
+
+class Model;
 
 //==============================================================================
 //                        JOINT INTERNAL POWER PROBE

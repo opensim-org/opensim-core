@@ -36,18 +36,19 @@ class TestDataAdapter(unittest.TestCase):
         except AttributeError:
             # C3D support not available. OpenSim was not compiled with BTK.
             return
-        tables = adapter.read(os.path.join(test_dir, 'singleLeglanding_2.c3d'))
+        tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'))
         markers = tables['markers']
         forces = tables['forces']
-        assert markers.getNumRows()    == 1219
-        assert markers.getNumColumns() == 356
-        assert forces.getNumRows()     == 9752
-        assert forces.getNumColumns()  == 3
+        
+        assert markers.getNumRows()    == 1249
+        assert markers.getNumColumns() == 44
+        assert forces.getNumRows()     == 9992
+        assert forces.getNumColumns()  == 6
 
-        tables = adapter.read(os.path.join(test_dir, 'jogging.c3d'))
+        tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
         markers = tables['markers']
         forces = tables['forces']
-        assert markers.getNumRows()    == 406
-        assert markers.getNumColumns() == 209
-        assert forces.getNumRows()     == 2030
-        assert forces.getNumColumns()  == 12
+        assert markers.getNumRows()    == 1103
+        assert markers.getNumColumns() == 40
+        assert forces.getNumRows()     == 8824
+        assert forces.getNumColumns()  == 6

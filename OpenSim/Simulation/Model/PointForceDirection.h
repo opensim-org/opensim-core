@@ -29,6 +29,7 @@
 namespace OpenSim {
 
 class Body;
+class PhysicalFrame;
 //=============================================================================
 //=============================================================================
 /** Convenience class for a generic representation of geometry of a complex

@@ -25,18 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "WrapObject.h"
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 

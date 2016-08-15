@@ -27,7 +27,6 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <OpenSim/Common/ScaleSet.h>
 #include "PathPointSet.h"
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
@@ -43,9 +42,10 @@
 namespace OpenSim {
 
 class Coordinate;
+class PointForceDirection;
+class ScaleSet;
 class WrapResult;
 class WrapObject;
-class PointForceDirection;
 
 //=============================================================================
 //=============================================================================

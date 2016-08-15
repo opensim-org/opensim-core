@@ -24,10 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include "Tool.h"
 
@@ -42,7 +39,7 @@ namespace OpenSim {
 
 class Model;
 class IKTaskSet;
-class Storage;
+
 //=============================================================================
 //=============================================================================
 /**

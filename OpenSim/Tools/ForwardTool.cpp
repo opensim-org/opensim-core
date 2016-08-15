@@ -27,13 +27,8 @@
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
 
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "CorrectionController.h"
 

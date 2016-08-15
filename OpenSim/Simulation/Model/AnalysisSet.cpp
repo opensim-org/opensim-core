@@ -30,7 +30,6 @@
 // INCLUDES
 //=============================================================================
 #include "AnalysisSet.h"
-#include "Model.h"
 
 
 using namespace OpenSim;

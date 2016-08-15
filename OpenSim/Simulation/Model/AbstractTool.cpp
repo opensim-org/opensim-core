@@ -28,9 +28,7 @@
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
 
-#include "PrescribedForce.h"
 #include "ForceSet.h"
-#include "BodySet.h"
 #include "Model.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
