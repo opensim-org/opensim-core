@@ -286,7 +286,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         # Actuator.
         actu = osim.CoordinateActuator()
         actu.setName('actu')
-        actu.setCoordinate(joint.getCoordinateSet().get(0))
+        actu.setCoordinate(joint.get_CoordinateSet().get(0))
         model.addForce(actu)
         # Controller.
         contr = osim.PrescribedController()

@@ -80,7 +80,7 @@ MODEL_ADOPT_HELPER(Controller);
 // PrescribedController::prescribeControlForActuator takes ownership of
 // the passed-in function.
 // There are two overloads of this function; we append to both of them.
-// arg[1] is `Function* prescribedFunction`.
+// args[1] is `Function* prescribedFunction`.
 %pythonappend OpenSim::PrescribedController::prescribeControlForActuator %{
     args[1]._markAdopted()
 %}
