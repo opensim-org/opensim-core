@@ -56,18 +56,18 @@ radius = osim.Body('radius',
 # ---------------------------------------------------------------------------
 
 shoulder = osim.PinJoint("shoulder",
-                         arm.getGround(), 	    	# PhysicalFrame
+                         arm.getGround(), # PhysicalFrame
                          osim.Vec3(0, 0, 0),
                          osim.Vec3(0, 0, 0),
-                         humerus, 					# PhysicalFrame
+                         humerus, # PhysicalFrame
                          osim.Vec3(0, 0, 0),
                          osim.Vec3(0, 1, 0))
 
 elbow = osim.PinJoint("elbow",
-                      humerus, 						# PhysicalFrame
+                      humerus, # PhysicalFrame
                       osim.Vec3(0, 0, 0),
                       osim.Vec3(0, 0, 0),
-                      radius, 						# PhysicalFrame
+                      radius, # PhysicalFrame
                       osim.Vec3(0, 0, 0),
                       osim.Vec3(0, 1, 0))
 
@@ -103,7 +103,7 @@ brain.prescribeControlForActuator(1,  # Actuator's index in controller set
 
 arm.addBody(humerus)
 arm.addBody(radius)
-arm.addJoint(shoulder)						# Now required in OpenSim4.0
+arm.addJoint(shoulder) # Now required in OpenSim4.0
 arm.addJoint(elbow)
 arm.addForce(biceps)
 arm.addController(brain)
