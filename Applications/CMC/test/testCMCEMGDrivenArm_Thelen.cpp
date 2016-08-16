@@ -42,12 +42,23 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*2+2*6);
-    rms_tols[4] = 0.10;  // trilong
-    rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
-    rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
-    rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
-    rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
+    Array<double> rms_tols(0, 2*2+2*6);
+    rms_tols[0]  = 0.0003; // r_shoulder/r_shoulder_elev/value
+    rms_tols[1]  = 0.005;  // r_shoulder/r_shoulder_elev/speed
+    rms_tols[2]  = 0.002;  // r_elbow/r_elbow_flex/value
+    rms_tols[3]  = 0.02;   // r_elbow/r_elbow_flex/speed
+    rms_tols[4]  = 0.09;   // TRIlong/activation
+    rms_tols[5]  = 0.0006; // TRIlong/fiber_length
+    rms_tols[6]  = 0.20;   // TRIlat/activation
+    rms_tols[7]  = 0.0006; // TRIlat/fiber_length
+    rms_tols[8]  = 0.19;   // TRImed/activation
+    rms_tols[9]  = 0.0005; // TRImed/fiber_length
+    rms_tols[10] = 0.25;   // BIClong/activation
+    rms_tols[11] = 0.002;  // BIClong/fiber_length
+    rms_tols[12] = 0.33;   // BICshort/activation
+    rms_tols[13] = 0.002;  // BICshort/fiber_length
+    rms_tols[14] = 0.003;  // BRA/activation
+    rms_tols[15] = 0.00005;// BRA/fiber_length
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
 
