@@ -60,10 +60,10 @@ void testCMCEMGDrivenArm() {
     rms_tols[14] = 0.003;  // BRA/activation
     rms_tols[15] = 0.00005;// BRA/fiber_length
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm_Thelen failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    cout << "\ntestCMCEMGDrivenArm_Thelen "+muscleType+ " passed\n" << endl;
 }
 
 int main() {
