@@ -177,10 +177,13 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 void PrescribedController::
     prescribeControlForActuator(int index, Function *prescribedFunction)
 {
-    SimTK_ASSERT( index < getActuatorSet().getSize(), 
-        "PrescribedController::computeControl:  index > number of actuators" );
-    SimTK_ASSERT( index >= 0,  
-        "PrescribedController::computeControl:  index < 0" );
+    OPENSIM_THROW_IF_FRMOBJ(index < 0,  
+            Exception, "Index was " + std::to_string(index) +
+                       " but must be nonnegative." );
+    OPENSIM_THROW_IF(index >= getActuatorSet().getSize(),
+            IndexOutOfRange, (size_t)index, 0,
+            (size_t)getActuatorSet().getSize() - 1);
+
     if(index >= get_ControlFunctions().getSize())
         upd_ControlFunctions().setSize(index+1);
     upd_ControlFunctions().set(index, prescribedFunction);  
