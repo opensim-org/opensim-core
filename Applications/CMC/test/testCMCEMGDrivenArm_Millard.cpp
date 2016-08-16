@@ -43,7 +43,7 @@ void testCMCEMGDrivenArm() {
     cmc.getModel().formStateStorage(temp, *standard);
 
     Array<double> rms_tols(0, 2*2+2*6);
-    rms_tols[0]  = 0.0002; // r_shoulder/r_shoulder_elev/value
+    rms_tols[0]  = 0.0007; // r_shoulder/r_shoulder_elev/value
     rms_tols[1]  = 0.004;  // r_shoulder/r_shoulder_elev/speed
     rms_tols[2]  = 0.0005; // r_elbow/r_elbow_flex/value
     rms_tols[3]  = 0.02;   // r_elbow/r_elbow_flex/speed
