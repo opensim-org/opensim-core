@@ -962,7 +962,7 @@ public:
     * model.getComponent("/path/to/component").getOutput("outputName");
     * @endcode
     *
-    * @param name   the name of the cache variable
+    * @param name   the name of the Output
     * @return       const reference to the AbstractOutput
     */
     const AbstractOutput& getOutput(const std::string& name) const
@@ -985,7 +985,7 @@ public:
     * model.updComponent("/path/to/component").updOutput("outputName");
     * @endcode
 
-    * @param name   the name of the cache variable
+    * @param name   the name of the Output
     * @return       reference to the AbstractOutput
     */
     AbstractOutput& updOutput(const std::string& name)
