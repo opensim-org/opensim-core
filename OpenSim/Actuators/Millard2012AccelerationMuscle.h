@@ -51,7 +51,39 @@ The parent class, Muscle.h, provides
 
 namespace OpenSim {
 
+//==============================================================================
+//                   MILLARD2012ACCELERATIONMUSCLE EXCEPTIONS
+//==============================================================================
+class Millard2012AccelerationMuscleCannotEquilibrate : public Exception {
+public:
+    Millard2012AccelerationMuscleCannotEquilibrate(const std::string& file,
+                                                   size_t line,
+                                                   const std::string& func,
+                                                   const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Unable to compute equilibrium for this muscle.\n";
+        msg += "Please verify that the initial activation is valid and that ";
+        msg += "the length of the musculotendon actuator doesn't produce a ";
+        msg += "pennation angle of 90 degrees or a negative fiber length.";
+        addMessage(msg);
+    }
+};
 
+class Millard2012AccelerationMuscleInvalidFlag : public Exception {
+public:
+    Millard2012AccelerationMuscleInvalidFlag(const std::string& file,
+                                             size_t line,
+                                             const std::string& func,
+                                             const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Invalid flag returned by initMuscleState().";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                        MILLARD2012ACCELERATIONMUSCLE
+//==============================================================================
 /**
 This class implements a 3 state (activation,fiber length and fiber velocity) 
 acceleration musculo-tendon model that has several advantages over 
