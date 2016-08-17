@@ -46,7 +46,7 @@ void testCMCEMGDrivenArm() {
     rms_tols[0]  = 0.0008; // r_shoulder/r_shoulder_elev/value
     rms_tols[1]  = 0.005;  // r_shoulder/r_shoulder_elev/speed
     rms_tols[2]  = 0.002;  // r_elbow/r_elbow_flex/value
-    rms_tols[3]  = 0.02;   // r_elbow/r_elbow_flex/speed
+    rms_tols[3]  = 0.025;  // r_elbow/r_elbow_flex/speed
     rms_tols[4]  = 0.09;   // TRIlong/activation
     rms_tols[5]  = 0.0006; // TRIlong/fiber_length
     rms_tols[6]  = 0.20;   // TRIlat/activation
