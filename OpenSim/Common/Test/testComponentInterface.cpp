@@ -1035,12 +1035,12 @@ void testInputOutputConnections()
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
 
     // Test various exceptions for inputs, outputs, connectors
-    ASSERT_THROW(ComponentNoInputFound, foo1->getInput("input0"));
-    ASSERT_THROW(ComponentNoConnectorFound, bar->updConnector<Foo>("parentFoo0"));
-    ASSERT_THROW(ComponentNoOutputFound, 
+    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(OutputNotFound, 
         world.getComponent("./internalSub").getOutput("subState0"));
     // Ensure that getOutput does not perform a "find"
-    ASSERT_THROW(ComponentNoOutputFound,
+    ASSERT_THROW(OutputNotFound,
         world.getOutput("./internalSub/subState"));
 
     foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));

@@ -119,13 +119,13 @@ public:
     }
 };
 
-class ComponentNoConnectorFound : public Exception {
+class ConnectorNotFound : public Exception {
 public:
-    ComponentNoConnectorFound(const std::string& file,
-                              size_t line,
-                              const std::string& func,
-                              const Object& obj,
-                              const std::string& connectorName) :
+    ConnectorNotFound(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const Object& obj,
+                      const std::string& connectorName) :
         Exception(file, line, func, obj) {
         std::string msg = "no Connector '" + connectorName;
         msg += "' found for this Component.";
@@ -133,13 +133,13 @@ public:
     }
 };
 
-class ComponentNoInputFound : public Exception {
+class InputNotFound : public Exception {
 public:
-    ComponentNoInputFound(const std::string& file,
-                          size_t line,
-                          const std::string& func,
-                          const Object& obj,
-                          const std::string& inputName) :
+    InputNotFound(const std::string& file,
+                  size_t line,
+                  const std::string& func,
+                  const Object& obj,
+                  const std::string& inputName) :
         Exception(file, line, func, obj) {
         std::string msg = "no Input '" + inputName;
         msg += "' found for this Component.";
@@ -147,13 +147,13 @@ public:
     }
 };
 
-class ComponentNoOutputFound : public Exception {
+class OutputNotFound : public Exception {
 public:
-    ComponentNoOutputFound(const std::string& file,
-                           size_t line,
-                           const std::string& func,
-                           const Object& obj,
-                           const std::string& outputName) :
+    OutputNotFound(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const Object& obj,
+                   const std::string& outputName) :
         Exception(file, line, func, obj) {
         std::string msg = "no Output '" + outputName;
         msg += "' found for this Component.";
@@ -810,7 +810,7 @@ public:
             return get_connectors(it->second);
         }
 
-        OPENSIM_THROW_FRMOBJ(ComponentNoConnectorFound, name);
+        OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
     }
 
     /** Get a writable reference to the AbstractConnector for the given
@@ -922,7 +922,7 @@ public:
             return it->second.getRef(); 
         }
 
-        OPENSIM_THROW_FRMOBJ(ComponentNoInputFound, name);
+        OPENSIM_THROW_FRMOBJ(InputNotFound, name);
     }
     
     /**
@@ -973,7 +973,7 @@ public:
             return it->second.getRef();
         }
 
-        OPENSIM_THROW_FRMOBJ(ComponentNoOutputFound, name);
+        OPENSIM_THROW_FRMOBJ(OutputNotFound, name);
     }
 
     /**
