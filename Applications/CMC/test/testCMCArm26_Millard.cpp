@@ -59,7 +59,7 @@ void testCMCArm26() {
     rms_tols[7]  = 0.0003; // TRIlat/fiber_length
     rms_tols[8]  = 0.03;   // TRImed/activation
     rms_tols[9]  = 0.0003; // TRImed/fiber_length
-    rms_tols[10] = 0.031;  // BIClong/activation
+    rms_tols[10] = 0.05;   // BIClong/activation
     rms_tols[11] = 0.0008; // BIClong/fiber_length
     rms_tols[12] = 0.0071; // BICshort/activation
     rms_tols[13] = 0.0005; // BICshort/fiber_length

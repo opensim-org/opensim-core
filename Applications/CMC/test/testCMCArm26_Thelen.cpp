@@ -50,7 +50,7 @@ void testCMCArm26() {
     rms_tols[2]  = 0.002;     // r_elbow/r_elbow_flex/value
     rms_tols[3]  = 0.006;     // r_elbow/r_elbow_flex/speed
     rms_tols[4]  = 0.00003;   // TRIlong/activation
-    rms_tols[5]  = 0.00001;   // TRIlong/fiber_length
+    rms_tols[5]  = 0.00002;   // TRIlong/fiber_length
     rms_tols[6]  = 0.0009;    // TRIlat/activation
     rms_tols[7]  = 0.0001;    // TRIlat/fiber_length
     rms_tols[8]  = 0.0008;    // TRImed/activation
