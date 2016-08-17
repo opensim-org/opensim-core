@@ -153,6 +153,7 @@ Model createModel4AppearanceTest()
     Model modelWithGroundOnly;
     Sphere* unitSphere = new Sphere(1.0);
     const Ground& ground = modelWithGroundOnly.getGround();
+    //DecorativeGeometry default is Rep : 3 shaded in std file
     modelWithGroundOnly.updGround().attachGeometry(unitSphere);
     // Create offset frame and add to model
     SimTK::Transform translate(Vec3(1.0, 0., 0.));
@@ -167,12 +168,14 @@ Model createModel4AppearanceTest()
     modelWithGroundOnly.addFrame(ooframe);
     // invisible Sphere
     Sphere* ooffsetSphere = unitSphere->clone();
+    // Hidden   
     ooffsetSphere->upd_Appearance().set_visible(false);
     ooframe->attachGeometry(ooffsetSphere);
     PhysicalOffsetFrame* oooframe = new PhysicalOffsetFrame(ground, Vec3(3.0, 0., 0.));
     modelWithGroundOnly.addFrame(oooframe);
     // Wireframe Sphere
     Sphere* oooffsetSphere = unitSphere->clone();
+    //DecorativeGeometry::DrawWireframe is Rep : 2 in std file
     oooffsetSphere->upd_Appearance().set_representation(DecorativeGeometry::DrawWireframe);
     oooframe->attachGeometry(oooffsetSphere);
     return modelWithGroundOnly; // Return a copy
