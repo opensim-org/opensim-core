@@ -67,7 +67,7 @@ void testGait10dof18musc() {
     cmc.getModel().formStateStorage(temp, *standard);
 
     Array<double> rms_tols(0, 2*10+2*18);
-    rms_tols[0]  = 0.00004;  // ground_pelvis/pelvis_tilt/value
+    rms_tols[0]  = 0.0001;   // ground_pelvis/pelvis_tilt/value
     rms_tols[1]  = 0.001;    // ground_pelvis/pelvis_tilt/speed
     rms_tols[2]  = 0.000002; // ground_pelvis/pelvis_tx/value
     rms_tols[3]  = 0.00002;  // ground_pelvis/pelvis_tx/speed
