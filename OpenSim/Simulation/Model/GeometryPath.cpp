@@ -150,7 +150,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         // the body (PhysicalFrame) IS part of the actual Model and its system
         // so we can ask it for its transform w.r.t. Ground
-        pos = point->getBody().getTransformInGround(state)*point->getLocation();
+        pos = point->getLocationInGround(state);
 
         if (hints.get_show_path_points())
             DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);
