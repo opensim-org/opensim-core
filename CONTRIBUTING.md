@@ -315,6 +315,7 @@ Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
 Andrew LaPre       |@ankela       |IK error output to file
+Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
 
 Contributor License Agreement
 -----------------------------
