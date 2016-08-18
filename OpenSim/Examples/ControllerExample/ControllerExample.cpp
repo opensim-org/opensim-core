@@ -319,10 +319,10 @@ int main()
 
         // Save the simulation results.
         auto controlsTable = osimModel.getControlsTable();
-        STOFileAdapter<double>::write(controlsTable, "tugOfWar_controls.sto");
+        STOFileAdapter_<double>::write(controlsTable, "tugOfWar_controls.sto");
 
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter<double>::write(statesTable, "tugOfWar_states.sto");
+        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {
         

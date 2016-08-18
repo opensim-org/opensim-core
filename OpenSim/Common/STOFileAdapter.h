@@ -55,16 +55,16 @@ public:
 /** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
 appropriately for STO files.                                                  */
 template<typename T>
-class OSIMCOMMON_API STOFileAdapter : public DelimFileAdapter<T> {
+class OSIMCOMMON_API STOFileAdapter_ : public DelimFileAdapter<T> {
 public:
-    STOFileAdapter();
-    STOFileAdapter(const STOFileAdapter&)            = default;
-    STOFileAdapter(STOFileAdapter&&)                 = default;
-    STOFileAdapter& operator=(const STOFileAdapter&) = default;
-    STOFileAdapter& operator=(STOFileAdapter&&)      = default;
-    ~STOFileAdapter()                                = default;
+    STOFileAdapter_();
+    STOFileAdapter_(const STOFileAdapter_&)            = default;
+    STOFileAdapter_(STOFileAdapter_&&)                 = default;
+    STOFileAdapter_& operator=(const STOFileAdapter_&) = default;
+    STOFileAdapter_& operator=(STOFileAdapter_&&)      = default;
+    ~STOFileAdapter_()                                = default;
 
-    STOFileAdapter* clone() const override;
+    STOFileAdapter_* clone() const override;
 
     /** Read a STO file.                                                      */
     static
@@ -76,7 +76,7 @@ public:
 };
 
 template<typename T>
-STOFileAdapter<T>::STOFileAdapter() :
+STOFileAdapter_<T>::STOFileAdapter_() :
     DelimFileAdapter<T>(" \t", // delimites for read between elements
                         "\t",  // delimiter for write between elements
                         ",",   // delim for reading components(within element)
@@ -84,15 +84,15 @@ STOFileAdapter<T>::STOFileAdapter() :
                         ) {}
 
 template<typename T>
-STOFileAdapter<T>*
-STOFileAdapter<T>::clone() const {
-    return new STOFileAdapter{*this};
+STOFileAdapter_<T>*
+STOFileAdapter_<T>::clone() const {
+    return new STOFileAdapter_{*this};
 }
 
 template<typename T>
 TimeSeriesTable_<T>
-STOFileAdapter<T>::read(const std::string& fileName) {
-    auto abs_table = STOFileAdapter{}.
+STOFileAdapter_<T>::read(const std::string& fileName) {
+    auto abs_table = STOFileAdapter_{}.
                      extendRead(fileName).
                      at(DelimFileAdapter<T>::_table);
     return static_cast<TimeSeriesTable_<T>&>(*abs_table);
@@ -100,11 +100,11 @@ STOFileAdapter<T>::read(const std::string& fileName) {
 
 template<typename T>
 void 
-STOFileAdapter<T>::write(const TimeSeriesTable_<T>& table, 
+STOFileAdapter_<T>::write(const TimeSeriesTable_<T>& table, 
                          const std::string& fileName) {
     DataAdapter::InputTables tables{};
     tables.emplace(DelimFileAdapter<T>::_table, &table);
-    STOFileAdapter{}.extendWrite(tables, fileName);
+    STOFileAdapter_{}.extendWrite(tables, fileName);
 }
 
 std::shared_ptr<DataAdapter> 

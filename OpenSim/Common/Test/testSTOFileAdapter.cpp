@@ -143,7 +143,7 @@ int main() {
     std::string tmpfile{"testmotfileadapter.mot"};
 
     for(const auto& filename : filenames) {
-        STOFileAdapter<double> stofileadapter{};
+        STOFileAdapter_<double> stofileadapter{};
         auto table = stofileadapter.read(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
@@ -159,13 +159,13 @@ int main() {
 
     for(const auto& filename : filenames) {
         TimeSeriesTable table{filename};
-        STOFileAdapter<double>::write(table, tmpfile);
+        STOFileAdapter_<double>::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     std::remove(tmpfile.c_str());
 
-    // Test reading/writing -- STOFileAdapter<SimTK::Vec3>.
+    // Test reading/writing -- STOFileAdapter_<SimTK::Vec3>.
     {
     std::string fileA{"testSTOFileAdapter_A.sto"};
     std::string fileB{"testSTOFileAdapter_B.sto"};
@@ -176,8 +176,8 @@ int main() {
         elem += 1;
         tableVec3.appendRow(t, {elem, elem, elem});
     }
-    STOFileAdapter<SimTK::Vec3>::write(tableVec3, fileA);
-    auto tableVec3_copy = STOFileAdapter<SimTK::Vec3>::read(fileA);
+    STOFileAdapter_<SimTK::Vec3>::write(tableVec3, fileA);
+    auto tableVec3_copy = STOFileAdapter_<SimTK::Vec3>::read(fileA);
     auto tableVec3_ptr = FileAdapter::readFile(fileA).at("table");
     DataAdapter::InputTables inputTables{};
     inputTables.emplace(std::string{"table"}, tableVec3_ptr.get());
@@ -198,8 +198,8 @@ int main() {
         elem += 1;
         tableVec6.appendRow(t, {elem, elem, elem});
     }
-    STOFileAdapter<SimTK::Vec6>::write(tableVec6, fileA);
-    auto tableVec6_copy = STOFileAdapter<SimTK::Vec6>::read(fileA);
+    STOFileAdapter_<SimTK::Vec6>::write(tableVec6, fileA);
+    auto tableVec6_copy = STOFileAdapter_<SimTK::Vec6>::read(fileA);
     auto tableVec6_ptr = FileAdapter::readFile(fileA).at("table");
     DataAdapter::InputTables inputTables{};
     inputTables.emplace(std::string{"table"}, tableVec6_ptr.get());
@@ -220,8 +220,8 @@ int main() {
         elem += 1;
         tableSpatialVec.appendRow(t, {elem, elem, elem});
     }
-    STOFileAdapter<SimTK::SpatialVec>::write(tableSpatialVec, fileA);
-    auto tableSpatialVec_copy = STOFileAdapter<SimTK::SpatialVec>::read(fileA);
+    STOFileAdapter_<SimTK::SpatialVec>::write(tableSpatialVec, fileA);
+    auto tableSpatialVec_copy = STOFileAdapter_<SimTK::SpatialVec>::read(fileA);
     auto tableSpatialVec_ptr = FileAdapter::readFile(fileA).at("table");
     DataAdapter::InputTables inputTables{};
     inputTables.emplace(std::string{"table"}, tableSpatialVec_ptr.get());

@@ -235,11 +235,11 @@ int main()
         // Save the simulation results
         // Save the states
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter<double>::write(statesTable, 
+        STOFileAdapter_<double>::write(statesTable, 
                                       "tugOfWar_fatigue_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter<double>::write(forcesTable, 
+        STOFileAdapter_<double>::write(forcesTable, 
                                       "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results

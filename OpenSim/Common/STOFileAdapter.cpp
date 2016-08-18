@@ -22,13 +22,13 @@ createSTOFileAdapterForReading(const std::string& fileName) {
                 using namespace SimTK;
 
                 if(value == "double")
-                    return std::make_shared<STOFileAdapter<double>>();
+                    return std::make_shared<STOFileAdapter_<double>>();
                 else if(value == "Vec3")
-                    return std::make_shared<STOFileAdapter<Vec3>>();
+                    return std::make_shared<STOFileAdapter_<Vec3>>();
                 else if(value == "Vec6")
-                    return std::make_shared<STOFileAdapter<Vec6>>();
+                    return std::make_shared<STOFileAdapter_<Vec6>>();
                 else if(value == "SpatialVec")
-                    return std::make_shared<STOFileAdapter<SpatialVec>>();
+                    return std::make_shared<STOFileAdapter_<SpatialVec>>();
                 else {
                     OPENSIM_THROW(STODataTypeNotSupported,
                                   value);
@@ -48,22 +48,22 @@ createSTOFileAdapterForWriting(const DataAdapter::InputTables& absTables) {
     try {
         using Table = const TimeSeriesTable_<double>;
         auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter<double>>();
+        return std::make_shared<STOFileAdapter_<double>>();
     } catch(const std::bad_cast&) {}
     try {
         using Table = const TimeSeriesTable_<Vec3>;
         auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter<Vec3>>();
+        return std::make_shared<STOFileAdapter_<Vec3>>();
     } catch(const std::bad_cast&) {}
     try {
         using Table = const TimeSeriesTable_<Vec6>;
         auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter<Vec6>>();
+        return std::make_shared<STOFileAdapter_<Vec6>>();
     } catch(const std::bad_cast&) {}
     try {
         using Table = const TimeSeriesTable_<SpatialVec>;
         auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter<SpatialVec>>();
+        return std::make_shared<STOFileAdapter_<SpatialVec>>();
     } catch(const std::bad_cast&) {}
 
     OPENSIM_THROW(STODataTypeNotSupported,

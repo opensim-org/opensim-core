@@ -334,10 +334,10 @@ int main()
         //////////////////////////////
         // Save the model states from forward integration
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter<double>::write(statesTable, "tugOfWar_states.sto");
+        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter<double>::write(forcesTable, "tugOfWar_forces.sto");
+        STOFileAdapter_<double>::write(forcesTable, "tugOfWar_forces.sto");
     }
     catch (const std::exception& ex)
     {
