@@ -522,26 +522,38 @@ void Model::reorderCoordinatesAccordingToSystemMobilities()
 
     auto& matter = getSystem().getMatterSubsystem();
 
-    for (int i = 0; i < nc; ++i) {
-        Coordinate* coord = &coordSet[i];
-        auto mbix = coord->getBodyIndex();
-        auto mqix = coord->getMobilizerQIndex();
+    auto coordinates = updComponentList<Coordinate>();
+
+    int cnt = 0;
+    for (auto& coord : coordinates) {
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
 
         int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
 
         SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds number of Coordinates "
             "in Set.");
 
-        //if in the set but not already in the right order
-        if (i != cix) {
-            // perform a move to put the Coordinate in tree order
-            // hold on to what is the slot already
-            coord = &coordSet[cix];
-            // set the current coordinate into its correct slot
-            coordSet.set(cix, &coordSet[i]);
-            // put the coordinate that was in the slot back in the set
-            coordSet.set(i, coord);
-        }
+        // Set the coordinate in the right slot in the CoordinateSet
+        coordSet.set(cix, &coord);
+
+        cout << "Coordinate[" << cnt++ << "] is `" << coord.getName() << "'."
+            << " with System index: " << cix << endl;
+    }
+
+    SimTK_ASSERT_ALWAYS(cnt == s.getNQ(),
+        "Reordered CoordinateSet does not correspond to the number of "
+        "mobilities in the underlying MultibodySystem.");
+
+    cout << endl;
+    // check
+    for (int i = 0; i < coordSet.getSize(); ++i) {
+        Coordinate& coord = coordSet[i];
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+        cout << "Coordinate[" << i << "] is `" << coord.getName() << "'." 
+            << " with System index: " << cix << endl;
     }
 }
 
