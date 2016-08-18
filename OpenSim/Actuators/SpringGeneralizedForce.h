@@ -27,8 +27,6 @@
 // INCLUDES
 //==============================================================================
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Force.h>
 
 //==============================================================================

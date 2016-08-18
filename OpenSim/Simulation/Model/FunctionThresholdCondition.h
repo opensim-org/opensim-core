@@ -25,13 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <SimTKsimbody.h>
 
 #include "Condition.h"
 

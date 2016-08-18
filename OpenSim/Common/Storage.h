@@ -27,11 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
-#include "SimTKcommon.h"
 #include "StorageInterface.h"
 #include "TimeSeriesTable.h"
 

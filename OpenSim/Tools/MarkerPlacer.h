@@ -25,22 +25,23 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include "IKTaskSet.h"
 #include "osimToolsDLL.h"
-#include "SimTKsimbody.h"
+#include <SimTKcommon/internal/ResetOnCopy.h>
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 
 class Model;
 class MarkerData;
+class IKTaskSet;
 class IKTrial;
 class Storage;
 

@@ -20,28 +20,18 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
-#include <OpenSim/version.h>
-
-#include "Model.h"
-#include <OpenSim/Common/ModelDisplayHints.h>
 #include "ModelVisualizer.h"
-#include "MarkerSet.h"
-#include "BodySet.h"
-#include "ForceSet.h"
-
-#include "Simbody.h"
+#include "Model.h"
+#include <OpenSim/version.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <simbody/internal/Visualizer_InputListener.h>
+#include <simbody/internal/Visualizer_Reporter.h>
 
 #include <string>
 using std::string;
 #include <iostream>
 using std::cout; using std::cerr; using std::clog; using std::endl;
-#include <fstream>
 
 using namespace OpenSim;
 using namespace SimTK;

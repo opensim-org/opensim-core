@@ -27,9 +27,13 @@
 // INCLUDES
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 
 namespace OpenSim {
+
+class Function;
+class Model;
 
 //=============================================================================
 //=============================================================================

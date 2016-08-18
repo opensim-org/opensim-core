@@ -24,15 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "PointOnLineConstraint.h"
-#include "SimbodyEngine.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <simbody/internal/MobilizedBody.h>
+#include <simbody/internal/Constraint.h>
 
 //=============================================================================
 // STATICS

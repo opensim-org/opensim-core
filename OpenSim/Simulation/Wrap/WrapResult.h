@@ -1,5 +1,5 @@
-#ifndef __WrapResult_h__
-#define __WrapResult_h__
+#ifndef OPENSIM_WRAP_RESULT_H
+#define OPENSIM_WRAP_RESULT_H
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapResult.h                           *
  * -------------------------------------------------------------------------- *
@@ -25,11 +25,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
-#include "SimTKcommon.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 namespace OpenSim {
 
@@ -77,6 +75,6 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __WrapResult_h__
+#endif // OPENSIM_WRAP_RESULT_H
 
 

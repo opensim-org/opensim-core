@@ -29,11 +29,12 @@
 
 
 #include "osimCommonDLL.h"
-#include "Array.h"
 
 
+namespace OpenSim {
 
-namespace OpenSim { 
+template <class T> class Array;
+
 //=============================================================================
 //=============================================================================
 /**

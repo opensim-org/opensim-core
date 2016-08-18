@@ -30,10 +30,6 @@
 //==============================================================================
 #include "TorqueActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-
 
 using namespace OpenSim;
 using std::string;

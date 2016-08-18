@@ -30,10 +30,8 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include "Array.h"
-#include "ArrayPtrs.h"
 #include "AbstractProperty.h"
-#include "DebugUtilities.h"
+#include "Exception.h"
 
 #include <string>
 
@@ -69,6 +67,7 @@ namespace OpenSim {
  */
 
 class Object;
+template <class T> class Array;
 
 #ifdef SWIG
     #ifdef OSIMCOMMON_API

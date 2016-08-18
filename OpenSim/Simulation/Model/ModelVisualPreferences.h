@@ -25,10 +25,7 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKcommon.h"
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 
 namespace OpenSim {

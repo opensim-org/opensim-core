@@ -29,12 +29,8 @@
 //=============================================================================
 #include "osimAnalysesDLL.h"
 #include <memory>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <SimTKcommon.h>
 #include "ForceReporter.h"
 
 //=============================================================================

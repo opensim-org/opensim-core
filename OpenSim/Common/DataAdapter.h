@@ -25,7 +25,6 @@
 
 // Non-standard headers.
 #include "osimCommonDLL.h"
-#include "SimTKcommon.h"
 #include "Exception.h"
 #include "AbstractDataTable.h"
 

@@ -25,7 +25,7 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Object.h"
-#include "SimTKsimbody.h"
+#include "SimTKcommon/internal/ReferencePtr.h"
 
 namespace OpenSim {
 

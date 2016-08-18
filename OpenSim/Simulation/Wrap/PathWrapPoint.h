@@ -24,10 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 namespace OpenSim {
 

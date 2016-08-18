@@ -26,17 +26,11 @@
 
 // INCLUDES
 #include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include "CMC.h"
 
-#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;

@@ -29,6 +29,8 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include "simbody/internal/Constraint.h"
+#include "simbody/internal/MobilizedBody_Ground.h"
 
 //=============================================================================
 // STATICS

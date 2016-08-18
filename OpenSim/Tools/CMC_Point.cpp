@@ -29,9 +29,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include "CMC_Task.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Point.h"
 
 using namespace std;

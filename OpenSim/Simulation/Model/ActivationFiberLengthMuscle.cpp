@@ -25,7 +25,6 @@
 // INCLUDES
 //==============================================================================
 #include "ActivationFiberLengthMuscle.h"
-#include "Model.h"
 
 using namespace std;
 using namespace OpenSim;

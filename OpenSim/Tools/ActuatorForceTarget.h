@@ -31,9 +31,10 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/OptimizationTarget.h>
-#include <SimTKmath.h>
 
 namespace OpenSim {
+
+class CMC;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

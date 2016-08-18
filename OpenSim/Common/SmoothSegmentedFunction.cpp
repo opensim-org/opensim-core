@@ -24,6 +24,8 @@
 // INCLUDES
 //=============================================================================
 #include "SmoothSegmentedFunction.h"
+#include <fstream>
+#include "simmath/internal/SplineFitter.h"
 
 //=============================================================================
 // STATICS

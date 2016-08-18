@@ -28,12 +28,12 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // INCLUDES
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/FunctionSet.h>
 #include "CMC_Task.h"
 
 namespace OpenSim {
+
+class Model;
 
 //=============================================================================
 //=============================================================================

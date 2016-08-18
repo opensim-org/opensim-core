@@ -23,16 +23,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <string>
 #include "MuscleStateTrackingTask.h"
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyBoolArray.h>
-#include <OpenSim/Common/PropertyIntArray.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;

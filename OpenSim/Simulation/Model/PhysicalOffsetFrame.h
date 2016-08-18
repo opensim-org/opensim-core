@@ -24,9 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/OffsetFrame.h> 
-#include <OpenSim/Simulation/Model/PhysicalFrame.h> 
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 

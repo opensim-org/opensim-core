@@ -24,12 +24,16 @@
  * -------------------------------------------------------------------------- */
 
 #include <vector>
-#include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <SimTKcommon/internal/IteratorRange.h>
 
 #include "osimSimulationDLL.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 

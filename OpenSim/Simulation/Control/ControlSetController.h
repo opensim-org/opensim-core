@@ -30,14 +30,8 @@
 //============================================================================
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
 #include "Controller.h"
-#include "SimTKsimbody.h"
+#include <OpenSim/Common/PropertyStr.h>
 
 //=============================================================================
 //=============================================================================

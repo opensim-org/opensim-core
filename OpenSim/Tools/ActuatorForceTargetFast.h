@@ -34,9 +34,6 @@
 //==============================================================================
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/OptimizationTarget.h>
-#include <SimTKcommon.h>
-#include <OpenSim/Common/Storage.h>
-#include "SimTKsimbody.h"
 
 namespace OpenSim {
 

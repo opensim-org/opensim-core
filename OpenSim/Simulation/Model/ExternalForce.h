@@ -28,7 +28,6 @@
 namespace OpenSim {
 
 class Model;
-class Body;
 class Storage;
 class Function;
 

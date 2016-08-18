@@ -27,7 +27,6 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 
-#include <simbody/internal/common.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 /*
 The parent class, Muscle.h, provides 
@@ -37,7 +36,6 @@ The parent class, Muscle.h, provides
     4. pennation_angle_at_optimal
     5. max_contraction_velocity
 */
-#include <OpenSim/Simulation/Model/Muscle.h>
 
 //All of the sub-models required for a muscle model:
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
@@ -45,7 +43,6 @@ The parent class, Muscle.h, provides
 
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
-#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/FiberForceLengthCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>

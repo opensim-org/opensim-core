@@ -23,6 +23,7 @@
 
 #include "MarkersReference.h"
 #include <OpenSim/Common/Units.h>
+#include <SimTKcommon/internal/State.h>
 
 using namespace std;
 using namespace SimTK;
