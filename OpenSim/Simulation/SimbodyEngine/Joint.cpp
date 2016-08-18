@@ -216,7 +216,7 @@ const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 
 const Coordinate& Joint::getCoordinate() const {
     OPENSIM_THROW_IF(numCoordinates() == 0,
-                     EmptyCoordinateSet);
+                     JointHasNoCoordinates);
     OPENSIM_THROW_IF(numCoordinates() > 1,
                      InvalidCall,
                      "Coordinate set has more than one coordinate. Use "

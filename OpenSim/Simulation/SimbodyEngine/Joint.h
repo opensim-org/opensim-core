@@ -315,19 +315,32 @@ public:
     Coordinate::MotionType getMotionType(CoordinateIndex cix) const;
 #endif //SWIG
 protected:
-    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:  
+    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:
     \code{.cpp}
-    class My2DofJoint::Joint {
-        CoordinateIndex dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
-        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translational) };
+    class My2DofJoint : public Joint {
+    public:
+        enum class Coord: unsigned {
+            RotationX,
+            TranslationX
+        };
+
+    private:
+        CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                            static_cast<unsigned>(Coord::RotationX)) };
+        CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                            static_cast<unsigned>(Coord::TranslationX)) };
         ...
-    }
+    };
     \endcode
     */
 #ifndef SWIG
-    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
-    Derived Joints must construct as many Coordinates as reflected by the
-    Mobilizer Qs. */
+    /** Utility for a derived Joint to add the Coordinates that correspond to
+    the motion it permits. Derived Joints must construct as many Coordinates as
+    are reflected by the underlying Mobilizer Qs. The index of the corresponding
+    enumeration (enum) is required at construction to ensure the Joint's
+    internal list of Coordinates is consistent with its interface; an exception
+    is thrown if the Coordinates are not constructed in the same order as the
+    enums have been defined. */
     CoordinateIndex constructCoordinate(Coordinate::MotionType mt,
                                         unsigned idx);
 
@@ -574,13 +587,13 @@ inline int Joint::getNumMobilities(const SimTK::MobilizedBody::Free& mobod) cons
     return 6;
 }
 
-class EmptyCoordinateSet : public Exception {
+class JointHasNoCoordinates : public Exception {
 public:
-    EmptyCoordinateSet(const std::string& file,
-                       size_t line,
-                       const std::string& func) :
+    JointHasNoCoordinates(const std::string& file,
+                          size_t line,
+                          const std::string& func) :
         Exception(file, line, func) {
-        std::string mesg = "Coordinate set is empty.";
+        std::string mesg = "The Joint has no Coordinates.";
 
         addMessage(mesg);
     }

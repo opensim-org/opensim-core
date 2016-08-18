@@ -1081,7 +1081,8 @@ void testWeldJoint(bool randomizeBodyOrder)
     // Test accessors.
     {
         WeldJoint myWeldJoint;
-        ASSERT_THROW(OpenSim::EmptyCoordinateSet, myWeldJoint.getCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myWeldJoint.getCoordinate());
     }
 }
 
@@ -2379,11 +2380,11 @@ void testCustomJointAccessors()
             myModel.getGround(), myModel.getGround(), myTransform0);
         myModel.addJoint(myCustomJoint0);
 
-        ASSERT_THROW(OpenSim::EmptyCoordinateSet,
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
                      myCustomJoint0->getCoordinate());
-        ASSERT_THROW(OpenSim::EmptyCoordinateSet,
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
                      myCustomJoint0->getCoordinate(0));
-        ASSERT_THROW(OpenSim::EmptyCoordinateSet,
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
                      myCustomJoint0->getCoordinate(1));
     }
     {
