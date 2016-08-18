@@ -28,12 +28,9 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include "CoordinateSet.h"
 #include "Model.h"
-#include "ModelVisualizer.h"
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -153,7 +150,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         // the body (PhysicalFrame) IS part of the actual Model and its system
         // so we can ask it for its transform w.r.t. Ground
-        pos = point->getBody().getTransformInGround(state)*point->getLocation();
+        pos = point->getLocationInGround(state);
 
         if (hints.get_show_path_points())
             DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);

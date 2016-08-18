@@ -27,6 +27,7 @@
 #include "CoupledBushingForce.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/Force_Custom.h"
 
 //=============================================================================
 // STATICS

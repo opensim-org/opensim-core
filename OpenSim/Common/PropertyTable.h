@@ -25,12 +25,9 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include "ArrayPtrs.h"
 #include "Property.h"
-#include "PropertyGroup.h"
 
 #include <map>
-#include <iterator>
 
 namespace OpenSim {
 

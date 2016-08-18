@@ -25,19 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
-#include "osimToolsDLL.h"
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "MeasurementSet.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 

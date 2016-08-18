@@ -31,8 +31,6 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Task.h"
 
 namespace OpenSim {

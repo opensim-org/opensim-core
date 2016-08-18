@@ -25,13 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include "WrapObject.h"
+#include <OpenSim/Common/PropertyDblArray.h>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -42,7 +37,6 @@
 
 namespace OpenSim {
 
-class Body;
 class Model;
 class PathWrap;
 class WrapResult;

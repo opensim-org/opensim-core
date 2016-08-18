@@ -26,12 +26,9 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-
-#include <memory>
+#include "simbody/internal/Constraint.h"
 
 //=============================================================================
 // STATICS

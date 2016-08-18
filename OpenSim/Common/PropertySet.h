@@ -33,8 +33,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
-#include "Property_Deprecated.h"
-#include "PropertyGroup.h"
+//#include "Property_Deprecated.h"
 #include "PropertyDblVec.h"
 
 
@@ -53,6 +52,8 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 
 
 namespace OpenSim { 
+
+class Property_Deprecated;
 
 // convenient abbreviations
 typedef PropertyDblVec_<2> PropertyDblVec2;

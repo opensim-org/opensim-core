@@ -25,7 +25,10 @@
 #define OPENSIM_VALUE_ARRAY_DICTIONARY_H_
 
 #include "OpenSim/Common/ValueArray.h"
+#include "SimTKcommon/internal/ClonePtr.h"
 
+#include <iterator>
+#include <map>
 #include <memory>
 
 namespace OpenSim {

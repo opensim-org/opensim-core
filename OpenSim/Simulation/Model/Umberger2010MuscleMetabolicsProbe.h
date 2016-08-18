@@ -25,11 +25,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "Probe.h"
-#include "Model.h"
+#include <OpenSim/Common/Set.h>
 
+namespace OpenSim {
 
-
-namespace OpenSim { 
+class Model;
+class Muscle;
 
 // Helper classes defined below.
 class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter;

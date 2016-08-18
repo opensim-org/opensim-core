@@ -29,8 +29,6 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
 #include "Control.h"
 
 

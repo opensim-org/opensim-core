@@ -28,10 +28,8 @@
 // INCLUDES
 //=============================================================================
 #include "osimAnalysesDLL.h"
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <SimTKcommon.h>
 
 
 //=============================================================================

@@ -24,8 +24,11 @@
 #ifndef OPENSIM_VALUE_ARRAY_H_
 #define OPENSIM_VALUE_ARRAY_H_
 
+#include <vector>
+
 // Non-standard headers.
-#include "SimTKcommon.h"
+//#include "SimTKcommon.h"
+#include "SimTKcommon/internal/Value.h"
 #include "OpenSim/Common/Exception.h"
 
 namespace OpenSim {

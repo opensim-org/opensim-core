@@ -24,8 +24,11 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include <assert.h>
+#include <string>
+#include <typeinfo>
 #include "osimCommonDLL.h"
-#include "Simbody.h"
+#include "SimTKcommon/internal/Xml.h"
 
 
 namespace OpenSim {

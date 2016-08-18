@@ -32,7 +32,6 @@
 // INCLUDE
 //============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
 
@@ -42,6 +41,7 @@ class Optimizer;
 
 namespace OpenSim {
 
+class Model;
 class OptimizationTarget;
 class VectorFunctionForActuators;
 class CMC_TaskSet;

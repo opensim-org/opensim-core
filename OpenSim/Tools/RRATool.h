@@ -31,6 +31,7 @@
 
 #include "osimToolsDLL.h"
 #include <OpenSim/Simulation/Model/AbstractTool.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 
 
 #ifdef SWIG
@@ -42,7 +43,6 @@
 
 namespace OpenSim {
 
-class ForceSet;
 class ControlSet;
 class Storage;
 //=============================================================================

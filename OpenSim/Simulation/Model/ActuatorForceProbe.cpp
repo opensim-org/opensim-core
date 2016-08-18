@@ -26,7 +26,7 @@
 // INCLUDE
 //=============================================================================
 #include "ActuatorForceProbe.h"
-#include "ForceSet.h"
+#include "Model.h"
 #include <OpenSim/Common/IO.h>
 
 using namespace std;

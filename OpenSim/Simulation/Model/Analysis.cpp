@@ -30,7 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-#include "Model.h"
+#include "OpenSim/Common/XMLDocument.h"
 
 
 

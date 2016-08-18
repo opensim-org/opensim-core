@@ -27,9 +27,7 @@
 // INCLUDES
 //=============================================================================
 // Headers define the various property types that OpenSim objects can read 
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 // Header to define analysis (DLL) interface

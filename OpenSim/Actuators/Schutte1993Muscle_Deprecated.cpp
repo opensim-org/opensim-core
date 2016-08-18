@@ -27,7 +27,6 @@
 #include "Schutte1993Muscle_Deprecated.h"
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS

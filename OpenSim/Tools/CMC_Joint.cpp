@@ -28,9 +28,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include "CMC_Task.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Joint.h"
 
 using namespace std;

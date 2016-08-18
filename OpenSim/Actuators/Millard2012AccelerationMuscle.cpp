@@ -24,11 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "Millard2012AccelerationMuscle.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <Simbody.h>
-#include <iostream>
 
 
 //=============================================================================
@@ -711,7 +707,8 @@ void Millard2012AccelerationMuscle::
         "Millard2012AccelerationMuscle: Muscle is not"
         " to date with properties");
 
-        //Initial fiber length, fiber velocity, activation from input State s
+        // Initialize the multibody system to the initial state vector.
+        setFiberLength(s, getOptimalFiberLength());
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
         //Compute an initial muscle state that develops the desired force and
@@ -804,7 +801,7 @@ void Millard2012AccelerationMuscle::
             default:
                 std::string muscleName = getName();            
                 printf(
-                    "\n\nWARNING: Millard2012EquilibriumMuscle Initialization:"
+                    "\n\nWARNING: Millard2012AccelerationMuscle Initialization:"
                     " %s invalid error flag, setting tendon force to 0.0, "
                     "the fiber length to the optimal fiber length, "
                     "and a fiber velocity equal to 0.0 ",

@@ -27,7 +27,6 @@
 //=============================================================================
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "PointKinematics.h"
 
 

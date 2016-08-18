@@ -23,9 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Actuators/MuscleActivationDynamics.h>
 
 namespace OpenSim {

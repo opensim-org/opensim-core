@@ -28,7 +28,6 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 
 
 namespace OpenSim { 

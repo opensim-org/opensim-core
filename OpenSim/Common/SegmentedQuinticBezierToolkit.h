@@ -24,11 +24,9 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 
-#include "Simbody.h"
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <cmath>
+#include "SimTKmath.h"
+#include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/System.h"
 
 
 namespace OpenSim {
