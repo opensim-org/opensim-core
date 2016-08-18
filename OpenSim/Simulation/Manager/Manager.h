@@ -1,5 +1,5 @@
-#ifndef OPENSIM_MANAGER_H
-#define OPENSIM_MANAGER_H
+#ifndef OPENSIM_MANAGER_H_
+#define OPENSIM_MANAGER_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Manager.h                             *
  * -------------------------------------------------------------------------- *
@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Array.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace SimTK {
 class Integrator;
@@ -63,7 +64,14 @@ private:
     Model *_model;
 
     /** Integrator. */
-    SimTK::Integrator* _integ;
+    // This is the actual integrator that is used when integrate() is called.
+    // Its memory is managed elsewehere; either by the user or by the
+    // _defaultInteg smart pointer.
+    SimTK::ReferencePtr<SimTK::Integrator> _integ;
+
+    // The integrator that is used when using the model-only constructor.
+    // This is allocated only if necessary.
+    std::unique_ptr<SimTK::Integrator> _defaultInteg;
 
     /** Initial time of the simulation. */
     double _ti;
@@ -73,7 +81,7 @@ private:
     double _firstDT;
     
     /** Storage for the states. */
-    Storage *_stateStore;
+    std::unique_ptr<Storage> _stateStore;
 
    int _steps;
    /** Number of integration step tries. */
@@ -122,12 +130,25 @@ private:
 // METHODS
 //=============================================================================
 public:
-    virtual ~Manager();
-    Manager(Model&,  SimTK::Integrator&);
-    /** Constructor that takes a model only and builds integrator internally */
-    Manager(Model& aModel) ;
-    /** A Constructor that does not take a model or controllerSet */
+    /** This constructor cannot be used in MATLAB/Python, since the
+     * SimTK::Integrator%s are not exposed in those languages. */
+    Manager(Model&, SimTK::Integrator&);
+    /** Constructor that takes a model only and internally uses a
+     * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
+     * constraint tolerance, etc.). MATLAB/Python users must use this
+     * constructor. */
+    Manager(Model& aModel);
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or
+     * controllerSet. This constructor also does not set an integrator; you
+     * must call setIntegrator() on your own. You should use one of the other
+     * two constructors. */
+    DEPRECATED_14("There will be no replacement for this constructor.")
     Manager();  
+
+    // This class would not behave properly if copied (we would need to write a
+    // complex custom copy constructor, etc.), so don't allow copies.
+    Manager(const Manager&) = delete;
+    void operator=(const Manager&) = delete;
 
 private:
     void setNull();
@@ -142,13 +163,18 @@ public:
     const std::string& getSessionName() const;
     const std::string& toString() const;
 
-    void setPerformAnalyses( bool performAnalyses) { _performAnalyses =  performAnalyses; }
-    void setWriteToStorage( bool writeToStorage) { _writeToStorage =  writeToStorage; }
+    void setPerformAnalyses(bool performAnalyses)
+    { _performAnalyses =  performAnalyses; }
+    void setWriteToStorage(bool writeToStorage)
+    { _writeToStorage =  writeToStorage; }
 
     // Integrator
     SimTK::Integrator& getIntegrator() const;
-    /** %Set the integrator */
-    void setIntegrator( SimTK::Integrator&);
+    /** %Set the integrator. The Manager does *not* take ownership of the
+     * passed-in integrator.
+     */
+    void setIntegrator(SimTK::Integrator&);
+
     // Initial and final times
     void setInitialTime(double aTI);
     double getInitialTime() const;
@@ -193,6 +219,8 @@ public:
 
     // STATE STORAGE
     bool hasStateStorage() const;
+    /** Set the Storage object to be used for storing states. The Manager takes
+    ownership of the passed-in Storage. */
     void setStateStorage(Storage& aStorage);
     Storage& getStateStorage() const;
     TimeSeriesTable getStatesTable() const;
@@ -204,7 +232,10 @@ public:
    void clearHalt();
    bool checkHalt();
 
+private:
 
+   // Handles common tasks of some of the other constructors.
+    Manager(Model& aModel, bool dummyVar);
 
 //=============================================================================
 };  // END of class Manager
@@ -213,5 +244,5 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif  // OPENSIM_MANAGER_H
+#endif  // OPENSIM_MANAGER_H_
 
