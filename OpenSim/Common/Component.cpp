@@ -697,31 +697,6 @@ std::string Component::getRelativePathName(const Component& wrt) const
     return prefix + stri;
 }
 
-const AbstractConnector* Component::findConnector(const std::string& name) const
-{
-    const AbstractConnector* found = nullptr;
-
-    std::map<std::string, int>::const_iterator it;
-    it = _connectorsTable.find(name);
-
-    if (it != _connectorsTable.end()) {
-        const AbstractConnector& absConnector = get_connectors(it->second);
-        found = &absConnector;
-    }
-    else {
-        std::string::size_type back = name.rfind("/");
-        std::string prefix = name.substr(0, back);
-        std::string conName = name.substr(back + 1, name.length() - back);
-
-        const Component* component = findComponent(prefix);
-        if (component){
-            found = component->findConnector(conName);
-        }
-    }
-    return found;
-}
-
-
 const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
 {

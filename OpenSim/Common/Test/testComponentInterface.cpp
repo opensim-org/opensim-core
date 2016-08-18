@@ -1033,11 +1033,17 @@ void testInputOutputConnections()
 
     // do any other input/output connections
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
-    // Must throw an exception since subState0 is not a state of internalSub.
-    ASSERT_THROW(OpenSim::Exception, 
-        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
-    // internalSub's state is "subState"
-    foo2->updInput("input1").connect(world.getOutput("./internalSub/subState"));
+
+    // Test various exceptions for inputs, outputs, connectors
+    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(OutputNotFound, 
+        world.getComponent("./internalSub").getOutput("subState0"));
+    // Ensure that getOutput does not perform a "find"
+    ASSERT_THROW(OutputNotFound,
+        world.getOutput("./internalSub/subState"));
+
+    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
 
     foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
     foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
@@ -1204,8 +1210,8 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
     SimTK_END_TEST();
 }
-
