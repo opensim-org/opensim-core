@@ -53,23 +53,8 @@
 namespace OpenSim {
 
 //==============================================================================
-//                   MILLARD2012EQUILIBRIUMMUSCLE EXCEPTIONS
+//                   Millard2012EquilibriumMuscle Exceptions
 //==============================================================================
-class Millard2012EquilibriumMuscleCannotEquilibrate : public Exception {
-public:
-    Millard2012EquilibriumMuscleCannotEquilibrate(const std::string& file,
-                                                  size_t line,
-                                                  const std::string& func,
-                                                  const Object& obj) :
-        Exception(file, line, func, obj) {
-        std::string msg = "Unable to compute equilibrium for this muscle.\n";
-        msg += "Please verify that the initial activation is valid and that ";
-        msg += "the length of the musculotendon actuator doesn't produce a ";
-        msg += "pennation angle of 90 degrees or a negative fiber length.";
-        addMessage(msg);
-    }
-};
-
 class Millard2012EquilibriumMuscleInvalidFlag : public Exception {
 public:
     Millard2012EquilibriumMuscleInvalidFlag(const std::string& file,
@@ -83,7 +68,7 @@ public:
 };
 
 //==============================================================================
-//                         MILLARD2012EQUILIBRIUMMUSCLE
+//                         Millard2012EquilibriumMuscle
 //==============================================================================
 /**
 This class implements a configurable equilibrium muscle model, as described in

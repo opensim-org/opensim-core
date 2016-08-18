@@ -767,7 +767,7 @@ void Millard2012AccelerationMuscle::
                 "  Activation is %f\n"
                 "  Fiber length is %f\n",
                 abs(solnErr), tol, maxIter, activation, fiberLength);
-            OPENSIM_THROW_FRMOBJ(Millard2012AccelerationMuscleCannotEquilibrate);
+            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
         }break;
 
         default:
