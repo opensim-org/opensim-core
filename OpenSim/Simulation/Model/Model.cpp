@@ -166,12 +166,16 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     }
 
                     SimTK::Xml::element_iterator visObjIter = bodyIter->element_begin("VisibleObject");
-                    SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
-                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+                    if (visObjIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+                    }
 
                     SimTK::Xml::element_iterator wrapSetIter = bodyIter->element_begin("WrapObjectSet");
-                    SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
-                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+                    if (wrapSetIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+                    }
 
                     String test;
                     newGroundElement.writeToString(test);
