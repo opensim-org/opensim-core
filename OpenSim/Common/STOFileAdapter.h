@@ -53,12 +53,43 @@ public:
 };
 
 /** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
-appropriately for STO files. STOFileAdapter allows reading/writing following
+appropriately for STO files. The format of the file is as follows:
+\code
+.................................
+.................................
+........ <metadata> .............
+.................................
+.................................
+endheader
+time colname1 colname2 ..........
+.................................
+.................................
+............ <data-rows> ........
+.................................
+.................................
+\endcode
+For example a TimeSeriesTable_<SimTK::Vec3> could look like:
+\code
+units=m
+DataType=Vec3
+endheader
+time  r_shoulder      l_shoulder      r_leg           l_leg
+0.1   0.11,0.22,0.33  0.44,0.55,0.66  0.77,0.88,0.99  0.10,0.11,0.12
+0.2   0.22,0.44,0.66  0.88,0.99,0.35  0.75,0.65,0.43  0.47,0.57,0.67
+\endcode
+Columns are delimited by tab character. Elements within a column are delimited
+by comma character. STOFileAdapter allows reading/writing following
 tables:
-- TimeSeriesTable_<double>            (DataType=double)
-- TimeSeriesTable_<SimTK::Vec3>       (DataType=Vec3)
-- TimeSeriesTable_<SimTK::Vec6>       (DataType=Vec6)
-- TimeSeriesTable_<SimTK::SpatialVec> (DataType=SpatialVec)
+<table>
+<tr><td>TimeSeriesTable_<double></td>
+<td>DataType=double</td></tr>
+<tr><td>TimeSeriesTable_<SimTK::Vec3></td>
+<td>DataType=Vec3</td></tr>
+<tr><td>TimeSeriesTable_<SimTK::Vec6></td>
+<td>DataType=Vec6</td></tr>
+<tr><td>TimeSeriesTable_<SimTK::SpatialVec></td>
+<td>DataType=SpatialVec</td></tr>
+</table>
 Files contain metadata (in form of "DataType=<something>" as shown above) 
 indicating the type of the table they contain.
 */
