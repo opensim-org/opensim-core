@@ -53,7 +53,15 @@ public:
 };
 
 /** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
-appropriately for STO files.                                                  */
+appropriately for STO files. STOFileAdapter allows reading/writing following
+tables:
+- TimeSeriesTable_<double>            (DataType=double)
+- TimeSeriesTable_<SimTK::Vec3>       (DataType=Vec3)
+- TimeSeriesTable_<SimTK::Vec6>       (DataType=Vec6)
+- TimeSeriesTable_<SimTK::SpatialVec> (DataType=SpatialVec)
+Files contain metadata (in form of "DataType=<something>" as shown above) 
+indicating the type of the table they contain.
+*/
 template<typename T>
 class OSIMCOMMON_API STOFileAdapter_ : public DelimFileAdapter<T> {
 public:
@@ -62,7 +70,7 @@ public:
     STOFileAdapter_(STOFileAdapter_&&)                 = default;
     STOFileAdapter_& operator=(const STOFileAdapter_&) = default;
     STOFileAdapter_& operator=(STOFileAdapter_&&)      = default;
-    ~STOFileAdapter_()                                = default;
+    ~STOFileAdapter_()                                 = default;
 
     STOFileAdapter_* clone() const override;
 
