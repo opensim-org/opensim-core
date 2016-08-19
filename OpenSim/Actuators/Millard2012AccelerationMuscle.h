@@ -51,7 +51,24 @@ The parent class, Muscle.h, provides
 
 namespace OpenSim {
 
+//==============================================================================
+//                   Millard2012AccelerationMuscle Exceptions
+//==============================================================================
+class Millard2012AccelerationMuscleInvalidFlag : public Exception {
+public:
+    Millard2012AccelerationMuscleInvalidFlag(const std::string& file,
+                                             size_t line,
+                                             const std::string& func,
+                                             const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Invalid flag returned by initMuscleState().";
+        addMessage(msg);
+    }
+};
 
+//==============================================================================
+//                        Millard2012AccelerationMuscle
+//==============================================================================
 /**
 This class implements a 3 state (activation,fiber length and fiber velocity) 
 acceleration musculo-tendon model that has several advantages over 

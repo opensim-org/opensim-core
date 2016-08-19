@@ -51,6 +51,25 @@
 #endif
 
 namespace OpenSim {
+
+//==============================================================================
+//                   Millard2012EquilibriumMuscle Exceptions
+//==============================================================================
+class Millard2012EquilibriumMuscleInvalidFlag : public Exception {
+public:
+    Millard2012EquilibriumMuscleInvalidFlag(const std::string& file,
+                                            size_t line,
+                                            const std::string& func,
+                                            const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Invalid flag returned by estimateMuscleFiberState().";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                         Millard2012EquilibriumMuscle
+//==============================================================================
 /**
 This class implements a configurable equilibrium muscle model, as described in
 Millard et al.\ (2013). An equilibrium model assumes that the forces generated
