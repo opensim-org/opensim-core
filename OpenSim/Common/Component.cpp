@@ -1102,36 +1102,25 @@ void Component::markPropertiesAsSubcomponents()
 void Component::markAsPropertySubcomponent(const Component* component)
 {
     // Only add if the component is not already a part of this Component
-    // So, add if empty
     SimTK::ReferencePtr<Component> compRef(const_cast<Component*>(component));
-    if (_propertySubcomponents.empty() ){
+    auto it =
+        std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
+    if ( it == _propertySubcomponents.end() ){
         // Must reconstruct the reference pointer in place in order
         // to invoke move constuctor from SimTK::Array::push_back 
         // otherwise it will copy and reset the Component pointer to null.
         _propertySubcomponents.push_back(
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
-    else{ //otherwise check that it isn't a part of the component already
-        auto it =
-            std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
-        if ( it == _propertySubcomponents.end() ){
-            // Must reconstruct the reference pointer in place in order
-            // to invoke move constuctor from SimTK::Array::push_back 
-            // otherwise it will copy and reset the Component pointer to null.
-            _propertySubcomponents.push_back(
-                SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
-        }
-        else{
-            auto compPath = component->getFullPathName();
-            auto foundPath = it->get()->getFullPathName();
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                           component->getName(), getName());
-        }
+    else{
+        auto compPath = component->getFullPathName();
+        auto foundPath = it->get()->getFullPathName();
+        OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                       component->getName(), getName());
     }
 
     compRef->setParent(*this);
 }
-
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
