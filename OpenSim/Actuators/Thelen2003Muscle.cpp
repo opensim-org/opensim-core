@@ -304,114 +304,64 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 
 void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
-    try{
-        //Initial activation and fiber length from input State, s.
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-        double activation = getActivation(s);
+    //Initial activation and fiber length from input State, s.
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+    double activation = getActivation(s);
 
-        //Tolerance, in Newtons, of the desired equilibrium
-        double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
-        if(tol < SimTK::SignificantReal*10){
-            tol = SimTK::SignificantReal*10;
-        }
-        int maxIter = 200;  //Should this be user settable?
+    //Tolerance, in Newtons, of the desired equilibrium
+    double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
+    if(tol < SimTK::SignificantReal*10){
+        tol = SimTK::SignificantReal*10;
+    }
+    int maxIter = 200;  //Should this be user settable?
 
     
-        SimTK::Vector soln = initMuscleState(s, activation, tol, maxIter);
+    SimTK::Vector soln = initMuscleState(s, activation, tol, maxIter);
     
-        int flag_status    = (int)soln[0];
-        double solnErr        = soln[1];
-        int iterations     = (int)soln[2];
-        double fiberLength    = soln[3];
-        // double passiveForce   = soln[4];
-        double tendonForce    = soln[5];
+    int flag_status    = (int)soln[0];
+    double solnErr        = soln[1];
+    int iterations     = (int)soln[2];
+    double fiberLength    = soln[3];
+    // double passiveForce   = soln[4];
+    double tendonForce    = soln[5];
 
 
-        switch(flag_status){
+    switch(flag_status){
 
-            case 0: //converged, all is normal
-            {
-                setActuation(s,tendonForce);
-                setFiberLength(s,fiberLength);
-            }break;
+        case 0: //converged, all is normal
+        {
+            setActuation(s,tendonForce);
+            setFiberLength(s,fiberLength);
+        }break;
 
-            case 1: //lower fiber length bound hit
-            {
-                setActuation(s,tendonForce);
-                setFiberLength(s,fiberLength);
+        case 1: //lower fiber length bound hit
+        {
+            setActuation(s,tendonForce);
+            setFiberLength(s,fiberLength);
             
-                std::string muscleName = getName();            
-                printf( "\n\nThelen2003Muscle Initialization Message:"
-                        " %s is at its minimum length of %f",
-                        muscleName.c_str(),
-                        getPennationModel().getMinimumFiberLength());
-            }break;
+            std::string muscleName = getName();            
+            printf( "\n\nThelen2003Muscle Initialization Message:"
+                    " %s is at its minimum length of %f",
+                    muscleName.c_str(),
+                    getPennationModel().getMinimumFiberLength());
+        }break;
 
-            case 2: //Maximum number of iterations exceeded.
-            {
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
+        case 2: //Maximum number of iterations exceeded.
+        {
+            // Report internal variables and throw exception.
+            char msgBuffer[1000];
+            sprintf(msgBuffer, "\n\n"
+                "  Solution error %e exceeds tolerance of %e\n"
+                "  Newton iterations reached limit of %d\n"
+                "  Activation is %f\n"
+                "  Fiber length is %f\n",
+                abs(solnErr), tol, maxIter, activation, fiberLength);
+            cerr << msgBuffer << endl;
+            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
+        }break;
 
-                std::string muscleName = getName();
-                std::string fcnName = "\n\nWARNING: Thelen2003Muscle::"
-                                 "computeInitialFiberEquilibrium(SimTK::State& s)";
-                    char msgBuffer[1000];
-                    sprintf(msgBuffer,
-                        "WARNING: No suitable initial conditions found for\n"
-                        "  %s: \n"
-                        "  by %s \n"
-                        "Continuing with an initial fiber force and "
-                            "length of 0 and %f\n"
-                        "    Here is a report from the routine:\n \n"
-                        "        Solution Error      : %f > tol (%f) \n"
-                        "        Newton Iterations   : %d of max. iterations (%d)\n"
-                        "    Check that the initial activation is valid,"
-                            " and that the whole \n"
-                        "    length doesn't produce a pennation"
-                            " angle of 90 degrees, nor a fiber\n"
-                        "    length less than 0:\n"
-                        "        Activation          : %f \n" 
-                        "        Whole muscle length : %f \n\n", 
-                        muscleName.c_str(),
-                        fcnName.c_str(), 
-                        get_optimal_fiber_length(),
-                        abs(solnErr),
-                        tol,
-                        iterations,
-                        maxIter,
-                        activation, 
-                        fiberLength);
-
-                    cerr << msgBuffer << endl;
-        
-            }break;
-
-            default:
-                std::string muscleName = getName();            
-                printf( "\n\nWARNING: Thelen2003Muscle Initialization:"
-                        " %s invalid error flag. Continuing with an initial "
-                        "tendon force of 0, and a fiber length equal to the "
-                        "optimal fiber length",
-                        muscleName.c_str());
-
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
-        }
-
-    }catch (const std::exception& e) { 
-        //If the initialization routine fails in some unexpected way, tell
-        //the user and continue with some valid initial conditions
-        cerr    << "\n\nWARNING: Thelen2003Muscle initialization exception caught:" 
-                << endl;
-        cerr << e.what() << endl;
-        
-        cerr << "    Continuing with initial tendon force of 0 " << endl;
-        cerr << "    and a fiber length equal to the optimal fiber length ..." 
-             << endl;
-
-        setActuation(s, 0.0);
-        setFiberLength(s, get_optimal_fiber_length());
-
+        default:
+            OPENSIM_THROW_FRMOBJ(Thelen2003MuscleInvalidFlag);
     }
 }
 

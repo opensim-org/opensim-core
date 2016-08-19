@@ -39,8 +39,24 @@
 #endif
 
 namespace OpenSim {
+
 //==============================================================================
-//                          THELEN 2003 MUSCLE
+//                         Thelen2003Muscle Exceptions
+//==============================================================================
+class Thelen2003MuscleInvalidFlag : public Exception {
+public:
+    Thelen2003MuscleInvalidFlag(const std::string& file,
+                                size_t line,
+                                const std::string& func,
+                                const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Invalid flag returned by initMuscleState().";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                               Thelen2003Muscle
 //==============================================================================
 /**
  Implementation of a two state (activation and fiber-length) Muscle model by 
