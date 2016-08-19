@@ -767,6 +767,7 @@ void Millard2012AccelerationMuscle::
                 "  Activation is %f\n"
                 "  Fiber length is %f\n",
                 abs(solnErr), tol, maxIter, activation, fiberLength);
+            cerr << msgBuffer << endl;
             OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
         }break;
 

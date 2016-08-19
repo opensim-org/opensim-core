@@ -490,6 +490,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
                 "  Clamped activation is %f\n"
                 "  Fiber length is %f\n",
                 abs(solnErr), tol, maxIter, clampedActivation, fiberLength);
+            cerr << msgBuffer << endl;
             OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
         }break;
 
@@ -568,6 +569,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                 "  Activation is %f\n"
                 "  Fiber length is %f\n",
                 abs(solnErr), tol, maxIter, activation, fiberLength);
+            cerr << msgBuffer << endl;
             OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
         }break;
 
