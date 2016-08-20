@@ -916,9 +916,8 @@ private:
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
-    @param aMaxIterations the maximum number of Newton steps allowed before
-           attempts to initialize the model are given up, and an exception is 
-           thrown.
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
@@ -928,7 +927,6 @@ private:
                                             double aSolTolerance,
                                             int aMaxIterations,
                                             double aNewtonStepFraction) const;
-
 
     /*
     This can only be called at the velocity stage at least.
