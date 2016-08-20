@@ -724,9 +724,9 @@ void Millard2012AccelerationMuscle::
     double newtonStepFraction = 0.75;
 
     SimTK::Vector result = SimTK::Vector(6);
-    ResultOfInitMuscleState flag_status = initMuscleState(s, activation, tol,
-                                          maxIter, newtonStepFraction, result);
-
+    ResultOfInitMuscleState flag_status = initMuscleState(result, s, activation,
+                                                          tol, maxIter,
+                                                          newtonStepFraction);
     double solnErr        = result[0];
     int iterations        = (int)result[1];
     double fiberLength    = result[2];
@@ -1196,9 +1196,12 @@ void Millard2012AccelerationMuscle::
 // Numerical Guts: Initialization
 //==============================================================================
 Millard2012AccelerationMuscle::ResultOfInitMuscleState
-Millard2012AccelerationMuscle::initMuscleState(const SimTK::State& s,
-    double aActivation, double aSolTolerance, int aMaxIterations,
-    double aNewtonStepFraction, SimTK::Vector& result) const
+Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
+                                               const SimTK::State& s,
+                                               double aActivation,
+                                               double aSolTolerance,
+                                               int aMaxIterations,
+                                               double aNewtonStepFraction) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
         "Millard2012AccelerationMuscle: Muscle is not"

@@ -909,6 +909,9 @@ private:
     /* Calculate the muscle state such that the fiber and tendon are developing
     the same force.
 
+    @param result reference to the result vector: [solution error (N),
+           iterations, fiber length (m), fiber velocity (m/s),
+           passive force (N), tendon force (N)]
     @param s the system state (const)
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
@@ -919,9 +922,12 @@ private:
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
-    ResultOfInitMuscleState initMuscleState(const SimTK::State& s,
-        double aActivation, double aSolTolerance, int aMaxIterations,
-        double aNewtonStepFraction, SimTK::Vector& result) const;
+    ResultOfInitMuscleState initMuscleState(SimTK::Vector& result,
+                                            const SimTK::State& s,
+                                            double aActivation,
+                                            double aSolTolerance,
+                                            int aMaxIterations,
+                                            double aNewtonStepFraction) const;
 
 
     /*
