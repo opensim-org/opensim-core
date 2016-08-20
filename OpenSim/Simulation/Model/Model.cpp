@@ -747,7 +747,7 @@ void Model::extendConnectToModel(Model &model)
             if ((jx >= 0) && (jx < joints.getSize()) && (jx != m)) {
                 // perform a move to put the joint in tree order
                 // this is necessary ONLY because some tools assume that the
-                // order or joints and specifically coordinates is the
+                // order of joints and specifically coordinates is the
                 // order of the mobility (generalized) forces.
                 // IDTool, StaticOptimization and RRA for example will fail.
                 // TODO: when the tools are fixed/removed remove this as well.
