@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,8 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-// C++ INCLUDES
 #include "Path.h"
 
 using namespace OpenSim;
@@ -43,6 +41,9 @@ Path::Path(const std::string path,
            const std::string invalidChars) :
     _separator(separator), _invalidChars(invalidChars), _isAbsolute(false)
 {
+    // check if path is empty
+    if (path.empty()) return;
+
     // check if this is an absolute path
     char firstChar = path.at(0);
     if (firstChar == _separator) _isAbsolute = true;
@@ -51,33 +52,90 @@ Path::Path(const std::string path,
     size_t start = path.find_first_not_of(separator);
     while (start != std::string::npos) {
         size_t end = path.find_first_of(separator, start);
-        std::string pathElement = path.substr(start, end - start + 1);
+        if (end == std::string::npos) break;
+        std::string pathElement = path.substr(start, end - start);
         appendPathElement(pathElement);
         start = path.find_first_not_of(separator, end + 1);
     }
 }
 
-Path* Path::getAbsolutePath() {
-    Path* absPath = getCurrentPath();
-    for (auto pathElement : _path) {
-        absPath->appendPathElement(pathElement);
+Path::Path(std::vector<std::string> pathVec,
+           const char separator,
+           const std::string invalidChars,
+           bool isAbsolute) :
+    _path(pathVec), _separator(separator), _invalidChars(invalidChars),
+    _isAbsolute(isAbsolute)
+{}
+
+std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) {
+    if (_isAbsolute) {
+        return _path;
+    }
+    
+    if (otherPath->_isAbsolute) {
+        Exception("otherPath is not an absolute path");
     }
 
-    return absPath;
+    std::vector<std::string> pathVec;
+    for (auto pathElement : otherPath->_path) {
+        pathVec.push_back(pathElement);
+    }
+
+    for (auto pathElement : _path) {
+        pathVec.push_back(pathElement);
+    }
+
+    return pathVec;
 }
 
-Path* Path::findRelativePath(Path* relPath) {
+std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
+    if (!this->_isAbsolute || !otherPath->_isAbsolute) {
+        Exception("both paths must be absolute to find relative path");
+    }
+
+    size_t thisPathLength = this->getPathLength();
+    size_t otherPathLength = otherPath->getPathLength();
+
+    // find how many elements at the head are in common
+    size_t searchLength = std::min(thisPathLength, otherPathLength);
+    bool match = true;
+    size_t ind = 0;
+    while (match && ind < searchLength) {
+        if (this->getPathElement(ind) != otherPath->getPathElement(ind)) {
+            match = false;
+        }
+        else {
+            ++ind;
+        }
+    }
+
+    // ind is the first index that doesn't match. first add any necessary
+    // "..", then add the remainder of the pathElements to get to otherPath
+    std::vector<std::string> pathVec;
     
+    size_t numDotDot = thisPathLength - ind;
+    for (int i = 0; i < numDotDot; ++i) {
+        pathVec.push_back("..");
+    }
+    for (; ind < otherPathLength; ++ind) {
+        pathVec.push_back(otherPath->getPathElement(ind));
+    }
+
+    return pathVec;
 }
 
 void Path::cleanPath() {
-    size_t numPathElements = _path.size();
+    size_t numPathElements = getPathLength();
     size_t i = 0;
     while (i < numPathElements) {
+        // remove any "." element
         if (_path[i] == ".") {
             _path.erase(_path.begin() + i);
             --numPathElements;
         }
+
+        // if it's not the first element, remove the ".." relement and
+        // the previous element
         else if (_path[i] == "..") {
             if (i != 0) {
                 _path.erase(_path.begin() + i);
@@ -86,6 +144,8 @@ void Path::cleanPath() {
                 --i;
             }
         }
+
+        // otherwise, move on
         else {
             ++i;
         }
@@ -95,9 +155,9 @@ void Path::cleanPath() {
 std::string Path::getString() {
     std::string outString;
     if (_isAbsolute) outString.append(1, _separator);
-    for (size_t i = 0; i < _path.size(); ++i) {
+    for (size_t i = 0; i < getPathLength(); ++i) {
         outString.append(_path[i]);
-        if (i != _path.size()) {
+        if (i != getPathLength()) {
             outString.append(1, _separator);
         }
     }

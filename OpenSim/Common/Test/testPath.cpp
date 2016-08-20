@@ -21,13 +21,34 @@
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Path.h>
+#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+/* The purpose of this test is strictly to check that the Path functions work
+ * outside of the context of the objects/components they are meant to service. 
+ */
 
 using namespace OpenSim;
 using namespace std;
 
+void testComponentPath() {
+    ComponentPath absPath1("/a/b/c/d");
+    ComponentPath absPath2("/a/b/e/f/g/h");
+    ComponentPath absPath3("/a/b");
+
+    ComponentPath relPath1("c/d");
+    ComponentPath relPath2("e/f/g/h");
+
+    ComponentPath emptyPath("");
+    ComponentPath rootPath("/");
+
+}
+
 int main()
 {
+    SimTK_START_TEST("testPath");
+        SimTK_SUBTEST(testComponentPath);
+    SimTK_END_TEST();
+
     return 0;
 }

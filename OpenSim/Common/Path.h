@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDES
 #include "OpenSim/Common/Object.h"
 
 namespace OpenSim {
@@ -43,17 +42,25 @@ namespace OpenSim {
 *
 * @author Carmichael Ong
 */
-class Path : public Object {
+class OSIMCOMMON_API Path : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Path, Object);
 
 public:
     /// Default constructor
-    Path() = default;
+    Path() = delete;
 
-    /// Construct Path from a string.
+    /// Construct Path from a string, given separator character and a string
+    /// of invalidChars
     Path(const std::string path, 
-         const char separators, 
+         const char separator, 
          const std::string invalidChars);
+
+    /// Construct Path from a vector of strings (pathVec), given separator
+    /// character and a string of invalidChars
+    Path(std::vector<std::string> pathVec,
+         const char separator,
+         const std::string invalidChars,
+         bool isAbsolute);
 
     /// Use default copy constructor and assignment operator.
     Path(const Path&) = default;
@@ -62,21 +69,28 @@ public:
     /// Destructor.
     ~Path() = default;
 
-    ///
-    virtual Path* getAbsolutePath();
-
-    ///
-    virtual Path* findRelativePath(Path* relPath);
-
+protected:
     /// Cleans up a path. This includes removing "." and resolving ".." if
     /// possible (i.e. it will not remove leading ".." but otherwise will
     /// remove the previous pathElement from _path.
     void cleanPath();
 
-    /// Write out the path to a string
+    /// Write out the path to a string with each element separated by the
+    /// specified separator.
     std::string getString();
 
+    /// Get an absolute path by resolving it relative to a given otherPath.
+    /// If the current Path is already absolute, return the same Path.
+    std::vector<std::string> getAbsolutePathVec(Path* otherPath);
+
+    /// Find the relative Path between this Path and another Path (otherPath).
+    /// Both Paths must be absolute.
+    std::vector<std::string> findRelativePathVec(Path* otherPath);
+
 private:
+    size_t getPathLength() { return _path.size(); };
+    std::vector<std::string> getPath() { return _path; };
+    std::string getPathElement(int index) { return getPath()[index]; };
 
 
     // Verify that a pathElement does not contain any chars from the list
@@ -86,11 +100,6 @@ private:
     // Append a pathElement to _path, first checking if the pathElement
     // is legal
     void appendPathElement(const std::string pathElement);
-
-    // Pure virtual function to get the current Path (i.e. the Path that
-    // will be used to resolve a Path through getAbsolutePath()). Other
-    // functions assume that this returns an absolute path.
-    virtual Path* getCurrentPath() = 0;
 
     // Path variables
     std::vector<std::string> _path;
