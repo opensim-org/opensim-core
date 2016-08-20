@@ -44,8 +44,9 @@ public:
     MuscleCannotEquilibrate(const std::string& file,
                             size_t line,
                             const std::string& func,
-                            const Object& obj) :
-        Exception(file, line, func, obj) {
+                            const Object& obj,
+                            const std::string& detail) :
+        Exception(file, line, func, obj, detail) {
         std::string msg = "Unable to compute equilibrium for this muscle.\n";
         msg += "Please verify that the initial activation is valid and that ";
         msg += "the length of the musculotendon actuator doesn't produce a ";
