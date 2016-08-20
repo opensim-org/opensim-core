@@ -165,7 +165,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.9
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -412,7 +412,7 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.9
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac OSX comes with python, but you could also use:
@@ -602,7 +602,7 @@ line below, we show the corresponding package.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.9; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
