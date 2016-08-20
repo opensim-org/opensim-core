@@ -52,21 +52,6 @@ The parent class, Muscle.h, provides
 namespace OpenSim {
 
 //==============================================================================
-//                   Millard2012AccelerationMuscle Exceptions
-//==============================================================================
-class Millard2012AccelerationMuscleInvalidFlag : public Exception {
-public:
-    Millard2012AccelerationMuscleInvalidFlag(const std::string& file,
-                                             size_t line,
-                                             const std::string& func,
-                                             const Object& obj) :
-        Exception(file, line, func, obj) {
-        std::string msg = "Invalid flag returned by initMuscleState().";
-        addMessage(msg);
-    }
-};
-
-//==============================================================================
 //                        Millard2012AccelerationMuscle
 //==============================================================================
 /**
@@ -914,13 +899,17 @@ private:
                                           const AccelerationMuscleInfo& ami,
                                           std::string& caller) const;
 
-    //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
+    // Status flag returned by initMuscleState().
+    enum class ResultOfInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
-    /*
-    @param s the system state
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
+    @param s the system state (const)
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
@@ -930,10 +919,9 @@ private:
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations,
-                             double aNewtonStepFraction) const;
-    
+    ResultOfInitMuscleState initMuscleState(const SimTK::State& s,
+        double aActivation, double aSolTolerance, int aMaxIterations,
+        double aNewtonStepFraction, SimTK::Vector& result) const;
 
 
     /*
