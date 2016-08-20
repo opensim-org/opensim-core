@@ -423,7 +423,9 @@ public:
     the same force, distributing the velocity of the entire musculotendon
     actuator between the fiber and tendon according to their relative
     stiffnesses.
-        @param[in,out] s The state of the system. */
+        @param[in,out] s The state of the system.
+        @throws MuscleCannotEquilibrate
+    */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
 
     /** Computes the fiber length such that the fiber and tendon are developing
@@ -431,7 +433,9 @@ public:
     version of computeInitialFiberEquilibrium(). By setting velocities to zero,
     we obtain a reasonable and robust solution that provides a rough solution
     for fiber length.
-        @param[in,out] s The state of the system. */
+        @param[in,out] s The state of the system.
+        @throws MuscleCannotEquilibrate
+    */
     void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
         override;
 

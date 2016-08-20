@@ -629,6 +629,7 @@ public:
         according to their relative compliances.
         
         @param s the state of the system
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override final;
         
