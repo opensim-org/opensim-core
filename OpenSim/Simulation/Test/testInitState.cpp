@@ -153,12 +153,12 @@ void testMemoryUsage(const string& modelFile)
     //=========================================================================
     // Setup OpenSim model
     // base footprint
-    size_t mem0 = getCurrentRSS( );
-    size_t model_size{ 0 };
+    size_t mem0 = getCurrentRSS();
+    size_t current_size{ 0 };
 
     Model model;
 
-    // getCurrentRSS( ) can be unreliable at evaluating the memory usage of a
+    // getCurrentRSS() can be unreliable at evaluating the memory usage of a
     // current process because of caching, shared memory and a litany of 
     // other reason including some platform specific details.
     // When this occurs, the model_size is determined to be zero, which is not
@@ -170,10 +170,21 @@ void testMemoryUsage(const string& modelFile)
     // to be rerun. It is not 100% that it will work, but it should be an
     // improvement.
     int ntries = 0;
-    while ((model_size == 0) && (ntries++ < 10)) {
+    while (ntries++ < 10) {
         model = Model(modelFile);
-        model_size = getCurrentRSS() - mem0;
+        current_size = getCurrentRSS();
+
+        // Exit if memory footprint increased.
+        if (current_size > mem0)
+            break;
+
+        // Update mem0 if memory footprint decreased.
+        if (current_size < mem0)
+            mem0 = current_size;
     }
+
+    // Ensure subtraction does not wrap unsigned int through zero.
+    const size_t model_size = current_size > mem0 ? current_size-mem0 : 0;
 
     if (ntries > 1) {
         cout << "testMemoryUsage: required " << to_string(ntries);
@@ -190,7 +201,7 @@ void testMemoryUsage(const string& modelFile)
     State state = model.initSystem();
 
     // initial footprint
-    size_t mem1 = getCurrentRSS( );
+    size_t mem1 = getCurrentRSS();
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
@@ -199,28 +210,28 @@ void testMemoryUsage(const string& modelFile)
         state = model.initializeState();
     }
 
-    // new footprint after MAX_N_TRIES
-    size_t mem2 = getCurrentRSS( );
-    // change
-    int64_t delta = mem2-mem1;
-    int64_t leak = delta/MAX_N_TRIES;
+    // New memory footprint after MAX_N_TRIES.
+    size_t mem2 = getCurrentRSS();
+    // Increase in memory footprint.
+    int64_t memory_increase = mem2 > mem1 ? mem2-mem1 : 0;
+    int64_t leak = memory_increase/MAX_N_TRIES;
 
     long double leak_percent = 100.0 * double(leak)/model_size;
 
     long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
     long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
     
-    cout << delta/1024 << "KB change in memory use after " << MAX_N_TRIES
-         << " state initializations." << endl;
+    cout << memory_increase/1024 << "KB increase in memory use after "
+         << MAX_N_TRIES << " state initializations." << endl;
     cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 
              leak_percent << "% of model size." << endl;
     cout << "Average initialization time: " << meanT << "ms" << endl;
 
-    // If we are leaking more than 1/2% of the model's footprint that is significant
+    // If we are leaking more than 0.5% of the model's footprint that is significant
     ASSERT( (leak_percent) < 0.5, __FILE__, __LINE__, 
         "testMemoryUsage: state initialization leak > 0.5% of model memory footprint.");
 
     // If we ever leak over 100MB total we should know about it.
-    ASSERT( delta < 1e8, __FILE__, __LINE__, 
+    ASSERT( memory_increase < 1e8, __FILE__, __LINE__, 
         "testMemoryUsage: total estimated memory leaked > 100MB.");
 }

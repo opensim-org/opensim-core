@@ -2303,7 +2303,7 @@ private:
 
     // Internal use: mark as a subcomponent, a component that is owned by this 
     // Component by virtue of being one of its properties.
-    void markAsPropertySubcomponent(Component* subcomponent);
+    void markAsPropertySubcomponent(const Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
