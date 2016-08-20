@@ -731,7 +731,7 @@ void Millard2012AccelerationMuscle::
     int iterations        = (int)result[1];
     double fiberLength    = result[2];
     double fiberVelocity  = result[3];
-    //double passiveForce = result[4];
+    //double passiveForce   = result[4];
     double tendonForce    = result[5];
 
     switch(flag_status) {
@@ -743,7 +743,7 @@ void Millard2012AccelerationMuscle::
         break;
 
     case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
-        printf("\n\nMillard2012AccelerationMuscle Initialization Message:"
+        printf("\n\nMillard2012AccelerationMuscle initialization:"
                " %s is at its minimum length of %f\n",
                getName().c_str(), fiberLength);
         setActuation(s, tendonForce);
@@ -1467,14 +1467,14 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
     //*******************************
     // Populate the result vector
     //
-    // 0: solution error (N)
-    // 1: iterations
-    // 2: fiber length (m)
-    // 3: fiber velocity (m/s)
-    // 4: passive force (N)
-    // 5: tendon force (N)
+    //   [0] solution error (N)
+    //   [1] iterations
+    //   [2] fiber length (m)
+    //   [3] fiber velocity (m/s)
+    //   [4] passive force (N)
+    //   [5] tendon force (N)
     //*******************************
-    if (abs(ddlce_dtt) < aSolTolerance) {  //The solution converged
+    if (abs(ddlce_dtt) < aSolTolerance) {  // The solution converged.
 
         result[0] = ddlce_dtt;
         result[1] = (double)iter;
@@ -1485,7 +1485,7 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
         return ResultOfInitMuscleState::Success_Converged;
     }
 
-    if (iter < aMaxIterations) {  //Fiber length is at its lower bound
+    if (iter < aMaxIterations) {  // Fiber length is at its lower bound.
 
         lce = m_penMdl.getMinimumFiberLength();
         phi = m_penMdl.calcPennationAngle(lce);
@@ -1523,7 +1523,7 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
                                     fal  ,fv,fpe,fk,fcphi,fse);
         Fse = calcTendonForce(ami);
 
-        //TODO: Check for a pennation angle singularity
+        // TODO: Check for a pennation angle singularity
 
         result[0] = ddlce_dtt;
         result[1] = (double)iter;
