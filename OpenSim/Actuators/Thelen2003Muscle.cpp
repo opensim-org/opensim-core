@@ -315,53 +315,45 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     }
     int maxIter = 200;  //Should this be user settable?
 
-    
-    SimTK::Vector soln = initMuscleState(s, activation, tol, maxIter);
-    
-    int flag_status    = (int)soln[0];
-    double solnErr        = soln[1];
-    int iterations     = (int)soln[2];
-    double fiberLength    = soln[3];
-    // double passiveForce   = soln[4];
-    double tendonForce    = soln[5];
+    SimTK::Vector result = SimTK::Vector(5);
+    ResultOfInitMuscleState flag_status = initMuscleState(result, s, activation,
+                                                          tol, maxIter);
+    double solnErr      = result[0];
+    int iterations      = (int)result[1];
+    double fiberLength  = result[2];
+    //double passiveForce = result[3];
+    double tendonForce  = result[4];
 
+    switch(flag_status) {
 
-    switch(flag_status){
+    case ResultOfInitMuscleState::Success_Converged:
+        setActuation(s, tendonForce);
+        setFiberLength(s, fiberLength);
+        break;
 
-        case 0: //converged, all is normal
-        {
-            setActuation(s,tendonForce);
-            setFiberLength(s,fiberLength);
-        }break;
+    case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
+        printf("\n\nThelen2003Muscle initialization:"
+               " %s is at its minimum length of %f\n",
+               getName().c_str(), fiberLength);
+        setActuation(s, tendonForce);
+        setFiberLength(s, fiberLength);
+        break;
 
-        case 1: //lower fiber length bound hit
-        {
-            setActuation(s,tendonForce);
-            setFiberLength(s,fiberLength);
-            
-            std::string muscleName = getName();            
-            printf( "\n\nThelen2003Muscle Initialization Message:"
-                    " %s is at its minimum length of %f",
-                    muscleName.c_str(),
-                    getPennationModel().getMinimumFiberLength());
-        }break;
-
-        case 2: //Maximum number of iterations exceeded.
-        {
-            // Report internal variables and throw exception.
-            char msgBuffer[1000];
-            sprintf(msgBuffer, "\n\n"
-                "  Solution error %e exceeds tolerance of %e\n"
-                "  Newton iterations reached limit of %d\n"
-                "  Activation is %f\n"
-                "  Fiber length is %f\n",
-                abs(solnErr), tol, maxIter, activation, fiberLength);
-            cerr << msgBuffer << endl;
-            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate);
-        }break;
-
-        default:
-            OPENSIM_THROW_FRMOBJ(Thelen2003MuscleInvalidFlag);
+    case ResultOfInitMuscleState::Failure_MaxIterationsReached:
+        // Report internal variables and throw exception.
+        const char* fmt = "\n\n"
+            "  Solution error %e exceeds tolerance of %e\n"
+            "  Newton iterations reached limit of %d\n"
+            "  Activation is %f\n"
+            "  Fiber length is %f\n";
+        const int messageLength = std::snprintf(nullptr, 0, fmt,
+            abs(solnErr), tol, maxIter, activation, fiberLength);
+        std::vector<char> buf(messageLength+1); //+1 for null terminator
+        std::snprintf(&buf[0], buf.size(), fmt,
+            abs(solnErr), tol, maxIter, activation, fiberLength);
+        OPENSIM_THROW_FRMOBJ( MuscleCannotEquilibrate,
+                              string(buf.begin(), buf.end()) );
+        break;
     }
 }
 
@@ -706,23 +698,13 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 //==============================================================================
 // Numerical Guts: Initialization
 //==============================================================================
-SimTK::Vector Thelen2003Muscle::initMuscleState(    SimTK::State& s, 
-                        double aActivation, 
-                        double aSolTolerance, 
-                        int aMaxIterations) const
+Thelen2003Muscle::ResultOfInitMuscleState
+Thelen2003Muscle::initMuscleState(SimTK::Vector& result,
+                                  const SimTK::State& s,
+                                  double aActivation,
+                                  double aSolTolerance,
+                                  int aMaxIterations) const
 {
-    //results vector format
-    //1: flag (0 = converged 
-    //         1=diverged, 
-    //         2= no solution due to singularity:length 0, 
-    //         3= no solution due to pennation angle singularity    
-    //2: solution error (N)
-    //3: iterations
-    //4: fiber length (m)
-    //5: passive force (N)
-    //6: tendon force (N)
-    SimTK::Vector results = SimTK::Vector(6);
-
     //I'm using smaller variable names here to make it possible to write out 
     //lengthy equations
     double ma = aActivation;
@@ -892,62 +874,50 @@ SimTK::Vector Thelen2003Muscle::initMuscleState(    SimTK::State& s,
         iter++;
     }
 
-    //*******************************    
-    //Populate the output vector
     //*******************************
-    //If the solution converged
-    if(abs(ferr) < aSolTolerance){    
-        //1: flag (0 = converged
-        //         1 = diverged (not enough iterations) 
-        //         2= no solution due to singularity:length 0, 
-        //         3= no solution due to pennation angle singularity
-        //2: solution Error (N)
-        //3: iterations
-        //4: fiber length (m)
-        //5: passive force (N)
-        //6: tendon force (N)
-        
-        results[0] = 0;
-        results[1] = ferr;
-        results[2] = (double)iter;
-        results[3] = lce;
-        results[4] = fpe*fiso;
-        results[5] = fse*fiso;
+    // Populate the result vector
+    //
+    //   [0] solution error (N)
+    //   [1] iterations
+    //   [2] fiber length (m)
+    //   [3] passive force (N)
+    //   [4] tendon force (N)
+    //*******************************
+    if (abs(ferr) < aSolTolerance) {  // The solution converged.
 
-    }else{ 
-        
-        if(iter < aMaxIterations){ //if the fiber length hit its lower bound
-
-            lce = getPennationModel().getMinimumFiberLength();
-            phi = getPennationModel().calcPennationAngle(lce);
-            cosphi = cos(phi);
-            tl  = getPennationModel().calcTendonLength(cosphi,lce,ml);
-            lceN = lce/ofl;
-            tlN  = tl/tsl;                
-            fse = calcfse(tlN);
-            fpe = calcfpe(lceN);
-
-            results[0] = 1.0;
-            results[1] = ferr;
-            results[2] = (double)iter;
-            results[3] = lce;
-            results[4] = fpe*fiso;
-            results[5] = fse*fiso;  
-        
-        }else{//If the solution diverged
-                 
-            results[0] = 2.0;
-            results[1] = ferr;
-            results[2] = (double)iter;
-            results[3] = SimTK::NaN;
-            results[4] = SimTK::NaN;
-            results[5] = SimTK::NaN;
-        }
-
- 
+        result[0] = ferr;
+        result[1] = (double)iter;
+        result[2] = lce;
+        result[3] = fpe*fiso;
+        result[4] = fse*fiso;
+        return ResultOfInitMuscleState::Success_Converged;
     }
 
-    return results;
+    if (iter < aMaxIterations) {  // Fiber length is at its lower bound.
+
+        lce = getPennationModel().getMinimumFiberLength();
+        phi = getPennationModel().calcPennationAngle(lce);
+        cosphi = cos(phi);
+        tl  = getPennationModel().calcTendonLength(cosphi,lce,ml);
+        lceN = lce/ofl;
+        tlN  = tl/tsl;
+        fse = calcfse(tlN);
+        fpe = calcfpe(lceN);
+
+        result[0] = ferr;
+        result[1] = (double)iter;
+        result[2] = lce;
+        result[3] = fpe*fiso;
+        result[4] = fse*fiso;
+        return ResultOfInitMuscleState::Warning_FiberAtLowerBound;
+    }
+
+    result[0] = ferr;
+    result[1] = (double)iter;
+    result[2] = SimTK::NaN;
+    result[3] = SimTK::NaN;
+    result[4] = SimTK::NaN;
+    return ResultOfInitMuscleState::Failure_MaxIterationsReached;
 }
 
 //==============================================================================

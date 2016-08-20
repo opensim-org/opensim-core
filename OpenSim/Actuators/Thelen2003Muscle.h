@@ -41,21 +41,6 @@
 namespace OpenSim {
 
 //==============================================================================
-//                         Thelen2003Muscle Exceptions
-//==============================================================================
-class Thelen2003MuscleInvalidFlag : public Exception {
-public:
-    Thelen2003MuscleInvalidFlag(const std::string& file,
-                                size_t line,
-                                const std::string& func,
-                                const Object& obj) :
-        Exception(file, line, func, obj) {
-        std::string msg = "Invalid flag returned by initMuscleState().";
-        addMessage(msg);
-    }
-};
-
-//==============================================================================
 //                               Thelen2003Muscle
 //==============================================================================
 /**
@@ -238,6 +223,8 @@ public:
         tendon are in static equilibrium and update the state
         
         Part of the Muscle.h interface
+
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
        
@@ -310,26 +297,34 @@ private:
       constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
-    //bool initializedModel;
-
-    //=====================================================================
-    // Private Accessor names
-    //=====================================================================
-    //This is so we can get some compiler checking on these string names
-
-
-    //=====================================================================
     // Private Computation
     //      -Computes curve values, derivatives and integrals
     //=====================================================================
 
-    //Initialization
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations) const;
+    // Status flag returned by initMuscleState().
+    enum class ResultOfInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
+    @param result reference to the result vector: [solution error (N),
+           iterations, fiber length (m), passive force (N), tendon force (N)]
+    @param s the system state (const)
+    @param aActivation the initial activation of the muscle
+    @param aSolTolerance the desired relative tolerance of the equilibrium 
+           solution
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
+    */
+    ResultOfInitMuscleState initMuscleState(SimTK::Vector& result,
+                                            const SimTK::State& s,
+                                            double aActivation,
+                                            double aSolTolerance,
+                                            int aMaxIterations) const;
     
     double calcFm(double ma, double fal, double fv, 
                  double fpe, double fiso) const;
