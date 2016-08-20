@@ -333,7 +333,7 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
 
     case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
         printf("\n\nThelen2003Muscle initialization:"
-               " %s is at its minimum length of %f\n",
+               " %s is at its minimum fiber length of %f\n",
                getName().c_str(), fiberLength);
         setActuation(s, tendonForce);
         setFiberLength(s, fiberLength);

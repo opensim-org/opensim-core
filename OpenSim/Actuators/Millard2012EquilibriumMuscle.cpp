@@ -472,7 +472,7 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
 
     case ResultOfEstimateMuscleFiberState::Warning_FiberAtLowerBound:
         printf("\n\nMillard2012EquilibriumMuscle initialization:"
-               " %s is at its minimum length of %f\n",
+               " %s is at its minimum fiber length of %f\n",
                getName().c_str(), fiberLength);
         setActuation(s, tendonForce);
         setFiberLength(s, fiberLength);
@@ -547,7 +547,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
     case ResultOfEstimateMuscleFiberState::Warning_FiberAtLowerBound:
         printf("\n\nMillard2012EquilibriumMuscle static solution:"
-               " %s is at its minimum length of %f\n",
+               " %s is at its minimum fiber length of %f\n",
                getName().c_str(), fiberLength);
         setActuation(s, tendonForce);
         setFiberLength(s, fiberLength);

@@ -744,7 +744,7 @@ void Millard2012AccelerationMuscle::
 
     case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
         printf("\n\nMillard2012AccelerationMuscle initialization:"
-               " %s is at its minimum length of %f\n",
+               " %s is at its minimum fiber length of %f\n",
                getName().c_str(), fiberLength);
         setActuation(s, tendonForce);
         setFiberLength(s, fiberLength);
