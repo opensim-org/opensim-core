@@ -901,7 +901,7 @@ private:
                                           std::string& caller) const;
 
     // Status flag returned by initMuscleState().
-    enum class ResultOfInitMuscleState {
+    enum ResultOfInitMuscleState {
         Success_Converged,
         Warning_FiberAtLowerBound,
         Failure_MaxIterationsReached

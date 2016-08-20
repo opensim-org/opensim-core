@@ -735,7 +735,7 @@ private:
     double clampFiberLength(double lce) const;
 
     // Status flag returned by estimateMuscleFiberState().
-    enum class ResultOfEstimateMuscleFiberState {
+    enum ResultOfEstimateMuscleFiberState {
         Success_Converged,
         Warning_FiberAtLowerBound,
         Failure_MaxIterationsReached
