@@ -69,15 +69,15 @@ public:
     /// Destructor.
     ~Path() = default;
 
+    /// Write out the path to a string with each element separated by the
+    /// specified separator.
+    std::string getString();
+
 protected:
     /// Cleans up a path. This includes removing "." and resolving ".." if
     /// possible (i.e. it will not remove leading ".." but otherwise will
     /// remove the previous pathElement from _path.
     void cleanPath();
-
-    /// Write out the path to a string with each element separated by the
-    /// specified separator.
-    std::string getString();
 
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.

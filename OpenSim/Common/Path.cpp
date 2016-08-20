@@ -52,11 +52,16 @@ Path::Path(const std::string path,
     size_t start = path.find_first_not_of(separator);
     while (start != std::string::npos) {
         size_t end = path.find_first_of(separator, start);
-        if (end == std::string::npos) break;
+        // if last segment (without a "/" at the end)
+        if (end == std::string::npos) {
+            end = path.find_last_not_of(separator, start) + 1;
+        }
         std::string pathElement = path.substr(start, end - start);
         appendPathElement(pathElement);
         start = path.find_first_not_of(separator, end + 1);
     }
+
+    this->cleanPath();
 }
 
 Path::Path(std::vector<std::string> pathVec,
@@ -72,8 +77,8 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) {
         return _path;
     }
     
-    if (otherPath->_isAbsolute) {
-        Exception("otherPath is not an absolute path");
+    if (!otherPath->_isAbsolute) {
+        throw Exception("otherPath is not an absolute path");
     }
 
     std::vector<std::string> pathVec;
@@ -90,7 +95,7 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) {
 
 std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
     if (!this->_isAbsolute || !otherPath->_isAbsolute) {
-        Exception("both paths must be absolute to find relative path");
+        throw Exception("both paths must be absolute to find relative path");
     }
 
     size_t thisPathLength = this->getPathLength();
@@ -114,7 +119,7 @@ std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
     std::vector<std::string> pathVec;
     
     size_t numDotDot = thisPathLength - ind;
-    for (int i = 0; i < numDotDot; ++i) {
+    for (size_t i = 0; i < numDotDot; ++i) {
         pathVec.push_back("..");
     }
     for (; ind < otherPathLength; ++ind) {
@@ -157,7 +162,7 @@ std::string Path::getString() {
     if (_isAbsolute) outString.append(1, _separator);
     for (size_t i = 0; i < getPathLength(); ++i) {
         outString.append(_path[i]);
-        if (i != getPathLength()) {
+        if (i != getPathLength() - 1) {
             outString.append(1, _separator);
         }
     }
@@ -174,7 +179,7 @@ bool Path::isLegalPathElement(const std::string pathElement) {
 
 void Path::appendPathElement(const std::string pathElement) {
     if (!isLegalPathElement(pathElement)) {
-        Exception("invalid character use");
+        throw Exception("invalid character use");
     }
     _path.push_back(pathElement);
 }

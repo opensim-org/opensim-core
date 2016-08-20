@@ -32,15 +32,47 @@ using namespace OpenSim;
 using namespace std;
 
 void testComponentPath() {
-    ComponentPath absPath1("/a/b/c/d");
-    ComponentPath absPath2("/a/b/e/f/g/h");
-    ComponentPath absPath3("/a/b");
+    // Test that input matches printing out
+    string absStr1 = "/a/b/c/d";
+    string absStr2 = "/a/b/e/f/g/h";
+    string absStr3 = "/a/b";
+    ComponentPath absPath1(absStr1);
+    ComponentPath absPath2(absStr2);
+    ComponentPath absPath3(absStr3);
+    ASSERT(absPath1.getString() == absStr1);
+    ASSERT(absPath2.getString() == absStr2);
+    ASSERT(absPath3.getString() == absStr3);
 
-    ComponentPath relPath1("c/d");
-    ComponentPath relPath2("e/f/g/h");
+    string relStr1 = "c/d";
+    string relStr2 = "e/f/g/h";
+    ComponentPath relPath1(relStr1);
+    ComponentPath relPath2(relStr2);
+    ASSERT(relPath1.getString() == relStr1);
+    ASSERT(relPath2.getString() == relStr2);
 
-    ComponentPath emptyPath("");
-    ComponentPath rootPath("/");
+    string emptyStr = "";
+    string rootStr = "/";
+    ComponentPath emptyPath(emptyStr);
+    ComponentPath rootPath(rootStr);
+    ASSERT(emptyPath.getString() == emptyStr);
+    ASSERT(rootPath.getString() == rootStr);
+
+    // Test getAbsolutePath()
+    ASSERT(relPath1.getAbsolutePath(&absPath3).getString() == absStr1);
+    ASSERT(relPath2.getAbsolutePath(&absPath3).getString() == absStr2);
+    ASSERT(absPath1.getAbsolutePath(&absPath2).getString() == absStr1);
+    ASSERT(relPath1.getAbsolutePath(&rootPath).getString() == "/c/d");
+    ASSERT_THROW(Exception, relPath1.getAbsolutePath(&relPath2));
+    
+    // Test findRelativePath()
+    ASSERT(absPath1.findRelativePath(&absPath2).getString() == "../../e/f/g/h");
+    ASSERT_THROW(Exception, relPath1.findRelativePath(&absPath2));
+    ASSERT_THROW(Exception, absPath2.findRelativePath(&relPath2));
+    ASSERT_THROW(Exception, relPath2.findRelativePath(&relPath1));
+
+    // Test cleaning path
+    
+
 
 }
 
