@@ -302,7 +302,7 @@ private:
     //=====================================================================
 
     // Status flag returned by initMuscleState().
-    enum class ResultOfInitMuscleState {
+    enum ResultOfInitMuscleState {
         Success_Converged,
         Warning_FiberAtLowerBound,
         Failure_MaxIterationsReached
