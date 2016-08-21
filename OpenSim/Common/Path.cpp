@@ -54,7 +54,7 @@ Path::Path(const std::string path,
         size_t end = path.find_first_of(separator, start);
         // if last segment (without a "/" at the end)
         if (end == std::string::npos) {
-            end = path.find_last_not_of(separator, start) + 1;
+            end = path.find_last_not_of(separator, std::string::npos) + 1;
         }
         std::string pathElement = path.substr(start, end - start);
         appendPathElement(pathElement);
@@ -139,7 +139,7 @@ void Path::cleanPath() {
             --numPathElements;
         }
 
-        // if it's not the first element, remove the ".." relement and
+        // if it's not the first element, remove the ".." element and
         // the previous element
         else if (_path[i] == "..") {
             if (i != 0) {

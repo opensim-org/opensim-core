@@ -70,7 +70,18 @@ void testComponentPath() {
     ASSERT_THROW(Exception, absPath2.findRelativePath(&relPath2));
     ASSERT_THROW(Exception, relPath2.findRelativePath(&relPath1));
 
-    // Test cleaning path
+    // Test some odd paths
+    string oddStr1 = "/a/././b/c/..//d/.././";
+    ComponentPath oddPath1(oddStr1);
+    ASSERT(oddPath1.getString() == absPath3.getString());
+
+    string oddStr2 = "/a/b/c/d/../..";
+    ComponentPath oddPath2(oddStr2);
+    ASSERT(oddPath2.getString() == absPath3.getString());
+
+    string oddStr3 = "/../b/c/d";
+    //ASSERT_THROW(Exception, ComponentPath(oddStr3));
+
     
 
 
