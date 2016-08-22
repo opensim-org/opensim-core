@@ -51,6 +51,7 @@ transform axis functions that depend on the same coordinate(s).
 */
 class OSIMSIMULATION_API CustomJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -97,6 +98,22 @@ public:
     {   return get_SpatialTransform(); }
     SpatialTransform& updSpatialTransform()
     {   return upd_SpatialTransform(); }
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Get a Coordinate associated with this Joint. */
+    const Coordinate& getCoordinate(unsigned idx) const {
+        OPENSIM_THROW_IF(numCoordinates() == 0,
+                         JointHasNoCoordinates);
+        OPENSIM_THROW_IF(idx > numCoordinates()-1,
+                         InvalidCall,
+                         "Index passed to getCoordinate() exceeds the largest "
+                         "index available");
+
+        return get_CoordinateSet()[idx];
+    }
 
     // SCALE
     void scale(const ScaleSet& aScaleSet) override;

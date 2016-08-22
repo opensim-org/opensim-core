@@ -176,8 +176,9 @@ void CustomJoint::constructCoordinates()
         std::string coordName = spatialTransform.getCoordinateNames()[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = coordinateSet.getIndex(coordName);
-        if (coordIndex < 0){
-            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
+        if (coordIndex < 0) {
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined,
+                                             i);
         }
         Coordinate& coord = coordinateSet.get(coordIndex);
         coord.setName(coordName);

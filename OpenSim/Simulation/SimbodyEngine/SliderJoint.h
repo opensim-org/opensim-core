@@ -40,14 +40,38 @@ along the common X-axis of the parent and child joint frames.
 @author Ajay Seth
 */
 class OSIMSIMULATION_API SliderJoint : public Joint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
+OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
 
+public:
+    /** Index of Coordinate for use as an argument to getCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& tx = mySliderJoint.
+                         getCoordinate(SliderJoint::Coord::TranslationX);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        TranslationX
+    };
+
+private:
     /** Specify the Coordinate of the SliderJoint */
-    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                                    static_cast<unsigned>(Coord::TranslationX)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Get the Coordinate associated with this Joint. @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
+    }
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
