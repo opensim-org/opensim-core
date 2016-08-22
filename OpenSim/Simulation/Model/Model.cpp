@@ -327,15 +327,6 @@ SimTK::State& Model::initializeState() {
     // Process the modified modeling option.
     getMultibodySystem().realizeModel(_workingState);
 
-    // having added all Components to the system (some of which can have their
-    // own Joints with Coordinates) make sure the Model's Coordinates are now
-    // in System order to make it easy to map between System's State Qs and 
-    // Coordinates. The earliest this can be done is after realizeModel
-    // because that is the last opportunity to modify the system that could 
-    // modify the number of underlying states. After this point all
-    // indices in the State are fixed.
-    //reorderCoordinatesAccordingToSystemMobilities();
-
     // Invoke the ModelComponent interface for initializing the state.
     initStateFromProperties(_workingState);
 
@@ -500,59 +491,6 @@ void Model::createMultibodySystem()
     addToSystem(*_system);
 }
 
-
-void Model::reorderCoordinatesAccordingToSystemMobilities()
-{
-    OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
-        "Attempting to reorder Coordinates according to an invalid System.");
-
-    auto& coordSet = updCoordinateSet();
-
-    // We have a valid MultibodySystem underlying the Coordinates
-    int nc = coordSet.getSize();
-    const SimTK::State& s = getModel().getWorkingState();
-    SimTK_ASSERT_ALWAYS(s.getNQ() == nc,
-        "CoordinateSet does not correspond to the number of mobilities in "
-        "the underlying MultibodySystem.");
-
-    auto& matter = getSystem().getMatterSubsystem();
-
-    auto coordinates = updComponentList<Coordinate>();
-
-    int cnt = 0;
-    for (auto& coord : coordinates) {
-        auto mbix = coord.getBodyIndex();
-        auto mqix = coord.getMobilizerQIndex();
-
-        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
-
-        SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds number of Coordinates "
-            "in Set.");
-
-        // Set the coordinate in the right slot in the CoordinateSet
-        coordSet.set(cix, &coord);
-
-        cout << "Coordinate[" << cnt++ << "] is `" << coord.getName() << "'."
-            << " with System index: " << cix << endl;
-    }
-
-    SimTK_ASSERT_ALWAYS(cnt == s.getNQ(),
-        "Reordered CoordinateSet does not correspond to the number of "
-        "mobilities in the underlying MultibodySystem.");
-
-    cout << endl;
-    // check
-    for (int i = 0; i < coordSet.getSize(); ++i) {
-        Coordinate& coord = coordSet[i];
-        auto mbix = coord.getBodyIndex();
-        auto mqix = coord.getMobilizerQIndex();
-        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
-        cout << "Coordinate[" << i << "] is `" << coord.getName() << "'." 
-            << " with System index: " << cix << endl;
-    }
-}
-
-
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -654,7 +592,8 @@ void Model::extendConnectToModel(Model &model)
             model.getName() << "." << endl;
     }
 
-    // Reset the list of all components and rebuild the list in the order
+    // Reset the list of all components and the order in which they are
+    // added to the System. Then we can rebuild the list in the order
     // that conforms to the MultibodyTree
     resetSubcomponentOrder();
 
@@ -690,7 +629,6 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
             Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
-            //Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
             Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
             Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
 
@@ -738,9 +676,7 @@ void Model::extendConnectToModel(Model &model)
 
             // order the joint components in the order of the multibody tree
             Joint* joint = static_cast<Joint*>(mob.getJointRef());
-            //setNextSubcomponentInSystem(joint->getParentFrame());
             setNextSubcomponentInSystem(*joint);
-            //setNextSubcomponentInSystem(joint->getChildFrame());
 
             int jx = joints.getIndex(joint, m);
             //if in the set but not already in the right order
@@ -808,7 +744,8 @@ void Model::extendConnectToModel(Model &model)
         setNextSubcomponentInSystem(comp.getRef());
     }
 
-    // Reorder coordinates in order of the underlying mobilities
+    // Populate the model's list of Coordinates as references into
+    // the individual Joints.
     updCoordinateSet().populate(*this);
     updForceSet().setupGroups();
     updControllerSet().setActuators(updActuators());
