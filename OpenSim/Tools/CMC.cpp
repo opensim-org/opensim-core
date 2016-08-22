@@ -725,11 +725,12 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         qSet->evaluate(uDesired,1,tiReal);
     }
     Array<double> qCorrection(0.0,nq),uCorrection(0.0,nu);
-       const Vector& q = s.getQ();
-       const Vector& u = s.getU();
 
-    for(i=0;i<nq;i++) qCorrection[i] = q[i] - qDesired[i];
-    for(i=0;i<nu;i++) uCorrection[i] = u[i] - uDesired[i];
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (i = 0; i < nq; ++i) {
+        qCorrection[i] = coords[i].getValue(s) - qDesired[i];
+        uCorrection[i] = coords[i].getSpeedValue(s) - uDesired[i];
+    }
 
     _predictor->getCMCActSubsys()->setCoordinateCorrections(&qCorrection[0]);
     _predictor->getCMCActSubsys()->setSpeedCorrections(&uCorrection[0]);
