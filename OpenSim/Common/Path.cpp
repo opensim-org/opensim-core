@@ -70,9 +70,48 @@ Path::Path(std::vector<std::string> pathVec,
            bool isAbsolute) :
     _path(pathVec), _separator(separator), _invalidChars(invalidChars),
     _isAbsolute(isAbsolute)
-{}
+{
+    if (_path.empty()) return;
+    this->cleanPath();
+}
 
-std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) {
+std::string Path::getString() 
+{
+    std::string outString;
+    if (_isAbsolute) outString.append(1, _separator);
+    for (size_t i = 0; i < getPathLength(); ++i) {
+        outString.append(_path[i]);
+        if (i != getPathLength() - 1) {
+            outString.append(1, _separator);
+        }
+    }
+
+    return outString;
+}
+
+void Path::insertPathElement(size_t pos, const std::string pathElement) 
+{
+    if (pos > getPathLength()) {
+        throw Exception("insertPathElement: pos must be between 0 and path length");
+    }
+
+    if (!isLegalPathElement(pathElement)) {
+        throw Exception("invalid character use");
+    }
+    _path.insert(_path.begin() + pos, pathElement);
+}
+
+void Path::erasePathElement(size_t pos)
+{
+    if (pos > getPathLength() - 1) {
+        throw Exception("erasePathElement: pos is out of range of elements");
+    }
+
+    _path.erase(_path.begin() + pos);
+}
+
+std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) 
+{
     if (_isAbsolute) {
         return _path;
     }
@@ -93,7 +132,8 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) {
     return pathVec;
 }
 
-std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
+std::vector<std::string> Path::getRelativePathVec(Path* otherPath) 
+{
     if (!this->_isAbsolute || !otherPath->_isAbsolute) {
         throw Exception("both paths must be absolute to find relative path");
     }
@@ -106,7 +146,7 @@ std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
     bool match = true;
     size_t ind = 0;
     while (match && ind < searchLength) {
-        if (this->getPathElement(ind) != otherPath->getPathElement(ind)) {
+        if (this->_path[ind] != otherPath->_path[ind]) {
             match = false;
         }
         else {
@@ -118,35 +158,39 @@ std::vector<std::string> Path::findRelativePathVec(Path* otherPath) {
     // "..", then add the remainder of the pathElements to get to otherPath
     std::vector<std::string> pathVec;
     
-    size_t numDotDot = thisPathLength - ind;
+    size_t numDotDot = otherPathLength - ind;
     for (size_t i = 0; i < numDotDot; ++i) {
         pathVec.push_back("..");
     }
-    for (; ind < otherPathLength; ++ind) {
-        pathVec.push_back(otherPath->getPathElement(ind));
+    for (; ind < thisPathLength; ++ind) {
+        pathVec.push_back(this->_path[ind]);
     }
 
     return pathVec;
 }
 
-void Path::cleanPath() {
+void Path::cleanPath() 
+{
     size_t numPathElements = getPathLength();
     size_t i = 0;
     while (i < numPathElements) {
         // remove any "." element
         if (_path[i] == ".") {
-            _path.erase(_path.begin() + i);
+            erasePathElement(i);
             --numPathElements;
         }
 
-        // if it's not the first element, remove the ".." element and
-        // the previous element
+        // if it's not the first element, and the previous element is not ".."
+        // remove the ".." element and the previous element
         else if (_path[i] == "..") {
-            if (i != 0) {
-                _path.erase(_path.begin() + i);
-                _path.erase(_path.begin() + i - 1);
+            if (i != 0 && _path[i-1] != "..") {
+                erasePathElement(i);
+                erasePathElement(i - 1);
                 numPathElements -= 2;
                 --i;
+            }
+            else {
+                ++i;
             }
         }
 
@@ -155,29 +199,22 @@ void Path::cleanPath() {
             ++i;
         }
     }
-}
 
-std::string Path::getString() {
-    std::string outString;
-    if (_isAbsolute) outString.append(1, _separator);
-    for (size_t i = 0; i < getPathLength(); ++i) {
-        outString.append(_path[i]);
-        if (i != getPathLength() - 1) {
-            outString.append(1, _separator);
-        }
+    if (!_path.empty() && _path[0] == ".." && _isAbsolute) {
+        throw Exception("absolute path cannot start with ''..''");
     }
-
-    return outString;
 }
 
-bool Path::isLegalPathElement(const std::string pathElement) {
+bool Path::isLegalPathElement(const std::string pathElement) 
+{
     if (pathElement.find_first_of(_invalidChars) != std::string::npos) {
         return false;
     }
     return true;
 }
 
-void Path::appendPathElement(const std::string pathElement) {
+void Path::appendPathElement(const std::string pathElement) 
+{
     if (!isLegalPathElement(pathElement)) {
         throw Exception("invalid character use");
     }

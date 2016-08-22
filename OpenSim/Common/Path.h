@@ -50,13 +50,14 @@ public:
     Path() = delete;
 
     /// Construct Path from a string, given separator character and a string
-    /// of invalidChars
-    Path(const std::string path, 
-         const char separator, 
+    /// of invalidChars. Performs a cleanPath() at the end of construction.
+    Path(const std::string path,
+         const char separator,
          const std::string invalidChars);
 
     /// Construct Path from a vector of strings (pathVec), given separator
-    /// character and a string of invalidChars
+    /// character and a string of invalidChars. Performs a cleanPath() at 
+    /// the end of construction.
     Path(std::vector<std::string> pathVec,
          const char separator,
          const std::string invalidChars,
@@ -73,33 +74,43 @@ public:
     /// specified separator.
     std::string getString();
 
-protected:
+    /// Insert a pathElement at the specified position. Note that this could
+    /// cause a path to become illegal (e.g., adding ".." to the front of 
+    /// an absolute path). The pathElement is checked to ensure no illegal
+    /// characters are used.
+    void insertPathElement(size_t pos, const std::string pathElement);
+
+    /// Erase a pathElement at the specified position. Note that this could
+    /// cause a path to become illegal (e.g., this may leave a ".." at the
+    /// front of an absolute path).
+    void erasePathElement(size_t pos);
+
+    /// Append a pathElement to the Path, first checking if the pathElement
+    /// is legal.
+    void appendPathElement(const std::string pathElement);
+
     /// Cleans up a path. This includes removing "." and resolving ".." if
     /// possible (i.e. it will not remove leading ".." but otherwise will
-    /// remove the previous pathElement from _path.
+    /// remove the previous pathElement from _path. This method also checks
+    /// if a path is invalid due to an absolute path starting with "..".
     void cleanPath();
 
+protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
     std::vector<std::string> getAbsolutePathVec(Path* otherPath);
 
-    /// Find the relative Path between this Path and another Path (otherPath).
-    /// Both Paths must be absolute.
-    std::vector<std::string> findRelativePathVec(Path* otherPath);
+    /// Find the relative Path between this Path and another Path (otherPath)
+    /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
+    /// absolute.
+    std::vector<std::string> getRelativePathVec(Path* otherPath);
 
 private:
     size_t getPathLength() { return _path.size(); };
-    std::vector<std::string> getPath() { return _path; };
-    std::string getPathElement(int index) { return getPath()[index]; };
-
 
     // Verify that a pathElement does not contain any chars from the list
     // of _invalidChars
     bool isLegalPathElement(const std::string pathElement);
-
-    // Append a pathElement to _path, first checking if the pathElement
-    // is legal
-    void appendPathElement(const std::string pathElement);
 
     // Path variables
     std::vector<std::string> _path;

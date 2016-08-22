@@ -45,10 +45,13 @@ void testComponentPath() {
 
     string relStr1 = "c/d";
     string relStr2 = "e/f/g/h";
+    string relStr3 = "../../../../c/d";
     ComponentPath relPath1(relStr1);
     ComponentPath relPath2(relStr2);
+    ComponentPath relPath3(relStr3);
     ASSERT(relPath1.getString() == relStr1);
     ASSERT(relPath2.getString() == relStr2);
+    ASSERT(relPath3.getString() == relStr3);
 
     string emptyStr = "";
     string rootStr = "/";
@@ -62,29 +65,60 @@ void testComponentPath() {
     ASSERT(relPath2.getAbsolutePath(&absPath3).getString() == absStr2);
     ASSERT(absPath1.getAbsolutePath(&absPath2).getString() == absStr1);
     ASSERT(relPath1.getAbsolutePath(&rootPath).getString() == "/c/d");
+    ASSERT(relPath3.getAbsolutePath(&absPath2).getString() == absPath1.getString());
     ASSERT_THROW(Exception, relPath1.getAbsolutePath(&relPath2));
     
     // Test findRelativePath()
-    ASSERT(absPath1.findRelativePath(&absPath2).getString() == "../../e/f/g/h");
-    ASSERT_THROW(Exception, relPath1.findRelativePath(&absPath2));
-    ASSERT_THROW(Exception, absPath2.findRelativePath(&relPath2));
-    ASSERT_THROW(Exception, relPath2.findRelativePath(&relPath1));
+    ASSERT(absPath1.getRelativePath(&absPath2).getString() == "../../../../c/d");
+    ASSERT(absPath2.getRelativePath(&absPath1).getString() == "../../e/f/g/h");
+    ASSERT(absPath1.getRelativePath(&absPath3).getString() == "c/d");
+    ASSERT(absPath3.getRelativePath(&absPath2).getString() == "../../../..");
+    ASSERT_THROW(Exception, relPath1.getRelativePath(&absPath2));
+    ASSERT_THROW(Exception, absPath2.getRelativePath(&relPath2));
+    ASSERT_THROW(Exception, relPath2.getRelativePath(&relPath1));
 
     // Test some odd paths
     string oddStr1 = "/a/././b/c/..//d/.././";
     ComponentPath oddPath1(oddStr1);
     ASSERT(oddPath1.getString() == absPath3.getString());
-
     string oddStr2 = "/a/b/c/d/../..";
     ComponentPath oddPath2(oddStr2);
     ASSERT(oddPath2.getString() == absPath3.getString());
-
     string oddStr3 = "/../b/c/d";
-    //ASSERT_THROW(Exception, ComponentPath(oddStr3));
+    ASSERT_THROW(Exception, ComponentPath oddPath3(oddStr3));
+    string oddStr4 = "/a/../../c/d";
+    ASSERT_THROW(Exception, ComponentPath oddPath4(oddStr4));
 
-    
+    string badChar1 = "/a/b\\/c/";
+    string badChar2 = "/a+b+c/";
+    string badChar3 = "/abc*/def/g/";
+    ASSERT_THROW(Exception, ComponentPath badPath1(badChar1));
+    ASSERT_THROW(Exception, ComponentPath badPath2(badChar2));
+    ASSERT_THROW(Exception, ComponentPath badPath3(badChar3));
 
+    // Test inserts and erase
+    string str1 = "/a/b/d";
+    ComponentPath path1(str1);
+    path1.insertPathElement(2, "c");
+    ASSERT(path1.getString() == absPath1.getString());
+    path1.erasePathElement(2);
+    path1.erasePathElement(2);
+    ASSERT(path1.getString() == absPath3.getString());
+    ASSERT_THROW(Exception, path1.appendPathElement("e/f/g/h"));
+    ASSERT_THROW(Exception, path1.insertPathElement(2, "e/f/g/h"));
+    path1.appendPathElement("e");
+    path1.appendPathElement("f");
+    path1.appendPathElement("g");
+    path1.appendPathElement("h");
+    ASSERT(path1.getString() == absPath2.getString());
+    path1.insertPathElement(0, "..");
+    ASSERT_THROW(Exception, path1.cleanPath());
+    path1.insertPathElement(0, "z");
+    path1.cleanPath();
+    ASSERT(path1.getString() == absPath2.getString());
 
+    ASSERT_THROW(Exception, path1.appendPathElement("a\\b"));
+    ASSERT_THROW(Exception, path1.insertPathElement(2, "a+b*"));
 }
 
 int main()
