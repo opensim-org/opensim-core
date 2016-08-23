@@ -77,6 +77,11 @@ void compareHeaders(std::ifstream& filenameA,
         if(line.find("DataType") != std::string::npos)
             continue;
 
+	// Ignore the key-value pair specifying the version number. Old files
+	// will have older version number.
+	if(line.find("version") != std::string::npos)
+	  continue;
+
         headerA.insert(line);
     }
     while(std::getline(filenameB, line)) {
@@ -90,6 +95,11 @@ void compareHeaders(std::ifstream& filenameA,
         // present in old files.
         if(line.find("DataType") != std::string::npos)
             continue;
+
+	// Ignore the key-value pair specifying the version number. Old files
+	// will have older version number.
+	if(line.find("version") != std::string::npos)
+	  continue;
 
         headerB.insert(line);
     }

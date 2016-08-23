@@ -32,10 +32,19 @@
 using namespace OpenSim;
 using namespace std;
 
+void changeVersionNumber(const std::string& filenameOld,
+			 const std::string& filenameNew);
+
 int main()
 {
     try {
-        Storage result1("SpringActuatedLeg_states_degrees.sto"), standard1("std_SpringActuatedLeg_states_degrees.mot");
+        const std::string
+	  result1Filename{"SpringActuatedLeg_states_degrees.sto"};
+        const std::string
+	  result1FilenameV2{"SpringActuatedLeg_states_degrees_V2.sto"};
+        changeVersionNumber(result1Filename, result1FilenameV2);
+        Storage result1(result1FilenameV2),
+	        standard1("std_SpringActuatedLeg_states_degrees.mot");
         Array<double> tolerances(1.0, 6);   // angles have 1 deg tolerance
         tolerances[1] = tolerances[3] = tolerances[5] = 5.0; // angular speeds have a 5 deg/s tolerance
 
@@ -45,7 +54,11 @@ int main()
         Array<double> forceTol(1.0, 2); // piston actuator has a tolerance of 1N
         forceTol[1] = 5.0; // spring has a tolerance of 5N 
 
-        Storage result2("actuator_forces.sto"), standard2("std_actuator_forces.mot");
+        const std::string result2Filename{"actuator_forces.sto"};
+        const std::string result2FilenameV2{"actuator_forces_V2.sto"};
+        changeVersionNumber(result2Filename, result2FilenameV2);
+        Storage result2(result2FilenameV2),
+	        standard2("std_actuator_forces.mot");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol, __FILE__, __LINE__, "actuator forces failed");
         cout << "actuator forces passed\n";
     }
@@ -55,4 +68,19 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
+}
+
+// Change version number of the file to 1 so that Storage can read it.
+void changeVersionNumber(const std::string& filenameOld,
+			 const std::string& filenameNew) {
+  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
+  std::ifstream fileOld{filenameOld};
+  std::ofstream fileNew{filenameNew};
+  std::string line{};
+  while(std::getline(fileOld, line)) {
+    if(std::regex_match(line, versionline))
+      fileNew << "version=1\n";
+    else
+      fileNew << line << "\n";
+  }
 }

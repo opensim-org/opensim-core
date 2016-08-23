@@ -32,10 +32,16 @@
 using namespace OpenSim;
 using namespace std;
 
+void changeVersionNumber(const std::string& filenameOld,
+			 const std::string& filenameNew);
+
 int main()
 {
     try {
-        Storage result1("tugOfWar_controls.sto"), 
+      const std::string result1Filename{"tugOfWar_controls.sto"};
+      const std::string result1FilenameV2{"tugOfWar_controls_v2.sto"};
+      changeVersionNumber(result1Filename, result1FilenameV2);
+        Storage result1(result1FilenameV2), 
                 standard1("std_tugOfWar_controls.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
                                        Array<double>(0.01, 2), 
@@ -51,7 +57,10 @@ int main()
         // activations within 2%
         tols[12] = tols[14] = 0.02;
 
-        Storage result2("tugOfWar_states.sto"), 
+      const std::string result2Filename{"tugOfWar_states.sto"};
+      const std::string result2FilenameV2{"tugOfWar_states_v2.sto"};
+      changeVersionNumber(result2Filename, result2FilenameV2);
+        Storage result2(result2FilenameV2), 
                 standard2("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
                                        tols, 
@@ -66,4 +75,19 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
+}
+
+// Change version number of the file to 1 so that Storage can read it.
+void changeVersionNumber(const std::string& filenameOld,
+			 const std::string& filenameNew) {
+  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
+  std::ifstream fileOld{filenameOld};
+  std::ofstream fileNew{filenameNew};
+  std::string line{};
+  while(std::getline(fileOld, line)) {
+    if(std::regex_match(line, versionline))
+      fileNew << "version=1\n";
+    else
+      fileNew << line << "\n";
+  }
 }
