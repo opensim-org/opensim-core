@@ -68,7 +68,7 @@ void testGait10dof18musc() {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 
-    if (cmc.run())
+    if (!cmc.run())
         OPENSIM_THROW(Exception, "testGait10dof18musc " + muscleType +
             " failed to complete.");
 
