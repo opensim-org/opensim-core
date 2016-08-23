@@ -94,7 +94,7 @@ biceps.addNewPathPoint("insertion",
 
 brain = osim.PrescribedController()
 brain.addActuator(biceps)
-brain.prescribeControlForActuator(1,  # Actuator's index in controller set
+brain.prescribeControlForActuator('biceps',  # Actuator's index in controller set
                                   osim.StepFunction(0.5, 3.0, 0.3, 1.0))
 
 # ---------------------------------------------------------------------------
