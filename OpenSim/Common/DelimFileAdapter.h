@@ -68,12 +68,19 @@ Header in the file is assumed to end with string "endheader" occupying a full
 line.                                                                         */
 template<typename T>
 class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
-    static_assert(std::is_same<T, double>::value ||
-                  std::is_same<T, SimTK::Vec3>::value ||
-                  std::is_same<T, SimTK::Vec6>::value ||
+    static_assert(std::is_same<T, double           >::value ||
+		  std::is_same<T, SimTK::Vec2      >::value ||
+                  std::is_same<T, SimTK::Vec3      >::value ||
+                  std::is_same<T, SimTK::Vec4      >::value ||
+                  std::is_same<T, SimTK::Vec5      >::value ||
+                  std::is_same<T, SimTK::Vec6      >::value ||
+		  std::is_same<T, SimTK::UnitVec3  >::value ||
+		  std::is_same<T, SimTK::Quaternion>::value ||  
                   std::is_same<T, SimTK::SpatialVec>::value,
                   "Template argument T must be one of the following types : "
-                  "double, SimTK::Vec3, SimTK::Vec6, SimTK::SpatialVec");
+                  "double, SimTK::Vec2, SimTK::Vec3, SimTK::Vec4, SimTK::Vec5, "
+		  "SimTK::Vec6, SimTK::UnitVec, SimTK::Quaternion, "
+		  "SimTK::SpatialVec");
 public:
     DelimFileAdapter()                                   = delete;
     DelimFileAdapter(const DelimFileAdapter&)            = default;
@@ -161,14 +168,44 @@ DelimFileAdapter<double>::dataTypeName() {
 
 template<>
 inline const std::string 
+DelimFileAdapter<SimTK::Vec2>::dataTypeName() {
+    return "Vec2";
+}
+
+template<>
+inline const std::string 
 DelimFileAdapter<SimTK::Vec3>::dataTypeName() {
     return "Vec3";
 }
 
 template<>
 inline const std::string 
+DelimFileAdapter<SimTK::Vec4>::dataTypeName() {
+    return "Vec4";
+}
+
+template<>
+inline const std::string 
+DelimFileAdapter<SimTK::Vec5>::dataTypeName() {
+    return "Vec5";
+}
+
+template<>
+inline const std::string 
 DelimFileAdapter<SimTK::Vec6>::dataTypeName() {
     return "Vec6";
+}
+
+template<>
+inline const std::string 
+DelimFileAdapter<SimTK::UnitVec3>::dataTypeName() {
+    return "UnitVec3";
+}
+
+template<>
+inline const std::string 
+DelimFileAdapter<SimTK::Quaternion>::dataTypeName() {
+    return "Quaternion";
 }
 
 template<>
@@ -353,10 +390,26 @@ DelimFileAdapter<double>::readElems(
 }
 
 template<>
+inline SimTK::RowVector_<SimTK::Vec2>
+DelimFileAdapter<SimTK::Vec2>::readElems(
+				 const std::vector<std::string>& tokens) const {
+    SimTK::RowVector_<SimTK::Vec2> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != 2,
+    		         IncorrectNumTokens,
+		         "Expected 2x (multiple of 2) number of tokens.");
+        elems[i] = SimTK::Vec2{std::stod(comps[0]),
+  			       std::stod(comps[1])};
+    }
+
+    return elems;
+}
+
+template<>
 inline SimTK::RowVector_<SimTK::Vec3>
 DelimFileAdapter<SimTK::Vec3>::readElems(
                                  const std::vector<std::string>& tokens) const {
-
     SimTK::RowVector_<SimTK::Vec3> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i) {
         auto comps = tokenize(tokens[i], _compDelimRead);
@@ -366,6 +419,47 @@ DelimFileAdapter<SimTK::Vec3>::readElems(
         elems[i] = SimTK::Vec3{std::stod(comps[0]),
                                std::stod(comps[1]),
                                std::stod(comps[2])};
+        
+    }
+
+    return elems;
+}
+
+template<>
+inline SimTK::RowVector_<SimTK::Vec4>
+DelimFileAdapter<SimTK::Vec4>::readElems(
+                                 const std::vector<std::string>& tokens) const {
+    SimTK::RowVector_<SimTK::Vec4> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != 4, 
+                         IncorrectNumTokens,
+                         "Expected 4x (multiple of 4) number of tokens.");
+        elems[i] = SimTK::Vec4{std::stod(comps[0]),
+                               std::stod(comps[1]),
+                               std::stod(comps[2]),
+			       std::stod(comps[3])};
+        
+    }
+
+    return elems;
+}
+
+template<>
+inline SimTK::RowVector_<SimTK::Vec5>
+DelimFileAdapter<SimTK::Vec5>::readElems(
+                                 const std::vector<std::string>& tokens) const {
+    SimTK::RowVector_<SimTK::Vec5> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != 5, 
+                         IncorrectNumTokens,
+                         "Expected 5x (multiple of 5) number of tokens.");
+        elems[i] = SimTK::Vec5{std::stod(comps[0]),
+                               std::stod(comps[1]),
+                               std::stod(comps[2]),
+			       std::stod(comps[3]),
+			       std::stod(comps[4])};
         
     }
 
@@ -388,6 +482,45 @@ DelimFileAdapter<SimTK::Vec6>::readElems(
                                std::stod(comps[3]),
                                std::stod(comps[4]),
                                std::stod(comps[5])};
+        
+    }
+
+    return elems;
+}
+
+template<>
+inline SimTK::RowVector_<SimTK::UnitVec3>
+DelimFileAdapter<SimTK::UnitVec3>::readElems(
+                                 const std::vector<std::string>& tokens) const {
+    SimTK::RowVector_<SimTK::UnitVec3> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != 3, 
+                         IncorrectNumTokens,
+                         "Expected 3x (multiple of 3) number of tokens.");
+        elems[i] = SimTK::UnitVec3{std::stod(comps[0]),
+				   std::stod(comps[1]),
+				   std::stod(comps[2])};
+        
+    }
+
+    return elems;
+}
+
+template<>
+inline SimTK::RowVector_<SimTK::Quaternion>
+DelimFileAdapter<SimTK::Quaternion>::readElems(
+                                 const std::vector<std::string>& tokens) const {
+    SimTK::RowVector_<SimTK::Quaternion> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != 4, 
+                         IncorrectNumTokens,
+                         "Expected 4x (multiple of 4) number of tokens.");
+        elems[i] = SimTK::Quaternion{std::stod(comps[0]),
+				     std::stod(comps[1]),
+				     std::stod(comps[2]),
+				     std::stod(comps[3])};
         
     }
 
@@ -529,12 +662,41 @@ DelimFileAdapter<double>::writeElem(std::ostream& stream,
 
 template<>
 inline void 
+DelimFileAdapter<SimTK::Vec2>::writeElem(std::ostream& stream,
+                                         const SimTK::Vec2& elem,
+                                         const unsigned& prec) const {
+    stream                    << std::setprecision(prec) << elem[0]
+           << _compDelimWrite << std::setprecision(prec) << elem[1];
+}
+
+template<>
+inline void 
 DelimFileAdapter<SimTK::Vec3>::writeElem(std::ostream& stream,
                                          const SimTK::Vec3& elem,
                                          const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0]
+    stream                    << std::setprecision(prec) << elem[0]
            << _compDelimWrite << std::setprecision(prec) << elem[1]
            << _compDelimWrite << std::setprecision(prec) << elem[2];
+}
+
+template<>
+inline void 
+DelimFileAdapter<SimTK::Vec4>::writeElem(std::ostream& stream,
+                                         const SimTK::Vec4& elem,
+                                         const unsigned& prec) const {
+    stream << std::setprecision(prec) << elem[0];
+    for(auto i = 1u; i < 4; ++i)
+        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
+}
+
+template<>
+inline void 
+DelimFileAdapter<SimTK::Vec5>::writeElem(std::ostream& stream,
+                                         const SimTK::Vec5& elem,
+                                         const unsigned& prec) const {
+    stream << std::setprecision(prec) << elem[0];
+    for(auto i = 1u; i < 5; ++i)
+        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
 }
 
 template<>
@@ -549,10 +711,30 @@ DelimFileAdapter<SimTK::Vec6>::writeElem(std::ostream& stream,
 
 template<>
 inline void 
+DelimFileAdapter<SimTK::UnitVec3>::writeElem(std::ostream& stream,
+					     const SimTK::UnitVec3& elem,
+					     const unsigned& prec) const {
+    stream                    << std::setprecision(prec) << elem[0]
+           << _compDelimWrite << std::setprecision(prec) << elem[1]
+	   << _compDelimWrite << std::setprecision(prec) << elem[2];
+}
+
+template<>
+inline void 
+DelimFileAdapter<SimTK::Quaternion>::writeElem(std::ostream& stream,
+                                              const SimTK::Quaternion& elem,
+					       const unsigned& prec) const {
+    stream << std::setprecision(prec) << elem[0];
+    for(auto i = 1u; i < 4; ++i)
+        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
+}
+
+template<>
+inline void 
 DelimFileAdapter<SimTK::SpatialVec>::writeElem(std::ostream& stream,
                                                const SimTK::SpatialVec& elem,
                                                const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0][0]
+    stream                    << std::setprecision(prec) << elem[0][0]
            << _compDelimWrite << std::setprecision(prec) << elem[0][1]
            << _compDelimWrite << std::setprecision(prec) << elem[0][2]
            << _compDelimWrite << std::setprecision(prec) << elem[1][0]

@@ -23,10 +23,20 @@ createSTOFileAdapterForReading(const std::string& fileName) {
 
                 if(value == "double")
                     return std::make_shared<STOFileAdapter_<double>>();
+                else if(value == "Vec2")
+                    return std::make_shared<STOFileAdapter_<Vec2>>();
                 else if(value == "Vec3")
                     return std::make_shared<STOFileAdapter_<Vec3>>();
+                else if(value == "Vec4")
+                    return std::make_shared<STOFileAdapter_<Vec4>>();
+                else if(value == "Vec5")
+                    return std::make_shared<STOFileAdapter_<Vec5>>();
                 else if(value == "Vec6")
                     return std::make_shared<STOFileAdapter_<Vec6>>();
+                else if(value == "UnitVec3")
+                    return std::make_shared<STOFileAdapter_<UnitVec3>>();
+                else if(value == "Quaternion")
+                    return std::make_shared<STOFileAdapter_<Quaternion>>();
                 else if(value == "SpatialVec")
                     return std::make_shared<STOFileAdapter_<SpatialVec>>();
                 else {
@@ -51,14 +61,39 @@ createSTOFileAdapterForWriting(const DataAdapter::InputTables& absTables) {
         return std::make_shared<STOFileAdapter_<double>>();
     } catch(const std::bad_cast&) {}
     try {
+        using Table = const TimeSeriesTable_<Vec2>;
+        auto table = dynamic_cast<Table&>(absTable);
+        return std::make_shared<STOFileAdapter_<Vec2>>();
+    } catch(const std::bad_cast&) {}
+    try {
         using Table = const TimeSeriesTable_<Vec3>;
         auto table = dynamic_cast<Table&>(absTable);
         return std::make_shared<STOFileAdapter_<Vec3>>();
     } catch(const std::bad_cast&) {}
     try {
+        using Table = const TimeSeriesTable_<Vec4>;
+        auto table = dynamic_cast<Table&>(absTable);
+        return std::make_shared<STOFileAdapter_<Vec4>>();
+    } catch(const std::bad_cast&) {}
+    try {
+        using Table = const TimeSeriesTable_<Vec5>;
+        auto table = dynamic_cast<Table&>(absTable);
+        return std::make_shared<STOFileAdapter_<Vec5>>();
+    } catch(const std::bad_cast&) {}
+    try {
         using Table = const TimeSeriesTable_<Vec6>;
         auto table = dynamic_cast<Table&>(absTable);
         return std::make_shared<STOFileAdapter_<Vec6>>();
+    } catch(const std::bad_cast&) {}
+    try {
+        using Table = const TimeSeriesTable_<UnitVec3>;
+        auto table = dynamic_cast<Table&>(absTable);
+        return std::make_shared<STOFileAdapter_<UnitVec3>>();
+    } catch(const std::bad_cast&) {}
+    try {
+        using Table = const TimeSeriesTable_<Quaternion>;
+        auto table = dynamic_cast<Table&>(absTable);
+        return std::make_shared<STOFileAdapter_<Quaternion>>();
     } catch(const std::bad_cast&) {}
     try {
         using Table = const TimeSeriesTable_<SpatialVec>;
