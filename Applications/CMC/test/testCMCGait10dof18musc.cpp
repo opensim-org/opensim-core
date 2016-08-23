@@ -86,6 +86,5 @@ void testGait10dof18musc() {
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait10dof18musc failed");
 
-    
-    cout << "\ntestGait10dof18musc "+muscleType+" passed\n" << endl;
+    cout << "\ntestGait10dof18musc "+ muscleType +" passed\n" << endl;
 }
