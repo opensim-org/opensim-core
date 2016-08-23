@@ -72,7 +72,7 @@ void CoordinateSet::populate(Model& model)
     setMemoryOwner(false);
     setSize(0);
 
-    auto& joints = model.updComponentList<Joint>();
+    auto joints = model.updComponentList<Joint>();
 
     for(Joint& joint : joints) {
         CoordinateSet& coords = joint.upd_CoordinateSet();
