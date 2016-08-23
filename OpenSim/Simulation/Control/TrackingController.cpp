@@ -26,6 +26,7 @@
 //=============================================================================
 #include "TrackingController.h"
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Common/Storage.h>
 
 //=============================================================================
 // STATICS
