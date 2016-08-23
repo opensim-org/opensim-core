@@ -47,7 +47,7 @@ const static double refControls[ARM26_DESIGN_SPACE_DIM]
 
 
 void changeVersionNumber(const std::string& filenameOld,
-			 const std::string& filenameNew);
+                         const std::string& filenameNew);
 
 int main()
 {
@@ -105,7 +105,7 @@ int main()
 
 // Change version number of the file to 1 so that Storage can read it.
 void changeVersionNumber(const std::string& filenameOld,
-			 const std::string& filenameNew) {
+                         const std::string& filenameNew) {
   std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
   std::ifstream fileOld{filenameOld};
   std::ofstream fileNew{filenameNew};

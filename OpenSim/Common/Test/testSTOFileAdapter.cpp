@@ -54,7 +54,7 @@ void testFailed(const std::string& filename,
 
     throw Exception{"Test failed: Original and copied STO files do not match. "
                     "Filename = '" + filename + "'. "
-	            "Expected token = " + origtoken + ". "
+                    "Expected token = " + origtoken + ". "
                     "Copied token = " + copiedtoken + "."};
 }
 
@@ -77,10 +77,10 @@ void compareHeaders(std::ifstream& filenameA,
         if(line.find("DataType") != std::string::npos)
             continue;
 
-	// Ignore the key-value pair specifying the version number. Old files
-	// will have older version number.
-	if(line.find("version") != std::string::npos)
-	  continue;
+        // Ignore the key-value pair specifying the version number. Old files
+        // will have older version number.
+        if(line.find("version") != std::string::npos)
+          continue;
 
         headerA.insert(line);
     }
@@ -96,10 +96,10 @@ void compareHeaders(std::ifstream& filenameA,
         if(line.find("DataType") != std::string::npos)
             continue;
 
-	// Ignore the key-value pair specifying the version number. Old files
-	// will have older version number.
-	if(line.find("version") != std::string::npos)
-	  continue;
+        // Ignore the key-value pair specifying the version number. Old files
+        // will have older version number.
+        if(line.find("version") != std::string::npos)
+          continue;
 
         headerB.insert(line);
     }
@@ -188,7 +188,7 @@ int main() {
     using namespace OpenSim;
 
     std::cout << "Testing reading/writing STOFileAdapter_<double>"
-	      << std::endl;
+              << std::endl;
     std::vector<std::string> filenames{};
     filenames.push_back("std_subject01_walk1_ik.mot");
     filenames.push_back("gait10dof18musc_subject01_walk_grf.mot");
@@ -221,28 +221,28 @@ int main() {
     std::remove(tmpfile.c_str());
 
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec2>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Vec2>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec3>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Vec3>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec4>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Vec4>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec5>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Vec5>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec6>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Vec6>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::UnitVec3>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::UnitVec3>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Quaternion>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::Quaternion>();
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::SpatialVec>"
-	      << std::endl;
+              << std::endl;
     testReadingWriting<SimTK::SpatialVec>();
 
     return 0;

@@ -132,7 +132,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
     if(_fileVersion > 1)
       throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
-	              ") not supported. Use STOFileAdapter instead."};
+                      ") not supported. Use STOFileAdapter instead."};
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();

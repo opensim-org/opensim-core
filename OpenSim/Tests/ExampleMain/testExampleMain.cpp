@@ -33,7 +33,7 @@ using namespace OpenSim;
 using namespace std;
 
 void changeVersionNumber(const std::string& filenameOld,
-			 const std::string& filenameNew);
+                         const std::string& filenameNew);
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
         const std::string result1FilenameV2{"tugOfWar_states_v2.sto"};
         changeVersionNumber(result1Filename, result1FilenameV2);
         Storage result1(result1FilenameV2), 
-	        standard1("std_tugOfWar_states.sto");
+                standard1("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
                                        Array<double>(0.1, 16), 
                                        __FILE__, 
@@ -77,7 +77,7 @@ int main()
 
 // Change version number of the file to 1 so that Storage can read it.
 void changeVersionNumber(const std::string& filenameOld,
-			 const std::string& filenameNew) {
+                         const std::string& filenameNew) {
   std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
   std::ifstream fileOld{filenameOld};
   std::ofstream fileNew{filenameNew};

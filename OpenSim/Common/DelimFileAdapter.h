@@ -69,18 +69,18 @@ line.                                                                         */
 template<typename T>
 class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
     static_assert(std::is_same<T, double           >::value ||
-		  std::is_same<T, SimTK::Vec2      >::value ||
+                  std::is_same<T, SimTK::Vec2      >::value ||
                   std::is_same<T, SimTK::Vec3      >::value ||
                   std::is_same<T, SimTK::Vec4      >::value ||
                   std::is_same<T, SimTK::Vec5      >::value ||
                   std::is_same<T, SimTK::Vec6      >::value ||
-		  std::is_same<T, SimTK::UnitVec3  >::value ||
-		  std::is_same<T, SimTK::Quaternion>::value ||  
+                  std::is_same<T, SimTK::UnitVec3  >::value ||
+                  std::is_same<T, SimTK::Quaternion>::value ||  
                   std::is_same<T, SimTK::SpatialVec>::value,
                   "Template argument T must be one of the following types : "
                   "double, SimTK::Vec2, SimTK::Vec3, SimTK::Vec4, SimTK::Vec5, "
-		  "SimTK::Vec6, SimTK::UnitVec, SimTK::Quaternion, "
-		  "SimTK::SpatialVec");
+                  "SimTK::Vec6, SimTK::UnitVec, SimTK::Quaternion, "
+                  "SimTK::SpatialVec");
 public:
     DelimFileAdapter()                                   = delete;
     DelimFileAdapter(const DelimFileAdapter&)            = default;
@@ -233,7 +233,7 @@ DelimFileAdapter<T>::_versionNumber{"2"};
 template<typename T>
 std::string
 DelimFileAdapter<T>::trim(const std::string& str,
-			  const char& ch) {
+                          const char& ch) {
   auto begin = str.find_first_not_of(ch);
   if(begin == std::string::npos)
     return std::string{};
@@ -297,21 +297,21 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             auto key = matchRes[1].str();
             auto value = matchRes[2].str();
             if(!key.empty() && !value.empty()) {
-	      const auto trimmed_key = trim(key);
-	      if(trimmed_key == _dataTypeString) {
+              const auto trimmed_key = trim(key);
+              if(trimmed_key == _dataTypeString) {
                 // Discard key-value pair specifying datatype. Datatype is 
                 // known at this point.
                     OPENSIM_THROW_IF(value != dataTypeName(),
                                      DataTypeMismatch,
                                      dataTypeName(),
                                      value);
-	      } else if(trimmed_key == _versionString) {
-		// Discard version number. Version number is added during
-		// writing. 
-	      } else {
-		table->updTableMetaData().setValueForKey(key, value);
-	      }
-	      continue;
+              } else if(trimmed_key == _versionString) {
+                // Discard version number. Version number is added during
+                // writing. 
+              } else {
+                table->updTableMetaData().setValueForKey(key, value);
+              }
+              continue;
             }
         }
 
@@ -392,15 +392,15 @@ DelimFileAdapter<double>::readElems(
 template<>
 inline SimTK::RowVector_<SimTK::Vec2>
 DelimFileAdapter<SimTK::Vec2>::readElems(
-				 const std::vector<std::string>& tokens) const {
+                                 const std::vector<std::string>& tokens) const {
     SimTK::RowVector_<SimTK::Vec2> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i) {
         auto comps = tokenize(tokens[i], _compDelimRead);
         OPENSIM_THROW_IF(comps.size() != 2,
-    		         IncorrectNumTokens,
-		         "Expected 2x (multiple of 2) number of tokens.");
+                         IncorrectNumTokens,
+                         "Expected 2x (multiple of 2) number of tokens.");
         elems[i] = SimTK::Vec2{std::stod(comps[0]),
-  			       std::stod(comps[1])};
+                               std::stod(comps[1])};
     }
 
     return elems;
@@ -438,7 +438,7 @@ DelimFileAdapter<SimTK::Vec4>::readElems(
         elems[i] = SimTK::Vec4{std::stod(comps[0]),
                                std::stod(comps[1]),
                                std::stod(comps[2]),
-			       std::stod(comps[3])};
+                               std::stod(comps[3])};
         
     }
 
@@ -458,8 +458,8 @@ DelimFileAdapter<SimTK::Vec5>::readElems(
         elems[i] = SimTK::Vec5{std::stod(comps[0]),
                                std::stod(comps[1]),
                                std::stod(comps[2]),
-			       std::stod(comps[3]),
-			       std::stod(comps[4])};
+                               std::stod(comps[3]),
+                               std::stod(comps[4])};
         
     }
 
@@ -499,8 +499,8 @@ DelimFileAdapter<SimTK::UnitVec3>::readElems(
                          IncorrectNumTokens,
                          "Expected 3x (multiple of 3) number of tokens.");
         elems[i] = SimTK::UnitVec3{std::stod(comps[0]),
-				   std::stod(comps[1]),
-				   std::stod(comps[2])};
+                                   std::stod(comps[1]),
+                                   std::stod(comps[2])};
         
     }
 
@@ -518,9 +518,9 @@ DelimFileAdapter<SimTK::Quaternion>::readElems(
                          IncorrectNumTokens,
                          "Expected 4x (multiple of 4) number of tokens.");
         elems[i] = SimTK::Quaternion{std::stod(comps[0]),
-				     std::stod(comps[1]),
-				     std::stod(comps[2]),
-				     std::stod(comps[3])};
+                                     std::stod(comps[1]),
+                                     std::stod(comps[2]),
+                                     std::stod(comps[3])};
         
     }
 
@@ -712,18 +712,18 @@ DelimFileAdapter<SimTK::Vec6>::writeElem(std::ostream& stream,
 template<>
 inline void 
 DelimFileAdapter<SimTK::UnitVec3>::writeElem(std::ostream& stream,
-					     const SimTK::UnitVec3& elem,
-					     const unsigned& prec) const {
+                                             const SimTK::UnitVec3& elem,
+                                             const unsigned& prec) const {
     stream                    << std::setprecision(prec) << elem[0]
            << _compDelimWrite << std::setprecision(prec) << elem[1]
-	   << _compDelimWrite << std::setprecision(prec) << elem[2];
+           << _compDelimWrite << std::setprecision(prec) << elem[2];
 }
 
 template<>
 inline void 
 DelimFileAdapter<SimTK::Quaternion>::writeElem(std::ostream& stream,
                                               const SimTK::Quaternion& elem,
-					       const unsigned& prec) const {
+                                               const unsigned& prec) const {
     stream << std::setprecision(prec) << elem[0];
     for(auto i = 1u; i < 4; ++i)
         stream << _compDelimWrite << std::setprecision(prec) << elem[i];
