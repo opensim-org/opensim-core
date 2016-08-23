@@ -52,10 +52,10 @@ void testFailed(const std::string& filename,
                 const std::string& copiedtoken) {
     using namespace OpenSim;
 
-    throw Exception{"Test failed: Original and copied TRC files do not match. "
-            "Filename = '" + filename + "'. "
-            "Expected token = " + origtoken + ". "
-            "Copied token = " + copiedtoken + "."};
+    throw Exception{"Test failed: Original and copied STO files do not match. "
+                    "Filename = '" + filename + "'. "
+	            "Expected token = " + origtoken + ". "
+                    "Copied token = " + copiedtoken + "."};
 }
 
 void compareHeaders(std::ifstream& filenameA,
@@ -141,9 +141,54 @@ void compareFiles(const std::string& filenameA,
     }
 }
 
+template<typename T>
+T createObject() {
+    static double init{0};
+    T elem{};
+    for(auto i = 0u; i < elem.size(); ++i)
+        elem[i] = init++;
+  
+  return elem;
+}
+
+template<>
+SimTK::UnitVec3 createObject<SimTK::UnitVec3>() {
+   return {0, 0, 0};
+}
+
+template<>
+SimTK::Quaternion createObject<SimTK::Quaternion>() {
+    return {0, 0, 0, 0};
+}
+
+template<typename T>
+void testReadingWriting() {
+    using namespace OpenSim;
+  
+    std::string fileA{"testSTOFileAdapter_A.sto"};
+    std::string fileB{"testSTOFileAdapter_B.sto"};
+    TimeSeriesTable_<T> table{};
+    table.setColumnLabels({"c0", "c1", "c2"});
+    for(auto t = 0; t < 10; ++t) {
+        auto elem = createObject<T>();
+        table.appendRow(t, {elem, elem, elem});
+    }
+    STOFileAdapter_<T>::write(table, fileA);
+    auto table_copy = STOFileAdapter_<T>::read(fileA);
+    auto table_ptr = FileAdapter::readFile(fileA).at("table");
+    DataAdapter::InputTables inputTables{};
+    inputTables.emplace(std::string{"table"}, table_ptr.get());
+    FileAdapter::writeFile(inputTables, fileB);
+    compareFiles(fileA, fileB);
+    std::remove(fileA.c_str());
+    std::remove(fileB.c_str());
+}
+
 int main() {
     using namespace OpenSim;
 
+    std::cout << "Testing reading/writing STOFileAdapter_<double>"
+	      << std::endl;
     std::vector<std::string> filenames{};
     filenames.push_back("std_subject01_walk1_ik.mot");
     filenames.push_back("gait10dof18musc_subject01_walk_grf.mot");
@@ -175,71 +220,30 @@ int main() {
 
     std::remove(tmpfile.c_str());
 
-    // Test reading/writing -- STOFileAdapter_<SimTK::Vec3>.
-    {
-    std::string fileA{"testSTOFileAdapter_A.sto"};
-    std::string fileB{"testSTOFileAdapter_B.sto"};
-    TimeSeriesTable_<SimTK::Vec3> tableVec3{};
-    SimTK::Vec3 elem{0, 1, 2};
-    tableVec3.setColumnLabels({"c0", "c1", "c2"});
-    for(auto t = 0; t < 10; ++t) {
-        elem += 1;
-        tableVec3.appendRow(t, {elem, elem, elem});
-    }
-    STOFileAdapter_<SimTK::Vec3>::write(tableVec3, fileA);
-    auto tableVec3_copy = STOFileAdapter_<SimTK::Vec3>::read(fileA);
-    auto tableVec3_ptr = FileAdapter::readFile(fileA).at("table");
-    DataAdapter::InputTables inputTables{};
-    inputTables.emplace(std::string{"table"}, tableVec3_ptr.get());
-    FileAdapter::writeFile(inputTables, fileB);
-    compareFiles(fileA, fileB);
-    std::remove(fileA.c_str());
-    std::remove(fileB.c_str());
-    }
-
-    // Test reading/writing -- STOFileAdapter<SimTK::Vec6>.
-    {
-    std::string fileA{"testSTOFileAdapter_A.sto"};
-    std::string fileB{"testSTOFileAdapter_B.sto"};
-    TimeSeriesTable_<SimTK::Vec6> tableVec6{};
-    SimTK::Vec6 elem{0, 1, 2, 3, 4, 5};
-    tableVec6.setColumnLabels({"c0", "c1", "c2"});
-    for(auto t = 0; t < 10; ++t) {
-        elem += 1;
-        tableVec6.appendRow(t, {elem, elem, elem});
-    }
-    STOFileAdapter_<SimTK::Vec6>::write(tableVec6, fileA);
-    auto tableVec6_copy = STOFileAdapter_<SimTK::Vec6>::read(fileA);
-    auto tableVec6_ptr = FileAdapter::readFile(fileA).at("table");
-    DataAdapter::InputTables inputTables{};
-    inputTables.emplace(std::string{"table"}, tableVec6_ptr.get());
-    FileAdapter::writeFile(inputTables, fileB);
-    compareFiles(fileA, fileB);
-    std::remove(fileA.c_str());
-    std::remove(fileB.c_str());
-    }
-
-    // Test reading/writing -- STOFileAdapter<SimTK::SpatialVec>.
-    {
-    std::string fileA{"testSTOFileAdapter_A.sto"};
-    std::string fileB{"testSTOFileAdapter_B.sto"};
-    TimeSeriesTable_<SimTK::SpatialVec> tableSpatialVec{};
-    SimTK::SpatialVec elem{{0, 1, 2}, {3, 4, 5}};
-    tableSpatialVec.setColumnLabels({"c0", "c1", "c2"});
-    for(auto t = 0; t < 10; ++t) {
-        elem += 1;
-        tableSpatialVec.appendRow(t, {elem, elem, elem});
-    }
-    STOFileAdapter_<SimTK::SpatialVec>::write(tableSpatialVec, fileA);
-    auto tableSpatialVec_copy = STOFileAdapter_<SimTK::SpatialVec>::read(fileA);
-    auto tableSpatialVec_ptr = FileAdapter::readFile(fileA).at("table");
-    DataAdapter::InputTables inputTables{};
-    inputTables.emplace(std::string{"table"}, tableSpatialVec_ptr.get());
-    FileAdapter::writeFile(inputTables, fileB);
-    compareFiles(fileA, fileB);
-    std::remove(fileA.c_str());
-    std::remove(fileB.c_str());
-    }
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec2>"
+	      << std::endl;
+    testReadingWriting<SimTK::Vec2>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec3>"
+	      << std::endl;
+    testReadingWriting<SimTK::Vec3>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec4>"
+	      << std::endl;
+    testReadingWriting<SimTK::Vec4>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec5>"
+	      << std::endl;
+    testReadingWriting<SimTK::Vec5>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec6>"
+	      << std::endl;
+    testReadingWriting<SimTK::Vec6>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::UnitVec3>"
+	      << std::endl;
+    testReadingWriting<SimTK::UnitVec3>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Quaternion>"
+	      << std::endl;
+    testReadingWriting<SimTK::Quaternion>();
+    std::cout << "Testing reading/writing STOFileAdapter_<SimTK::SpatialVec>"
+	      << std::endl;
+    testReadingWriting<SimTK::SpatialVec>();
 
     return 0;
 }
