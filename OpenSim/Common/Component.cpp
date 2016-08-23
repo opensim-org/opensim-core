@@ -23,8 +23,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include "OpenSim/Common/Component.h"
-#include "OpenSim/Common/Set.h"
+#include "Component.h"
 #include "OpenSim/Common/IO.h"
 
 using namespace SimTK;
@@ -200,7 +199,8 @@ void Component::componentsFinalizeFromProperties() const
             ->finalizeFromProperties();
     }
     for (auto& comp : _propertySubcomponents) {
-        comp->finalizeFromProperties();
+        const_cast<Component*>(comp.get())
+            ->finalizeFromProperties();
     }
     for (auto& comp : _adoptedSubcomponents) {
         const_cast<Component*>(comp.get())
@@ -565,6 +565,9 @@ unsigned Component::printComponentsMatching(const std::string& substring) const
 
 int Component::getNumStateVariables() const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     //Get the number of state variables added (or exposed) by this Component
     int ns = getNumStateVariablesAddedByComponent(); 
     // And then include the states of its subcomponents
@@ -695,34 +698,12 @@ std::string Component::getRelativePathName(const Component& wrt) const
     return prefix + stri;
 }
 
-const AbstractConnector* Component::findConnector(const std::string& name) const
-{
-    const AbstractConnector* found = nullptr;
-
-    std::map<std::string, int>::const_iterator it;
-    it = _connectorsTable.find(name);
-
-    if (it != _connectorsTable.end()) {
-        const AbstractConnector& absConnector = get_connectors(it->second);
-        found = &absConnector;
-    }
-    else {
-        std::string::size_type back = name.rfind("/");
-        std::string prefix = name.substr(0, back);
-        std::string conName = name.substr(back + 1, name.length() - back);
-
-        const Component* component = findComponent(prefix);
-        if (component){
-            found = component->findConnector(conName);
-        }
-    }
-    return found;
-}
-
-
 const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // first assume that the state variable named belongs to this
     // top level component
     std::string::size_type back = name.rfind("/");
@@ -764,6 +745,9 @@ const Component::StateVariable* Component::
 // its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     Array<std::string> names = getStateVariablesNamesAddedByComponent();
 
 /** TODO: Use component iterator  like below
@@ -832,6 +816,9 @@ Array<std::string> Component::getStateVariableNames() const
 double Component::
     getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // find the state variable with this component or its subcomponents
     const StateVariable* rsv = findStateVariable(name);
     if (rsv) {
@@ -851,6 +838,9 @@ double Component::
     getStateVariableDerivativeValue(const SimTK::State& state, 
                                 const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     computeStateVariableDerivatives(state);
     
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -881,6 +871,9 @@ double Component::
 void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     // find the state variable
     const StateVariable* rsv = findStateVariable(name);
 
@@ -928,6 +921,9 @@ bool Component::isAllStatesVariablesListValid() const
 SimTK::Vector Component::
     getStateVariableValues(const SimTK::State& state) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     int nsv = getNumStateVariables();
     // if the StateVariables are invalid (see above) rebuild the list
     if (!isAllStatesVariablesListValid()) {
@@ -952,6 +948,9 @@ SimTK::Vector Component::
 void Component::
     setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     int nsv = getNumStateVariables();
 
     SimTK_ASSERT(values.size() == nsv,
@@ -999,6 +998,9 @@ void Component::
 double Component::
 getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
 
@@ -1021,6 +1023,9 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 void Component::
 setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
+    // Must have already called initSystem.
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
 
@@ -1059,14 +1064,14 @@ void Component::markPropertiesAsSubcomponents()
     // Now mark properties that are Components as subcomponents
     //loop over all its properties
     for (int i = 0; i < getNumProperties(); ++i) {
-        auto& prop = updPropertyByIndex(i);
+        auto& prop = getPropertyByIndex(i);
         // check if property is of type Object
         if (prop.isObjectProperty()) {
             // a property is a list so cycle through its contents
             for (int j = 0; j < prop.size(); ++j) {
-                Object& obj = prop.updValueAsObject(j);
+                const Object& obj = prop.getValueAsObject(j);
                 // if the object is a Component mark it
-                if (Component* comp = dynamic_cast<Component*>(&obj) ) {
+                if (const Component* comp = dynamic_cast<const Component*>(&obj) ) {
                     markAsPropertySubcomponent(comp);
                 }
                 else {
@@ -1081,12 +1086,12 @@ void Component::markPropertiesAsSubcomponents()
                     std::string objType = obj.getConcreteClassName();
                     if (obj.hasProperty("objects")) {
                         // get the PropertyObjArray if the object has one
-                        auto& objectsProp = obj.updPropertyByName("objects");
+                        auto& objectsProp = obj.getPropertyByName("objects");
                         // loop over the objects in the PropertyObjArray
                         for (int k = 0; k < objectsProp.size(); ++k) {
-                            Object& obj = objectsProp.updValueAsObject(k);
+                            const Object& obj = objectsProp.getValueAsObject(k);
                             // if the object is a Component mark it
-                            if (Component* comp = dynamic_cast<Component*>(&obj) )
+                            if (const Component* comp = dynamic_cast<const Component*>(&obj) )
                                 markAsPropertySubcomponent(comp);
                         } // loop over objects and mark it if it is a component
                     } // end if property is a Set with "objects" inside
@@ -1098,31 +1103,28 @@ void Component::markPropertiesAsSubcomponents()
 
 // mark a Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::markAsPropertySubcomponent(Component* component)
+void Component::markAsPropertySubcomponent(const Component* component)
 {
     // Only add if the component is not already a part of this Component
-    // So, add if empty
-    SimTK::ReferencePtr<Component> compRef(component);
-    if (_propertySubcomponents.empty() ){
-        _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
+    SimTK::ReferencePtr<Component> compRef(const_cast<Component*>(component));
+    auto it =
+        std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
+    if ( it == _propertySubcomponents.end() ){
+        // Must reconstruct the reference pointer in place in order
+        // to invoke move constuctor from SimTK::Array::push_back 
+        // otherwise it will copy and reset the Component pointer to null.
+        _propertySubcomponents.push_back(
+            SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
-    else{ //otherwise check that it isn't a part of the component already
-        auto it =
-            std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
-        if ( it == _propertySubcomponents.end() ){
-            _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
-        }
-        else{
-            auto compPath = component->getFullPathName();
-            auto foundPath = it->get()->getFullPathName();
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                           component->getName(), getName());
-        }
+    else{
+        auto compPath = component->getFullPathName();
+        auto foundPath = it->get()->getFullPathName();
+        OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                       component->getName(), getName());
     }
 
-    component->setParent(*this);
+    compRef->setParent(*this);
 }
-
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.

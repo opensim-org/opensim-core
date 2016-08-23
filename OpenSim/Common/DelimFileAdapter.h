@@ -22,6 +22,8 @@
 #ifndef OPENSIM_DELIM_FILE_ADAPTER_H_
 #define OPENSIM_DELIM_FILE_ADAPTER_H_
 
+#include "SimTKcommon.h"
+
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 

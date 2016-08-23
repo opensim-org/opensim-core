@@ -30,43 +30,34 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlLinearNode.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 
 #include "SimTKcommon/internal/SystemGuts.h"
 
 #include "Model.h"
 
-#include "Muscle.h"
-#include "Ligament.h"
-#include "CoordinateSet.h"
-#include "FrameSet.h"
-#include "BodySet.h"
-#include "AnalysisSet.h"
-#include "ForceSet.h"
-#include "ControllerSet.h"
-#include "Analysis.h"
-#include "ForceAdapter.h"
 #include "Actuator.h"
-#include "MarkerSet.h"
-#include "ContactGeometrySet.h"
-#include "ProbeSet.h"
+#include "AnalysisSet.h"
+#include "BodySet.h"
 #include "ComponentSet.h"
+#include "ContactGeometrySet.h"
+#include "ControllerSet.h"
+#include "CoordinateSet.h"
+#include "ForceSet.h"
+#include "FrameSet.h"
+#include "Ligament.h"
+#include "MarkerSet.h"
+#include "ProbeSet.h"
+
 #include <iostream>
 #include <string>
-#include <cmath>
+
+#include <OpenSim/Simulation/AssemblySolver.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -175,12 +166,16 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     }
 
                     SimTK::Xml::element_iterator visObjIter = bodyIter->element_begin("VisibleObject");
-                    SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
-                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+                    if (visObjIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+                    }
 
                     SimTK::Xml::element_iterator wrapSetIter = bodyIter->element_begin("WrapObjectSet");
-                    SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
-                    newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+                    if (wrapSetIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+                    }
 
                     String test;
                     newGroundElement.writeToString(test);

@@ -95,13 +95,6 @@ void test(const std::string filename) {
 
 int main() {
     std::vector<std::string> filenames{};
-    filenames.push_back("jogging.c3d");
-    filenames.push_back("singleLeglanding_2.c3d");
-    filenames.push_back("aStaticTrial_2.c3d");
-    filenames.push_back("aStaticTrial.c3d");
-    filenames.push_back("doubleLegLanding.c3d");
-    filenames.push_back("sideCutting.c3d");
-    filenames.push_back("singleLegLanding.c3d");
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
 

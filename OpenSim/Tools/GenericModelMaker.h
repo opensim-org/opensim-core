@@ -25,13 +25,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API

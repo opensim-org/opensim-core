@@ -30,7 +30,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
-#include "SimTKsimbody.h"
 
 
 #ifdef SWIG

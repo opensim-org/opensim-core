@@ -25,7 +25,6 @@
 
 
 // INCLUDES
-#include <string>
 #include "Function.h"
 #include "PropertyDbl.h"
 

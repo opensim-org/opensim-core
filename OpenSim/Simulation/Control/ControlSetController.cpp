@@ -33,7 +33,8 @@
 #include "ControlSetController.h"
 #include "ControlLinear.h"
 #include "ControlSet.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Common/Storage.h>
 
 
 //=============================================================================

@@ -25,9 +25,7 @@
 // C++ INCLUDES
 #include "PiecewiseConstantFunction.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
+#include "FunctionAdapter.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 

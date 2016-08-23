@@ -745,11 +745,12 @@ void testExport() {
     // Trying to export the trajectory with an incompatible model.
     {
         Model arm26("arm26.osim");
+        SimTK::State differentState = arm26.initSystem();
         SimTK_TEST_MUST_THROW_EXC(states.exportToTable(arm26),
                                   StatesTrajectory::IncompatibleModel);
     }
 
-    // Exception if given a non-existant column name.
+    // Exception if given a non-existent column name.
     SimTK_TEST_MUST_THROW_EXC(
             states.exportToTable(gait, {"knee_l/knee_angle_l/value",
                                         "not_an_actual_state",

@@ -24,6 +24,11 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
+#include <simbody/internal/GeneralForceSubsystem.h>
+#include <simbody/internal/Force.h>
+#include <simbody/internal/MobilizedBody_Pin.h>
+#include <simbody/internal/MobilizedBody_Ground.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -387,6 +392,44 @@ void testMisc() {
     TheWorld theWorld;
     theWorld.setName("World");
     theWorld.finalizeFromProperties();
+
+    // ComponentHasNoSystem exception should be thrown if user attempts to read
+    // or write state, discrete, or cache variables before Component has an
+    // underlying MultibodySystem.
+    {
+        SimTK::State sBlank;
+        const std::string varName = "waldo"; //dummy name
+
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValues(sBlank));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValues(sBlank, SimTK::Vector(1, 0.)));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableDerivativeValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getDiscreteVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setDiscreteVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setCacheVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.updCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableValid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableInvalid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.isCacheVariableValid(sBlank, varName));
+    }
 
     TheWorld* cloneWorld = theWorld.clone();
     cloneWorld->setName("ClonedWorld");
@@ -766,11 +809,12 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs to desired model outputs
-    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
-    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    // wire up table reporter inputs (using conveniece method) to desired 
+    // model outputs
+    tabReporter->updInput().connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput().connect(bar.getOutput("activation"));
+    tabReporter->updInput().connect(foo.getOutput("Output1"));
+    tabReporter->updInput().connect(bar.getOutput("PotentialEnergy"));
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -990,11 +1034,17 @@ void testInputOutputConnections()
 
     // do any other input/output connections
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
-    // Must throw an exception since subState0 is not a state of internalSub.
-    ASSERT_THROW(OpenSim::Exception, 
-        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
-    // internalSub's state is "subState"
-    foo2->updInput("input1").connect(world.getOutput("./internalSub/subState"));
+
+    // Test various exceptions for inputs, outputs, connectors
+    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(OutputNotFound, 
+        world.getComponent("./internalSub").getOutput("subState0"));
+    // Ensure that getOutput does not perform a "find"
+    ASSERT_THROW(OutputNotFound,
+        world.getOutput("./internalSub/subState"));
+
+    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
 
     foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
     foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
@@ -1161,8 +1211,8 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
     SimTK_END_TEST();
 }
-

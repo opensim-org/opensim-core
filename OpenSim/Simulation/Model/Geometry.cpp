@@ -24,14 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property.h>
-#include <OpenSim/Common/Component.h>
+#include <fstream>
 #include "Frame.h"
-#include "PhysicalFrame.h"
 #include "Geometry.h"
 #include "Model.h"
-#include "ModelVisualizer.h"
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -87,6 +83,8 @@ void Geometry::generateDecorations(bool fixed,
     if (!fixed && !getInput("transform").isConnected())
         return; 
     
+    if (!get_Appearance().get_visible()) return;
+
     SimTK::Array_<SimTK::DecorativeGeometry> decos;
     implementCreateDecorativeGeometry(decos);
     if (decos.size() == 0) return;

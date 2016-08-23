@@ -34,6 +34,9 @@
 #include <functional>
 #include <map>
 
+#include <SimTKcommon/internal/Stage.h>
+#include <SimTKcommon/internal/State.h>
+
 namespace OpenSim {
 
 class Component;

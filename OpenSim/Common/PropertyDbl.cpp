@@ -31,7 +31,7 @@
 //============================================================================
 #include "PropertyDbl.h"
 #include <cstdio>
-#include "SimTKmath.h"
+#include "SimTKcommon/Scalar.h"
 
 
 

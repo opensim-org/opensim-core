@@ -31,7 +31,6 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/PropertyDbl.h>
 
 //=============================================================================

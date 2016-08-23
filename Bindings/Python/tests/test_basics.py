@@ -56,6 +56,15 @@ class TestBasics(unittest.TestCase):
         assert cmc.getModel().getName() == 'eggplant'
         assert cmc.getAnalysisSet().get(0).getName() == 'strong'
 
+    def test_ManagerConstructorCreatesIntegrator(self):
+        # Make sure that the Manager is able to create a default integrator.
+        # This tests a bug fix: previously, it was impossible to use the
+        # Manager to integrate from MATLAB/Python, since it was not possible
+        # to provide an Integrator to the Manager.
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        state = model.initSystem()
 
-
-
+        manager = osim.Manager(model)
+        manager.setInitialTime(0)
+        manager.setFinalTime(0.00001)
+        manager.integrate(state)

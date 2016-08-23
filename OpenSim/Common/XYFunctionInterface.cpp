@@ -25,6 +25,15 @@
 // INCLUDES
 //=============================================================================
 #include "XYFunctionInterface.h"
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Common/PiecewiseConstantFunction.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
+#include <OpenSim/Common/SimmSpline.h>
+#include <OpenSim/Common/StepFunction.h>
 
 
 namespace OpenSim {

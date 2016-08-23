@@ -26,10 +26,10 @@
 //=============================================================================
 #include "CustomJoint.h"
 #include "SpatialTransform.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include "simbody/internal/MobilizedBody_FunctionBased.h"
 
 
 //=============================================================================
@@ -176,8 +176,9 @@ void CustomJoint::constructCoordinates()
         std::string coordName = spatialTransform.getCoordinateNames()[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = coordinateSet.getIndex(coordName);
-        if (coordIndex < 0){
-            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
+        if (coordIndex < 0) {
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined,
+                                             i);
         }
         Coordinate& coord = coordinateSet.get(coordIndex);
         coord.setName(coordName);

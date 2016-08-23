@@ -25,9 +25,6 @@
 // C++ INCLUDES
 #include "SimmSpline.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 #include "FunctionAdapter.h"

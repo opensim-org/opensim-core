@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimToolsDLL.h"
 #include <OpenSim/Common/Set.h>
 #include "MarkerPair.h"
 
