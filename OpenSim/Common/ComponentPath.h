@@ -36,7 +36,7 @@ namespace OpenSim {
 /**
 * A class for handling Paths for Components, deriving from Path. A ComponentPath
 * uses a forward-slash ('/') as a separator always. It also specifies invalid
-* characters in a Component name ("\\/.*+");
+* characters in a Component name ("\\/*+").
 *
 * @author Carmichael Ong
 */
@@ -46,7 +46,7 @@ class OSIMCOMMON_API ComponentPath : public Path {
 
 public:
     /// Constructors
-    ComponentPath() = delete;
+    ComponentPath() = default;
     ComponentPath(const std::string path);
     ComponentPath(std::vector<std::string> pathVec, bool isAbsolute);
 

@@ -92,11 +92,11 @@ std::string Path::getString()
 void Path::insertPathElement(size_t pos, const std::string pathElement) 
 {
     if (pos > getPathLength()) {
-        throw Exception("insertPathElement: pos must be between 0 and path length");
+        OPENSIM_THROW(Exception, "insertPathElement: pos must be between 0 and path length");
     }
 
     if (!isLegalPathElement(pathElement)) {
-        throw Exception("invalid character use");
+        OPENSIM_THROW(Exception, "invalid character used in path element");
     }
     _path.insert(_path.begin() + pos, pathElement);
 }
@@ -104,7 +104,7 @@ void Path::insertPathElement(size_t pos, const std::string pathElement)
 void Path::erasePathElement(size_t pos)
 {
     if (pos > getPathLength() - 1) {
-        throw Exception("erasePathElement: pos is out of range of elements");
+        OPENSIM_THROW(Exception, "erasePathElement: pos is out of range of elements");
     }
 
     _path.erase(_path.begin() + pos);
@@ -117,7 +117,7 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath)
     }
     
     if (!otherPath->_isAbsolute) {
-        throw Exception("otherPath is not an absolute path");
+        OPENSIM_THROW(Exception, "otherPath must be an absolute path");
     }
 
     std::vector<std::string> pathVec;
@@ -135,7 +135,7 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath)
 std::vector<std::string> Path::getRelativePathVec(Path* otherPath) 
 {
     if (!this->_isAbsolute || !otherPath->_isAbsolute) {
-        throw Exception("both paths must be absolute to find relative path");
+        OPENSIM_THROW(Exception, "getRelativePathVec: both paths must be absolute to find relative path");
     }
 
     size_t thisPathLength = this->getPathLength();
@@ -201,7 +201,7 @@ void Path::cleanPath()
     }
 
     if (!_path.empty() && _path[0] == ".." && _isAbsolute) {
-        throw Exception("absolute path cannot start with ''..''");
+        OPENSIM_THROW(Exception, "absolute path cannot start with ''..''");
     }
 }
 
@@ -216,7 +216,7 @@ bool Path::isLegalPathElement(const std::string pathElement)
 void Path::appendPathElement(const std::string pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        throw Exception("invalid character use");
+        OPENSIM_THROW(Exception, "invalid character used in path element");
     }
     _path.push_back(pathElement);
 }

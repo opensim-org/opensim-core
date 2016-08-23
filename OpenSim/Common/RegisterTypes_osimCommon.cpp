@@ -48,6 +48,8 @@
 
 #include "ModelDisplayHints.h"
 
+#include "ComponentPath.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -101,6 +103,8 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( ConsoleReporterVec3() );
 
     Object::registerType( ModelDisplayHints());
+
+    Object::registerType( ComponentPath() );
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a
     // natural cubic spline) to renamed SimmSpline class. Later we

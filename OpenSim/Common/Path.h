@@ -47,7 +47,7 @@ class OSIMCOMMON_API Path : public Object {
 
 public:
     /// Default constructor
-    Path() = delete;
+    Path() = default;
 
     /// Construct Path from a string, given separator character and a string
     /// of invalidChars. Performs a cleanPath() at the end of construction.
