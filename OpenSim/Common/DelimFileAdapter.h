@@ -118,6 +118,10 @@ protected:
                    const unsigned& prec) const;
 
 private:
+    /** Trim string -- remove specified leading and trailing characters from 
+    string. Trims out whitespace by default.                                  */
+    static std::string trim(const std::string& str, const char& ch = ' ');
+    
     /** Delimiters used for reading.                                          */
     const std::string _delimitersRead;
     /** Delimiter used for writing. Separates elements from each other.       */
@@ -132,6 +136,10 @@ private:
     static const std::string _timeColumnLabel;
     /** Key used to read/write data-type name.                                */
     static const std::string _dataTypeString;
+    /** Key used to read/write file version number.                           */
+    static const std::string _versionString;
+    /** File version number.                                                  */
+    static const std::string _versionNumber;
 };
 
 
@@ -174,6 +182,26 @@ DelimFileAdapter<T>::_timeColumnLabel{"time"};
 template<typename T>
 const std::string
 DelimFileAdapter<T>::_dataTypeString{"DataType"};
+
+template<typename T>
+const std::string
+DelimFileAdapter<T>::_versionString{"version"};
+
+template<typename T>
+const std::string
+DelimFileAdapter<T>::_versionNumber{"2"};
+
+template<typename T>
+std::string
+DelimFileAdapter<T>::trim(const std::string& str,
+			  const char& ch) {
+  auto begin = str.find_first_not_of(ch);
+  if(begin == std::string::npos)
+    return std::string{};
+
+  auto count = str.find_last_not_of(ch) - begin + 1;
+  return str.substr(begin, count);
+}
 
 template<typename T>
 DelimFileAdapter<T>::DelimFileAdapter(const std::string& delimitersRead,
@@ -230,17 +258,21 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             auto key = matchRes[1].str();
             auto value = matchRes[2].str();
             if(!key.empty() && !value.empty()) {
+	      const auto trimmed_key = trim(key);
+	      if(trimmed_key == _dataTypeString) {
                 // Discard key-value pair specifying datatype. Datatype is 
                 // known at this point.
-                if(key.find(_dataTypeString) != std::string::npos) {
                     OPENSIM_THROW_IF(value != dataTypeName(),
                                      DataTypeMismatch,
                                      dataTypeName(),
                                      value);
-                } else {
-                    table->updTableMetaData().setValueForKey(key, value);
-                }
-                continue;
+	      } else if(trimmed_key == _versionString) {
+		// Discard version number. Version number is added during
+		// writing. 
+	      } else {
+		table->updTableMetaData().setValueForKey(key, value);
+	      }
+	      continue;
             }
         }
 
@@ -441,7 +473,7 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
                       getTableMetaData().
                       getValueForKey("header").
                       template getValue<std::string>() << "\n";
-    } catch(KeyNotFound&) { 
+    } catch(KeyNotFound&) {
         // No operation. Continue with other keys in table metadata.
     }
     // Write rest of the key-value pairs and end the header.
@@ -455,7 +487,9 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
         } catch(const InvalidTemplateArgument&) {}
     }
     // Write name of the data-type -- vec3, vec6, etc.
-    out_stream << _dataTypeString << "=" <<  dataTypeName() << "\n";
+    out_stream << _dataTypeString << "=" << dataTypeName() << "\n";
+    // Write version number.
+    out_stream << _versionString << "=" << _versionNumber << "\n";
     out_stream << _endHeaderString << "\n";
 
     // Line containing column labels.
