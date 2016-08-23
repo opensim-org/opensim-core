@@ -137,7 +137,8 @@ Joint::Joint(const std::string &name,
 //=============================================================================
 // CONSTRUCTION Utility
 //=============================================================================
-Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
+Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
+                                                  unsigned idx)
 {
     Coordinate* coord = new Coordinate();
     coord->setName(getName() + "_coord_"
@@ -151,6 +152,10 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
                         _motionTypes.size(), 
                         "Joint::constructCoordinate() MotionTypes do not "
                         "correspond to coordinates");
+    SimTK_ASSERT_ALWAYS(static_cast<unsigned>(cix) == idx,
+                        "Joint::constructCoordinate() must be passed "
+                        "enumerations in the same order as the enumerations "
+                        "have been defined");
     return cix;
 }
 
@@ -207,6 +212,18 @@ const PhysicalFrame& Joint::getChildFrame() const
 const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
     return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+}
+
+const Coordinate& Joint::getCoordinate() const {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     JointHasNoCoordinates);
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Coordinate set has more than one coordinate. Use "
+                     "getCoordinate method defined in the concrete class "
+                     "instead.");
+
+    return get_CoordinateSet()[0];
 }
 
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
