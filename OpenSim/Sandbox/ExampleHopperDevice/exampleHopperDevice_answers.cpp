@@ -240,7 +240,7 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 } // namespace OpenSim
 
 
-void executeExample();
+void run();
 
 int main()
 {
