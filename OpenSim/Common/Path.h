@@ -93,7 +93,8 @@ public:
     void cleanPath();
 
     bool isAbsolute() { return _isAbsolute; };
-    std::string getPathName() { return _path[getPathLength() - 1]; };
+
+    size_t getPathLength() const { return _path.size(); };
 
 protected:
     /// Default constructor
@@ -116,13 +117,17 @@ protected:
         return subPath;
     }
 
+    /// Return the the sub-path that contains all pathElements except for
+    /// the last one.
     std::vector<std::string> getParentPathVec()
     {
         return getSubPathVec(0, getPathLength() - 1);
     }
 
+    std::string getPathElement(size_t pos) { return _path[pos]; };
+    std::string getPathName() { return _path[getPathLength() - 1]; };
+
 private:
-    size_t getPathLength() const { return _path.size(); };
 
     // Verify that a pathElement does not contain any chars from the list
     // of _invalidChars

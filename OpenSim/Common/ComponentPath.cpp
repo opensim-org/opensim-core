@@ -52,3 +52,37 @@ ComponentPath ComponentPath::getParentPath()
     vector<string> parentPathVec = getParentPathVec();
     return ComponentPath(parentPathVec, isAbsolute());
 }
+
+ComponentPath ComponentPath::getSubComponent(size_t index)
+{
+    return ComponentPath(getPathElement(index));
+}
+
+ComponentPath ComponentPath::getLastSubcomponent() 
+{
+    return getSubComponent(getPathLength() - 1);
+}
+
+void ComponentPath::pushBack(std::string pathElement)
+{
+    appendPathElement(pathElement);
+}
+
+void ComponentPath::pushFront(std::string pathElement)
+{
+    insertPathElement(0, pathElement);
+}
+
+std::string ComponentPath::popBack()
+{
+    std::string backElement = getPathElement(getPathLength() - 1);
+    erasePathElement(getPathLength() - 1);
+    return backElement;
+}
+
+std::string ComponentPath::popFront()
+{
+    std::string frontElement = getPathElement(0);
+    erasePathElement(0);
+    return frontElement;
+}

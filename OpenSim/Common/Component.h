@@ -1974,11 +1974,11 @@ protected:
             throw Exception(msg);
         }
 
-        ComponentPath thisCompPath(getFullPathName());
+        ComponentPath thisFullPath(getFullPathName());
         ComponentPath pathToFind(name);
 
         const C* found = NULL;
-        if (thisCompPath == pathToFind) {
+        if (thisFullPath == pathToFind) {
             found = dynamic_cast<const C*>(this);
             if (found)
                 return found;
@@ -1986,8 +1986,9 @@ protected:
 
         std::vector<const C*> foundCs;
 
-        std::string subname = pathToFind.getPathName();
-        if (this->getName() == subname) {
+        ComponentPath subnamePath = pathToFind.getLastSubcomponent();
+        ComponentPath thisPath(this->getName());
+        if (thisPath == subnamePath) {
             if ( (found = dynamic_cast<const C*>(this)) )
                 foundCs.push_back(found);
         }
@@ -1995,29 +1996,29 @@ protected:
         ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
-            std::string compFullPathName = comp.getFullPathName();
-            ComponentPath compFullPath(compFullPathName);
-            ComponentPath thisCompPath(getFullPathName());
-            thisCompPath.appendPathElement(subname);
+            ComponentPath compPath(comp.getName());
+            ComponentPath compFullPath(comp.getFullPathName());
+            ComponentPath thisFullPathPlusSubname(getFullPathName());
+            thisFullPathPlusSubname.pushBack(subnamePath.getString());
 
-            if (compFullPathName == subname) {
+            if (compFullPath == subnamePath) {
                 foundCs.push_back(&comp);
                 break;
             } // if a child of this Component, one should not need
               // to specify this Component's full path name 
-            else if (compFullPath == thisCompPath) {
+            else if (compFullPath == thisFullPathPlusSubname) {
                 foundCs.push_back(&comp);
                 break;
             } // otherwise, we just have a type and name match
               // which we may need to support for compatibility with older models
               // where only names were used (not path or type)
               // TODO replace with an exception -aseth
-            else if (comp.getName() == subname) {
+            else if (compPath == subnamePath) {
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
                 if (comp.getDebugLevel() > 0) {
-                    std::string details = msg + " Found '" + compFullPathName + 
+                    std::string details = msg + " Found '" + compFullPath.getString() + 
                         "' as a match for:\n Component '" + name + "' of type " + 
                         comp.getConcreteClassName() + ", but it "
                         "is not on specified path.\n";
