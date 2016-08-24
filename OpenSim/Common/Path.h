@@ -46,9 +46,6 @@ class OSIMCOMMON_API Path : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Path, Object);
 
 public:
-    /// Default constructor
-    Path() = default;
-
     /// Construct Path from a string, given separator character and a string
     /// of invalidChars. Performs a cleanPath() at the end of construction.
     Path(const std::string path,
@@ -72,7 +69,7 @@ public:
 
     /// Write out the path to a string with each element separated by the
     /// specified separator.
-    std::string getString();
+    std::string getString() const;
 
     /// Insert a pathElement at the specified position. Note that this could
     /// cause a path to become illegal (e.g., adding ".." to the front of 
@@ -95,7 +92,13 @@ public:
     /// if a path is invalid due to an absolute path starting with "..".
     void cleanPath();
 
+    bool isAbsolute() { return _isAbsolute; };
+    std::string getPathName() { return _path[getPathLength() - 1]; };
+
 protected:
+    /// Default constructor
+    Path() = default;
+
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
     std::vector<std::string> getAbsolutePathVec(Path* otherPath);
@@ -105,8 +108,21 @@ protected:
     /// absolute.
     std::vector<std::string> getRelativePathVec(Path* otherPath);
 
+    /// Return the sub-path, on the range [first, last).
+    std::vector<std::string> getSubPathVec(size_t first, size_t last)
+    {
+        std::vector<std::string> subPath(_path.begin() + first, 
+            _path.begin() + last);
+        return subPath;
+    }
+
+    std::vector<std::string> getParentPathVec()
+    {
+        return getSubPathVec(0, getPathLength() - 1);
+    }
+
 private:
-    size_t getPathLength() { return _path.size(); };
+    size_t getPathLength() const { return _path.size(); };
 
     // Verify that a pathElement does not contain any chars from the list
     // of _invalidChars

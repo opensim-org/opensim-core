@@ -48,6 +48,7 @@
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
+#include "ComponentPath.h"
 #include <functional>
 
 #include "simbody/internal/MultibodySystem.h"
@@ -1973,19 +1974,20 @@ protected:
             throw Exception(msg);
         }
 
-        std::vector<const C*> foundCs;
+        ComponentPath thisCompPath(getFullPathName());
+        ComponentPath pathToFind(name);
 
         const C* found = NULL;
-        std::string::size_type front = name.rfind("/");
-        size_t len = name.length();
-        std::string subname = front< len ? name.substr(front + 1, len - front) : name;
-
-        if (this->getFullPathName() == name) {
+        if (thisCompPath == pathToFind) {
             found = dynamic_cast<const C*>(this);
             if (found)
                 return found;
         }
-        else if (this->getName() == subname) {
+
+        std::vector<const C*> foundCs;
+
+        std::string subname = pathToFind.getPathName();
+        if (this->getName() == subname) {
             if ( (found = dynamic_cast<const C*>(this)) )
                 foundCs.push_back(found);
         }
@@ -1994,12 +1996,16 @@ protected:
         
         for (const C& comp : compsList) {
             std::string compFullPathName = comp.getFullPathName();
+            ComponentPath compFullPath(compFullPathName);
+            ComponentPath thisCompPath(getFullPathName());
+            thisCompPath.appendPathElement(subname);
+
             if (compFullPathName == subname) {
                 foundCs.push_back(&comp);
                 break;
             } // if a child of this Component, one should not need
               // to specify this Component's full path name 
-            else if (compFullPathName == (getFullPathName() + "/" + subname)) {
+            else if (compFullPath == thisCompPath) {
                 foundCs.push_back(&comp);
                 break;
             } // otherwise, we just have a type and name match

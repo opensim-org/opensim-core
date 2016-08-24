@@ -61,7 +61,7 @@ Path::Path(const std::string path,
         start = path.find_first_not_of(separator, end + 1);
     }
 
-    this->cleanPath();
+    cleanPath();
 }
 
 Path::Path(std::vector<std::string> pathVec,
@@ -72,10 +72,10 @@ Path::Path(std::vector<std::string> pathVec,
     _isAbsolute(isAbsolute)
 {
     if (_path.empty()) return;
-    this->cleanPath();
+    cleanPath();
 }
 
-std::string Path::getString() 
+std::string Path::getString() const
 {
     std::string outString;
     if (_isAbsolute) outString.append(1, _separator);
@@ -117,7 +117,7 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath)
     }
     
     if (!otherPath->_isAbsolute) {
-        OPENSIM_THROW(Exception, "otherPath must be an absolute path");
+        OPENSIM_THROW(Exception, "getOatherPathVec: otherPath must be an absolute path");
     }
 
     std::vector<std::string> pathVec;
@@ -163,11 +163,12 @@ std::vector<std::string> Path::getRelativePathVec(Path* otherPath)
         pathVec.push_back("..");
     }
     for (; ind < thisPathLength; ++ind) {
-        pathVec.push_back(this->_path[ind]);
+        pathVec.push_back(_path[ind]);
     }
 
     return pathVec;
 }
+
 
 void Path::cleanPath() 
 {

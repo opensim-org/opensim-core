@@ -36,13 +36,19 @@ ComponentPath::ComponentPath(std::vector<std::string> pathVec, bool isAbsolute) 
 
 ComponentPath ComponentPath::getAbsolutePath(ComponentPath* otherPath)
 {
-    vector<string> absPathVec = this->getAbsolutePathVec(otherPath);
+    vector<string> absPathVec = getAbsolutePathVec(otherPath);
     return ComponentPath(absPathVec, true);
 
 }
 
 ComponentPath ComponentPath::getRelativePath(ComponentPath* otherPath)
 {
-    vector<string> relPathVec = this->getRelativePathVec(otherPath);
+    vector<string> relPathVec = getRelativePathVec(otherPath);
     return ComponentPath(relPathVec, false);
+}
+
+ComponentPath ComponentPath::getParentPath()
+{
+    vector<string> parentPathVec = getParentPathVec();
+    return ComponentPath(parentPathVec, isAbsolute());
 }

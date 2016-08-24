@@ -615,86 +615,27 @@ void Component::setParent(const Component& parent)
 
 std::string Component::getFullPathName() const
 {
-    std::string pathName = getName();
+    std::vector<std::string> pathVec;
+    pathVec.push_back(getName());
+
     const Component* up = this;
 
     while (up && up->hasParent()) {
         up = &up->getParent();
-        pathName = up->getName() + "/" + pathName;
+        pathVec.insert(pathVec.begin(), up->getName());
     }
     // The root must have a leading '/' 
-    pathName = "/" + pathName;
+    ComponentPath path(pathVec, true);
 
-    return pathName;
+    return path.getString();
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    std::string thisP = getFullPathName();
-    std::string wrtP = wrt.getFullPathName();
+    ComponentPath thisP(getFullPathName());
+    ComponentPath wrtP(wrt.getFullPathName());
 
-    IO::TrimWhitespace(thisP);
-    IO::TrimWhitespace(wrtP);
-
-    size_t ni = thisP.length();
-    size_t nj = wrtP.length();
-    // the limit on the common substring size is the smallest of the two
-    size_t limit = ni <= nj ? ni : nj;
-    size_t ix = 1, jx = 0;
-    size_t last = 0;
-
-    // Loop through the paths to pick up a bigger substring that matches
-    while ( !thisP.compare(0, ix, wrtP, 0, ix) && (ix < std::string::npos) ) {
-        last = ix;
-        // step ahead to the next node if there is one
-        ix = thisP.find('/', last+1);
-        // step along both strings
-        jx = wrtP.find('/', last+1);
-
-        // if no more nodes for this path try complete match of final node name
-        if (ix == std::string::npos && last < limit)
-            ix = ni;
-
-        // if no more nodes for wrt path try complete match of final node name
-        if (jx == std::string::npos && last < limit)
-            jx = nj;
-
-        // verify that the both paths are in sync
-        if (ix != jx) { // if not break to use the current last index of match
-            break;
-        }
-     }
-
-    // Include the delimiter in the common string iff we are not at the end of string
-    // and not at the root
-    if ((0 < last) && (last < limit) && thisP[last] == '/') {
-        last = last + 1;
-    }
-
-    std::string common = thisP.substr(0, last);
-    std::string stri = thisP.substr(last, ni-last);
-    std::string strj = wrtP.substr(last, nj-last);
-
-    std::string prefix  = "";
-
-    // the whole wrt path is part of the common path
-    if (strj.empty() && stri[0] == '/') {
-        prefix = ".";
-    }
-    // if there is a remainder in the wrtP then move at least one
-    else if (!strj.empty() && strj[0] != '/') {
-        prefix += "../";
-    }
-
-    last = 0;
-    // process all the '/' nodes in the wrtP up to the common path
-    while ((jx = strj.find('/', last)) < std::string::npos) {
-        prefix += "../";
-        last = jx + 1;
-    }
-
-    // return the relative path 
-    return prefix + stri;
+    return thisP.getRelativePath(&wrtP).getString();
 }
 
 const Component::StateVariable* Component::

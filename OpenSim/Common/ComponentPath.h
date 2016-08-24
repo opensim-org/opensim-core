@@ -50,8 +50,19 @@ public:
     ComponentPath(const std::string path);
     ComponentPath(std::vector<std::string> pathVec, bool isAbsolute);
 
+    bool operator==(const ComponentPath& other) const
+    {
+        return this->getString() == other.getString();
+    }
+
+    bool operator!=(const ComponentPath& other) const
+    {
+        return this->getString() != other.getString();
+    }
+
     ComponentPath getAbsolutePath(ComponentPath* otherPath);
     ComponentPath getRelativePath(ComponentPath* otherPath);
+    ComponentPath getParentPath();
 };
 
 

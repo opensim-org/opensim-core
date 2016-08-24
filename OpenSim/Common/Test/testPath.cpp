@@ -60,6 +60,13 @@ void testComponentPath() {
     ASSERT(emptyPath.getString() == emptyStr);
     ASSERT(rootPath.getString() == rootStr);
 
+    // Test equality
+    ComponentPath absPath4("/a/b");
+    ASSERT(absPath4 == absPath3);
+    ASSERT(absPath4 != absPath1);
+    ComponentPath absPath5("/c/d");
+    ASSERT(absPath5 != relPath1);
+
     // Test getAbsolutePath()
     ASSERT(relPath1.getAbsolutePath(&absPath3).getString() == absStr1);
     ASSERT(relPath2.getAbsolutePath(&absPath3).getString() == absStr2);

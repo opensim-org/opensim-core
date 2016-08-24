@@ -904,7 +904,7 @@ void testComponentPathNames()
 
     foo.setName("World3/bar2/foo1");
     fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "./foo1");
+    ASSERT(fooWrtBar == "foo1");
 
     bar.setName("LegWithConstrainedFoot/footConstraint");
     foo.setName("LegWithConstrainedFoot/foot");
