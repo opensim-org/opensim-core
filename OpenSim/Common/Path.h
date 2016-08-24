@@ -128,7 +128,6 @@ protected:
     std::string getPathName() { return _path[getPathLength() - 1]; };
 
 private:
-
     // Verify that a pathElement does not contain any chars from the list
     // of _invalidChars
     bool isLegalPathElement(const std::string pathElement);

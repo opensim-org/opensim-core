@@ -2082,40 +2082,43 @@ protected:
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
     {
-        std::string::size_type front = 0;
-        std::string::size_type back = path.rfind('/');
-        std::string dir = "";
-        std::string currentPath = "";
         const Component* current = this;
+        ComponentPath pathToFind(path);
+        ComponentPath pathNameToFind = pathToFind.getLastSubcomponent();
+        size_t pathLength = pathToFind.getPathLength();
+        size_t ind = 0;
+        ComponentPath currentSubpath;
+        ComponentPath upPath("..");
+        ComponentPath curDirPath(".");
 
-        const std::string compName = back < std::string::npos ? path.substr(back+1) : path;
-        back = 0;
+        while (ind < pathLength && current) {
+            currentSubpath = pathToFind.getSubComponent(ind);
+            ComponentPath currentPathName(current->getName());
 
-        while (back < std::string::npos && current) {
-            back = path.find('/', front);
-            dir = path.substr(front, back - front);
-
-            if (dir == ".." && current->hasParent())
+            if (currentSubpath == upPath && current->hasParent())
                 current = &current->getParent();
             // if current in dir keep drilling down the path 
-            else if (current->getName() == dir) {
-                front = back + 1;
+            else if (currentPathName == currentSubpath) {
+                ind++;
                 continue;
             }
             // if dir is empty we are at root or have a nameless comp
             // if dir is '.' we are in the right parent, and loop again
             // so that dir is the name of the component we want.
-            else if (!dir.empty() && dir != ".") {
+            else if (!currentSubpath.getString().empty() && currentSubpath != curDirPath) {
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
-                currentPath = current->getFullPathName();
+                ComponentPath currentFullPathPlusSubpath(current->getFullPathName());
+                currentFullPathPlusSubpath.pushBack(currentSubpath.getString());
                 for (const Component& comp : compsList) {
+                    ComponentPath compFullPath(comp.getFullPathName());
+                    ComponentPath compPath(comp.getName());
                     // Match for the dir
-                    if (comp.getFullPathName() == currentPath + "/" + dir) {
+                    if (compFullPath == currentFullPathPlusSubpath) {
                         // In the right dir and has matching name
                         // update current to this comp
                         current = &comp;
-                        if (comp.getName() == compName) {
+                        if (compPath == pathNameToFind) {
                             // now verify type
                             const C* compC = dynamic_cast<const C*>(&comp);
                             if (compC)
@@ -2130,10 +2133,10 @@ protected:
                     current = nullptr;
                 }
             }
-            front = back + 1;
+            ind++;
         }
 
-        if (dir == compName)
+        if (currentSubpath == pathNameToFind)
             return dynamic_cast<const C*>(current);
 
         return nullptr;
