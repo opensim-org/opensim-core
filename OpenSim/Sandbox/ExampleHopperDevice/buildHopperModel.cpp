@@ -148,18 +148,15 @@ Model buildHopper() {
     hopper.addForce(vastus);
 
     // Attach a cylinder (patella) to the distal end of the thigh over which the
-    // vastus muscle can wrap. In the future, we will be able to attach wrap
-    // objects to PhysicalOffsetFrames; for now, we will use the existing
-    // "translation" property.
+    // vastus muscle can wrap. 
     auto patellaFrame = new PhysicalOffsetFrame("patellaFrame",
         *thigh, SimTK::Transform(linkDistalPoint));
     auto patella = new WrapCylinder();
     patella->setName("patella");
     patella->set_radius(0.08);
     patella->set_length(linkRadius*2.);
-    //patella->set_translation(linkDistalPoint);
     patella->set_quadrant("x");
-    //thigh->addWrapObject(patella);
+
     patellaFrame->addWrapObject(patella);
     thigh->addComponent(patellaFrame);
 

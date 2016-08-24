@@ -32,7 +32,7 @@ This interactive example consists of three steps:
   Step 2. Build an assistive device and test it on a simple testbed.
   Step 3. Connect the device to the hopper to increase hop height.
 
-To start working through this example, go to main() at the bottom of this file.
+To start working through this example, go to run() at the bottom of this file.
 From there, you will be directed to specific files and methods in this project
 that need to be completed. Now, hop to it! */
 
@@ -173,7 +173,7 @@ void executeExample();
 int main()
 {
     try {
-        executeExample();
+        run();
     }
     catch (const std::exception& ex) {
         std::cout << "Hopper Example Failed to run due to the following Exception: " 
@@ -189,7 +189,7 @@ int main()
 // the exercise. The project should execute without making any changes (you
 // should see the unassisted hopper hop slightly).
 //------------------------------------------------------------------------------
-void executeExample()
+void run()
 {
     using namespace OpenSim;
 
