@@ -76,9 +76,8 @@ void CoordinateSet::populate(Model& model)
     // unless qualified by its owning component name, namely the Joint
     for(int i=0; i< model.getJointSet().getSize(); i++){
         Joint& nextJoint = model.getJointSet().get(i);
-        CoordinateSet& coords = nextJoint.upd_CoordinateSet();
         for(int j=0; j< nextJoint.numCoordinates(); j++){
-            adoptAndAppend(&coords[j]);
+            adoptAndAppend(&nextJoint.upd_coordinates(j));
         }
     }
 }

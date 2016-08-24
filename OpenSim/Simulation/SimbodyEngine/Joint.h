@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
@@ -98,8 +98,9 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
-        "Set holding the generalized coordinates (q's) that parameterize this joint." );
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, Coordinate,
+        "List containing the generalized coordinates (q's) that parameterize "
+        "this joint.");
 
     OpenSim_DECLARE_PROPERTY(reverse, bool,
         "Advanced option. Specify the direction of the joint in the multibody tree: "
@@ -223,9 +224,6 @@ public:
      */
     const OpenSim::PhysicalFrame& getParentFrame() const;
 
-    // Coordinate Set
-    const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
-
     /** Convenience method to get the Coordinate associated with a
         single-degree-of-freedom Joint. If the Joint has more than one
         Coordinate, you must provide the appropriate argument to the
@@ -235,7 +233,7 @@ public:
     bool getReverse() const { return get_reverse(); }
 
     //Model building
-    int numCoordinates() const { return get_CoordinateSet().getSize(); }
+    int numCoordinates() const { return getProperty_coordinates().size(); }
 
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;

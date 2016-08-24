@@ -91,17 +91,17 @@ void testControlSetControllerOnBlock()
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
     // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    auto& sliderCoord = blockToGround.upd_coordinates(0);
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block and joint to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -185,16 +185,16 @@ void testPrescribedControllerOnBlock(bool disabled)
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create 6 coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    auto& sliderCoord = blockToGround.upd_coordinates(0);
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -278,10 +278,10 @@ void testCorrectionControllerOnBlock()
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    auto& sliderCoord = blockToGround.upd_coordinates(0);
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
