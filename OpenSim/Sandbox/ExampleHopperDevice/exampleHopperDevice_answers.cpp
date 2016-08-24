@@ -397,6 +397,4 @@ void run()
         SimTK::State& sHD = assistedHopper.initSystem();
         simulate(assistedHopper, sHD);
     }
-
-    return 0;
 };
