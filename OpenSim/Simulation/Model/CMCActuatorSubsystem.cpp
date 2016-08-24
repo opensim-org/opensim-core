@@ -149,6 +149,8 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     // controls
     const CoordinateSet& coords = _model->getCoordinateSet();
     for (int i = 0; i < nq; ++i) {
+        // the last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
         coords[i].setValue(modCompState, _qWork[i] + _qCorrections[i], i==(nq-1));
         coords[i].setSpeedValue(modCompState, _uWork[i] + _uCorrections[i]);
     }
