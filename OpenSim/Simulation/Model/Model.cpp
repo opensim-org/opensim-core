@@ -763,8 +763,6 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     Model *mutableThis = const_cast<Model *>(this);
 
-    // Ensure Ground is added before all other Components
-    //getGround().addToSystem(system);
     //Analyses are not Components so add them after legit 
     //Components have been wired-up correctly.
     mutableThis->updAnalysisSet().setModel(*mutableThis);
