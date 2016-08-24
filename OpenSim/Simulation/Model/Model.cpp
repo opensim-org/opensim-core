@@ -665,6 +665,10 @@ void Model::extendConnectToModel(Model &model)
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, *ground, *child);
             free->upd_reverse() = mob.isReversedFromJoint();
+            // TODO: Joints are currently required to be in the JointSet
+            // When the reordering of Joints is eliminated (see following else block)
+            // this limitation can be removed and the free joint adopted as in 
+            // internal subcomponent (similar to the weld constraint above)
             addJoint(free);
             setNextSubcomponentInSystem(*free);
         }
