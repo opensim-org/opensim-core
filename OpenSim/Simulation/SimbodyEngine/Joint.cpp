@@ -539,7 +539,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     int documentVersion = versionNumber;
     //bool converting = false;
-    if (documentVersion < XMLDocument::getLatestVersion()){
+    if (documentVersion <= XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child");
@@ -627,6 +627,26 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 XMLDocument::addPhysicalOffsetFrame(aNode, childFrameName + "_offset",
                     childFrameName, location_in_child, orientation_in_child);
                 childNameElt->setValue(childFrameName + "_offset");
+            }
+        }
+
+        // Version 30506 replaced Joint's CoordinateSet with a "coordinates"
+        // list property.
+        if (documentVersion <= 30506) {
+            if (aNode.hasElement("CoordinateSet")) {
+                auto coordSetIter = aNode.element_begin("CoordinateSet");
+                auto coordIter = coordSetIter->getRequiredElement("objects")
+                                 .element_begin("Coordinate");
+                // Create node for new layout.
+                Xml::Element coordinatesElement("coordinates");
+                // Copy Coordinate elements into new node.
+                while (coordIter != aNode.element_end()) {
+                    coordinatesElement.appendNode(coordIter->clone());
+                    ++coordIter;
+                }
+                // Replace old "CoordinateSet" node with new "coordinates" node.
+                aNode.insertNodeAfter(coordSetIter, coordinatesElement);
+                aNode.eraseNode(coordSetIter);
             }
         }
     }
