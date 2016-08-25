@@ -513,9 +513,10 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
                 const Coordinate* coord = NULL;
                 const Coordinate* independentCoord = NULL;
                 const Function* constraintFunc = NULL;
+                int ix = -1;
                 Coordinate::MotionType motionType = (order[i]<3) ? Coordinate::Rotational : Coordinate::Translational;
                 if (ta->getCoordinateNames().size() > 0)
-                    const int ix = cj->getProperty_coordinates().findIndexForName(ta->getCoordinateNames()[0]);
+                    ix = cj->getProperty_coordinates().findIndexForName(ta->getCoordinateNames()[0]);
                 if (ix >= 0) {
                     coord = cj->get_coordinates(ix);
                     constraintFunc = isDependent(coord, &independentCoord);
