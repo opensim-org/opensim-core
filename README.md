@@ -149,8 +149,16 @@ On Windows using Visual Studio
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
       for Visual C++ 2015*.
-      You can uncheck all other boxes. If you have already installed Visual
-      Studio without C++ support, simply re-run the installer and select *Modify*.
+      You can uncheck all other boxes. If Visual Studio is installed without C++
+      support, CMake will report the following errors:
+      ```
+      The C compiler identification is unknown
+      The CXX compiler identification is unknown
+      ```
+      If you have already installed Visual Studio without C++ support, simply
+      re-run the installer and select *Modify*. Alternatively, go to
+      *File > New > Project...* in Visual Studio, select *Visual C++*, and click
+      *Install Visual C++ 2015 Tools for Windows Desktop*.
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
