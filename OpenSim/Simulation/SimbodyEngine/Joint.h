@@ -471,7 +471,7 @@ protected:
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
-        SimTK_ASSERT1(numCoordinates() == get_CoordinateSet().getSize(), 
+        SimTK_ASSERT1(numCoordinates() == getNumMobilities<T>(simtkBody),
                       "%s list of coordinates does not match number of mobilities.",
                       getConcreteClassName().c_str());
 
