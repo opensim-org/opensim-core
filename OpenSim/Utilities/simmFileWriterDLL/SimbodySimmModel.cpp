@@ -518,7 +518,7 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
                 if (ta->getCoordinateNames().size() > 0)
                     ix = cj->getProperty_coordinates().findIndexForName(ta->getCoordinateNames()[0]);
                 if (ix >= 0) {
-                    coord = cj->get_coordinates(ix);
+                    coord = &cj->get_coordinates(ix);
                     constraintFunc = isDependent(coord, &independentCoord);
                 }
                 if (constraintFunc != NULL) {  // dof is constrained to a coordinate in another joint
