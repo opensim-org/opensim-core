@@ -1,5 +1,5 @@
 ## Project: TITLE
-***Gazebo Design Document***
+***OpenSim Design Document***
 
 ### Overview
 
@@ -8,7 +8,7 @@ Create a graphical tool to plot simulation data.
 
 ### Requirements
 
-List the set of requirements that this project must fulfill.
+List the set of requirements that this project must fulfill. Include all constraints this proposal is working within.
 If the list gets too long, consider splitting the project into multiple small projects.
 
 For example:
@@ -19,15 +19,21 @@ For example:
 
 ### Architecture
 Include a system architecture diagram.
-This should be a conceptual diagram that describes what components of Gazebo will be utilized or changed, the flow of information, new classes, etc.
+This should be a conceptual diagram that describes what components of OpnSim will be utilized or changed, the flow of information, new classes, etc.
 
 ### Interfaces
-Describe any new interfaces or modifications to interfaces, where interfaces are protobuf messages, function API changes, SDF changes, and GUI changes. These changes can be notional.
+Describe any new interfaces or modifications to interfaces, function API changes, SDF changes, and GUI changes. These changes can be notional. Describe if/how/when OpenSim users/developers will be affected.
 
 For example:
 Plot proto message: A message that carries plot data will be created to transmit data from the server to the client.
 
 Include any UX design drawings.
+
+#### Bindings
+Describe implications to Python and Java bindings.
+
+### Backwards Compatibility
+Describe implications on backwards compatibility. Particularly if/how/when code written to previous versions of OpenSim will break and how are they addressed going forward.
 
 ### Lifecycle and Ownership
 Describe the intended lifecycle of new objects.
@@ -53,9 +59,5 @@ List and describe the tests that will be created. For example:
 ### Pull Requests
 List and describe the pull requests that will be created to merge this project.
 Consider separating large refactoring operations from additions of new code.
-For example, the physics::SurfaceParams class was refactored in
-[pull request #891](https://bitbucket.org/osrf/gazebo/pull-request/891/refactor)
-so that a new FrictionPyramid class could be added in
-[pull request #935](https://bitbucket.org/osrf/gazebo/pull-request/935/create).
 
 Keep in mind that smaller, atomic pull requests are easier to review.
