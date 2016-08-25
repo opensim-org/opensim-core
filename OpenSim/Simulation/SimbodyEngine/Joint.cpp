@@ -539,7 +539,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     int documentVersion = versionNumber;
     //bool converting = false;
-    if (documentVersion <= XMLDocument::getLatestVersion()){
+    if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child");
@@ -551,7 +551,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "Connector_Body_",
                                                 "Connector_PhysicalFrame_");
         }
-        // Version 30503 changed "parent_body" connector name to "parent_frame"
+        // Version 30505 changed "parent_body" connector name to "parent_frame"
         // Convert location and orientation into PhysicalOffsetFrames owned by the Joint
         if (documentVersion < 30505) {
             // Elements for the parent and child names the joint connects
@@ -630,9 +630,9 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
         }
 
-        // Version 30506 replaced Joint's CoordinateSet with a "coordinates"
+        // Version 30507 replaced Joint's CoordinateSet with a "coordinates"
         // list property.
-        if (documentVersion <= 30506) {
+        if (documentVersion < 30507) {
             if (aNode.hasElement("CoordinateSet")) {
                 auto coordSetIter = aNode.element_begin("CoordinateSet");
                 auto coordIter = coordSetIter->getRequiredElement("objects")
