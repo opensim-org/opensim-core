@@ -471,10 +471,6 @@ protected:
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
-        SimTK_ASSERT1(numCoordinates() == getNumMobilities<T>(simtkBody),
-                      "%s list of coordinates does not match number of mobilities.",
-                      getConcreteClassName().c_str());
-
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
             physicalFrame,
             getNumMobilities<T>(simtkBody),
