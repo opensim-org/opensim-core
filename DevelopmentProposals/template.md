@@ -3,9 +3,12 @@
 
 ### Overview
 
-Just a few sentences that describes the purpose of this project. 
+Just a few sentences that describes the purpose of this project. Provide motivation for the proposal by:
+* referring to the existing [Issues](https://github.com/opensim-org/opensim-core/issues) it addresses.
+* describing the problem (not captured in existing issues) it solves.
+
 For example:
-*Add ability to read/write table of quaternions to/from STO files.*
+*Add ability to read/write table of quaternions to/from STO files. This is a new feature and does not directly address any existing issue.* 
 
 ### Requirements
 
@@ -29,7 +32,7 @@ For example:
 There will no change to the existing interface. This proposal is to add ability to read and write quaternion tables to files using existing interface.
 
 #### Bindings
-Describe implications to Python and Java bindings.
+Describe implications for Python and Java bindings.
 
 ### Backwards Compatibility
 Describe implications on backwards compatibility. Particularly if/how/when code written to previous versions of OpenSim will break and how are they addressed going forward.
