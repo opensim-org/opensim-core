@@ -635,20 +635,31 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
         if (documentVersion < 30507) {
             if (aNode.hasElement("CoordinateSet")) {
                 auto coordSetIter = aNode.element_begin("CoordinateSet");
-                auto coordIter = coordSetIter->getRequiredElement("objects")
-                                 .element_begin("Coordinate");
-                // Create node for new layout.
-                Xml::Element coordinatesElement("coordinates");
-                // Copy Coordinate elements into new node.
-                while (coordIter != aNode.element_end()) {
-                    coordinatesElement.appendNode(coordIter->clone());
-                    ++coordIter;
+                if (coordSetIter->hasElement("objects")) {
+                    auto coordIter = coordSetIter->getRequiredElement("objects")
+                                                   .element_begin("Coordinate");
+                    if (coordIter != aNode.element_end()) {
+                        // A "CoordinateSet" element exists, it contains an
+                        // "objects" element, and the "objects" element contains
+                        // at least one "Coordinate" element.
+
+                        // Create an element for the new layout.
+                        Xml::Element coordinatesElement("coordinates");
+                        // Copy all "Coordinate" elements from the old layout.
+                        while (coordIter != aNode.element_end()) {
+                            coordinatesElement.appendNode(coordIter->clone());
+                            ++coordIter;
+                        }
+                        // Insert new "coordinates" element.
+                        aNode.insertNodeAfter(coordSetIter, coordinatesElement);
+                    }
                 }
-                // Replace old "CoordinateSet" node with new "coordinates" node.
-                aNode.insertNodeAfter(coordSetIter, coordinatesElement);
+
+                // Remove old "CoordinateSet" element.
                 aNode.eraseNode(coordSetIter);
             }
         }
+
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
