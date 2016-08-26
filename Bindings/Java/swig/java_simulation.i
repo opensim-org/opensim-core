@@ -125,6 +125,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %javamethodmodifiers OpenSim::Model::addContactGeometry "private";
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
+%javamethodmodifiers OpenSim::Model::addJoint "private";
 
 %rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
@@ -134,6 +135,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::Model::addContactGeometry private_addContactGeometry;
 %rename OpenSim::Model::addController private_addController;
 %rename OpenSim::Model::addAnalysis private_addAnalysis;
+%rename OpenSim::Model::addJoint private_addJoint;
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
@@ -199,6 +201,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   public void addController(Controller aController) {
       aController.markAdopted();
       private_addController(aController);
+  }
+
+  public void addJoint(Joint aJoint) {
+      aJoint.markAdopted();
+      private_addJoint(aJoint);
   }
 %}
 

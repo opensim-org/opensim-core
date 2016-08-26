@@ -104,6 +104,7 @@ OpenSimAddJavaTest(TestBasics)
 OpenSimAddJavaTest(TestIterators)
 OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
+OpenSimAddJavaTest(TestModelBuilding)
 
 
 
