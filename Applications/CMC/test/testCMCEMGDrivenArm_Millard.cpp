@@ -42,23 +42,12 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0, 2*2+2*6);
-    rms_tols[0]  = 0.0007; // r_shoulder/r_shoulder_elev/value
-    rms_tols[1]  = 0.004;  // r_shoulder/r_shoulder_elev/speed
-    rms_tols[2]  = 0.0017; // r_elbow/r_elbow_flex/value
-    rms_tols[3]  = 0.02;   // r_elbow/r_elbow_flex/speed
-    rms_tols[4]  = 0.09;   // TRIlong/activation
-    rms_tols[5]  = 0.0005; // TRIlong/fiber_length
-    rms_tols[6]  = 0.19;   // TRIlat/activation
-    rms_tols[7]  = 0.0008; // TRIlat/fiber_length
-    rms_tols[8]  = 0.18;   // TRImed/activation
-    rms_tols[9]  = 0.0007; // TRImed/fiber_length
-    rms_tols[10] = 0.24;   // BIClong/activation
-    rms_tols[11] = 0.003;  // BIClong/fiber_length
-    rms_tols[12] = 0.28;   // BICshort/activation
-    rms_tols[13] = 0.003;  // BICshort/fiber_length
-    rms_tols[14] = 0.003;  // BRA/activation
-    rms_tols[15] = 0.0001; // BRA/fiber_length
+    Array<double> rms_tols(0.02, 2*2+2*6);
+    rms_tols[4]  = 0.10;   // TRIlong/activation
+    rms_tols[6]  = 0.25;   // TRIlat/activation
+    rms_tols[8]  = 0.20;   // TRImed/activation
+    rms_tols[10] = 0.25;   // BIClong/activation
+    rms_tols[12] = 0.30;   // BICshort/activation
     
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm_Millard failed");
