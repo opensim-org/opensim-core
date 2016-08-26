@@ -73,6 +73,9 @@ For example:
 Programmatically create a few `TimeSeriesTable`s of `Quaternion`, write them to
 files, read those files back in and verify their contents.
 
+### Potential hurdles or roadblocks
+List any known problems with this proposal. Any potential hurdles or roadblocks in moving forward this proposal.
+
 ### Pull Requests
 List and describe the pull requests that will be created to merge this project.
 Consider separating large refactoring operations from additions of new code.
