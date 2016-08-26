@@ -91,7 +91,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
         SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
         SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
         // ...and that they aren't all just references to the same single state.
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (int i = 0; i < (int)states.getSize(); ++i) {
             SimTK_TEST_EQ(states[i].getTime(), times[i]);
             SimTK_TEST_EQ(statesCol->getStates()[i].getTime(), times[i]);
         }

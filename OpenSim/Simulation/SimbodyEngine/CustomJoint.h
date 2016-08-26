@@ -107,7 +107,7 @@ public:
     const Coordinate& getCoordinate(unsigned idx) const {
         OPENSIM_THROW_IF(numCoordinates() == 0,
                          JointHasNoCoordinates);
-        OPENSIM_THROW_IF(idx > numCoordinates()-1,
+        OPENSIM_THROW_IF((int)idx > numCoordinates()-1,
                          InvalidCall,
                          "Index passed to getCoordinate() exceeds the largest "
                          "index available");
