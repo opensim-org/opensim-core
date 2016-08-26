@@ -33,7 +33,11 @@ namespace OpenSim {
 /**
 * A class for handling Paths for Components, deriving from Path. A ComponentPath
 * uses a forward-slash ('/') as a separator always. It also specifies invalid
-* characters in a Component name ("\\/*+").
+* characters in a Component name:
+* - back-slash ('\\')
+* - forward-slash ('/')
+* - asterisk ('*')
+* - plus-sign ('+')
 *
 * @author Carmichael Ong
 */
