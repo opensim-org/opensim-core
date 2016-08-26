@@ -648,6 +648,8 @@ const Component::StateVariable* Component::
     // top level component
     std::string::size_type back = name.rfind("/");
     std::string prefix = name.substr(0, back);
+    // this is a bug (or misuse?)! if the name does not have a "/", then
+    // name = prefix = varName. back+1 = 0 due to uint
     std::string varName = name.substr(back + 1, name.length() - back);
 
     std::map<std::string, StateVariableInfo>::const_iterator it;
