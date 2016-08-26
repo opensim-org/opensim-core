@@ -52,7 +52,7 @@ If so, describe how.
 One or more performance tests may be required.
 
 ### Tests
-List and describe the tests that will be created. For example:
+List and describe the tests that will be created.
 
 For example:
 Programmatically create a few `TimeSeriesTable`s of `Quaternion`, write them to files, read those files back in and verify their contents.
