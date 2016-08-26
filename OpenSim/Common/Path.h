@@ -74,6 +74,39 @@ public:
     /// specified separator.
     std::string getString() const;
 
+    /// Return true if this Path is an absolute path.
+    bool isAbsolute() { return _isAbsolute; };
+
+    /// Return the number of elements in the Path
+    size_t getPathLength() const { return _path.size(); };
+
+    /// Push a string to the back of a path (i.e. the end). First checks if the
+    /// pathElement is legal. Does not change if path is absolute or relative.
+    void pushBack(std::string pathElement) {
+        appendPathElement(pathElement);
+    }
+
+protected:
+    /// Get an absolute path by resolving it relative to a given otherPath.
+    /// If the current Path is already absolute, return the same Path.
+    std::vector<std::string> getAbsolutePathVec(Path* otherPath);
+
+    /// Find the relative Path between this Path and another Path (otherPath)
+    /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
+    /// absolute.
+    std::vector<std::string> getRelativePathVec(Path* otherPath);
+
+    /// Return the the sub-path that contains all pathElements except for
+    /// the last one.
+    std::vector<std::string> getParentPathVec()
+    {
+        return getSubPathVec(0, getPathLength() - 1);
+    }
+
+    std::string getPathElement(size_t pos) { return _path[pos]; };
+    std::string getPathName() { return _path[getPathLength() - 1]; };
+
+private:
     /// Insert a pathElement at the specified position. Note that this could
     /// cause a path to become illegal (e.g., adding ".." to the front of 
     /// an absolute path). The pathElement is checked to ensure no illegal
@@ -95,40 +128,16 @@ public:
     /// if a path is invalid due to an absolute path starting with "..".
     void cleanPath();
 
-    bool isAbsolute() { return _isAbsolute; };
-    size_t getPathLength() const { return _path.size(); };
-
-protected:
-    /// Get an absolute path by resolving it relative to a given otherPath.
-    /// If the current Path is already absolute, return the same Path.
-    std::vector<std::string> getAbsolutePathVec(Path* otherPath);
-
-    /// Find the relative Path between this Path and another Path (otherPath)
-    /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
-    /// absolute.
-    std::vector<std::string> getRelativePathVec(Path* otherPath);
-
     /// Return the sub-path, on the range [first, last).
     std::vector<std::string> getSubPathVec(size_t first, size_t last)
     {
-        std::vector<std::string> subPath(_path.begin() + first, 
+        std::vector<std::string> subPath(_path.begin() + first,
             _path.begin() + last);
         return subPath;
     }
 
-    /// Return the the sub-path that contains all pathElements except for
-    /// the last one.
-    std::vector<std::string> getParentPathVec()
-    {
-        return getSubPathVec(0, getPathLength() - 1);
-    }
-
-    std::string getPathElement(size_t pos) { return _path[pos]; };
-    std::string getPathName() { return _path[getPathLength() - 1]; };
-
-private:
-    // Verify that a pathElement does not contain any chars from the list
-    // of _invalidChars
+    /// Return true if pathElement does not contain any chars from the list
+    /// of _invalidChars
     bool isLegalPathElement(const std::string pathElement);
 
     // Path variables

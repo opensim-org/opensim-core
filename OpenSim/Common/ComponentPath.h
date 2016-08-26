@@ -71,13 +71,14 @@ public:
     /// the last one.
     ComponentPath getParentPath();
 
-    ComponentPath getSubComponent(size_t index);
+    /// Return a ComponentPath object of a subcomponent by index. This will
+    /// always be a relative path.
+    ComponentPath getSubcomponent(size_t index);
+
+    /// Return the last part of a ComponentPath. This will always be a relative
+    /// path.
     ComponentPath getLastSubcomponent();
 
-    void pushBack(std::string pathElement);
-    void pushFront(std::string pathElement);
-    std::string popBack();
-    std::string popFront();
 };
 
 

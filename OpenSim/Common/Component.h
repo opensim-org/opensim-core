@@ -2092,7 +2092,7 @@ protected:
         ComponentPath curDirPath(".");
 
         while (ind < pathLength && current) {
-            currentSubpath = pathToFind.getSubComponent(ind);
+            currentSubpath = pathToFind.getSubcomponent(ind);
             ComponentPath currentPathName(current->getName());
 
             if (currentSubpath == upPath && current->hasParent())

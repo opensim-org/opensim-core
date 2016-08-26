@@ -103,29 +103,16 @@ void testComponentPath() {
     ASSERT_THROW(Exception, ComponentPath badPath2(badChar2));
     ASSERT_THROW(Exception, ComponentPath badPath3(badChar3));
 
-    // Test inserts and erase
-    string str1 = "/a/b/d";
+    // Test pushBack
+    string str1 = "/a/b";
     ComponentPath path1(str1);
-    path1.insertPathElement(2, "c");
-    ASSERT(path1.getString() == absPath1.getString());
-    path1.erasePathElement(2);
-    path1.erasePathElement(2);
-    ASSERT(path1.getString() == absPath3.getString());
-    ASSERT_THROW(Exception, path1.appendPathElement("e/f/g/h"));
-    ASSERT_THROW(Exception, path1.insertPathElement(2, "e/f/g/h"));
-    path1.appendPathElement("e");
-    path1.appendPathElement("f");
-    path1.appendPathElement("g");
-    path1.appendPathElement("h");
-    ASSERT(path1.getString() == absPath2.getString());
-    path1.insertPathElement(0, "..");
-    ASSERT_THROW(Exception, path1.cleanPath());
-    path1.insertPathElement(0, "z");
-    path1.cleanPath();
-    ASSERT(path1.getString() == absPath2.getString());
+    ASSERT_THROW(Exception, path1.pushBack("c/d"));
+    path1.pushBack("c");
+    path1.pushBack("d");
+    ASSERT(path1 == absPath1);
 
-    ASSERT_THROW(Exception, path1.appendPathElement("a\\b"));
-    ASSERT_THROW(Exception, path1.insertPathElement(2, "a+b*"));
+    ASSERT_THROW(Exception, path1.pushBack("a\\b"));
+    ASSERT_THROW(Exception, path1.pushBack("a+b*"));
 }
 
 int main()
