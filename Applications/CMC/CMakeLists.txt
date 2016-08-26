@@ -1,4 +1,4 @@
-OpenSimAddApplication(cmc)
+OpenSimAddApplication(NAME cmc)
 
 if(BUILD_TESTING)
     subdirs(test)

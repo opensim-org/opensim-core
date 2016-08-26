@@ -36,6 +36,13 @@ Converting from v3.x to v4.0
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
+- We created a new unified command line interface that will replace the
+  single-tool command line executables (`scale`, `ik`, `id`, `rra`, `cmc`,
+  etc.).
+  - `scale -S setup.xml` -> `opensim run-tool setup.xml`.
+  - `scale -PS` -> `opensim print-xml scale`
+  - `scale -PropertyInfo ...` -> `opensim info ...`
+  - `versionUpdate ...` -> `opensim update-file ...`
 
 Composing a Component from other components
 -------------------------------------------
