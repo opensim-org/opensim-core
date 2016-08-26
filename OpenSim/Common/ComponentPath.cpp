@@ -26,6 +26,9 @@
 using namespace OpenSim;
 using namespace std;
 
+const char separator = '/';
+const std::string invalidChars = "\\/*+";
+
 ComponentPath::ComponentPath(const string path) :
     Path(path, separator, invalidChars)
 {}

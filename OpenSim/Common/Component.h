@@ -2696,26 +2696,26 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
  
-    const std::string& path = getConnecteeName();
+    ComponentPath path(getConnecteeName());
     const C* comp = nullptr;
 
     try {
-        if (path[0] == '/') { //absolute path name
-            comp =  &root.template getComponent<C>(path);
+        if (path.isAbsolute()) {
+            comp =  &root.template getComponent<C>(path.getString());
         }
-        else { // relative path name
-            comp =  &getOwner().template getComponent<C>(path);
+        else {
+            comp =  &getOwner().template getComponent<C>(path.getString());
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
-        comp =  root.template findComponent<C>(path);
+        comp =  root.template findComponent<C>(path.getString());
     }
     if (comp)
         connect(*comp);
     else
         OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-            path,
+            path.getString(),
             C::getClassName(),
             getName() );
 }
@@ -2738,26 +2738,22 @@ void Input<T>::connect(const AbstractOutput& output,
             _connectees.push_back(
                 SimTK::ReferencePtr<const Channel>(&chan.second) );
 
-            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
-            std::string pathName =
-                output.getOwner().getRelativePathName(getOwner());
-            if (pathName.rfind("/") == (pathName.length()-1)) { 
-                pathName = pathName + chan.second.getName();
-            }
-            else {
-                pathName = pathName + "/" + chan.second.getName();
-            }
+            // Update the connectee name as
+            // <RelOwnerPath>/<Output><(annotation)>
+            ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
+            std::string outputName = chan.second.getName();
             if (!annotation.empty() && annotation != chan.second.getChannelName()) {
-                pathName += "(" + annotation + ")";
+                outputName += "(" + annotation + ")";
             }
+            path.pushBack(outputName);
 
             // set the connectee name so that the connection can be
             // serialized
             int numPreexistingConnectees = getNumConnectees();
             if (ix < numPreexistingConnectees)
-                setConnecteeName(pathName, ix);
+                setConnecteeName(path.getString(), ix);
             else
-                appendConnecteeName(pathName);
+                appendConnecteeName(path.getString());
 
             // Use the same annotation for each channel.
             std::string annoToStore = annotation.empty() ?
@@ -2790,26 +2786,20 @@ void Input<T>::connect(const AbstractChannel& channel,
         _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
         
         // Update the connectee name as
-        // /<OwnerPath>/<Output>:<Channel><(annotation)>
-        const auto& outputsOwner = chanT->getOutput().getOwner();
-        std::string pathName = outputsOwner.getRelativePathName(getOwner());
-
-        if (pathName.rfind("/") == (pathName.length() - 1)) {
-            pathName = pathName + chanT->getName();
-        }
-        else {
-            pathName = pathName + "/" + chanT->getName();
-        }
+        // <RelOwnerPath>/<Channel><(annotation)>
+        ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
+        std::string channelName = chanT->getName();
         if (!annotation.empty() && annotation != chanT->getChannelName()) {
-            pathName += "(" + annotation + ")";
+            channelName += "(" + annotation + ")";
         }
+        path.pushBack(channelName);
         
         // Set the connectee name so the connection can be serialized.
         int numPreexistingConnectees = getNumConnectees();
         if (ix < numPreexistingConnectees)
-            setConnecteeName(pathName, ix);
+            setConnecteeName(path.getString(), ix);
         else
-            appendConnecteeName(pathName);
+            appendConnecteeName(path.getString());
         
         // Annotation.
         std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
@@ -2827,31 +2817,31 @@ void Input<T>::connect(const AbstractChannel& channel,
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPath, channelName, annotation;
+    std::string outputPathStr, channelName, annotation;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
+        parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
                            annotation);
-        std::string::size_type back = outputPath.rfind("/");
-        std::string componentPath = outputPath.substr(0, back);
-        std::string outputName = outputPath.substr(back + 1);
+        ComponentPath outputPath(outputPathStr);
+        std::string componentPathStr = outputPath.getParentPath().getString();
+        std::string outputName = outputPath.getLastSubcomponent().getString();
         try {
             const AbstractOutput* output = nullptr;
 
-            if (outputPath[0] == '/') { //absolute path name
-                if (componentPath.empty()) {
-                    output = &root.getOutput(outputPath);
+            if (outputPath.isAbsolute()) { //absolute path name
+                if (componentPathStr.empty()) {
+                    output = &root.getOutput(outputPath.getString());
                 }
                 else {
-                    output = &root.getComponent(componentPath).getOutput(outputName);
+                    output = &root.getComponent(componentPathStr).getOutput(outputName);
                 }
             }
 
             else { // relative path name
-                if (componentPath.empty()) {
-                    output = &getOwner().getOutput(outputPath);
+                if (componentPathStr.empty()) {
+                    output = &getOwner().getOutput(outputPath.getString());
                 }
                 else {
-                    output = &getOwner().getComponent(componentPath).getOutput(outputName);
+                    output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
                 }
                 
             }

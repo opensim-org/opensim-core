@@ -46,6 +46,9 @@ class OSIMCOMMON_API Path : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(Path, Object);
 
 public:
+    /// Default constructor
+    Path() = default;
+
     /// Construct Path from a string, given separator character and a string
     /// of invalidChars. Performs a cleanPath() at the end of construction.
     Path(const std::string path,
@@ -93,13 +96,9 @@ public:
     void cleanPath();
 
     bool isAbsolute() { return _isAbsolute; };
-
     size_t getPathLength() const { return _path.size(); };
 
 protected:
-    /// Default constructor
-    Path() = default;
-
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
     std::vector<std::string> getAbsolutePathVec(Path* otherPath);

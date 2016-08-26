@@ -25,9 +25,6 @@
 
 #include "Path.h"
 
-const char separator = '/';
-const std::string invalidChars = "\\/*+";
-
 namespace OpenSim {
 
 //==============================================================================
@@ -61,8 +58,17 @@ public:
         return this->getString() != other.getString();
     }
 
+    /// Get an absolute path by resolving it relative to a given otherPath.
+    /// If the current Path is already absolute, return the same Path.
     ComponentPath getAbsolutePath(ComponentPath* otherPath);
+
+    /// Find the relative Path between this Path and another Path (otherPath)
+    /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
+    /// absolute.
     ComponentPath getRelativePath(ComponentPath* otherPath);
+
+    /// Return the the sub-path that contains all sub components except for
+    /// the last one.
     ComponentPath getParentPath();
 
     ComponentPath getSubComponent(size_t index);

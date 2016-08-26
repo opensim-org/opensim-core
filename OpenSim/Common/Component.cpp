@@ -660,14 +660,14 @@ const Component::StateVariable* Component::
     const StateVariable* found = nullptr;
     const Component* comp = traversePathToComponent<Component>(prefix);
 
-    if (comp){
+    if (comp) {
         found = comp->findStateVariable(varName);
     }
 
     // Path not given or could not find it along given path name
     // Now try complete search.
     if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i){
+        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
             comp = _propertySubcomponents[i]->findComponent(prefix, &found);
             if (found) {
                 return found;
