@@ -40,19 +40,19 @@ int main() {
     
     table.appendRow(0.00, row0);
 
-    auto row1 = row0 + 1;
+    SimTK::RowVector_<double> row1 = row0 + 1;
 
     table.appendRow(0.25, row1);
 
-    auto row2 = row1 + 1;
+    SimTK::RowVector_<double> row2 = row1 + 1;
 
     table.appendRow(0.50, row2);
 
-    auto row3 = row2 + 1;
+    SimTK::RowVector_<double> row3 = row2 + 1;
 
     table.appendRow(0.75, row3);
     
-    auto row4 = row3 + 1;
+    SimTK::RowVector_<double> row4 = row3 + 1;
 
     table.appendRow(1.00, row4);
 

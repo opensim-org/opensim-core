@@ -48,8 +48,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rz = myPlanarJoint.
-                         getCoordinate(PlanarJoint::Coord::RotationZ);
+        const Coordinate& rz = myPlanarJoint.
+                               getCoordinate(PlanarJoint::Coord::RotationZ);
         \endcode
     */
     enum class Coord: unsigned {

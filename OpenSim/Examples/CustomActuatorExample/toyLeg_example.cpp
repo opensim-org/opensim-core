@@ -218,15 +218,15 @@ int main()
         manager.integrate(si);
 
         // Save results
-        auto controlsTable = osimModel.getControlsTable();
+        TimeSeriesTable controlsTable = osimModel.getControlsTable();
         STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
-        auto statesTable = manager.getStatesTable();
+        TimeSeriesTable statesTable = manager.getStatesTable();
         osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
         STOFileAdapter::write(statesTable, 
                               "SpringActuatedLeg_states_degrees.sto");
 
-        auto forcesTable = forces->getForcesTable();
+        TimeSeriesTable forcesTable = forces->getForcesTable();
         STOFileAdapter::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)

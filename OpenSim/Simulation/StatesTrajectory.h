@@ -154,7 +154,7 @@ class Model;
  * You can iterate through a trajectory to access the value of a state variable
  * at each time in the trajectory.
  * @code{.cpp}
- * for (const auto& state : states) {
+ * for (const SimTK::State& state : states) {
  *     std::cout << state.getTime() << " "
  *               << model.getStateVariableValue(state, "knee/flexion/value")
  *               << std::endl;
@@ -177,7 +177,7 @@ public:
      * @code{.cpp}
      * Model model("subject01.osim");
      * const StatesTrajectory states = getStatesTrajectorySomehow();
-     * const auto& state = states[0];
+     * const SimTK::State& state = states[0];
      * model.getStateVariableValue(state, "knee/flexion/value");
      * @endcode
      * This function does not check if the index is larger than the size of
@@ -301,9 +301,9 @@ public:
      * (e.g., `knee/flexion/angle`).
      *
      * @code
-     * auto allStateVars = states.exportToTable(model);
-     * auto kneeStates = states.exportToTable(model, {"knee/flexion/value",
-     *                                                "knee/flexion/speed"});
+     * TimeSeriesTable allStateVars = states.exportToTable(model);
+     * TimeSeriesTable kneeStates = states.exportToTable(model,
+     *                              {"knee/flexion/value", "knee/flexion/speed"});
      * @endcode
      *
      * @throws IncompatibleModel Thrown if the Model fails the check

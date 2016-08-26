@@ -56,7 +56,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X);
+        const Coordinate& rx = myBallJoint.
+                               getCoordinate(BallJoint::Coord::Rotation1X);
         \endcode
     */
     enum class Coord: unsigned {

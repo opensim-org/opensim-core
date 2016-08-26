@@ -54,7 +54,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X);
+        const Coordinate& rx = myFreeJoint.
+                               getCoordinate(FreeJoint::Coord::Rotation1X);
         \endcode
     */
     enum class Coord: unsigned {

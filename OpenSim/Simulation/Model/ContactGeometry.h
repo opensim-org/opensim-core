@@ -107,12 +107,12 @@ public:
      * Ground) `B` in which this geometry is fixed, you can use the following
      * code:
      * @code{.cpp}
-     * const auto& X_BF = geom.getFrame().findTransformInBaseFrame();
-     * const auto X_FP = geom.getTransform();
-     * const auto X_BP = X_BF * X_FP;
+     * const SimTK::Transform& X_BF = geom.getFrame().findTransformInBaseFrame();
+     * const SimTK::Transform  X_FP = geom.getTransform();
+     * const SimTK::Transform  X_BP = X_BF * X_FP;
      * @endcode
      *
-     * Prior to OpenSim 4.0, there wwas no intermediate PhysicalFrame `F`, so
+     * Prior to OpenSim 4.0, there was no intermediate PhysicalFrame `F`, so
      * this method essentially returned `X_BP`. */
     SimTK::Transform getTransform() const;
 
