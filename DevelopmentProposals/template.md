@@ -40,7 +40,7 @@ Describe implications on backwards compatibility. Particularly if/how/when code 
 For example:
 This proposal intends to add a new feature that previously did not exist.
 
-### Lifecycle and Ownership
+### Lifecycle and Ownership / Memory Management
 Describe the intended lifecycle of new objects.
 Based on the lifecycle, suggest an ownership model.
 These characteristics should motivate the types of pointers, smart pointers,
