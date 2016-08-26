@@ -1,5 +1,5 @@
 ## Project: TITLE
-***OpenSim Design Document***
+***OpenSim Development Proposal***
 
 ### Overview
 
