@@ -42,7 +42,7 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.018, 2*2+2*6);
+    Array<double> rms_tols(0.025, 2*2+2*6);
     rms_tols[4]  = 0.10;   // TRIlong/activation
     rms_tols[6]  = 0.20;   // TRIlat/activation
     rms_tols[8]  = 0.20;   // TRImed/activation
