@@ -52,7 +52,7 @@ void testCMCArm26() {
     rms_tols[6]  = 0.05;   // TRIlat/activation
     rms_tols[8]  = 0.05;   // TRImed/activation
     rms_tols[10] = 0.05;   // BIClong/activation
-    rms_tols[12] = 0.01;   // BICshort/activation
+    rms_tols[12] = 0.02;   // BICshort/activation
     rms_tols[14] = 0.005;  // BRA/activation
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
