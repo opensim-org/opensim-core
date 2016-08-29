@@ -45,7 +45,7 @@ void testCMCEMGDrivenArm() {
     Array<double> rms_tols(0.02, 2*2+2*6);
     rms_tols[4]  = 0.15;   // TRIlong/activation
     rms_tols[6]  = 0.30;   // TRIlat/activation
-    rms_tols[8]  = 0.20;   // TRImed/activation
+    rms_tols[8]  = 0.25;   // TRImed/activation
     rms_tols[10] = 0.25;   // BIClong/activation
     rms_tols[12] = 0.30;   // BICshort/activation
     
