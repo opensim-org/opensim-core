@@ -46,7 +46,7 @@ void testCMCEMGDrivenArm() {
     rms_tols[4]  = 0.15;   // TRIlong/activation
     rms_tols[6]  = 0.35;   // TRIlat/activation
     rms_tols[8]  = 0.35;   // TRImed/activation
-    rms_tols[10] = 0.25;   // BIClong/activation
+    rms_tols[10] = 0.35;   // BIClong/activation
     rms_tols[12] = 0.35;   // BICshort/activation
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm_Thelen failed");
