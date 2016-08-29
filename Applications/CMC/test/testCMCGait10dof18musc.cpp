@@ -66,10 +66,9 @@ void testGait10dof18musc() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
-    for(int i=0; i<20; ++i){
-        rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
-    }
+    Array<double> rms_tols(0.035, 2*10+2*18); // Activations within 2%.
+    for(auto i = 0u; i < 20; ++i)
+        rms_tols[i] = 0.012; // Angles and speeds within 0.6deg & 0.6deg/s.
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
