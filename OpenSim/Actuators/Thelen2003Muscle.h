@@ -302,30 +302,33 @@ private:
     //=====================================================================
 
     // Status flag returned by initMuscleState().
-    enum ResultOfInitMuscleState {
+    enum StatusFromInitMuscleState {
         Success_Converged,
         Warning_FiberAtLowerBound,
         Failure_MaxIterationsReached
     };
 
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, passive_force, and
+    // tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
     /* Calculate the muscle state such that the fiber and tendon are developing
     the same force.
 
-    @param result reference to the result vector: [solution error (N),
-           iterations, fiber length (m), passive force (N), tendon force (N)]
-    @param s the system state (const)
+    @param s the system state
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
     @param aMaxIterations the maximum number of Newton steps allowed before we
            give up attempting to initialize the model
     */
-    ResultOfInitMuscleState initMuscleState(SimTK::Vector& result,
-                                            const SimTK::State& s,
-                                            double aActivation,
-                                            double aSolTolerance,
-                                            int aMaxIterations) const;
-    
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations) const;
+
     double calcFm(double ma, double fal, double fv, 
                  double fpe, double fiso) const;
 

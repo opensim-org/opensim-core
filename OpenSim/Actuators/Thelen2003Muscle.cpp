@@ -315,31 +315,25 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     }
     int maxIter = 200;  //Should this be user settable?
 
-    SimTK::Vector result = SimTK::Vector(5);
-    ResultOfInitMuscleState flag_status = initMuscleState(result, s, activation,
-                                                          tol, maxIter);
-    double solnErr      = result[0];
-    int iterations      = (int)result[1];
-    double fiberLength  = result[2];
-    //double passiveForce = result[3];
-    double tendonForce  = result[4];
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState> result =
+        initMuscleState(s, activation, tol, maxIter);
 
-    switch(flag_status) {
+    switch(result.first) {
 
-    case ResultOfInitMuscleState::Success_Converged:
-        setActuation(s, tendonForce);
-        setFiberLength(s, fiberLength);
+    case StatusFromInitMuscleState::Success_Converged:
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
         break;
 
-    case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
+    case StatusFromInitMuscleState::Warning_FiberAtLowerBound:
         printf("\n\nThelen2003Muscle initialization:"
                " %s is at its minimum fiber length of %f\n",
-               getName().c_str(), fiberLength);
-        setActuation(s, tendonForce);
-        setFiberLength(s, fiberLength);
+               getName().c_str(), result.second["fiber_length"]);
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
         break;
 
-    case ResultOfInitMuscleState::Failure_MaxIterationsReached:
+    case StatusFromInitMuscleState::Failure_MaxIterationsReached:
         // Report internal variables and throw exception.
         const char* fmt = "\n\n"
             "  Solution error %e exceeds tolerance of %e\n"
@@ -347,10 +341,12 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
             "  Activation is %f\n"
             "  Fiber length is %f\n";
         const int messageLength = std::snprintf(nullptr, 0, fmt,
-            abs(solnErr), tol, maxIter, activation, fiberLength);
+            abs(result.second["solution_error"]), tol, maxIter, activation,
+            result.second["fiber_length"]);
         std::vector<char> buf(messageLength+1); //+1 for null terminator
         std::snprintf(&buf[0], buf.size(), fmt,
-            abs(solnErr), tol, maxIter, activation, fiberLength);
+            abs(result.second["solution_error"]), tol, maxIter, activation,
+            result.second["fiber_length"]);
         OPENSIM_THROW_FRMOBJ( MuscleCannotEquilibrate,
                               string(buf.begin(), buf.end()) );
         break;
@@ -698,12 +694,12 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 //==============================================================================
 // Numerical Guts: Initialization
 //==============================================================================
-Thelen2003Muscle::ResultOfInitMuscleState
-Thelen2003Muscle::initMuscleState(SimTK::Vector& result,
-                                  const SimTK::State& s,
-                                  double aActivation,
-                                  double aSolTolerance,
-                                  int aMaxIterations) const
+std::pair<Thelen2003Muscle::StatusFromInitMuscleState,
+          Thelen2003Muscle::ValuesFromInitMuscleState>
+Thelen2003Muscle::initMuscleState(const SimTK::State& s,
+                                  const double aActivation,
+                                  const double aSolTolerance,
+                                  const int aMaxIterations) const
 {
     //I'm using smaller variable names here to make it possible to write out 
     //lengthy equations
@@ -874,23 +870,19 @@ Thelen2003Muscle::initMuscleState(SimTK::Vector& result,
         iter++;
     }
 
-    //*******************************
-    // Populate the result vector
-    //
-    //   [0] solution error (N)
-    //   [1] iterations
-    //   [2] fiber length (m)
-    //   [3] passive force (N)
-    //   [4] tendon force (N)
-    //*******************************
+    // Populate the result map.
+    ValuesFromInitMuscleState resultValues;
+
     if (abs(ferr) < aSolTolerance) {  // The solution converged.
 
-        result[0] = ferr;
-        result[1] = (double)iter;
-        result[2] = lce;
-        result[3] = fpe*fiso;
-        result[4] = fse*fiso;
-        return ResultOfInitMuscleState::Success_Converged;
+        resultValues["solution_error"] = ferr;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["passive_force"]  = fpe*fiso;
+        resultValues["tendon_force"]   = fse*fiso;
+
+        return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+            (StatusFromInitMuscleState::Success_Converged, resultValues);
     }
 
     if (iter < aMaxIterations) {  // Fiber length is at its lower bound.
@@ -904,20 +896,24 @@ Thelen2003Muscle::initMuscleState(SimTK::Vector& result,
         fse = calcfse(tlN);
         fpe = calcfpe(lceN);
 
-        result[0] = ferr;
-        result[1] = (double)iter;
-        result[2] = lce;
-        result[3] = fpe*fiso;
-        result[4] = fse*fiso;
-        return ResultOfInitMuscleState::Warning_FiberAtLowerBound;
+        resultValues["solution_error"] = ferr;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["passive_force"]  = fpe*fiso;
+        resultValues["tendon_force"]   = fse*fiso;
+
+        return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+           (StatusFromInitMuscleState::Warning_FiberAtLowerBound, resultValues);
     }
 
-    result[0] = ferr;
-    result[1] = (double)iter;
-    result[2] = SimTK::NaN;
-    result[3] = SimTK::NaN;
-    result[4] = SimTK::NaN;
-    return ResultOfInitMuscleState::Failure_MaxIterationsReached;
+    resultValues["solution_error"] = ferr;
+    resultValues["iterations"]     = (double)iter;
+    resultValues["fiber_length"]   = SimTK::NaN;
+    resultValues["passive_force"]  = SimTK::NaN;
+    resultValues["tendon_force"]   = SimTK::NaN;
+
+    return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        (StatusFromInitMuscleState::Failure_MaxIterationsReached, resultValues);
 }
 
 //==============================================================================

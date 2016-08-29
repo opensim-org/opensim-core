@@ -901,19 +901,21 @@ private:
                                           std::string& caller) const;
 
     // Status flag returned by initMuscleState().
-    enum ResultOfInitMuscleState {
+    enum StatusFromInitMuscleState {
         Success_Converged,
         Warning_FiberAtLowerBound,
         Failure_MaxIterationsReached
     };
 
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, fiber_velocity, passive_force,
+    // and tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
     /* Calculate the muscle state such that the fiber and tendon are developing
     the same force.
 
-    @param result reference to the result vector: [solution error (N),
-           iterations, fiber length (m), fiber velocity (m/s),
-           passive force (N), tendon force (N)]
-    @param s the system state (const)
+    @param s the system state
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
@@ -922,12 +924,12 @@ private:
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
-    ResultOfInitMuscleState initMuscleState(SimTK::Vector& result,
-                                            const SimTK::State& s,
-                                            double aActivation,
-                                            double aSolTolerance,
-                                            int aMaxIterations,
-                                            double aNewtonStepFraction) const;
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations,
+                        const double aNewtonStepFraction) const;
 
     /*
     This can only be called at the velocity stage at least.

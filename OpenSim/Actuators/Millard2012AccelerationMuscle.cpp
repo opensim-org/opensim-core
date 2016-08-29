@@ -723,35 +723,27 @@ void Millard2012AccelerationMuscle::
     int maxIter = 500;  //Should this be user settable?  
     double newtonStepFraction = 0.75;
 
-    SimTK::Vector result = SimTK::Vector(6);
-    ResultOfInitMuscleState flag_status = initMuscleState(result, s, activation,
-                                                          tol, maxIter,
-                                                          newtonStepFraction);
-    double solnErr        = result[0];
-    int iterations        = (int)result[1];
-    double fiberLength    = result[2];
-    double fiberVelocity  = result[3];
-    //double passiveForce   = result[4];
-    double tendonForce    = result[5];
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState> result =
+        initMuscleState(s, activation, tol, maxIter, newtonStepFraction);
 
-    switch(flag_status) {
+    switch(result.first) {
 
-    case ResultOfInitMuscleState::Success_Converged:
-        setActuation(s, tendonForce);
-        setFiberLength(s, fiberLength);
-        setFiberVelocity(s, fiberVelocity);
+    case StatusFromInitMuscleState::Success_Converged:
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        setFiberVelocity(s, result.second["fiber_velocity"]);
         break;
 
-    case ResultOfInitMuscleState::Warning_FiberAtLowerBound:
+    case StatusFromInitMuscleState::Warning_FiberAtLowerBound:
         printf("\n\nMillard2012AccelerationMuscle initialization:"
                " %s is at its minimum fiber length of %f\n",
-               getName().c_str(), fiberLength);
-        setActuation(s, tendonForce);
-        setFiberLength(s, fiberLength);
-        setFiberVelocity(s, fiberVelocity);
+               getName().c_str(), result.second["fiber_length"]);
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        setFiberVelocity(s, result.second["fiber_velocity"]);
         break;
 
-    case ResultOfInitMuscleState::Failure_MaxIterationsReached:
+    case StatusFromInitMuscleState::Failure_MaxIterationsReached:
         // Report internal variables and throw exception.
         const char* fmt = "\n\n"
             "  Solution error %e exceeds tolerance of %e\n"
@@ -759,10 +751,12 @@ void Millard2012AccelerationMuscle::
             "  Activation is %f\n"
             "  Fiber length is %f\n";
         const int messageLength = std::snprintf(nullptr, 0, fmt,
-            abs(solnErr), tol, maxIter, activation, fiberLength);
+            abs(result.second["solution_error"]), tol, maxIter, activation,
+            result.second["fiber_length"]);
         std::vector<char> buf(messageLength+1); //+1 for null terminator
         std::snprintf(&buf[0], buf.size(), fmt,
-            abs(solnErr), tol, maxIter, activation, fiberLength);
+            abs(result.second["solution_error"]), tol, maxIter, activation,
+            result.second["fiber_length"]);
         OPENSIM_THROW_FRMOBJ( MuscleCannotEquilibrate,
                               string(buf.begin(), buf.end()) );
         break;
@@ -1195,13 +1189,14 @@ void Millard2012AccelerationMuscle::
 //==============================================================================
 // Numerical Guts: Initialization
 //==============================================================================
-Millard2012AccelerationMuscle::ResultOfInitMuscleState
-Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
-                                               const SimTK::State& s,
-                                               double aActivation,
-                                               double aSolTolerance,
-                                               int aMaxIterations,
-                                               double aNewtonStepFraction) const
+std::pair<Millard2012AccelerationMuscle::StatusFromInitMuscleState,
+          Millard2012AccelerationMuscle::ValuesFromInitMuscleState>
+Millard2012AccelerationMuscle::initMuscleState(
+                                    const SimTK::State& s,
+                                    const double aActivation,
+                                    const double aSolTolerance,
+                                    const int aMaxIterations,
+                                    const double aNewtonStepFraction) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
         "Millard2012AccelerationMuscle: Muscle is not"
@@ -1312,7 +1307,7 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
         && minFiberLengthCtr < 10){
 
         
-        //Update the multipliers and their partial derivativaes
+        //Update the multipliers and their partial derivatives
         fal         = falCurve.calcValue(lceN);
         fpe         = fpeCurve.calcValue(lceN);
         fk          = fkCurve.calcValue(lceN);
@@ -1464,25 +1459,20 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
         iter++;
     }
 
-    //*******************************
-    // Populate the result vector
-    //
-    //   [0] solution error (N)
-    //   [1] iterations
-    //   [2] fiber length (m)
-    //   [3] fiber velocity (m/s)
-    //   [4] passive force (N)
-    //   [5] tendon force (N)
-    //*******************************
+    // Populate the result map.
+    ValuesFromInitMuscleState resultValues;
+
     if (abs(ddlce_dtt) < aSolTolerance) {  // The solution converged.
 
-        result[0] = ddlce_dtt;
-        result[1] = (double)iter;
-        result[2] = lce;
-        result[3] = dlce_dt;
-        result[4] = ami.fpeVEM * fiso;
-        result[5] = ami.fseVEM * fiso;
-        return ResultOfInitMuscleState::Success_Converged;
+        resultValues["solution_error"] = ddlce_dtt;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["fiber_velocity"] = dlce_dt;
+        resultValues["passive_force"]  = ami.fpeVEM * fiso;
+        resultValues["tendon_force"]   = ami.fseVEM * fiso;
+
+        return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+               (StatusFromInitMuscleState::Success_Converged, resultValues);
     }
 
     if (iter < aMaxIterations) {  // Fiber length is at its lower bound.
@@ -1525,22 +1515,26 @@ Millard2012AccelerationMuscle::initMuscleState(SimTK::Vector& result,
 
         // TODO: Check for a pennation angle singularity
 
-        result[0] = ddlce_dtt;
-        result[1] = (double)iter;
-        result[2] = lce;
-        result[3] = dlce_dt;
-        result[4] = ami.fpeVEM * fiso;
-        result[5] = ami.fseVEM * fiso;
-        return ResultOfInitMuscleState::Warning_FiberAtLowerBound;
+        resultValues["solution_error"] = ddlce_dtt;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["fiber_velocity"] = dlce_dt;
+        resultValues["passive_force"]  = ami.fpeVEM * fiso;
+        resultValues["tendon_force"]   = ami.fseVEM * fiso;
+
+        return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+           (StatusFromInitMuscleState::Warning_FiberAtLowerBound, resultValues);
     }
 
-    result[0] = ddlce_dtt;
-    result[1] = (double)iter;
-    result[2] = SimTK::NaN;
-    result[3] = SimTK::NaN;
-    result[4] = SimTK::NaN;
-    result[5] = SimTK::NaN;
-    return ResultOfInitMuscleState::Failure_MaxIterationsReached;
+    resultValues["solution_error"] = ddlce_dtt;
+    resultValues["iterations"]     = (double)iter;
+    resultValues["fiber_length"]   = SimTK::NaN;
+    resultValues["fiber_velocity"] = SimTK::NaN;
+    resultValues["passive_force"]  = SimTK::NaN;
+    resultValues["tendon_force"]   = SimTK::NaN;
+
+    return std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        (StatusFromInitMuscleState::Failure_MaxIterationsReached, resultValues);
 }
 
 
