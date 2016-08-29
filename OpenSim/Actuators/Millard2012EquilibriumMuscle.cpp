@@ -469,20 +469,13 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
 
     case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
         // Report internal variables and throw exception.
-        const char* fmt = "\n\n"
-            "  Solution error %e exceeds tolerance of %e\n"
-            "  Newton iterations reached limit of %d\n"
-            "  Clamped activation is %f\n"
-            "  Fiber length is %f\n";
-        const int messageLength = std::snprintf(nullptr, 0, fmt,
-            abs(result.second["solution_error"]), tol, maxIter,
-            clampedActivation, result.second["fiber_length"]);
-        std::vector<char> buf(messageLength+1); //+1 for null terminator
-        std::snprintf(&buf[0], buf.size(), fmt,
-            abs(result.second["solution_error"]), tol, maxIter,
-            clampedActivation, result.second["fiber_length"]);
-        OPENSIM_THROW_FRMOBJ( MuscleCannotEquilibrate,
-                              string(buf.begin(), buf.end()) );
+        std::ostringstream ss;
+        ss << "\n  Solution error " << abs(result.second["solution_error"])
+           << " exceeds tolerance of " << tol << "\n"
+           << "  Newton iterations reached limit of " << maxIter << "\n"
+           << "  Clamped activation is " << clampedActivation << "\n"
+           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
         break;
     }
 }
@@ -535,20 +528,13 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
     case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
         // Report internal variables and throw exception.
-        const char* fmt = "\n\n"
-            "  Solution error %e exceeds tolerance of %e\n"
-            "  Newton iterations reached limit of %d\n"
-            "  Activation is %f\n"
-            "  Fiber length is %f\n";
-        const int messageLength = std::snprintf(nullptr, 0, fmt,
-            abs(result.second["solution_error"]), tol, maxIter, activation,
-            result.second["fiber_length"]);
-        std::vector<char> buf(messageLength+1); //+1 for null terminator
-        std::snprintf(&buf[0], buf.size(), fmt,
-            abs(result.second["solution_error"]), tol, maxIter, activation,
-            result.second["fiber_length"]);
-        OPENSIM_THROW_FRMOBJ( MuscleCannotEquilibrate,
-                              string(buf.begin(), buf.end()) );
+        std::ostringstream ss;
+        ss << "\n  Solution error " << abs(result.second["solution_error"])
+           << " exceeds tolerance of " << tol << "\n"
+           << "  Newton iterations reached limit of " << maxIter << "\n"
+           << "  Activation is " << activation << "\n"
+           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
         break;
     }
 }
