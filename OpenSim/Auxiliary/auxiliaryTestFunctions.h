@@ -79,7 +79,7 @@ inline void ASSERT(bool cond,
  */
 void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, 
                                     OpenSim::Storage& standard, 
-                                    OpenSim::Array<double> tolerances, 
+                                    std::vector<double> tolerances, 
                                     std::string testFile, 
                                     int testFileLine, 
                                     std::string errorMessage)

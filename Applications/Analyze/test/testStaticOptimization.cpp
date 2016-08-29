@@ -135,14 +135,14 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     //Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
-                                    Array<double>(actTol, 6),
-                                    __FILE__, __LINE__, 
-                                    "Arm26 activations "+muscName+" failed");
+                                   std::vector<double>(6, actTol),
+                                   __FILE__, __LINE__, 
+                                   "Arm26 activations "+muscName+" failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
-                                    Array<double>(forceTol, 6),
-                                    __FILE__, __LINE__, 
-                                    "Arm26 forces "+muscName+" failed.");
+                                   std::vector<double>(6, forceTol),
+                                   __FILE__, __LINE__, 
+                                   "Arm26 forces "+muscName+" failed.");
     cout << resultsDir <<": test Arm26 passed." << endl;
   
     
@@ -164,12 +164,12 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     //Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
-        Array<double>(actTol, 6), 
+        std::vector<double>(6, actTol),
         __FILE__, __LINE__, 
         "Arm26 activation "+muscName+" with bounds failed.");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
-        Array<double>(forceTol, 6),
+        std::vector<double>(6, forceTol),
         __FILE__,  __LINE__, 
         "Arm26 forces "+muscName+" with bounds failed.");
  
@@ -188,12 +188,12 @@ void testModelWithPassiveForces() {
     Storage stdForces("std_walk_subject01_ankle_spring_StaticOptimization_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations, stdActivations,
-        Array<double>(0.025, 28),
+        std::vector<double>(28, 0.025),
         __FILE__, __LINE__,
         "ModelWithPassiveForces activations failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
-        Array<double>(2.5, 48),
+        std::vector<double>(48, 2.5),
         __FILE__, __LINE__,
         "ModelWithPassiveForces forces failed.");
     cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;
