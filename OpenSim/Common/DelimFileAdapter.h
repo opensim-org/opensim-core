@@ -105,7 +105,7 @@ public:
     static const std::string _table;
 
     /** Name of the data type T (template parameter).                         */
-    static const std::string dataTypeName();
+    static inline const std::string dataTypeName();
 
 protected:
     /** Implementation of the read functionality.                             */
@@ -127,6 +127,14 @@ protected:
                    const unsigned& prec) const;
 
 private:
+    /** Following overloads implement dataTypeName.                           */
+    static inline const std::string dataTypeName_impl(double);
+    static inline const std::string dataTypeName_impl(SimTK::UnitVec3);
+    static inline const std::string dataTypeName_impl(SimTK::Quaternion);
+    static inline const std::string dataTypeName_impl(SimTK::SpatialVec);
+    template<int M>
+    static inline const std::string dataTypeName_impl(SimTK::Vec<M>);
+    
     /** Trim string -- remove specified leading and trailing characters from 
     string. Trims out whitespace by default.                                  */
     static std::string trim(const std::string& str, const char& ch = ' ');
@@ -160,58 +168,41 @@ template<typename T>
 const std::string 
 DelimFileAdapter<T>::_endHeaderString{"endheader"};
 
-template<>
-inline const std::string 
-DelimFileAdapter<double>::dataTypeName() {
+template<typename T>
+const std::string
+DelimFileAdapter<T>::dataTypeName() {
+    return dataTypeName_impl(T{});
+}
+
+template<typename T>
+const std::string
+DelimFileAdapter<T>::dataTypeName_impl(double) {
     return "double";
 }
 
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Vec2>::dataTypeName() {
-    return "Vec2";
-}
-
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Vec3>::dataTypeName() {
-    return "Vec3";
-}
-
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Vec4>::dataTypeName() {
-    return "Vec4";
-}
-
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Vec5>::dataTypeName() {
-    return "Vec5";
-}
-
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Vec6>::dataTypeName() {
-    return "Vec6";
-}
-
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::UnitVec3>::dataTypeName() {
+template<typename T>
+const std::string
+DelimFileAdapter<T>::dataTypeName_impl(SimTK::UnitVec3) {
     return "UnitVec3";
 }
 
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::Quaternion>::dataTypeName() {
+template<typename T>
+const std::string
+DelimFileAdapter<T>::dataTypeName_impl(SimTK::Quaternion) {
     return "Quaternion";
 }
 
-template<>
-inline const std::string 
-DelimFileAdapter<SimTK::SpatialVec>::dataTypeName() {
+template<typename T>
+const std::string
+DelimFileAdapter<T>::dataTypeName_impl(SimTK::SpatialVec) {
     return "SpatialVec";
+}
+
+template<typename T>
+template<int M>
+const std::string
+DelimFileAdapter<T>::dataTypeName_impl(SimTK::Vec<M>) {
+  return std::string{"Vec"} + std::to_string(M);
 }
 
 template<typename T>
