@@ -303,7 +303,7 @@ public:
                          const std::string& aColumnName,
                          double startTime=SimTK::NaN, double endTime=SimTK::NaN);
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-    void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    void compareWithStandard(Storage& standard, std::vector<std::string> &columnsUsed, std::vector<double> &comparisons);
     /** Force column labels for a Storage object to become unique. This is done
      * by prepending the string (n_) as needed where n=1, 2, ...
      *
