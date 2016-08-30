@@ -27,6 +27,7 @@
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 
+#include <string>
 #include <fstream>
 #include <regex>
 
@@ -105,7 +106,7 @@ public:
     static const std::string _table;
 
     /** Name of the data type T (template parameter).                         */
-    static inline const std::string dataTypeName();
+    static inline std::string dataTypeName();
 
 protected:
     /** Implementation of the read functionality.                             */
@@ -117,24 +118,42 @@ protected:
 
     /** Read elements of type T (template parameter) from a sequence of 
     tokens.                                                                   */
-    SimTK::RowVector_<T> 
+    inline SimTK::RowVector_<T> 
     readElems(const std::vector<std::string>& tokens) const;
 
     /** Write an element of type T (template parameter) to stream with the
     specified precision.                                                      */
-    void writeElem(std::ostream& stream, 
-                   const T& elem,
-                   const unsigned& prec) const;
+    inline void writeElem(std::ostream& stream, 
+                          const T& elem,
+                          const unsigned& prec) const;
 
 private:
-    /** Following overloads implement dataTypeName.                           */
-    static inline const std::string dataTypeName_impl(double);
-    static inline const std::string dataTypeName_impl(SimTK::UnitVec3);
-    static inline const std::string dataTypeName_impl(SimTK::Quaternion);
-    static inline const std::string dataTypeName_impl(SimTK::SpatialVec);
+    /** Following overloads implement dataTypeName().                         */
+    static inline std::string dataTypeName_impl(double);
+    static inline std::string dataTypeName_impl(SimTK::UnitVec3);
+    static inline std::string dataTypeName_impl(SimTK::Quaternion);
+    static inline std::string dataTypeName_impl(SimTK::SpatialVec);
     template<int M>
-    static inline const std::string dataTypeName_impl(SimTK::Vec<M>);
-    
+    static inline std::string dataTypeName_impl(SimTK::Vec<M>);
+
+    /** Following overloads implement readElems().                            */
+    inline SimTK::RowVector_<double>
+    readElems_impl(const std::vector<std::string>& tokens,
+                   double) const ;
+    inline SimTK::RowVector_<SimTK::UnitVec3>
+    readElems_impl(const std::vector<std::string>& tokens,
+                   SimTK::UnitVec3) const;
+    inline SimTK::RowVector_<SimTK::Quaternion>
+    readElems_impl(const std::vector<std::string>& tokens,
+                   SimTK::Quaternion) const;
+    inline SimTK::RowVector_<SimTK::SpatialVec>
+    readElems_impl(const std::vector<std::string>& tokens,
+                   SimTK::SpatialVec) const;
+    template<int M>
+    inline SimTK::RowVector_<SimTK::Vec<M>>
+    readElems_impl(const std::vector<std::string>& tokens,
+                   SimTK::Vec<M>) const;
+      
     /** Trim string -- remove specified leading and trailing characters from 
     string. Trims out whitespace by default.                                  */
     static std::string trim(const std::string& str, const char& ch = ' ');
@@ -169,38 +188,38 @@ const std::string
 DelimFileAdapter<T>::_endHeaderString{"endheader"};
 
 template<typename T>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName() {
     return dataTypeName_impl(T{});
 }
 
 template<typename T>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName_impl(double) {
     return "double";
 }
 
 template<typename T>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName_impl(SimTK::UnitVec3) {
     return "UnitVec3";
 }
 
 template<typename T>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName_impl(SimTK::Quaternion) {
     return "Quaternion";
 }
 
 template<typename T>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName_impl(SimTK::SpatialVec) {
     return "SpatialVec";
 }
 
 template<typename T>
 template<int M>
-const std::string
+std::string
 DelimFileAdapter<T>::dataTypeName_impl(SimTK::Vec<M>) {
   return std::string{"Vec"} + std::to_string(M);
 }
@@ -369,10 +388,16 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     return output_tables;
 }
 
-template<>
-inline SimTK::RowVector_<double>
-DelimFileAdapter<double>::readElems(
-                                 const std::vector<std::string>& tokens) const {
+template<typename T>
+SimTK::RowVector_<T>
+DelimFileAdapter<T>::readElems(const std::vector<std::string>& tokens) const {
+    return readElems_impl(tokens, T{});
+}
+
+template<typename T>
+SimTK::RowVector_<double>
+DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
+                                    double) const {
     SimTK::RowVector_<double> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i)
         elems[static_cast<int>(i)] = std::stod(tokens[i]);
@@ -380,109 +405,10 @@ DelimFileAdapter<double>::readElems(
     return elems;
 }
 
-template<>
-inline SimTK::RowVector_<SimTK::Vec2>
-DelimFileAdapter<SimTK::Vec2>::readElems(
-                                 const std::vector<std::string>& tokens) const {
-    SimTK::RowVector_<SimTK::Vec2> elems{static_cast<int>(tokens.size())};
-    for(auto i = 0u; i < tokens.size(); ++i) {
-        auto comps = tokenize(tokens[i], _compDelimRead);
-        OPENSIM_THROW_IF(comps.size() != 2,
-                         IncorrectNumTokens,
-                         "Expected 2x (multiple of 2) number of tokens.");
-        elems[i] = SimTK::Vec2{std::stod(comps[0]),
-                               std::stod(comps[1])};
-    }
-
-    return elems;
-}
-
-template<>
-inline SimTK::RowVector_<SimTK::Vec3>
-DelimFileAdapter<SimTK::Vec3>::readElems(
-                                 const std::vector<std::string>& tokens) const {
-    SimTK::RowVector_<SimTK::Vec3> elems{static_cast<int>(tokens.size())};
-    for(auto i = 0u; i < tokens.size(); ++i) {
-        auto comps = tokenize(tokens[i], _compDelimRead);
-        OPENSIM_THROW_IF(comps.size() != 3, 
-                         IncorrectNumTokens,
-                         "Expected 3x (multiple of 3) number of tokens.");
-        elems[i] = SimTK::Vec3{std::stod(comps[0]),
-                               std::stod(comps[1]),
-                               std::stod(comps[2])};
-        
-    }
-
-    return elems;
-}
-
-template<>
-inline SimTK::RowVector_<SimTK::Vec4>
-DelimFileAdapter<SimTK::Vec4>::readElems(
-                                 const std::vector<std::string>& tokens) const {
-    SimTK::RowVector_<SimTK::Vec4> elems{static_cast<int>(tokens.size())};
-    for(auto i = 0u; i < tokens.size(); ++i) {
-        auto comps = tokenize(tokens[i], _compDelimRead);
-        OPENSIM_THROW_IF(comps.size() != 4, 
-                         IncorrectNumTokens,
-                         "Expected 4x (multiple of 4) number of tokens.");
-        elems[i] = SimTK::Vec4{std::stod(comps[0]),
-                               std::stod(comps[1]),
-                               std::stod(comps[2]),
-                               std::stod(comps[3])};
-        
-    }
-
-    return elems;
-}
-
-template<>
-inline SimTK::RowVector_<SimTK::Vec5>
-DelimFileAdapter<SimTK::Vec5>::readElems(
-                                 const std::vector<std::string>& tokens) const {
-    SimTK::RowVector_<SimTK::Vec5> elems{static_cast<int>(tokens.size())};
-    for(auto i = 0u; i < tokens.size(); ++i) {
-        auto comps = tokenize(tokens[i], _compDelimRead);
-        OPENSIM_THROW_IF(comps.size() != 5, 
-                         IncorrectNumTokens,
-                         "Expected 5x (multiple of 5) number of tokens.");
-        elems[i] = SimTK::Vec5{std::stod(comps[0]),
-                               std::stod(comps[1]),
-                               std::stod(comps[2]),
-                               std::stod(comps[3]),
-                               std::stod(comps[4])};
-        
-    }
-
-    return elems;
-}
-
-template<>
-inline SimTK::RowVector_<SimTK::Vec6>
-DelimFileAdapter<SimTK::Vec6>::readElems(
-                                 const std::vector<std::string>& tokens) const {
-    SimTK::RowVector_<SimTK::Vec6> elems{static_cast<int>(tokens.size())};
-    for(auto i = 0u; i < tokens.size(); ++i) {
-        auto comps = tokenize(tokens[i], _compDelimRead);
-        OPENSIM_THROW_IF(comps.size() != 6, 
-                         IncorrectNumTokens,
-                         "Expected 6x (multiple of 6) number of tokens.");
-        elems[i] = SimTK::Vec6{std::stod(comps[0]),
-                               std::stod(comps[1]),
-                               std::stod(comps[2]),
-                               std::stod(comps[3]),
-                               std::stod(comps[4]),
-                               std::stod(comps[5])};
-        
-    }
-
-    return elems;
-}
-
-template<>
-inline SimTK::RowVector_<SimTK::UnitVec3>
-DelimFileAdapter<SimTK::UnitVec3>::readElems(
-                                 const std::vector<std::string>& tokens) const {
+template<typename T>
+SimTK::RowVector_<SimTK::UnitVec3>
+DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
+                                    SimTK::UnitVec3) const {
     SimTK::RowVector_<SimTK::UnitVec3> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i) {
         auto comps = tokenize(tokens[i], _compDelimRead);
@@ -492,16 +418,15 @@ DelimFileAdapter<SimTK::UnitVec3>::readElems(
         elems[i] = SimTK::UnitVec3{std::stod(comps[0]),
                                    std::stod(comps[1]),
                                    std::stod(comps[2])};
-        
     }
 
     return elems;
 }
 
-template<>
-inline SimTK::RowVector_<SimTK::Quaternion>
-DelimFileAdapter<SimTK::Quaternion>::readElems(
-                                 const std::vector<std::string>& tokens) const {
+template<typename T>
+SimTK::RowVector_<SimTK::Quaternion>
+DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
+                                    SimTK::Quaternion) const {
     SimTK::RowVector_<SimTK::Quaternion> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i) {
         auto comps = tokenize(tokens[i], _compDelimRead);
@@ -512,16 +437,15 @@ DelimFileAdapter<SimTK::Quaternion>::readElems(
                                      std::stod(comps[1]),
                                      std::stod(comps[2]),
                                      std::stod(comps[3])};
-        
     }
 
     return elems;
 }
 
-template<>
-inline SimTK::RowVector_<SimTK::SpatialVec>
-DelimFileAdapter<SimTK::SpatialVec>::readElems(
-                                 const std::vector<std::string>& tokens) const {
+template<typename T>
+SimTK::RowVector_<SimTK::SpatialVec>
+DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
+                                    SimTK::SpatialVec) const {
     SimTK::RowVector_<SimTK::SpatialVec> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i) {
         auto comps = tokenize(tokens[i], _compDelimRead);
@@ -534,42 +458,32 @@ DelimFileAdapter<SimTK::SpatialVec>::readElems(
                                      {std::stod(comps[3]),
                                       std::stod(comps[4]),
                                       std::stod(comps[5])}};
-        
     }
 
     return elems;
 }
 
-// /** Read SimTK::Transform_<double>. The transform is a 3x4 matrix and the data
-// in the input vector is organized column-wise -- [col0, col1, col2, col3]. First 
-// three columns form the rotation matrix. The last column is translation.       */
-// template<>
-// inline SimTK::RowVector_<SimTK::Transform_<double>>
-// DelimFileAdapter<SimTK::Transform_<double>>::readElems(
-//                                  const std::vector<std::string>& tokens) const {
-//     OPENSIM_THROW_IF(tokens.size() % 12 != 0,
-//                      IncorrectNumTokens,
-//                      "Expected 12x (multiple of 12) number of tokens.");
+template<typename T>
+template<int M>
+SimTK::RowVector_<SimTK::Vec<M>>
+DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
+                                    SimTK::Vec<M>) const {
+    SimTK::RowVector_<SimTK::Vec<M>> elems{static_cast<int>(tokens.size())};
+    for(auto i = 0u; i < tokens.size(); ++i) {
+        auto comps = tokenize(tokens[i], _compDelimRead);
+        OPENSIM_THROW_IF(comps.size() != M, 
+                         IncorrectNumTokens,
+                         "Expected " + std::to_string(M) +
+                         "x (multiple of " + std::to_string(M) +
+                         ") number of tokens.");
+        for(int j = 0; j < M; ++j) {
+            elems[i][j] = std::stod(comps[j]);
+        }
+    }
 
-//     SimTK::RowVector_<SimTK::Transform_<double>> 
-//         elems{static_cast<int>(tokens.size() / 12)};
-//     for(auto i = 0u; i < tokens.size(); i += 12) {
-//         SimTK::Tranform_<double> elem{};
-//         auto& rotMat = elems[i / 12].updR();
-//         auto& trans = elems[i / 12].updT();
-        
-//         for(auto c = 0u; c < 3; ++c)
-//             for(auto r = 0u; r < 3; ++r)
-//                 rotMat(r, c) = std::stod(tokens.at(i + (c * 3) + r));
-        
-//         trans[0] = std::stod(tokens.at(i + 9));
-//         trans[1] = std::stod(tokens.at(i + 10));
-//         trans[2] = std::stod(tokens.at(i + 11));
-//     }
-
-//     return elems;
-// }
-
+    return elems;
+}
+  
 template<typename T>
 void
 DelimFileAdapter<T>::extendWrite(const InputTables& absTables, 
