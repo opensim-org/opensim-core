@@ -14,7 +14,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 ### Architecture
 Changes to `Component`:
 - Create a new method for forming connections between Components. There will be several variants:
-  - `static void connect(const Object& object, Object& object)` and `static void connect(Object& object, const Object& object)`,
+  - `static void connect(const Object& object, Component& comp)` and `static void connect(Component& comp, const Object& object)`,
     which will call [this method](https://github.com/opensim-org/opensim-core/blob/master/OpenSim/Common/ComponentConnector.h#L278).
   - `static void connect(const AbstractOutput& output, AbstractInput& input, const std::string& annotation = "")` and
     `static void connect(AbstractInput& input, const AbstractOutput& output, const std::string& annotation = "")`,
@@ -40,7 +40,7 @@ Component::connect(device.getOutput(outputName), reporter->updInput("inputs"));
 ```
 
 ### Bindings
-I don't know. Are there issues wrapping static methods?
+No anticipated issues.
 
 ### Backwards Compatibility
 No backwards compatibility concerns because Components are new to 4.0.
@@ -56,7 +56,7 @@ Updates to testComponentInterface.cpp will retain current test coverage for the 
 Will add tests to ensure `connect(a, b)` has the same effect as `connect(b, a)`.
 
 ### Potential hurdles or roadblocks
-See bindings, above.
+Agreeing on implementing either (a) `connect(in, out)`, (b) `connect(out, in)`, or (c) both.
 
 ### Pull Requests
 A single PR should suffice.
