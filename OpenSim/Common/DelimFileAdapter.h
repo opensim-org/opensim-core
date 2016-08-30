@@ -139,7 +139,7 @@ private:
     /** Following overloads implement readElems().                            */
     inline SimTK::RowVector_<double>
     readElems_impl(const std::vector<std::string>& tokens,
-                   double) const ;
+                   double) const;
     inline SimTK::RowVector_<SimTK::UnitVec3>
     readElems_impl(const std::vector<std::string>& tokens,
                    SimTK::UnitVec3) const;
@@ -153,6 +153,18 @@ private:
     inline SimTK::RowVector_<SimTK::Vec<M>>
     readElems_impl(const std::vector<std::string>& tokens,
                    SimTK::Vec<M>) const;
+
+    /** Following overloads implement writeElem().                            */
+    inline void writeElem_impl(std::ostream& stream,
+                               const double& elem,
+                               const unsigned& prec) const;
+    inline void writeElem_impl(std::ostream& stream,
+                               const SimTK::SpatialVec& elem,
+                               const unsigned& prec) const;
+    template<int M>
+    inline void writeElem_impl(std::ostream& stream,
+                               const SimTK::Vec<M>& elem,
+                               const unsigned& prec) const;
       
     /** Trim string -- remove specified leading and trailing characters from 
     string. Trims out whitespace by default.                                  */
@@ -557,88 +569,27 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
     }
 }
 
-template<>
-inline void 
-DelimFileAdapter<double>::writeElem(std::ostream& stream,
+template<typename T>
+void
+DelimFileAdapter<T>::writeElem(std::ostream& stream,
+                               const T& elem,
+                               const unsigned& prec) const {
+    writeElem_impl(stream, elem, prec);
+}
+
+template<typename T>
+void
+DelimFileAdapter<T>::writeElem_impl(std::ostream& stream,
                                     const double& elem,
                                     const unsigned& prec) const {
     stream << std::setprecision(prec) << elem;
 }
 
-template<>
-inline void 
-DelimFileAdapter<SimTK::Vec2>::writeElem(std::ostream& stream,
-                                         const SimTK::Vec2& elem,
-                                         const unsigned& prec) const {
-    stream                    << std::setprecision(prec) << elem[0]
-           << _compDelimWrite << std::setprecision(prec) << elem[1];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::Vec3>::writeElem(std::ostream& stream,
-                                         const SimTK::Vec3& elem,
-                                         const unsigned& prec) const {
-    stream                    << std::setprecision(prec) << elem[0]
-           << _compDelimWrite << std::setprecision(prec) << elem[1]
-           << _compDelimWrite << std::setprecision(prec) << elem[2];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::Vec4>::writeElem(std::ostream& stream,
-                                         const SimTK::Vec4& elem,
-                                         const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0];
-    for(auto i = 1u; i < 4; ++i)
-        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::Vec5>::writeElem(std::ostream& stream,
-                                         const SimTK::Vec5& elem,
-                                         const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0];
-    for(auto i = 1u; i < 5; ++i)
-        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::Vec6>::writeElem(std::ostream& stream,
-                                         const SimTK::Vec6& elem,
-                                         const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0];
-    for(auto i = 1u; i < 6; ++i)
-        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::UnitVec3>::writeElem(std::ostream& stream,
-                                             const SimTK::UnitVec3& elem,
-                                             const unsigned& prec) const {
-    stream                    << std::setprecision(prec) << elem[0]
-           << _compDelimWrite << std::setprecision(prec) << elem[1]
-           << _compDelimWrite << std::setprecision(prec) << elem[2];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::Quaternion>::writeElem(std::ostream& stream,
-                                              const SimTK::Quaternion& elem,
-                                               const unsigned& prec) const {
-    stream << std::setprecision(prec) << elem[0];
-    for(auto i = 1u; i < 4; ++i)
-        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
-}
-
-template<>
-inline void 
-DelimFileAdapter<SimTK::SpatialVec>::writeElem(std::ostream& stream,
-                                               const SimTK::SpatialVec& elem,
-                                               const unsigned& prec) const {
+template<typename T>
+void
+DelimFileAdapter<T>::writeElem_impl(std::ostream& stream,
+                                    const SimTK::SpatialVec& elem,
+                                    const unsigned& prec) const {
     stream                    << std::setprecision(prec) << elem[0][0]
            << _compDelimWrite << std::setprecision(prec) << elem[0][1]
            << _compDelimWrite << std::setprecision(prec) << elem[0][2]
@@ -647,22 +598,16 @@ DelimFileAdapter<SimTK::SpatialVec>::writeElem(std::ostream& stream,
            << _compDelimWrite << std::setprecision(prec) << elem[1][2];
 }
 
-// /** Write SimTK::Transform_<double> to stream. The tranform is a 3x4 matrix and 
-// the data is written column-wise -- [col0, col1, col2, col3]. First 3 columns 
-// form the rotation. The last column is translation.                            */
-// template<>
-// inline void
-// DelimFileAdapter<SimTK::Transform_<double>>::writeElem(std::ostream& stream,
-//                                           const SimTK::Transform_<double>& elem,
-//                                           const unsigned& prec) const {
-//     const auto& mat34 = elem.asMat34();
-//     stream << std::setprecision(prec) << mat34(0, 0)
-//            << _compDelimWrite << std::setprecision(prec) << mat34(1, 0)
-//            << _compDelimWrite << std::setprecision(prec) << mat34(2, 0);
-//     for(auto c = 1u; c < 4; ++c)
-//         for(auto r = 0u; r < 3; ++r)
-//             stream << _compDelimWrite << std::setprecision(prec) << mat34(r, c);
-// }
+template<typename T>
+template<int M>
+void
+DelimFileAdapter<T>::writeElem_impl(std::ostream& stream,
+                                    const SimTK::Vec<M>& elem,
+                                    const unsigned& prec) const {
+    stream << std::setprecision(prec) << elem[0];
+    for(auto i = 1u; i < M; ++i)
+        stream << _compDelimWrite << std::setprecision(prec) << elem[i];
+}
 
 }
 
