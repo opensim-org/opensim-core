@@ -42,17 +42,17 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*2+2*6);
-    rms_tols[4] = 0.10;  // trilong
-    rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
-    rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
-    rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
-    rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
+    Array<double> rms_tols(0.025, 2*2+2*6);
+    rms_tols[4]  = 0.15;   // TRIlong/activation
+    rms_tols[6]  = 0.35;   // TRIlat/activation
+    rms_tols[8]  = 0.35;   // TRImed/activation
+    rms_tols[10] = 0.35;   // BIClong/activation
+    rms_tols[12] = 0.35;   // BICshort/activation
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm_Thelen failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    cout << "\ntestCMCEMGDrivenArm_Thelen "+muscleType+ " passed\n" << endl;
 }
 
 int main() {
