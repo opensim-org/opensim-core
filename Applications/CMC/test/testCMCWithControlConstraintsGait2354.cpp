@@ -82,7 +82,7 @@ void testGait2354() {
     for (int i = 23; i < 46; ++i){
         rms_tols2[i] = 0.75; // velocities
     }
-    for (int i = 46; i < rms_tols2.size(); ++i){
+    for (size_t i = 46; i < rms_tols2.size(); ++i){
         rms_tols2[i] = 0.15; // muscle activations and fiber-lengths
     }
 
