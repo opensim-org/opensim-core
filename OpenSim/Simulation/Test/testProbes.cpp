@@ -225,15 +225,15 @@ void simulateMuscle(
         Vec3(0),
                         Vec3(0));
 
-    CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-    jointCoordinateSet[0].setRangeMin(0);
-        jointCoordinateSet[0].setRangeMax(1.0);
+    auto& sliderCoord = slider->upd_coordinates(0);
+    sliderCoord.setName("tx");
+    sliderCoord.setDefaultValue(1.0);
+    sliderCoord.setRangeMin(0);
+    sliderCoord.setRangeMax(1.0);
 
     if (motion != NULL){
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-        jointCoordinateSet[0].setDefaultIsPrescribed(true);
+        sliderCoord.setPrescribedFunction(*motion);
+        sliderCoord.setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);

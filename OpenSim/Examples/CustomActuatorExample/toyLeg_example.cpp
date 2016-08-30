@@ -102,17 +102,14 @@ int main()
             locationInChild, orientationInChild);
         
         double range[2] = {-SimTK::Pi*2, SimTK::Pi*2};
-        CoordinateSet& ankleCoordinateSet = ankle->upd_CoordinateSet();
-        ankleCoordinateSet[0].setName("q1");
-        ankleCoordinateSet[0].setRange(range);
+        ankle->upd_coordinates(0).setName("q1");
+        ankle->upd_coordinates(0).setRange(range);
 
-        CoordinateSet& kneeCoordinateSet = knee->upd_CoordinateSet();
-        kneeCoordinateSet[0].setName("q2");
-        kneeCoordinateSet[0].setRange(range);
+        knee->upd_coordinates(0).setName("q2");
+        knee->upd_coordinates(0).setRange(range);
 
-        CoordinateSet& hipCoordinateSet = hip->upd_CoordinateSet();
-        hipCoordinateSet[0].setName("q3");
-        hipCoordinateSet[0].setRange(range);
+        hip->upd_coordinates(0).setName("q3");
+        hip->upd_coordinates(0).setRange(range);
 
         // Add the bodies to the model
         osimModel.addBody(linkage1);

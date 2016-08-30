@@ -73,7 +73,7 @@ public:
 
     /** Get the Coordinate associated with this Joint. @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
-        return get_CoordinateSet()[ static_cast<unsigned>(idx) ];
+        return get_coordinates( static_cast<unsigned>(idx) );
     }
 
 protected:

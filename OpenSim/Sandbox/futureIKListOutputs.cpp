@@ -268,7 +268,7 @@ void createModel(Model& model) {
                              *pelvis, Vec3(0), Vec3(0),
                              *femur,  Vec3(0, 1, 0), Vec3(0));
     model.addJoint(hip);
-    hog->getCoordinateSet().get(0).setDefaultValue(0.5 * SimTK::Pi);
+    hog->upd_coordinates(0).setDefaultValue(0.5 * SimTK::Pi);
     
     auto* asis = new OpenSim::Marker();
     asis->setName("asis"); asis->setParentFrame(*pelvis);

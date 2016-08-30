@@ -181,10 +181,10 @@ void testStationOnOffsetFrame()
     SimTK::State state = pendulum.initSystem();
 
     // set the model coordinates and coordinate speeds
-    hip->upd_CoordinateSet()[0].setValue(state, 0.29);
-    hip->upd_CoordinateSet()[0].setSpeedValue(state, 0.1);
-    hip->upd_CoordinateSet()[1].setValue(state, -0.38);
-    hip->upd_CoordinateSet()[1].setSpeedValue(state, -0.13);
+    hip->upd_coordinates(0).setValue(state, 0.29);
+    hip->upd_coordinates(0).setSpeedValue(state, 0.1);
+    hip->upd_coordinates(1).setValue(state, -0.38);
+    hip->upd_coordinates(1).setSpeedValue(state, -0.13);
 
     // Get the frame's mobilized body
     const OpenSim::PhysicalFrame&  frame = myStation->getParentFrame();

@@ -118,10 +118,9 @@ void testMcKibbenActuator()
     Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
     SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);
 
-    auto& coords = ballToGround->upd_CoordinateSet();
-    coords[0].setName("ball_d");
-    coords[0].setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
-    coords[0].set_prescribed(true);
+    ballToGround->upd_coordinates(0).setName("ball_d");
+    ballToGround->upd_coordinates(0).setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
+    ballToGround->upd_coordinates(0).set_prescribed(true);
 
     model->addBody(ball);
     model->addJoint(ballToGround);
@@ -394,9 +393,8 @@ void testClutchedPathSpring()
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider->upd_CoordinateSet();
-    slider_coords[0].setName("block_h");
-    slider_coords[0].setRange(positionRange);
+    slider->upd_coordinates(0).setName("block_h");
+    slider->upd_coordinates(0).setRange(positionRange);
 
     model->addBody(pulleyBody);
     model->addJoint(weld);

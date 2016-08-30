@@ -235,7 +235,7 @@ inline Model buildTestbed()
     // Attach the load to ground with a FreeJoint and set the location of the
     // load to (1,0,0).
     FreeJoint* gndToLoad = new FreeJoint("gndToLoad", testbed.getGround(), *load);
-    gndToLoad->getCoordinateSet()[3].setDefaultValue(1.0);
+    gndToLoad->upd_coordinates(3).setDefaultValue(1.0);
     testbed.addJoint(gndToLoad);
 
     // Add a spring between the ground's origin and the load.
