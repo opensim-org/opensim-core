@@ -112,7 +112,7 @@ public:
                          "Index passed to getCoordinate() exceeds the largest "
                          "index available");
 
-        return get_CoordinateSet()[idx];
+        return get_coordinates(idx);
     }
 
     // SCALE

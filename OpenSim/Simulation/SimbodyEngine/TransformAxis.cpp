@@ -81,7 +81,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     // Look up the coordinates by name.
     const Property<string>& coordNames = getProperty_coordinates();
     int nc = coordNames.size();
-    const CoordinateSet& coords = _joint->getCoordinateSet();
+    const auto& coords = _joint->getProperty_coordinates();
 
     if (!hasFunction()) {
         SimTK_ASSERT2_ALWAYS(coordNames.size() == 0,
@@ -91,7 +91,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     }
 
     for(int i=0; i< nc; ++i) {
-        if (!coords.contains(coordNames[i])) {
+        if (coords.findIndexForName( coordNames[i] ) < 0) {
             errorMessage += "Invalid coordinate (" 
                             + coordNames[i] 
                             + ") specified for TransformAxis " 
@@ -136,11 +136,13 @@ double TransformAxis::getValue(const State& s )
 {
     const Property<string>& coordNames = getCoordinateNames();
     const int nc = coordNames.size();
-    const CoordinateSet& coords = _joint->getCoordinateSet();
+    const auto& coords = _joint->getProperty_coordinates();
 
     Vector workX(nc, 0.0);
-    for (int i=0; i < nc; ++i)
-        workX[i] = coords.get(coordNames[i]).getValue(s);
+    for (int i=0; i < nc; ++i) {
+        const int idx = coords.findIndexForName( coordNames[i] );
+        workX[i] = _joint->get_coordinates(idx).getValue(s);
+    }
 
     return getFunction().calcValue(workX);
 }
