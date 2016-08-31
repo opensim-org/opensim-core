@@ -80,9 +80,9 @@ inline void ASSERT(bool cond,
 void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result, 
                                     const OpenSim::Storage& standard, 
                                     const std::vector<double>& tolerances, 
-                                    const std::string testFile, 
+                                    const std::string& testFile, 
                                     const int testFileLine, 
-                                    const std::string errorMessage)
+                                    const std::string& errorMessage)
 {
     std::vector<std::string> columnsUsed;
     std::vector<double> comparisons;
