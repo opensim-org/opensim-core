@@ -83,9 +83,9 @@ void testSingleMuscle() {
     Storage fwd_states("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
     Storage cmc_states("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-    Array<double> control_tols(4.0e-3, 1); // peak control is 0.2 so this is 2% of peak
-    Array<double> force_tols(1.0e-1, 1);   // 0.1 N 
-    Array<double> state_tols(1.0e-3, 4);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
+    std::vector<double> control_tols(1, 4.0e-3); // peak control is 0.2 so this is 2% of peak
+    std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N 
+    std::vector<double> state_tols(4, 1.0e-3);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
         __FILE__, __LINE__, base + " controls failed");

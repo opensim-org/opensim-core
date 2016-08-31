@@ -81,18 +81,18 @@ inline void ASSERT(bool cond,
  * specified tolerances. If RMS error for any column is outside the
  * tolerance, throw an Exception.
  */
-void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, 
-                                    OpenSim::Storage& standard, 
-                                    OpenSim::Array<double> tolerances, 
-                                    std::string testFile, 
-                                    int testFileLine, 
-                                    std::string errorMessage)
+void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result, 
+                                    const OpenSim::Storage& standard, 
+                                    const std::vector<double>& tolerances, 
+                                    const std::string& testFile, 
+                                    const int testFileLine, 
+                                    const std::string& errorMessage)
 {
-    OpenSim::Array<std::string> columnsUsed;
-    OpenSim::Array<double> comparisons;
+    std::vector<std::string> columnsUsed;
+    std::vector<double> comparisons;
     result.compareWithStandard(standard, columnsUsed, comparisons);
 
-    int ncolumns = columnsUsed.getSize();
+    int ncolumns = columnsUsed.size();
 
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");

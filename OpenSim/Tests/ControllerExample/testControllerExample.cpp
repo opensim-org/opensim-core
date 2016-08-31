@@ -36,18 +36,18 @@ int main()
 {
     try {
       const std::string result1Filename{"tugOfWar_controls.sto"};
-      const std::string result1FilenameV2{"tugOfWar_controls_V1.sto"};
-      changeVersionNumber(result1Filename, result1FilenameV2);
-        Storage result1(result1FilenameV2), 
+      const std::string result1FilenameV1{"tugOfWar_controls_V1.sto"};
+      changeVersionNumber(result1Filename, result1FilenameV1);
+        Storage result1(result1FilenameV1), 
                 standard1("std_tugOfWar_controls.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-                                       Array<double>(0.01, 2), 
+                                       std::vector<double>(2, 0.01),
                                        __FILE__, 
                                        __LINE__, 
                                        "tugOfWar controls failed");
         cout << "tugOfWar controls passed\n" << endl;
 
-        Array<double> tols(0.01, 16);
+        std::vector<double> tols(16, 0.01);
         // speeds are not matched as precisely
         for(int i =0; i < 6; ++i)
             tols[2*i+1] = 0.03;
@@ -55,9 +55,9 @@ int main()
         tols[12] = tols[14] = 0.02;
 
       const std::string result2Filename{"tugOfWar_states.sto"};
-      const std::string result2FilenameV2{"tugOfWar_states_V1.sto"};
-      changeVersionNumber(result2Filename, result2FilenameV2);
-        Storage result2(result2FilenameV2), 
+      const std::string result2FilenameV1{"tugOfWar_states_V1.sto"};
+      changeVersionNumber(result2Filename, result2FilenameV1);
+        Storage result2(result2FilenameV1), 
                 standard2("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
                                        tols, 

@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Model/ComponentSet.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>

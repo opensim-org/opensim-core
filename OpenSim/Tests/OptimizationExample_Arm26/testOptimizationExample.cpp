@@ -50,12 +50,12 @@ int main()
 {
     try {
         const std::string resultFilename{"Arm26_optimized_states.sto"};
-        const std::string resultFilenameV2{"Arm26_optimized_states_V1.sto"};
-        changeVersionNumber(resultFilename, resultFilenameV2);
-        Storage result(resultFilenameV2),
+        const std::string resultFilenameV1{"Arm26_optimized_states_V1.sto"};
+        changeVersionNumber(resultFilename, resultFilenameV1);
+        Storage result(resultFilenameV1),
                 standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
-                                       Array<double>(0.01, 16),
+                                       std::vector<double>(16, 0.01),
                                        __FILE__, 
                                        __LINE__, 
                                        "Arm26 states failed comparison test");

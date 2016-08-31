@@ -140,27 +140,25 @@ int main()
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
         
-        // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground frames
-        CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
-
-        // Set the angle and position ranges for the coordinate set
+        // Set the angle and position ranges for the free (6-degree-of-freedom)
+        // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        jointCoordinateSet[0].setRange(angleRange);
-        jointCoordinateSet[1].setRange(angleRange);
-        jointCoordinateSet[2].setRange(angleRange);
-        jointCoordinateSet[3].setRange(positionRange);
-        jointCoordinateSet[4].setRange(positionRange);
-        jointCoordinateSet[5].setRange(positionRange);
+        blockToGround->upd_coordinates(0).setRange(angleRange);
+        blockToGround->upd_coordinates(1).setRange(angleRange);
+        blockToGround->upd_coordinates(2).setRange(angleRange);
+        blockToGround->upd_coordinates(3).setRange(positionRange);
+        blockToGround->upd_coordinates(4).setRange(positionRange);
+        blockToGround->upd_coordinates(5).setRange(positionRange);
 
         // GRAVITY
         // Obtain the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
 
         // Define non-zero default states for the free joint
-        jointCoordinateSet[3].setDefaultValue(constantDistance); // set x-translation value
+        blockToGround->upd_coordinates(3).setDefaultValue(constantDistance); // set x-translation value
         double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
-        jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
+        blockToGround->upd_coordinates(4).setDefaultValue(h_start); // set y-translation which is height
 
         // Add the block and joint to the model
         osimModel.addBody(block);
