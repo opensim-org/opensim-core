@@ -225,7 +225,7 @@ void simulateMuscle(
         Vec3(0),
                         Vec3(0));
 
-    auto& sliderCoord = slider->upd_coordinates(0);
+    auto& sliderCoord = slider->updCoordinate();
     sliderCoord.setName("tx");
     sliderCoord.setDefaultValue(1.0);
     sliderCoord.setRangeMin(0);

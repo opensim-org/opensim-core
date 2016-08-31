@@ -54,9 +54,9 @@ void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
     if (matter.getUseEulerAngles(s))
         return;
 
-    double xangle = get_coordinates(0).getDefaultValue();
-    double yangle = get_coordinates(1).getDefaultValue();
-    double zangle = get_coordinates(2).getDefaultValue();
+    double xangle = getCoordinate(GimbalJoint::Coord::Rotation1X).getDefaultValue();
+    double yangle = getCoordinate(GimbalJoint::Coord::Rotation2Y).getDefaultValue();
+    double zangle = getCoordinate(GimbalJoint::Coord::Rotation3Z).getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 
     //GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
@@ -74,8 +74,8 @@ void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        upd_coordinates(0).setDefaultValue(angles[0]);
-        upd_coordinates(1).setDefaultValue(angles[1]);
-        upd_coordinates(2).setDefaultValue(angles[2]);
+        updCoordinate(GimbalJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
+        updCoordinate(GimbalJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
+        updCoordinate(GimbalJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
     }
 }

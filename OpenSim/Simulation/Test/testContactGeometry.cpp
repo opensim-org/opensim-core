@@ -490,7 +490,7 @@ void testIntermediateFrames() {
         // Initialize and set state.
         SimTK::State& state = model.initSystem();
         const auto& hinge = model.getJointSet().get("hinge");
-        const auto& coord = hinge.get_coordinates(0);
+        const auto& coord = hinge.getCoordinate();
         coord.setValue(state, 0.15 * SimTK::Pi);
 
         // Integrate.
