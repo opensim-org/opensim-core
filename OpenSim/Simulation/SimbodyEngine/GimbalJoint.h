@@ -44,7 +44,8 @@ class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
 public:
-    /** Indices of Coordinates for use as arguments to getCoordinate().
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
 
         <b>C++ example</b>
         \code{.cpp}
@@ -75,9 +76,20 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get a Coordinate associated with this Joint. @see Coord */
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
         return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
     }
 
 protected:

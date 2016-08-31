@@ -224,6 +224,18 @@ const Coordinate& Joint::getCoordinate() const {
     return get_coordinates(0);
 }
 
+Coordinate& Joint::updCoordinate() {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     JointHasNoCoordinates);
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Coordinate set has more than one coordinate. Use "
+                     "updCoordinate method defined in the concrete class "
+                     "instead.");
+
+    return upd_coordinates(0);
+}
+
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
 {
     OPENSIM_THROW_IF(cix >= _motionTypes.size(), Exception,
