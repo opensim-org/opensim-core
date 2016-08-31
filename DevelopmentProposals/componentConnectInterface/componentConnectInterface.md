@@ -13,7 +13,7 @@ controller->updConnector("actuator").connect(*pathActuator);
 
 Some users may find this design difficult to learn for two reasons:
 - The verb "connect" appears in the middle of a potentially long line, not the beginning where it would be more visible.
-- The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `input.connect(output)`.
+- The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `consumer.connect(producer)`.
 
 This project proposes to change the interface for connecting Components while retaining all current functionality.
 See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
@@ -23,7 +23,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 - No redundancy in the interface (i.e., the new interface replaces the existing interface).
 
 ### Architecture
-#### Changes to `Component`
+__**Changes to `Component`**__
 Create new methods for forming connections between Components.
 ```cpp
 // 1. Plugging an AbstractOutput into an AbstractInput.
@@ -41,10 +41,10 @@ static void connectToInput(AbstractInput& input, const AbstractChannel& channel,
 static void connectToConnector(Connector& connector, const Object& object);
 ```
 
-#### Changes to `Component`
+__**Changes to `Component`**__
 Rename the existing `void connect(Component& root)` method to `finalizeConnections()`.
 
-#### Changes to `AbstractConnector`, `Connector`, `AbstractInput`, and `Input`
+__**Changes to `AbstractConnector`, `Connector`, `AbstractInput`, and `Input`**__
 Move the existing `connect()` methods from public to protected.
 Note that `Component` is already a friend of `AbstractConnector`.
 
