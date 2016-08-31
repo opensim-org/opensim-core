@@ -356,21 +356,21 @@ void compareHertzAndMeshContactResults()
 
     // Hertz theory and ElasticFoundation will not be the same, but they should
     // yield similar results, to withing
-    Array<double> rms_tols_1(12, nforces);
+    std::vector<double> rms_tols_1(nforces, 12);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
             __FILE__, __LINE__,
             "ElasticFoundation FAILED to Match Hertz Contact ");
 
     // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
     // virtually identical
-    Array<double> rms_tols_2(0.5, nforces);
+    std::vector<double> rms_tols_2(nforces, 0.5);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
             __FILE__, __LINE__,
             "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
     // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
     // identical
-    Array<double> rms_tols_3(integ_accuracy, nforces);
+    std::vector<double> rms_tols_3(nforces, integ_accuracy);
     CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
             __FILE__, __LINE__,
             "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");

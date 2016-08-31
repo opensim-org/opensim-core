@@ -66,26 +66,28 @@ void testGait2354() {
     int nq = results.getColumnLabels().getSize()-1;
 
     // Tracking kinematics angles in degrees should be within 2 degrees
-    Array<double> rms_tols(2.0, nq);
+    std::vector<double> rms_tols(nq, 2.0);
     rms_tols[3] = 0.005; // pelvis translations in m should be with 5mm
     rms_tols[4] = 0.005;
     rms_tols[5] = 0.005;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testGait2354 tracking failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, 
+        __FILE__, __LINE__, "testGait2354 tracking failed");
 
     Storage results2("subject01_ResultsCMC/subject01_walk1_states.sto");
     Storage standard2("std_subject01_walk1_states.sto");
 
     Array<string> col_labels = standard2.getColumnLabels();
-    Array<double> rms_tols2(0.1, col_labels.getSize()-1);
+    std::vector<double> rms_tols2(col_labels.getSize()-1, 0.1);
     for (int i = 23; i < 46; ++i){
         rms_tols2[i] = 0.75; // velocities
     }
-    for (int i = 46; i < rms_tols2.getSize(); ++i){
+    for (size_t i = 46; i < rms_tols2.size(); ++i){
         rms_tols2[i] = 0.15; // muscle activations and fiber-lengths
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2, __FILE__, __LINE__, "testGait2354 states failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2, 
+        __FILE__, __LINE__, "testGait2354 states failed");
 
     cout << "\n testGait2354 passed\n" << endl;
 }

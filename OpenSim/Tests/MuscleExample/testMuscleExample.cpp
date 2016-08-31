@@ -39,7 +39,7 @@ int main()
                 standard1("std_tugOfWar_fatigue_states.sto");
         int ncols = result1.getColumnLabels().getSize();
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-                                       Array<double>(0.01, ncols), 
+                                       std::vector<double>(ncols, 0.01),
                                        __FILE__, 
                                        __LINE__, 
                                        "tugOfWar fatigue states failed");
@@ -49,7 +49,7 @@ int main()
                 standard2("std_tugOfWar_forces.mot");
         ncols = result2.getColumnLabels().getSize();
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
-                                       Array<double>(20.0, ncols), 
+                                       std::vector<double>(ncols, 20.0),
                                        __FILE__, 
                                        __LINE__, 
                                        "tugOfWar forces failed");
