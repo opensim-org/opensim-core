@@ -29,6 +29,10 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include "getRSS.h"
 
+#include <fstream>
+#include <string>
+#include <regex>
+
 template <typename T>
 void ASSERT_EQUAL(T expected, 
                   T found, 
@@ -199,6 +203,22 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
         }
      }
      return obj;
+}
+
+// Change version number of the file to 1 so that Storage can read it. This
+// function can be removed when Storage class is removed.
+inline void changeVersionNumber(const std::string& filenameOld,
+                                const std::string& filenameNew) {
+  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
+  std::ifstream fileOld{filenameOld};
+  std::ofstream fileNew{filenameNew};
+  std::string line{};
+  while(std::getline(fileOld, line)) {
+    if(std::regex_match(line, versionline))
+      fileNew << "version=1\n";
+    else
+      fileNew << line << "\n";
+  }
 }
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_

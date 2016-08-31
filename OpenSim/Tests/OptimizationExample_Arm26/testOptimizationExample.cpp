@@ -46,14 +46,11 @@ const static double refControls[ARM26_DESIGN_SPACE_DIM]
     = {0.060, 0.021, 0.022, 0.99, 0.71, 0.30};
 
 
-void changeVersionNumber(const std::string& filenameOld,
-                         const std::string& filenameNew);
-
 int main()
 {
     try {
         const std::string resultFilename{"Arm26_optimized_states.sto"};
-        const std::string resultFilenameV2{"Arm26_optimized_states_V2.sto"};
+        const std::string resultFilenameV2{"Arm26_optimized_states_V1.sto"};
         changeVersionNumber(resultFilename, resultFilenameV2);
         Storage result(resultFilenameV2),
                 standard("std_Arm26_optimized_states.sto");
@@ -101,19 +98,4 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
-}
-
-// Change version number of the file to 1 so that Storage can read it.
-void changeVersionNumber(const std::string& filenameOld,
-                         const std::string& filenameNew) {
-  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
-  std::ifstream fileOld{filenameOld};
-  std::ofstream fileNew{filenameNew};
-  std::string line{};
-  while(std::getline(fileOld, line)) {
-    if(std::regex_match(line, versionline))
-      fileNew << "version=1\n";
-    else
-      fileNew << line << "\n";
-  }
 }

@@ -32,16 +32,13 @@
 using namespace OpenSim;
 using namespace std;
 
-void changeVersionNumber(const std::string& filenameOld,
-                         const std::string& filenameNew);
-
 int main()
 {
     try {
         const std::string
           result1Filename{"SpringActuatedLeg_states_degrees.sto"};
         const std::string
-          result1FilenameV2{"SpringActuatedLeg_states_degrees_V2.sto"};
+          result1FilenameV2{"SpringActuatedLeg_states_degrees_V1.sto"};
         changeVersionNumber(result1Filename, result1FilenameV2);
         Storage result1(result1FilenameV2),
                 standard1("std_SpringActuatedLeg_states_degrees.mot");
@@ -55,7 +52,7 @@ int main()
         forceTol[1] = 5.0; // spring has a tolerance of 5N 
 
         const std::string result2Filename{"actuator_forces.sto"};
-        const std::string result2FilenameV2{"actuator_forces_V2.sto"};
+        const std::string result2FilenameV2{"actuator_forces_V1.sto"};
         changeVersionNumber(result2Filename, result2FilenameV2);
         Storage result2(result2FilenameV2),
                 standard2("std_actuator_forces.mot");
@@ -68,19 +65,4 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
-}
-
-// Change version number of the file to 1 so that Storage can read it.
-void changeVersionNumber(const std::string& filenameOld,
-                         const std::string& filenameNew) {
-  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
-  std::ifstream fileOld{filenameOld};
-  std::ofstream fileNew{filenameNew};
-  std::string line{};
-  while(std::getline(fileOld, line)) {
-    if(std::regex_match(line, versionline))
-      fileNew << "version=1\n";
-    else
-      fileNew << line << "\n";
-  }
 }
