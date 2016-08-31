@@ -122,8 +122,8 @@ public:
 
     /** Convenience method that can be used in place of `updInput("inputs")`. 
     @code
-    ConsoleReporter* reporter = new ConsoleReporter();
-    DataSource* src = new DataSource();
+    auto* reporter = new ConsoleReporter();
+    auto* src = new DataSource();
     reporter->updInput().connect(src->getOutput("outputName"));
     @endcode
     */

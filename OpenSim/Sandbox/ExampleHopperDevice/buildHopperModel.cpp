@@ -47,20 +47,20 @@ Model buildHopper() {
     using SimTK::Inertia;
 
     // Create a new OpenSim model on earth.
-    Model hopper = Model();
+    auto hopper = Model();
     hopper.setName("Dennis");
     hopper.setGravity(Vec3(0, -9.80665, 0));
 
     // Create the pelvis, thigh, and shank bodies.
     double pelvisMass = 30., pelvisSideLength = 0.2;
-    Inertia pelvisInertia = pelvisMass * Inertia::brick(Vec3(pelvisSideLength/2.));
-    Body* pelvis = new Body("pelvis", pelvisMass, Vec3(0), pelvisInertia);
+    auto pelvisInertia = pelvisMass * Inertia::brick(Vec3(pelvisSideLength/2.));
+    auto* pelvis = new Body("pelvis", pelvisMass, Vec3(0), pelvisInertia);
 
     double linkMass = 10., linkLength = 0.5, linkRadius = 0.035;
-    Inertia linkInertia = linkMass *
-                          Inertia::cylinderAlongY(linkRadius, linkLength/2.);
-    Body* thigh = new Body("thigh", linkMass, Vec3(0), linkInertia);
-    Body* shank = new Body("shank", linkMass, Vec3(0), linkInertia);
+    auto linkInertia = linkMass *
+                       Inertia::cylinderAlongY(linkRadius, linkLength/2.);
+    auto* thigh = new Body("thigh", linkMass, Vec3(0), linkInertia);
+    auto* shank = new Body("shank", linkMass, Vec3(0), linkInertia);
 
     // Add the bodies to the model (the model takes ownership).
     hopper.addBody(pelvis);
@@ -70,17 +70,17 @@ Model buildHopper() {
     // Attach the pelvis to ground with a vertical slider joint, and attach the
     // pelvis, thigh, and shank bodies to each other with pin joints.
     Vec3 sliderOrientation(0, 0, SimTK::Pi/2.);
-    SliderJoint* sliderToGround = new SliderJoint("slider",
-        hopper.getGround(), Vec3(0), sliderOrientation,
-        *pelvis, Vec3(0), sliderOrientation);
+    auto* sliderToGround = new SliderJoint("slider", hopper.getGround(),
+                                           Vec3(0), sliderOrientation,
+                                           *pelvis, Vec3(0), sliderOrientation);
     Vec3 linkDistalPoint(0, -linkLength/2., 0);
     Vec3 linkProximalPoint(0, linkLength/2., 0);
     // Define the pelvis as the parent so the reported value is hip flexion.
-    PinJoint* hip = new PinJoint("hip", *pelvis, Vec3(0), Vec3(0),
-                                        *thigh, linkProximalPoint, Vec3(0));
+    auto* hip = new PinJoint("hip", *pelvis, Vec3(0), Vec3(0),
+                                    *thigh, linkProximalPoint, Vec3(0));
     // Define the shank as the parent so the reported value is knee flexion.
-    PinJoint* knee = new PinJoint("knee", *shank, linkProximalPoint, Vec3(0),
-                                          *thigh, linkDistalPoint, Vec3(0));
+    auto* knee = new PinJoint("knee", *shank, linkProximalPoint, Vec3(0),
+                                      *thigh, linkDistalPoint, Vec3(0));
 
     // Add the joints to the model.
     hopper.addJoint(sliderToGround);
@@ -90,54 +90,52 @@ Model buildHopper() {
     // Set the coordinate names and default values. Note that we need the
     // ampersand in "Coordinate&" so that we get a reference to the Coordinate
     // rather than a copy.
-    Coordinate& sliderCoord = sliderToGround->upd_CoordinateSet()[0];
+    Coordinate& sliderCoord = sliderToGround->upd_coordinates(0);
     sliderCoord.setName("yCoord");
     sliderCoord.setDefaultValue(1.);
 
-    Coordinate& hipCoord = hip->upd_CoordinateSet()[0];
+    Coordinate& hipCoord = hip->upd_coordinates(0);
     hipCoord.setName("hipFlexion");
     hipCoord.setDefaultValue(0.35);
 
-    Coordinate& kneeCoord = knee->upd_CoordinateSet()[0];
+    Coordinate& kneeCoord = knee->upd_coordinates(0);
     kneeCoord.setName("kneeFlexion");
     kneeCoord.setDefaultValue(0.75);
 
     // Limit the range of motion for the hip and knee joints.
     double hipRange[2] = {110., -90.};
     double hipStiff[2] = {20., 20.}, hipDamping = 5., hipTransition = 10.;
-    CoordinateLimitForce* hipLimitForce = new CoordinateLimitForce("hipFlexion",
+    auto* hipLimitForce = new CoordinateLimitForce("hipFlexion",
         hipRange[0], hipStiff[0], hipRange[1], hipStiff[1], hipDamping,
         hipTransition);
     hip->addComponent(hipLimitForce);
 
     double kneeRange[2] = {140., 10.};
     double kneeStiff[2] = {50., 40.}, kneeDamping = 2., kneeTransition = 10.;
-    CoordinateLimitForce* kneeLimitForce = new CoordinateLimitForce("kneeFlexion",
+    auto* kneeLimitForce = new CoordinateLimitForce("kneeFlexion",
         kneeRange[0], kneeStiff[0], kneeRange[1], kneeStiff[1], kneeDamping,
         kneeTransition);
     knee->addComponent(kneeLimitForce);
 
     // Create a constraint to keep the foot (distal end of the shank) directly
     // beneath the pelvis (the Y-axis points upwards).
-    PointOnLineConstraint* constraint = new PointOnLineConstraint(
-        hopper.getGround(), Vec3(0,1,0), Vec3(0), *shank, linkDistalPoint);
+    auto* constraint = new PointOnLineConstraint(hopper.getGround(),
+                           Vec3(0,1,0), Vec3(0), *shank, linkDistalPoint);
     shank->addComponent(constraint);
 
     // Use a contact model to prevent the foot (ContactSphere) from passing
     // through the floor (ContactHalfSpace).
-    ContactHalfSpace* floor = new ContactHalfSpace(Vec3(0),
-        Vec3(0, 0, -SimTK::Pi/2.), hopper.getGround(), "floor");
+    auto* floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -SimTK::Pi/2.),
+                                       hopper.getGround(), "floor");
     double footRadius = 0.1;
-    ContactSphere* foot = new ContactSphere(footRadius, linkDistalPoint, *shank,
-                                            "foot");
+    auto* foot = new ContactSphere(footRadius, linkDistalPoint, *shank, "foot");
 
     double stiffness = 1.e8, dissipation = 0.5, friction[3] = {0.9, 0.9, 0.6};
-    HuntCrossleyForce::ContactParameters* contactParams =
-        new HuntCrossleyForce::ContactParameters(
-            stiffness, dissipation, friction[0], friction[1], friction[2]);
+    auto* contactParams = new HuntCrossleyForce::ContactParameters(
+        stiffness, dissipation, friction[0], friction[1], friction[2]);
     contactParams->addGeometry("floor");
     contactParams->addGeometry("foot");
-    HuntCrossleyForce* contactForce = new HuntCrossleyForce(contactParams);
+    auto* contactForce = new HuntCrossleyForce(contactParams);
 
     // Add the contact-related components to the model.
     hopper.addContactGeometry(floor);
@@ -147,8 +145,8 @@ Model buildHopper() {
     // Create the vastus muscle and set its origin and insertion points.
     double mclFmax = 4000., mclOptFibLen = 0.55, mclTendonSlackLen = 0.25,
            mclPennAng = 0.;
-    Thelen2003Muscle* vastus = new Thelen2003Muscle("vastus", mclFmax,
-                               mclOptFibLen, mclTendonSlackLen, mclPennAng);
+    auto* vastus = new Thelen2003Muscle("vastus", mclFmax, mclOptFibLen,
+                                        mclTendonSlackLen, mclPennAng);
     vastus->addNewPathPoint("origin", *thigh, Vec3(linkRadius, 0.1, 0));
     vastus->addNewPathPoint("insertion", *shank, Vec3(linkRadius, 0.15, 0));
     hopper.addForce(vastus);
@@ -157,7 +155,7 @@ Model buildHopper() {
     // vastus muscle can wrap. In the future, we will be able to attach wrap
     // objects to PhysicalOffsetFrames; for now, we will use the existing
     // "translation" property.
-    WrapCylinder* patella = new WrapCylinder();
+    auto* patella = new WrapCylinder();
     patella->setName("patella");
     patella->set_radius(0.08);
     patella->set_length(linkRadius*2.);
@@ -169,30 +167,27 @@ Model buildHopper() {
     vastus->updGeometryPath().addPathWrap(*patella);
 
     // Create a controller to excite the vastus muscle.
-    PrescribedController* brain = new PrescribedController();
+    auto* brain = new PrescribedController();
     brain->setActuators(hopper.updActuators());
     double t[3] = {0.0, 2.0, 3.9}, x[3] = {0.3, 1.0, 0.1};
-    PiecewiseConstantFunction* controlFunction =
-        new PiecewiseConstantFunction(3, t, x);
+    auto* controlFunction = new PiecewiseConstantFunction(3, t, x);
     brain->prescribeControlForActuator("vastus", controlFunction);
     hopper.addController(brain);
 
     // Create frames on the thigh and shank segments for attaching the device.
-    PhysicalOffsetFrame* thighAttachment =
-        new PhysicalOffsetFrame("deviceAttachmentPoint", *thigh,
-                                SimTK::Transform(Vec3(linkRadius, 0.15, 0)));
-    PhysicalOffsetFrame* shankAttachment =
-        new PhysicalOffsetFrame("deviceAttachmentPoint", *shank,
-                                SimTK::Transform(Vec3(linkRadius, 0, 0)));
+    auto* thighAttachment = new PhysicalOffsetFrame("deviceAttachmentPoint",
+                            *thigh, SimTK::Transform(Vec3(linkRadius, 0.15, 0)));
+    auto* shankAttachment = new PhysicalOffsetFrame("deviceAttachmentPoint",
+                            *shank, SimTK::Transform(Vec3(linkRadius, 0, 0)));
     thigh->addComponent(thighAttachment);
     shank->addComponent(shankAttachment);
 
     // Attach geometry to the bodies and enable the visualizer.
-    Brick* pelvisGeometry = new Brick(Vec3(pelvisSideLength/2.));
+    auto* pelvisGeometry = new Brick(Vec3(pelvisSideLength/2.));
     pelvisGeometry->setColor(Vec3(0.8, 0.1, 0.1));
     pelvis->attachGeometry(pelvisGeometry);
 
-    Cylinder* linkGeometry = new Cylinder(linkRadius, linkLength/2.);
+    auto* linkGeometry = new Cylinder(linkRadius, linkLength/2.);
     linkGeometry->setColor(Vec3(0.8, 0.1, 0.1));
     thigh->attachGeometry(linkGeometry);
     shank->attachGeometry(linkGeometry->clone());

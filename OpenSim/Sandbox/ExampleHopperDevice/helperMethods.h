@@ -224,8 +224,8 @@ inline Model buildTestbed()
     testbed.setGravity(Vec3(0));
 
     // Create a 2500 kg load and add geometry for visualization.
-    Body* load = new Body("load", 2500., Vec3(0), Inertia(1.));
-    Sphere* sphere = new Sphere(0.02);
+    auto* load = new Body("load", 2500., Vec3(0), Inertia(1.));
+    auto* sphere = new Sphere(0.02);
     sphere->setFrame(*load);
     sphere->setOpacity(0.5);
     sphere->setColor(SimTK::Blue);
@@ -234,12 +234,12 @@ inline Model buildTestbed()
 
     // Attach the load to ground with a FreeJoint and set the location of the
     // load to (1,0,0).
-    FreeJoint* gndToLoad = new FreeJoint("gndToLoad", testbed.getGround(), *load);
+    auto* gndToLoad = new FreeJoint("gndToLoad", testbed.getGround(), *load);
     gndToLoad->upd_coordinates(3).setDefaultValue(1.0);
     testbed.addJoint(gndToLoad);
 
     // Add a spring between the ground's origin and the load.
-    PointToPointSpring* spring = new PointToPointSpring(
+    auto* spring = new PointToPointSpring(
         testbed.getGround(), Vec3(0),   //frame G and location in G of point 1
         *load, Vec3(0),                 //frame F and location in F of point 2
         5000., 1.);                     //stiffness and rest length

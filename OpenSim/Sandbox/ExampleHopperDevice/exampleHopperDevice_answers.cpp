@@ -145,7 +145,7 @@ void addConsoleReporterToHopper(Model& hopper)
     //TODO: Create a new ConsoleReporter. Set its name and reporting interval.
     #pragma region Step1_TaskB_solution
 
-    ConsoleReporter* reporter = new ConsoleReporter();
+    auto* reporter = new ConsoleReporter();
     reporter->setName("hopper_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 
@@ -192,7 +192,7 @@ void addSignalGeneratorToDevice(Device& device)
     //TODO: Create a new SignalGenerator and set its name.
     #pragma region Step2_TaskE_solution
 
-    SignalGenerator* signalGen = new SignalGenerator();
+    auto* signalGen = new SignalGenerator();
     signalGen->setName("signalGen");
 
     #pragma endregion
@@ -221,7 +221,7 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
     const std::vector<std::string>& deviceControllerOutputs)
 {
     // Create a new ConsoleReporter. Set its name and reporting interval.
-    ConsoleReporter* reporter = new ConsoleReporter();
+    auto* reporter = new ConsoleReporter();
     reporter->setName(model.getName() + "_" + device.getName() + "_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 

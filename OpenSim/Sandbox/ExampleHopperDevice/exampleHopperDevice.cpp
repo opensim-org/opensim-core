@@ -149,7 +149,7 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
     const std::vector<std::string>& deviceControllerOutputs)
 {
     // Create a new ConsoleReporter. Set its name and reporting interval.
-    ConsoleReporter* reporter = new ConsoleReporter();
+    auto* reporter = new ConsoleReporter();
     reporter->setName(model.getName() + "_" + device.getName() + "_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 

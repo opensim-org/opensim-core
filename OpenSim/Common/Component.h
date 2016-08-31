@@ -590,7 +590,7 @@ public:
      * that path name location does not exist OR it is not of the correct type.
      * For example, 
      * @code 
-     *    Coordinate& coord = model.getComponent<Coordinate>("right_elbow/elbow_flexion");
+     *    auto& coord = model.getComponent<Coordinate>("right_elbow/elbow_flexion");
      * @endcode
      * returns coord which is a Coordinate named "elbow_flexion" from a Joint
      * named "right_elbow" given it is a child of the Component (Model) model.
