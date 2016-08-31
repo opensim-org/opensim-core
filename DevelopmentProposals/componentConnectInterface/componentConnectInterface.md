@@ -23,7 +23,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 - No redundancy in the interface (i.e., the new interface replaces the existing interface).
 
 ### Architecture
-__**Changes to `Component`**__
+**Changes to `Component`** -- 
 Create new methods for forming connections between Components.
 ```cpp
 // 1. Plugging an AbstractOutput into an AbstractInput.
@@ -41,10 +41,10 @@ static void connectToInput(AbstractInput& input, const AbstractChannel& channel,
 static void connectToConnector(Connector& connector, const Object& object);
 ```
 
-__**Changes to `Component`**__
+**Changes to `Component`** -- 
 Rename the existing `void connect(Component& root)` method to `finalizeConnections()`.
 
-__**Changes to `AbstractConnector`, `Connector`, `AbstractInput`, and `Input`**__
+**Changes to `AbstractConnector`, `Connector`, `AbstractInput`, and `Input`** -- 
 Move the existing `connect()` methods from public to protected.
 Note that `Component` is already a friend of `AbstractConnector`.
 
