@@ -126,8 +126,9 @@ AddDependency(NAME       simbody
                          -DBUILD_TESTING:BOOL=OFF)
 
 AddDependency(NAME       docopt
-              URL        https://github.com/docopt/docopt.cpp.git
-              TAG        0237c9adc88b1165d77b8303b1fb70d676d4d11e)
+              # URL        https://github.com/docopt/docopt.cpp.git
+              URL        https://github.com/opensim-org/docopt.cpp.git
+              TAG        3475d45fa5236c43480e00911dee1c68958e3176)
  
 #######################
 
