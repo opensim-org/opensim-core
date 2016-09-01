@@ -743,12 +743,12 @@ const Component::StateVariable* Component::
 
 // Get the names of "continuous" state variables maintained by the Component and
 // its subcomponents.
-Array<std::string> Component::getStateVariableNames() const
+std::vector<std::string> Component::getStateVariableNames() const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    Array<std::string> names = getStateVariablesNamesAddedByComponent();
+    std::vector<std::string> names = getStateVariablesNamesAddedByComponent();
 
 /** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
@@ -767,21 +767,20 @@ Array<std::string> Component::getStateVariableNames() const
 
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
+        std::vector<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
+        //int nsubs = subnames.getSize();
         const std::string& subCompName = _memberSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
         if (back > front) // have non-whitespace name
             prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
+        for (auto& subname : subnames) {
+            names.push_back(prefix + subname);
         }
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); i++){
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
+        std::vector<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
         const std::string& subCompName =  _propertySubcomponents[i]->getName();
         // TODO: We should implement checks that names do not have whitespace at the time 
         // they are assigned and not here where it is a waste of time - aseth
@@ -789,23 +788,22 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
         if(back > front) // have non-whitespace name
-            prefix = subCompName+"/";
-        for(int j =0; j<nsubs; ++j){
-            names.append(prefix+subnames[j]);
+            prefix = subCompName + "/";
+        for (auto& subname : subnames) {
+            names.push_back(prefix + subname);
         }
     }
 
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        Array<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
+        std::vector<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
         const std::string& subCompName = _adoptedSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
         if (back > front) // have non-whitespace name
             prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
+        for (auto& subname : subnames) {
+            names.push_back(prefix + subname);
         }
     }
 
@@ -930,7 +928,7 @@ SimTK::Vector Component::
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
         _allStateVariables.resize(nsv);
-        Array<std::string> names = getStateVariableNames();
+        std::vector<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
             _allStateVariables[i].reset(findStateVariable(names[i]));
     }
@@ -962,7 +960,7 @@ void Component::
         _statesAssociatedSystem.reset(&getSystem());
         _allStateVariables.clear();
         _allStateVariables.resize(nsv);
-        Array<std::string> names = getStateVariableNames();
+        std::vector<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
             _allStateVariables[i].reset(findStateVariable(names[i]));
     }
@@ -1236,13 +1234,13 @@ getCacheVariableIndex(const std::string& name) const
     return it->second.index;
 }
 
-Array<std::string> Component::
+std::vector<std::string> Component::
 getStateVariablesNamesAddedByComponent() const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();
     
-    Array<std::string> names("",(int)_namedStateVariableInfo.size());
+    std::vector<std::string> names(_namedStateVariableInfo.size()); // ("", (int));
 
     while(it != _namedStateVariableInfo.end()){
         names[it->second.order] = it->first;
