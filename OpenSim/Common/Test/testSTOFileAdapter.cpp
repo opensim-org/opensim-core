@@ -129,5 +129,7 @@ int main() {
 
     std::remove(tmpfile.c_str());
 
+    std::cout << "\nAll tests passed!" << std::endl;
+
     return 0;
 }
