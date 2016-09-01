@@ -201,7 +201,7 @@ class TestInputsOutputs(unittest.TestCase):
         m.addComponent(rep)
 
         # Connect.
-        coord = j.getCoordinateSet().get(0)
+        coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
         rep.updInput('inputs').connect(coord.getOutput('speed'), 'spd')
         rep.updInput('inputs').connect(

@@ -116,7 +116,7 @@ arm.addController(brain)
 reporter = osim.TableReporter()
 reporter.set_report_time_interval(1.0)
 reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
-elbow_cord = elbow.getCoordinateSet().get(0).getOutput("value")
+elbow_cord = elbow.get_coordinates(0).getOutput("value")
 reporter.updInput("inputs").connect(elbow_cord, "elbow_angle")
 arm.addComponent(reporter)
 
@@ -126,8 +126,8 @@ arm.addComponent(reporter)
 
 state = arm.initSystem()
 # Fix the shoulder at its default angle and begin with the elbow flexed.
-arm.updCoordinateSet().get(0).setLocked(state, True)
-arm.updCoordinateSet().get(1).setValue(state, 0.5 * osim.SimTK_PI)
+arm.upd_coordinates(0).setLocked(state, True)
+arm.upd_coordinates(1).setValue(state, 0.5 * osim.SimTK_PI)
 arm.equilibrateMuscles(state)
 
 # ---------------------------------------------------------------------------

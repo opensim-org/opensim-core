@@ -478,12 +478,12 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
         // Nothing to do.
     } else if (joint.getConcreteClassName()==("PinJoint")) {
         int index = 0;
-        string coordName = joint.getCoordinateSet().get(index).getName();
+        string coordName = joint.get_coordinates(index).getName();
         SimTK::Vec3 axis(0.0, 0.0, 1.0); // Pin joints always rotate about the Z axis.
         ssj->addFunctionDof(axis, coordName, 0, Coordinate::Rotational);
     } else if (joint.getConcreteClassName()==("SliderJoint")) {
         int index = 0;
-        string coordName = joint.getCoordinateSet().get(index).getName();
+        string coordName = joint.get_coordinates(index).getName();
         SimTK::Vec3 axis(1.0, 0.0, 0.0); // Slider joints always translate along the X axis.
         ssj->addFunctionDof(axis, coordName, 0, Coordinate::Translational);
     } else if (joint.getConcreteClassName()==("EllipsoidJoint")) {
@@ -493,15 +493,14 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
         SimTK::Vec3 yaxis(0.0, 1.0, 0.0);
         SimTK::Vec3 zaxis(0.0, 0.0, 1.0);
         int index = 0;
-        ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
-        ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
-        ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(xaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(yaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(zaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(xaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(yaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(zaxis, joint.get_coordinates(index).getName(), 0, Coordinate::Rotational);
     } else if (joint.getConcreteClassName()==("CustomJoint")) {
         const CustomJoint* cj = (CustomJoint*)(&joint);
-        const CoordinateSet& coordinates = cj->getCoordinateSet();
 
         // Add the joint's transform axes to the SimbodySimmJoint.
         const SpatialTransform& dofs = cj->getSpatialTransform();
@@ -514,11 +513,14 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
                 const Coordinate* coord = NULL;
                 const Coordinate* independentCoord = NULL;
                 const Function* constraintFunc = NULL;
+                int ix = -1;
                 Coordinate::MotionType motionType = (order[i]<3) ? Coordinate::Rotational : Coordinate::Translational;
                 if (ta->getCoordinateNames().size() > 0)
-                    coord = &coordinates.get(ta->getCoordinateNames()[0]);
-                if (coord)
+                    ix = cj->getProperty_coordinates().findIndexForName(ta->getCoordinateNames()[0]);
+                if (ix >= 0) {
+                    coord = &cj->get_coordinates(ix);
                     constraintFunc = isDependent(coord, &independentCoord);
+                }
                 if (constraintFunc != NULL) {  // dof is constrained to a coordinate in another joint
                     ssj->addFunctionDof(ta->getAxis(), independentCoord->getName(), addJointFunction(constraintFunc, independentCoord->getMotionType(), motionType), motionType);
                 } else {

@@ -52,7 +52,7 @@ int main()
         Storage result("Arm26_optimized_states.sto"),
                 standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
-                                       Array<double>(0.01, 16),
+                                       std::vector<double>(16, 0.01),
                                        __FILE__, 
                                        __LINE__, 
                                        "Arm26 states failed comparison test");
