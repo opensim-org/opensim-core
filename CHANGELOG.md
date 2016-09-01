@@ -36,6 +36,11 @@ Converting from v3.x to v4.0
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
+- The `CoordinateSet` property in `Joint` has been replaced with a `coordinates`
+  list property and enumerations have been added for accessing the Coordinates
+  owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
+  `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
+  #1210, and #1222).
 
 Composing a Component from other components
 -------------------------------------------
@@ -101,6 +106,9 @@ Other Changes
 - Marker location file output name in IK changed to reflect trial name for batch processing.
 - Created a method `ScaleTool::run()`, making it easier to run the Scale Tool
 programmatically in MATLAB or python.
+- Thelen2003Muscle, Millard2012EquilibriumMuscle, and
+  Millard2012AccelerationMuscle now throw an exception if the force equilibrium
+  calculation fails to converge (PR #1201).
 
 Documentation
 --------------

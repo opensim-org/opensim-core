@@ -927,6 +927,23 @@ void testThelen2003Muscle()
             SimTK::SignificantReal, __FILE__, __LINE__,
             "minimum_activation was not set in activation model");
     }
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.001; //short fiber and tendon
+        const double tendonSlackLength  = 0.001;
+        auto muscle = new Thelen2003Muscle("muscle", 1., optimalFiberLength,
+                                           tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 
@@ -967,6 +984,25 @@ void testMillard2012EquilibriumMuscle()
         CorrectnessTest,
         CorrectnessTestTolerance,
         false);
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.01; //short fiber, long tendon
+        const double tendonSlackLength  = 100.;
+        auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
+                          optimalFiberLength, tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        muscle->setActivation(state, 1.);
+        model.realizeVelocity(state);
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 void testMillard2012AccelerationMuscle()

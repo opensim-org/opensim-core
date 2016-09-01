@@ -42,7 +42,7 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*2+2*6);
+    std::vector<double> rms_tols(2*2+2*6, 0.02);
     rms_tols[4] = 0.10;  // trilong
     rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
     rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on

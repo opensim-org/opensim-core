@@ -303,14 +303,14 @@ void compareResultsToStandard() {
             standard1("std_tugOfWar_states.sto");
 
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            Array<double>(0.02, 16), __FILE__, __LINE__,
+            std::vector<double>(16, 0.02), __FILE__, __LINE__,
             "testAddComponents::tugOfWar states failed");
         cout << "testAddComponents::tugOfWar states passed\n";
 
         Storage result2("tugOfWar_forces.sto"),
             standard2("std_tugOfWar_forces.mot");
 
-        Array<double> tols(1.0, 20);
+        std::vector<double> tols(20, 1.0);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 
