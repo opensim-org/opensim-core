@@ -97,14 +97,20 @@ int main() {
     filenames.push_back("subject01_walk1_grf.mot");
     std::string tmpfile{"testmotfileadapter.mot"};
 
+    std::cout << "Testing STOFileAdapter::read() and STOFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         STOFileAdapter stofileadapter{};
         auto table = stofileadapter.read(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         auto table = FileAdapter::readFile(filename).at("table");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
@@ -112,13 +118,18 @@ int main() {
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing TimeSeriesTable and STOFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         TimeSeriesTable table{filename};
         STOFileAdapter::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     std::remove(tmpfile.c_str());
+
+    std::cout << "\nAll tests passed!" << std::endl;
 
     return 0;
 }
