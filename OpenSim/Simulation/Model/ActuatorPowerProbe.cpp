@@ -25,6 +25,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "ActuatorPowerProbe.h"
+#include "Model.h"
 #include <OpenSim/Common/IO.h>
 
 using namespace std;

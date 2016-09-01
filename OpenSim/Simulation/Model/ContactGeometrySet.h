@@ -23,8 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
 #include "OpenSim/Simulation/Model/ModelComponentSet.h"
 #include "ContactGeometry.h"
 

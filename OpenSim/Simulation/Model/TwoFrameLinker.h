@@ -27,10 +27,9 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
-
-class PhysicalOffsetFrame;
 
 //=============================================================================
 //=============================================================================
@@ -64,7 +63,7 @@ public:
 //==============================================================================
 
     OpenSim_DECLARE_CONNECTOR(frame1, F,
-            "The first frame participtting in this linker.");
+            "The first frame participating in this linker.");
     OpenSim_DECLARE_CONNECTOR(frame2, F,
             "The second frame participating in this linker.");
 

@@ -28,12 +28,9 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include "CoordinateSet.h"
 #include "Model.h"
-#include "ModelVisualizer.h"
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -131,32 +128,34 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     this->updateDisplayPath(state);
 
+    // Even though these are Points which are Components they are completey 
+    // orphaned and not part of any system since they are populated during 
+    // a simulation. TODO we need another data structure to be a DecorativePath
+    // which simply an array of points in ground or on MBs.
+    // Trying to getLocationInGround(state) will faile due to no underlying system.
     const Array<PathPoint*>& points = getCurrentDisplayPath(state);
 
     if (points.getSize() == 0) { return; }
 
     const PathPoint* lastPoint = points[0];
-    Vec3 lastLoc_B = lastPoint->getLocation();
-    MobilizedBodyIndex lastBody = lastPoint->getBody().getMobilizedBodyIndex();
+    MobilizedBodyIndex mbix(0);
 
+    Vec3 lastPos = lastPoint->getLocationInGround(state);
     if (hints.get_show_path_points())
-        DefaultGeometry::drawPathPoint(lastBody, lastLoc_B, getColor(state),
-        appendToThis);
+        DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
-    const SimTK::SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
-    Vec3 lastPos = matter.getMobilizedBody(lastBody)
-        .getBodyTransform(state) * lastLoc_B;
-
+    Vec3 pos;
     for (int j = 1; j < points.getSize(); j++) {
         const PathPoint* point = points[j];
-        const Vec3 loc_B = point->getLocation();
-        const MobilizedBodyIndex body = point->getBody().getMobilizedBodyIndex();
+
+        // the body (PhysicalFrame) IS part of the actual Model and its system
+        // so we can ask it for its transform w.r.t. Ground
+        pos = point->getLocationInGround(state);
 
         if (hints.get_show_path_points())
-            DefaultGeometry::drawPathPoint(body, loc_B, getColor(state),
-            appendToThis);
+            DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);
 
-        Vec3 pos = matter.getMobilizedBody(body).getBodyTransform(state)*loc_B;
+        
         // Line segments will be in ground frame
         appendToThis.push_back(DecorativeLine(lastPos, pos)
             .setLineThickness(4)
@@ -164,7 +163,6 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         lastPos = pos;
     }
-
 }
 
 //_____________________________________________________________________________
@@ -235,7 +233,7 @@ getPointForceDirections(const SimTK::State& s,
     for (i = 0; i < np; i++) {
         PointForceDirection *pfd = 
             new PointForceDirection(currentPath[i]->getLocation(), 
-                                    *(OpenSim::Body*)&(currentPath[i]->getBody()), Vec3(0));
+                                    currentPath[i]->getBody(), Vec3(0));
         rPFDs->append(pfd);
     }
 
@@ -252,10 +250,10 @@ getPointForceDirections(const SimTK::State& s,
 
             // Find the positions of start and end in the inertial frame.
             //engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-            posStart = start->getBody().getTransformInGround(s)*start->getLocation();
+            posStart = start->getLocationInGround(s);
             
             //engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
-            posEnd = end->getBody().getTransformInGround(s)*end->getLocation();
+            posEnd = end->getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
             direction = (posEnd - posStart);
@@ -342,20 +340,28 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
             // add in the tension point forces to body forces
             if (mppo) {// moving path point location is a function of the state
-                bo->applyForceToBodyPoint(s, mppo->getLocation(s), force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
+                bo->applyForceToBodyPoint(s, X_BF*mppo->getLocation(s), force,
                     bodyForces);
             }
             else {
-                bo->applyForceToBodyPoint(s, start->getLocation(), force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = start->getParentFrame().findTransformInBaseFrame();
+                bo->applyForceToBodyPoint(s, X_BF*start->getLocation(), force,
                     bodyForces);
             }
 
             if (mppf) {// moving path point location is a function of the state
-                bf->applyForceToBodyPoint(s, mppf->getLocation(s), -force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = mppf->getParentFrame().findTransformInBaseFrame();
+                bf->applyForceToBodyPoint(s, X_BF*mppf->getLocation(s), -force,
                     bodyForces);
             }
             else {
-                bf->applyForceToBodyPoint(s, end->getLocation(), -force,
+                // transform of the frame of the point to the base mobilized body
+                auto X_BF = end->getParentFrame().findTransformInBaseFrame();
+                bf->applyForceToBodyPoint(s, X_BF*end->getLocation(), -force,
                     bodyForces);
             }
 
@@ -389,7 +395,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
                     mppf->getXCoordinate().getMobilizerQIndex(), 
                     ff, mobilityForces);
             }
-            
         }       
     }
 }

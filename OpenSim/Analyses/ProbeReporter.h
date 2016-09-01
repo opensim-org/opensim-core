@@ -27,15 +27,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Probe.h>
-#include <OpenSim/Simulation/Model/ProbeSet.h>
 #include "osimAnalysesDLL.h"
-#include "SimTKsimbody.h"
 
 
 #ifdef SWIG
@@ -47,6 +43,8 @@
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class ProbeSet;
 
 /**
  * A class for reporting the outputs of all model-connected Probes to file during

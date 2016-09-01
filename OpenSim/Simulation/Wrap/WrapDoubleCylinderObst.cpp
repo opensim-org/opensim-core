@@ -21,16 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapDoubleCylinderObst.h"
-#include <SimTKcommon.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
 
 //=============================================================================
 // STATICS

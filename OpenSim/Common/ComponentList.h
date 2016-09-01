@@ -26,7 +26,9 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
-#include "Simbody.h"
+#include <string>
+#include <type_traits>
+#include "SimTKcommon/basics.h"
 
 namespace OpenSim {
 
@@ -112,12 +114,17 @@ public:
 
     static_assert(std::is_base_of<Component, T>::value,
         "Can only create a ComponentList of Components.");
+
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
     const references/pointers, and that components can't be modified 
     through this iterator. */
-    typedef ComponentListIterator<const T> const_iterator;
+    typedef ComponentListIterator<ConstT> const_iterator;
     
     /** If T is const (e.g., ComponentList<const Body>), then this is
     the same as const_iterator, and does not allow modifying the elements.
@@ -226,6 +233,10 @@ template <typename T>
 class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, Component>
 {
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     // The template argument T may be const or non-const; this typedef is
     // always the non-const variant of T. The typedef is useful for friend
     // declarations and casting.
@@ -245,16 +256,22 @@ public:
     bool operator==(const ComponentListIterator<OtherT>& other) const
     { return _node == other._node; }
     
-    /// Check for equality using a normal method rather than an operator,
-    /// This variant accepts only an iterator with the same template parameter.
-    /// Exists for scripting.
-    bool equals(const ComponentListIterator& other) const
-    { return *this == other; }
-    
     /// Check for inequality using same convention as operator==.
     template <typename OtherT>
     bool operator!=(const ComponentListIterator<OtherT>& other) const
     { return _node != &*other._node; }
+    
+    /// @ Comparison operators for scripting
+    /// These variants accept only an iterator with the same template parameter.
+    /// @{
+    /// Check for (non)equality using a normal method rather than an operator.
+    bool equals(const ComponentListIterator& other) const
+    { return operator==<T>(other); }
+    bool operator==(const ComponentListIterator& other) const
+    { return operator==<T>(other); }
+    bool operator!=(const ComponentListIterator& other) const
+    { return operator!=<T>(other); }
+    /// @}
     
     /** Dereference the iterator to get a reference to Component of proper
     type (matching Filter if specified). If you have a const iterator, then
@@ -290,7 +307,7 @@ public:
      languages. */
     ComponentListIterator& next() { return ++(*this); }
     
-    /** Allow cconverting from non-const iterator to const_iterator.
+    /** Allow converting from non-const iterator to const_iterator.
     This helps with iterating through the list in a const
     way, even if you have a non-const list. This
     allows the following code:
@@ -316,7 +333,7 @@ public:
     
     /** @internal ComponentListIterator<const T> needs access to the members
     of ComponentListIterator<T> for the templated constructor above. */
-    friend class ComponentListIterator<const T>;
+    friend class ComponentListIterator<ConstT>;
     /** @internal Comparison operators for ComponentListIterator<T> need
     access to members of ComponentListIterator<const T> (e.g., when invoking
     operator==() with a ComponentListIterator<T> as the left operand and a

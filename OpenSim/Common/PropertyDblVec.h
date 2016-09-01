@@ -30,7 +30,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
-#include "SimTKcommon.h"
+#include "OpenSim/Common/Array.h"
 
 //=============================================================================
 //=============================================================================

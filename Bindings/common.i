@@ -57,6 +57,8 @@
 %template(ArrayStr) OpenSim::Array<std::string>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
+%template(ArrayConstObjPtr) OpenSim::Array<const OpenSim::Object*>;
+%template(ArrayPtrsConstObj) OpenSim::ArrayPtrs<const OpenSim::Object>;
 
 // Used in Component::generateDecorations.
 %include <OpenSim/Common/ModelDisplayHints.h>

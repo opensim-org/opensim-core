@@ -26,6 +26,7 @@
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Actuator.h"
+#include "OpenSim/Common/DebugUtilities.h"
 
 
 using namespace std;

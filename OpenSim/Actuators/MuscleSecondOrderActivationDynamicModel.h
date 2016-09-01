@@ -25,12 +25,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-
-//#include <string>
-//#include <SimTKcommon/internal/Function.h>
-#include "Simbody.h"
-
-
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 

@@ -25,8 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "BallJoint.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/MobilizedBody_Ball.h"
 
 //=============================================================================
 // STATICS
@@ -54,11 +54,9 @@ void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
     if (matter.getUseEulerAngles(s))
         return;
 
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-    double xangle = coordinateSet[0].getDefaultValue();
-    double yangle = coordinateSet[1].getDefaultValue();
-    double zangle = coordinateSet[2].getDefaultValue();
+    double xangle = get_coordinates(0).getDefaultValue();
+    double yangle = get_coordinates(1).getDefaultValue();
+    double zangle = get_coordinates(2).getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
     //BallJoint* mutableThis = const_cast<BallJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
@@ -75,11 +73,8 @@ void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
     
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-        coordinateSet[0].setDefaultValue(angles[0]);
-        coordinateSet[1].setDefaultValue(angles[1]);
-        coordinateSet[2].setDefaultValue(angles[2]);
+        upd_coordinates(0).setDefaultValue(angles[0]);
+        upd_coordinates(1).setDefaultValue(angles[1]);
+        upd_coordinates(2).setDefaultValue(angles[2]);
     }
 }
-

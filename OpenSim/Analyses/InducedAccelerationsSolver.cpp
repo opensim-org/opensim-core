@@ -25,12 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include "InducedAccelerationsSolver.h"
 
 using namespace OpenSim;

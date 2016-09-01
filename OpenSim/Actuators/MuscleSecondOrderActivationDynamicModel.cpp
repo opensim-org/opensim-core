@@ -23,8 +23,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-
-//#include <SimTKcommon\Testing.h>
 #include "MuscleSecondOrderActivationDynamicModel.h"
 using namespace std;
 using namespace OpenSim;

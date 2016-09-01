@@ -26,7 +26,6 @@
 
 // INCLUDES
 #include "OpenSim/Common/TimeSeriesTable.h"
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <memory>

@@ -24,20 +24,15 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include <iostream>
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <SimTKsimbody.h>
+#include "SimTKcommon/Orientation.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "SimTKcommon/basics.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -46,17 +41,14 @@
     #endif
 #endif
 
+namespace SimTK { class State; }
+
 namespace OpenSim {
 
-class Body;
-class Constraint;
-class Coordinate;
-class Joint;
-class Body;
-class Joint;
-class Model;
 class CoordinateSet;
-class JointSet;
+class Model;
+class PhysicalFrame;
+class Storage;
 
 //=============================================================================
 //=============================================================================

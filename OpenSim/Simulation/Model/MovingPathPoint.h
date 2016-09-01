@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 

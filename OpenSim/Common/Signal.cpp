@@ -27,12 +27,15 @@
 
 
 // INCLUDES
-#include <iostream>
-#include <string>
 #include <math.h>
 #include "Signal.h"
 #include "Array.h"
-#include "SimTKsimbody.h"
+#include "SimTKcommon/Constants.h"
+#include "SimTKcommon/Orientation.h"
+#include "SimTKcommon/Scalar.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "simmath/internal/Spline.h"
+#include "simmath/internal/SplineFitter.h"
 
 using namespace OpenSim;
 using namespace std;

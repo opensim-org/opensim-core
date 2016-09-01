@@ -46,10 +46,11 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
-#include "Simbody.h"
 #include <functional>
-#include <memory>
+
+#include "simbody/internal/MultibodySystem.h"
 
 namespace OpenSim {
 
@@ -89,7 +90,6 @@ public:
     }
 };
 
-
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -97,10 +97,66 @@ public:
                                         const std::string& func,
                                         const std::string& compName,
                                         const std::string& thisName) :
-            Exception(file, line, func) {
+        Exception(file, line, func) {
         std::string msg = "Component '" + compName;
         msg += "' already owned by tree to which '" + thisName;
         msg += "' belongs. Clone the component to adopt a fresh copy.";
+        addMessage(msg);
+    }
+};
+
+class ComponentHasNoSystem : public Exception {
+public:
+    ComponentHasNoSystem(const std::string& file,
+                         size_t line,
+                         const std::string& func,
+                         const Object& obj) :
+        Exception(file, line, func, obj) {
+        std::string msg = "This Component has not been added to a System.\n";
+        msg += "You must call initSystem on the top-level Component ";
+        msg += "(i.e., Model) first.";
+        addMessage(msg);
+    }
+};
+
+class ConnectorNotFound : public Exception {
+public:
+    ConnectorNotFound(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const Object& obj,
+                      const std::string& connectorName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Connector '" + connectorName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class InputNotFound : public Exception {
+public:
+    InputNotFound(const std::string& file,
+                  size_t line,
+                  const std::string& func,
+                  const Object& obj,
+                  const std::string& inputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Input '" + inputName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class OutputNotFound : public Exception {
+public:
+    OutputNotFound(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const Object& obj,
+                   const std::string& outputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Output '" + outputName;
+        msg += "' found for this Component.";
         addMessage(msg);
     }
 };
@@ -574,7 +630,7 @@ public:
      * Coordinate.safeDownCast(coord).getDefaultClamped() % now accessible.
      * @endcode
      *
-     * Exception: in Python, you will get the concrete type (in most cases):
+     * %Exception: in Python, you will get the concrete type (in most cases):
      * @code{.py}
      * coord = model.getComponent('right_elbow/elbow_flexion')
      * coord.getDefaultClamped() # works; no downcasting necessary. 
@@ -627,16 +683,18 @@ public:
     unsigned printComponentsMatching(const std::string& substring) const;
 
     /**
-     * Get the number of "Continuous" state variables maintained by the Component
-     * and its subcomponents
+     * Get the number of "continuous" state variables maintained by the
+     * Component and its subcomponents.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     int getNumStateVariables() const;
 
     /**
      * Get the names of "continuous" state variables maintained by the Component
-     * and its subcomponents. Note that states are defined when the system is 
-     * created. Make sure to call initSystem on the top  level Component
-     * (e.g. Model)
+     * and its subcomponents.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     Array<std::string> getStateVariableNames() const;
 
@@ -739,23 +797,26 @@ public:
      * lets you get information about the connection (like if the connector is
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
+     *
+     * <b>C++ example</b>
+     * @code{.cpp}
+     * model.getComponent("/path/to/component").getConnector("connectorName");
+     * @endcode
      */
     const AbstractConnector& getConnector(const std::string& name) const {
-        const AbstractConnector* found = findConnector(name);
+        auto it = _connectorsTable.find(name);
 
-        if (!found){
-            std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::getConnector() ERROR- Connector '" << name;
-            msg << "' not found.\n" << std::endl;
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        if (it != _connectorsTable.end()) {
+            return get_connectors(it->second);
         }
 
-        return *found;
+        OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
     }
 
     /** Get a writable reference to the AbstractConnector for the given
      * connector name. Use this method to connect the Connector to something.
+     * 
+     * <b>C++ example</b>
      * @code
      * joint.updConnector("parent_frame").connect(model.getGround());
      * @endcode
@@ -845,6 +906,11 @@ public:
     /**
     * Get an Input provided by this Component by name.
     *
+    * <b>C++ example:</b> get an Input from a Component in the model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getInput("inputName");
+    * @endcode
+    *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
@@ -855,22 +921,22 @@ public:
         if (it != _inputsTable.end()) {
             return it->second.getRef(); 
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string inName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            if (found)
-                return found->getInput(inName);
-        }
-        std::stringstream msg;
-        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW_FRMOBJ(InputNotFound, name);
     }
     
+    /**
+    * Get a writable reference to an Input provided by this Component by name.
+    *
+    * <b>C++ example:</b> get a writeable reference to an Input of a 
+    * Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updInput("inputName");
+    * @endcode
+
+    * @param name   the name of the Input
+    * @return       reference to the AbstractInput
+    */
     AbstractInput& updInput(const std::string& name)
     {
         return *const_cast<AbstractInput *>(&getInput(name));
@@ -878,7 +944,7 @@ public:
 
 
     /**
-    * Get a concrete Input that you can direclty ask for its values.
+    * Get a concrete Input that you can directly ask for its values.
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
@@ -891,7 +957,12 @@ public:
     /**
     * Get the Output provided by this Component by name.
     *
-    * @param name   the name of the cache variable
+    * <b>C++ example:</b> get an Output from a Component in a model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getOutput("outputName");
+    * @endcode
+    *
+    * @param name   the name of the Output
     * @return       const reference to the AbstractOutput
     */
     const AbstractOutput& getOutput(const std::string& name) const
@@ -901,39 +972,20 @@ public:
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            // no prefix found then no prefix (path) to locate Component
-            OPENSIM_THROW_IF( back == std::string::npos, Exception,
-                "Component::getOutput has no output '" + name
-                    + "' for component '" + getName() + "' of type "
-                    + getConcreteClassName() );
 
-            std::string prefix = name.substr(0, back);
-            std::string outName = name.substr(back + 1, name.length() - back);
-
-            try {
-                const Component& found = getComponent<Component>(prefix);
-                // if found is this component again, no point trying to find
-                // output again, otherwise we would not have reached here 
-                return found.getOutput(outName);
-            }
-            catch (const std::exception& x) {
-                std::stringstream msg;
-                msg << "Component::getOutput: ERR-  no output '" << name
-                    << "' found.\n " "for component '" << getName() << "' of type "
-                    << getConcreteClassName() << ". Details:\n" << x.what() 
-                    << std::endl;
-
-                 throw Exception(msg.str(), __FILE__, __LINE__);
-            }
-        }
+        OPENSIM_THROW_FRMOBJ(OutputNotFound, name);
     }
 
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
-    * @param name   the name of the cache variable
+    * <b>C++ example:</b> get a writeable reference to an Output of a 
+    * Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updOutput("outputName");
+    * @endcode
+
+    * @param name   the name of the Output
     * @return       reference to the AbstractOutput
     */
     AbstractOutput& updOutput(const std::string& name)
@@ -1013,15 +1065,16 @@ public:
         const AbstractInput& in = getInput(name);
         // TODO could maybe remove this check and have the Input do it. Or,
         // here, we could catch Input's exception and give a different message.
-        if (in.isConnected()){
+        if (in.isConnected()) {
             return (Input<T>::downcast(in)).getValue(state);
-            }
-        else{
+        }
+        
+        else {
         std::stringstream msg;
-            msg << "Component::getInputValue: ERR- input '" << name << "' not connected.\n "
+            msg << "Component::getInputValue: ERR- Input '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type "<< getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+        }
     }
 
     /**
@@ -1050,6 +1103,8 @@ public:
      *
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
@@ -1059,6 +1114,8 @@ public:
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
      * @param value  the value to set
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
 
@@ -1070,6 +1127,8 @@ public:
      * @param state   the State for which to get the value
      * @return Vector of state variable values of length getNumStateVariables()
      *                in the order returned by getStateVariableNames()
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     SimTK::Vector getStateVariableValues(const SimTK::State& state) const;
 
@@ -1078,8 +1137,11 @@ public:
      * Includes state variables allocated by its subcomponents.
      *
      * @param state   the State for which to get the value
-     * @param values  Vector of state variable values of length getNumStateVariables()
-     *                in the order returned by getStateVariableNames()
+     * @param values  Vector of state variable values of length
+     *                getNumStateVariables() in the order returned by
+     *                getStateVariableNames()
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
 
@@ -1088,6 +1150,8 @@ public:
      *
      * @param state   the State for which to get the derivative value
      * @param name    the name (string) of the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     double getStateVariableDerivativeValue(const SimTK::State& state, 
         const std::string& name) const;
@@ -1098,17 +1162,23 @@ public:
      * @param state   the State from which to get the value
      * @param name    the name of the state variable
      * @return value  the discrete variable value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
-    double getDiscreteVariableValue(const SimTK::State& state, const std::string& name) const;
+    double getDiscreteVariableValue(const SimTK::State& state,
+                                    const std::string& name) const;
 
     /**
      * %Set the value of a discrete variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
-     * @param name   the name of the dsicrete variable
+     * @param name   the name of the discrete variable
      * @param value  the value to set
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
-    void setDiscreteVariableValue(SimTK::State& state, const std::string& name, double value) const;
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
+                                  double value) const;
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -1116,10 +1186,15 @@ public:
      * @param state  the State from which to get the value
      * @param name   the name of the cache variable
      * @return T     const reference to the cache variable's value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> const T& 
     getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1136,18 +1211,23 @@ public:
         }
     }
     /**
-     * Obtain a writable cache variable value allocated by this Component by name.
-     * Do not forget to mark the cache value as valid after updating, otherwise it
-     * will force a reevaluation if the evaluation method is monitoring the 
-     * validity of the cache value.
+     * Obtain a writable cache variable value allocated by this Component by
+     * name. Do not forget to mark the cache value as valid after updating,
+     * otherwise it will force a re-evaluation if the evaluation method is
+     * monitoring the validity of the cache value.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
      * @return value modifiable reference to the cache variable's value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> T& 
     updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1167,17 +1247,23 @@ public:
     }
 
     /**
-     * After updating a cache variable value allocated by this Component, you can
-     * mark its value as valid, which will not change until the realization stage 
-     * falls below the minimum set at the time the cache variable was created. If 
-     * not marked as valid, the evaluation method monitoring this flag will force 
-     * a re-evaluation rather that just reading the value from the cache.
+     * After updating a cache variable value allocated by this Component, you
+     * can mark its value as valid, which will not change until the realization
+     * stage falls below the minimum set at the time the cache variable was
+     * created. If not marked as valid, the evaluation method monitoring this
+     * flag will force a re-evaluation rather that just reading the value from
+     * the cache.
      *
      * @param state  the State containing the cache variable
      * @param name   the name of the cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1195,24 +1281,29 @@ public:
     }
 
     /**
-     * Mark a cache variable value allocated by this Component as invalid.
-     * When the system realization drops to below the lowest valid stage, cache 
+     * Mark a cache variable value allocated by this Component as invalid. When
+     * the system realization drops to below the lowest valid stage, cache
      * variables are automatically marked as invalid. There are instances when
-     * component added state variables require invalidating a cache at a lower 
-     * stage. For example, a component may have a length state variable which 
-     * should invalidate calculations involving it and other positions when the 
-     * state variable is set. Changing the component state variable automatically
-     * invalidates Dynamics and higher realizations, but to force realizations
-     * at Position and Velocity requires setting the lowest valid stage to 
-     * Position and marking the cache variable as invalid whenver the length
-     * state variable value is set/changed.
+     * component-added state variables require invalidating a cache at a lower
+     * stage. For example, a component may have a "length" state variable which
+     * should invalidate calculations involving it and other positions when the
+     * state variable is set. Changing the component state variable
+     * automatically invalidates Dynamics and higher realizations, but to force
+     * realizations at Position and Velocity requires setting the lowest valid
+     * stage to Position and marking the cache variable as invalid whenever the
+     * "length" state variable value is set/changed.
      *
      * @param state  the State containing the cache variable
      * @param name   the name of the cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     void markCacheVariableInvalid(const SimTK::State& state, 
                                   const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1230,17 +1321,22 @@ public:
     }
 
     /**
-     * Enables the user to monitor the validity of the cache variable value using the
-     * returned flag. For components performing a costly evaluation, use this 
-     * method to force a re-evaluation cache variable value only when necessary 
-     * (returns false).
+     * Enables the user to monitor the validity of the cache variable value
+     * using the returned flag. For components performing a costly evaluation,
+     * use this method to force a re-evaluation of a cache variable value only
+     * when necessary (i.e., returns false).
      *
      * @param state  the State in which the cache value resides
      * @param name   the name of the cache variable
      * @return bool  whether the cache variable value is valid or not
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1258,18 +1354,23 @@ public:
     }
 
     /**
-     *  %Set cache variable value allocated by this Component by name.
-     *  All cache entries are lazily evaluated (on a need basis) so a set
-     *  also marks the cache as valid.
+     * %Set cache variable value allocated by this Component by name. All cache
+     * entries are lazily evaluated (on a need basis) so a set also marks the
+     * cache as valid.
      *
      * @param state  the State in which to store the new value
      * @param name   the name of the cache variable
      * @param value  the new value for this cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
      */
     template<typename T> void 
     setCacheVariableValue(const SimTK::State& state, const std::string& name, 
                      const T& value) const
     {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
         std::map<std::string, CacheInfo>::const_iterator it;
         it = _namedCacheVariableInfo.find(name);
 
@@ -1587,7 +1688,7 @@ protected:
     Override to set the derivatives of state variables added to the system 
     by this component. (also see extendAddToSystem()). If the component adds states
     and computeStateVariableDerivatives is not implemented by the component,
-    an exception is thrown when the system tries to evaluate its derivates.
+    an exception is thrown when the system tries to evaluate its derivatives.
 
     Implement like this:
     @code
@@ -1617,7 +1718,7 @@ protected:
     virtual void computeStateVariableDerivatives(const SimTK::State& s) const;
 
     /**
-     * %Set the derivative of a state variable by name when computed inside of  
+     * %Set the derivative of a state variable by name when computed inside of
      * this Component's computeStateVariableDerivatives() method.
      *
      * @param state  the State for which to set the value
@@ -1815,17 +1916,19 @@ protected:
     const int getStateIndex(const std::string& name) const;
 
    /**
-     * Get the System Index of a state variable allocated by this Component.  
+     * Get the System Index of a state variable allocated by this Component.
      * Returns an InvalidIndex if no state variable with the name provided is
      * found.
-     * @param stateVariableName   the name of the state variable 
+     * @param stateVariableName   the name of the state variable
      */
     SimTK::SystemYIndex 
         getStateVariableSystemIndex(const std::string& stateVariableName) const;
 
-    /** Get the index of a Component's discrete variable in the Subsystem for allocations.
-        This method is intended for derived Components that may need direct access
-        to its underlying Subsystem.*/
+   /**
+     * Get the index of a Component's discrete variable in the Subsystem for
+     * allocations. This method is intended for derived Components that may need
+     * direct access to its underlying Subsystem.
+     */
     const SimTK::DiscreteVariableIndex 
     getDiscreteVariableIndex(const std::string& name) const;
 
@@ -1907,12 +2010,14 @@ protected:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                std::string details = msg + " Found '" + compFullPathName + 
-                    "' as a match for:\n Component '" + name + "' of type " + 
-                    comp.getConcreteClassName() + ", but it "
-                    "is not on specified path.\n";
-                //throw Exception(details, __FILE__, __LINE__);
-                std::cout << details << std::endl;
+                if (comp.getDebugLevel() > 0) {
+                    std::string details = msg + " Found '" + compFullPathName + 
+                        "' as a match for:\n Component '" + name + "' of type " + 
+                        comp.getConcreteClassName() + ", but it "
+                        "is not on specified path.\n";
+                    //throw Exception(details, __FILE__, __LINE__);
+                    std::cout << details << std::endl;
+                }
             }
         }
 
@@ -1944,10 +2049,12 @@ protected:
 #endif
 
 public:
-    /** Similarly find a Connector of this Component (includes its subcomponents) */
-    const AbstractConnector* findConnector(const std::string& name) const;
-    /** Similarly find a StateVariable of this Component (includes its subcomponents) */
 #ifndef SWIG // StateVariable is protected.
+    /**
+     * Find a StateVariable of this Component (includes its subcomponents).
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 
@@ -2168,7 +2275,7 @@ protected:
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
      * non-existant. The also specifies at what stage the output must be valid
-     * for the the component to consume it as an input.  if the Output's
+     * for the component to consume it as an input.  if the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
@@ -2192,7 +2299,7 @@ private:
 
     // Internal use: mark as a subcomponent, a component that is owned by this 
     // Component by virtue of being one of its properties.
-    void markAsPropertySubcomponent(Component* subcomponent);
+    void markAsPropertySubcomponent(const Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
@@ -2347,7 +2454,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    SimTK::Array_<SimTK::ReferencePtr<Component>>  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -2714,13 +2821,29 @@ void Input<T>::findAndConnect(const Component& root) {
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
+        std::string::size_type back = outputPath.rfind("/");
+        std::string componentPath = outputPath.substr(0, back);
+        std::string outputName = outputPath.substr(back + 1);
         try {
             const AbstractOutput* output = nullptr;
+
             if (outputPath[0] == '/') { //absolute path name
-                output = &root.getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &root.getOutput(outputPath);
+                }
+                else {
+                    output = &root.getComponent(componentPath).getOutput(outputName);
+                }
             }
+
             else { // relative path name
-                output = &getOwner().getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &getOwner().getOutput(outputPath);
+                }
+                else {
+                    output = &getOwner().getComponent(componentPath).getOutput(outputName);
+                }
+                
             }
             const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);

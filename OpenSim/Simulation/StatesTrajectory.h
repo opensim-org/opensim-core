@@ -24,12 +24,16 @@
  * -------------------------------------------------------------------------- */
 
 #include <vector>
-#include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <SimTKcommon/internal/IteratorRange.h>
 
 #include "osimSimulationDLL.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 
@@ -419,7 +423,7 @@ public:
             msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
             msg += std::to_string(numDepColumns) + "). You must provide a ";
             msg += "States Storage that has the same number ";
-            msg += "of entires in every row.";
+            msg += "of entries in every row.";
             addMessage(msg);
         }
     };

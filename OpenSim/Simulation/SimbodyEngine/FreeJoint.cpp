@@ -26,7 +26,7 @@
 //=============================================================================
 #include "FreeJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "simbody/internal/MobilizedBody_Free.h"
 
 //=============================================================================
 // STATICS
@@ -52,17 +52,13 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(s)){
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-        double xangle = coordinateSet.get(zero).getDefaultValue();
-        double yangle = coordinateSet.get(1).getDefaultValue();
-        double zangle = coordinateSet.get(2).getDefaultValue();
+        double xangle = get_coordinates(0).getDefaultValue();
+        double yangle = get_coordinates(1).getDefaultValue();
+        double zangle = get_coordinates(2).getDefaultValue();
         Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-        Vec3 t(coordinateSet.get(3).getDefaultValue(),
-            coordinateSet.get(4).getDefaultValue(),
-            coordinateSet.get(5).getDefaultValue());
+        Vec3 t(get_coordinates(3).getDefaultValue(),
+            get_coordinates(4).getDefaultValue(),
+            get_coordinates(5).getDefaultValue());
 
         //FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
         getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
@@ -81,15 +77,11 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
- 
-        coordinateSet.get(zero).setDefaultValue(angles[0]);
-        coordinateSet.get(1).setDefaultValue(angles[1]);
-        coordinateSet.get(2).setDefaultValue(angles[2]);
-        coordinateSet.get(3).setDefaultValue(t[0]); 
-        coordinateSet.get(4).setDefaultValue(t[1]); 
-        coordinateSet.get(5).setDefaultValue(t[2]);
+        upd_coordinates(0).setDefaultValue(angles[0]);
+        upd_coordinates(1).setDefaultValue(angles[1]);
+        upd_coordinates(2).setDefaultValue(angles[2]);
+        upd_coordinates(3).setDefaultValue(t[0]); 
+        upd_coordinates(4).setDefaultValue(t[1]); 
+        upd_coordinates(5).setDefaultValue(t[2]);
     }
 }

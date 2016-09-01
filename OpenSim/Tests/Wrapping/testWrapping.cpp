@@ -26,6 +26,7 @@
 
 #include "simbody/internal/CableTrackerSubsystem.h"
 #include "simbody/internal/CablePath.h"
+#include "simbody/internal/Force_Custom.h"
 
 #include <set>
 #include <string>
@@ -45,6 +46,7 @@ public:
     Real duration;
 };
 
+void testWrapCylinder();
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime);
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation=0.5);
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime);
@@ -56,7 +58,9 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try{// performance with multiple muscles and wrapping in upper-extremity
+    try{
+        testWrapCylinder();
+        // performance with multiple muscles and wrapping in upper-extremity
         simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);}
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
@@ -308,6 +312,90 @@ private:
     const MultibodySystem&  mbs;
 //    MyCableSpring           cable1;
 };
+
+
+void testWrapCylinder()
+{
+    const double r = 0.25;
+    const double off = sqrt(2)*r-0.05;
+    Model model;
+    model.setName("testWrapCylinder");
+
+    auto& ground = model.updGround();
+    auto body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0.1, 0.1, 0.01));
+    model.addComponent(body);
+
+    auto bodyOffset = new PhysicalOffsetFrame("bToj", *body, Transform(Vec3(-off, 0, 0)));
+    model.addComponent(bodyOffset);
+    
+    auto joint = new PinJoint("pin", ground, *bodyOffset);
+    model.addComponent(joint);
+
+    WrapCylinder* pulley1 = new WrapCylinder();
+    pulley1->setName("pulley1");
+    pulley1->set_radius(r);
+    pulley1->set_length(0.05);
+
+    // Add the wrap object to the body, which takes ownership of it
+    ground.addWrapObject(pulley1);
+
+    // One spring has wrap cylinder with respect to ground origin
+    PathSpring* spring1 =
+        new PathSpring("spring1", 1.0, 0.1, 0.01);
+    spring1->updGeometryPath().
+        appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+    spring1->updGeometryPath().
+        appendNewPathPoint("insert", *body, Vec3(0));
+    spring1->updGeometryPath().addPathWrap(*pulley1);
+
+    model.addComponent(spring1);
+
+    WrapCylinder* pulley2 = new WrapCylinder();
+    pulley2->setName("pulley2");
+    pulley2->set_radius(r);
+    pulley2->set_length(0.05);
+
+    // Add the wrap object to the body, which takes ownership of it
+    bodyOffset->addWrapObject(pulley2);
+
+    // Second spring has wrap cylinder with respect to bodyOffse origin
+    PathSpring* spring2 =
+        new PathSpring("spring2", 1.0, 0.1, 0.01);
+    spring2->updGeometryPath().
+        appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+    spring2->updGeometryPath().
+        appendNewPathPoint("insert", *body, Vec3(0));
+    spring2->updGeometryPath().addPathWrap(*pulley2);
+    spring2->updGeometryPath().setDefaultColor(Vec3(0, 0.8, 0));
+
+    model.addComponent(spring2);
+
+    //model.setUseVisualizer(true);
+
+    SimTK::State& s = model.initSystem();
+    auto& coord = joint->upd_coordinates(0);
+
+    int nsteps = 10;
+    for (int i = 0; i < nsteps; ++i) {
+        
+        coord.setValue(s, i*SimTK::Pi/(2*nsteps));
+        model.realizeVelocity(s);
+
+        //model.getVisualizer().show(s);
+
+        double ma1 = spring1->computeMomentArm(s, coord);
+        double ma2 = spring2->computeMomentArm(s, coord);
+
+        ASSERT_EQUAL<double>(r, ma1, SimTK::Eps);
+        ASSERT_EQUAL<double>(r, ma2, SimTK::Eps);
+
+        double len1 = spring1->getLength(s);
+        double len2 = spring2->getLength(s);
+
+        ASSERT_EQUAL<double>(len1, len2, SimTK::Eps);
+    }
+}
+
 
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation)
 {
@@ -756,9 +844,6 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
     simulate(osimModel, state, initialTime, finalTime);
 
 }// end of simulateModelWithCables()
-
-
-
 
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime) {
     //  osimModel.printBasicInfo(cout);

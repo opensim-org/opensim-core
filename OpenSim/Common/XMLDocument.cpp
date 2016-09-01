@@ -29,10 +29,7 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
-#include <fstream>  // Ayman: remove .h per .NET 2003
-#include "osimCommonDLL.h"
 #include "XMLDocument.h"
-#include "Exception.h"
 #include "Object.h"
 
 
@@ -50,12 +47,13 @@ using namespace std;
 // 20303
 // 30000 for OpenSim 3.0 release
 // 30500 for OpenSim 4.0 development and Connectors
-// 30501 for Changing serialization of Marker
-// 30502 for Changing serialization of Geometry
-// 30503 for Changing serialization of Ground
-// 30505 for Changing serialization of Joint to create offset frames
+// 30501 for changing serialization of Marker
+// 30502 for changing serialization of Geometry
+// 30503 for changing serialization of Ground
+// 30505 for changing serialization of Joint to create offset frames
 // 30506 for testing 30505 conversion code
-const int XMLDocument::LatestVersion = 30506;
+// 30507 for changing serialization of Coordinates owned by Joint
+const int XMLDocument::LatestVersion = 30507;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

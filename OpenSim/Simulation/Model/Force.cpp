@@ -23,7 +23,6 @@
 
 #include "Force.h"
 #include "Model.h"
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 
 
@@ -137,25 +136,32 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &aBody, const Vec3& aPoint, 
-                                    const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
+void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &frame,
+                              const Vec3& point, const Vec3& forceInG, 
+                              Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
-                                                   aPoint, aForce, bodyForces);
+    // get the point expressed in frame, F, expressed in the base, B.
+    auto p_B = frame.findTransformInBaseFrame()*point;
+
+    _model->getMatterSubsystem().addInStationForce(s, 
+                                    frame.getMobilizedBodyIndex(),
+                                    p_B, forceInG, bodyForces);
 }
 
-void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& aBody, 
-                        const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
+void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& frame, 
+                        const Vec3& torque, Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),
-                                                 aTorque, bodyForces);
+    _model->getMatterSubsystem().addInBodyTorque(s, frame.getMobilizedBodyIndex(),
+                                                 torque, bodyForces);
 }
 
-void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
-                                        double aForce, Vector &mobilityForces) const
+void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &coord, 
+                                        double force, Vector &mobilityForces) const
 {
-    _model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
-                                    SimTK::MobilizerUIndex(aCoord.getMobilizerQIndex()), aForce, mobilityForces);
+    _model->getMatterSubsystem().addInMobilityForce(s, 
+                                 SimTK::MobilizedBodyIndex(coord.getBodyIndex()), 
+                                 SimTK::MobilizerUIndex(coord.getMobilizerQIndex()),
+                                 force, mobilityForces);
 }
 
 

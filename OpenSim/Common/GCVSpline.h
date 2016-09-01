@@ -27,7 +27,6 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <string>
-#include "Array.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
@@ -41,6 +40,8 @@
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+template <class T> class Array;
 
 /**
  * A class for representing a smooth function with a generalized

@@ -89,14 +89,15 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
     model.addComponent(reporter);
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix the hip at its default angle and begin with the knee flexed.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->upd_coordinates(0).setLocked(state, true);
+    elbow->upd_coordinates(0).setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
     // Add display geometry.
@@ -119,4 +120,6 @@ int main() {
     getchar();
 #endif
     manager.integrate(state);
+
+    return 0;
 };

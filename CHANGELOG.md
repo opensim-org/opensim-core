@@ -36,6 +36,18 @@ Converting from v3.x to v4.0
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
+- We created a new unified command line interface that will replace the
+  single-tool command line executables (`scale`, `ik`, `id`, `rra`, `cmc`,
+  etc.).
+  - `scale -S setup.xml` -> `opensim run-tool setup.xml`.
+  - `scale -PS` -> `opensim print-xml scale`
+  - `scale -PropertyInfo ...` -> `opensim info ...`
+  - `versionUpdate ...` -> `opensim update-file ...`
+- The `CoordinateSet` property in `Joint` has been replaced with a `coordinates`
+  list property and enumerations have been added for accessing the Coordinates
+  owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
+  `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
+  #1210, and #1222).
 
 Composing a Component from other components
 -------------------------------------------
@@ -79,8 +91,14 @@ Removed Classes
 The following classes are no longer supported in OpenSim and are removed in OpenSim 4.0.
 - Muscle class `ContDerivMuscle_Depredated`.
 
-Python
-------
+MATLAB and Python interfaces
+----------------------------
+- The SimbodyMatterSubsystem class--which provides operators related to the mass
+matrix, Jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
+Python (PR #930).
+
+Python interface
+----------------
 - Improved error handling. Now, OpenSim's error messages show up as exceptions
 in Python.
 
@@ -95,6 +113,9 @@ Other Changes
 - Marker location file output name in IK changed to reflect trial name for batch processing.
 - Created a method `ScaleTool::run()`, making it easier to run the Scale Tool
 programmatically in MATLAB or python.
+- Thelen2003Muscle, Millard2012EquilibriumMuscle, and
+  Millard2012AccelerationMuscle now throw an exception if the force equilibrium
+  calculation fails to converge (PR #1201).
 
 Documentation
 --------------

@@ -31,9 +31,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <math.h>
-#include <stdio.h>
-#include "SimTKcommon.h"
-
+#include "SimTKcommon/Orientation.h"
 
 namespace OpenSim { 
 

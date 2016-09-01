@@ -34,17 +34,10 @@
 #include "XMLDocument.h"
 #include "Exception.h"
 #include "Property_Deprecated.h"
-#include "PropertyObj.h"
-#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "IO.h"
 
-#include "Simbody.h"
-
 #include <fstream>
-#include <vector>
-#include <map>
-#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;
@@ -102,16 +95,13 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // This maybe slower than we like but definitely faster than 
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
-    if(aFileName.empty()) {
-        string msg =
-            "Object: ERR- Empty filename encountered.";
-        throw Exception(msg,__FILE__,__LINE__);
-    } else 
-        if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
-        string msg =
-            "Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
-        throw Exception(msg,__FILE__,__LINE__);
-    }   
+    OPENSIM_THROW_IF(aFileName.empty(), Exception,
+        "Object: Cannot construct from empty filename. No filename specified.");
+
+    OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
+        Exception,
+        "Object: Cannot not open file " + aFileName +
+        ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
 
@@ -1368,9 +1358,10 @@ print(const string &aFileName) const
 
 // This signature accepts "className.propertyName", splits out the individual
 // segments and calls the other signature.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                        const string &aClassNameDotPropertyName)
+                  const string &aClassNameDotPropertyName,
+                  bool printFlagInfo)
 {
     // PARSE NAMES
     string compoundName = aClassNameDotPropertyName;
@@ -1382,13 +1373,14 @@ PrintPropertyInfo(ostream &aOStream,
         propertyName = compoundName.substr(delimPos+1);
     }
 
-    PrintPropertyInfo(aOStream,className,propertyName);
+    return PrintPropertyInfo(aOStream, className, propertyName, printFlagInfo);
 }
 
 // This is the real method.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                  const string &aClassName,const string &aPropertyName)
+                  const string &aClassName, const string &aPropertyName,
+                  bool printFlagInfo)
 {
     if(aClassName=="") {
         // NO CLASS
@@ -1400,16 +1392,20 @@ PrintPropertyInfo(ostream &aOStream,
             if(obj==NULL) continue;
             aOStream<<obj->getConcreteClassName()<<endl;
         }
-        aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+        }
+        return true;
     }
 
     // FIND CLASS
     const Object* object = getDefaultInstanceOfType(aClassName);
     if(object==NULL) {
-        aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
-        aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+            aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+        }
+        return false;
     }
 
     PropertySet propertySet = object->getPropertySet();
@@ -1454,13 +1450,15 @@ PrintPropertyInfo(ostream &aOStream,
             }
         }
 
-        aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
-                    "info for a particular property.\n";
-        if(aPropertyName!="*") {
-            aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
-                        "properties in a class.\n";
+        if (printFlagInfo) {
+            aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+                "info for a particular property.\n";
+            if(aPropertyName!="*") {
+                aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                    "properties in a class.\n";
+            }
         }
-        return;
+        return true;
     }
 
     // FIND PROPERTY
@@ -1470,20 +1468,28 @@ PrintPropertyInfo(ostream &aOStream,
         //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
         aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
                  << prop->getComment() << "\n";
+        return true;
     } catch(...) {
         try {
             abstractProperty = object->_propertyTable.getPropertyPtr(aPropertyName);
+            if (abstractProperty == nullptr) {
+                throw Exception("No property '" + aPropertyName +
+                        "' class '" + aClassName + "'.");
+            }
             // OUTPUT
             //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
             aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
                      << abstractProperty->getComment()<<"\n";
+            return true;
         } catch (...) {
-            aOStream << "\nPrintPropertyInfo: no property with the name "
-                     << aPropertyName;
-            aOStream << " was found in class " << aClassName << ".\n";
-            aOStream << "Omit the property name to get a listing of all "
-                        "properties in a class.\n";
-            return;
+            if (printFlagInfo) {
+                aOStream << "\nPrintPropertyInfo: no property with the name "
+                    << aPropertyName;
+                aOStream << " was found in class " << aClassName << ".\n";
+                aOStream << "Omit the property name to get a listing of all "
+                    "properties in a class.\n";
+            }
+            return false;
         }
     }
 }
@@ -1535,6 +1541,7 @@ makeObjectFromFile(const std::string &aFileName)
             IO::chDir(saveWorkingDirectory);
             throw; // re-issue the exception
         }
+        IO::chDir(saveWorkingDirectory);
         return (newObject);
     }
 

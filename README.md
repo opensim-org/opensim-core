@@ -70,14 +70,15 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
     model.addComponent(reporter);
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix the hip at its default angle and begin with the knee flexed.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->upd_coordinates(0).setLocked(state, true);
+    elbow->upd_coordinates(0).setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
     // Add display geometry.
@@ -94,6 +95,8 @@ int main() {
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
+    
+    return 0;
 };
 ```
 
@@ -104,7 +107,7 @@ This code produces the following animation:
 and prints the following information to the console:
 
         [reporter]
-                time|  fiber_force|       value|
+                time|  fiber_force| elbow_angle|
                    0|     1.180969|   1.5707963|
                    1|     57.27509|  0.77066412|
                    2|    19.728411|   1.5680456|
@@ -147,8 +150,18 @@ On Windows using Visual Studio
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
       for Visual C++ 2015*.
-      You can uncheck all other boxes. If you have already installed Visual
-      Studio without C++ support, simply re-run the installer and select *Modify*.
+      You can uncheck all other boxes. If Visual Studio is installed without C++
+      support, CMake will report the following errors:
+      
+      ```
+      The C compiler identification is unknown
+      The CXX compiler identification is unknown
+      ```
+      
+      If you have already installed Visual Studio without C++ support, simply
+      re-run the installer and select *Modify*. Alternatively, go to
+      *File > New > Project...* in Visual Studio, select *Visual C++*, and click
+      *Install Visual C++ 2015 Tools for Windows Desktop*.
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
@@ -163,7 +176,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -356,11 +369,12 @@ ctest -C RelWithDebInfo --parallel 8
 On Mac OSX using Xcode
 ======================
 
-### For Mac OSX 10.10 Yosemite and OS X 10.11 El Capitan
+### For Mac OSX 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
 ```shell 
 sudo xcodebuild -license
 ``` 
+If you already have **Xcode**, update it to 7.3, or the latest version.
 
 Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
 ```shell
@@ -393,10 +407,10 @@ ctest -j8
 
 #### Get the dependencies
 
-* **operating system**: Mac OSX 10.8 or later.
+* **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
+* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -409,7 +423,7 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac OSX comes with python, but you could also use:
@@ -599,7 +613,7 @@ line below, we show the corresponding package.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.

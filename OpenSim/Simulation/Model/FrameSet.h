@@ -23,12 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 namespace OpenSim {
 
 class Model;
+class Frame;
 
 //=============================================================================
 //=============================================================================

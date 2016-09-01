@@ -26,8 +26,6 @@
 
 // INCLUDE
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 

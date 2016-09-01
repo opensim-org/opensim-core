@@ -277,7 +277,7 @@ private:
 
     // All coordinates (Simbody mobility) have associated constraints that
     // perform joint locking, prescribed motion and range of motion.
-    // Constraints are created upon setup: locked, precribedFunction
+    // Constraints are created upon setup: locked, prescribed Function
     // and range must be set.
     // NOTE: Changing the prescribed motion function requires topology to be realized
     //       so state is invalidated
