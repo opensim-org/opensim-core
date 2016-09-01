@@ -14,17 +14,15 @@ For background:
 
 `Input::connect()` has the following two signatures:
 ```cpp
-void connect(const AbstractOutput& output, const std::string& annotation = "")
-void connect(const AbstractChannel& channel, const std::string& annotation = "")
+void connect(const AbstractOutput& output,   const std::string& annotation = "");
+void connect(const AbstractChannel& channel, const std::string& annotation = "");
 ```
 For simplicity and without loss of generality, we shall assume the user is connecting an Output to the Reporter's Input.
-(There may, of course, be slight implementation differences for Outputs and Channels, depending on the solution.)
-The `annotation` argument is optional; if provided, both Reporters will use the specified string as the column label.
-The issue arises when no annotation is specified: what default label should be used and how should it be generated?
+(There may be implementation differences for Outputs and Channels, depending on the design, but these differences are likely to be small.)
+The `annotation` argument is optional; if provided, the ConsoleReporter will use the specified string as the column label and the Output's name otherwise;
+the TableReporter always uses the full path name as the column label.
 
-The issue is complicated by the fact that the annotation can *only* be set when `connect()` is called;
-there is no `setAnnotation()` method.
-The annotation is currently stored when `connect()` is called.
+The annotation is currently stored when `Input::connect()` is called.
 If the user provided the optional second argument when calling `connect()`, then this string is stored as the annotation;
 otherwise, a default annotation is stored.
 The default annotation is currently the name of the Output (e.g., "value" in the case of a Coordinate).
@@ -44,28 +42,30 @@ Thus, providing an annotation if the default column label is unsatisfactory (e.g
 
 The TableReporter always uses the (current) full path name as the column label.
 TableReporters are likely to report more Outputs than ConsoleReporters because, unlike the console,
-there is no detriment (aside, of course, from memory issues for *very* large tables) to writing a table with many columns.
+there is no detriment to writing a table with many columns (aside, of course, from memory issues for *very* large tables).
 As such, it is more important for the TableReporter to use meaningful default column labels.
 If reporting the value of all Coordinates in a Model, for example, it would be unhelpful for all column labels to be "value",
 and forcing the user to specify an annotation for each Output may not be practical.
 
 ### Requirements
-- The ConsoleReporter and TableReporter should both use the annotation for the column label if an annotation has been provided.
+- The ConsoleReporter and TableReporter should both use the annotation for the column label if an annotation has been provided by the user.
 - The ConsoleReporter should use a default column name that is likely to be as meaningful as possible while still being short.
+  Although not strictly enforced, the Output names tend to be short (and are automatically truncated if they are too long).
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
-Several designs would satisfy the above criteria.
+Several designs would satisfy the above criteria; four are provided here.
 
 **Design 1**
 
 Store an empty string in `_annotations` if no annotation was provided when `Input::connect()` was called.
 When writing the column label, use the `_annotations` value if it is not empty; otherwise,
-the ConsoleReporter will use the Output name and the TableReporter will use the full path name.
+the ConsoleReporter will use the Output's name and the TableReporter will use the Output's full path name.
 This design will change the current behavior.
 Currently, the name of the Output can differ from the column label if the name is changed after `Input::connect()` has been called.
-It seems most natural to generate the default column label when reporting rather than when connecting,
-so there is presumably a good reason for storing the default in `Input::connect()`.
+It seems natural to generate a default column label when reporting rather than when connecting,
+so there is presumably a good reason for generating a default when `Input::connect()` is called
+(though always using the Output's full path name in the TableReporter is inconsistent).
 
 **Design 2**
 
