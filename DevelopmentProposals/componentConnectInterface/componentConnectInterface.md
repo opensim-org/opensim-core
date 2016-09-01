@@ -5,12 +5,19 @@
 The interface for connecting Outputs to Inputs currently looks like the following:
 ```cpp
 // "update this Input to my ConsoleReporter and connect it to this Output from my Model"
+
+// Use case 1.
 reporter->updInput("inputs").connect(hopper.getComponent(hopperHeightCoord).getOutput("value"), "height");
+
+// Use case 2.
+auto& input  = reporter->updInput("inputs");
+auto& output = hopper.getComponent(hopperHeightCoord).getOutput("value");
+input.connect(output, "height");
 ```
 
 Some users may find this design difficult to learn for two reasons:
-- The verb "connect" appears in the middle of a potentially long line.
-- The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `consumer.connect(producer)`.
+- In Use case 1, the verb "connect" appears in the middle of a potentially long line.
+- The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `input.connect(output)`.
 
 This project proposes to change the interface for connecting Outputs to Inputs while retaining all current functionality.
 See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
@@ -50,12 +57,11 @@ reporter->updInput("inputs").connect(output, "height");
 
 // Alternative designs (mutually exclusive).
 // Would rename the existing connect() method to, e.g., finalizeConnections().
-Component::connect(reporter->updInput("inputs"), output, "height");  //not both
-Component::connect(reporter->output, updInput("inputs"), "height");  //of these
+Component::connect(reporter->output, updInput("inputs"), "height");  //not both
+Component::connect(reporter->updInput("inputs"), output, "height");  //of these
 Component::connect(reporter->updInput(), output, "height");
-Component::connect(reporter->output, updInput(), "height");
+Component::connect(reporter, output, "height");
 Component::satisfyInput(reporter->updInput(), output, "height");
-Component::satisfyInput(output, reporter->updInput(), "height");
 ```
 
 **Design 3 (unable to wrap)**
@@ -69,6 +75,20 @@ reporter->updInput("inputs").connect(output, "height");
 // Alternative designs.
 output >> reporter->updInput();  //would need a separate setAnnotation() method
 reporter->updInput() << output;
+reporter << output << annotation;
+```
+
+**Design 4**
+
+Create a `Connection` Component that is analogous to the wires between the Output and Input.
+```cpp
+const auto& output = hopper.getComponent(hopperHeightCoord).getOutput("value");
+auto& rainbow = Connection(reporter->updInput(), output, "height");
+
+// Opens up several possibilities.
+rainbow.setProducer(hopper.getComponent(vastus).getOutput("activation"));
+rainbow.setConsumer(reporter2);
+rainbow.setAnnotation("Hi ho!");
 ```
 
 ### Bindings
