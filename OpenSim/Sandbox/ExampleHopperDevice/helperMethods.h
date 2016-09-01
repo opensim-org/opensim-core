@@ -118,7 +118,7 @@ inline void showSubcomponentInfo(const Component& comp)
     // Step through compList once to find the longest concrete class name.
     unsigned maxlen = 0;
     for (const C& thisComp : compList) {
-        auto len = thisComp.getConcreteClassName().length();
+        int len = thisComp.getConcreteClassName().length();
         maxlen = std::max(maxlen, static_cast<unsigned>(len));
     }
     maxlen += 4; //padding
@@ -144,7 +144,8 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
         cout << endl;
 
         std::vector<std::string> outputNames = comp.getOutputNames();
-        for (auto thisName : outputNames) { cout << "  " << thisName << endl; }
+        for (std::string& thisName : outputNames)
+            cout << "  " << thisName << endl;
         cout << endl;
     }
 
@@ -217,14 +218,14 @@ inline Model buildTestbed()
     using SimTK::Inertia;
 
     // Create a new OpenSim model.
-    auto testbed = Model();
+    Model testbed = Model();
     testbed.setName("testbed");
     testbed.setUseVisualizer(true);
     testbed.setGravity(Vec3(0));
 
     // Create a 2500 kg load and add geometry for visualization.
-    auto load = new Body("load", 2500., Vec3(0), Inertia(1.));
-    auto sphere = new Sphere(0.02);
+    auto* load = new Body("load", 2500., Vec3(0), Inertia(1.));
+    auto* sphere = new Sphere(0.02);
     sphere->setFrame(*load);
     sphere->setOpacity(0.5);
     sphere->setColor(SimTK::Blue);
@@ -233,12 +234,12 @@ inline Model buildTestbed()
 
     // Attach the load to ground with a FreeJoint and set the location of the
     // load to (1,0,0).
-    auto gndToLoad = new FreeJoint("gndToLoad", testbed.getGround(), *load);
+    auto* gndToLoad = new FreeJoint("gndToLoad", testbed.getGround(), *load);
     gndToLoad->upd_coordinates(3).setDefaultValue(1.0);
     testbed.addJoint(gndToLoad);
 
     // Add a spring between the ground's origin and the load.
-    auto spring = new PointToPointSpring(
+    auto* spring = new PointToPointSpring(
         testbed.getGround(), Vec3(0),   //frame G and location in G of point 1
         *load, Vec3(0),                 //frame F and location in F of point 2
         5000., 1.);                     //stiffness and rest length

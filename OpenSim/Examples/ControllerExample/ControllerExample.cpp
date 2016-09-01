@@ -111,7 +111,7 @@ public:
         double blockMass = getModel().getBodySet().get( "block" ).getMass();
 
         // Get pointers to each of the muscles in the model.
-        auto leftMuscle = dynamic_cast<const Muscle*>  ( &getActuatorSet().get(0) );
+        auto leftMuscle  = dynamic_cast<const Muscle*> ( &getActuatorSet().get(0) );
         auto rightMuscle = dynamic_cast<const Muscle*> ( &getActuatorSet().get(1) );
 
         // Compute the desired position of the block in the tug-of-war
@@ -318,10 +318,10 @@ int main()
         manager.integrate( si );
 
         // Save the simulation results.
-        auto controlsTable = osimModel.getControlsTable();
+        TimeSeriesTable controlsTable = osimModel.getControlsTable();
         STOFileAdapter::write(controlsTable, "tugOfWar_controls.sto");
 
-        auto statesTable = manager.getStatesTable();
+        TimeSeriesTable statesTable = manager.getStatesTable();
         STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {

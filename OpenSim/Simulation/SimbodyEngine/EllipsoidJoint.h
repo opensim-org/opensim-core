@@ -52,8 +52,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myEllipsoidJoint.
-                         getCoordinate(EllipsoidJoint::Coord::Rotation1X);
+        const Coordinate& rx = myEllipsoidJoint.
+                               getCoordinate(EllipsoidJoint::Coord::Rotation1X);
         \endcode
     */
     enum class Coord: unsigned {

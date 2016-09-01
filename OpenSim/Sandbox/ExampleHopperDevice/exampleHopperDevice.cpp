@@ -98,9 +98,9 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
     if (model.hasComponent<WrapCylinder>("thigh/patella")) {
-        auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
-        auto& frame = model.updComponent<PhysicalFrame>("thigh");
-        auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
+        PathActuator& cable = model.updComponent<PathActuator>("device/cableAtoB");
+        PhysicalFrame& frame = model.updComponent<PhysicalFrame>("thigh");
+        WrapObject& wrapObject = frame.upd_WrapObjectSet().get("patella");
         cable.updGeometryPath().addPathWrap(wrapObject);
     }
 }
@@ -149,17 +149,17 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
     const std::vector<std::string>& deviceControllerOutputs)
 {
     // Create a new ConsoleReporter. Set its name and reporting interval.
-    auto reporter = new ConsoleReporter();
+    auto* reporter = new ConsoleReporter();
     reporter->setName(model.getName() + "_" + device.getName() + "_results");
     reporter->set_report_time_interval(REPORTING_INTERVAL);
 
     // Loop through the desired device outputs and add them to the reporter.
-    for (auto thisOutputName : deviceOutputs)
+    for (const std::string& thisOutputName : deviceOutputs)
         reporter->updInput("inputs").connect(device.getOutput(thisOutputName));
 
-    for (auto thisOutputName : deviceControllerOutputs)
-        reporter->updInput("inputs").
-        connect(device.getComponent("controller").getOutput(thisOutputName));
+    for (const std::string& thisOutputName : deviceControllerOutputs)
+        reporter->updInput("inputs").connect(
+            device.getComponent("controller").getOutput(thisOutputName));
 
     // Add the reporter to the model.
     model.addComponent(reporter);
@@ -183,7 +183,7 @@ int main()
     if (true)
     {
         // Build the hopper.
-        auto hopper = buildHopper();
+        Model hopper = buildHopper();
         // Update the hopper model's internal data members, which includes
         // identifying its subcomponents from its properties.
         hopper.finalizeFromProperties();
@@ -219,7 +219,7 @@ int main()
     if (false)
     {
         // Build the testbed and device.
-        auto testbed = buildTestbed();
+        Model testbed = buildTestbed();
         testbed.finalizeFromProperties();
 
         // Step 2, Task A
@@ -235,7 +235,7 @@ int main()
         // Step 2, Task C
         // ==============
         // Go to buildDeviceModel.cpp and complete the "TODO"s in buildDevice().
-        auto device = buildDevice();
+        Device* device = buildDevice();
         device->finalizeFromProperties();
 
         // Show all Components in the device and testbed.
@@ -277,9 +277,9 @@ int main()
     if (false)
     {
         // Build the hopper and device.
-        auto assistedHopper = buildHopper();
+        Model assistedHopper = buildHopper();
         assistedHopper.finalizeFromProperties();
-        auto kneeDevice = buildDevice();
+        Device* kneeDevice = buildDevice();
         kneeDevice->finalizeFromProperties();
 
         // Step 3, Task A

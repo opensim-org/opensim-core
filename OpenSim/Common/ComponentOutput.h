@@ -251,7 +251,7 @@ public:
      (even for single-value Channels).
      
      @code{.cpp}
-     for (const auto& chan : getChannels()) {
+     for (const std::pair<std::string, Channel>& chan : getChannels()) {
         std::cout << chan.second->getName() << std::endl;
      }
      @endcode
@@ -417,7 +417,7 @@ private:
  * protected:
  *     void extendFinalizeFromProperties() {
  *          Super::extendFinalizeFromProperties();
- *          for (const auto& name : getChannelsToAdd()) {
+ *          for (const std::string& name : getChannelsToAdd()) {
  *              updOutput("data").addChannel(name);
  *          }
  *     }

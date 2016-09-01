@@ -589,7 +589,7 @@ public:
     /** Get const access to the channels connected to this input.
         You can use this to iterate through the channels.
         @code{.cpp}
-        for (const auto& chan : getChannels()) {
+        for (const Channel& chan : getChannels()) {
             std::cout << chan.getValue(state) << std::endl;
         }
         @endcode

@@ -755,7 +755,7 @@ Array<std::string> Component::getStateVariableNames() const
         stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
     }
 
-    for (auto& comp : getComponentList<Component>()) {
+    for (Component& comp : getComponentList<Component>()) {
         const std::string& pathName = comp.getFullPathName();// *this);
         Array<std::string> subStateNames = 
             comp.getStateVariablesNamesAddedByComponent();

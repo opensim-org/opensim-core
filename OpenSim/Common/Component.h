@@ -495,7 +495,7 @@ public:
      * component is traversed before its subcomponents.
      *
      * @code{.cpp}
-     * for (const auto& muscle : model.getComponentList<Muscle>()) {
+     * for (const Muscle& muscle : model.getComponentList<Muscle>()) {
      *     muscle.get_max_isometric_force();
      * }
      * @endcode
@@ -518,7 +518,7 @@ public:
     the max isometric force of all muscles:
     
     @code{.cpp}
-    for (auto& muscle : model.updComponentList<Muscle>()) {
+    for (Muscle& muscle : model.updComponentList<Muscle>()) {
         muscle.set_max_isometric_force(...);
     }
     @endcode
@@ -1000,7 +1000,7 @@ public:
     /** Iterate through all Outputs of this component. The intent is to use
      * this in a loop as such:
      * @code
-     * for (const auto& entry : comp.getOutputs()) {
+     * for (const AbstractOutput& entry : comp.getOutputs()) {
      *     const std::string& name = entry.first;
      *     const AbstractOutput* output = entry.second.get();
      *     std::cout << output->getTypeName() << std::endl;

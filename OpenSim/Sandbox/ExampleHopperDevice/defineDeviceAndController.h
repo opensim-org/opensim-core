@@ -103,7 +103,7 @@ public:
 protected:
     // Change the color of the device's path as its tension changes.
     void extendRealizeDynamics(const SimTK::State& s) const override {
-        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        const PathActuator& actuator = getComponent<PathActuator>("cableAtoB");
         double level = fmin(1., getTension(s) / actuator.get_optimal_force());
         actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
     }
@@ -160,7 +160,7 @@ public:
                          SimTK::Vector& controls) const override
     {
         double signal = computeControl(s);
-        const auto& actuator = getConnectee<ScalarActuator>("actuator");
+        const ScalarActuator& actuator = getConnectee<ScalarActuator>("actuator");
         SimTK::Vector thisActuatorsControls(1, signal);
         actuator.addInControls(thisActuatorsControls, controls);
     }

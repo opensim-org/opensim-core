@@ -48,8 +48,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myGimbalJoint.
-                         getCoordinate(GimbalJoint::Coord::Rotation1X);
+        const Coordinate& rx = myGimbalJoint.
+                               getCoordinate(GimbalJoint::Coord::Rotation1X);
         \endcode
     */
     enum class Coord: unsigned {

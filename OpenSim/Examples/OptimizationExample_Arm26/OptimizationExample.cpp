@@ -210,7 +210,7 @@ int main()
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
         manager.integrate(si);
 
-        auto statesTable = manager.getStatesTable();
+        TimeSeriesTable statesTable = manager.getStatesTable();
         STOFileAdapter::write(statesTable, "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)

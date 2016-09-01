@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  buildDevice.cpp                          *
+ *                       OpenSim:  buildDeviceModel.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -48,26 +48,26 @@ Device* buildDevice() {
     using SimTK::Inertia;
 
     // Create the device.
-    auto device = new Device();
+    auto* device = new Device();
     device->setName("device");
 
     // The device's mass is distributed between two identical cuffs that attach
     // to the hopper via WeldJoints (to be added below).
     double deviceMass = 2.0;
-    auto cuffA = new Body("cuffA", deviceMass/2., Vec3(0), Inertia(0.5));
+    auto* cuffA = new Body("cuffA", deviceMass/2., Vec3(0), Inertia(0.5));
     //TODO: Repeat for cuffB.
 
     //TODO: Add the cuff Components to the device.
 
     // Attach a sphere to each cuff for visualization.
-    auto sphere = new Sphere(0.01);
+    auto* sphere = new Sphere(0.01);
     sphere->setName("sphere");
     sphere->setColor(SimTK::Red);
     cuffA->attachGeometry(sphere);
     //cuffB->attachGeometry(sphere->clone());
 
     // Create a WeldJoint to anchor cuffA to the hopper.
-    auto anchorA = new WeldJoint();
+    auto* anchorA = new WeldJoint();
     anchorA->setName("anchorA");
     //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
@@ -80,7 +80,7 @@ Device* buildDevice() {
     //      device.
 
     // Attach a PathActuator between the two cuffs.
-    auto pathActuator = new PathActuator();
+    auto* pathActuator = new PathActuator();
     pathActuator->setName("cableAtoB");
     pathActuator->set_optimal_force(OPTIMAL_FORCE);
     pathActuator->addNewPathPoint("pointA", *cuffA, Vec3(0));
@@ -88,7 +88,7 @@ Device* buildDevice() {
     device->addComponent(pathActuator);
 
     // Create a PropMyoController.
-    auto controller = new PropMyoController();
+    auto* controller = new PropMyoController();
     controller->setName("controller");
     controller->set_gain(GAIN);
 

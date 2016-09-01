@@ -47,8 +47,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& tx = mySliderJoint.
-                         getCoordinate(SliderJoint::Coord::TranslationX);
+        const Coordinate& tx = mySliderJoint.
+                               getCoordinate(SliderJoint::Coord::TranslationX);
         \endcode
     */
     enum class Coord: unsigned {

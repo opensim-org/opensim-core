@@ -50,7 +50,8 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rz = myPinJoint.getCoordinate(PinJoint::Coord::RotationZ);
+        const Coordinate& rz = myPinJoint.
+                               getCoordinate(PinJoint::Coord::RotationZ);
         \endcode
     */
     enum class Coord: unsigned {

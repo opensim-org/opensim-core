@@ -40,19 +40,19 @@ int main() {
     
     dataTable.appendRow(0.00, row0);
 
-    auto row1 = row0 + 1;
+    SimTK::RowVector_<double> row1 = row0 + 1;
 
     dataTable.appendRow(0.25, row1);
 
-    auto row2 = row1 + 1;
+    SimTK::RowVector_<double> row2 = row1 + 1;
 
     dataTable.appendRow(0.50, row2);
 
-    auto row3 = row2 + 1;
+    SimTK::RowVector_<double> row3 = row2 + 1;
 
     dataTable.appendRow(0.75, row3);
     
-    auto row4 = row3 + 1;
+    SimTK::RowVector_<double> row4 = row3 + 1;
 
     dataTable.appendRow(1.00, row4);
 
@@ -62,7 +62,7 @@ int main() {
 
     // Editing the DataTable to not have strictly increasing independent column
     // will fail the construction of TimeSeriesTable.
-    auto row5 = row4 + 1;
+    SimTK::RowVector_<double> row5 = row4 + 1;
     
     dataTable.appendRow(0.9, row5); // 0.9 is less than previous value (1.00).
 
