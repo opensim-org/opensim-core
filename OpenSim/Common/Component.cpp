@@ -775,7 +775,7 @@ std::vector<std::string> Component::getStateVariableNames() const
         std::string prefix = "";
         if (back > front) // have non-whitespace name
             prefix = subCompName + "/";
-        for (auto& subname : subnames) {
+        for (auto const& subname : subnames) {
             names.push_back(prefix + subname);
         }
     }
@@ -789,7 +789,7 @@ std::vector<std::string> Component::getStateVariableNames() const
         std::string prefix = "";
         if(back > front) // have non-whitespace name
             prefix = subCompName + "/";
-        for (auto& subname : subnames) {
+        for (auto const& subname : subnames) {
             names.push_back(prefix + subname);
         }
     }
@@ -802,7 +802,7 @@ std::vector<std::string> Component::getStateVariableNames() const
         std::string prefix = "";
         if (back > front) // have non-whitespace name
             prefix = subCompName + "/";
-        for (auto& subname : subnames) {
+        for (auto const& subname : subnames) {
             names.push_back(prefix + subname);
         }
     }
@@ -1240,7 +1240,7 @@ getStateVariablesNamesAddedByComponent() const
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();
     
-    std::vector<std::string> names(_namedStateVariableInfo.size()); // ("", (int));
+    std::vector<std::string> names(_namedStateVariableInfo.size());
 
     while(it != _namedStateVariableInfo.end()){
         names[it->second.order] = it->first;

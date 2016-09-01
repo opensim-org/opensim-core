@@ -208,13 +208,13 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Also, assemble the names of the states that we will actually set in the
     // trajectory, along with the corresponding state index.
     std::map<int, std::string> statesToFillUp;
-    for (int is = 0; is < modelStateNames.getSize(); ++is) {
+    for (const auto& name : modelStateNames) {
         // getStateIndex() will check for pre-4.0 column names.
-        const int stateIndex = sto.getStateIndex(modelStateNames[is]);
+        const int stateIndex = sto.getStateIndex(name);
         if (stateIndex == -1) {
-            missingColumnNames.push_back(modelStateNames[is]);
+            missingColumnNames.push_back(name);
         } else {
-            statesToFillUp[stateIndex] = modelStateNames[is];
+            statesToFillUp[stateIndex] = name;
         }
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),

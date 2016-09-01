@@ -294,7 +294,7 @@ bool ForwardTool::run()
         _yStore->getData(startIndexForYStore,numStateVariables,&rawData[0]);
     }
     if (_yStore!=NULL || startIndexForYStore >= 0){
-        Array<std::string> stateNames = _model->getStateVariableNames();
+        std::vector<std::string> stateNames = _model->getStateVariableNames();
         for (int i=0; i<numStateVariables; i++)
             _model->setStateVariableValue(s, stateNames[i], rawData[i]);
     }

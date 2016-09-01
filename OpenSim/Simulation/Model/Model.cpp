@@ -1462,9 +1462,11 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
     aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
 
 */
-    Array<string> stateNames = getStateVariableNames();
-    aOStream<<"\nSTATES (total: "<<stateNames.getSize()<<")"<<std::endl;
-    for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
+    std::vector<string> stateNames = getStateVariableNames();
+    aOStream << "\nSTATES (total: " << stateNames.size() << ")" << std::endl;
+    for (int i = 0; i < stateNames.size(); i++) {
+        aOStream << "y[" << i << "] = " << stateNames[i] << std::endl;
+    }
 }
 
 //--------------------------------------------------------------------------
@@ -1824,16 +1826,16 @@ void Model::setAllControllersEnabled( bool enabled ) {
  */
 void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
 {
-    Array<string> rStateNames = getStateVariableNames();
+    std::vector<string> rStateNames = getStateVariableNames();
     int numStates = getNumStateVariables();
     // make sure same size, otherwise warn
-    if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize()){
+    if (originalStorage.getSmallestNumberOfStates() != rStateNames.size()){
         cout << "Number of columns does not match in formStateStorage. Found "
-            << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
+            << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.size() << "." << endl;
     }
     // Create a list with entry for each desiredName telling which column in originalStorage has the data
-    int* mapColumns = new int[rStateNames.getSize()];
-    for(int i=0; i< rStateNames.getSize(); i++){
+    int* mapColumns = new int[rStateNames.size()];
+    for(int i=0; i< rStateNames.size(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
         if (fix==-1){
@@ -1890,8 +1892,12 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         }
         statesStorage.append(*stateVec);
     }
-    rStateNames.insert(0, "time");
-    statesStorage.setColumnLabels(rStateNames);
+    rStateNames.insert(rStateNames.begin(), "time");
+    OpenSim::Array<std::string> rStateNamesArray;
+    for (auto const& name : rStateNames) {
+        rStateNamesArray.append(name);
+    }
+    statesStorage.setColumnLabels(rStateNamesArray);
 
     delete[] mapColumns;
 }

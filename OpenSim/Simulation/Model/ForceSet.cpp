@@ -367,7 +367,9 @@ getStateVariableNames(OpenSim::Array<std::string> &rNames) const
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&get(i));
        
         if(act) {
-            rNames.append(act->getStateVariableNames());
+            for (auto const& name : act->getStateVariableNames()) {
+                rNames.append(name);
+            }
         }
     }
 }

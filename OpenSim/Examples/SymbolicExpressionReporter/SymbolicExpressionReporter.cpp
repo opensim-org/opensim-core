@@ -222,11 +222,11 @@ record(const SimTK::State& s)
     // MAKE SURE ALL QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
     // Get state variable names and values in same order and use that to update map
-    Array<std::string> stateNames = _model->getStateVariableNames();
+    std::vector<std::string> stateNames = _model->getStateVariableNames();
     SimTK::Vector rStateValues = _model->getStateVariableValues(s);
 
     // update map between names and values, then pass it to expression evaluator
-    for(int i=0; i<stateNames.getSize(); i++){
+    for(int i=0; i<stateNames.size(); i++){
         _variables.find(stateNames[i])->second = rStateValues[i];
     }
     double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
@@ -260,9 +260,9 @@ begin( SimTK::State& s)
     // RESET STORAGE
     _resultStore.reset(s.getTime());
     // Populate list of names, initial values from s
-    Array<std::string> stateNames = _model->getStateVariableNames();
-    for(int i=0; i< stateNames.getSize(); i++){
-        _variables.insert(pair<string, double>(stateNames[i], 0.0));
+    std::vector<std::string> stateNames = _model->getStateVariableNames();
+    for(auto const& name : stateNames){
+        _variables.insert(pair<string, double>(name, 0.0));
     }
     // RECORD
     int status = 0;

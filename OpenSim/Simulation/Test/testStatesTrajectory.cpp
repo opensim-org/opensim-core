@@ -690,7 +690,7 @@ void tableAndTrajectoryMatch(const Model& model,
 
     size_t numColumns{};
     if (columns.empty()) {
-        numColumns = stateNames.getSize();
+        numColumns = stateNames.size();
     } else {
         numColumns = columns.size();
     }

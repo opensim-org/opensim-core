@@ -182,9 +182,13 @@ constructColumnLabels()
     if (_model)
     {
         // ASSIGN
-        Array<string> columnLabels = _model->getStateVariableNames();
-        columnLabels.insert(0, "time");     
-        _statesStore.setColumnLabels(columnLabels);
+        std::vector<string> columnLabels = _model->getStateVariableNames();
+        columnLabels.insert(columnLabels.begin(), "time");
+        Array<string> columnLabelsArray;
+        for (auto const& label : columnLabels) {
+            columnLabelsArray.append(label);
+        }
+        _statesStore.setColumnLabels(columnLabelsArray);
     }
 }
 
