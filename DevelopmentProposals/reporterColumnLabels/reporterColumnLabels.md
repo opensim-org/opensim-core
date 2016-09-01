@@ -25,7 +25,7 @@ the TableReporter always uses the full path name as the column label.
 The annotation is currently stored when `Input::connect()` is called.
 If the user provided the optional second argument when calling `connect()`, then this string is stored as the annotation;
 otherwise, a default annotation is stored.
-The default annotation is currently the name of the Output (e.g., "value" in the case of a Coordinate).
+The default annotation is currently the name of the Output (e.g., "value", in the case of a Coordinate).
 With the current design, it is impossible to determine whether the stored annotation was specified by the user or set by default.
 The user could even have specified a string that is identical to the default.
 
@@ -49,12 +49,12 @@ and forcing the user to specify an annotation for each Output may not be practic
 
 ### Requirements
 - The ConsoleReporter and TableReporter should both use the annotation for the column label if an annotation has been provided by the user.
-- The ConsoleReporter should use a default column name that is likely to be as meaningful as possible while still being short.
+- The ConsoleReporter should use a default column label that is likely to be as meaningful as possible while still being short.
   Although not strictly enforced, the Output names tend to be short (and are automatically truncated if they are too long).
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
-Several designs would satisfy the above criteria; four are provided here.
+Several designs would satisfy the requirements; four are proposed here.
 
 **Design 1**
 
@@ -64,7 +64,7 @@ the ConsoleReporter will use the Output's name and the TableReporter will use th
 This design will change the current behavior.
 Currently, the name of the Output can differ from the column label if the name is changed after `Input::connect()` has been called.
 It seems natural to generate a default column label when reporting rather than when connecting,
-so there is presumably a good reason for generating a default when `Input::connect()` is called
+so there is presumably a good reason for wanting to generate a default when `Input::connect()` is called
 (though always using the Output's full path name in the TableReporter is inconsistent).
 
 **Design 2**
