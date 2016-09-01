@@ -6,17 +6,17 @@ The interface for connecting Outputs to Inputs currently looks like the followin
 ```cpp
 // "update this Input to my ConsoleReporter and connect it to this Output from my Model"
 
-// Use case 1.
+// Use Case 1.
 reporter->updInput("inputs").connect(hopper.getComponent(hopperHeightCoord).getOutput("value"), "height");
 
-// Use case 2.
+// Use Case 2.
 auto& input  = reporter->updInput("inputs");
 auto& output = hopper.getComponent(hopperHeightCoord).getOutput("value");
 input.connect(output, "height");
 ```
 
 Some users may find this design difficult to learn for two reasons:
-- In Use case 1, the verb "connect" appears in the middle of a potentially long line.
+- In Use Case 1, the verb "connect" appears in the middle of a potentially long line.
 - The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `input.connect(output)`.
 
 This project proposes to change the interface for connecting Outputs to Inputs while retaining all current functionality.
@@ -27,7 +27,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 - No redundancy in the interface (i.e., the new interface replaces the existing interface).
 
 ### Architecture and Interfaces
-There are several possible designs.
+There are many possible designs; four possibilities are provided below.
 
 **Design 1**
 
@@ -92,13 +92,14 @@ rainbow.setAnnotation("Hi ho!");
 ```
 
 ### Bindings
-No anticipated issues for Designs 1 or 2.
+No anticipated issues for Designs 1, 2, or 4.
+Design 3 cannot be wrapped.
 
 ### Backwards Compatibility
 No backwards compatibility concerns because Components are new to 4.0.
 
 ### Lifecycle and Ownership / Memory Management
-No new objects.
+Design 4 introduces a `Connection` class, which would be owned by Model.
 
 ### Performance Considerations
 No expected performance issues because the same methods will be called under the hood.
