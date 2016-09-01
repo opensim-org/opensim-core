@@ -291,7 +291,7 @@ const Joint& Coordinate::getJoint() const
 
 Coordinate::MotionType Coordinate::getMotionType() const
 {
-    int ix = getJoint().get_CoordinateSet().getIndex(this);
+    int ix = getJoint().getProperty_coordinates().findIndexForName(getName());
     return getJoint().getMotionType(Joint::CoordinateIndex(ix));
 }
 

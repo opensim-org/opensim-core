@@ -6,6 +6,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 # TODO add more tests of the integrity checks.
 
 class TestStatesTrajectory(unittest.TestCase):

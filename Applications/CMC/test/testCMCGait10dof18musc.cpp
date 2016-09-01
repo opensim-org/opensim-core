@@ -81,7 +81,7 @@ void testGait10dof18musc() {
     int nstates = standard->getColumnLabels().size() - 1;
 
     // angles and speeds within .6 degrees .6 degs/s; activations within 1%
-    Array<double> rms_tols(0.01, nstates);
+    std::vector<double> rms_tols(0.01, nstates);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");

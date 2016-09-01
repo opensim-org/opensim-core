@@ -217,7 +217,7 @@ void testGait2354()
     
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
@@ -239,7 +239,7 @@ void testGait2354WithController() {
 
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree

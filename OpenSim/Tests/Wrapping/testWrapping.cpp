@@ -373,7 +373,7 @@ void testWrapCylinder()
     //model.setUseVisualizer(true);
 
     SimTK::State& s = model.initSystem();
-    auto& coord = joint->getCoordinateSet()[0];
+    auto& coord = joint->upd_coordinates(0);
 
     int nsteps = 10;
     for (int i = 0; i < nsteps; ++i) {

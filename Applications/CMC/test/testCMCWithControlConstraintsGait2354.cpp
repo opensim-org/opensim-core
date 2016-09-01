@@ -66,7 +66,7 @@ void testGait2354() {
     int nq = results.getColumnLabels().getSize()-1;
 
     // Tracking kinematics angles in degrees should be within 1.5 degrees
-    Array<double> rms_tols(1.5, nq);
+    std::vector<double> rms_tols(1.5, nq);
     rms_tols[3] = 0.005; // pelvis translations in m should be with 5mm
     rms_tols[4] = 0.005;
     rms_tols[5] = 0.005;
@@ -80,7 +80,7 @@ void testGait2354() {
     Array<string> col_labels = standard2.getColumnLabels();
 
     // tolerance for joint angles 0.02rad ~= 1.15 degs and activation within 2%
-    Array<double> rms_tols2(0.02, col_labels.getSize()-1);
+    std::vector<double> rms_tols2(0.02, col_labels.getSize()-1);
     for (int i = 0; i < nq; ++i){
         rms_tols2[2*i+1] = 0.25; // velocities rad/s
     }

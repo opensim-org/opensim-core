@@ -23,10 +23,13 @@
 # simple-arm.py
 # Author: Neil Dhir
 # ------------------------------------------------------------------------#
-# ABSTRACT: This short piece of OpenSim python API example mimics         #
-# the simple-arm example found on the core landing page. Though it does   #
-# not include forward simulation, but instead saves the model to an .osim #
-# file which can be used in the GUI for further analysis.		  #
+# ABSTRACT: This short piece of OpenSim python API example demonstrates a #
+# simple arm which consists of two bodies, two joints, a muscle and a     #
+# controller. All model elements are labeled with their appropriate       #
+# biomechanical namesakes for easy identification and clarity of          #
+# demonstration. Further, the model does not include forward simulation,  #
+# but instead saves the model to an .osim file which can be used in the   #
+# OpenSim plotter or the graphics window.                                 #
 # ------------------------------------------------------------------------#
 
 import opensim as osim
@@ -39,7 +42,6 @@ arm = osim.Model()
 # origin, and moments and products of inertia of zero.
 # ---------------------------------------------------------------------------
 
-# chrisdembia: use 4 spaces instead of tabs
 humerus = osim.Body('humerus',
                     1.0,
                     osim.Vec3(0, 0, 0),
@@ -54,18 +56,18 @@ radius = osim.Body('radius',
 # ---------------------------------------------------------------------------
 
 shoulder = osim.PinJoint("shoulder",
-                         arm.getGround(), 	    		# PhysicalFrame
+                         arm.getGround(), # PhysicalFrame
                          osim.Vec3(0, 0, 0),
                          osim.Vec3(0, 0, 0),
-                         humerus, 				# PhysicalFrame
+                         humerus, # PhysicalFrame
                          osim.Vec3(0, 0, 0),
                          osim.Vec3(0, 1, 0))
 
 elbow = osim.PinJoint("elbow",
-                      humerus, 				# PhysicalFrame
+                      humerus, # PhysicalFrame
                       osim.Vec3(0, 0, 0),
                       osim.Vec3(0, 0, 0),
-                      radius, 				# PhysicalFrame
+                      radius, # PhysicalFrame
                       osim.Vec3(0, 0, 0),
                       osim.Vec3(0, 1, 0))
 
@@ -92,7 +94,7 @@ biceps.addNewPathPoint("insertion",
 
 brain = osim.PrescribedController()
 brain.addActuator(biceps)
-brain.prescribeControlForActuator(1,  # Actuator's index in controller set
+brain.prescribeControlForActuator('biceps',  # Actuator's index in controller set
                                   osim.StepFunction(0.5, 3.0, 0.3, 1.0))
 
 # ---------------------------------------------------------------------------
@@ -101,7 +103,7 @@ brain.prescribeControlForActuator(1,  # Actuator's index in controller set
 
 arm.addBody(humerus)
 arm.addBody(radius)
-arm.addJoint(shoulder)			# Now required in OpenSim4.0
+arm.addJoint(shoulder) # Now required in OpenSim4.0
 arm.addJoint(elbow)
 arm.addForce(biceps)
 arm.addController(brain)
@@ -114,7 +116,7 @@ arm.addController(brain)
 reporter = osim.TableReporter()
 reporter.set_report_time_interval(1.0)
 reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
-elbow_cord = elbow.getCoordinateSet().get(0).getOutput("value")
+elbow_cord = elbow.get_coordinates(0).getOutput("value")
 reporter.updInput("inputs").connect(elbow_cord, "elbow_angle")
 arm.addComponent(reporter)
 
@@ -124,8 +126,8 @@ arm.addComponent(reporter)
 
 state = arm.initSystem()
 # Fix the shoulder at its default angle and begin with the elbow flexed.
-arm.updCoordinateSet().get(0).setLocked(state, True)
-arm.updCoordinateSet().get(1).setValue(state, 0.5 * osim.SimTK_PI)
+arm.upd_coordinates(0).setLocked(state, True)
+arm.upd_coordinates(1).setValue(state, 0.5 * osim.SimTK_PI)
 arm.equilibrateMuscles(state)
 
 # ---------------------------------------------------------------------------
