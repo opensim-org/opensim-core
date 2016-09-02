@@ -39,7 +39,7 @@ int main() {
     try { testGait10dof18musc(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc");
+        failures.push_back("testGait10dof18musc_Thelen");
     }
 
     // redo with the Millard2012EquilibriumMuscle 
@@ -81,7 +81,7 @@ void testGait10dof18musc() {
     int nstates = standard->getColumnLabels().size() - 1;
 
     // angles and speeds within .6 degrees .6 degs/s; activations within 1%
-    std::vector<double> rms_tols(0.01, nstates);
+    std::vector<double> rms_tols(nstates, 0.01);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");
