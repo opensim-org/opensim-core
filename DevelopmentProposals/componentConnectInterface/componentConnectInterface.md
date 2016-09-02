@@ -1,4 +1,4 @@
-## Project: Improved interface for connecting Outputs to Inputs
+## Project: Improved interface for connecting Components
 ***OpenSim Development Proposal***
 
 ### Overview
@@ -15,11 +15,15 @@ auto& output = hopper.getComponent(hopperHeightCoord).getOutput("value");
 input.connect(output, "height");
 ```
 
+Connectors are connected similarly.
 Some users may find this design difficult to learn for two reasons:
 - In Use Case 1, the verb "connect" appears in the middle of a potentially long line.
 - The verb "connect" does not imply directionality, yet `connect()` can be called only in one direction: `input.connect(output)`.
+- The distinction between a Connector and an Input is potentially confusing.
+  (*Connectors* express topological dependencies among Components; *Inputs and Outputs* express the flow of time-varying signals.)
 
 This project proposes to change the interface for connecting Outputs to Inputs while retaining all current functionality.
+Connectors are a secondary, but related, issue.
 See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 
 ### Requirements
@@ -27,12 +31,13 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 - No redundancy in the interface (i.e., the new interface replaces the existing interface).
 
 ### Architecture and Interfaces
-There are many possible designs; four possibilities are provided below.
+There are many possible designs; several possibilities are provided below.
+Popular ideas from dev team meeting are indicated with `<-- LIKED`.
 
 **Design 1**
 
 Create convenience methods to simplify the code that precedes the word `connect`.
-Where applicable, make the existing `connect()` method private.
+Where applicable, make the existing `connect()` method private to avoid redundancy in the API.
 ```cpp
 // Current design (for reference).
 const auto& output = hopper.getComponent(hopperHeightCoord).getOutput("value");
@@ -41,10 +46,20 @@ reporter->updInput("inputs").connect(output, "height");
 // Alternative designs (mutually exclusive).
 reporter->connect("inputs", output, "height");  //of the form [register] = [expression]
 reporter->connect(output, "inputs", "height");  //mirrors left-to-right signal flow diagram
-// Specific to Reporters, which have only one Input.
+
+// These methods are specific to Reporters, which have only one Input. For
+// multi-input Components, the first argument would be the name of the Input.
 reporter->connectToInput(output, "height");     //hides the Reporter's Input
+reporter->connectInput(output, "height");       //unclear whether connecting to or from Input
 reporter->satisfyInput(output, "height");       //avoids the overloaded verb "connect"
+reporter->specifyInput(output, "height");
+reporter->setInput(output, "height");           //conflicts with existing use of "set" prefix
+                                                //  (where argument would be of type Input)
 reporter->addToReport(output, "height");        //might match user psychology
+
+// Other ideas from dev team meeting.
+muscle.getOutput("activation").wireTo(component.getInput("activationIn"));
+muscle.getInput("activationIn").wireFrom(component.getOutput("activation"));
 ```
 
 **Design 2**
@@ -64,7 +79,15 @@ Component::connect(reporter, output, "height");
 Component::satisfyInput(reporter->updInput(), output, "height");
 ```
 
-**Design 3 (unable to wrap)**
+**Design 3**
+
+Create a free `connect()` function; similar to Design 2 but without the `Component::`.
+```cpp
+using namespace OpenSim;
+connect(reporter->updInput(), output, "height");
+```
+
+**Design 4**
 
 Overload `operator<<` or `operator>>`.
 ```cpp
@@ -78,7 +101,7 @@ reporter->updInput() << output;
 reporter << output << annotation;
 ```
 
-**Design 4**
+**Design 5**
 
 Create a `Connection` Component that is analogous to the wires between the Output and Input.
 ```cpp
@@ -89,17 +112,40 @@ auto& rainbow = Connection(reporter->updInput(), output, "height");
 rainbow.setProducer(hopper.getComponent(vastus).getOutput("activation"));
 rainbow.setConsumer(reporter2);
 rainbow.setAnnotation("Hi ho!");
+myComponent.getConnections();
+```
+
+**Design 6**
+
+Rename `Connector` to `Socket` and use `connect()` for both Sockets and Inputs.
+Sockets and Inputs can be accessed using methods generated through the property system (e.g., `upd_sockets()`)
+as well as macro-generated methods that bake the name of the input into the method name (e.g., `connectInput_activation()`).
+```cpp
+myComponent.upd_sockets("actuator").connect(*pathActuator);                      // <-- LIKED
+// Equivalently:
+myComponent.upd_sockets(0).connect(*pathActuator);
+myComponent.upd_sockets().get(0).connect(*pathActuator);
+myComponent.connectSocket_actuator(*pathActuator);                               // <-- LIKED
+
+myComponent.upd_inputs("activation").connect( vastus.getOutput("activation") );  // <-- LIKED
+// Equivalently:
+myComponent.connectInput_activation( vastus.getOutput("activation") );           // <-- LIKED
+myComponent.wireInput_activation( vastus.getOutput("activation") );              // <-- LIKED
+myComponent.satisfyInput_activation( vastus.getOutput("activation") );
+myComponent.setInput_activation( vastus.getOutput("activation") );
+myComponent.appendInput_activation( vastus.getOutput("activation") );
+myComponent.getInputs().get(0).connect( vastus.getOutput("activation") );        // <-- LIKED
 ```
 
 ### Bindings
-No anticipated issues for Designs 1, 2, or 4.
-Design 3 cannot be wrapped.
+Design 3 would require custom wrapping code in Bindings/Java/swig.
+Design 4 cannot be wrapped.
 
 ### Backwards Compatibility
 No backwards compatibility concerns because Components are new to 4.0.
 
 ### Lifecycle and Ownership / Memory Management
-Design 4 introduces a `Connection` class, which would be owned by Model.
+Design 5 introduces a `Connection` class, which would be owned by Model.
 
 ### Performance Considerations
 No expected performance issues because the same methods will be called under the hood.
@@ -111,4 +157,4 @@ The necessary updates to testComponentInterface.cpp will retain the current test
 No anticipated issues.
 
 ### Pull Requests
-A single PR should be sufficient.
+To be determined.
