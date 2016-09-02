@@ -33,7 +33,7 @@ environment:
       PYTHON_DIR: "C:\\Python27-x64"
 
 branches:
-  exclude:
+  except:
   # Branches containing Development Proposals do not need to be tested.
   # Exclude any branch whose name starts with devprop (case-insensitive).
   # For example, devprop-feature and DEVPROP_feature are ignored.
