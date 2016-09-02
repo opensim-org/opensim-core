@@ -88,7 +88,7 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
     std::vector<double> comparisons;
     result.compareWithStandard(standard, columnsUsed, comparisons);
 
-    int ncolumns = columnsUsed.size();
+    size_t ncolumns = columnsUsed.size();
 
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");
