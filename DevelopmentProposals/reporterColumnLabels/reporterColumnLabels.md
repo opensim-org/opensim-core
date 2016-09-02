@@ -27,7 +27,7 @@ If the user provided the optional second argument when calling `connect()`, then
 otherwise, a default annotation is stored.
 The default annotation is currently the name of the Output (e.g., "value", in the case of a Coordinate).
 With the current design, it is impossible to determine whether the stored annotation was specified by the user or set by default.
-The user could even have specified a string that is identical to the default.
+The user could even have specified a string that happens to be identical to the default.
 
 Currently, the ConsoleReporter always uses the annotation as the column label.
 This behavior appears to be appropriate for the ConsoleReporter because Output names tend to be short.
@@ -50,7 +50,7 @@ and forcing the user to specify an annotation for each Output may not be practic
 ### Requirements
 - The ConsoleReporter and TableReporter should both use the annotation for the column label if an annotation has been provided by the user.
 - The ConsoleReporter should use a default column label that is likely to be as meaningful as possible while still being short.
-  Although not strictly enforced, the Output names tend to be short (and are automatically truncated if they are too long).
+  Although not strictly enforced, the Output names tend to be short (and are automatically truncated to 12 characters if they are too long).
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
@@ -69,24 +69,25 @@ so there is presumably a good reason for wanting to generate a default when `Inp
 
 **Design 2**
 
-To retain the current behavior, the `_annotations` member variable can be changed from a `std::vector<std::string>` to a `std::vector< std::pair<bool, std::string> >`.
+To retain the current behavior of storing the Output's name at connect time,
+the `_annotations` member variable can be changed from a `std::vector<std::string>` to a `std::vector< std::pair<bool, std::string> >`.
 The boolean flag would indicate whether the string was the annotation provided by the user or the name of the Output when `Input::connect()` was called.
 The column label would then be determined at report time as follows:
 ```
 if (ConsoleReporter)
     column_label = annotation
-else
-    column_label = provided_by_user_flag ? annotation : Output.getFullPathName()
+else //TableReporter
+    column_label = annotation_was_provided_by_user ? annotation : Output.getFullPathName()
 end
 ```
 
 **Design 3**
 
-This design also retains the current behavior.
+This design also retains the current behavior of storing the Output's name at connect time.
 The `_annotation` would be stored in `Input::connect()` as follows:
 ```
 if (user provided an annotation)
-    _annotation = user's string
+    _annotation = string provided by user
 else
     _annotation = ConsoleReporter ? Output.getName() : Output.getFullPathName()
 end
@@ -94,7 +95,8 @@ end
 
 **Design 4**
 
-This design also retains the current behavior, and also allows the user to specify a preference for whether to use short or long default column labels.
+This design also retains the current behavior of storing the Output's name at connect time,
+and also allows the user to specify a preference for whether to use short or long default column labels.
 The `_annotations` member variable would be changed from a `std::vector<std::string>` to a `std::vector< std::pair<std::string, std::string> >`
 and would be set at connect time as follows:
 ```
@@ -129,7 +131,17 @@ There do not appear to be any tests for ConsoleReporter or TableReporter.
 Tests will be created to ensure column labels are correct.
 
 ### Potential hurdles or roadblocks
-No anticipated hurdles or roadblocks.
+There may be additional considerations related to how annotations are serialized.
+Connectee addresses are currently serialized using full path names suffixed with `(annotation)`.
+It may be prudent to switch to a more explicit layout to separate the path, output, channel, and annotation fields:
+```
+<ConnecteePath>
+    <path_to_Component>uniped/thigh/kneeJoint/flexion</path_to_Component>
+    <output_name>value</output_name>
+    <channel_name></channel_name>
+    <annotation>flexionAngle</annotation>
+</ConnecteePath>
+```
 
 ### Pull Requests
 It does not appear to be necessary to split this project across multiple PRs.
