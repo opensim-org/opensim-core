@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 
@@ -232,7 +231,7 @@ public:
     ///@}
 
     /** Attach Geometry to this Frame and have this Frame take ownership of
-        it by adding it to this Frame's <attached_geometry> property list.
+        it by adding it to this Frame's \<attached_geometry\> property list.
         The Geometry is treated as being fixed to this Frame such that the
         transform used to position the Geometry is that of this Frame. */
     void attachGeometry(OpenSim::Geometry* geom);

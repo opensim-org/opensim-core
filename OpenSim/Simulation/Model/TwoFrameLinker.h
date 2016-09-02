@@ -27,10 +27,9 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
-
-class PhysicalOffsetFrame;
 
 //=============================================================================
 //=============================================================================

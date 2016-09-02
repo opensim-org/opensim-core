@@ -27,10 +27,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
-#include "SimTKsimbody.h"
 
 
 #ifdef SWIG
@@ -42,6 +40,9 @@
 //=============================================================================
 //=============================================================================
 namespace OpenSim {
+
+class Storage;
+
     /**
     * A class for recording the basic actuator information for a model
     * during a simulation.

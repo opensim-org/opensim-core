@@ -7,6 +7,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 # TODO in Component:
 #
 # SimTK::IteratorPair<...> Component::getConnectors()
@@ -201,7 +204,7 @@ class TestInputsOutputs(unittest.TestCase):
         m.addComponent(rep)
 
         # Connect.
-        coord = j.getCoordinateSet().get(0)
+        coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
         rep.updInput('inputs').connect(coord.getOutput('speed'), 'spd')
         rep.updInput('inputs').connect(

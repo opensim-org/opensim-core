@@ -1,5 +1,5 @@
-#ifndef __PathWrapSet_h__
-#define __PathWrapSet_h__
+#ifndef OPENSIM_PATH_WRAP_SET_H
+#define OPENSIM_PATH_WRAP_SET_H
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PathWrapSet.h                           *
  * -------------------------------------------------------------------------- *
@@ -67,4 +67,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __PathWrapSet_h__
+#endif // OPENSIM_PATH_WRAP_SET_H

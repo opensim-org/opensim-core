@@ -25,6 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "Measurement.h"
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 //=============================================================================
 // STATICS

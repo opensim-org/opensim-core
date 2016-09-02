@@ -98,14 +98,20 @@ int main() {
     filenames.push_back("subject01_static.trc");
     std::string tmpfile{"testtrcfileadapter.trc"};
 
+    std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         auto table = trcfileadapter.read(filename);
         trcfileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         auto table = FileAdapter::readFile(filename).at("markers");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"markers"}, table.get());
@@ -113,13 +119,18 @@ int main() {
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing TimeSeriesTableVec3 and TRCFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         TimeSeriesTableVec3 table{filename};
         TRCFileAdapter::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     std::remove(tmpfile.c_str());
+
+    std::cout << "\nAll tests passed!" << std::endl;
 
     return 0;
 }

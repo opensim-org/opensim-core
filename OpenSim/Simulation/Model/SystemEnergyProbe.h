@@ -26,10 +26,10 @@
 
 // INCLUDE
 #include "Probe.h"
-#include "Model.h"
-
 
 namespace OpenSim {
+
+class Model;
 
 //==============================================================================
 //                         SYSTEM ENERGY PROBE

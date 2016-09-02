@@ -30,6 +30,7 @@ in-memory container for data access and manipulation.                         */
 
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
+#include "SimTKcommon/internal/BigMatrix.h"
 
 namespace OpenSim {
 

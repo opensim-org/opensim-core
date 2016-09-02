@@ -21,27 +21,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "RRATool.h"
+#include "CMC.h"
+#include "CMC_TaskSet.h"
+#include "ActuatorForceTarget.h"
+#include "ActuatorForceTargetFast.h"
 #include "AnalyzeTool.h"
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
 #include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
-#include "CMC_TaskSet.h"
-#include "ActuatorForceTarget.h"
-#include "ActuatorForceTargetFast.h"
+
 
 using namespace std;
 using namespace SimTK;

@@ -28,7 +28,7 @@
 #include "osimCommonDLL.h"
 #include <iostream>
 #include <string>
-#include <SimTKcommon.h>
+#include "SimTKcommon/SmallMatrix.h"
 
 namespace OpenSim {
 

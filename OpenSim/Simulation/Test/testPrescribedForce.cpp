@@ -111,11 +111,10 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
 
     // Rename coordinates for a free joint
-    CoordinateSet free_coords = free.getCoordinateSet();
-    for(int i=0; i<free_coords.getSize(); i++){
+    for(int i=0; i<free.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "free_q" << i;
-        free_coords.get(i).setName(coord_name.str());
+        free.upd_coordinates(i).setName(coord_name.str());
     }
 
     osimModel->addBody(&ball);

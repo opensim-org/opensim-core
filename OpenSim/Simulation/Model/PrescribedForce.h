@@ -23,15 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include "OpenSim/Simulation/osimSimulationDLL.h"
-#include "OpenSim/Common/Function.h"
 #include "OpenSim/Common/FunctionSet.h"
 #include "Force.h"
 
 namespace OpenSim {
 
 class Model;
-class FunctionSet;
 class Storage;
 
 /** This applies to a PhysicalFrame a force and/or torque that is specified as a 

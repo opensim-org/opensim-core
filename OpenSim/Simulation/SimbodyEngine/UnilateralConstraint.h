@@ -25,21 +25,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include "Constraint.h"
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <SimTKsimbody.h>
 
 namespace OpenSim {
-
-class SimbodyEngine;
 
 //=============================================================================
 //=============================================================================

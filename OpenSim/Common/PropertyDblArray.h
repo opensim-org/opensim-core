@@ -34,6 +34,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
+#include "Array.h"
 
 
 //=============================================================================

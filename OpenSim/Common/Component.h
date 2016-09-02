@@ -46,10 +46,11 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentConnector.h"
 #include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
-#include "Simbody.h"
 #include <functional>
-#include <memory>
+
+#include "simbody/internal/MultibodySystem.h"
 
 namespace OpenSim {
 
@@ -96,7 +97,7 @@ public:
                                         const std::string& func,
                                         const std::string& compName,
                                         const std::string& thisName) :
-            Exception(file, line, func) {
+        Exception(file, line, func) {
         std::string msg = "Component '" + compName;
         msg += "' already owned by tree to which '" + thisName;
         msg += "' belongs. Clone the component to adopt a fresh copy.";
@@ -114,6 +115,48 @@ public:
         std::string msg = "This Component has not been added to a System.\n";
         msg += "You must call initSystem on the top-level Component ";
         msg += "(i.e., Model) first.";
+        addMessage(msg);
+    }
+};
+
+class ConnectorNotFound : public Exception {
+public:
+    ConnectorNotFound(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const Object& obj,
+                      const std::string& connectorName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Connector '" + connectorName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class InputNotFound : public Exception {
+public:
+    InputNotFound(const std::string& file,
+                  size_t line,
+                  const std::string& func,
+                  const Object& obj,
+                  const std::string& inputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Input '" + inputName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class OutputNotFound : public Exception {
+public:
+    OutputNotFound(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const Object& obj,
+                   const std::string& outputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Output '" + outputName;
+        msg += "' found for this Component.";
         addMessage(msg);
     }
 };
@@ -754,23 +797,26 @@ public:
      * lets you get information about the connection (like if the connector is
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
+     *
+     * <b>C++ example</b>
+     * @code{.cpp}
+     * model.getComponent("/path/to/component").getConnector("connectorName");
+     * @endcode
      */
     const AbstractConnector& getConnector(const std::string& name) const {
-        const AbstractConnector* found = findConnector(name);
+        auto it = _connectorsTable.find(name);
 
-        if (!found){
-            std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::getConnector() ERROR- Connector '" << name;
-            msg << "' not found.\n" << std::endl;
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        if (it != _connectorsTable.end()) {
+            return get_connectors(it->second);
         }
 
-        return *found;
+        OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
     }
 
     /** Get a writable reference to the AbstractConnector for the given
      * connector name. Use this method to connect the Connector to something.
+     * 
+     * <b>C++ example</b>
      * @code
      * joint.updConnector("parent_frame").connect(model.getGround());
      * @endcode
@@ -860,6 +906,11 @@ public:
     /**
     * Get an Input provided by this Component by name.
     *
+    * <b>C++ example:</b> get an Input from a Component in the model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getInput("inputName");
+    * @endcode
+    *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
@@ -870,22 +921,22 @@ public:
         if (it != _inputsTable.end()) {
             return it->second.getRef(); 
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            std::string prefix = name.substr(0, back);
-            std::string inName = name.substr(back + 1, name.length() - back);
 
-            const Component* found = findComponent<Component>(prefix);
-            if (found)
-                return found->getInput(inName);
-        }
-        std::stringstream msg;
-        msg << "Component::getInput: ERR- no input '" << name << "' found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW_FRMOBJ(InputNotFound, name);
     }
     
+    /**
+    * Get a writable reference to an Input provided by this Component by name.
+    *
+    * <b>C++ example:</b> get a writeable reference to an Input of a 
+    * Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updInput("inputName");
+    * @endcode
+
+    * @param name   the name of the Input
+    * @return       reference to the AbstractInput
+    */
     AbstractInput& updInput(const std::string& name)
     {
         return *const_cast<AbstractInput *>(&getInput(name));
@@ -906,7 +957,12 @@ public:
     /**
     * Get the Output provided by this Component by name.
     *
-    * @param name   the name of the cache variable
+    * <b>C++ example:</b> get an Output from a Component in a model
+    * @code{.cpp}
+    * model.getComponent("/path/to/component").getOutput("outputName");
+    * @endcode
+    *
+    * @param name   the name of the Output
     * @return       const reference to the AbstractOutput
     */
     const AbstractOutput& getOutput(const std::string& name) const
@@ -916,39 +972,20 @@ public:
         if (it != _outputsTable.end()) {
             return it->second.getRef();
         }
-        else {
-            std::string::size_type back = name.rfind("/");
-            // no prefix found then no prefix (path) to locate Component
-            OPENSIM_THROW_IF( back == std::string::npos, Exception,
-                "Component::getOutput has no output '" + name
-                    + "' for component '" + getName() + "' of type "
-                    + getConcreteClassName() );
 
-            std::string prefix = name.substr(0, back);
-            std::string outName = name.substr(back + 1, name.length() - back);
-
-            try {
-                const Component& found = getComponent<Component>(prefix);
-                // if found is this component again, no point trying to find
-                // output again, otherwise we would not have reached here 
-                return found.getOutput(outName);
-            }
-            catch (const std::exception& x) {
-                std::stringstream msg;
-                msg << "Component::getOutput: ERR-  no output '" << name
-                    << "' found.\n " "for component '" << getName() << "' of type "
-                    << getConcreteClassName() << ". Details:\n" << x.what() 
-                    << std::endl;
-
-                 throw Exception(msg.str(), __FILE__, __LINE__);
-            }
-        }
+        OPENSIM_THROW_FRMOBJ(OutputNotFound, name);
     }
 
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
-    * @param name   the name of the cache variable
+    * <b>C++ example:</b> get a writeable reference to an Output of a 
+    * Component in a model
+    * @code{.cpp}
+    * model.updComponent("/path/to/component").updOutput("outputName");
+    * @endcode
+
+    * @param name   the name of the Output
     * @return       reference to the AbstractOutput
     */
     AbstractOutput& updOutput(const std::string& name)
@@ -1028,15 +1065,16 @@ public:
         const AbstractInput& in = getInput(name);
         // TODO could maybe remove this check and have the Input do it. Or,
         // here, we could catch Input's exception and give a different message.
-        if (in.isConnected()){
+        if (in.isConnected()) {
             return (Input<T>::downcast(in)).getValue(state);
-            }
-        else{
+        }
+        
+        else {
         std::stringstream msg;
-            msg << "Component::getInputValue: ERR- input '" << name << "' not connected.\n "
+            msg << "Component::getInputValue: ERR- Input '" << name << "' not connected.\n "
                 << "for component '" << getName() << "' of type "<< getConcreteClassName();
         throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+        }
     }
 
     /**
@@ -2011,8 +2049,6 @@ protected:
 #endif
 
 public:
-    /** Find a Connector of this Component (includes its subcomponents). */
-    const AbstractConnector* findConnector(const std::string& name) const;
 #ifndef SWIG // StateVariable is protected.
     /**
      * Find a StateVariable of this Component (includes its subcomponents).
@@ -2263,7 +2299,7 @@ private:
 
     // Internal use: mark as a subcomponent, a component that is owned by this 
     // Component by virtue of being one of its properties.
-    void markAsPropertySubcomponent(Component* subcomponent);
+    void markAsPropertySubcomponent(const Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
@@ -2418,7 +2454,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    SimTK::Array_<SimTK::ReferencePtr<Component>>  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -2785,13 +2821,29 @@ void Input<T>::findAndConnect(const Component& root) {
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
                            annotation);
+        std::string::size_type back = outputPath.rfind("/");
+        std::string componentPath = outputPath.substr(0, back);
+        std::string outputName = outputPath.substr(back + 1);
         try {
             const AbstractOutput* output = nullptr;
+
             if (outputPath[0] == '/') { //absolute path name
-                output = &root.getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &root.getOutput(outputPath);
+                }
+                else {
+                    output = &root.getComponent(componentPath).getOutput(outputName);
+                }
             }
+
             else { // relative path name
-                output = &getOwner().getOutput(outputPath);
+                if (componentPath.empty()) {
+                    output = &getOwner().getOutput(outputPath);
+                }
+                else {
+                    output = &getOwner().getComponent(componentPath).getOutput(outputName);
+                }
+                
             }
             const auto& channel = output->getChannel(channelName);
             connect(channel, annotation);

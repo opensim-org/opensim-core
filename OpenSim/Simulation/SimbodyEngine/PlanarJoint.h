@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -44,14 +43,54 @@ ordered mobilities; rotation about Z and translation in X then Y.
 class OSIMSIMULATION_API PlanarJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PlanarJoint, Joint);
 
+public:
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rz = myPlanarJoint.
+                         getCoordinate(PlanarJoint::Coord::RotationZ);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        RotationZ,
+        TranslationX,
+        TranslationY
+    };
+
+private:
     /** Specify the Coordinates of the GimbalJoint */
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational) };
-    CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                    static_cast<unsigned>(Coord::RotationZ)) };
+    CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                                    static_cast<unsigned>(Coord::TranslationX)) };
+    CoordinateIndex ty{ constructCoordinate(Coordinate::MotionType::Translational,
+                                    static_cast<unsigned>(Coord::TranslationY)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
+    }
 
 protected:
     /** Model component interface */

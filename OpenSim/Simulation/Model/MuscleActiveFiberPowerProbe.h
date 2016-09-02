@@ -25,9 +25,7 @@
 
 
 // INCLUDE
-#include "Muscle.h"
 #include "Probe.h"
-#include "Model.h"
 
 
 namespace OpenSim {

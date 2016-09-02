@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 
 #include "SimbodyEngine.h"
-#include "Joint.h"
 #include "Coordinate.h"
 
 

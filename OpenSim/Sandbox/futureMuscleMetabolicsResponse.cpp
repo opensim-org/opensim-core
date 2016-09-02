@@ -143,14 +143,16 @@ void testComplexResponse() {
     // Add individual responses to the aggregate response
     auto response1 = new ComplexResponse();
     response1->setName("complex_response_j1");
-    response1->updConnector<Coordinate>("coord").connect(j1->get_CoordinateSet()[0]);
+    response1->updConnector<Coordinate>("coord").connect(
+        j1->getCoordinate(PinJoint::Coord::RotationZ));
     // add to aggregate which takes ownership
     aggregate->addComponent(response1);
 
     // now create response 2
     auto response2 = new ComplexResponse();
     response2->setName("complex_response_j2");
-    response2->updConnector<Coordinate>("coord").connect(j2->get_CoordinateSet()[0]);
+    response2->updConnector<Coordinate>("coord").connect(
+        j2->getCoordinate(PinJoint::Coord::RotationZ));
     // add to aggregate which takes ownership
     aggregate->addComponent(response2);
 
@@ -169,7 +171,7 @@ void testComplexResponse() {
     reporter->updInput("inputs").connect(response2->getOutput("sum"));
     reporter->updInput("inputs").connect(aggregate->getOutput("total_sum"));
     reporter->updInput("inputs").connect(
-            j1->getCoordinateSet().get(0).getOutput("value"));
+            j1->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"));
     // TODO connect by path: reporter->getInput("input").connect("/complex_response/sum");
     // multi input: reporter->getMultiInput("input").append_connect(cr->getOutput("sum"));
  

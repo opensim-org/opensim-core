@@ -23,18 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "SimTKcommon.h"
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Set.h>
-#include "ModelComponent.h"
 #include "Appearance.h"
 
 namespace OpenSim { 
 
-class PhysicalFrame;
-class Model;
 class Frame;
-class ModelComponent;
 //=============================================================================
 //=============================================================================
 /**

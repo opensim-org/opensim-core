@@ -40,7 +40,7 @@
 // INCLUDES
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
-#include <Simbody.h>
+//#include <Simbody.h>
 
 namespace OpenSim {
 

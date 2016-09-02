@@ -22,18 +22,12 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 

@@ -31,14 +31,15 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "VectorFunction.h"
-#include "Array.h"
-#include "SimTKsimbody.h"
+//#include "Array.h"
 
-
+namespace SimTK { class State; }
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+template <class T> class Array;
 
 /**
  * An abstract class for representing a vector function.

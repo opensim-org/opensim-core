@@ -26,7 +26,7 @@
 //=============================================================================
 #include "FreeJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "simbody/internal/MobilizedBody_Free.h"
 
 //=============================================================================
 // STATICS
@@ -52,17 +52,13 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(s)){
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-        double xangle = coordinateSet.get(zero).getDefaultValue();
-        double yangle = coordinateSet.get(1).getDefaultValue();
-        double zangle = coordinateSet.get(2).getDefaultValue();
+        double xangle = getCoordinate(FreeJoint::Coord::Rotation1X).getDefaultValue();
+        double yangle = getCoordinate(FreeJoint::Coord::Rotation2Y).getDefaultValue();
+        double zangle = getCoordinate(FreeJoint::Coord::Rotation3Z).getDefaultValue();
         Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-        Vec3 t(coordinateSet.get(3).getDefaultValue(),
-            coordinateSet.get(4).getDefaultValue(),
-            coordinateSet.get(5).getDefaultValue());
+        Vec3 t(getCoordinate(FreeJoint::Coord::TranslationX).getDefaultValue(),
+               getCoordinate(FreeJoint::Coord::TranslationY).getDefaultValue(),
+               getCoordinate(FreeJoint::Coord::TranslationZ).getDefaultValue());
 
         //FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
         getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
@@ -81,15 +77,11 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.
-        
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
- 
-        coordinateSet.get(zero).setDefaultValue(angles[0]);
-        coordinateSet.get(1).setDefaultValue(angles[1]);
-        coordinateSet.get(2).setDefaultValue(angles[2]);
-        coordinateSet.get(3).setDefaultValue(t[0]); 
-        coordinateSet.get(4).setDefaultValue(t[1]); 
-        coordinateSet.get(5).setDefaultValue(t[2]);
+        updCoordinate(FreeJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
+        updCoordinate(FreeJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
+        updCoordinate(FreeJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
+        updCoordinate(FreeJoint::Coord::TranslationX).setDefaultValue(t[0]); 
+        updCoordinate(FreeJoint::Coord::TranslationY).setDefaultValue(t[1]); 
+        updCoordinate(FreeJoint::Coord::TranslationZ).setDefaultValue(t[2]);
     }
 }

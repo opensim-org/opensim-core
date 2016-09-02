@@ -25,13 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "WrapObject.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "WrapResult.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
 
 //=============================================================================
 // STATICS
@@ -67,12 +62,10 @@ void WrapObject::constructProperties()
     constructProperty_translation(defaultTranslations);
 
     constructProperty_quadrant("Unassigned");
-
-    constructProperty_display_preference(1);
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
-
-    constructProperty_color(defaultColor);
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
+    constructProperty_Appearance(defaultAppearance);
 }
 
 const PhysicalFrame& WrapObject::getFrame() const

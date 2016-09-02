@@ -27,10 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-
-#include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKcommon.h"
+#include <SimTKcommon/SmallMatrix.h>
 
 
 namespace OpenSim { 

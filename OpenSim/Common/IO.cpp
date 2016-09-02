@@ -27,7 +27,6 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include <time.h>
 #include <math.h>
 #include <string>

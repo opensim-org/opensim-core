@@ -25,10 +25,9 @@
 // INCLUDES
 //=============================================================================
 #include "ScaleTool.h"
-#include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include "SimTKsimbody.h"
+#include "GenericModelMaker.h"
 
 //=============================================================================
 // STATICS

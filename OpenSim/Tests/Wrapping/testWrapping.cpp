@@ -26,6 +26,7 @@
 
 #include "simbody/internal/CableTrackerSubsystem.h"
 #include "simbody/internal/CablePath.h"
+#include "simbody/internal/Force_Custom.h"
 
 #include <set>
 #include <string>
@@ -372,7 +373,7 @@ void testWrapCylinder()
     //model.setUseVisualizer(true);
 
     SimTK::State& s = model.initSystem();
-    auto& coord = joint->getCoordinateSet()[0];
+    auto& coord = joint->updCoordinate();
 
     int nsteps = 10;
     for (int i = 0; i < nsteps; ++i) {
