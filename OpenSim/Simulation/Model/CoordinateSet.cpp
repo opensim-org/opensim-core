@@ -75,9 +75,8 @@ void CoordinateSet::populate(Model& model)
     auto joints = model.updComponentList<Joint>();
 
     for(Joint& joint : joints) {
-        CoordinateSet& coords = joint.upd_CoordinateSet();
         for(int j=0; j< joint.numCoordinates(); ++j){
-            adoptAndAppend(&coords[j]);
+            adoptAndAppend(&joint.upd_coordinates(j));
         }
     }
 }
