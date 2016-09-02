@@ -60,6 +60,16 @@ public:
     }
 };
 
+namespace {
+    template<typename T>
+    struct is_SimTK_Vec : std::false_type {};
+
+    template<int M, typename ELT, int Stride>
+    struct is_SimTK_Vec<SimTK::Vec<M, ELT, Stride>> {
+        static constexpr bool value = (M >= 2 && M <= 12);
+    };
+} // namespace
+
 /** DelimFileAdapter is a FileAdapter that reads and writes text files with
 given delimiters. CSVFileAdapter and MOTFileAdapter derive from this class and
 set the delimiters appropriately for the files they parse. The read/write
@@ -70,17 +80,13 @@ line.                                                                         */
 template<typename T>
 class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
     static_assert(std::is_same<T, double           >::value ||
-                  std::is_same<T, SimTK::Vec2      >::value ||
-                  std::is_same<T, SimTK::Vec3      >::value ||
-                  std::is_same<T, SimTK::Vec4      >::value ||
-                  std::is_same<T, SimTK::Vec5      >::value ||
-                  std::is_same<T, SimTK::Vec6      >::value ||
+                  is_SimTK_Vec<T                   >::value ||
                   std::is_same<T, SimTK::UnitVec3  >::value ||
                   std::is_same<T, SimTK::Quaternion>::value ||  
                   std::is_same<T, SimTK::SpatialVec>::value,
                   "Template argument T must be one of the following types : "
-                  "double, SimTK::Vec2, SimTK::Vec3, SimTK::Vec4, SimTK::Vec5, "
-                  "SimTK::Vec6, SimTK::UnitVec, SimTK::Quaternion, "
+                  "double, SimTK::Vec2 to SimTK::Vec9, SimTK::Vec<10> to "
+                  "SimTK::Vec<12>, SimTK::UnitVec, SimTK::Quaternion, "
                   "SimTK::SpatialVec");
 public:
     DelimFileAdapter()                                   = delete;
@@ -193,11 +199,11 @@ private:
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_table("table");
+DelimFileAdapter<T>::_table = "table";
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_endHeaderString("endheader");
+DelimFileAdapter<T>::_endHeaderString = "endheader";
 
 template<typename T>
 std::string
@@ -238,19 +244,19 @@ DelimFileAdapter<T>::dataTypeName_impl(SimTK::Vec<M>) {
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_timeColumnLabel("time");
+DelimFileAdapter<T>::_timeColumnLabel = "time";
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_dataTypeString("DataType");
+DelimFileAdapter<T>::_dataTypeString = "DataType";
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_versionString("version");
+DelimFileAdapter<T>::_versionString = "version";
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_versionNumber("2");
+DelimFileAdapter<T>::_versionNumber = "2";
 
 template<typename T>
 std::string
@@ -609,6 +615,6 @@ DelimFileAdapter<T>::writeElem_impl(std::ostream& stream,
         stream << _compDelimWrite << std::setprecision(prec) << elem[i];
 }
 
-}
+} // namespace OpenSim
 
 #endif // OPENSIM_DELIM_FILE_ADAPTER_H_
