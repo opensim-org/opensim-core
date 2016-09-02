@@ -32,7 +32,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 
 ### Architecture and Interfaces
 There are many possible designs; several possibilities are provided below.
-Popular ideas from dev team meeting are indicated with `<-- LIKED`.
+Popular ideas from dev team meeting are indicated with `<-- LIKED` (see Designs 1 and 6).
 
 **Design 1**
 
@@ -55,7 +55,7 @@ reporter->satisfyInput(output, "height");       //avoids the overloaded verb "co
 reporter->specifyInput(output, "height");
 reporter->setInput(output, "height");           //conflicts with existing use of "set" prefix
                                                 //  (where argument would be of type Input)
-reporter->addToReport(output, "height");        //might match user psychology
+reporter->addToReport(output, "height");        //might match user psychology               <-- LIKED
 
 // Other ideas from dev team meeting.
 muscle.getOutput("activation").wireTo(component.getInput("activationIn"));
