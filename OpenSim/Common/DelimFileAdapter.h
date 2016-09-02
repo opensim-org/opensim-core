@@ -193,11 +193,11 @@ private:
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_table{"table"};
+DelimFileAdapter<T>::_table("table");
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_endHeaderString{"endheader"};
+DelimFileAdapter<T>::_endHeaderString("endheader");
 
 template<typename T>
 std::string
@@ -238,19 +238,19 @@ DelimFileAdapter<T>::dataTypeName_impl(SimTK::Vec<M>) {
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_timeColumnLabel{"time"};
+DelimFileAdapter<T>::_timeColumnLabel("time");
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_dataTypeString{"DataType"};
+DelimFileAdapter<T>::_dataTypeString("DataType");
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_versionString{"version"};
+DelimFileAdapter<T>::_versionString("version");
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_versionNumber{"2"};
+DelimFileAdapter<T>::_versionNumber("2");
 
 template<typename T>
 std::string
