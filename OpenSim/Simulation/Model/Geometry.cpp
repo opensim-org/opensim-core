@@ -207,7 +207,7 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasParent()) {
-            std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
             return;   // Orphan Mesh not part of a model yet
         }
         const Component* parent = &getParent();
@@ -223,7 +223,7 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            std::clog << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
             return;   // Orphan Mesh not descendent of a model
         }
         // Current interface to Visualizer calls generateDecorations on every frame.
@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            std::clog << "ModelVisualizer ignoring '" << file
+            std::cout << "ModelVisualizer ignoring '" << file
                 << "'; only .vtp .stl and .obj files currently supported.\n";
             return;
         }
@@ -246,13 +246,15 @@ void Mesh::extendFinalizeFromProperties() {
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
         if (!foundIt) {
-            std::clog << "ModelVisualizer couldn't find file '" << file
+            if (getDebugLevel()==0) { return; }
+
+            std::cout << "ModelVisualizer couldn't find file '" << file
                 << "'; tried\n";
             for (unsigned i = 0; i < attempts.size(); ++i)
-                std::clog << "  " << attempts[i] << "\n";
+                std::cout << "  " << attempts[i] << "\n";
             if (!isAbsolutePath &&
                 !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                std::clog << "Set environment variable OPENSIM_HOME "
+                std::cout << "Set environment variable OPENSIM_HOME "
                 << "to search $OPENSIM_HOME/Geometry.\n";
             return;
         }
@@ -266,7 +268,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         }
         catch (const std::exception& e) {
-            std::clog << "Visualizer couldn't read "
+            std::cout << "Visualizer couldn't read "
                 << attempts.back() << " because:\n"
                 << e.what() << "\n";
             return;

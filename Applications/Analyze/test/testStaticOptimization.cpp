@@ -48,7 +48,7 @@ int main()
     muscleModelNames.append("Thelen2003Muscle_Deprecated");
     muscleModelNames.append("Thelen2003Muscle");
     muscleModelNames.append("Millard2012EquilibriumMuscle");
-    muscleModelNames.append("Millard2012AccelerationMuscle");
+    //muscleModelNames.append("Millard2012AccelerationMuscle");
     
     // Tolerances for the differences between the current models
     // and the 'standard' solution, which was closest to using 

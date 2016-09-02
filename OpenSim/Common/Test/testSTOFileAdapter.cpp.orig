@@ -200,8 +200,12 @@ int main() {
     std::cout << "Testing STOFileAdapter::read() and STOFileAdapter::write()"
               << std::endl;
     for(const auto& filename : filenames) {
-        std::cout << " " << filename << std::endl;
+<<<<<<< HEAD
         STOFileAdapter_<double> stofileadapter{};
+=======
+        std::cout << "  " << filename << std::endl;
+        STOFileAdapter stofileadapter{};
+>>>>>>> master
         auto table = stofileadapter.read(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
@@ -229,6 +233,7 @@ int main() {
 
     std::remove(tmpfile.c_str());
 
+<<<<<<< HEAD
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec2>"
               << std::endl;
     testReadingWriting<SimTK::Vec2>();
@@ -253,8 +258,9 @@ int main() {
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::SpatialVec>"
               << std::endl;
     testReadingWriting<SimTK::SpatialVec>();
+=======
     std::cout << "\nAll tests passed!" << std::endl;
-
+>>>>>>> master
 
     return 0;
 }
