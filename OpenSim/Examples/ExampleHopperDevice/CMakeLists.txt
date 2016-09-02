@@ -1,3 +1,5 @@
+include_directories(${PROJECT_SOURCE_DIR})
+
 add_executable(exampleHopperDevice
     exampleHopperDevice.cpp
     buildHopperModel.cpp
@@ -5,11 +7,7 @@ add_executable(exampleHopperDevice
     defineDeviceAndController.h
     helperMethods.h)
 target_link_libraries(exampleHopperDevice osimTools)
-set_target_properties(exampleHopperDevice PROPERTIES
-    PROJECT_LABEL "Hopper Device"
-    FOLDER "Examples"
-    EXCLUDE_FROM_ALL TRUE
-    )
+set_target_properties(exampleHopperDevice PROPERTIES FOLDER "Examples")
 
 add_executable(exampleHopperDeviceAnswers
     exampleHopperDevice_answers.cpp
@@ -18,8 +16,4 @@ add_executable(exampleHopperDeviceAnswers
     defineDeviceAndController_answers.h
     helperMethods.h)
 target_link_libraries(exampleHopperDeviceAnswers osimTools)
-set_target_properties(exampleHopperDeviceAnswers PROPERTIES
-    PROJECT_LABEL "Hopper Device Answers"
-    FOLDER "Example answers"
-    EXCLUDE_FROM_ALL TRUE
-    )
+set_target_properties(exampleHopperDeviceAnswers PROPERTIES FOLDER "Examples")
