@@ -6,8 +6,10 @@ add_executable(exampleHopperDevice
     buildDeviceModel.cpp
     defineDeviceAndController.h
     helperMethods.h)
-target_link_libraries(exampleHopperDevice osimTools)
+target_link_libraries(exampleHopperDevice ${Simbody_LIBRARIES} osimTools)
 set_target_properties(exampleHopperDevice PROPERTIES FOLDER "Examples")
+add_test(NAME    exampleHopperDevice
+         COMMAND exampleHopperDevice noVisualizer simulateOnce)
 
 add_executable(exampleHopperDeviceAnswers
     exampleHopperDevice_answers.cpp
@@ -15,5 +17,7 @@ add_executable(exampleHopperDeviceAnswers
     buildDeviceModel_answers.cpp
     defineDeviceAndController_answers.h
     helperMethods.h)
-target_link_libraries(exampleHopperDeviceAnswers osimTools)
+target_link_libraries(exampleHopperDeviceAnswers ${Simbody_LIBRARIES} osimTools)
 set_target_properties(exampleHopperDeviceAnswers PROPERTIES FOLDER "Examples")
+add_test(NAME    exampleHopperDeviceAnswers
+         COMMAND exampleHopperDeviceAnswers noVisualizer simulateOnce)

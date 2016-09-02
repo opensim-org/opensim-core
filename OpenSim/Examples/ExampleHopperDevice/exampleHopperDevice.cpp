@@ -173,8 +173,20 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 // the exercise. The project should execute without making any changes (you
 // should see the unassisted hopper hop slightly).
 //------------------------------------------------------------------------------
-int main()
-{
+int main(int argc, char* argv[]) {
+    //==========================================================================
+    // Command line argument parsing.
+    //==========================================================================
+    // Suppress/show visualizer.
+    bool showVisualizer{true};
+    // Simulate just once or until user stops.
+    bool simulateOnce{false};
+    for(int i = 0; i < argc; ++i)
+        if(strcmp(argv[i], "noVisualizer") == 0)
+            showVisualizer = false;
+        else if(strcmp(argv[i], "simulateOnce") == 0)
+            simulateOnce = true;
+        
     using namespace OpenSim;
 
     //==========================================================================
@@ -210,7 +222,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHop = hopper.initSystem();
-        simulate(hopper, sHop);
+        simulate(hopper, sHop, showVisualizer, simulateOnce);
     }
 
     //==========================================================================
@@ -268,7 +280,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
-        simulate(testbed, sDev);
+        simulate(testbed, sDev, showVisualizer, simulateOnce);
     }
 
     //==========================================================================
@@ -307,7 +319,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
-        simulate(assistedHopper, sHD);
+        simulate(assistedHopper, sHD, showVisualizer, simulateOnce);
     }
 
     return 0;

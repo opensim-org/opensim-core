@@ -59,8 +59,11 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants=true);
 // state at the end of the simulation). Set saveStatesFile=true to save the
 // states to a storage file.
 //------------------------------------------------------------------------------
-inline void simulate(Model& model, SimTK::State& state,
-                     bool saveStatesFile=false);
+inline void simulate(Model& model,
+                     SimTK::State& state,
+                     bool showVisualizer,
+                     bool simulateOnce,
+                     bool saveStatesFile = false);
 
 
 //------------------------------------------------------------------------------
@@ -160,10 +163,18 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
     }
 }
 
-inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
-{
+inline void simulate(Model& model,
+                     SimTK::State& state,
+                     const bool showVisualizer,
+                     const bool simulateOnce,
+                     const bool saveStatesFile) {
     SimTK::State initState = state;
     SimTK::Visualizer::InputSilo* silo;
+
+    if(!showVisualizer) {
+        model.setUseVisualizer(false);
+        std::cout << "Visualizer turned off." << std::endl;
+    }
 
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
@@ -184,7 +195,7 @@ inline void simulate(Model& model, SimTK::State& state, bool saveStatesFile)
 
     // Simulate until the user presses ESC (or enters 'q' if visualization has
     // been disabled).
-    while (true) {
+    while (!simulateOnce) {
         if (model.getUseVisualizer()) {
             // Get a key press.
             silo->clear(); // Ignore any previous key presses.
@@ -219,7 +230,6 @@ inline Model buildTestbed()
     // Create a new OpenSim model.
     auto testbed = Model();
     testbed.setName("testbed");
-    testbed.setUseVisualizer(true);
     testbed.setGravity(Vec3(0));
 
     // Create a 2500 kg load and add geometry for visualization.
