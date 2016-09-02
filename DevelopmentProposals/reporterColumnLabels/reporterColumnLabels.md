@@ -55,6 +55,7 @@ and forcing the user to specify an annotation for each Output may not be practic
 
 ### Architecture
 Several designs would satisfy the requirements; four are proposed here.
+As a general note, it may be useful to add a `setAnnotation()` method (e.g., if a fully connected model was loaded from file).
 
 **Design 1**
 
