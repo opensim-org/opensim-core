@@ -87,7 +87,7 @@ Model buildHopper() {
     hopper.addJoint(knee);
 
     // Set the coordinate names and default values. Note that we need "auto&"
-    // here so that we get a reference to the CoordinateSet rather than a copy.
+    // here so that we get a reference to the Coordinate rather than a copy.
     auto& sliderCoord =
         sliderToGround->updCoordinate(SliderJoint::Coord::TranslationX);
     sliderCoord.setName("yCoord");
