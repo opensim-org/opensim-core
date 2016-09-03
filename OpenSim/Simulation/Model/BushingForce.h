@@ -63,7 +63,7 @@ public:
     OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
         "Damping parameters resisting angular deviation rate. (Nm/(rad/s))");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
-        "Damping parameters resisting relative translational velocity. (N/(m/s)");
+        "Damping parameters resisting relative translational velocity. (N/(m/s))");
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
