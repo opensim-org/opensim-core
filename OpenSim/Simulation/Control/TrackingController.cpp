@@ -77,9 +77,7 @@ void TrackingController::setNull()
 //=============================================================================
 void TrackingController::setDesiredStatesStorage(const Storage* aYDesStore)
 {
-    auto* old = _desiredStatesStorage.release();
-    delete old;
-    _desiredStatesStorage.reset(aYDesStore);
+    _desiredStatesStorage = aYDesStore;
 }
 
 const Storage& TrackingController:: getDesiredStatesStorage() const
