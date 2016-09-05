@@ -100,12 +100,12 @@ int main()
         // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        blockToGround->upd_coordinates(0).setRange(angleRange);
-        blockToGround->upd_coordinates(1).setRange(angleRange);
-        blockToGround->upd_coordinates(2).setRange(angleRange);
-        blockToGround->upd_coordinates(3).setRange(positionRange);
-        blockToGround->upd_coordinates(4).setRange(positionRange);
-        blockToGround->upd_coordinates(5).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
         // Add the block body to the model
         osimModel.addBody(block);
@@ -173,7 +173,7 @@ int main()
 
         // Add a Muscle analysis
         MuscleAnalysis* muscAnalysis = new MuscleAnalysis(&osimModel);
-        Array<std::string> coords(blockToGround->get_coordinates(5).getName(),1);
+        Array<std::string> coords(blockToGround->getCoordinate(FreeJoint::Coord::TranslationZ).getName(),1);
         muscAnalysis->setCoordinates(coords);
         muscAnalysis->setComputeMoments(false);
         osimModel.addAnalysis(muscAnalysis);

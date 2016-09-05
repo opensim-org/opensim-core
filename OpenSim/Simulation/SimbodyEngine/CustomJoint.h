@@ -103,7 +103,11 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get a Coordinate associated with this Joint. */
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint. */
     const Coordinate& getCoordinate(unsigned idx) const {
         OPENSIM_THROW_IF(numCoordinates() == 0,
                          JointHasNoCoordinates);
@@ -113,6 +117,18 @@ public:
                          "index available");
 
         return get_coordinates(idx);
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint. */
+    Coordinate& updCoordinate(unsigned idx) {
+        OPENSIM_THROW_IF(numCoordinates() == 0,
+                         JointHasNoCoordinates);
+        OPENSIM_THROW_IF(idx > numCoordinates()-1,
+                         InvalidCall,
+                         "Index passed to updCoordinate() exceeds the largest "
+                         "index available");
+
+        return upd_coordinates(idx);
     }
 
     // SCALE

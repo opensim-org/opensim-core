@@ -165,9 +165,9 @@ void EllipsoidJoint::extendInitStateFromProperties(SimTK::State& s) const
     const SimbodyMatterSubsystem& matter = getModel().getMatterSubsystem();
     
     if (!matter.getUseEulerAngles(s)){
-        double xangle = get_coordinates(0).getDefaultValue();
-        double yangle = get_coordinates(1).getDefaultValue();
-        double zangle = get_coordinates(2).getDefaultValue();
+        double xangle = getCoordinate(EllipsoidJoint::Coord::Rotation1X).getDefaultValue();
+        double yangle = getCoordinate(EllipsoidJoint::Coord::Rotation2Y).getDefaultValue();
+        double zangle = getCoordinate(EllipsoidJoint::Coord::Rotation3Z).getDefaultValue();
         Rotation r(BodyRotationSequence, xangle, XAxis, 
                                          yangle, YAxis, zangle, ZAxis);
 
@@ -187,9 +187,9 @@ void EllipsoidJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
 
-        upd_coordinates(0).setDefaultValue(angles[0]);
-        upd_coordinates(1).setDefaultValue(angles[1]);
-        upd_coordinates(2).setDefaultValue(angles[2]);
+        updCoordinate(EllipsoidJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
+        updCoordinate(EllipsoidJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
+        updCoordinate(EllipsoidJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
     }
 }
 

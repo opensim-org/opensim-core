@@ -224,11 +224,17 @@ public:
      */
     const OpenSim::PhysicalFrame& getParentFrame() const;
 
-    /** Convenience method to get the Coordinate associated with a
-        single-degree-of-freedom Joint. If the Joint has more than one
+    /** Convenience method to get a const reference to the Coordinate associated
+        with a single-degree-of-freedom Joint. If the Joint has more than one
         Coordinate, you must provide the appropriate argument to the
         getCoordinate() method defined in the derived class. */
     const Coordinate& getCoordinate() const;
+
+    /** Convenience method to get a writable reference to the Coordinate
+        associated with a single-degree-of-freedom Joint. If the Joint has more
+        than one Coordinate, you must provide the appropriate argument to the
+        updCoordinate() method defined in the derived class. */
+    Coordinate& updCoordinate();
 
     bool getReverse() const { return get_reverse(); }
 
