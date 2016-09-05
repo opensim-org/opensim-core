@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -37,7 +37,7 @@
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj,min,build)  STR(maj.min.build)
 #define MAKE_COPYRIGHT_STRING(y,a) \
-    "Copyright (c) " STR(y) " Stanford University, " STR(a)
+    "Copyright (c) 2005-2016 Stanford University, " STR(a)
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
