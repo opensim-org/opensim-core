@@ -533,16 +533,6 @@ void Model::reorderCoordinatesAccordingToSystemMobilities()
     SimTK_ASSERT_ALWAYS(cnt == nc,
         "Reordered Coordinates does not correspond to the number of "
         "Coordinates in the Model.");
-
-    // check
-    for (int i = 0; i < coordSet.getSize(); ++i) {
-        Coordinate& coord = coordSet[i];
-        auto mbix = coord.getBodyIndex();
-        auto mqix = coord.getMobilizerQIndex();
-        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
-        cout << "Coordinate[" << i << "] is `" << coord.getName() << "'." 
-            << " with System index: " << cix << endl;
-    }
 }
 
 
