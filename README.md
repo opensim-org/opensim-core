@@ -606,10 +606,11 @@ On Ubuntu using Unix Makefiles
 
 #### Get the dependencies
 
-Most dependencies can be obtained via the Ubuntu software repositories. On each
-line below, we show the corresponding package.
+Most dependencies can be obtained via the Ubuntu software repositories;
+especially if you are using Ubuntu 15.10 or later. On each line below, we show
+the Ubuntu package names for the dependencies. You can find instructions for
+specific Ubuntu versions under 'For the impatient' below.
 
-* **operating system**: Ubuntu 12.04 or later. *(See OS specific instructions under 'For the impatient' below)*
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
   `cmake-gui`. 
