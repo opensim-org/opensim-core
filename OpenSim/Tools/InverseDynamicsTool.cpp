@@ -301,8 +301,6 @@ bool InverseDynamicsTool::run()
 
         }
 
-
-
         // Exclude user-specified forces from the dynamics for this analysis
         disableModelForces(*_model, s, _excludedForces);
 
