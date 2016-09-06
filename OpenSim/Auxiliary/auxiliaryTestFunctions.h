@@ -205,10 +205,11 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
      return obj;
 }
 
-// Change version number of the file to 1 so that Storage can read it. This
-// function can be removed when Storage class is removed.
-inline void changeVersionNumber(const std::string& filenameOld,
-                                const std::string& filenameNew) {
+// Change version number of the file to 1 so that Storage can read it.
+// Storage can only read files with version <= 1.
+// This function can be removed when Storage class is removed.
+inline void revertToVersionNumber1(const std::string& filenameOld,
+                                   const std::string& filenameNew) {
   std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
   std::ifstream fileOld{filenameOld};
   std::ofstream fileNew{filenameNew};

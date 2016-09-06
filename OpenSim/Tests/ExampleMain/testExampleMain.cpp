@@ -37,7 +37,7 @@ int main()
     try {
         const std::string result1Filename{"tugOfWar_states.sto"};
         const std::string result1FilenameV1{"tugOfWar_states_V1.sto"};
-        changeVersionNumber(result1Filename, result1FilenameV1);
+        revertToVersionNumber1(result1Filename, result1FilenameV1);
         Storage result1(result1FilenameV1), 
                 standard1("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
@@ -49,7 +49,7 @@ int main()
 
         const std::string result3Filename{"tugOfWar_forces.sto"};
         const std::string result3FilenameV1{"tugOfWar_forces_V1.sto"};
-        changeVersionNumber(result3Filename, result3FilenameV1);
+        revertToVersionNumber1(result3Filename, result3FilenameV1);
         Storage result3(result3FilenameV1), 
                 standard3("std_tugOfWar_forces.mot");
         

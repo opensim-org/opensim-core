@@ -51,7 +51,7 @@ int main()
     try {
         const std::string resultFilename{"Arm26_optimized_states.sto"};
         const std::string resultFilenameV1{"Arm26_optimized_states_V1.sto"};
-        changeVersionNumber(resultFilename, resultFilenameV1);
+        revertToVersionNumber1(resultFilename, resultFilenameV1);
         Storage result(resultFilenameV1),
                 standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
