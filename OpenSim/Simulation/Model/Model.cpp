@@ -309,7 +309,7 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (!_system) 
+    if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
@@ -319,6 +319,11 @@ SimTK::State& Model::initializeState() {
     // Set the model's operating state (internal member variable) to the 
     // default state that is stored inside the System.
     _workingState = getMultibodySystem().getDefaultState();
+
+    // Once we have the System topology realized, we can reorder
+    // Coordinates so they are aligned with generalized coordinates (q)
+    // in the State
+    reorderCoordinatesAccordingToSystemMobilities();
 
     // Set the Simbody modeling option that tells any joints that use 
     // quaternions to use Euler angles instead.
@@ -490,6 +495,56 @@ void Model::createMultibodySystem()
 
     addToSystem(*_system);
 }
+
+
+void Model::reorderCoordinatesAccordingToSystemMobilities()
+{
+    OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
+        "Attempting to reorder Coordinates according to an invalid System.");
+
+    auto& coordSet = updCoordinateSet();
+
+    // We have a valid MultibodySystem underlying the Coordinates
+    int nc = coordSet.getSize();
+    const SimTK::State& s = getModel().getWorkingState();
+    SimTK_ASSERT_ALWAYS(nc <= s.getNQ(),
+        "Number of Coordinates exceeds the number of mobilities in "
+        "the underlying MultibodySystem.");
+
+    auto& matter = getSystem().getMatterSubsystem();
+
+    auto coordinates = updComponentList<Coordinate>();
+
+    int cnt = 0;
+    for (auto& coord : coordinates) {
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
+
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+
+        SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
+            "in this Model.");
+
+        // Set the coordinate in the right slot in the CoordinateSet
+        coordSet.set(cix, &coord);
+        cnt++;
+    }
+
+    SimTK_ASSERT_ALWAYS(cnt == nc,
+        "Reordered Coordinates does not correspond to the number of "
+        "Coordinates in the Model.");
+
+    // check
+    for (int i = 0; i < coordSet.getSize(); ++i) {
+        Coordinate& coord = coordSet[i];
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+        cout << "Coordinate[" << i << "] is `" << coord.getName() << "'." 
+            << " with System index: " << cix << endl;
+    }
+}
+
 
 void Model::extendFinalizeFromProperties()
 {
@@ -682,19 +737,7 @@ void Model::extendConnectToModel(Model &model)
             Joint* joint = static_cast<Joint*>(mob.getJointRef());
             setNextSubcomponentInSystem(*joint);
 
-            int jx = joints.getIndex(joint, m);
-            //if in the set but not already in the right order
-            if ((jx >= 0) && (jx < joints.getSize()) && (jx != m)) {
-                // perform a move to put the joint in tree order
-                // this is necessary ONLY because some tools assume that the
-                // order of joints and specifically coordinates is the
-                // order of the mobility (generalized) forces.
-                // IDTool, StaticOptimization and RRA for example will fail.
-                // TODO: when the tools are fixed/removed remove this as well.
-                joint = &joints.get(jx);
-                joints.set(jx, &joints.get(m));
-                joints.set(m, joint);
-            }
+
         }
     }
     joints.setMemoryOwner(isMemoryOwner);
