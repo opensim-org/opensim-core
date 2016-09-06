@@ -33,7 +33,7 @@
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj,min,build)  STR(maj.min.build)
 #define MAKE_COPYRIGHT_STRING(y,a) \
-    "Copyright (c) 2005-2016 Stanford University, " STR(a)
+    "Copyright (c) " STR(y) " Stanford University, " STR(a)
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
