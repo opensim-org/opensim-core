@@ -78,7 +78,7 @@ this class.
 Header in the file is assumed to end with string "endheader" occupying a full
 line.                                                                         */
 template<typename T>
-class OSIMCOMMON_API DelimFileAdapter : public FileAdapter {
+class DelimFileAdapter : public FileAdapter {
     static_assert(std::is_same<T, double           >::value ||
                   is_SimTK_Vec<T                   >::value ||
                   std::is_same<T, SimTK::UnitVec3  >::value ||
