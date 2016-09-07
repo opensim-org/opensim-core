@@ -61,7 +61,6 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants=true);
 //------------------------------------------------------------------------------
 inline void simulate(Model& model,
                      SimTK::State& state,
-                     bool showVisualizer,
                      bool simulateOnce,
                      bool saveStatesFile = false);
 
@@ -71,7 +70,7 @@ inline void simulate(Model& model,
 // will attach one end of the device to ground ("/testbed/ground") and the other
 // end to a sprung load ("/testbed/load").
 //------------------------------------------------------------------------------
-inline Model buildTestbed();
+inline Model buildTestbed(bool showVisualizer);
 
 
 //------------------------------------------------------------------------------
@@ -165,16 +164,10 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
 
 inline void simulate(Model& model,
                      SimTK::State& state,
-                     const bool showVisualizer,
                      const bool simulateOnce,
                      const bool saveStatesFile) {
     SimTK::State initState = state;
     SimTK::Visualizer::InputSilo* silo;
-
-    if(!showVisualizer) {
-        model.setUseVisualizer(false);
-        std::cout << "Visualizer turned off." << std::endl;
-    }
 
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
@@ -195,14 +188,14 @@ inline void simulate(Model& model,
 
     // Simulate until the user presses ESC (or enters 'q' if visualization has
     // been disabled).
-    while (!simulateOnce) {
+    do {
         if (model.getUseVisualizer()) {
             // Get a key press.
             silo->clear(); // Ignore any previous key presses.
             unsigned key, modifiers;
             silo->waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
-        } else {
+        } else if(!simulateOnce) {
             std::cout << "Press <Enter> to begin simulating, or 'q' followed "
                       << "by <Enter> to quit . . . " << std::endl;
             if (std::cin.get() == 'q') { break; }
@@ -219,10 +212,10 @@ inline void simulate(Model& model,
         if (saveStatesFile) {
             manager.getStateStorage().print("hopperStates.sto");
         }
-    }
+    } while(!simulateOnce);
 }
 
-inline Model buildTestbed()
+inline Model buildTestbed(bool showVisualizer)
 {
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -230,6 +223,8 @@ inline Model buildTestbed()
     // Create a new OpenSim model.
     auto testbed = Model();
     testbed.setName("testbed");
+    if(showVisualizer)
+        testbed.setUseVisualizer(true);
     testbed.setGravity(Vec3(0));
 
     // Create a 2500 kg load and add geometry for visualization.

@@ -42,7 +42,7 @@ buildHopper() is doing. */
 
 namespace OpenSim {
 
-Model buildHopper() {
+Model buildHopper(bool showVisualizer) {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -189,6 +189,9 @@ Model buildHopper() {
     thigh->attachGeometry(linkGeometry);
     shank->attachGeometry(linkGeometry->clone());
 
+    if(showVisualizer)
+        hopper.setUseVisualizer(true);
+    
     return hopper;
 }
 

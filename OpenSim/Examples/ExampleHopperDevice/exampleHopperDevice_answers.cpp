@@ -85,8 +85,8 @@ static const std::string vastus{"/Dennis/vastus"};
 namespace OpenSim {
 
 // Forward declarations for methods used below.
-Model buildHopper();    //defined in buildHopperModel.cpp
-Model buildTestbed();   //defined in helperMethods.h
+Model buildHopper(bool showVisualizer);    //defined in buildHopperModel.cpp
+Model buildTestbed(bool showVisualizer);   //defined in helperMethods.h
 Device* buildDevice();  //defined in buildDevice.cpp
 
 
@@ -267,7 +267,7 @@ int main(int argc, char* argv[]) {
     if (true)
     {
         // Build the hopper.
-        auto hopper = buildHopper();
+        auto hopper = buildHopper(showVisualizer);
         // Update the hopper model's internal data members, which includes
         // identifying its subcomponents from its properties.
         hopper.finalizeFromProperties();
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHop = hopper.initSystem();
-        simulate(hopper, sHop, showVisualizer, simulateOnce);
+        simulate(hopper, sHop, simulateOnce);
     }
 
     //==========================================================================
@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
     if (true)
     {
         // Build the testbed and device.
-        auto testbed = buildTestbed();
+        auto testbed = buildTestbed(showVisualizer);
         testbed.finalizeFromProperties();
 
         // Step 2, Task A
@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
-        simulate(testbed, sDev, showVisualizer, simulateOnce);
+        simulate(testbed, sDev, simulateOnce);
     }
 
     //==========================================================================
@@ -361,7 +361,7 @@ int main(int argc, char* argv[]) {
     if (true)
     {
         // Build the hopper and device.
-        auto assistedHopper = buildHopper();
+        auto assistedHopper = buildHopper(showVisualizer);
         assistedHopper.finalizeFromProperties();
         auto kneeDevice = buildDevice();
         kneeDevice->finalizeFromProperties();
@@ -391,7 +391,7 @@ int main(int argc, char* argv[]) {
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
-        simulate(assistedHopper, sHD, showVisualizer, simulateOnce);
+        simulate(assistedHopper, sHD, simulateOnce);
     }
 
     return 0;
