@@ -47,7 +47,7 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
-3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
+3. Make sure that your code executes as intended and that *all* tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
 
 4. Typo fixes can be merged by any member of the Development (Dev) Team.
 
