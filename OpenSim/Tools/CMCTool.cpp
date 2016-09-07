@@ -650,6 +650,8 @@ bool CMCTool::run()
     // so set each Coordinate value and speed individually.
     const CoordinateSet& coords = _model->getCoordinateSet();
     for (int i = 0; i < nq; ++i) {
+        // The last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
         coords[i].setValue(s, q[i], i==(nq-1));
         coords[i].setSpeedValue(s, u[i]);
     }
