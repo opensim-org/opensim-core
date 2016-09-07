@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
     // Command line argument parsing.
     //==========================================================================
     // Following are arguments to this executable:
-    // (1) 'noVisualizer' -- [Optional] Do no show visualizer. Default
+    // (1) 'noVisualizer' -- [Optional] Do not show visualizer. Default
     //                       behavior is to show visualizer.
     // (2) 'simulateOnce' -- [Optional] Simulate once and exit the program.
     //                       Default behavior is to simulate multiple times
