@@ -23,7 +23,10 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle:
+Let's simulate a simple arm whose elbow is actuated by a muscle, using 
+the C++ interface (You can find a python version of this example at 
+`Bindings/Python/examples/build_simple_arm_model.py`):
+
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
@@ -119,9 +122,6 @@ and prints the following information to the console:
                    8|     34.18601|   1.5079186|
                    9|    34.341649|    1.506727|
                   10|    35.784713|    1.507164|
-
-You can find a python version of this example at 
-`Bindings/Python/examples/build_simple_arm_model.py`
 
 ---
 
