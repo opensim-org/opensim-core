@@ -120,8 +120,10 @@ and prints the following information to the console:
                    9|    34.341649|    1.506727|
                   10|    35.784713|    1.507164|
 
----
+You can find a python version of this example at 
+`Bindings/Python/examples/build_simple_arm_model.py`
 
+---
 
 Building from the source code
 -----------------------------
