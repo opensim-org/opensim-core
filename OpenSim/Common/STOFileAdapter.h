@@ -116,7 +116,7 @@ Files contain metadata (in form of "DataType=<something>" as shown above)
 indicating the type of the table they contain.
 */
 template<typename T>
-class OSIMCOMMON_API STOFileAdapter_ : public DelimFileAdapter<T> {
+class STOFileAdapter_ : public DelimFileAdapter<T> {
 public:
     STOFileAdapter_();
     STOFileAdapter_(const STOFileAdapter_&)            = default;
