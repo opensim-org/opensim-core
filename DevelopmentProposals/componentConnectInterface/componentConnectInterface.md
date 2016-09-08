@@ -34,10 +34,10 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 
 **The current proposal involves four main changes:**
 
-1. Rename `Connector` to `Socket`; avoids the awkward-sounding action of connecting connectors.
+1. Rename Connector to Socket; avoids the awkward-sounding action of connecting connectors.
 2. Rename existing `Component::connect()` method to `finalizeConnections()`.
-   Aligns with `finalizeFromProperties()` and avoids confusion with new `connect()` method (see below).
-3. Modify macros to automatically generate methods of the form `connectInput_<nameOfInput>()`.
+   Aligns with `finalizeFromProperties()` and avoids confusion with other `connect()` methods.
+3. Modify macros to automatically generate methods of the form `connectInput_[nameOfInput]()`.
 4. Add convenience methods for common use cases, like `Reporter::addToReport()`.
 
 Details and alternative designs are provided below.
