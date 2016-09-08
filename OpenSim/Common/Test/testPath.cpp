@@ -144,6 +144,32 @@ void testComponentPath() {
     ASSERT_THROW(Exception, path1.pushBack("a\\b"));
     ASSERT_THROW(Exception, path1.pushBack("a+b*"));
     ASSERT_THROW(Exception, path1.pushBack("test/this"));
+
+    /* Test functions for getting certain parts of ComponentPath. */
+    // Create a path "/zero/one/two/three/four"
+    std::vector<std::string> levels = {"zero", "one", "two", "three", "four"};
+    ComponentPath numberedAbsPath(levels, true);
+    // Parent path is "/zero/one/two/three"
+    std::string numberedAbsPathParentStr = "/zero/one/two/three";
+    ComponentPath numberedAbsPathParent(numberedAbsPathParentStr);
+    // Test if getParentPath() returns correct ComponentPath object
+    ASSERT(numberedAbsPath.getParentPath() == numberedAbsPathParent);
+    // Test if getParentPathStr() returns correct string
+    ASSERT(numberedAbsPath.getParentPathStr() == numberedAbsPathParentStr);
+    // Loop through all levels of the subtree and see if names match
+    for (size_t ind = 0; ind < levels.size(); ++ind) {
+        ASSERT(numberedAbsPath.getSubtreeNodeNameAtLevel(ind) == levels[ind]);
+    }
+
+    // Do the same as above but with a relative path instead
+    ComponentPath numberedRelPath(levels, false);
+    std::string numberedRelPathParentStr = "zero/one/two/three";
+    ComponentPath numberedRelPathParent(numberedRelPathParentStr);
+    ASSERT(numberedRelPath.getParentPath() == numberedRelPathParent);
+    ASSERT(numberedRelPath.getParentPathStr() == numberedRelPathParentStr);
+    for (size_t ind = 0; ind < levels.size(); ++ind) {
+        ASSERT(numberedRelPath.getSubtreeNodeNameAtLevel(ind) == levels[ind]);
+    }
 }
 
 int main()
