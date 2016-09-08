@@ -109,7 +109,7 @@ public:
     DelimFileAdapter* clone() const override;
 
     /** Key used for table associative array returned/accepted by write/read. */
-    static const std::string _table;
+    static inline const std::string tableString();
 
     /** Name of the data type T (template parameter).                         */
     static inline std::string dataTypeName();
@@ -199,7 +199,9 @@ private:
 
 template<typename T>
 const std::string 
-DelimFileAdapter<T>::_table = "table";
+DelimFileAdapter<T>::tableString() {
+    return "table";
+}
 
 template<typename T>
 const std::string 
@@ -401,7 +403,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     }
 
     OutputTables output_tables{};
-    output_tables.emplace(_table, table);
+    output_tables.emplace(tableString(), table);
 
     return output_tables;
 }
@@ -511,11 +513,11 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
 
     const TimeSeriesTable_<T>* table{};
     try {
-        auto abs_table = absTables.at(_table);
+        auto abs_table = absTables.at(tableString());
         table = dynamic_cast<const TimeSeriesTable_<T>*>(abs_table);
     } catch(std::out_of_range&) {
         OPENSIM_THROW(KeyMissing,
-                      _table);
+                      tableString());
     } catch(std::bad_cast&) {
         OPENSIM_THROW(IncorrectTableType);
     }

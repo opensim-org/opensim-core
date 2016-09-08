@@ -155,7 +155,7 @@ TimeSeriesTable_<T>
 STOFileAdapter_<T>::read(const std::string& fileName) {
     auto abs_table = STOFileAdapter_{}.
                      extendRead(fileName).
-                     at(DelimFileAdapter<T>::_table);
+                     at(DelimFileAdapter<T>::tableString());
     return static_cast<TimeSeriesTable_<T>&>(*abs_table);
 }
 
@@ -164,7 +164,7 @@ void
 STOFileAdapter_<T>::write(const TimeSeriesTable_<T>& table, 
                          const std::string& fileName) {
     DataAdapter::InputTables tables{};
-    tables.emplace(DelimFileAdapter<T>::_table, &table);
+    tables.emplace(DelimFileAdapter<T>::tableString(), &table);
     STOFileAdapter_{}.extendWrite(tables, fileName);
 }
 
