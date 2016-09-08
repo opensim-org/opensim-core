@@ -33,7 +33,8 @@ namespace OpenSim {
 /**
 * An abstract class for handling a Path. A Path refers to a list of strings that
 * represent a different level in a hierarchical structure. Each level is divided
-* by designated separators (e.g., "/" or "\").
+* by designated separators (e.g., "/" or "\"). The string name related to each
+* level is called a "pathElement" here.
 *
 * This class stores the list of levels as a vector of strings. One char is used
 * to denote a path separator when either reading in or writing the Path out to
@@ -42,8 +43,7 @@ namespace OpenSim {
 *
 * @author Carmichael Ong
 */
-class OSIMCOMMON_API Path : public Object {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(Path, Object);
+class OSIMCOMMON_API Path {
 
 public:
     /// Default constructor
@@ -82,19 +82,25 @@ public:
 
     /// Push a string to the back of a path (i.e. the end). First checks if the
     /// pathElement is legal. Does not change if path is absolute or relative.
-    void pushBack(std::string pathElement) {
+    void pushBack(const std::string& pathElement) {
         appendPathElement(pathElement);
     }
+
+    /// Pure virtual function that returns a char for the designated separator.
+    virtual const char getSeparator() const = 0;
+
+    /// Pure virtual function that returns a string of invalid characters.
+    virtual const std::string getInvalidChars() const = 0;
 
 protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
-    std::vector<std::string> getAbsolutePathVec(Path* otherPath);
+    std::vector<std::string> formAbsolutePathVec(Path* otherPath);
 
     /// Find the relative Path between this Path and another Path (otherPath)
     /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
     /// absolute.
-    std::vector<std::string> getRelativePathVec(Path* otherPath);
+    std::vector<std::string> formRelativePathVec(Path* otherPath);
 
     /// Return the the sub-path that contains all pathElements except for
     /// the last one.
@@ -103,7 +109,11 @@ protected:
         return getSubPathVec(0, getPathLength() - 1);
     }
 
+    /// Return the pathElement from the specified position as a string. This
+    /// does not do any checks on the bounds.
     std::string getPathElement(size_t pos) { return _path[pos]; };
+
+    /// Return the last pathElement as a string.
     std::string getPathName() { return _path[getPathLength() - 1]; };
 
 private:
@@ -111,7 +121,7 @@ private:
     /// cause a path to become illegal (e.g., adding ".." to the front of 
     /// an absolute path). The pathElement is checked to ensure no illegal
     /// characters are used.
-    void insertPathElement(size_t pos, const std::string pathElement);
+    void insertPathElement(size_t pos, const std::string& pathElement);
 
     /// Erase a pathElement at the specified position. Note that this could
     /// cause a path to become illegal (e.g., this may leave a ".." at the
@@ -120,7 +130,7 @@ private:
 
     /// Append a pathElement to the Path, first checking if the pathElement
     /// is legal.
-    void appendPathElement(const std::string pathElement);
+    void appendPathElement(const std::string& pathElement);
 
     /// Cleans up a path. This includes removing "." and resolving ".." if
     /// possible (i.e. it will not remove leading ".." but otherwise will
@@ -138,7 +148,7 @@ private:
 
     /// Return true if pathElement does not contain any chars from the list
     /// of _invalidChars
-    bool isLegalPathElement(const std::string pathElement);
+    bool isLegalPathElement(const std::string& pathElement);
 
     // Path variables
     std::vector<std::string> _path;

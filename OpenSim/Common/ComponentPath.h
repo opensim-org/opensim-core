@@ -43,15 +43,21 @@ namespace OpenSim {
 */
 
 class OSIMCOMMON_API ComponentPath : public Path {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentPath, Path);
 
 public:
-    /// Constructors
+    // Constructors
+    /// Default Constructor
     ComponentPath() = default;
+    
+    /// Construct a ComponentPath from a string. This will clean up the
+    /// path, removing and resolving "." and ".." when possible.
     ComponentPath(const std::string path);
+
+    /// Constructor a ComponentPath from a vector that contains all subtree
+    /// node names and a bool that indicates if the path is an absolute path.
     ComponentPath(std::vector<std::string> pathVec, bool isAbsolute);
 
-    /// Operators
+    // Operators
     bool operator==(const ComponentPath& other) const
     {
         return this->getString() == other.getString();
@@ -62,27 +68,37 @@ public:
         return this->getString() != other.getString();
     }
 
+    // Override virtual functions
+    const char getSeparator() const override { return separator; };
+    const std::string getInvalidChars() const override { return invalidChars; };
+
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
-    ComponentPath getAbsolutePath(ComponentPath* otherPath);
+    ComponentPath formAbsolutePath(ComponentPath* otherPath);
 
     /// Find the relative Path between this Path and another Path (otherPath)
     /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
     /// absolute.
-    ComponentPath getRelativePath(ComponentPath* otherPath);
+    ComponentPath formRelativePath(ComponentPath* otherPath);
 
-    /// Return the the sub-path that contains all sub components except for
-    /// the last one.
+    /// Return the sub-path that contains all subtree node levels 
+    /// except for the last one.
     ComponentPath getParentPath();
 
-    /// Return a ComponentPath object of a subcomponent by index. This will
-    /// always be a relative path.
-    ComponentPath getSubcomponent(size_t index);
+    /// Return the parent path as a string.
+    std::string getParentPathStr();
 
-    /// Return the last part of a ComponentPath. This will always be a relative
-    /// path.
-    ComponentPath getLastSubcomponent();
+    /// Return a string of a subtree node at a specified level. This is
+    /// 0 indexed.
+    std::string getSubtreeNodeNameAtLevel(size_t index);
 
+    /// Return a string of the name of the Component related to a 
+    /// ComponentPath. This is just the last level of a ComponentPath.
+    std::string getComponentName();
+
+private:
+    static const char separator;
+    static const std::string invalidChars;
 };
 
 

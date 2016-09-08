@@ -24,15 +24,16 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-/* The purpose of this test is strictly to check that the Path functions work
- * outside of the context of the objects/components they are meant to service. 
+/* The purpose of this test is strictly to check that classed derived from
+ * the Path class work the objects/components they are meant to service. 
  */
 
 using namespace OpenSim;
 using namespace std;
 
 void testComponentPath() {
-    // Test that input matches printing out
+    /* Test that creating ComponentPath with paths that should not be cleaned up */
+    // Absolute paths
     string absStr1 = "/a/b/c/d";
     string absStr2 = "/a/b/e/f/g/h";
     string absStr3 = "/a/b";
@@ -43,9 +44,10 @@ void testComponentPath() {
     ASSERT(absPath2.getString() == absStr2);
     ASSERT(absPath3.getString() == absStr3);
 
+    // Relative paths
     string relStr1 = "c/d";
     string relStr2 = "e/f/g/h";
-    string relStr3 = "../../../../c/d";
+    string relStr3 = "../../../../c/d"; // relative path can start with ".."
     ComponentPath relPath1(relStr1);
     ComponentPath relPath2(relStr2);
     ComponentPath relPath3(relStr3);
@@ -53,6 +55,7 @@ void testComponentPath() {
     ASSERT(relPath2.getString() == relStr2);
     ASSERT(relPath3.getString() == relStr3);
 
+    // Paths that will have an empty vector of strings
     string emptyStr = "";
     string rootStr = "/";
     ComponentPath emptyPath(emptyStr);
@@ -60,42 +63,63 @@ void testComponentPath() {
     ASSERT(emptyPath.getString() == emptyStr);
     ASSERT(rootPath.getString() == rootStr);
 
-    // Test equality
+
+    /* Test the equality operator */
     ComponentPath absPath4("/a/b");
-    ASSERT(absPath4 == absPath3);
-    ASSERT(absPath4 != absPath1);
+    ASSERT(absPath4 == absPath3); // exactly the same
+    ASSERT(absPath4 != absPath1); // wrong absolute path
     ComponentPath absPath5("/c/d");
-    ASSERT(absPath5 != relPath1);
+    ASSERT(absPath5 != relPath1); // wrong absolute/relative comparison
 
-    // Test getAbsolutePath()
-    ASSERT(relPath1.getAbsolutePath(&absPath3).getString() == absStr1);
-    ASSERT(relPath2.getAbsolutePath(&absPath3).getString() == absStr2);
-    ASSERT(absPath1.getAbsolutePath(&absPath2).getString() == absStr1);
-    ASSERT(relPath1.getAbsolutePath(&rootPath).getString() == "/c/d");
-    ASSERT(relPath3.getAbsolutePath(&absPath2).getString() == absPath1.getString());
-    ASSERT_THROW(Exception, relPath1.getAbsolutePath(&relPath2));
+    /* Test formAbsolutePath(). Test a variety of paths. The argument 
+     * in formAbsolutePath() must be an absolute path itself. */
+    // Test without any ".."
+    ASSERT(relPath1.formAbsolutePath(&absPath3).getString() == absStr1);
+    ASSERT(relPath2.formAbsolutePath(&absPath3).getString() == absStr2);
+    // Any absolute path should return itself
+    ASSERT(absPath1.formAbsolutePath(&absPath2) == absPath1);
+    // Test if this works from root.
+    ASSERT(relPath1.formAbsolutePath(&rootPath).getString() == "/c/d");
+    // Test with lots of ".."
+    ASSERT(relPath3.formAbsolutePath(&absPath2) == absPath1);
+    // argument can't be a relative path
+    ASSERT_THROW(Exception, relPath1.formAbsolutePath(&relPath2));
     
-    // Test findRelativePath()
-    ASSERT(absPath1.getRelativePath(&absPath2).getString() == "../../../../c/d");
-    ASSERT(absPath2.getRelativePath(&absPath1).getString() == "../../e/f/g/h");
-    ASSERT(absPath1.getRelativePath(&absPath3).getString() == "c/d");
-    ASSERT(absPath3.getRelativePath(&absPath2).getString() == "../../../..");
-    ASSERT_THROW(Exception, relPath1.getRelativePath(&absPath2));
-    ASSERT_THROW(Exception, absPath2.getRelativePath(&relPath2));
-    ASSERT_THROW(Exception, relPath2.getRelativePath(&relPath1));
+    /* Test findRelativePath(). Both paths must be absolute */
+    // Test path that go up and back down the tree
+    ASSERT(absPath1.formRelativePath(&absPath2).getString() == "../../../../c/d");
+    ASSERT(absPath2.formRelativePath(&absPath1).getString() == "../../e/f/g/h");
+    // Test path that just goes down a tree
+    ASSERT(absPath1.formRelativePath(&absPath3).getString() == "c/d");
+    // Test path that only goes up the tree
+    ASSERT(absPath3.formRelativePath(&absPath2).getString() == "../../../..");
+    // Throw exceptions if either or both paths are not absolute
+    ASSERT_THROW(Exception, relPath1.formRelativePath(&absPath2));
+    ASSERT_THROW(Exception, absPath2.formRelativePath(&relPath2));
+    ASSERT_THROW(Exception, relPath2.formRelativePath(&relPath1));
 
-    // Test some odd paths
+
+    /* Test paths with "." and ".." */
+    // Remove all ".", clean up ".." and ignore "/" at the end
     string oddStr1 = "/a/././b/c/..//d/.././";
     ComponentPath oddPath1(oddStr1);
     ASSERT(oddPath1.getString() == absPath3.getString());
+    // Test ".." at the end of a path
     string oddStr2 = "/a/b/c/d/../..";
     ComponentPath oddPath2(oddStr2);
     ASSERT(oddPath2.getString() == absPath3.getString());
+    // Test ".." at the beginning of an absolute path (should throw exception)
     string oddStr3 = "/../b/c/d";
     ASSERT_THROW(Exception, ComponentPath oddPath3(oddStr3));
+    // Test if there are so many ".." that it will end up at the front of
+    // an absolute path, and thus should fail like the one above
     string oddStr4 = "/a/../../c/d";
     ASSERT_THROW(Exception, ComponentPath oddPath4(oddStr4));
 
+    /* Test that invalid characters will throw an exception. This should throw
+     * exceptions when "\\", "+", or "*" appear in the string that initializes
+     * the ComponentPath. Although "/" is also an invalid character, it should
+     * NOT throw an exception here since it is read in as a separator. */
     string badChar1 = "/a/b\\/c/";
     string badChar2 = "/a+b+c/";
     string badChar3 = "/abc*/def/g/";
@@ -103,16 +127,23 @@ void testComponentPath() {
     ASSERT_THROW(Exception, ComponentPath badPath2(badChar2));
     ASSERT_THROW(Exception, ComponentPath badPath3(badChar3));
 
-    // Test pushBack
+    /* Test the pushBack() function */
     string str1 = "/a/b";
     ComponentPath path1(str1);
-    ASSERT_THROW(Exception, path1.pushBack("c/d"));
+    // can't add multiple levels at once
+    ASSERT_THROW(Exception, path1.pushBack("c/d")); 
+    // add the levels separately
     path1.pushBack("c");
     path1.pushBack("d");
+    // now it should match absPath1 ("/a/b/c/d")
     ASSERT(path1 == absPath1);
 
+    /* Test invalid characters in pushBack(). Unlike the invalid
+     * character test above, "/" should be considered invalid since
+     * pushBack() cannot add multiple levels at once. */
     ASSERT_THROW(Exception, path1.pushBack("a\\b"));
     ASSERT_THROW(Exception, path1.pushBack("a+b*"));
+    ASSERT_THROW(Exception, path1.pushBack("test/this"));
 }
 
 int main()

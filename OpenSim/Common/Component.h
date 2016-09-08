@@ -1986,9 +1986,9 @@ protected:
 
         std::vector<const C*> foundCs;
 
-        ComponentPath subnamePath = pathToFind.getLastSubcomponent();
-        ComponentPath thisPath(this->getName());
-        if (thisPath == subnamePath) {
+        std::string subname = pathToFind.getComponentName();
+        std::string thisName = this->getName();
+        if (thisName == subname) {
             if ( (found = dynamic_cast<const C*>(this)) )
                 foundCs.push_back(found);
         }
@@ -1996,12 +1996,12 @@ protected:
         ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
-            ComponentPath compPath(comp.getName());
+            std::string compName = comp.getName();
             ComponentPath compFullPath(comp.getFullPathName());
             ComponentPath thisFullPathPlusSubname(getFullPathName());
-            thisFullPathPlusSubname.pushBack(subnamePath.getString());
+            thisFullPathPlusSubname.pushBack(subname);
 
-            if (compFullPath == subnamePath) {
+            if (compFullPath.getString() == subname) {
                 foundCs.push_back(&comp);
                 break;
             } // if a child of this Component, one should not need
@@ -2013,7 +2013,7 @@ protected:
               // which we may need to support for compatibility with older models
               // where only names were used (not path or type)
               // TODO replace with an exception -aseth
-            else if (compPath == subnamePath) {
+            else if (compName == subname) {
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
@@ -2084,7 +2084,7 @@ protected:
     {
         const Component* current = this;
         ComponentPath pathToFind(path);
-        ComponentPath pathNameToFind = pathToFind.getLastSubcomponent();
+        std::string pathNameToFind = pathToFind.getComponentName();
         size_t pathLength = pathToFind.getPathLength();
         size_t ind = 0;
         ComponentPath currentSubpath;
@@ -2092,7 +2092,7 @@ protected:
         ComponentPath curDirPath(".");
 
         while (ind < pathLength && current) {
-            currentSubpath = pathToFind.getSubcomponent(ind);
+            currentSubpath = pathToFind.getSubtreeNodeNameAtLevel(ind);
             ComponentPath currentPathName(current->getName());
 
             if (currentSubpath == upPath && current->hasParent())
@@ -2112,13 +2112,13 @@ protected:
                 currentFullPathPlusSubpath.pushBack(currentSubpath.getString());
                 for (const Component& comp : compsList) {
                     ComponentPath compFullPath(comp.getFullPathName());
-                    ComponentPath compPath(comp.getName());
+                    std::string compName = comp.getName();
                     // Match for the dir
                     if (compFullPath == currentFullPathPlusSubpath) {
                         // In the right dir and has matching name
                         // update current to this comp
                         current = &comp;
-                        if (compPath == pathNameToFind) {
+                        if (compName == pathNameToFind) {
                             // now verify type
                             const C* compC = dynamic_cast<const C*>(&comp);
                             if (compC)
@@ -2822,8 +2822,8 @@ void Input<T>::findAndConnect(const Component& root) {
         parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
                            annotation);
         ComponentPath outputPath(outputPathStr);
-        std::string componentPathStr = outputPath.getParentPath().getString();
-        std::string outputName = outputPath.getLastSubcomponent().getString();
+        std::string componentPathStr = outputPath.getParentPathStr();
+        std::string outputName = outputPath.getComponentName();
         try {
             const AbstractOutput* output = nullptr;
 
@@ -2852,7 +2852,7 @@ void Input<T>::findAndConnect(const Component& root) {
             std::stringstream msg;
             msg << getConcreteClassName() << " '" << getName();
             msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
-            msg << outputPath << "'";
+            msg << outputPathStr << "'";
             if (!channelName.empty()) {
                 msg << " and channel '" << channelName << "'";
             }

@@ -89,7 +89,7 @@ std::string Path::getString() const
     return outString;
 }
 
-void Path::insertPathElement(size_t pos, const std::string pathElement) 
+void Path::insertPathElement(size_t pos, const std::string& pathElement) 
 {
     if (pos > getPathLength()) {
         OPENSIM_THROW(Exception, "insertPathElement: pos must be between 0 and path length");
@@ -110,7 +110,7 @@ void Path::erasePathElement(size_t pos)
     _path.erase(_path.begin() + pos);
 }
 
-std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath) 
+std::vector<std::string> Path::formAbsolutePathVec(Path* otherPath) 
 {
     if (_isAbsolute) {
         return _path;
@@ -132,7 +132,7 @@ std::vector<std::string> Path::getAbsolutePathVec(Path* otherPath)
     return pathVec;
 }
 
-std::vector<std::string> Path::getRelativePathVec(Path* otherPath) 
+std::vector<std::string> Path::formRelativePathVec(Path* otherPath) 
 {
     if (!this->_isAbsolute || !otherPath->_isAbsolute) {
         OPENSIM_THROW(Exception, "getRelativePathVec: both paths must be absolute to find relative path");
@@ -206,7 +206,7 @@ void Path::cleanPath()
     }
 }
 
-bool Path::isLegalPathElement(const std::string pathElement) 
+bool Path::isLegalPathElement(const std::string& pathElement) 
 {
     if (pathElement.find_first_of(_invalidChars) != std::string::npos) {
         return false;
@@ -214,7 +214,7 @@ bool Path::isLegalPathElement(const std::string pathElement)
     return true;
 }
 
-void Path::appendPathElement(const std::string pathElement) 
+void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
         OPENSIM_THROW(Exception, "invalid character used in path element");

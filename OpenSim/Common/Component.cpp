@@ -635,7 +635,7 @@ std::string Component::getRelativePathName(const Component& wrt) const
     ComponentPath thisP(getFullPathName());
     ComponentPath wrtP(wrt.getFullPathName());
 
-    return thisP.getRelativePath(&wrtP).getString();
+    return thisP.formRelativePath(&wrtP).getString();
 }
 
 const Component::StateVariable* Component::

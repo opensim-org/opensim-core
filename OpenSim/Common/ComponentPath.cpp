@@ -26,8 +26,9 @@
 using namespace OpenSim;
 using namespace std;
 
-const char separator = '/';
-const std::string invalidChars = "\\/*+";
+// Set static member variables.
+const char ComponentPath::separator = '/';
+const std::string ComponentPath::invalidChars = "\\/*+";
 
 ComponentPath::ComponentPath(const string path) :
     Path(path, separator, invalidChars)
@@ -37,16 +38,16 @@ ComponentPath::ComponentPath(std::vector<std::string> pathVec, bool isAbsolute) 
     Path(pathVec, separator, invalidChars, isAbsolute)
 {}
 
-ComponentPath ComponentPath::getAbsolutePath(ComponentPath* otherPath)
+ComponentPath ComponentPath::formAbsolutePath(ComponentPath* otherPath)
 {
-    vector<string> absPathVec = getAbsolutePathVec(otherPath);
+    vector<string> absPathVec = formAbsolutePathVec(otherPath);
     return ComponentPath(absPathVec, true);
 
 }
 
-ComponentPath ComponentPath::getRelativePath(ComponentPath* otherPath)
+ComponentPath ComponentPath::formRelativePath(ComponentPath* otherPath)
 {
-    vector<string> relPathVec = getRelativePathVec(otherPath);
+    vector<string> relPathVec = formRelativePathVec(otherPath);
     return ComponentPath(relPathVec, false);
 }
 
@@ -56,12 +57,17 @@ ComponentPath ComponentPath::getParentPath()
     return ComponentPath(parentPathVec, isAbsolute());
 }
 
-ComponentPath ComponentPath::getSubcomponent(size_t index)
+std::string ComponentPath::getParentPathStr()
 {
-    return ComponentPath(getPathElement(index));
+    return getParentPath().getString();
 }
 
-ComponentPath ComponentPath::getLastSubcomponent() 
+std::string ComponentPath::getSubtreeNodeNameAtLevel(size_t index)
 {
-    return getSubcomponent(getPathLength() - 1);
+    return getPathElement(index);
+}
+
+std::string ComponentPath::getComponentName() 
+{
+    return getSubtreeNodeNameAtLevel(getPathLength() - 1);
 }
