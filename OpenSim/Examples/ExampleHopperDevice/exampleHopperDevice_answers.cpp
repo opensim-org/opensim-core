@@ -85,8 +85,8 @@ static const std::string vastus{"/Dennis/vastus"};
 namespace OpenSim {
 
 // Forward declarations for methods used below.
-Model buildHopper();    //defined in buildHopperModel.cpp
-Model buildTestbed();   //defined in helperMethods.h
+Model buildHopper(bool showVisualizer);    //defined in buildHopperModel.cpp
+Model buildTestbed(bool showVisualizer);   //defined in helperMethods.h
 Device* buildDevice();  //defined in buildDevice.cpp
 
 
@@ -245,8 +245,27 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 // the exercise. The project should execute without making any changes (you
 // should see the unassisted hopper hop slightly).
 //------------------------------------------------------------------------------
-int main()
-{
+int main(int argc, char* argv[]) {
+    //==========================================================================
+    // Command line argument parsing.
+    //==========================================================================
+    // Following are arguments to this executable:
+    // (1) noVisualizer -- [Optional] Do not show visualizer. Default
+    //                       behavior is to show visualizer.
+    // (2) simulateOnce -- [Optional] Simulate once and exit the program.
+    //                       Default behavior is to simulate multiple times
+    //                       until user requests to stop.
+    
+    // Suppress/show visualizer.
+    bool showVisualizer{true};
+    // Simulate just once or until user stops.
+    bool simulateOnce{false};
+    for(int i = 0; i < argc; ++i)
+        if(strcmp(argv[i], "noVisualizer") == 0)
+            showVisualizer = false;
+        else if(strcmp(argv[i], "simulateOnce") == 0)
+            simulateOnce = true;
+
     using namespace OpenSim;
 
     //==========================================================================
@@ -255,7 +274,7 @@ int main()
     if (true)
     {
         // Build the hopper.
-        auto hopper = buildHopper();
+        auto hopper = buildHopper(showVisualizer);
         // Update the hopper model's internal data members, which includes
         // identifying its subcomponents from its properties.
         hopper.finalizeFromProperties();
@@ -282,7 +301,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHop = hopper.initSystem();
-        simulate(hopper, sHop);
+        simulate(hopper, sHop, simulateOnce);
     }
 
     //==========================================================================
@@ -291,7 +310,7 @@ int main()
     if (true)
     {
         // Build the testbed and device.
-        auto testbed = buildTestbed();
+        auto testbed = buildTestbed(showVisualizer);
         testbed.finalizeFromProperties();
 
         // Step 2, Task A
@@ -340,7 +359,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
-        simulate(testbed, sDev);
+        simulate(testbed, sDev, simulateOnce);
     }
 
     //==========================================================================
@@ -349,7 +368,7 @@ int main()
     if (true)
     {
         // Build the hopper and device.
-        auto assistedHopper = buildHopper();
+        auto assistedHopper = buildHopper(showVisualizer);
         assistedHopper.finalizeFromProperties();
         auto kneeDevice = buildDevice();
         kneeDevice->finalizeFromProperties();
@@ -379,7 +398,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
-        simulate(assistedHopper, sHD);
+        simulate(assistedHopper, sHD, simulateOnce);
     }
 
     return 0;
