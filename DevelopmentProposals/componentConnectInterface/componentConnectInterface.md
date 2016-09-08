@@ -33,6 +33,7 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 ### Architecture and Interfaces
 
 **The current proposal involves four main changes:**
+
 1. Rename `Connector` to `Socket`; avoids the awkward-sounding action of connecting connectors.
 2. Rename existing `Component::connect()` method to `finalizeConnections()`.
    Aligns with `finalizeFromProperties()` and avoids confusion with new `connect()` method (see below).
