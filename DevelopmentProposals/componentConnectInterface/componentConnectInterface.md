@@ -31,7 +31,15 @@ See [issue #1118](https://github.com/opensim-org/opensim-core/issues/1118).
 - No redundancy in the interface (i.e., the new interface replaces the existing interface).
 
 ### Architecture and Interfaces
-There are many possible designs; several possibilities are provided below.
+
+|      | The current proposal involves four main changes
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|  1.  | Rename `Connector` to `Socket`; avoids the awkward-sounding action of connecting connectors.
+|  2.  | Rename existing `Component::connect()` method to `finalizeConnections()`. Aligns with `finalizeFromProperties()` and avoids confusion with new `connect()` method (see below).
+|  3.  | Modify macros to automatically generate methods of the form `connectInput_<nameOfInput>()`.
+|  4.  | Add convenience methods for common use cases, like `Reporter::addToReport()`.
+
+Details and alternative designs are provided below.
 Popular ideas from dev team meeting are indicated with `<-- LIKED` (see Designs 1 and 6).
 
 **Design 1**
