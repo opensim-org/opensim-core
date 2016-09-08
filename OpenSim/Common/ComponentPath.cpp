@@ -31,11 +31,11 @@ const char ComponentPath::separator = '/';
 const std::string ComponentPath::invalidChars = "\\/*+";
 
 ComponentPath::ComponentPath(const string path) :
-    Path(path, separator, invalidChars)
+    Path(path, getSeparator(), getInvalidChars())
 {}
 
 ComponentPath::ComponentPath(std::vector<std::string> pathVec, bool isAbsolute) :
-    Path(pathVec, separator, invalidChars, isAbsolute)
+    Path(pathVec, getSeparator(), getInvalidChars(), isAbsolute)
 {}
 
 ComponentPath ComponentPath::formAbsolutePath(ComponentPath* otherPath)
@@ -62,12 +62,12 @@ std::string ComponentPath::getParentPathStr()
     return getParentPath().getString();
 }
 
-std::string ComponentPath::getSubtreeNodeNameAtLevel(size_t index)
+std::string ComponentPath::getSubdirectoryNameAtLevel(size_t index)
 {
     return getPathElement(index);
 }
 
 std::string ComponentPath::getComponentName() 
 {
-    return getSubtreeNodeNameAtLevel(getPathLength() - 1);
+    return getSubdirectoryNameAtLevel(getPathLength() - 1);
 }

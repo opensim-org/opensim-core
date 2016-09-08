@@ -158,7 +158,7 @@ void testComponentPath() {
     ASSERT(numberedAbsPath.getParentPathStr() == numberedAbsPathParentStr);
     // Loop through all levels of the subtree and see if names match
     for (size_t ind = 0; ind < levels.size(); ++ind) {
-        ASSERT(numberedAbsPath.getSubtreeNodeNameAtLevel(ind) == levels[ind]);
+        ASSERT(numberedAbsPath.getSubdirectoryNameAtLevel(ind) == levels[ind]);
     }
 
     // Do the same as above but with a relative path instead
@@ -168,7 +168,7 @@ void testComponentPath() {
     ASSERT(numberedRelPath.getParentPath() == numberedRelPathParent);
     ASSERT(numberedRelPath.getParentPathStr() == numberedRelPathParentStr);
     for (size_t ind = 0; ind < levels.size(); ++ind) {
-        ASSERT(numberedRelPath.getSubtreeNodeNameAtLevel(ind) == levels[ind]);
+        ASSERT(numberedRelPath.getSubdirectoryNameAtLevel(ind) == levels[ind]);
     }
 }
 

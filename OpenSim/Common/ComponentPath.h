@@ -81,16 +81,16 @@ public:
     /// absolute.
     ComponentPath formRelativePath(ComponentPath* otherPath);
 
-    /// Return the sub-path that contains all subtree node levels 
+    /// Return the sub-path that contains all subdirectory levels 
     /// except for the last one.
     ComponentPath getParentPath();
 
     /// Return the parent path as a string.
     std::string getParentPathStr();
 
-    /// Return a string of a subtree node at a specified level. This is
+    /// Return a string of a subdirectory name at a specified level. This is
     /// 0 indexed.
-    std::string getSubtreeNodeNameAtLevel(size_t index);
+    std::string getSubdirectoryNameAtLevel(size_t index);
 
     /// Return a string of the name of the Component related to a 
     /// ComponentPath. This is just the last level of a ComponentPath.
