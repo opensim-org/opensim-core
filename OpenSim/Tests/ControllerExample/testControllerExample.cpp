@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Cassidy Kelly                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -38,13 +38,13 @@ int main()
         Storage result1("tugOfWar_controls.sto"), 
                 standard1("std_tugOfWar_controls.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-                                       Array<double>(0.01, 2), 
+                                       std::vector<double>(2, 0.01),
                                        __FILE__, 
                                        __LINE__, 
                                        "tugOfWar controls failed");
         cout << "tugOfWar controls passed\n" << endl;
 
-        Array<double> tols(0.01, 16);
+        std::vector<double> tols(16, 0.01);
         // speeds are not matched as precisely
         for(int i =0; i < 6; ++i)
             tols[2*i+1] = 0.03;

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -253,15 +253,15 @@ void simulateMuscle(
                         Vec3(0), 
                         Vec3(0));
 
-    CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-        jointCoordinateSet[0].setRangeMin(0); 
-        jointCoordinateSet[0].setRangeMax(1.0);
-    
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("tx");
+    sliderCoord.setDefaultValue(1.0);
+    sliderCoord.setRangeMin(0); 
+    sliderCoord.setRangeMax(1.0);
+
     if(motion != NULL){
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-        jointCoordinateSet[0].setDefaultIsPrescribed(true);
+        sliderCoord.setPrescribedFunction(*motion);
+        sliderCoord.setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);
@@ -927,6 +927,23 @@ void testThelen2003Muscle()
             SimTK::SignificantReal, __FILE__, __LINE__,
             "minimum_activation was not set in activation model");
     }
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.001; //short fiber and tendon
+        const double tendonSlackLength  = 0.001;
+        auto muscle = new Thelen2003Muscle("muscle", 1., optimalFiberLength,
+                                           tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 
@@ -967,6 +984,25 @@ void testMillard2012EquilibriumMuscle()
         CorrectnessTest,
         CorrectnessTestTolerance,
         false);
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.01; //short fiber, long tendon
+        const double tendonSlackLength  = 100.;
+        auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
+                          optimalFiberLength, tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        muscle->setActivation(state, 1.);
+        model.realizeVelocity(state);
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 void testMillard2012AccelerationMuscle()

@@ -64,7 +64,7 @@ state = model.initSystem();
 model.realizeAcceleration(state);
 
 % Access (and iterate through) the AbstractOutputs, using names.
-coord = joint.getCoordinateSet().get(0);
+coord = joint.get_coordinates(0);
 names = coord.getOutputNames();
 for i = 0:(names.size() - 1)
     assert(coord.getOutput(names.get(i)).isListOutput() == 0);

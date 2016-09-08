@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -66,7 +66,7 @@ void testGait10dof18musc() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
+    std::vector<double> rms_tols(2*10+2*18, 0.02); // activations within 2%
     for(int i=0; i<20; ++i){
         rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
     }

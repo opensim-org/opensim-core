@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
  * Contributor(s): Ayman Habib                                                *
  *                                                                            *
@@ -199,7 +199,8 @@ void Component::componentsFinalizeFromProperties() const
             ->finalizeFromProperties();
     }
     for (auto& comp : _propertySubcomponents) {
-        comp->finalizeFromProperties();
+        const_cast<Component*>(comp.get())
+            ->finalizeFromProperties();
     }
     for (auto& comp : _adoptedSubcomponents) {
         const_cast<Component*>(comp.get())
@@ -697,31 +698,6 @@ std::string Component::getRelativePathName(const Component& wrt) const
     return prefix + stri;
 }
 
-const AbstractConnector* Component::findConnector(const std::string& name) const
-{
-    const AbstractConnector* found = nullptr;
-
-    std::map<std::string, int>::const_iterator it;
-    it = _connectorsTable.find(name);
-
-    if (it != _connectorsTable.end()) {
-        const AbstractConnector& absConnector = get_connectors(it->second);
-        found = &absConnector;
-    }
-    else {
-        std::string::size_type back = name.rfind("/");
-        std::string prefix = name.substr(0, back);
-        std::string conName = name.substr(back + 1, name.length() - back);
-
-        const Component* component = findComponent(prefix);
-        if (component){
-            found = component->findConnector(conName);
-        }
-    }
-    return found;
-}
-
-
 const Component::StateVariable* Component::
     findStateVariable(const std::string& name) const
 {
@@ -1088,14 +1064,14 @@ void Component::markPropertiesAsSubcomponents()
     // Now mark properties that are Components as subcomponents
     //loop over all its properties
     for (int i = 0; i < getNumProperties(); ++i) {
-        auto& prop = updPropertyByIndex(i);
+        auto& prop = getPropertyByIndex(i);
         // check if property is of type Object
         if (prop.isObjectProperty()) {
             // a property is a list so cycle through its contents
             for (int j = 0; j < prop.size(); ++j) {
-                Object& obj = prop.updValueAsObject(j);
+                const Object& obj = prop.getValueAsObject(j);
                 // if the object is a Component mark it
-                if (Component* comp = dynamic_cast<Component*>(&obj) ) {
+                if (const Component* comp = dynamic_cast<const Component*>(&obj) ) {
                     markAsPropertySubcomponent(comp);
                 }
                 else {
@@ -1110,12 +1086,12 @@ void Component::markPropertiesAsSubcomponents()
                     std::string objType = obj.getConcreteClassName();
                     if (obj.hasProperty("objects")) {
                         // get the PropertyObjArray if the object has one
-                        auto& objectsProp = obj.updPropertyByName("objects");
+                        auto& objectsProp = obj.getPropertyByName("objects");
                         // loop over the objects in the PropertyObjArray
                         for (int k = 0; k < objectsProp.size(); ++k) {
-                            Object& obj = objectsProp.updValueAsObject(k);
+                            const Object& obj = objectsProp.getValueAsObject(k);
                             // if the object is a Component mark it
-                            if (Component* comp = dynamic_cast<Component*>(&obj) )
+                            if (const Component* comp = dynamic_cast<const Component*>(&obj) )
                                 markAsPropertySubcomponent(comp);
                         } // loop over objects and mark it if it is a component
                     } // end if property is a Set with "objects" inside
@@ -1127,31 +1103,28 @@ void Component::markPropertiesAsSubcomponents()
 
 // mark a Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
-void Component::markAsPropertySubcomponent(Component* component)
+void Component::markAsPropertySubcomponent(const Component* component)
 {
     // Only add if the component is not already a part of this Component
-    // So, add if empty
-    SimTK::ReferencePtr<Component> compRef(component);
-    if (_propertySubcomponents.empty() ){
-        _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
+    SimTK::ReferencePtr<Component> compRef(const_cast<Component*>(component));
+    auto it =
+        std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
+    if ( it == _propertySubcomponents.end() ){
+        // Must reconstruct the reference pointer in place in order
+        // to invoke move constuctor from SimTK::Array::push_back 
+        // otherwise it will copy and reset the Component pointer to null.
+        _propertySubcomponents.push_back(
+            SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
-    else{ //otherwise check that it isn't a part of the component already
-        auto it =
-            std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
-        if ( it == _propertySubcomponents.end() ){
-            _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
-        }
-        else{
-            auto compPath = component->getFullPathName();
-            auto foundPath = it->get()->getFullPathName();
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                           component->getName(), getName());
-        }
+    else{
+        auto compPath = component->getFullPathName();
+        auto foundPath = it->get()->getFullPathName();
+        OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
+                       component->getName(), getName());
     }
 
-    component->setParent(*this);
+    compRef->setParent(*this);
 }
-
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.

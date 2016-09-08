@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -373,7 +373,7 @@ void testWrapCylinder()
     //model.setUseVisualizer(true);
 
     SimTK::State& s = model.initSystem();
-    auto& coord = joint->getCoordinateSet()[0];
+    auto& coord = joint->updCoordinate();
 
     int nsteps = 10;
     for (int i = 0; i < nsteps; ++i) {

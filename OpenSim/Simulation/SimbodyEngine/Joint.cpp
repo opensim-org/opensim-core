@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -137,20 +137,25 @@ Joint::Joint(const std::string &name,
 //=============================================================================
 // CONSTRUCTION Utility
 //=============================================================================
-Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt)
+Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
+                                                  unsigned idx)
 {
     Coordinate* coord = new Coordinate();
-    coord->setName(getName() + "_coord_"
-        + std::to_string(get_CoordinateSet().getSize()));
-    // CoordinateSet takes ownership
+    coord->setName(getName() + "_coord_" + std::to_string( numCoordinates() ));
+    // Joint takes ownership
     coord->setJoint(*this);
-    upd_CoordinateSet().adoptAndAppend(coord);
-    auto cix = CoordinateIndex(get_CoordinateSet().getIndex(coord));
+    updProperty_coordinates().adoptAndAppendValue(coord);
+    auto cix = CoordinateIndex(getProperty_coordinates().
+                               findIndexForName( coord->getName() ));
     _motionTypes.push_back(mt);
     SimTK_ASSERT_ALWAYS(static_cast<unsigned>(numCoordinates()) == 
                         _motionTypes.size(), 
                         "Joint::constructCoordinate() MotionTypes do not "
                         "correspond to coordinates");
+    SimTK_ASSERT_ALWAYS(static_cast<unsigned>(cix) == idx,
+                        "Joint::constructCoordinate() must be passed "
+                        "enumerations in the same order as the enumerations "
+                        "have been defined");
     return cix;
 }
 
@@ -170,7 +175,7 @@ void Joint::setNull()
 void Joint::constructProperties()
 {
     // Generalized coordinates
-    constructProperty_CoordinateSet(CoordinateSet());
+    constructProperty_coordinates();
 
     // Transform direction (parent->child or child->parent)
     constructProperty_reverse(false);
@@ -183,11 +188,9 @@ void Joint::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    CoordinateSet& coords = upd_CoordinateSet();
-    // add all coordinates listed under this joint 
-    for (int i = 0; i < coords.getSize(); ++i) {
-        coords[i].setJoint(*this);
-    }
+    // add all coordinates listed under this joint
+    for (int i = 0; i < numCoordinates(); ++i)
+        upd_coordinates(i).setJoint(*this);
 }
 
 //=============================================================================
@@ -207,6 +210,28 @@ const PhysicalFrame& Joint::getChildFrame() const
 const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
     return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+}
+
+const Coordinate& Joint::getCoordinate() const {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     JointHasNoCoordinates);
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Joint has more than one coordinate. Use the getCoordinate "
+                     "method defined in the concrete class instead.");
+
+    return get_coordinates(0);
+}
+
+Coordinate& Joint::updCoordinate() {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     JointHasNoCoordinates);
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Joint has more than one coordinate. Use the updCoordinate "
+                     "method defined in the concrete class instead.");
+
+    return upd_coordinates(0);
 }
 
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const
@@ -242,10 +267,8 @@ void Joint::setMotionType(CoordinateIndex cix, Coordinate::MotionType mt)
  */
 bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 {
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    int i, size = coordinateSet.getSize();
-    for(i=0; i<size; i++) {
-        if(&coordinateSet.get(i) == &aCoordinate) return true;
+    for(int i = 0; i < numCoordinates(); ++i) {
+        if(&get_coordinates(i) == &aCoordinate) return true;
     }
 
     return false;
@@ -325,18 +348,16 @@ void Joint::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
 
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).extendInitStateFromProperties(s);
+    for (int i = 0; i < numCoordinates(); ++i)
+        get_coordinates(i).extendInitStateFromProperties(s);
 }
 
 void Joint::extendSetPropertiesFromState(const SimTK::State& state)
 {
     Super::extendSetPropertiesFromState(state);
 
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-    for (int i = 0; i < coordinateSet.getSize(); i++)
-        coordinateSet.get(i).extendSetPropertiesFromState(state);
+    for (int i = 0; i < numCoordinates(); ++i)
+        upd_coordinates(i).extendSetPropertiesFromState(state);
 }
 
 
@@ -361,10 +382,8 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
 
     std::set<SimTK::MobilizedBodyIndex> mbds;
 
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-    for(int i=0; i<coordinateSet.getSize(); ++i){
-        const MobilizedBodyIndex& coordsMbx = coordinateSet[i].getBodyIndex();
+    for(int i = 0; i < numCoordinates(); ++i) {
+        const MobilizedBodyIndex& coordsMbx = get_coordinates(i).getBodyIndex();
         if (coordsMbx != mbx){
             mbds.insert(coordsMbx);
         }
@@ -406,16 +425,13 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
     joint motion. */
 double Joint::calcPower(const SimTK::State &s) const
 {
-    const CoordinateSet &coords = getCoordinateSet();
-    int nc = coords.getSize();
-
     double power = 0;
-    for(int i=0; i<nc; ++i){
-        if (coords[i].isPrescribed(s)){
+    for(int i = 0; i < numCoordinates(); ++i) {
+        if (get_coordinates(i).isPrescribed(s)) {
             // get the reaction force for this coordinate prescribed motion constraint
             const SimTK::Constraint &pc =
                 _model->updMultibodySystem().updMatterSubsystem()
-                    .getConstraint(coords[i]._prescribedConstraintIndex);
+                    .getConstraint(get_coordinates(i)._prescribedConstraintIndex);
             power += pc.calcPower(s);
         }
     }
@@ -545,7 +561,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "Connector_Body_",
                                                 "Connector_PhysicalFrame_");
         }
-        // Version 30503 changed "parent_body" connector name to "parent_frame"
+        // Version 30505 changed "parent_body" connector name to "parent_frame"
         // Convert location and orientation into PhysicalOffsetFrames owned by the Joint
         if (documentVersion < 30505) {
             // Elements for the parent and child names the joint connects
@@ -623,6 +639,37 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 childNameElt->setValue(childFrameName + "_offset");
             }
         }
+
+        // Version 30507 replaced Joint's CoordinateSet with a "coordinates"
+        // list property.
+        if (documentVersion < 30507) {
+            if (aNode.hasElement("CoordinateSet")) {
+                auto coordSetIter = aNode.element_begin("CoordinateSet");
+                if (coordSetIter->hasElement("objects")) {
+                    auto coordIter = coordSetIter->getRequiredElement("objects")
+                                                   .element_begin("Coordinate");
+                    if (coordIter != aNode.element_end()) {
+                        // A "CoordinateSet" element exists, it contains an
+                        // "objects" element, and the "objects" element contains
+                        // at least one "Coordinate" element.
+
+                        // Create an element for the new layout.
+                        Xml::Element coordinatesElement("coordinates");
+                        // Copy all "Coordinate" elements from the old layout.
+                        while (coordIter != aNode.element_end()) {
+                            coordinatesElement.appendNode(coordIter->clone());
+                            ++coordIter;
+                        }
+                        // Insert new "coordinates" element.
+                        aNode.insertNodeAfter(coordSetIter, coordinatesElement);
+                    }
+                }
+
+                // Remove old "CoordinateSet" element.
+                aNode.eraseNode(coordSetIter);
+            }
+        }
+
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -635,7 +682,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
     const int& startingCoordinateIndex) const
 {
     // If not OpenSim body provided as the one being mobilized assume it is 
-    // and intermediate body and ignore.
+    // an intermediate body and ignore.
     if (mobilized){
         // Index can only be assigned to a parent or child body connected by this
         // Joint
@@ -661,20 +708,24 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
             physOff->getParentFrame().setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
         }
     }
-    int nc = numCoordinates();
+    const int nc = numCoordinates();
     SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),
         "%s attempted to create an underlying SimTK::MobilizedBody that "
         "supplies %d mobilities but only %d required.",
                   getConcreteClassName().c_str(),
                   numMobilities, nc - startingCoordinateIndex);
 
-    const CoordinateSet& coords = get_CoordinateSet();
+    // Need a writable reference to this Joint so indices can be set on its
+    // Coordinates.
+    Self& mutableSelf = const_cast<Self&>(*this);
 
     int j = startingCoordinateIndex;
     for (int iq = 0; iq < numMobilities; ++iq){
         if (j < nc){ // assign
-            coords[j]._mobilizerQIndex = SimTK::MobilizerQIndex(iq);
-            coords[j]._bodyIndex = mobod.getMobilizedBodyIndex();
+            mutableSelf.upd_coordinates(j)._mobilizerQIndex =
+                SimTK::MobilizerQIndex(iq);
+            mutableSelf.upd_coordinates(j)._bodyIndex =
+                mobod.getMobilizedBodyIndex();
             j++;
         }
         else{

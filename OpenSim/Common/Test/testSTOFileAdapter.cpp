@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -97,14 +97,20 @@ int main() {
     filenames.push_back("subject01_walk1_grf.mot");
     std::string tmpfile{"testmotfileadapter.mot"};
 
+    std::cout << "Testing STOFileAdapter::read() and STOFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         STOFileAdapter stofileadapter{};
         auto table = stofileadapter.read(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         auto table = FileAdapter::readFile(filename).at("table");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
@@ -112,13 +118,18 @@ int main() {
         compareFiles(filename, tmpfile);
     }
 
+    std::cout << "Testing TimeSeriesTable and STOFileAdapter::write()"
+              << std::endl;
     for(const auto& filename : filenames) {
+        std::cout << "  " << filename << std::endl;
         TimeSeriesTable table{filename};
         STOFileAdapter::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
     std::remove(tmpfile.c_str());
+
+    std::cout << "\nAll tests passed!" << std::endl;
 
     return 0;
 }

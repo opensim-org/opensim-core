@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth, Ayman Habib                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -95,20 +95,17 @@ int main()
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, 
             locationInParent, orientationInParent, 
             *block, locationInBody, orientationInBody);
-        
-        // Get a reference to the coordinate set (6 degrees-of-freedom) 
-        // between the block and ground bodies
-        CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
 
-        // Set the angle and position ranges for the coordinate set
+        // Set the angle and position ranges for the free (6-degree-of-freedom)
+        // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        jointCoordinateSet[0].setRange(angleRange);
-        jointCoordinateSet[1].setRange(angleRange);
-        jointCoordinateSet[2].setRange(angleRange);
-        jointCoordinateSet[3].setRange(positionRange);
-        jointCoordinateSet[4].setRange(positionRange);
-        jointCoordinateSet[5].setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
         // Add the block body to the model
         osimModel.addBody(block);
@@ -176,7 +173,7 @@ int main()
 
         // Add a Muscle analysis
         MuscleAnalysis* muscAnalysis = new MuscleAnalysis(&osimModel);
-        Array<std::string> coords(jointCoordinateSet[5].getName(),1);
+        Array<std::string> coords(blockToGround->getCoordinate(FreeJoint::Coord::TranslationZ).getName(),1);
         muscAnalysis->setCoordinates(coords);
         muscAnalysis->setComputeMoments(false);
         osimModel.addAnalysis(muscAnalysis);

@@ -45,7 +45,8 @@ void testCMCArm26() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.015, 2*2+2*6); // activations within 1%, angles within .6 degrees
+    // activations within 1.5%, angles within .6 degrees
+    std::vector<double> rms_tols{2*2+2*6, 0.015}; 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testCMCArm26 "+ muscleType;
 

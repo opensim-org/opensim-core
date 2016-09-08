@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -76,9 +76,8 @@ void CoordinateSet::populate(Model& model)
     // unless qualified by its owning component name, namely the Joint
     for(int i=0; i< model.getJointSet().getSize(); i++){
         Joint& nextJoint = model.getJointSet().get(i);
-        CoordinateSet& coords = nextJoint.upd_CoordinateSet();
         for(int j=0; j< nextJoint.numCoordinates(); j++){
-            adoptAndAppend(&coords[j]);
+            adoptAndAppend(&nextJoint.upd_coordinates(j));
         }
     }
 }

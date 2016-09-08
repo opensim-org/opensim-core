@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Cassidy Kelly                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -38,7 +38,7 @@ int main()
         Storage result1("tugOfWar_states.sto"), 
                 standard1("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-                                       Array<double>(0.1, 16), 
+                                       std::vector<double>(16, 0.1),
                                        __FILE__, 
                                        __LINE__, 
                                        "tugOfWar states failed");
@@ -47,7 +47,7 @@ int main()
         Storage result3("tugOfWar_forces.sto"), 
                 standard3("std_tugOfWar_forces.mot");
         
-        Array<double> tols(1.0, 20);
+        std::vector<double> tols(20, 1.0);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 

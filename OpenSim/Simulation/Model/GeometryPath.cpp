@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -150,7 +150,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         // the body (PhysicalFrame) IS part of the actual Model and its system
         // so we can ask it for its transform w.r.t. Ground
-        pos = point->getBody().getTransformInGround(state)*point->getLocation();
+        pos = point->getLocationInGround(state);
 
         if (hints.get_show_path_points())
             DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -425,111 +425,58 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
     }
 
     // Elastic tendon initialization routine.
-    try {
-        // Initialize activation as specified by the user.
-        double clampedActivation = clampActivation(getActivation(s));
-        setActivation(s,clampedActivation);
 
-        // Initialize the multibody system to the initial state vector.
-        setFiberLength(s, getOptimalFiberLength());
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+    // Initialize activation as specified by the user.
+    double clampedActivation = clampActivation(getActivation(s));
+    setActivation(s,clampedActivation);
 
-        // Compute an initial muscle state that develops the desired force and
-        // shares the muscle stretch between the muscle fiber and the tendon
-        // according to their relative stiffnesses.
-        int flag_status      = -1;
-        double solnErr       = SimTK::NaN;
-        int iterations       = 0;
-        double fiberLength   = SimTK::NaN;
-        //double fiberVelocity = SimTK::NaN;
-        double tendonForce   = SimTK::NaN;
+    // Initialize the multibody system to the initial state vector.
+    setFiberLength(s, getOptimalFiberLength());
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-        // tol is the desired tolerance in Newtons.
-        double tol = 1e-8*getMaxIsometricForce();
-        if(tol < SimTK::SignificantReal*10) {
-            tol = SimTK::SignificantReal*10;
-        }
-        int maxIter = 200;
-        double pathLength = getLength(s);
-        double pathLengtheningSpeed = getLengtheningSpeed(s);
+    // Compute an initial muscle state that develops the desired force and
+    // shares the muscle stretch between the muscle fiber and the tendon
+    // according to their relative stiffnesses.
 
-        SimTK::Vector soln;
-        soln = estimateMuscleFiberState(clampedActivation, pathLength,
-                                        pathLengtheningSpeed, tol, maxIter);
-        flag_status   = (int)soln[0];
-        solnErr       = soln[1];
-        iterations    = (int)soln[2];
-        fiberLength   = soln[3];
-        //fiberVelocity = soln[4];
-        tendonForce   = soln[5];
+    // tol is the desired tolerance in Newtons.
+    double tol = 1e-8*getMaxIsometricForce();
+    if(tol < SimTK::SignificantReal*10) {
+        tol = SimTK::SignificantReal*10;
+    }
+    int maxIter = 200;
+    double pathLength = getLength(s);
+    double pathLengtheningSpeed = getLengtheningSpeed(s);
 
-        switch(flag_status) {
-            case 0: //converged
-            {
-                setActuation(s, tendonForce);
-                setFiberLength(s,fiberLength);
+    std::pair<StatusFromEstimateMuscleFiberState,
+              ValuesFromEstimateMuscleFiberState> result =
+        estimateMuscleFiberState(clampedActivation, pathLength,
+                                 pathLengtheningSpeed, tol, maxIter);
 
-            }break;
+    switch(result.first) {
 
-            case 1: //lower bound on fiber length was reached
-            {
-                setActuation(s, tendonForce);
-                setFiberLength(s,fiberLength);
-                printf("\n\nMillard2012EquilibriumMuscle Initialization:"
-                       "%s is at its minimum length of %f\n",
-                       getName().c_str(), getMinimumFiberLength());
-            }break;
+    case StatusFromEstimateMuscleFiberState::Success_Converged:
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        break;
 
-            case 2: //maximum number of iterations reached
-            {
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
+    case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
+        printf("\n\nMillard2012EquilibriumMuscle initialization:"
+               " %s is at its minimum fiber length of %f\n",
+               getName().c_str(), result.second["fiber_length"]);
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        break;
 
-                char msgBuffer[1000];
-                sprintf(msgBuffer,
-                    "WARNING: No suitable initial conditions found for %s by "
-                    "computeInitialFiberEquilibrium.\n"
-                    "Continuing with an initial fiber force of 0 and an "
-                    "initial length of %f.\n"
-                    "Here is a report from the routine:\n\n"
-                    "   Solution Error:    %f > tol (%f)\n"
-                    "   Newton Iterations: %d of max. iterations (%d)\n"
-                    "Verify that the initial activation is valid and that the "
-                    "length of the musculotendon actuator\n"
-                    "doesn't produce a pennation angle of 90 degrees or a "
-                    "fiber length less than zero:\n"
-                    "   Activation:      %f\n"
-                    "   Actuator length: %f\n\n",
-                    getName().c_str(),
-                    get_optimal_fiber_length(),
-                    abs(solnErr), tol,
-                    iterations, maxIter,
-                    clampedActivation,
-                    fiberLength);
-
-                    cerr << msgBuffer << endl;
-            }break;
-
-            default:
-                printf("\n\nWARNING: invalid error flag returned from "
-                       "initialization routine for %s."
-                       "Setting tendon force to 0.0 and fiber length to the "
-                       "optimal fiber length.",
-                       getName().c_str());
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
-        }
-
-    } catch (const std::exception& e) {
-        // If the initialization routine fails in some unexpected way, tell the
-        // user and continue with some valid initial conditions.
-        cerr << "\n\nWARNING: Millard2012EquilibriumMuscle initialization "
-                "exception caught:" << endl;
-        cerr << e.what() << endl;
-        cerr << "Continuing with initial tendon force of 0 and a fiber length "
-                "equal to the optimal fiber length.\n\n" << endl;
-        setActuation(s, 0);
-        setFiberLength(s,getOptimalFiberLength());
+    case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
+        // Report internal variables and throw exception.
+        std::ostringstream ss;
+        ss << "\n  Solution error " << abs(result.second["solution_error"])
+           << " exceeds tolerance of " << tol << "\n"
+           << "  Newton iterations reached limit of " << maxIter << "\n"
+           << "  Clamped activation is " << clampedActivation << "\n"
+           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+        break;
     }
 }
 
@@ -541,108 +488,54 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
     }
 
     // Elastic tendon initialization routine.
-    try {
-        // Initialize activation and fiber length provided by the State s
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-        // Compute the fiber length where the fiber and tendon are in static
-        // equilibrium. Fiber and tendon velocity are set to zero.
-        int flag_status      = -1;
-        double solnErr       = SimTK::NaN;
-        int iterations       = 0;
-        double fiberLength   = SimTK::NaN;
-        //double fiberVelocity = 0.0;
-        double tendonForce   = SimTK::NaN;
+    // Initialize activation and fiber length provided by the State s
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
-        // tol is the desired tolerance in Newtons.
-        double tol = 1e-8*getMaxIsometricForce();
-        if(tol < SimTK::SignificantReal*10) {
-            tol = SimTK::SignificantReal*10;
-        }
-        int maxIter = 200;
-        double pathLength = getLength(s);
-        double pathLengtheningSpeed = 0.0;
+    // Compute the fiber length where the fiber and tendon are in static
+    // equilibrium. Fiber and tendon velocity are set to zero.
 
-        double activation = getActivation(s);
+    // tol is the desired tolerance in Newtons.
+    double tol = 1e-8*getMaxIsometricForce();
+    if(tol < SimTK::SignificantReal*10) {
+        tol = SimTK::SignificantReal*10;
+    }
+    int maxIter = 200;
+    double pathLength = getLength(s);
+    double pathLengtheningSpeed = 0.0;
 
-        SimTK::Vector soln;
-        soln = estimateMuscleFiberState(activation, pathLength,
-                                        pathLengtheningSpeed, tol, maxIter,
-                                        true);
-        flag_status   = (int)soln[0];
-        solnErr       = soln[1];
-        iterations    = (int)soln[2];
-        fiberLength   = soln[3];
-        //fiberVelocity = soln[4];
-        tendonForce   = soln[5];
+    double activation = getActivation(s);
 
-        switch(flag_status) {
-            case 0: //converged
-            {
-                setActuation(s, tendonForce);
-                setFiberLength(s,fiberLength);
+    std::pair<StatusFromEstimateMuscleFiberState,
+              ValuesFromEstimateMuscleFiberState> result =
+        estimateMuscleFiberState(activation, pathLength, pathLengtheningSpeed,
+                                 tol, maxIter, true);
 
-            }break;
+    switch(result.first) {
 
-            case 1: //lower bound on fiber length was reached
-            {
-                setActuation(s, tendonForce);
-                setFiberLength(s,fiberLength);
-                printf("\n\nMillard2012EquilibriumMuscle static solution:"
-                       "%s is at its minimum length of %f\n",
-                       getName().c_str(), getMinimumFiberLength());
-            }break;
+    case StatusFromEstimateMuscleFiberState::Success_Converged:
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        break;
 
-            case 2: //maximum number of iterations reached
-            {
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
+    case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
+        printf("\n\nMillard2012EquilibriumMuscle static solution:"
+               " %s is at its minimum fiber length of %f\n",
+               getName().c_str(), result.second["fiber_length"]);
+        setActuation(s, result.second["tendon_force"]);
+        setFiberLength(s, result.second["fiber_length"]);
+        break;
 
-                char msgBuffer[1000];
-                sprintf(msgBuffer,
-                    "WARNING: No suitable static solution found for %s by "
-                    "computeFiberEquilibriumAtZeroVelocity().\n"
-                    "Continuing with an initial fiber force of 0 and an "
-                    "initial length of %f.\n"
-                    "Here is a report from the routine:\n\n"
-                    "   Solution Error:    %f > tol (%f)\n"
-                    "   Newton Iterations: %d of max. iterations (%d)\n"
-                    "Verify that the default activation is valid and that the "
-                    "length of the musculotendon actuator\n"
-                    "doesn't produce a pennation angle of 90 degrees or a "
-                    "fiber length less than zero:\n"
-                    "   Activation:      %f\n"
-                    "   Actuator length: %f\n\n",
-                    getName().c_str(),
-                    get_optimal_fiber_length(),
-                    abs(solnErr), tol,
-                    iterations, maxIter,
-                    activation,
-                    fiberLength);
-
-                    cerr << msgBuffer << endl;
-            }break;
-
-            default:
-                printf("\n\nWARNING: invalid error flag returned from "
-                       "static solution for %s."
-                       "Setting tendon force to 0.0 and fiber length to the "
-                       "optimal fiber length.",
-                       getName().c_str());
-                setActuation(s, 0.0);
-                setFiberLength(s, get_optimal_fiber_length());
-        }
-
-    } catch (const std::exception& e) {
-        // If the initialization routine fails in some unexpected way, tell the
-        // user and continue with some valid initial conditions.
-        cerr << "\n\nWARNING: Millard2012EquilibriumMuscle static solution "
-                "exception caught:" << endl;
-        cerr << e.what() << endl;
-        cerr << "Continuing with initial tendon force of 0 and a fiber length "
-                "equal to the optimal fiber length.\n\n" << endl;
-        setActuation(s, 0);
-        setFiberLength(s,getOptimalFiberLength());
+    case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
+        // Report internal variables and throw exception.
+        std::ostringstream ss;
+        ss << "\n  Solution error " << abs(result.second["solution_error"])
+           << " exceeds tolerance of " << tol << "\n"
+           << "  Newton iterations reached limit of " << maxIter << "\n"
+           << "  Activation is " << activation << "\n"
+           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+        break;
     }
 }
 
@@ -1418,13 +1311,15 @@ isFiberStateClamped(double lce, double dlceN) const
 double Millard2012EquilibriumMuscle::clampFiberLength(double lce) const
 {   return max(lce, getMinimumFiberLength()); }
 
-SimTK::Vector Millard2012EquilibriumMuscle::
-estimateMuscleFiberState(double aActivation,
-                         double pathLength,
-                         double pathLengtheningSpeed,
-                         double aSolTolerance,
-                         int aMaxIterations,
-                         bool staticSolution) const
+std::pair<Millard2012EquilibriumMuscle::StatusFromEstimateMuscleFiberState,
+          Millard2012EquilibriumMuscle::ValuesFromEstimateMuscleFiberState>
+Millard2012EquilibriumMuscle::estimateMuscleFiberState(
+                                    const double aActivation,
+                                    const double pathLength,
+                                    const double pathLengtheningSpeed,
+                                    const double aSolTolerance,
+                                    const int aMaxIterations,
+                                    bool staticSolution) const
 {
     // If seeking a static solution, set velocities to zero and avoid the
     // velocity-sharing algorithm below, as it can produce nonzero fiber and
@@ -1432,18 +1327,6 @@ estimateMuscleFiberState(double aActivation,
     if(abs(pathLengtheningSpeed) < SimTK::SignificantReal) {
         staticSolution = true;
     }
-
-    // Results vector format:
-    //   [0] flag: 0 = converged
-    //             1 = diverged
-    //             2 = no solution due to length singularity
-    //             3 = no solution due to pennation angle singularity
-    //   [1] solution error (N)
-    //   [2] iterations
-    //   [3] fiber length (m)
-    //   [4] fiber velocity (N)
-    //   [5] tendon force (N)
-    SimTK::Vector results = SimTK::Vector(6);
 
     // Using short variable names to facilitate writing out long equations
     double ma        = aActivation;
@@ -1622,55 +1505,54 @@ estimateMuscleFiberState(double aActivation,
         iter++;
     }
 
-    // Populate the results vector:
-    //   [0] flag: 0 = converged
-    //             1 = diverged
-    //             2 = no solution due to length singularity
-    //             3 = no solution due to pennation angle singularity
-    //   [1] solution error (N)
-    //   [2] iterations
-    //   [3] fiber length (m)
-    //   [4] fiber velocity (N)
-    //   [5] tendon force (N)
+    // Populate the result map.
+    ValuesFromEstimateMuscleFiberState resultValues;
 
-    if(abs(ferr) < aSolTolerance) {
-        // The solution converged
-        results[0] = 0;
-        results[1] = ferr;
-        results[2] = (double)iter;
-        results[3] = lce;
-        results[4] = dlce;
-        results[5] = fse*fiso;
+    if(abs(ferr) < aSolTolerance) {  // The solution converged.
 
-    } else {
-        // The fiber length hit its lower bound
-        if(iter < aMaxIterations) {
-            lce    = getMinimumFiberLength();
-            phi    = penMdl.calcPennationAngle(lce);
-            cosphi = cos(phi);
-            tl     = penMdl.calcTendonLength(cosphi,lce,ml);
-            lceN   = lce/ofl;
-            tlN    = tl/tsl;
-            fse    = fseCurve.calcValue(tlN);
+        resultValues["solution_error"] = ferr;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["fiber_velocity"] = dlce;
+        resultValues["tendon_force"]   = fse*fiso;
 
-            results[0] = 1.0;
-            results[1] = ferr;
-            results[2] = (double)iter;
-            results[3] = lce;
-            results[4] = 0;
-            results[5] = fse*fiso;
-
-        } else {
-            // The solution diverged
-            results[0] = 2.0;
-            results[1] = ferr;
-            results[2] = (double)iter;
-            results[3] = SimTK::NaN;
-            results[4] = SimTK::NaN;
-            results[5] = SimTK::NaN;
-        }
+        return std::pair<StatusFromEstimateMuscleFiberState,
+                         ValuesFromEstimateMuscleFiberState>
+          (StatusFromEstimateMuscleFiberState::Success_Converged, resultValues);
     }
-    return results;
+
+    if(iter < aMaxIterations) {  // Fiber length is at its lower bound.
+
+        lce    = getMinimumFiberLength();
+        phi    = penMdl.calcPennationAngle(lce);
+        cosphi = cos(phi);
+        tl     = penMdl.calcTendonLength(cosphi,lce,ml);
+        lceN   = lce/ofl;
+        tlN    = tl/tsl;
+        fse    = fseCurve.calcValue(tlN);
+
+        resultValues["solution_error"] = ferr;
+        resultValues["iterations"]     = (double)iter;
+        resultValues["fiber_length"]   = lce;
+        resultValues["fiber_velocity"] = 0;
+        resultValues["tendon_force"]   = fse*fiso;
+
+        return std::pair<StatusFromEstimateMuscleFiberState,
+                         ValuesFromEstimateMuscleFiberState>
+            (StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound,
+             resultValues);
+    }
+
+    resultValues["solution_error"] = ferr;
+    resultValues["iterations"]     = (double)iter;
+    resultValues["fiber_length"]   = SimTK::NaN;
+    resultValues["fiber_velocity"] = SimTK::NaN;
+    resultValues["tendon_force"]   = SimTK::NaN;
+
+    return std::pair<StatusFromEstimateMuscleFiberState,
+                        ValuesFromEstimateMuscleFiberState>
+        (StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached,
+            resultValues);
 }
 
 //==============================================================================

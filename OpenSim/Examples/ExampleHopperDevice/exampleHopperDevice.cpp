@@ -46,11 +46,11 @@ static const double REPORTING_INTERVAL{ 0.2 };
 static const std::string testbedAttachment1{"ground"};
 static const std::string testbedAttachment2{"load"};
 
-//TODO: Provide the name of the output corresponding to the hopper's height.
+//TODO: Provide the name of the coordinate corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
 //      joint; see buildHopperModel.cpp and showAllOutputs() in helperMethods.h.
 // [Step 1, Task A]
-static const std::string hopperHeightOutput{"/Dennis/?????"}; //fill this in
+static const std::string hopperHeightCoord{"/Dennis/?????"}; //fill this in
 
 //TODO: Provide the full path names of the PhysicalOffsetFrames defined on the
 //      hopper for attaching the assistive device. See buildHopperModel.cpp and
@@ -60,17 +60,17 @@ static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
 static const std::string shankAttachment{"/Dennis/?????"}; //fill this in
 
 //TODO: To assist hopping, we will activate the knee device whenever the vastus
-//      muscle is active. To do this, we will need to connect the vastus
-//      muscle's "activation" output to the controller's "activation" input.
+//      muscle is active. For convenience, we define a string "vastus" which
+//      is the path to the vastus muscle.
 // [Step 3, Task B]
-static const std::string vastusActivationOutput{"/Dennis/?????"}; //fill this in
+static const std::string vastus{"/Dennis/?????"}; //fill this in
 
 
 namespace OpenSim {
 
 // Forward declarations for methods used below.
-Model buildHopper();    //defined in buildHopperModel.cpp
-Model buildTestbed();   //defined in helperMethods.h
+Model buildHopper(bool showVisualizer);    //defined in buildHopperModel.cpp
+Model buildTestbed(bool showVisualizer);   //defined in helperMethods.h
 Device* buildDevice();  //defined in buildDevice.cpp
 
 
@@ -137,7 +137,7 @@ void addSignalGeneratorToDevice(Device& device)
     //device.addComponent(signalGen);
 
     //TODO: Connect the signal generator's output signal to the controller's
-    //      activation input ("controller/activation").
+    //      activation input.
 }
 
 
@@ -145,7 +145,8 @@ void addSignalGeneratorToDevice(Device& device)
 // Add a ConsoleReporter to a model for displaying outputs from a device.
 //------------------------------------------------------------------------------
 void addDeviceConsoleReporterToModel(Model& model, Device& device,
-    const std::vector<std::string>& deviceOutputs)
+    const std::vector<std::string>& deviceOutputs,
+    const std::vector<std::string>& deviceControllerOutputs)
 {
     // Create a new ConsoleReporter. Set its name and reporting interval.
     auto reporter = new ConsoleReporter();
@@ -155,6 +156,10 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
     // Loop through the desired device outputs and add them to the reporter.
     for (auto thisOutputName : deviceOutputs)
         reporter->updInput("inputs").connect(device.getOutput(thisOutputName));
+
+    for (auto thisOutputName : deviceControllerOutputs)
+        reporter->updInput("inputs").
+        connect(device.getComponent("controller").getOutput(thisOutputName));
 
     // Add the reporter to the model.
     model.addComponent(reporter);
@@ -168,8 +173,27 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 // the exercise. The project should execute without making any changes (you
 // should see the unassisted hopper hop slightly).
 //------------------------------------------------------------------------------
-int main()
-{
+int main(int argc, char* argv[]) {
+    //==========================================================================
+    // Command line argument parsing.
+    //==========================================================================
+    // Following are arguments to this executable:
+    // (1) noVisualizer -- [Optional] Do not show visualizer. Default
+    //                       behavior is to show visualizer.
+    // (2) simulateOnce -- [Optional] Simulate once and exit the program.
+    //                       Default behavior is to simulate multiple times
+    //                       until user requests to stop.
+    
+    // Suppress/show visualizer.
+    bool showVisualizer{true};
+    // Simulate just once or until user stops.
+    bool simulateOnce{false};
+    for(int i = 0; i < argc; ++i)
+        if(strcmp(argv[i], "noVisualizer") == 0)
+            showVisualizer = false;
+        else if(strcmp(argv[i], "simulateOnce") == 0)
+            simulateOnce = true;
+        
     using namespace OpenSim;
 
     //==========================================================================
@@ -178,7 +202,7 @@ int main()
     if (true)
     {
         // Build the hopper.
-        auto hopper = buildHopper();
+        auto hopper = buildHopper(showVisualizer);
         // Update the hopper model's internal data members, which includes
         // identifying its subcomponents from its properties.
         hopper.finalizeFromProperties();
@@ -192,8 +216,8 @@ int main()
 
         // Step 1, Task A
         // ==============
-        // Determine the name of the output corresponding to the hopper's
-        // height. The hopperHeightOutput string (at the top of this file) must
+        // Determine the name of the coordinate corresponding to the hopper's
+        // height. The hopperHeightCoord string (at the top of this file) must
         // be filled in.
 
         // Step 1, Task B
@@ -205,7 +229,7 @@ int main()
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHop = hopper.initSystem();
-        simulate(hopper, sHop);
+        simulate(hopper, sHop, simulateOnce);
     }
 
     //==========================================================================
@@ -214,7 +238,7 @@ int main()
     if (false)
     {
         // Build the testbed and device.
-        auto testbed = buildTestbed();
+        auto testbed = buildTestbed(showVisualizer);
         testbed.finalizeFromProperties();
 
         // Step 2, Task A
@@ -254,15 +278,16 @@ int main()
         addSignalGeneratorToDevice(*device);
 
         // List the device outputs we wish to display during the simulation.
-        std::vector<std::string> deviceOutputs{ "length", "tension", "power",
-                                                "controller/myo_control" };
+        std::vector<std::string> deviceOutputs{ "length", "tension", "power" };
+        std::vector<std::string> deviceControllerOutputs{ "myo_control" };
 
         // Add a ConsoleReporter to report deviceOutputs.
-        //addDeviceConsoleReporterToModel(testbed, *device, deviceOutputs);
+        //addDeviceConsoleReporterToModel(testbed, *device, deviceOutputs,
+        //                                deviceControllerOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
-        simulate(testbed, sDev);
+        simulate(testbed, sDev, simulateOnce);
     }
 
     //==========================================================================
@@ -271,7 +296,7 @@ int main()
     if (false)
     {
         // Build the hopper and device.
-        auto assistedHopper = buildHopper();
+        auto assistedHopper = buildHopper(showVisualizer);
         assistedHopper.finalizeFromProperties();
         auto kneeDevice = buildDevice();
         kneeDevice->finalizeFromProperties();
@@ -286,22 +311,22 @@ int main()
         // Step 3, Task B
         // ==============
         // Use the vastus muscle's activation as the control signal for the
-        // device. The signalForKneeDevice string (at the top of this file) must
+        // device. The vastus string (at the top of this file) must
         // be filled in.
-        //kneeDevice->updInput("controller/activation")
-        //    .connect(assistedHopper.getOutput(vastusActivationOutput));
+        //kneeDevice->updComponent("controller").updInput("activation")
+        //    .connect(assistedHopper.getComponent(vastus).getOutput("activation"));
 
         // List the device outputs we wish to display during the simulation.
-        std::vector<std::string> kneeDeviceOutputs{ "controller/myo_control",
-                                                    "tension", "height" };
+        std::vector<std::string> kneeDeviceOutputs{ "tension", "height" };
+        std::vector<std::string> deviceControllerOutputs{ "myo_control" };
 
         // Add a ConsoleReporter to report deviceOutputs.
         //addDeviceConsoleReporterToModel(assistedHopper, *kneeDevice,
-        //                                kneeDeviceOutputs);
+        //                                kneeDeviceOutputs, deviceControllerOutputs);
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
-        simulate(assistedHopper, sHD);
+        simulate(assistedHopper, sHD, simulateOnce);
     }
 
     return 0;

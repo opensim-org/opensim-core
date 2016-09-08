@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -212,14 +212,15 @@ void testGait2354()
     
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
     
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354 failed");
 }
 
 void testGait2354WithController() {
@@ -233,12 +234,13 @@ void testGait2354WithController() {
 
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
     
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354WithController failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354WithController failed");
 }

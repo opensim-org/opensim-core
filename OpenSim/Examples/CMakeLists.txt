@@ -4,7 +4,8 @@ option(BUILD_API_EXAMPLES
 
 if(BUILD_API_EXAMPLES)
 
-    install(DIRECTORY ExampleMain
+  install(DIRECTORY ExampleMain
+        ExampleHopperDevice
         ExampleLuxoMuscle
         ControllerExample
         MuscleExample
@@ -17,6 +18,7 @@ if(BUILD_API_EXAMPLES)
         DataAdapter
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
 
+    add_subdirectory(ExampleHopperDevice)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
 
