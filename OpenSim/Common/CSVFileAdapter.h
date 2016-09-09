@@ -29,7 +29,7 @@ namespace OpenSim {
 
 /** CSVFileAdapter is a DelimFileAdapter that presets the delimiters 
 appropriately for CSV files.                                                  */
-class OSIMCOMMON_API CSVFileAdapter : public DelimFileAdapter {
+class OSIMCOMMON_API CSVFileAdapter : public DelimFileAdapter<double> {
 public:
     CSVFileAdapter();
     CSVFileAdapter(const CSVFileAdapter&)            = default;

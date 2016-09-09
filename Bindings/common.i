@@ -148,7 +148,10 @@ namespace OpenSim {
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
-%shared_ptr(OpenSim::STOFileAdapter)
+%shared_ptr(OpenSim::STOFileAdapter_<duoble>)
+%shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec3>)
+%shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec6>)
+%shared_ptr(OpenSim::STOFileAdapter_<SimTK::SpatialVec>)
 %shared_ptr(OpenSim::CSVFileAdapter)
 %shared_ptr(OpenSim::TRCFileAdapter)
 %shared_ptr(OpenSim::C3DFileAdapter)
@@ -161,12 +164,17 @@ namespace OpenSim {
 namespace OpenSim {
     %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
     %ignore DelimFileAdapter::DelimFileAdapter(DelimFileAdapter &&);
-    %ignore STOFileAdapter::STOFileAdapter(STOFileAdapter &&);
     %ignore CSVFileAdapter::CSVFileAdapter(CSVFileAdapter &&);
 }
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
+%ignore OpenSim::createSTOFileAdapterForReading;
+%ignore OpenSim::createSTOFileAdapterForWriting;
 %include <OpenSim/Common/STOFileAdapter.h>
+%template(STOFileAdapter)           OpenSim::STOFileAdapter_<double>;
+%template(STOFileAdapterVec3)       OpenSim::STOFileAdapter_<SimTK::Vec3>;
+%template(STOFileAdapterVec6)       OpenSim::STOFileAdapter_<SimTK::Vec6>;
+%template(STOFileAdapterSpatialVec) OpenSim::STOFileAdapter_<SimTK::SpatialVec>;
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 

@@ -211,7 +211,8 @@ int main()
         manager.integrate(si);
 
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "Arm26_optimized_states.sto");
+        STOFileAdapter_<double>::write(statesTable, 
+                                      "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

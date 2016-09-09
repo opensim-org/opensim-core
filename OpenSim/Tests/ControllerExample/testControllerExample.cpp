@@ -35,7 +35,10 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_controls.sto"), 
+      const std::string result1Filename{"tugOfWar_controls.sto"};
+      const std::string result1FilenameV1{"tugOfWar_controls_V1.sto"};
+      revertToVersionNumber1(result1Filename, result1FilenameV1);
+        Storage result1(result1FilenameV1), 
                 standard1("std_tugOfWar_controls.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
                                        std::vector<double>(2, 0.01),
@@ -51,7 +54,10 @@ int main()
         // activations within 2%
         tols[12] = tols[14] = 0.02;
 
-        Storage result2("tugOfWar_states.sto"), 
+      const std::string result2Filename{"tugOfWar_states.sto"};
+      const std::string result2FilenameV1{"tugOfWar_states_V1.sto"};
+      revertToVersionNumber1(result2Filename, result2FilenameV1);
+        Storage result2(result2FilenameV1), 
                 standard2("std_tugOfWar_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
                                        tols, 
