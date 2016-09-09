@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2016 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                     *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -91,7 +91,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
         SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
         SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
         // ...and that they aren't all just references to the same single state.
-        for (int i = 0; i < states.getSize(); ++i) {
+        for (int i = 0; i < (int)states.getSize(); ++i) {
             SimTK_TEST_EQ(states[i].getTime(), times[i]);
             SimTK_TEST_EQ(statesCol->getStates()[i].getTime(), times[i]);
         }

@@ -42,7 +42,7 @@ buildHopper() is doing. */
 
 namespace OpenSim {
 
-Model buildHopper() {
+Model buildHopper(bool showVisualizer) {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -88,8 +88,8 @@ Model buildHopper() {
 
     // Set the coordinate names and default values. Note that we need "auto&"
     // here so that we get a reference to the Coordinate rather than a copy.
-    auto& sliderCoord = sliderToGround->
-                        updCoordinate(SliderJoint::Coord::TranslationX);
+    auto& sliderCoord =
+        sliderToGround->updCoordinate(SliderJoint::Coord::TranslationX);
     sliderCoord.setName("yCoord");
     sliderCoord.setDefaultValue(1.);
 
@@ -189,8 +189,9 @@ Model buildHopper() {
     thigh->attachGeometry(linkGeometry);
     shank->attachGeometry(linkGeometry->clone());
 
-    hopper.setUseVisualizer(true);
-
+    if(showVisualizer)
+        hopper.setUseVisualizer(true);
+    
     return hopper;
 }
 
