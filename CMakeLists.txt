@@ -496,10 +496,6 @@ if(WITH_BTK)
     CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
 endif()
 
-find_package(docopt
-             REQUIRED
-             HINTS "${OPENSIM_DEPENDENCIES_DIR}/docopt/lib/cmake/docopt")
-
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
 endif()
