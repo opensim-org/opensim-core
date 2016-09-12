@@ -362,12 +362,16 @@ public:
     that can be implemented by subclasses of Components.
 
     Component ensures that the corresponding calls are propagated to all of its
-    (sub)components. */
+    subcomponents.*/
 
     ///@{
 
-    /** Update Component's internal data members based on properties.
-        Marks the Component as up to date with its properties. */
+    /** Define a Component's internal data members and structure according to
+        its properties. This includes its subcomponents as part of the component
+        ownership tree and identifies its parent (if present) in the tree.
+        finalizeFromProperties propagates to all of the component's
+        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
+        on itself.*/
     void finalizeFromProperties();
 
     /** Connect this Component to its aggregate component, which is the root
@@ -2453,7 +2457,7 @@ protected:
     };
 
 
-    /// Helper method to enable Component maker to specify the order of
+    /// Helper method to enable Component makers to specify the order of
     /// subcomponents to be added to the System used by addToSystem().
     /// Use this method in extendConnect() of your Component to set the
     /// order of your components. For example, Model orders subcomponents
@@ -2508,9 +2512,18 @@ private:
     // Hold onto adopted components
     SimTK::Array_<SimTK::ClonePtr<Component> > _adoptedSubcomponents;
 
-    // A flat list of all the subcomponents that comprise this Component.
-    // The list must be complete and in the correct System order by 
-    // addToSystem().
+    // A flat list of subcomponents (immediate and otherwise) under this
+    // Component. This list must be populated prior to addToSystem(), and is
+    // used strictly to specify the order in which addToSystem() is invoked
+    // on its subcomponents. The order is necessary for the construction
+    // of Simbody elements (e.g. MobilizedBodies, Constraints, Forces, 
+    // Measures, ...) which cannot be added to the SimTK::MultibodySystem
+    // arbitrarily. In the case of MobilizedBodies, for example, the parent
+    // MobilizedBody must be part of the system before the child can be added.
+    // OpenSim::Model performs the mapping from User specifications to the
+    // system order required by the SimTK::MultibodySystem.
+    // If the Component does not reset the list, it is by default the ownership
+    // tree order of its subcomponents.
     mutable std::vector<SimTK::ReferencePtr<const Component> > _orderedSubcomponents;
 
     // Structure to hold modeling option information. Modeling options are
