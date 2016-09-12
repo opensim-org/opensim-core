@@ -134,12 +134,18 @@ void testComponentListConst() {
     // which is done when the model creates and initializes the system
     SimTK::State state = model.initSystem();
 
+    unsigned numJoints{}, numCoords{};
+    const unsigned expNumJoints{2}, expNumCoords{2};
     for(const auto& joint : model.getComponentList<Joint>()) {
         std::cout << "Joint: " << joint.getFullPathName() << std::endl;
+        ++numJoints;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
             std::cout << "Coord: " << coord.getFullPathName() << std::endl;
+            ++numCoords;
         }
     }
+    assert(numJoints == expNumJoints);
+    assert(numCoords == expNumCoords);
 
     int numJointsWithStateVariables = 0;
     ComponentList<const Joint> jointsWithStates = model.getComponentList<Joint>();
