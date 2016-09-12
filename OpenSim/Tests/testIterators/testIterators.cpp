@@ -134,6 +134,13 @@ void testComponentListConst() {
     // which is done when the model creates and initializes the system
     SimTK::State state = model.initSystem();
 
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        std::cout << "Joint: " << joint.getFullPathName() << std::endl;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            std::cout << "Coord: " << coord.getFullPathName() << std::endl;
+        }
+    }
+
     int numJointsWithStateVariables = 0;
     ComponentList<const Joint> jointsWithStates = model.getComponentList<Joint>();
     ComponentWithStateVariables myFilter;
