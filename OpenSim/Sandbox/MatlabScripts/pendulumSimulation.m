@@ -76,4 +76,10 @@ markertable = markerReporter.getReport;
 [coordinateData,coordinatelabels] = opensimTableToArray(coordinatetable)
 [markerData] = opensimVec3TableToStruct(markertable);
 
+%% Print the rotated markers to trc file.
+% THE BELOW LINES DO NOT WORK AND THERE IS CURRENTLY NO FIX
+stofileadapter = STOFileAdapter();
+stofileadapter.write(markertable,'pendulum_markers.sto');
+
+
 
