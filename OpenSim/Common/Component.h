@@ -1454,6 +1454,12 @@ protected:
     */
     void adoptSubcomponent(Component* subcomponent);
 
+    /** Get the number of Subcomponents immediately owned by this Component */
+    size_t getNumImmediateSubcomponents() const {
+        return getNumMemberSubcomponents() + getNumPropertySubcomponents()
+            + getNumAdoptedSubcomponents();
+    }
+
     /** Get the number of Subcomponents that are data members of this Component */
     size_t getNumMemberSubcomponents() const;
     /** Get the number of Subcomponents that are properties of this Component */
