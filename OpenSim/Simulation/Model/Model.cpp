@@ -87,7 +87,6 @@ Model::Model() : ModelComponent(),
     constructProperties();
     setNull();
     finalizeFromProperties();
-    updCoordinateSet().populate(*this);
 }
 //_____________________________________________________________________________
 /**
@@ -108,7 +107,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 
     if (finalize) {
         finalizeFromProperties();
-        updCoordinateSet().populate(*this);
     }
 
     _fileName = aFileName;
@@ -504,9 +502,12 @@ void Model::extendFinalizeFromProperties()
     }
 
     if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered interpreting properties of the model. " <<
+        cout << "The following Errors/Warnings were encountered ";
+        cout << "interpreting properties of the model. " <<
             getValidationLog() << endl;
     }
+
+    updCoordinateSet().populate(*this);
 }
 
 void Model::createMultibodyTree()
