@@ -1463,7 +1463,8 @@ protected:
 
     /** Access this Component's immediate subcomponents (not those owned by
         subcomponents) */
-    std::vector<SimTK::ReferencePtr<const Component>> getMySubcomponents() const;
+    std::vector<SimTK::ReferencePtr<const Component>>
+        getImmediateSubcomponents() const;
 
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
