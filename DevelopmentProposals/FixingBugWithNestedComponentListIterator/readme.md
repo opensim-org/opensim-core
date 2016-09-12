@@ -1,83 +1,36 @@
-## Project: TITLE
-***OpenSim Development Proposal***
+## Project: Address problem/bug with nested loops using `ComponentListIterator`
 
 ### Overview
-
-Just a few sentences that describes the purpose of this project. Provide
-motivation for the proposal by:
-* referring to the existing
-[Issues](https://github.com/opensim-org/opensim-core/issues) it addresses.
-* describing the problem (not captured in existing issues) it solves.
-
-For example:
-*Add ability to read/write table of quaternions to/from STO files. This is a
-new feature and does not directly address any existing issue.* 
+The issue is detailed in issue [#1159](https://github.com/opensim-org/opensim-core/issues/1159).
 
 ### Requirements
+* No change the existing interface of `ComponentList`, `ComponentListIterator`, `Component`.
+* Current state of tests in `testIterators` should not change. Meaning existing tests should run/pass and produce exactly the same output before & after the change.
+* Introduce a test into `testIterator` to confirm the fix/solution.
 
-List the set of requirements that this project must fulfill. Include all
-constraints this proposal is working within.
-If the list gets too long, consider splitting the project into multiple small
-projects.
+### Problem
+The problem seems to be with the handling of `_nextComponent` data member of `Component`. For every component, it is meant to keep track of the next component to be traversed in the pre-order traversal of the component tree. When for loops are nested as shown in the issue [#1159](https://github.com/opensim-org/opensim-core/issues/1159), `_nextComponent` incorrectly becomes `nullptr` at the inner for-loop, resulting in `ComponentListIterator` finding a `nullptr` in place of next component during outer for-loop. `ComponentListIterator` terminates the loop prematurely.
 
-For example:
-* Add support for reading and writing of `TimeSeriesTables` of `Quaternion`s
-to/from STO files through the existing class `STOFileAdapter`.
+### Solution
+The solution is to edit the function `Component::initComponentTreeTraversal` to make sure `_nextComponent` is not set to `nullptr` for the root of the tree. Refer to the changes made to sources in this PR for details.
 
 ### Architecture
-Describe changes to the architecture and include a diagram if
-applicable/helpful.
-This should be a conceptual diagram that describes what components of OpenSim
-will be utilized or changed, the flow of information, new classes, etc.
-
-For example:
-Existing classes `STOFileAdapter` and `DelimFileAdapter` will be edited by
-adding template specializations. The existing dispatch mechanism will be
-extended to include `Quaternion`. ....
+No change. 
 
 ### Interfaces
-Describe any new interfaces or modifications to interfaces, function API
-changes, SDF changes. These changes can be notional. Describe if/how/when
-OpenSim users/developers will be affected.
-
-For example:
-There will no change to the existing interface. This proposal is to add ability
-to read and write quaternion tables to files using existing interface.
+No change.
 
 #### Bindings
-Describe implications for Python and Java bindings.
+No implications to bindings.
 
 ### Backwards Compatibility
-Describe implications on backwards compatibility. Particularly if/how/when code
-written to previous versions of OpenSim will break and how are they addressed
-going forward.
-
-For example:
-This proposal intends to add a new feature that previously did not exist.
-
-### Lifecycle and Ownership / Memory Management
-Describe the intended lifecycle of new objects.
-Based on the lifecycle, suggest an ownership model.
-These characteristics should motivate the types of pointers, smart pointers,
-and/or references that are used in the interfaces.
+No breaking change.
 
 ### Performance Considerations
-Will this project cause changes to performance?
-If so, describe how.
-One or more performance tests may be required.
+No change to performance expected.
 
 ### Tests
-List and describe the tests that will be created.
-
-For example:
-Programmatically create a few `TimeSeriesTable`s of `Quaternion`, write them to
-files, read those files back in and verify their contents.
-
-### Potential hurdles or roadblocks
-List any known problems with this proposal. Any potential hurdles or roadblocks in moving forward this proposal.
+The test introduced will be a nested for loop and assertion of number of iterations expected in the two loops.
 
 ### Pull Requests
-List and describe the pull requests that will be created to merge this project.
-Consider separating large refactoring operations from additions of new code.
-
-Keep in mind that smaller, atomic pull requests are easier to review.
+This proposal is part of the pull request that provides the fix as well.
