@@ -1,6 +1,6 @@
 // SimmFileWriter.cpp
 // Author: Peter Loan
-/* Copyright (c)  2005, Stanford University and Peter Loan.
+/* Copyright (c) 2005-2016 Stanford University and Peter Loan.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 *   1. The software is used only for non-commercial research and education. It may not

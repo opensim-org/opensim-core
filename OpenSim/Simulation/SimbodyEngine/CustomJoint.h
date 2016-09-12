@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -123,7 +123,7 @@ public:
     Coordinate& updCoordinate(unsigned idx) {
         OPENSIM_THROW_IF(numCoordinates() == 0,
                          JointHasNoCoordinates);
-        OPENSIM_THROW_IF(idx > numCoordinates()-1,
+        OPENSIM_THROW_IF(idx >= static_cast<unsigned>(numCoordinates()),
                          InvalidCall,
                          "Index passed to updCoordinate() exceeds the largest "
                          "index available");

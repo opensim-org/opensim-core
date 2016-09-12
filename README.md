@@ -23,7 +23,10 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle:
+Let's simulate a simple arm whose elbow is actuated by a muscle, using 
+the C++ interface (You can find a python version of this example at 
+`Bindings/Python/examples/build_simple_arm_model.py`):
+
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
@@ -122,7 +125,6 @@ and prints the following information to the console:
 
 ---
 
-
 Building from the source code
 -----------------------------
 
@@ -140,7 +142,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able
@@ -169,6 +171,9 @@ On Windows using Visual Studio
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -273,6 +278,10 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
+           variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -409,7 +418,7 @@ ctest -j8
 
 * **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
@@ -418,6 +427,9 @@ ctest -j8
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -512,6 +524,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -592,16 +608,15 @@ On Ubuntu using Unix Makefiles
 
 #### Get the dependencies
 
-Most dependencies can be obtained via the Ubuntu software repositories. On each
-line below, we show the corresponding package.
+Most dependencies can be obtained via the Ubuntu software repositories;
+especially if you are using Ubuntu 15.10 or later. On each line below, we show
+the Ubuntu package names for the dependencies. You can find instructions for
+specific Ubuntu versions under 'For the impatient' below.
 
-* **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
-  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
-  or from this [third party
-  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
-* **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
+  `cmake-gui`. 
+* **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -609,6 +624,9 @@ line below, we show the corresponding package.
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -620,7 +638,7 @@ line below, we show the corresponding package.
 
 For example, you could get the required dependencies (except Simbody) via:
 
-    $ sudo apt-get install cmake-gui g++-4.8
+    $ sudo apt-get install cmake-gui g++-4.9
 
 And you could get all the optional dependencies via:
 
@@ -706,6 +724,10 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
