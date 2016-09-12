@@ -1,7 +1,7 @@
-#ifndef _defineDeviceAndController_h_
-#define _defineDeviceAndController_h_
+#ifndef _defineDeviceAndController_answers_h_
+#define _defineDeviceAndController_answers_h_
 /* -------------------------------------------------------------------------- *
- *                   OpenSim:  defineDeviceAndController.h                    *
+ *               OpenSim:  defineDeviceAndController_answers.h                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -231,4 +231,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // _defineDeviceAndController_h_
+#endif // _defineDeviceAndController_answers_h_
