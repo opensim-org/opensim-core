@@ -2391,7 +2391,9 @@ private:
         
         for (auto& it : _inputsTable) {
             it.second->setOwner(*this);
-    }
+        }
+
+        resetSubcomponentOrder();
     }
 
 protected:
@@ -2463,19 +2465,20 @@ protected:
         bool hidden;
     };
 
-
     /// Helper method to enable Component makers to specify the order of
     /// subcomponents to be added to the System used by addToSystem().
-    /// Use this method in extendConnect() of your Component to set the
-    /// order of your components. For example, Model orders subcomponents
-    /// according to the multibody tree and add bodies and joints in order
+    /// Use this method in extendConnect() of your Component (or within 
+    /// your extendConnectToModel() for ModelComponents) to set the
+    /// order of your subcomponents. For example, Model orders subcomponents
+    /// according to the multibody tree and adds bodies and joints in order
     /// starting from Ground and growing outward.
-    /// Note: call resetSubcomponentOrder() prior to setting the first
-    /// subcomponent.
     /// If the subcomponent already appears in the order list setting it
     /// later in the list has no effect. The list remains unique.
     void setNextSubcomponentInSystem(const Component& sub) const;
 
+    /// resetSubcomponentOrder clears this Component's list of ordered
+    /// subcomponents (which leaves subcomponents untouched). Rebuild the
+    /// the list using setNextSubcomponentInSystem(), above.
     void resetSubcomponentOrder() {
         _orderedSubcomponents.clear();
     }

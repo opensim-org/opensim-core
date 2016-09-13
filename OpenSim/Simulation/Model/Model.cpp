@@ -593,14 +593,12 @@ void Model::extendConnectToModel(Model &model)
             model.getName() << "." << endl;
     }
 
-    // Reset the list of all components and the order in which they are
-    // added to the System. Then we can rebuild the list in the order
-    // that conforms to the MultibodyTree
-    resetSubcomponentOrder();
-
+    // Create the Multibody tree according to the components that
+    // form this model.
     createMultibodyTree();
 
-    // Model is connected so build the Multibody tree to represent it
+    // generate the graph of the Multibody tree to determine the order in
+    // which subcomponents will be added to the MultibodySystem (in addToSystem)
     _multibodyTree.generateGraph();
     //_multibodyTree.dumpGraph(cout);
     //cout << endl;
