@@ -736,7 +736,8 @@ void Model::extendConnectToModel(Model &model)
     }
 
     // Now include all remaining Components beginning with PhysicalFrames
-    // since Forces can only be applied to PhyicalFrames
+    // since Constraints, Forces and other components can only be applied to
+    // PhyicalFrames.
     auto poFrames = getComponentList<PhysicalOffsetFrame>();
     for (const auto& pof : poFrames) {
         setNextSubcomponentInSystem(pof);
@@ -744,7 +745,7 @@ void Model::extendConnectToModel(Model &model)
 
     // and everything else including Forces, Controllers, etc...
     // belonging to the model
-    auto components = getMySubcomponents();
+    auto components = getImmediateSubcomponents();
     for (const auto& comp : components) {
         setNextSubcomponentInSystem(comp.getRef());
     }
