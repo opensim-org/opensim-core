@@ -1,15 +1,11 @@
 function [data_array,labels] = opensimTableToArray(table)
 
-
-
-
-
 import org.opensim.modeling.*
 
 % allocate an array
-nCol = table.getNumColumns;
-nRow = table.getNumRows;
-data = zeros(nRow, nCol);
+nCol = table.getNumColumns() ;
+nRow = table.getNumRows() ;
+data = zeros(nRow, nCol) ;
 labels = {};
 
 for iCol = 0 : nCol - 1
