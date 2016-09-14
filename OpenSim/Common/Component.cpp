@@ -376,8 +376,9 @@ void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
     }
     else {
         OPENSIM_THROW_FRMOBJ(Exception, 
-            "_orderedSubcomponents specified, but does not include all "
-            "immediate subcomponents."
+            "_orderedSubcomponents specified, but its size does not reflect the "
+            "the number of immediate subcomponents. Verify that you have included "
+            "all immediate subcomponents in the ordered list."
         )
     }
 }
