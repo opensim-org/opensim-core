@@ -146,23 +146,44 @@ void testStates(const string& modelFile)
     ASSERT(max(abs(y1-y2)) > 1e-4);
 }
 
+size_t getMedianOfCurrentRSSOverNSamples(size_t nsamples) {
+    // NOTE: getCurrentRSS() can be unreliable at evaluating the memory usage
+    // of a current process because of caching, shared memory and a litany of 
+    // other reasons including some platform specific details.
+    // Taking an average over nsamples just in case we get a flaky estimate.
+    // A stable estimate of memory usage is necessary so that we do not find
+    // cases where loading model either decreases or has no change in memory
+    // usage, which is impossible.
+    size_t memEstimate{ 0 };
+    std::vector<size_t> samples;
+    for (size_t i = 0; i < nsamples; ++i) {
+        samples.push_back(getCurrentRSS());
+        memEstimate += samples[i];
+    }
+    size_t mean = memEstimate / nsamples;
+    size_t nmedian = nsamples / 2;
+    std::nth_element(samples.begin(), samples.begin() + nmedian, samples.end());
+
+    return samples[nmedian];
+}
+
 void testMemoryUsage(const string& modelFile)
 {
     using namespace SimTK;
 
+    int nsamples{ 10 };
+
     //=========================================================================
     // Setup OpenSim model
     // base footprint
-    size_t mem0 = getCurrentRSS();
+    size_t mem0 = getMedianOfCurrentRSSOverNSamples(nsamples);
     size_t current_size{ 0 };
 
     Model model;
 
-    // NOTE: getCurrentRSS() can be unreliable at evaluating the memory usage
-    // of a current process because of caching, shared memory and a litany of 
-    // other reasons including some platform specific details.
-    // When this occurs, the model_size is determined to be zero, which is not
-    // possible. This was leading to an invalid (NaN) leak % and the test was
+    // If the current_size is determined to be less than or equal to mem0, which 
+    // is not possible (loading a Model must increase memory usage even if just
+    // a tiny, this was leading to an invalid (NaN) leak % and the test was
     // failing. Redoing the test (or restarting the CI tests) often remedies
     // the issue (see #473) but it is a waste of time and CI resources.
     // The following code was added to retry loading the model until a nonzero
@@ -172,19 +193,19 @@ void testMemoryUsage(const string& modelFile)
     int ntries = 0;
     while (ntries++ < 10) {
         model = Model(modelFile);
-        current_size = getCurrentRSS();
+        current_size = getMedianOfCurrentRSSOverNSamples(nsamples);
 
-        // Exit if memory footprint increased.
+        // Exit if memory footprint increased as expected.
         if (current_size > mem0)
             break;
-
-        // Update mem0 if memory footprint decreased.
-        if (current_size < mem0)
-            mem0 = current_size;
     }
 
-    // Ensure subtraction does not wrap unsigned int through zero.
-    const size_t model_size = current_size > mem0 ? current_size-mem0 : 0;
+    ASSERT(current_size > mem0, __FILE__, __LINE__,
+        "testMemoryUsage: model creation failed to increase process memory.\n"
+        "Memory instrumentation code failed to estimate model size correctly.");
+
+    // Subtraction does not wrap unsigned int through zero because
+    const size_t model_size = current_size-mem0;
 
     if (ntries > 1) {
         cout << "testMemoryUsage: required " << to_string(ntries);
@@ -194,14 +215,10 @@ void testMemoryUsage(const string& modelFile)
     cout << "*********************** testMemoryUsage ***********************" << endl;
     cout << "MODEL: " << modelFile << " uses " << model_size / 1024.0 << "KB" << endl;
 
-    ASSERT(model_size > 0, __FILE__, __LINE__,
-        "testMemoryUsage: model size was found to be zero.\n"
-        "Memory instrumentation code failed to estimate model size correctly.");
-
     State state = model.initSystem();
 
     // initial footprint
-    size_t mem1 = getCurrentRSS();
+    size_t mem1 = getMedianOfCurrentRSSOverNSamples(nsamples);
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
@@ -211,7 +228,8 @@ void testMemoryUsage(const string& modelFile)
     }
 
     // New memory footprint after MAX_N_TRIES.
-    size_t mem2 = getCurrentRSS();
+    size_t mem2 = getMedianOfCurrentRSSOverNSamples(nsamples);
+
     // Increase in memory footprint.
     int64_t memory_increase = mem2 > mem1 ? mem2-mem1 : 0;
     int64_t leak = memory_increase/MAX_N_TRIES;
