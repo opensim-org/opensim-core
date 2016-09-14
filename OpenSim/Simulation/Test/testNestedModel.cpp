@@ -42,37 +42,13 @@ class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
 };
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testPendulumModelWithJointInDevice(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; 
-        failures.push_back("testPendulumModelWithJointInDevice");
-    }
-    try { testPendulumModelWithDeviceModel(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPendulumModelWithDeviceModel");
-    }
-
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
-}
 
 //==============================================================================
-// Test Cases
+// Test Case Driver
 //==============================================================================
 
-void testPendulumModelWithJointInDevice()
+template<class C>
+void testPendulumModelWithNestedJoints()
 {
     using namespace SimTK;
     Vec3 tolerance(SimTK::Eps);
@@ -83,7 +59,7 @@ void testPendulumModelWithJointInDevice()
     Model* pendulum = new Model("double_pendulum.osim");
     
     // Create a new empty device;
-    Device* device = new Device();
+    C* device = new C();
     device->setName("device");
 
     // Build the device
@@ -104,65 +80,44 @@ void testPendulumModelWithJointInDevice()
     anchorB->setName("anchorB");
     anchorB->updConnector("child_frame").connect(*cuffB);
 
+    // add anchors to the Device
     device->addComponent(anchorA);
     device->addComponent(anchorB);
 
+    // add the device to the pendulum model
+    pendulum->addModelComponent(device);
+
     // Connect the device to the pendulum
-    auto bodies = pendulum->getComponentList<PhysicalFrame>();
+    auto bodies = pendulum->getComponentList<OpenSim::Body>();
     auto& body = bodies.begin();
     anchorA->updConnector("parent_frame").connect(*body);
     body++;
     anchorB->updConnector("parent_frame").connect(*body);
-
-    pendulum->addModelComponent(device);
 
     State& s = pendulum->initSystem();
 }
 
-
-void testPendulumModelWithDeviceModel()
+int main()
 {
-    using namespace SimTK;
-    Vec3 tolerance(SimTK::Eps);
+    SimTK::Array_<std::string> failures;
 
-    cout << "Running testPendulumModelWithDeviceModel" << endl;
+    try { testPendulumModelWithNestedJoints<Device>(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testPendulumModelWithNestedJoints<Device>");
+    }
+    try { testPendulumModelWithNestedJoints<Model>(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testPendulumModelWithNestedJoints<Model>");
+    }
 
-    // Load the pendulum model
-    Model* pendulum = new Model("double_pendulum.osim");
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
+        return 1;
+    }
 
-    // Create a new empty device;
-    Model* device = new Model();
-    device->setName("device");
+    cout << "Done. All cases passed." << endl;
 
-    // Build the device
-    // Create bodies 
-    auto* cuffA = new OpenSim::Body("cuffA", 1.0, Vec3(0), Inertia(0.5));
-    auto* cuffB = new OpenSim::Body("cuffB", 1.0, Vec3(0), Inertia(0.5));
-
-    // add Bodies to the device
-    device->addComponent(cuffA);
-    device->addComponent(cuffB);
-
-    // Create WeldJoints to anchor cuff Bodies to the pendulum.
-    auto* anchorA = new WeldJoint();
-    anchorA->setName("anchorA");
-    anchorA->updConnector("child_frame").connect(*cuffA);
-
-    auto* anchorB = new WeldJoint();
-    anchorB->setName("anchorB");
-    anchorB->updConnector("child_frame").connect(*cuffB);
-
-    device->addComponent(anchorA);
-    device->addComponent(anchorB);
-
-    // Connect the device to the pendulum
-    auto bodies = pendulum->getComponentList<PhysicalFrame>();
-    auto& body = bodies.begin();
-    anchorA->updConnector("parent_frame").connect(*body);
-    body++;
-    anchorB->updConnector("parent_frame").connect(*body);
-
-    pendulum->addModelComponent(device);
-
-    State& s = pendulum->initSystem();
+    return 0;
 }
