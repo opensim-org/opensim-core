@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -130,6 +130,9 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
     if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
+    if(_fileVersion > 1)
+      throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
+                      ") not supported. Use STOFileAdapter instead."};
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();
@@ -1289,7 +1292,7 @@ TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     table.setColumnLabels(_columnLabels.get() + 1, 
                           _columnLabels.get() + _columnLabels.getSize());
 
-    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
         const auto& row = getStateVector(i)->getData();
         const auto time = getStateVector(i)->getTime();
         // Exclude the first column. It is 'time'. Time is a separate column in

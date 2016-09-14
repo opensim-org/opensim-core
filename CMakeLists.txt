@@ -8,7 +8,7 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.2)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -177,6 +177,7 @@ else()
 endif()
 
 set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+set(OPENSIM_INSTALL_PYTHONEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Python")
 
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)

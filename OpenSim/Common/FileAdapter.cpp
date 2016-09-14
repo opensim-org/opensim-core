@@ -2,21 +2,35 @@
 
 namespace OpenSim {
 
+std::shared_ptr<DataAdapter>
+createSTOFileAdapterForReading(const std::string&);
+
+std::shared_ptr<DataAdapter>
+createSTOFileAdapterForWriting(const DataAdapter::InputTables&);
+
 FileAdapter::OutputTables
 FileAdapter::readFile(const std::string& fileName) {
     auto extension = findExtension(fileName);
-    auto data_adapter = createAdapter(extension);
-    auto& file_adapter = static_cast<FileAdapter&>(*data_adapter);
-    return file_adapter.extendRead(fileName);
+    std::shared_ptr<DataAdapter> dataAdapter{};
+    if(extension == "sto")
+        dataAdapter = createSTOFileAdapterForReading(fileName);
+    else 
+        dataAdapter = createAdapter(extension);
+    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
+    return fileAdapter.extendRead(fileName);
 }
 
 void 
 FileAdapter::writeFile(const InputTables& tables, 
                        const std::string& fileName) {
     auto extension = findExtension(fileName);
-    auto data_adapter = createAdapter(extension);
-    auto& file_adapter = static_cast<FileAdapter&>(*data_adapter);
-    file_adapter.extendWrite(tables, fileName);
+    std::shared_ptr<DataAdapter> dataAdapter{};
+    if(extension == "sto")
+        dataAdapter = createSTOFileAdapterForWriting(tables);
+    else
+        dataAdapter = createAdapter(extension);
+    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
+    fileAdapter.extendWrite(tables, fileName);
 }
 
 std::string 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Cassidy Kelly                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,7 +49,10 @@ const static double refControls[ARM26_DESIGN_SPACE_DIM]
 int main()
 {
     try {
-        Storage result("Arm26_optimized_states.sto"),
+        const std::string resultFilename{"Arm26_optimized_states.sto"};
+        const std::string resultFilenameV1{"Arm26_optimized_states_V1.sto"};
+        revertToVersionNumber1(resultFilename, resultFilenameV1);
+        Storage result(resultFilenameV1),
                 standard("std_Arm26_optimized_states.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
                                        std::vector<double>(16, 0.01),

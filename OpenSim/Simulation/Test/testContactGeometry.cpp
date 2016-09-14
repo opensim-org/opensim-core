@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -490,7 +490,7 @@ void testIntermediateFrames() {
         // Initialize and set state.
         SimTK::State& state = model.initSystem();
         const auto& hinge = model.getJointSet().get("hinge");
-        const auto& coord = hinge.get_coordinates(0);
+        const auto& coord = hinge.getCoordinate();
         coord.setValue(state, 0.15 * SimTK::Pi);
 
         // Integrate.

@@ -127,7 +127,7 @@ AddDependency(NAME       simbody
 
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
-              TAG        0237c9adc88b1165d77b8303b1fb70d676d4d11e)
+              TAG        725519e2441b47e51f4c3ee35fc4edb926bcc262)
  
 #######################
 

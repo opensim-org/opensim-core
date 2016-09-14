@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -217,11 +217,21 @@ const Coordinate& Joint::getCoordinate() const {
                      JointHasNoCoordinates);
     OPENSIM_THROW_IF(numCoordinates() > 1,
                      InvalidCall,
-                     "Coordinate set has more than one coordinate. Use "
-                     "getCoordinate method defined in the concrete class "
-                     "instead.");
+                     "Joint has more than one coordinate. Use the getCoordinate "
+                     "method defined in the concrete class instead.");
 
     return get_coordinates(0);
+}
+
+Coordinate& Joint::updCoordinate() {
+    OPENSIM_THROW_IF(numCoordinates() == 0,
+                     JointHasNoCoordinates);
+    OPENSIM_THROW_IF(numCoordinates() > 1,
+                     InvalidCall,
+                     "Joint has more than one coordinate. Use the updCoordinate "
+                     "method defined in the concrete class instead.");
+
+    return upd_coordinates(0);
 }
 
 Coordinate::MotionType Joint::getMotionType(CoordinateIndex cix) const

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -102,14 +102,14 @@ int main()
             locationInChild, orientationInChild);
         
         double range[2] = {-SimTK::Pi*2, SimTK::Pi*2};
-        ankle->upd_coordinates(0).setName("q1");
-        ankle->upd_coordinates(0).setRange(range);
+        ankle->updCoordinate().setName("q1");
+        ankle->updCoordinate().setRange(range);
 
-        knee->upd_coordinates(0).setName("q2");
-        knee->upd_coordinates(0).setRange(range);
+        knee->updCoordinate().setName("q2");
+        knee->updCoordinate().setRange(range);
 
-        hip->upd_coordinates(0).setName("q3");
-        hip->upd_coordinates(0).setRange(range);
+        hip->updCoordinate().setName("q3");
+        hip->updCoordinate().setRange(range);
 
         // Add the bodies to the model
         osimModel.addBody(linkage1);
@@ -216,15 +216,16 @@ int main()
 
         // Save results
         auto controlsTable = osimModel.getControlsTable();
-        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
+        STOFileAdapter_<double>::write(controlsTable, 
+                                      "SpringActuatedLeg_controls.sto");
 
         auto statesTable = manager.getStatesTable();
         osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
-        STOFileAdapter::write(statesTable, 
-                              "SpringActuatedLeg_states_degrees.sto");
+        STOFileAdapter_<double>::write(statesTable, 
+                                      "SpringActuatedLeg_states_degrees.sto");
 
         auto forcesTable = forces->getForcesTable();
-        STOFileAdapter::write(forcesTable, "actuator_forces.sto");
+        STOFileAdapter_<double>::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)
     {

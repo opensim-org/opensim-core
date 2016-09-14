@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -185,8 +185,8 @@ void testExpressionBasedCoordinateForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
@@ -385,8 +385,8 @@ void testPathSpring()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("block_h");
     sliderCoord.setRange(positionRange);
 
@@ -490,8 +490,8 @@ void testSpringMass()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
@@ -588,8 +588,8 @@ void testBushingForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
@@ -703,8 +703,8 @@ void testFunctionBasedBushingForce()
                                  ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
@@ -811,8 +811,8 @@ void testExpressionBasedBushingForceTranslational()
     SliderJoint sliderY("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
     
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = sliderY.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = sliderY.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
     
@@ -942,8 +942,8 @@ void testExpressionBasedBushingForceRotational()
         ball, Vec3(0), Vec3(Pi / 2, 0, 0));
 
     double thetaRange[2] = { -2*Pi, 2*Pi };
-    // Rename coordinates for a pin joint
-    auto& pinCoord = pin.upd_coordinates(0);
+    // Rename coordinate for the pin joint
+    auto& pinCoord = pin.updCoordinate();
     pinCoord.setName("ball_theta");
     pinCoord.setRange(thetaRange);
 
@@ -1217,8 +1217,8 @@ void testCoordinateLimitForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {0.1, 2};
-    // Rename coordinates for a slider joint
-    auto& sliderCoord = slider.upd_coordinates(0);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
@@ -1362,8 +1362,8 @@ void testCoordinateLimitForceRotational()
 
     // NOTE: Angular limits are in degrees NOT radians
     double positionRange[2] = {-30, 90};
-    // Rename coordinates for a pin joint
-    auto& pinCoord = pin.upd_coordinates(0);
+    // Rename coordinate for the pin joint
+    auto& pinCoord = pin.updCoordinate();
     pinCoord.setName("theta");
     pinCoord.setRange(positionRange);
 
@@ -1522,7 +1522,7 @@ void testExternalForce()
     SimTK::State& s = model.initSystem();
 
     // set the starting location of the tower to be right over the point
-    freeJoint.upd_coordinates(3).setValue(s, 0.1);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s, 0.1);
 
     double accuracy = 1e-6;
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
@@ -1567,7 +1567,7 @@ void testExternalForce()
 
     // set the starting location of the tower to be offset as to counter-balance the torque
     // point is 0.1, by moving fwd to 0.3, force has -0.2m moment-arm to generate -2Nm
-    freeJoint.upd_coordinates(3).setValue(s2, 0.3);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s2, 0.3);
     model.setPropertiesFromState(s2);
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
@@ -1604,7 +1604,7 @@ void testExternalForce()
     SimTK::State& s3 = model.initSystem();
 
     // only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
-    freeJoint.upd_coordinates(3).setValue(s3, 0.4); // yield -3Nm for force only
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s3, 0.4); // yield -3Nm for force only
     model.setPropertiesFromState(s3);
 
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
@@ -1653,7 +1653,7 @@ void testExternalForce()
     model.getGravityForce().disable(s4);
 
     // only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
-    freeJoint.upd_coordinates(3).setValue(s4, 0);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s4, 0);
     model.setPropertiesFromState(s4);
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());

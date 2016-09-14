@@ -11,6 +11,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 class TestBasics(unittest.TestCase):
     def test_version(self):
         print(osim.__version__)

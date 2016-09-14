@@ -1,5 +1,3 @@
-
-
 if(OPENSIM_BUILD_INDIVIDUAL_APPS)
     # Basically, don't install the old applications on Linux or OSX, where
     # they conflict with system executables like "id".
