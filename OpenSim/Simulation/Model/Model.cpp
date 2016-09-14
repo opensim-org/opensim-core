@@ -636,6 +636,10 @@ void Model::extendConnectToModel(Model &model)
         cout << "Model::" << getName() <<
             " is being connected to model " <<
             model.getName() << "." << endl;
+        // if part of another Model, that Model is in charge
+        // of creating a valid Multibody tree that includes
+        // Components of this Model. 
+        return;
     }
 
     // Create the Multibody tree according to the components that
@@ -792,8 +796,8 @@ void Model::extendConnectToModel(Model &model)
 }
 
 
-// ModelComponent interface enables this model to be treated as a subcomponent of another model by 
-// creating components in its system.
+// ModelComponent interface enables this model to be treated as a subcomponent of
+// another model by creating components in its system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -808,11 +812,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
-    // its "slots" and retain its index by accessing this cached Vector
-    // value depends on velocity and invalidates dynamics BUT should not trigger
+    // This must be created before Actuator.extendAddToSystem() since Actuator
+    // will append its "slots" and retain its index by accessing this cached Vector.
+    // Value depends on velocity and invalidates dynamics BUT should not trigger
     // re-computation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
+    Measure_<Vector>::Result modelControls(system.updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -990,7 +994,8 @@ void Model::extendInitStateFromProperties(SimTK::State& state) const
     Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    Measure_<Vector>::Result controlsCache = 
+        Measure_<Vector>::Result::getAs(updSystem().updDefaultSubsystem().getMeasure(_modelControlsIndex));
     controlsCache.updValue(state).resize(_defaultControls.size());
     controlsCache.updValue(state) = _defaultControls;
 }
