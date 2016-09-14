@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Simulation/SimbodyEngine/PinJoint.h"
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -61,6 +62,110 @@ const int expectedNumJntComponents = 3;
 // Test using the iterator to skip over every other Component (Frame in this case)
 // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
 const int expectedNumCountSkipFrames = 3;
+
+namespace OpenSim {
+    
+class Device : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
+
+public:
+    OpenSim_DECLARE_OUTPUT(length    , double, getLength , SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(speed     , double, getSpeed  , SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tension   , double, getTension, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(power     , double, getPower  , SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(height    , double, getHeight , SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
+                           SimTK::Stage::Position);
+
+    double getLength(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLength(s);
+    }
+
+    double getSpeed(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+    }
+
+    double getTension(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+    }
+
+    double getPower(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
+    }
+
+    double getHeight(const SimTK::State& s) const {
+        static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
+        return getModel().getComponent(hopperHeightCoord)
+            .getOutputValue<double>(s, "value");
+    }
+
+    double getCenterOfMassHeight(const SimTK::State& s) const {
+        SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
+        return com_position[SimTK::YAxis];
+    }
+
+protected:
+    // Change the color of the device's path as its tension changes.
+    void extendRealizeDynamics(const SimTK::State& s) const override {
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1., getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
+    }
+
+}; // end of Device
+    
+} // namespace OpenSim
+
+
+void testComponentListRefs() {
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    Model model(modelFilename);
+
+    auto device = new OpenSim::Device();
+    device->setName("device");
+
+    auto humerus = new OpenSim::Body("device_humerus", 1, Vec3(0), Inertia(0));
+    auto radius  = new OpenSim::Body("device_radius",  1, Vec3(0), Inertia(0));
+
+    auto shoulder = new OpenSim::PinJoint("device_shoulder",
+                                          model.getGround(), Vec3(0), Vec3(0),
+                                          *humerus, Vec3(0, 1, 0), Vec3(0));
+    auto elbow = new OpenSim::PinJoint("device_elbow",
+                                       *humerus, Vec3(0), Vec3(0),
+                                       *radius, Vec3(0, 1, 0), Vec3(0));
+
+    device->addComponent(shoulder);
+    device->addComponent(elbow);
+
+    model.addModelComponent(device);
+    model.finalizeFromProperties();
+
+    std::set<const Joint*> joints1{}, joints2{};
+    std::set<const Coordinate*> coords{};
+
+    std::cout << "Joints in the model: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        std::cout << "    " << joint.getFullPathName() << std::endl;
+        joints1.insert(&joint);
+    }
+
+    std::cout << "Joints and Coordinates: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        joints2.insert(&joint);
+        std::cout << "    Joint: " << joint.getFullPathName() << std::endl;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            std::cout << "        Coord: "
+                      << coord.getFullPathName() << std::endl;
+            coords.insert(&coord);
+        }
+    }
+
+    ASSERT(joints1.size() == 4);
+    ASSERT(joints1.size() == joints2.size());
+    ASSERT(coords.size() == 4);
+}
 
 void testComponentListConst() {
 
@@ -135,7 +240,6 @@ void testComponentListConst() {
     SimTK::State state = model.initSystem();
 
     unsigned numJoints{}, numCoords{};
-    const unsigned expNumJoints{2}, expNumCoords{2};
     for(const auto& joint : model.getComponentList<Joint>()) {
         std::cout << "Joint: " << joint.getFullPathName() << std::endl;
         ++numJoints;
@@ -144,8 +248,8 @@ void testComponentListConst() {
             ++numCoords;
         }
     }
-    assert(numJoints == expNumJoints);
-    assert(numCoords == expNumCoords);
+    ASSERT(numJoints == 2);
+    ASSERT(numCoords == 2);
 
     int numJointsWithStateVariables = 0;
     ComponentList<const Joint> jointsWithStates = model.getComponentList<Joint>();
@@ -454,6 +558,7 @@ int main() {
         SimTK_SUBTEST(testComponentListNonConstWithConstIterator);
         SimTK_SUBTEST(testComponentListNonConstWithNonConstIterator);
         SimTK_SUBTEST(testComponentListComparisonOperators);
+        SimTK_SUBTEST(testComponentListRefs);
     SimTK_END_TEST();
 }
 
