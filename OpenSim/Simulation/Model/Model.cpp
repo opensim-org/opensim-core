@@ -87,7 +87,6 @@ Model::Model() : ModelComponent(),
     constructProperties();
     setNull();
     finalizeFromProperties();
-    updCoordinateSet().populate(*this);
 }
 //_____________________________________________________________________________
 /**
@@ -108,7 +107,6 @@ Model::Model(const string &aFileName, const bool finalize) :
 
     if (finalize) {
         finalizeFromProperties();
-        updCoordinateSet().populate(*this);
     }
 
     _fileName = aFileName;
@@ -549,9 +547,12 @@ void Model::extendFinalizeFromProperties()
     }
 
     if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered interpreting properties of the model. " <<
+        cout << "The following Errors/Warnings were encountered ";
+        cout << "interpreting properties of the model. " <<
             getValidationLog() << endl;
     }
+
+    updCoordinateSet().populate(*this);
 }
 
 void Model::createMultibodyTree()
@@ -637,14 +638,12 @@ void Model::extendConnectToModel(Model &model)
             model.getName() << "." << endl;
     }
 
-    // Reset the list of all components and the order in which they are
-    // added to the System. Then we can rebuild the list in the order
-    // that conforms to the MultibodyTree
-    resetSubcomponentOrder();
-
+    // Create the Multibody tree according to the components that
+    // form this model.
     createMultibodyTree();
 
-    // Model is connected so build the Multibody tree to represent it
+    // generate the graph of the Multibody tree to determine the order in
+    // which subcomponents will be added to the MultibodySystem (in addToSystem)
     _multibodyTree.generateGraph();
     //_multibodyTree.dumpGraph(cout);
     //cout << endl;
@@ -768,7 +767,8 @@ void Model::extendConnectToModel(Model &model)
     }
 
     // Now include all remaining Components beginning with PhysicalFrames
-    // since Forces can only be applied to PhyicalFrames
+    // since Constraints, Forces and other components can only be applied to
+    // PhyicalFrames.
     auto poFrames = getComponentList<PhysicalOffsetFrame>();
     for (const auto& pof : poFrames) {
         setNextSubcomponentInSystem(pof);
@@ -776,7 +776,7 @@ void Model::extendConnectToModel(Model &model)
 
     // and everything else including Forces, Controllers, etc...
     // belonging to the model
-    auto components = getMySubcomponents();
+    auto components = getImmediateSubcomponents();
     for (const auto& comp : components) {
         setNextSubcomponentInSystem(comp.getRef());
     }

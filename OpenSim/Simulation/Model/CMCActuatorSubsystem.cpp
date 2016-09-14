@@ -142,8 +142,8 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
         _qSet->evaluate(_uWork,1,t);
     }
 
-    /* Hack to obtain a modifiable state in a const method */
-    State& modCompState = const_cast<SimTK::State&>(_completeState);
+    /* Hack to obtain a mutable state in a const method */
+    State& mutableCompState = const_cast<SimTK::State&>(_completeState);
 
     // Update the coordinate values to pose the model while computing muscle
     // controls
@@ -151,14 +151,14 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     for (int i = 0; i < nq; ++i) {
         // the last argument to setValue is a bool to enforce kinematic constraints
         // or not. It is being set to true when we set the last coordinate value.
-        coords[i].setValue(modCompState, _qWork[i] + _qCorrections[i], i==(nq-1));
-        coords[i].setSpeedValue(modCompState, _uWork[i] + _uCorrections[i]);
+        coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], i==(nq-1));
+        coords[i].setSpeedValue(mutableCompState, _uWork[i] + _uCorrections[i]);
     }
 
      /* copy  muscle states computed from the actuator system to the muscle states
         for the complete system  then compute forces*/
-    modCompState.updZ() = s.getZ();
-    modCompState.updTime() = t;
+    mutableCompState.updZ() = s.getZ();
+    mutableCompState.updTime() = t;
 
      _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 

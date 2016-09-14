@@ -185,8 +185,8 @@ void Component::finalizeFromProperties()
     }
 
     markPropertiesAsSubcomponents();
-    extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
+    extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
 }
 
@@ -262,16 +262,6 @@ void Component::connect(Component &root)
                 "' within " + root.getConcreteClassName() + " '" +
                 root.getName() + "' (details: " + x.what() + ").");
         }
-    }
-
-    //clear out previous order list since new components could be added
-    // before calling connect()
-    resetSubcomponentOrder();
-    // Now set a default order in which the subcomponents add themselves to
-    // the System according to the tree traversal order 
-    auto allMyComponents = getComponentList<Component>();
-    for (const auto& comp : allMyComponents) {
-        setNextSubcomponentInSystem(comp);
     }
 
     // Allow derived Components to handle/check their connections and also 
@@ -369,8 +359,26 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 
 void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
 {
-    for (const auto& compRef : _orderedSubcomponents) {
-        compRef->addToSystem(system);
+    // If _orderedSubcomponents is specified, then use this Component's
+    // specification for the order in which subcomponents are added. At a
+    // minimum the order for all immediate subcomponents must be specified.
+    if (_orderedSubcomponents.size() >= getNumImmediateSubcomponents()) {
+        for (const auto& compRef : _orderedSubcomponents) {
+            compRef->addToSystem(system);
+        }
+    }
+    else if (_orderedSubcomponents.size() == 0) {
+        // Otherwise, invoke on all immediate subcomponents in tree order
+        auto mySubcomponents = getImmediateSubcomponents();
+        for (const auto& compRef : mySubcomponents) {
+            compRef->addToSystem(system);
+        }
+    }
+    else {
+        OPENSIM_THROW_FRMOBJ(Exception, 
+            "_orderedSubcomponents specified, but does not include all "
+            "immediate subcomponents."
+        )
     }
 }
 
@@ -1177,7 +1185,7 @@ void Component::adoptSubcomponent(Component* subcomponent)
 }
 
 std::vector<SimTK::ReferencePtr<const Component>> 
-    Component::getMySubcomponents() const
+    Component::getImmediateSubcomponents() const
 {
     std::vector<SimTK::ReferencePtr<const Component>> mySubcomponents;
     for (auto& compRef : _memberSubcomponents) {
