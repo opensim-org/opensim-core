@@ -89,9 +89,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     Array<PathPoint *> pathPrototype;
     addCacheVariable<Array<PathPoint *> >
         ("current_path", pathPrototype, SimTK::Stage::Position);
-    // When displaying, cache the set of points to be used to draw the path.
-    addCacheVariable<Array<PathPoint *> >
-        ("current_display_path", pathPrototype, SimTK::Stage::Position);
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
@@ -414,22 +411,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
 //_____________________________________________________________________________
 /*
- * get the current display path of the path
- *
- * @return The array of currently active path points, plus points along the
- * surfaces of the wrap objects (if any).
- * 
- */
-const OpenSim::Array<PathPoint*>& GeometryPath::
-getCurrentDisplayPath(const SimTK::State& s) const
-{
-    // update the geometry to make sure the current display path is up to date.
-    // updateGeometry(s);
-    return getCacheVariableValue<Array <PathPoint*> >(s, "current_display_path" );
-}
-
-//_____________________________________________________________________________
-/*
  * Update the geometric representation of the path.
  * The resulting geometry is maintained at the VisibleObject layer.
  * This function should not be made public. It is called internally
@@ -444,10 +425,6 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
     // If display path is current do not need to recompute it.
     if (isCacheVariableValid(s, "current_display_path"))
         return;
-   
-    // Updating the display path will also validate the current_display_path 
-    // cache variable.
-    updateDisplayPath(s);
 }
 
 //=============================================================================
@@ -1205,18 +1182,6 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
         const_cast<Self*>(this)->_maSolver.reset(new MomentArmSolver(*_model));
 
     return _maSolver->solve(s, aCoord,  *this);
-}
-
-//_____________________________________________________________________________
-/*
- * Update the cache entry for current_display_path
- */
-void GeometryPath::updateDisplayPath(const SimTK::State& s) const
-{
-    Array<PathPoint*>& currentDisplayPath = 
-        updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-
-    currentDisplayPath.setSize(0);
 }
 
 void GeometryPath::extendFinalizeFromProperties()
