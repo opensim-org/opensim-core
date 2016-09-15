@@ -421,10 +421,6 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
 {
     // Check if the current path needs to recomputed.
     computePath(s);
-
-    // If display path is current do not need to recompute it.
-    if (isCacheVariableValid(s, "current_display_path"))
-        return;
 }
 
 //=============================================================================
