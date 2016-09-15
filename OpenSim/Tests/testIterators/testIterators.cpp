@@ -72,7 +72,7 @@ class Device : public ModelComponent {
 } // namespace OpenSim
 
 
-void testComponentListRefs() {
+void testNestedComponentListConsistency() {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -516,7 +516,7 @@ int main() {
         SimTK_SUBTEST(testComponentListNonConstWithConstIterator);
         SimTK_SUBTEST(testComponentListNonConstWithNonConstIterator);
         SimTK_SUBTEST(testComponentListComparisonOperators);
-        SimTK_SUBTEST(testComponentListRefs);
+        SimTK_SUBTEST(testNestedComponentListConsistency);
     SimTK_END_TEST();
 }
 
