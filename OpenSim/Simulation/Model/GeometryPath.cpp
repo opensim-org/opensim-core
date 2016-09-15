@@ -124,20 +124,14 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     if (fixed) { return; }
     // Ensure that the state has been realized to Stage::Dynamics to give
     // clients of this path a chance to calculate meaningful color information.
+    // TODO: this should be removed. Generate decorations is reporting it should 
+    // not force computations.
     this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
 
-    this->updateDisplayPath(state);
+    const Array<PathPoint*>& pathPoints =
+        getCacheVariableValue<Array<PathPoint*> >(state, "current_path");
 
-    // Even though these are Points which are Components they are completey 
-    // orphaned and not part of any system since they are populated during 
-    // a simulation. TODO we need another data structure to be a DecorativePath
-    // which simply an array of points in ground or on MBs.
-    // Trying to getLocationInGround(state) will faile due to no underlying system.
-    const Array<PathPoint*>& points = getCurrentDisplayPath(state);
-
-    if (points.getSize() == 0) { return; }
-
-    const PathPoint* lastPoint = points[0];
+    const PathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
 
     Vec3 lastPos = lastPoint->getLocationInGround(state);
@@ -145,23 +139,42 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
     Vec3 pos;
-    for (int j = 1; j < points.getSize(); j++) {
-        const PathPoint* point = points[j];
+    for (int j = 1; j < pathPoints.getSize(); j++) {
+        PathPoint* point = pathPoints[j];
+        PathWrapPoint* mwp = dynamic_cast<PathWrapPoint*>(point);
 
-        // the body (PhysicalFrame) IS part of the actual Model and its system
-        // so we can ask it for its transform w.r.t. Ground
-        pos = point->getLocationInGround(state);
-
-        if (hints.get_show_path_points())
-            DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);
-
-        
-        // Line segments will be in ground frame
-        appendToThis.push_back(DecorativeLine(lastPos, pos)
-            .setLineThickness(4)
-            .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
-
-        lastPos = pos;
+        if (mwp) {
+            // If the point is a PathWrapPoint and has surfacePoints,
+            // then this is the second of two tangent points for the
+            // wrap instance. So add the surface points to the display
+            // path before adding the second tangent point.
+            // Note: the first surface point is coincident with the
+            // first tangent point, so don't add it to the path.
+            Array<Vec3>& surfacePoints = mwp->getWrapPath();
+            const Transform& X_BG = mwp->getBody().getTransformInGround(state);
+            for (int j = 1; j<surfacePoints.getSize(); j++) {
+                pos = X_BG*surfacePoints.get(j);
+                if (hints.get_show_path_points())
+                    DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                        appendToThis);
+                // Line segments will be in ground frame
+                appendToThis.push_back(DecorativeLine(lastPos, pos)
+                    .setLineThickness(4)
+                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+                lastPos = pos;
+            }
+        } 
+        else { // otherwise a regular PathPoint so just draw its location
+            pos = point->getLocationInGround(state);
+            if (hints.get_show_path_points())
+                DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                    appendToThis);
+            // Line segments will be in ground frame
+            appendToThis.push_back(DecorativeLine(lastPos, pos)
+                .setLineThickness(4)
+                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+            lastPos = pos;
+        }
     }
 }
 
@@ -1204,31 +1217,6 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s) const
         updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
 
     currentDisplayPath.setSize(0);
-
-    const Array<PathPoint*>& currentPath =  
-        getCacheVariableValue<Array<PathPoint*> >(s, "current_path");
-    for (int i=0; i<currentPath.getSize(); i++) {
-        PathPoint* mp = currentPath.get(i);
-        PathWrapPoint* mwp = dynamic_cast<PathWrapPoint*>(mp);
-        if (mwp) {
-            // If the point is a PathWrapPoint and has surfacePoints,
-            // then this is the second of two tangent points for the
-            // wrap instance. So add the surface points to the display
-            // path before adding the second tangent point.
-            // Note: the first surface point is coincident with the
-            // first tangent point, so don't add it to the path.
-            const Array<Vec3>& surfacePoints = mwp->getWrapPath();
-            for (int j=1; j<surfacePoints.getSize(); j++) {
-                PathWrapPoint* p = new PathWrapPoint();
-                p->setLocation(s, surfacePoints.get(j));
-                p->setBody(mwp->getBody());
-                currentDisplayPath.append(p);
-            }
-        }
-        currentDisplayPath.append(mp);
-    }
-
-    markCacheVariableValid(s, "current_display_path");
 }
 
 void GeometryPath::extendFinalizeFromProperties()
