@@ -67,51 +67,6 @@ namespace OpenSim {
     
 class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
-
-public:
-    OpenSim_DECLARE_OUTPUT(length    , double, getLength , SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(speed     , double, getSpeed  , SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(tension   , double, getTension, SimTK::Stage::Dynamics);
-    OpenSim_DECLARE_OUTPUT(power     , double, getPower  , SimTK::Stage::Dynamics);
-    OpenSim_DECLARE_OUTPUT(height    , double, getHeight , SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
-                           SimTK::Stage::Position);
-
-    double getLength(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getLength(s);
-    }
-
-    double getSpeed(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
-    }
-
-    double getTension(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
-    }
-
-    double getPower(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getPower(s);
-    }
-
-    double getHeight(const SimTK::State& s) const {
-        static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
-        return getModel().getComponent(hopperHeightCoord)
-            .getOutputValue<double>(s, "value");
-    }
-
-    double getCenterOfMassHeight(const SimTK::State& s) const {
-        SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
-        return com_position[SimTK::YAxis];
-    }
-
-protected:
-    // Change the color of the device's path as its tension changes.
-    void extendRealizeDynamics(const SimTK::State& s) const override {
-        const auto& actuator = getComponent<PathActuator>("cableAtoB");
-        double level = fmin(1., getTension(s) / actuator.get_optimal_force());
-        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
-    }
-
 }; // end of Device
     
 } // namespace OpenSim
