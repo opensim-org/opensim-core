@@ -97,28 +97,31 @@ void testComponentListRefs() {
     model.addModelComponent(device);
     model.finalizeFromProperties();
 
-    std::set<const Joint*> joints1{}, joints2{};
-    std::set<const Coordinate*> coords{};
+    std::vector<const Joint*> joints1{}, joints2{};
+    std::vector<const Coordinate*> coords{};
 
     std::cout << "Joints in the model: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
         std::cout << "    " << joint.getFullPathName() << std::endl;
-        joints1.insert(&joint);
+        joints1.push_back(&joint);
     }
 
     std::cout << "Joints and Coordinates: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
-        joints2.insert(&joint);
+        joints2.push_back(&joint);
         std::cout << "    Joint: " << joint.getFullPathName() << std::endl;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
             std::cout << "        Coord: "
                       << coord.getFullPathName() << std::endl;
-            coords.insert(&coord);
+            coords.push_back(&coord);
         }
     }
 
-    ASSERT(joints1.size() == 4);
+    // Joints list should be a unique set.
+    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    // Joints1 and Joints2 must be identical.
     ASSERT(joints1.size() == joints2.size());
+    // Expected number of coordinates.
     ASSERT(coords.size() == 4);
 }
 
