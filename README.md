@@ -78,17 +78,17 @@ int main() {
     model.addComponent(reporter);
 
     // Add display geometry.
-    Ellipsoid* bodyGeometry = new Ellipsoid(0.1, 0.5, 0.1);
-    bodyGeometry->setColor(Gray);
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    bodyGeometry.setColor(Gray);
     // Attach an ellipsoid to a frame located at the center of each body.
     PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
         "humerusCenter", "humerus", Transform(Vec3(0, 0.5, 0)));
     humerus->addComponent(humerusCenter);
-    humerusCenter->attachGeometry(bodyGeometry->clone());
+    humerusCenter->attachGeometry(bodyGeometry.clone());
     PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
         "radiusCenter", "radius", Transform(Vec3(0, 0.5, 0)));
     radius->addComponent(radiusCenter);
-    radiusCenter->attachGeometry(bodyGeometry->clone());
+    radiusCenter->attachGeometry(bodyGeometry.clone());
 
     // Configure the model.
     State& state = model.initSystem();
