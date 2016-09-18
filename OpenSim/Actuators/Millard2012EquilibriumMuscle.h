@@ -215,6 +215,8 @@ public:
         "Deactivation time constant (in seconds).");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "Activation lower bound.");
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "Maximum pennation angle (in radians).");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ActiveForceLengthCurve,
         "Active-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ForceVelocityCurve,
@@ -298,12 +300,6 @@ public:
 
     /** @returns The MuscleFixedWidthPennationModel used by this model. */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
-
-    /** @returns The maximum pennation angle permitted by this muscle model.
-    Note that this equilibrium model, like all equilibrium models, has a
-    singularity when pennation approaches Pi/2. Thus, the maximum pennation
-    angle must be less than Pi/2. */
-    double getMaximumPennationAngle() const;
 
     /** @returns The minimum fiber length, which is the maximum of two values:
     the smallest fiber length allowed by the pennation model, and the minimum
@@ -668,11 +664,11 @@ private:
 // PRIVATE UTILITY CLASS MEMBERS
 //==============================================================================
 
-    // This object defines the pennation model used for this muscle model. Using
-    // a ClonePtr saves us from having to write a destructor, copy constructor,
-    // or copy assignment. This will be zeroed on construction, cleaned up on
-    // destruction, and cloned when copying.
-    MuscleFixedWidthPennationModel penMdl;
+    // Subcomponent owned by the muscle for computing fiber kinematics. The
+    // properties of this subcomponent are set in extendFinalizeFromProperties()
+    // from the properties of the muscle.
+    MemberSubcomponentIndex penMdlIdx{
+        constructSubcomponent<MuscleFixedWidthPennationModel>("penMdl") };
 
     // Singularity-free inverse of ForceVelocityCurve.
     ForceVelocityInverseCurve fvInvCurve;
