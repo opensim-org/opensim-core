@@ -565,9 +565,6 @@ private:
     void setNull();
     void constructProperties();
 
-    // Builds the components that are necessary to simulate using this muscle.
-    void buildMuscle();
-
     // Rebuilds muscle model if any of its properties have changed.
     void extendFinalizeFromProperties() override;
 

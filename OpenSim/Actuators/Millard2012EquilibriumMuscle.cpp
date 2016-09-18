@@ -55,126 +55,110 @@ void Millard2012EquilibriumMuscle::constructProperties()
     constructProperty_TendonForceLengthCurve(TendonForceLengthCurve());
 }
 
-void Millard2012EquilibriumMuscle::buildMuscle()
-{
-    try {
-        // Fiber velocity becomes unstable as pennation angle approaches Pi/2
-        // because the kinematic equations for fiber velocity approach a
-        // singularity as phi -> Pi/2.
-        //      lceAT = lce*cos(phi)
-        //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
-        //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
-        double maxPennationAngle = acos(0.1);
-        penMdl = MuscleFixedWidthPennationModel(getOptimalFiberLength(),
-                                        getPennationAngleAtOptimalFiberLength(),
-                                        maxPennationAngle);
-
-        // Ensure object names are up-to-date
-        const std::string& aName = getName();
-
-        ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
-        falCurve.setName(aName+"_ActiveForceLengthCurve");
-
-        ForceVelocityCurve& fvCurve = upd_ForceVelocityCurve();
-        fvCurve.setName(aName+"_ForceVelocityCurve");
-
-        FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
-        fpeCurve.setName(aName+"_FiberForceLengthCurve");
-
-        TendonForceLengthCurve& fseCurve = upd_TendonForceLengthCurve();
-        fseCurve.setName(aName+"_TendonForceLengthCurve");
-
-        // Include fiber damping in the model only if the damping coefficient is
-        // larger than MIN_NONZERO_DAMPING_COEFFICIENT. This is done to ensure
-        // we remain sufficiently far from the numerical singularity at beta=0.
-        use_fiber_damping = (getFiberDamping() >=
-                             MIN_NONZERO_DAMPING_COEFFICIENT);
-
-        // To initialize, we need to create an inverse force-velocity curve
-        double conSlopeAtVmax   = fvCurve.getConcentricSlopeAtVmax();
-        double conSlopeNearVmax = fvCurve.getConcentricSlopeNearVmax();
-        double isometricSlope   = fvCurve.getIsometricSlope();
-        double eccSlopeAtVmax   = fvCurve.getEccentricSlopeAtVmax();
-        double eccSlopeNearVmax = fvCurve.getEccentricSlopeNearVmax();
-        double conCurviness     = fvCurve.getConcentricCurviness();
-        double eccCurviness     = fvCurve.getEccentricCurviness();
-        double eccForceMax      = fvCurve.
-                                  getMaxEccentricVelocityForceMultiplier();
-
-        // A few parameters may need to be adjusted to avoid singularities
-        // (e.g., if an elastic tendon is used with no fiber damping).
-        if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
-            set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
-
-            if(falCurve.getMinValue() < 0.1) {
-                falCurve.setMinValue(0.1);
-            }
-            if(cos(penMdl.get_maximum_pennation_angle())
-                < SimTK::SignificantReal)
-            {
-                penMdl.set_maximum_pennation_angle(maxPennationAngle);
-            }
-            if(conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
-                fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
-                                      0.1, eccSlopeNearVmax, eccForceMax);
-            }
-
-        } else { //singularity-free model
-            set_minimum_activation(clamp(0, get_minimum_activation(), 1));
-            falCurve.setMinValue(0.0);
-            fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
-                                  0.0, eccSlopeNearVmax, eccForceMax);
-        }
-
-        if(conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
-            conSlopeAtVmax = 0.1;
-            eccSlopeAtVmax = 0.1;
-        }
-        fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax,
-                                               conSlopeNearVmax,
-                                               isometricSlope,
-                                               eccSlopeAtVmax,
-                                               eccSlopeNearVmax,
-                                               eccForceMax,
-                                               conCurviness,
-                                               eccCurviness);
-
-        // Ensure all sub-objects are up-to-date
-        // TODO: Remove this once MuscleFixedWidthPennationModel has been made
-        //       into a property.
-        penMdl.finalizeFromProperties();
-
-        falCurve.ensureCurveUpToDate();
-        fvCurve.ensureCurveUpToDate();
-        fvInvCurve.ensureCurveUpToDate();
-        fpeCurve.ensureCurveUpToDate();
-        fseCurve.ensureCurveUpToDate();
-
-        // Compute the minimum active fiber length (in meters)
-        double minActiveFiberLength = falCurve.getMinActiveFiberLength()
-                                      * getOptimalFiberLength();
- 
-        // Minimum pennated fiber length (in meters)
-        double minPennatedFiberLength = penMdl.getMinimumFiberLength();
-        m_minimumFiberLength = max(minActiveFiberLength,minPennatedFiberLength);
-
-        // Minimum fiber length along the tendon
-        double phi = penMdl.calcPennationAngle(m_minimumFiberLength);
-        m_minimumFiberLengthAlongTendon =
-            penMdl.calcFiberLengthAlongTendon(m_minimumFiberLength,cos(phi));
-
-    } catch(const std::exception &x) {
-        std::string msg = "Exception caught in " + getName()
-                          + "::buildMuscle()\n" + x.what();
-        throw OpenSim::Exception(msg);
-    }
-    setObjectIsUpToDateWithProperties();
-}
-
 void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    buildMuscle();
+
+    // Fiber shortening velocity becomes unstable as pennation angle approaches
+    // Pi/2 because the kinematic equation for fiber velocity approaches a
+    // singularity as cos(phi) -> 0. We place an upper limit on the pennation
+    // angle to avoid this singularity.
+    //
+    // Length of fiber (contractile element) along tendon:
+    //     lceAT = lce*cos(phi)
+    // Velocity of fiber along tendon:
+    //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
+    // Velocity of fiber:
+    //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
+    double maxPennationAngle = acos(0.1);
+    penMdl = MuscleFixedWidthPennationModel(getOptimalFiberLength(),
+                                    getPennationAngleAtOptimalFiberLength(),
+                                    maxPennationAngle);
+
+    // Set the names of the muscle curves.
+    const std::string& namePrefix = getName();
+
+    ActiveForceLengthCurve& falCurve = upd_ActiveForceLengthCurve();
+    falCurve.setName(namePrefix + "_ActiveForceLengthCurve");
+
+    ForceVelocityCurve& fvCurve = upd_ForceVelocityCurve();
+    fvCurve.setName(namePrefix + "_ForceVelocityCurve");
+
+    FiberForceLengthCurve& fpeCurve = upd_FiberForceLengthCurve();
+    fpeCurve.setName(namePrefix + "_FiberForceLengthCurve");
+
+    TendonForceLengthCurve& fseCurve = upd_TendonForceLengthCurve();
+    fseCurve.setName(namePrefix + "_TendonForceLengthCurve");
+
+    // Include fiber damping in the model only if the damping coefficient is
+    // larger than MIN_NONZERO_DAMPING_COEFFICIENT. This is done to ensure
+    // we remain sufficiently far from the numerical singularity at beta=0.
+    use_fiber_damping = (getFiberDamping() >= MIN_NONZERO_DAMPING_COEFFICIENT);
+
+    // To initialize, we need to construct an *inverse* force-velocity curve
+    // from the parameters of the force-velocity curve.
+    double conSlopeAtVmax   = fvCurve.getConcentricSlopeAtVmax();
+    double conSlopeNearVmax = fvCurve.getConcentricSlopeNearVmax();
+    double isometricSlope   = fvCurve.getIsometricSlope();
+    double eccSlopeAtVmax   = fvCurve.getEccentricSlopeAtVmax();
+    double eccSlopeNearVmax = fvCurve.getEccentricSlopeNearVmax();
+    double conCurviness     = fvCurve.getConcentricCurviness();
+    double eccCurviness     = fvCurve.getEccentricCurviness();
+    double eccForceMax      = fvCurve.getMaxEccentricVelocityForceMultiplier();
+
+    // A few parameters may need to be adjusted to avoid singularities (e.g., if
+    // an elastic tendon is used with no fiber damping).
+    if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
+        // Compliant tendon with no damping.
+        set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+
+        if (falCurve.getMinValue() < 0.1)
+            falCurve.setMinValue(0.1);
+        if (cos(penMdl.get_maximum_pennation_angle()) < SimTK::SignificantReal)
+            penMdl.set_maximum_pennation_angle(maxPennationAngle);
+        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1)
+            fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
+                                  0.1, eccSlopeNearVmax, eccForceMax);
+
+    } else { //singularity-free model
+        set_minimum_activation(clamp(0, get_minimum_activation(), 1));
+        falCurve.setMinValue(0.0);
+        fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
+                              0.0, eccSlopeNearVmax, eccForceMax);
+    }
+
+    if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
+        conSlopeAtVmax = 0.1;
+        eccSlopeAtVmax = 0.1;
+    }
+    fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax, conSlopeNearVmax,
+                                           isometricSlope, eccSlopeAtVmax,
+                                           eccSlopeNearVmax, eccForceMax,
+                                           conCurviness, eccCurviness);
+
+    // Ensure all sub-objects are up-to-date.
+    // TODO: Remove this once MuscleFixedWidthPennationModel has been made into
+    //       a property.
+    penMdl.finalizeFromProperties();
+
+    falCurve.ensureCurveUpToDate();
+    fvCurve.ensureCurveUpToDate();
+    fvInvCurve.ensureCurveUpToDate();
+    fpeCurve.ensureCurveUpToDate();
+    fseCurve.ensureCurveUpToDate();
+
+    // Minimum active fiber length (in meters).
+    const double minActiveFiberLength = falCurve.getMinActiveFiberLength()
+                                        * getOptimalFiberLength();
+
+    // Minimum pennated fiber length (in meters).
+    const double minPennatedFiberLength = penMdl.getMinimumFiberLength();
+    m_minimumFiberLength = max(minActiveFiberLength, minPennatedFiberLength);
+
+    // Minimum fiber length along the tendon.
+    const double phi = penMdl.calcPennationAngle(m_minimumFiberLength);
+    m_minimumFiberLengthAlongTendon =
+        penMdl.calcFiberLengthAlongTendon(m_minimumFiberLength, cos(phi));
 }
 
 //==============================================================================
