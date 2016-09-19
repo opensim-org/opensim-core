@@ -167,6 +167,12 @@ public:
         return _outputTable;
     }
 
+    void clearReport() {
+        auto columnLabels = _outputTable.getColumnLabels();
+        _outputTable = TimeSeriesTable_<ValueT>{};
+        _outputTable.setColumnLabels(columnLabels);
+    }
+
 protected:
     void implementReport(const SimTK::State& state) const override {
         const auto& input = this->template getInput<InputT>("inputs");

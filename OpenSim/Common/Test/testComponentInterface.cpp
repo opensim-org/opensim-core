@@ -830,6 +830,8 @@ void testListInputs() {
 
     cout << "  TableReporterMixedOutputs (contents)" << endl;
     cout << tabReporter->getReport() << endl;
+
+    tabReporter->clearReport();
 }
 
 
