@@ -66,8 +66,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     // singularity as cos(phi) -> 0. We place an upper limit on the pennation
     // angle (the maximum_pennation_angle property) to avoid this singularity.
     //
-    // Length of fiber (contractile element) along tendon:
-    //     lceAT = lce*cos(phi)
+    // Length ("l") of fiber (contractile element, "ce") along tendon ("AT"):
+    //      lceAT = lce*cos(phi)
     // Velocity of fiber along tendon:
     //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
     // Velocity of fiber:
