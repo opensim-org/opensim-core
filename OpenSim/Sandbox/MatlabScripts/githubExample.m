@@ -29,7 +29,7 @@ import org.opensim.modeling.*
 model = Model();
 %model.setUseVisualizer(true);
 
-% origin, and moments and products of inertia of zero.
+% origin, and moments and product   s of inertia of zero.
 humerus = Body('humerus', 1, Vec3(0), Inertia(0));
 radius = Body('radius', 1, Vec3(0), Inertia(0));
 
@@ -38,7 +38,7 @@ shoulder = PinJoint('shoulder', model.getGround(), Vec3(0), Vec3(0), humerus, Ve
 elbow = PinJoint('elbow', humerus, Vec3(0), Vec3(0), radius, Vec3(0, 1, 0), Vec3(0));
 
 % Add a muscle that flexes the elbow.
-biceps = Millard2012EquilibriumMuscle('biceps', 200, 0.6, 0.55, 0);
+biceps = Millard2012EquilibriumMuscle('biceps', 200, 0.6, 0.55, 0);=
 biceps.addNewPathPoint('origin',humerus, Vec3(0, 0.8, 0));
 biceps.addNewPathPoint('insertion', radius,  Vec3(0, 0.7, 0));
 
