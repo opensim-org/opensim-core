@@ -117,8 +117,6 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 
         if (falCurve.getMinValue() < 0.1)
             falCurve.setMinValue(0.1);
-        if (cos(penMdl.get_maximum_pennation_angle()) < SimTK::SignificantReal)
-            penMdl.set_maximum_pennation_angle(acos(0.1));
         if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1)
             fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
                                   0.1, eccSlopeNearVmax, eccForceMax);
