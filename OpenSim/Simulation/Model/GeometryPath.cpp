@@ -144,9 +144,11 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         if (pwp) {
             // A PathWrapPoint provides points on the wrapping surface as Vec3s
             Array<Vec3>& surfacePoints = pwp->getWrapPath();
-            // The surface points are expressed w.r.t. the wrap surface's body 
+            // The surface points are expressed w.r.t. the wrap surface's body frame.
+            // Transform the surface points into the ground reference frame to draw
+            // the surface point as the wrapping portion of the GeometryPath
             const Transform& X_BG = pwp->getBody().getTransformInGround(state);
-            // Cycle through each surface point and draw it
+            // Cycle through each surface point and draw it the Ground frame
             for (int j = 0; j<surfacePoints.getSize(); ++j) {
                 // transform the surface point into the Ground reference frame
                 pos = X_BG*surfacePoints[j];
