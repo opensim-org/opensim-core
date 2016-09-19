@@ -11,7 +11,8 @@ tables = adapter.read('test_walking.c3d')
 
 %% get the Markers
 markers = tables.get('markers');
-markerdata = opensimVec3TableToStruct(markers);
+
+markerdata = opensimTimeSeriesTableToMatlab(markers);
 markerlabels = fieldnames(markerdata);
 
 % Print the (unrotated) markers to trc file
@@ -19,20 +20,49 @@ trcfileadapter = TRCFileAdapter();
 trcfileadapter.write(markers,'test_walking.trc');
 
 %% Get the force
-forces = tables.get('forces');
-forcedata = opensimVec3TableToStruct(forces);
-markerlabels = fieldnames(forcedata);
-
-% Print the (unrotated) markers to trc file
-trcfileadapter = MOTFileAdapter();
-trcfileadapter.write(markers,'test_walking.trc');
+% forces = tables.get('forces');
+% forcedata = opensimVec3TableToStruct(forces);
+% markerlabels = fieldnames(forcedata);
+% 
+% % Print the (unrotated) markers to trc file
+% trcfileadapter = TRCFileAdapter();
+% trcfileadapter.write(markers,'test_walking.trc');
 
 
 %% Define a rotation matix
 Rot = 90;          
 rotationMatrix = [1,0,0;0,cos(Rot*pi/180),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cos(Rot*pi/180)];
         
-%% 
+%% Rotate marker data
+
+new_table = TimeSeriesTableVec3()
+
+
+TimeSeriesTableVec3::DependentsMetaData marker_dep_metadata{};
+marker_dep_metadata.setValueArrayForKey("labels", marker_labels);
+marker_table.setDependentsMetaData(marker_dep_metadata);
+
+double time_step{1.0 / acquisition->GetPointFrequency()};
+for f = 1:0 
+    
+    
+    rowVector = RowVector()
+    
+    
+    
+    for(auto it = marker_pts->Begin();
+        it != marker_pts->End();
+        ++it) {
+        auto pt = *it;
+        row[m++] = SimTK::Vec3{pt->GetValues().coeff(f, 0),
+                               pt->GetValues().coeff(f, 1),
+                               pt->GetValues().coeff(f, 2)};
+    }
+
+    
+marker_table.appendRow(0 + f * time_step, row);
+
+
 for iMarker = 0 : length(markerdata) - 1
 
     % get the column data for the marker
@@ -50,13 +80,20 @@ for iMarker = 0 : length(markerdata) - 1
         rotatedData = [rotationMatrix'*vectorData']';
 
         % Write the rotated data back to the Vec3TimesSeriesTable
-        % THE BELOW LINES DO NOT WORK AND THERE IS CURRENTLY NO FIX
-        % marker.updElt(0,iRow).set(0, rotatedData)
-             
+        Vec3(rotatedData(1),rotatedData(2),rotatedData(3))
+        
+        methodsview(new_table)
+                 
+          create an empty timesseriestable and use append every row Vec3
     end
 end
 
-%% 
+%% Print the rotated markers to trc file
+trcfileadapter = TRCFileAdapter();
+trcfileadapter.write(markers,'test_walking_rotated.trc');
+
+%% Rotate Force data
+
 for iForces = 0 : length(forcesdata) - 1
 
     % get the column data for the marker
@@ -80,10 +117,8 @@ for iForces = 0 : length(forcesdata) - 1
     end
 end
 
+%% Print the force data
 
 
 
-%% Print the rotated markers to trc file
-trcfileadapter = TRCFileAdapter();
-trcfileadapter.write(markers,'test_walking_rotated.trc');
 
