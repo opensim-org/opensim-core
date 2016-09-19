@@ -136,7 +136,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
     Vec3 pos;
-    int cnt = 0;
+
     for (int i = 1; i < pathPoints.getSize(); ++i) {
         PathPoint* point = pathPoints[i];
         PathWrapPoint* pwp = dynamic_cast<PathWrapPoint*>(point);
@@ -156,7 +156,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
                 // Line segments will be in ground frame
                 appendToThis.push_back(DecorativeLine(lastPos, pos)
                     .setLineThickness(4)
-                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(cnt++));
+                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
                 lastPos = pos;
             }
         } 
@@ -168,7 +168,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
             // Line segments will be in ground frame
             appendToThis.push_back(DecorativeLine(lastPos, pos)
                 .setLineThickness(4)
-                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(cnt++));
+                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(i));
             lastPos = pos;
         }
     }
