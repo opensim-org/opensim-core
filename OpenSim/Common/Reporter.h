@@ -163,14 +163,22 @@ public:
     TableReporter_() = default;
     virtual ~TableReporter_() = default;
 
+    /** Retrieve the report.                                                  */
     const TimeSeriesTable_<ValueT>& getReport() const {
         return _outputTable;
     }
 
+    /** Clear the report. This can be used for example in loops where iteration
+    is intended to create a fresh report.                                     */
     void clearReport() {
         auto columnLabels = _outputTable.getColumnLabels();
         _outputTable = TimeSeriesTable_<ValueT>{};
         _outputTable.setColumnLabels(columnLabels);
+    }
+
+    /** Same as clearReport().                                                */
+    void clearTable() {
+        clearReport();
     }
 
 protected:
@@ -183,7 +191,16 @@ protected:
               const auto& value = chan.getValue(state);
               result[idx] = value;
         }
-        const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), result);
+        try {
+            const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(),
+                                                            result);
+        } catch(const InvalidTimestamp&) {
+            OPENSIM_THROW(Exception,
+                          "Attempting to update reporter with rows having "
+                          "invalid timestamps. Hint: If running simulation in "
+                          "a loop, use clearReport() to clear report at the end"
+                          "of each loop.");
+        }
     }
 
 
