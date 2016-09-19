@@ -136,28 +136,27 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
     Vec3 pos;
-    for (int j = 1; j < pathPoints.getSize(); j++) {
-        PathPoint* point = pathPoints[j];
-        PathWrapPoint* mwp = dynamic_cast<PathWrapPoint*>(point);
+    int cnt = 0;
+    for (int i = 1; i < pathPoints.getSize(); ++i) {
+        PathPoint* point = pathPoints[i];
+        PathWrapPoint* pwp = dynamic_cast<PathWrapPoint*>(point);
 
-        if (mwp) {
-            // If the point is a PathWrapPoint and has surfacePoints,
-            // then this is the second of two tangent points for the
-            // wrap instance. So add the surface points to the display
-            // path before adding the second tangent point.
-            // Note: the first surface point is coincident with the
-            // first tangent point, so don't add it to the path.
-            Array<Vec3>& surfacePoints = mwp->getWrapPath();
-            const Transform& X_BG = mwp->getBody().getTransformInGround(state);
-            for (int j = 1; j<surfacePoints.getSize(); j++) {
-                pos = X_BG*surfacePoints.get(j);
+        if (pwp) {
+            // A PathWrapPoint provides points on the wrapping surface as Vec3s
+            Array<Vec3>& surfacePoints = pwp->getWrapPath();
+            // The surface points are expressed w.r.t. the wrap surface's body 
+            const Transform& X_BG = pwp->getBody().getTransformInGround(state);
+            // Cycle through each surface point and draw it
+            for (int j = 0; j<surfacePoints.getSize(); ++j) {
+                // transform the surface point into the Ground reference frame
+                pos = X_BG*surfacePoints[j];
                 if (hints.get_show_path_points())
                     DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
                         appendToThis);
                 // Line segments will be in ground frame
                 appendToThis.push_back(DecorativeLine(lastPos, pos)
                     .setLineThickness(4)
-                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(cnt++));
                 lastPos = pos;
             }
         } 
@@ -169,7 +168,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
             // Line segments will be in ground frame
             appendToThis.push_back(DecorativeLine(lastPos, pos)
                 .setLineThickness(4)
-                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(cnt++));
             lastPos = pos;
         }
     }
