@@ -1579,7 +1579,7 @@ calcActiveFiberForceAlongTendon(double activation,
         double fpe  = fpeCurve.calcValue(lceN);
 
         //Evaluate the pennation angle
-        double phi = penMdl.calcPennationAngle(lceN);
+        double phi = getPennationModel().calcPennationAngle(lceN);
 
         //Compute the active fiber force
         Vec4 fiberForceV = calcFiberForce(fiso,ca,fal,fv,fpe,dlceN);
@@ -1665,7 +1665,8 @@ calcFiberStateGivenBoundaryCond(double lengthMT,
                 lt  = getTendonSlackLength();
                 ltN = 1.0;
             } else if(tendonForce <= 0) {               // slack elastic tendon
-                lt  = lengthMT - penMdl.getMinimumFiberLengthAlongTendon();
+                lt  = lengthMT -
+                      getPennationModel().getMinimumFiberLengthAlongTendon();
                 ltN = lt/getTendonSlackLength();
             }
         }
@@ -1693,12 +1694,12 @@ calcFiberStateGivenBoundaryCond(double lengthMT,
             }
 
             //3. Compute fiber length, pennation angle
-            lm  = penMdl.calcFiberLength(lengthMT,lt);
+            lm  = getPennationModel().calcFiberLength(lengthMT,lt);
             lmN = lm/getOptimalFiberLength();
-            phi = penMdl.calcPennationAngle(lm);
+            phi = getPennationModel().calcPennationAngle(lm);
 
             //4. Compute fiber velocity, pennation angular velocity
-            vm  = penMdl.calcFiberVelocity( cos(phi), velocityMT,vt);
+            vm  = getPennationModel().calcFiberVelocity(cos(phi),velocityMT,vt);
             vmN = vm / (getOptimalFiberLength()*getMaxContractionVelocity());
 
             //5. Compute activation
@@ -1738,9 +1739,9 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
         double dlm   = getLengtheningSpeed(s);
         double ltslk = getTendonSlackLength();
         double dlt   = 0.0; //inextensible tendon
-        double lce   = penMdl.calcFiberLength(lm,ltslk);
-        double phi   = penMdl.calcPennationAngle(lce);
-        double dlce  = penMdl.calcFiberVelocity(cos(phi),dlm,dlt);
+        double lce   = getPennationModel().calcFiberLength(lm,ltslk);
+        double phi   = getPennationModel().calcPennationAngle(lce);
+        double dlce  = getPennationModel().calcFiberVelocity(cos(phi),dlm,dlt);
 
         if(!SimTK::isNaN(dlce)) {
             inextensibleTendonActiveFiberForce =
