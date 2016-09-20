@@ -83,14 +83,7 @@ for iDefCoord = 1 : m
     stofileadapter = STOFileAdapterVec3();
     stofileadapter.write(markertable,'pendulum_markers.sto');
     
-    clear reporter
-    clear coordinateReporter
-    clear markerReporter
-    clear model
-    clear state
-    clear manager
-    clear coordinatetable
-    clear markertable
+   
 end
 
 

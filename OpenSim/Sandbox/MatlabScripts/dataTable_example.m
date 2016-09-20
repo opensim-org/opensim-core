@@ -52,3 +52,30 @@ col2.getElt(1,0)
 col2.getElt(2,0)
 col2.getElt(3,0)
 col2.getElt(4,0)
+
+
+
+% Following construction of TimeSeriesTable succeeds because the DataTable
+% has its independent column strictly increasing.
+timeseriestable = TimeSeriesTable(table);
+
+% Editing the DataTable to not have strictly increasing independent column
+% will fail the construction of TimeSeriesTable.
+
+table.appendRow(0.9,row3)
+
+try
+   timeseriestable = TimeSeriesTable(table);
+catch exception
+   'Times series table exception: Time has to be increasing'
+end
+
+% Edit the entry in the independent column to make the column strictly
+% increasing.
+table.setIndependentValueAtIndex(5, 1.25);
+
+try
+   timeseriestable = TimeSeriesTable(table);
+catch exception
+   'Times series table exception: Time has to be increasing'
+end
