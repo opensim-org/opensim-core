@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 
 // Sub-models used by this muscle model
+#include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
@@ -298,8 +299,12 @@ public:
     /** @returns The TendonForceLengthCurve used by this model. */
     const TendonForceLengthCurve& getTendonForceLengthCurve() const;
 
-    /** @returns The MuscleFixedWidthPennationModel used by this model. */
+    /** @returns The MuscleFixedWidthPennationModel owned by this model. */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
+
+    /** @returns The MuscleFirstOrderActivationDynamicModel owned by this
+    model. */
+    const MuscleFirstOrderActivationDynamicModel& getActivationModel() const;
 
     /** @returns The minimum fiber length, which is the maximum of two values:
     the smallest fiber length allowed by the pennation model, and the minimum
@@ -705,11 +710,13 @@ private:
 // PRIVATE UTILITY CLASS MEMBERS
 //==============================================================================
 
-    // Subcomponent owned by the muscle for computing fiber kinematics. The
-    // properties of this subcomponent are set in extendFinalizeFromProperties()
-    // from the properties of the muscle.
+    // Subcomponents owned by the muscle. The properties of these subcomponents
+    // are set in extendFinalizeFromProperties() from the properties of the
+    // muscle.
     MemberSubcomponentIndex penMdlIdx{
-        constructSubcomponent<MuscleFixedWidthPennationModel>("penMdl") };
+      constructSubcomponent<MuscleFixedWidthPennationModel>("penMdl") };
+    MemberSubcomponentIndex actMdlIdx{
+      constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     // Singularity-free inverse of ForceVelocityCurve.
     ForceVelocityInverseCurve fvInvCurve;

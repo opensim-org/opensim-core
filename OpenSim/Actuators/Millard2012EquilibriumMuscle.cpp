@@ -61,23 +61,6 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    // Fiber shortening velocity becomes unstable as pennation angle approaches
-    // Pi/2 because the kinematic equation for fiber velocity approaches a
-    // singularity as cos(phi) -> 0. We place an upper limit on the pennation
-    // angle (the maximum_pennation_angle property) to avoid this singularity.
-    //
-    // Length ("l") of fiber (contractile element, "ce") along tendon ("AT"):
-    //      lceAT = lce*cos(phi)
-    // Velocity of fiber along tendon:
-    //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
-    // Velocity of fiber:
-    //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
-    auto& penMdl =
-        updMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx);
-    penMdl.set_optimal_fiber_length(getOptimalFiberLength());
-    penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
-    penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
-
     // Set the names of the muscle curves.
     const std::string& namePrefix = getName();
 
@@ -144,15 +127,41 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     fpeCurve.ensureCurveUpToDate();
     fseCurve.ensureCurveUpToDate();
 
-    // Minimum active fiber length (in meters).
+    // Set properties of subcomponents.
+
+    // Fiber shortening velocity becomes unstable as pennation angle approaches
+    // Pi/2 because the kinematic equation for fiber velocity approaches a
+    // singularity as cos(phi) -> 0. We place an upper limit on the pennation
+    // angle (the maximum_pennation_angle property) to avoid this singularity.
+    // The pennation model subcomponent ensures that the maximum_pennation_angle
+    // property is within an appropriate range.
+    //
+    // Length ("l") of fiber (contractile element, "ce") along tendon ("AT"):
+    //      lceAT = lce*cos(phi)
+    // Velocity of fiber along tendon:
+    //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
+    // Velocity of fiber:
+    //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
+    auto& penMdl =
+        updMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx);
+    penMdl.set_optimal_fiber_length(getOptimalFiberLength());
+    penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
+    penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
+
+    if (!get_ignore_activation_dynamics()) {
+        auto& actMdl =
+            updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
+        actMdl.set_activation_time_constant(get_activation_time_constant());
+        actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
+        actMdl.set_minimum_activation(get_minimum_activation());
+    }
+
+    // Compute and store values that are used frequently.
     const double minActiveFiberLength = falCurve.getMinActiveFiberLength()
                                         * getOptimalFiberLength();
-
-    // Minimum pennated fiber length (in meters).
     const double minPennatedFiberLength = penMdl.getMinimumFiberLength();
     m_minimumFiberLength = max(minActiveFiberLength, minPennatedFiberLength);
 
-    // Minimum fiber length along the tendon.
     const double phi = penMdl.calcPennationAngle(m_minimumFiberLength);
     m_minimumFiberLengthAlongTendon =
         penMdl.calcFiberLengthAlongTendon(m_minimumFiberLength, cos(phi));
@@ -221,6 +230,10 @@ getTendonForceLengthCurve() const
 const MuscleFixedWidthPennationModel& Millard2012EquilibriumMuscle::
 getPennationModel() const
 { return getMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx); }
+
+const MuscleFirstOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
+getActivationModel() const
+{ return getMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx); }
 
 double Millard2012EquilibriumMuscle::getMinimumFiberLength() const
 {   return m_minimumFiberLength; }
@@ -1004,7 +1017,6 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    //double dummyValue = 0.0;
     if(!get_ignore_activation_dynamics()) {
         addStateVariable(STATE_ACTIVATION_NAME);
     }
