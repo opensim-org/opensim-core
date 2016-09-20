@@ -1004,9 +1004,6 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
-        "Millard2012EquilibriumMuscle: Muscle properties are not up-to-date");
-
     //double dummyValue = 0.0;
     if(!get_ignore_activation_dynamics()) {
         addStateVariable(STATE_ACTIVATION_NAME);
