@@ -138,15 +138,16 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     // Check values of properties related to fiber kinematics and set properties
     // of pennation model subcomponent. Values of optimal_fiber_length,
     // pennation_angle_at_optimal, and maximum_pennation_angle are checked by
-    // MuscleFixedWidthPennationModel.
+    // MuscleFixedWidthPennationModel::extendFinalizeFromProperties().
     auto& penMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx);
     penMdl.set_optimal_fiber_length(getOptimalFiberLength());
     penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
+    penMdl.finalizeFromProperties();
 
     const double defaultFibLen = get_default_fiber_length();
-    SimTK_ERRCHK1_ALWAYS(defaultFibLen == clampFiberLength(defaultFibLen),
+    SimTK_ERRCHK1_ALWAYS(defaultFibLen == penMdl.clampFiberLength(defaultFibLen),
         "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
         "%s: default_fiber_length exceeds the permissible range",
         getName().c_str());
@@ -154,13 +155,15 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     // Check values of properties related to activation dynamics and set
     // properties of activation dynamics model subcomponent. Values of
     // activation_time_constant, deactivation_time_constant, and
-    // minimum_activation are checked by MuscleFirstOrderActivationDynamicModel.
+    // minimum_activation are checked by
+    // MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties().
     if (!get_ignore_activation_dynamics()) {
         auto& actMdl =
             updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
         actMdl.set_activation_time_constant(get_activation_time_constant());
         actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
         actMdl.set_minimum_activation(get_minimum_activation());
+        actMdl.finalizeFromProperties();
 
         const double defaultAct = get_default_activation();
         SimTK_ERRCHK1_ALWAYS(defaultAct == actMdl.clampActivation(defaultAct),
@@ -216,7 +219,7 @@ double Millard2012EquilibriumMuscle::getFiberDamping() const
 double Millard2012EquilibriumMuscle::getDefaultActivation() const
 {   return get_default_activation(); }
 double Millard2012EquilibriumMuscle::getDefaultFiberLength() const
-{   return clampFiberLength(get_default_fiber_length()); }
+{   return get_default_fiber_length(); }
 double Millard2012EquilibriumMuscle::getActivationTimeConstant() const
 {   return get_activation_time_constant(); }
 double Millard2012EquilibriumMuscle::getDeactivationTimeConstant() const
@@ -373,7 +376,7 @@ setFiberLength(SimTK::State& s, double fiberLength) const
 {
     if (!get_ignore_tendon_compliance()) {
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
-                         clampFiberLength(fiberLength));
+            getPennationModel().clampFiberLength(fiberLength));
         markCacheVariableInvalid(s,"lengthInfo");
         markCacheVariableInvalid(s,"velInfo");
         markCacheVariableInvalid(s,"dynamicsInfo");
@@ -552,11 +555,11 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
         //const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
         if(get_ignore_tendon_compliance()) {                //rigid tendon
-            mli.fiberLength = clampFiberLength(
+            mli.fiberLength = getPennationModel().clampFiberLength(
                                getPennationModel().calcFiberLength(getLength(s),
                                tendonSlackLen));
         } else {                                            // elastic tendon
-            mli.fiberLength = clampFiberLength(
+            mli.fiberLength = getPennationModel().clampFiberLength(
                                 getStateVariableValue(s, STATE_FIBER_LENGTH_NAME));
         }
 
@@ -1266,9 +1269,6 @@ isFiberStateClamped(double lce, double dlceN) const
     return clamped;
 }
 
-double Millard2012EquilibriumMuscle::clampFiberLength(double lce) const
-{   return max(lce, getMinimumFiberLength()); }
-
 std::pair<Millard2012EquilibriumMuscle::StatusFromEstimateMuscleFiberState,
           Millard2012EquilibriumMuscle::ValuesFromEstimateMuscleFiberState>
 Millard2012EquilibriumMuscle::estimateMuscleFiberState(
@@ -1309,7 +1309,8 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     double lce = 0.0;
     double tl  = getTendonSlackLength()*1.01;  // begin with small tendon force
 
-    lce = clampFiberLength(getPennationModel().calcFiberLength(ml,tl));
+    lce = getPennationModel().clampFiberLength(
+              getPennationModel().calcFiberLength(ml,tl));
 
     double phi    = getPennationModel().calcPennationAngle(lce);
     double cosphi = cos(phi);

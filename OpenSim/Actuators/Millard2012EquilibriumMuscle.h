@@ -723,10 +723,6 @@ private:
     // value allowed by the pennation model and the active force length curve
     bool isFiberStateClamped(double lce, double dlceN) const;
 
-    // Returns the maximum of the minimum fiber length and the current fiber
-    // length
-    double clampFiberLength(double lce) const;
-
     // Status flag returned by estimateMuscleFiberState().
     enum StatusFromEstimateMuscleFiberState {
         Success_Converged,
