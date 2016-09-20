@@ -163,9 +163,14 @@ public:
     TableReporter_() = default;
     virtual ~TableReporter_() = default;
 
-    /** Retrieve the report.                                                  */
+    /** Retrieve the report as a TimeSeriesTable.                             */
     const TimeSeriesTable_<ValueT>& getReport() const {
         return _outputTable;
+    }
+
+    /** Same as getReport().                                                  */
+    const TimeSeriesTable_<ValueT>& getTable() const {
+        return getReport();
     }
 
     /** Clear the report. This can be used for example in loops performing 
