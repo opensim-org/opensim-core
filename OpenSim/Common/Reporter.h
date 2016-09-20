@@ -168,8 +168,9 @@ public:
         return _outputTable;
     }
 
-    /** Clear the report. This can be used for example in loops where iteration
-    is intended to create a fresh report.                                     */
+    /** Clear the report. This can be used for example in loops performing 
+    simulation. Each new iteration should start with an empty report and so this
+    function can be used to clear the report at the end of each iteration.    */
     void clearReport() {
         auto columnLabels = _outputTable.getColumnLabels();
         _outputTable = TimeSeriesTable_<ValueT>{};
