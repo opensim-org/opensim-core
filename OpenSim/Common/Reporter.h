@@ -195,9 +195,10 @@ protected:
         try {
             const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(),
                                                             result);
-        } catch(const InvalidTimestamp&) {
+        } catch(const InvalidTimestamp& exception) {
             OPENSIM_THROW(Exception,
-                          "Attempting to update reporter with rows having "
+                          std::string{exception.what()} +
+                          "\n\nAttempting to update reporter with rows having "
                           "invalid timestamps. Hint: If running simulation in "
                           "a loop, use clearReport() to clear report at the end"
                           "of each loop.");
