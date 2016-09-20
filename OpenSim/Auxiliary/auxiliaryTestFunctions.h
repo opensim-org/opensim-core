@@ -27,7 +27,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "getRSS.h"
 
 #include <fstream>
@@ -210,68 +209,35 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 // Storage can only read files with version <= 1.
 // This function can be removed when Storage class is removed.
 inline void revertToVersionNumber1(const std::string& filenameOld,
-                                   const std::string& filenameNew) {
-  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
-  std::ifstream fileOld{filenameOld};
-  std::ofstream fileNew{filenameNew};
-  std::string line{};
-  while(std::getline(fileOld, line)) {
-    if(std::regex_match(line, versionline))
-      fileNew << "version=1\n";
-    else
-      fileNew << line << "\n";
-  }
-}
-
-bool isGetRSSValid() {
-    auto s = sizeof(char);
-    // chat is a byte on ALL platforms
-    ASSERT(s == 1);
-
-    size_t mem0 = getCurrentRSS();
-
-    size_t size = 20 * 1024; // 20 * 1KB;
-    // This should yield a change in memory usage of exactly 20KB;
-    char* charBlock = (char*)std::malloc(size * s);
-
-    // do something with charBlock so that compiler does not optimize it away
-    for (size_t i = 1; i < size; ++i) {
-        charBlock[i] = charBlock[i - 1];
+    const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline))
+            fileNew << "version=1\n";
+        else
+            fileNew << line << "\n";
     }
-
-    size_t mem1 = mem0;
-    size_t count = 0;
-
-    while(mem1 == mem0) {
-        mem1 = getCurrentRSS();
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        ++count;
-    }
-
-    std::cout << "Took " << count << " tries to register change in getRSS()" << std::endl;
-    std::cout << "mem1=" << mem1 << "  mem0=" << mem0 << " | " << mem1 - mem0 << std::endl;
-
-    free(charBlock);
-
-    return (mem1-mem0) == size;
 }
-
 
 // Estimate the change in memory usage for a given command
 template <typename T>
-size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100) {
+size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
+{
     std::vector<size_t> deltas;
+    std::cout << "command of type: " << typeid(T).name() << std::endl;
 
     for (size_t i = 0; i < nSamples; ++i) {
         size_t mem0 = getCurrentRSS();
-
         // Execute the desired command
         command();
-
+        // wait a millisecond to allow memory usage to settle
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // poll the change in memory usage
         size_t mem1 = getCurrentRSS();
         deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
-        //std::cout << "i: " << i << " | " << "delta = " << deltas[i] << std::endl;
     }
 
     size_t nmedian = nSamples / 2;
@@ -283,17 +249,22 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100) {
     return deltas[nmedian];
 }
 
-// Estimate the change in memory caused by loading a model
-size_t estimateMemoryChangeForModelLoading( const std::string& modelFileName,
-    size_t nSamples) {
-
-    auto command = [modelFileName]() {
-        OpenSim::Model model(modelFileName);
-        model.finalizeFromProperties();
+bool isGetRSSValid() 
+{
+    size_t size = 20 * 1024; // 20 * 1KB;
+    // This should yield a change in memory usage of exactly 20KB;
+    char* charBlock = nullptr;
+    auto command = [size, charBlock]() {
+        // This should yield a change in memory usage of exactly 20KB;
+        char* charBlock = (char*)std::malloc(size * sizeof(char));
+        for (size_t i = 1; i < size; ++i) {
+            charBlock[i] = charBlock[i - 1];
+        }
     };
-    return estimateMemoryChangeForCommand(command, nSamples);
+    size_t delta = estimateMemoryChangeForCommand(command, 10);
 
+    free(charBlock);
+    return delta == size;
 }
-
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
