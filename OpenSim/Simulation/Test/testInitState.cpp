@@ -86,7 +86,7 @@ void testStates(const string& modelFile)
     // hold on to original default continuous state variables
     Vector y1 = state.getY();
     y1 = state.getY();
-    y1.dump("y1: Initial state:");
+    //y1.dump("y1: Initial state:");
 
     // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state);
@@ -104,7 +104,7 @@ void testStates(const string& modelFile)
 
     // continuous state variables after simulation
     Vector y2 = state.getY();
-    y2.dump("y2: State after integration:");
+    //y2.dump("y2: State after integration:");
 
     // reset model working state to default state
     State& state2 = model.initializeState();
@@ -112,7 +112,7 @@ void testStates(const string& modelFile)
     // another version of default continuous state variables 
     // should be unaffected by simulation of the system
     Vector y3 = state2.getY();
-    y3.dump("y3: Model reset to Initial state:");
+    //y3.dump("y3: Model reset to Initial state:");
 
     // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state2);
@@ -132,7 +132,7 @@ void testStates(const string& modelFile)
     // from the state after the simulation
     Vector y4 = state2.getY();
     
-    y4.dump("y4: Default State after second simulation:");
+    //y4.dump("y4: Default State after second simulation:");
 
     for (int i = 0; i < y1.size(); i++) 
     {
@@ -150,88 +150,32 @@ void testMemoryUsage(const string& modelFile)
 {
     using namespace SimTK;
 
-    //=========================================================================
-    // Setup OpenSim model
-    // base footprint
-    size_t mem0 = getCurrentRSS();
-    size_t current_size{ 0 };
+    if (isGetRSSValid) {
+        //=========================================================================
+        // Estimate the size of the model when loaded into memory
+        const size_t model_size = estimateMemoryChangeForModelLoading(modelFile, 10);
 
-    Model model;
+        Model model(modelFile);
+        State state = model.initSystem();
 
-    // getCurrentRSS() can be unreliable at evaluating the memory usage of a
-    // current process because of caching, shared memory and a litany of 
-    // other reason including some platform specific details.
-    // When this occurs, the model_size is determined to be zero, which is not
-    // possible. This was leading to an invalid (NaN) leak % and the test was
-    // failing. Redoing the test (or restarting the CI tests) often remedies
-    // the issue (see #473) but it is a waste of time and CI resources.
-    // The following code was added to retry loading the model until a nonzero
-    // value is registered so that the test can proceed without requiring 
-    // to be rerun. It is not 100% that it will work, but it should be an
-    // improvement.
-    int ntries = 0;
-    while (ntries++ < 10) {
-        model = Model(modelFile);
-        current_size = getCurrentRSS();
+        // also time how long initializing the state takes
+        clock_t startTime = clock();
 
-        // Exit if memory footprint increased.
-        if (current_size > mem0)
-            break;
+        // determine the change in memory usage due to invoking model.initialiState
+        auto command = [&model]() mutable { model.initializeState(); };
+        const size_t leak = estimateMemoryChangeForCommand(command, MAX_N_TRIES);
 
-        // Update mem0 if memory footprint decreased.
-        if (current_size < mem0)
-            mem0 = current_size;
+        long double leak_percent = 100.0 * double(leak) / model_size;
+
+        long double dT = (long double)(clock() - startTime) / CLOCKS_PER_SEC;
+        long double meanT = 1.0e3 * dT / MAX_N_TRIES; // in ms
+
+        cout << "Approximate leak size: " << leak / 1024.0 << "KB or " <<
+            leak_percent << "% of model size." << endl;
+        cout << "Average initialization time: " << meanT << "ms" << endl;
+
+        // If we are leaking more than 0.5% of the model's footprint that is significant
+        ASSERT((leak_percent) < 0.5, __FILE__, __LINE__,
+            "testMemoryUsage: state initialization leak > 0.5% of model memory footprint.");
     }
-
-    // Ensure subtraction does not wrap unsigned int through zero.
-    const size_t model_size = current_size > mem0 ? current_size-mem0 : 0;
-
-    if (ntries > 1) {
-        cout << "testMemoryUsage: required " << to_string(ntries);
-        cout << " load attempts to record a nonzero model_size." << endl;
-    }
-
-    cout << "*********************** testMemoryUsage ***********************" << endl;
-    cout << "MODEL: " << modelFile << " uses " << model_size / 1024.0 << "KB" << endl;
-
-    ASSERT(model_size > 0, __FILE__, __LINE__,
-        "testMemoryUsage: model size was found to be zero.\n"
-        "Memory instrumentation code failed to estimate model size correctly.");
-
-    State state = model.initSystem();
-
-    // initial footprint
-    size_t mem1 = getCurrentRSS();
-
-    // also time how long initializing the state takes
-    clock_t startTime = clock();
-
-    for(int i=0; i< MAX_N_TRIES; ++i){
-        state = model.initializeState();
-    }
-
-    // New memory footprint after MAX_N_TRIES.
-    size_t mem2 = getCurrentRSS();
-    // Increase in memory footprint.
-    int64_t memory_increase = mem2 > mem1 ? mem2-mem1 : 0;
-    int64_t leak = memory_increase/MAX_N_TRIES;
-
-    long double leak_percent = 100.0 * double(leak)/model_size;
-
-    long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
-    long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
-    
-    cout << memory_increase/1024 << "KB increase in memory use after "
-         << MAX_N_TRIES << " state initializations." << endl;
-    cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 
-             leak_percent << "% of model size." << endl;
-    cout << "Average initialization time: " << meanT << "ms" << endl;
-
-    // If we are leaking more than 0.5% of the model's footprint that is significant
-    ASSERT( (leak_percent) < 0.5, __FILE__, __LINE__, 
-        "testMemoryUsage: state initialization leak > 0.5% of model memory footprint.");
-
-    // If we ever leak over 100MB total we should know about it.
-    ASSERT( memory_increase < 1e8, __FILE__, __LINE__, 
-        "testMemoryUsage: total estimated memory leaked > 100MB.");
 }
