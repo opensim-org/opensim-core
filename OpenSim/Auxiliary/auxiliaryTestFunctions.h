@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "getRSS.h"
 
 #include <fstream>
@@ -221,5 +222,78 @@ inline void revertToVersionNumber1(const std::string& filenameOld,
       fileNew << line << "\n";
   }
 }
+
+bool isGetRSSValid() {
+    auto s = sizeof(char);
+    // chat is a byte on ALL platforms
+    ASSERT(s == 1);
+
+    size_t mem0 = getCurrentRSS();
+
+    size_t size = 20 * 1024; // 20 * 1KB;
+    // This should yield a change in memory usage of exactly 20KB;
+    char* charBlock = (char*)std::malloc(size * s);
+
+    // do something with charBlock so that compiler does not optimize it away
+    for (size_t i = 1; i < size; ++i) {
+        charBlock[i] = charBlock[i - 1];
+    }
+
+    size_t mem1 = mem0;
+    size_t count = 0;
+
+    while(mem1 == mem0) {
+        mem1 = getCurrentRSS();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        ++count;
+    }
+
+    std::cout << "Took " << count << " tries to register change in getRSS()" << std::endl;
+    std::cout << "mem1=" << mem1 << "  mem0=" << mem0 << " | " << mem1 - mem0 << std::endl;
+
+    free(charBlock);
+
+    return (mem1-mem0) == size;
+}
+
+
+// Estimate the change in memory usage for a given command
+template <typename T>
+size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100) {
+    std::vector<size_t> deltas;
+
+    for (size_t i = 0; i < nSamples; ++i) {
+        size_t mem0 = getCurrentRSS();
+
+        // Execute the desired command
+        command();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        size_t mem1 = getCurrentRSS();
+        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
+        //std::cout << "i: " << i << " | " << "delta = " << deltas[i] << std::endl;
+    }
+
+    size_t nmedian = nSamples / 2;
+    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+
+    std::cout << "median: " << deltas[nmedian] <<
+        "    max: " << *std::max_element(deltas.begin(), deltas.end()) << std::endl;
+
+    return deltas[nmedian];
+}
+
+// Estimate the change in memory caused by loading a model
+size_t estimateMemoryChangeForModelLoading( const std::string& modelFileName,
+    size_t nSamples) {
+
+    auto command = [modelFileName]() {
+        OpenSim::Model model(modelFileName);
+        model.finalizeFromProperties();
+    };
+    return estimateMemoryChangeForCommand(command, nSamples);
+
+}
+
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
