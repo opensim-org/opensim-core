@@ -434,36 +434,43 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
     double pathLength = getLength(s);
     double pathLengtheningSpeed = getLengtheningSpeed(s);
 
-    std::pair<StatusFromEstimateMuscleFiberState,
-              ValuesFromEstimateMuscleFiberState> result =
-        estimateMuscleFiberState(clampedActivation, pathLength,
-                                 pathLengtheningSpeed, tol, maxIter);
+    try {
+        std::pair<StatusFromEstimateMuscleFiberState,
+                  ValuesFromEstimateMuscleFiberState> result =
+            estimateMuscleFiberState(clampedActivation, pathLength,
+                                     pathLengtheningSpeed, tol, maxIter);
 
-    switch(result.first) {
+        switch(result.first) {
 
-    case StatusFromEstimateMuscleFiberState::Success_Converged:
-        setActuation(s, result.second["tendon_force"]);
-        setFiberLength(s, result.second["fiber_length"]);
-        break;
+        case StatusFromEstimateMuscleFiberState::Success_Converged:
+            setActuation(s, result.second["tendon_force"]);
+            setFiberLength(s, result.second["fiber_length"]);
+            break;
 
-    case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
-        printf("\n\nMillard2012EquilibriumMuscle initialization:"
-               " %s is at its minimum fiber length of %f\n",
-               getName().c_str(), result.second["fiber_length"]);
-        setActuation(s, result.second["tendon_force"]);
-        setFiberLength(s, result.second["fiber_length"]);
-        break;
+        case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
+            printf("\n\nMillard2012EquilibriumMuscle initialization:"
+                   " %s is at its minimum fiber length of %f\n",
+                   getName().c_str(), result.second["fiber_length"]);
+            setActuation(s, result.second["tendon_force"]);
+            setFiberLength(s, result.second["fiber_length"]);
+            break;
 
-    case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
-        // Report internal variables and throw exception.
+        case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
+            // Report internal variables and throw exception.
+            std::ostringstream ss;
+            ss << "\n  Solution error " << abs(result.second["solution_error"])
+               << " exceeds tolerance of " << tol << "\n"
+               << "  Newton iterations reached limit of " << maxIter << "\n"
+               << "  Clamped activation is " << clampedActivation << "\n"
+               << "  Fiber length is " << result.second["fiber_length"] << "\n";
+            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+            break;
+        }
+
+    } catch (const std::exception& x) {
         std::ostringstream ss;
-        ss << "\n  Solution error " << abs(result.second["solution_error"])
-           << " exceeds tolerance of " << tol << "\n"
-           << "  Newton iterations reached limit of " << maxIter << "\n"
-           << "  Clamped activation is " << clampedActivation << "\n"
-           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        ss << "Internal exception encountered.\n" << x.what();
         OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
-        break;
     }
 }
 
@@ -493,36 +500,43 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 
     double activation = getActivation(s);
 
-    std::pair<StatusFromEstimateMuscleFiberState,
-              ValuesFromEstimateMuscleFiberState> result =
-        estimateMuscleFiberState(activation, pathLength, pathLengtheningSpeed,
-                                 tol, maxIter, true);
+    try {
+        std::pair<StatusFromEstimateMuscleFiberState,
+                  ValuesFromEstimateMuscleFiberState> result =
+            estimateMuscleFiberState(activation, pathLength, pathLengtheningSpeed,
+                                     tol, maxIter, true);
 
-    switch(result.first) {
+        switch(result.first) {
 
-    case StatusFromEstimateMuscleFiberState::Success_Converged:
-        setActuation(s, result.second["tendon_force"]);
-        setFiberLength(s, result.second["fiber_length"]);
-        break;
+        case StatusFromEstimateMuscleFiberState::Success_Converged:
+            setActuation(s, result.second["tendon_force"]);
+            setFiberLength(s, result.second["fiber_length"]);
+            break;
 
-    case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
-        printf("\n\nMillard2012EquilibriumMuscle static solution:"
-               " %s is at its minimum fiber length of %f\n",
-               getName().c_str(), result.second["fiber_length"]);
-        setActuation(s, result.second["tendon_force"]);
-        setFiberLength(s, result.second["fiber_length"]);
-        break;
+        case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
+            printf("\n\nMillard2012EquilibriumMuscle static solution:"
+                   " %s is at its minimum fiber length of %f\n",
+                   getName().c_str(), result.second["fiber_length"]);
+            setActuation(s, result.second["tendon_force"]);
+            setFiberLength(s, result.second["fiber_length"]);
+            break;
 
-    case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
-        // Report internal variables and throw exception.
+        case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
+            // Report internal variables and throw exception.
+            std::ostringstream ss;
+            ss << "\n  Solution error " << abs(result.second["solution_error"])
+               << " exceeds tolerance of " << tol << "\n"
+               << "  Newton iterations reached limit of " << maxIter << "\n"
+               << "  Activation is " << activation << "\n"
+               << "  Fiber length is " << result.second["fiber_length"] << "\n";
+            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+            break;
+        }
+
+    } catch (const std::exception& x) {
         std::ostringstream ss;
-        ss << "\n  Solution error " << abs(result.second["solution_error"])
-           << " exceeds tolerance of " << tol << "\n"
-           << "  Newton iterations reached limit of " << maxIter << "\n"
-           << "  Activation is " << activation << "\n"
-           << "  Fiber length is " << result.second["fiber_length"] << "\n";
+        ss << "Internal exception encountered.\n" << x.what();
         OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
-        break;
     }
 }
 
