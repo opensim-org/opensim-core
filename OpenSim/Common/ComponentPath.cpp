@@ -62,12 +62,12 @@ std::string ComponentPath::getParentPathStr()
     return getParentPath().getString();
 }
 
-std::string ComponentPath::getSubdirectoryNameAtLevel(size_t index)
+std::string ComponentPath::getSubcomponentNameAtLevel(size_t index)
 {
     return getPathElement(index);
 }
 
 std::string ComponentPath::getComponentName() 
 {
-    return getSubdirectoryNameAtLevel(getPathLength() - 1);
+    return getSubcomponentNameAtLevel(getPathLength() - 1);
 }

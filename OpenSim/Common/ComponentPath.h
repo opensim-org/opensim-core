@@ -90,7 +90,7 @@ public:
 
     /// Return a string of a subdirectory name at a specified level. This is
     /// 0 indexed.
-    std::string getSubdirectoryNameAtLevel(size_t index);
+    std::string getSubcomponentNameAtLevel(size_t index);
 
     /// Return a string of the name of the Component related to a 
     /// ComponentPath. This is just the last level of a ComponentPath.
