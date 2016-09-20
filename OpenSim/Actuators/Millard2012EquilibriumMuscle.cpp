@@ -468,9 +468,8 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
         }
 
     } catch (const std::exception& x) {
-        std::ostringstream ss;
-        ss << "Internal exception encountered.\n" << x.what();
-        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate,
+            "Internal exception encountered.\n" + std::string{x.what()});
     }
 }
 
@@ -534,9 +533,8 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
         }
 
     } catch (const std::exception& x) {
-        std::ostringstream ss;
-        ss << "Internal exception encountered.\n" << x.what();
-        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
+        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate,
+            "Internal exception encountered.\n" + std::string{x.what()});
     }
 }
 
