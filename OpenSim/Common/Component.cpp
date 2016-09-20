@@ -1550,13 +1550,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     const Component* last = nullptr;
     for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
         if (i == _memberSubcomponents.size() - 1) {
-            // use parent's sibling if any
-            if (this == &root) // only to be safe if root changes
-                _memberSubcomponents[i]->_nextComponent = nullptr;
-            else {
-                _memberSubcomponents[i]->_nextComponent =
-                    _nextComponent.get();
-            }
+            _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
         else {
@@ -1571,13 +1565,8 @@ void Component::initComponentTreeTraversal(const Component &root) const {
 
         for (unsigned int i = 0; i < npsc; i++) {
             if (i == npsc - 1) {
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _propertySubcomponents[i]->_nextComponent = nullptr;
-                else {
-                    _propertySubcomponents[i]->_nextComponent =
-                        _nextComponent.get();
-                }
+                _propertySubcomponents[i]->_nextComponent =
+                    _nextComponent.get();
                 last = _propertySubcomponents[i].get();
             }
             else {
@@ -1593,12 +1582,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
 
         for (unsigned int i = 0; i <nasc; i++) {
             if (i == nasc - 1) {
-                // use parent's sibling if any
-                if (this == &root) // only to be safe if root changes
-                    _adoptedSubcomponents[i]->_nextComponent = nullptr;
-                else
-                    _adoptedSubcomponents[i]->_nextComponent =
-                    _nextComponent.get();
+                _adoptedSubcomponents[i]->_nextComponent = _nextComponent.get();
             }
             else {
                 _adoptedSubcomponents[i]->_nextComponent

@@ -209,17 +209,62 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 // Storage can only read files with version <= 1.
 // This function can be removed when Storage class is removed.
 inline void revertToVersionNumber1(const std::string& filenameOld,
-                                   const std::string& filenameNew) {
-  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
-  std::ifstream fileOld{filenameOld};
-  std::ofstream fileNew{filenameNew};
-  std::string line{};
-  while(std::getline(fileOld, line)) {
-    if(std::regex_match(line, versionline))
-      fileNew << "version=1\n";
-    else
-      fileNew << line << "\n";
-  }
+    const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline))
+            fileNew << "version=1\n";
+        else
+            fileNew << line << "\n";
+    }
+}
+
+// Estimate the change in memory usage for a given command
+template <typename T>
+size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
+{
+    std::vector<size_t> deltas;
+    std::cout << "command of type: " << typeid(T).name() << std::endl;
+
+    for (size_t i = 0; i < nSamples; ++i) {
+        size_t mem0 = getCurrentRSS();
+        // Execute the desired command
+        command();
+        // wait a millisecond to allow memory usage to settle
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // poll the change in memory usage
+        size_t mem1 = getCurrentRSS();
+        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
+    }
+
+    size_t nmedian = nSamples / 2;
+    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+
+    std::cout << "median: " << deltas[nmedian] <<
+        "    max: " << *std::max_element(deltas.begin(), deltas.end()) << std::endl;
+
+    return deltas[nmedian];
+}
+
+bool isGetRSSValid() 
+{
+    size_t size = 20 * 1024; // 20 * 1KB;
+    // This should yield a change in memory usage of exactly 20KB;
+    char* charBlock = nullptr;
+    auto command = [size, charBlock]() {
+        // This should yield a change in memory usage of exactly 20KB;
+        char* charBlock = (char*)std::malloc(size * sizeof(char));
+        for (size_t i = 1; i < size; ++i) {
+            charBlock[i] = charBlock[i - 1];
+        }
+    };
+    size_t delta = estimateMemoryChangeForCommand(command, 10);
+
+    free(charBlock);
+    return delta == size;
 }
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
