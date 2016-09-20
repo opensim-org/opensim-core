@@ -146,11 +146,14 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
     penMdl.finalizeFromProperties();
 
-    const double defaultFibLen = get_default_fiber_length();
-    SimTK_ERRCHK1_ALWAYS(defaultFibLen == penMdl.clampFiberLength(defaultFibLen),
-        "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
-        "%s: default_fiber_length exceeds the permissible range",
-        getName().c_str());
+    const double clampedDefaultFiberLength =
+        penMdl.clampFiberLength(get_default_fiber_length());
+    if (clampedDefaultFiberLength != get_default_fiber_length()) {
+        std::ostringstream ss;
+        ss << "The default_fiber_length property is beyond the allowable "
+           << "range; try setting it to " << clampedDefaultFiberLength << ".";
+        OPENSIM_THROW_FRMOBJ(Exception, ss.str());
+    }
 
     // Check values of properties related to activation dynamics and set
     // properties of activation dynamics model subcomponent. Values of
@@ -165,11 +168,14 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         actMdl.set_minimum_activation(get_minimum_activation());
         actMdl.finalizeFromProperties();
 
-        const double defaultAct = get_default_activation();
-        SimTK_ERRCHK1_ALWAYS(defaultAct == actMdl.clampActivation(defaultAct),
-            "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
-            "%s: default_activation exceeds the permissible range",
-            getName().c_str());
+        const double clampedDefaultActivation =
+            actMdl.clampActivation(get_default_activation());
+        if (clampedDefaultActivation != get_default_activation()) {
+            std::ostringstream ss;
+            ss << "The default_activation property is beyond the allowable "
+               << "range; try setting it to " << clampedDefaultActivation << ".";
+            OPENSIM_THROW_FRMOBJ(Exception, ss.str());
+        }
     }
 
     // Compute and store values that are used frequently.
