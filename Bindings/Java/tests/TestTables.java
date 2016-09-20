@@ -14,7 +14,7 @@ class TestTables {
         RowVector row0 = new RowVector(3, 7.);
         table.appendRow(0, row0);
         double value = row0.__getitem__(2);
-		System.out.println("Value ="+value);
-
+        System.out.println("Value ="+value);
+        double shouldThrow = row0.__getitem__(4);
   }
 }
