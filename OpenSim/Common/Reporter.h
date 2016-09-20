@@ -197,11 +197,10 @@ protected:
                                                             result);
         } catch(const InvalidTimestamp& exception) {
             OPENSIM_THROW(Exception,
-                          std::string{exception.what()} +
-                          "\n\nAttempting to update reporter with rows having "
+                          "Attempting to update reporter with rows having "
                           "invalid timestamps. Hint: If running simulation in "
                           "a loop, use clearReport() to clear report at the end"
-                          "of each loop.");
+                          "of each loop.\n\n" + std::string{exception.what()});
         }
     }
 
