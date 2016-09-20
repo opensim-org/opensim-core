@@ -487,13 +487,6 @@ public:
 protected:
     void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
-    /** @returns Activation clamped to the permissible range (i.e., between
-    minimum_activation and 1.0). */
-    double clampActivation(double activation) const;
-
-    /** Calculate activation rate. */
-    double calcActivationDerivative(double activation, double excitation) const;
-
     /** Gets the derivative of an actuator state by index.
         @param s The state.
         @param aStateName The name of the state to get.

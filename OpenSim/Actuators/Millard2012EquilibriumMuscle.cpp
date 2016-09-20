@@ -255,14 +255,11 @@ getFiberVelocity(const SimTK::State& s) const
 double Millard2012EquilibriumMuscle::
 getActivationDerivative(const SimTK::State& s) const
 {
-    double activationDerivative = 0.0;
+    if (get_ignore_activation_dynamics())
+        return 0.0;
 
-    if(!get_ignore_activation_dynamics()) {
-        double u = getExcitation(s);
-        double a = getActivation(s);
-        activationDerivative = calcActivationDerivative(a,u);
-    }
-    return activationDerivative;
+    return getActivationModel().calcDerivative(getActivation(s),
+                                               getExcitation(s));
 }
 
 double Millard2012EquilibriumMuscle::
@@ -319,7 +316,7 @@ void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
 
 void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 {
-    set_default_activation(clampActivation(activation));
+    set_default_activation(getActivationModel().clampActivation(activation));
 }
 
 void Millard2012EquilibriumMuscle::
@@ -330,7 +327,8 @@ setActivation(SimTK::State& s, double activation) const
         setControls(SimTK::Vector(1, activation), controls);
         _model->setControls(s, controls);
     } else {
-        setStateVariableValue(s, STATE_ACTIVATION_NAME, clampActivation(activation));
+        setStateVariableValue(s, STATE_ACTIVATION_NAME,
+                              getActivationModel().clampActivation(activation));
     }
     markCacheVariableInvalid(s,"velInfo");
     markCacheVariableInvalid(s,"dynamicsInfo");
@@ -419,7 +417,8 @@ computeInitialFiberEquilibrium(SimTK::State& s) const
     // Elastic tendon initialization routine.
 
     // Initialize activation as specified by the user.
-    double clampedActivation = clampActivation(getActivation(s));
+    double clampedActivation =
+        getActivationModel().clampActivation(getActivation(s));
     setActivation(s,clampedActivation);
 
     // Initialize the multibody system to the initial state vector.
@@ -546,33 +545,6 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
         upd_tendon_slack_length() *= scaleFactor;
         path.setPreScaleLength(s, 0.0);
     }
-}
-
-double Millard2012EquilibriumMuscle::clampActivation(double activation) const
-{
-    return clamp(getMinimumActivation(), activation, 1.0);
-}
-
-double Millard2012EquilibriumMuscle::
-calcActivationDerivative(double activation, double excitation) const
-{
-    double da = 0.0;
-
-    if(!get_ignore_activation_dynamics()) {
-        // This model respects a lower bound on activation while preserving the
-        // expected steady-state value.
-        double clampedExcitation = clamp(getMinimumActivation(),excitation,1.0);
-        double clampedActivation = clamp(getMinimumActivation(),activation,1.0);
-        double tau = SimTK::NaN;
-
-        if(clampedExcitation > clampedActivation) {
-            tau = getActivationTimeConstant() * (0.5 + 1.5*clampedActivation);
-        } else {
-            tau = getDeactivationTimeConstant() / (0.5 + 1.5*clampedActivation);
-        }
-        da = (clampedExcitation - clampedActivation) / tau;
-    }
-    return da;
 }
 
 //==============================================================================
@@ -731,9 +703,10 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
-                a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
+                a = getActivationModel().clampActivation(
+                        getStateVariableValue(s, STATE_ACTIVATION_NAME));
             } else {
-                a = clampActivation(getControl(s));
+                a = getActivationModel().clampActivation(getControl(s));
             }
 
             const TendonForceLengthCurve& fseCurve =
@@ -765,9 +738,10 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = SimTK::NaN;
             if(!get_ignore_activation_dynamics()) {
-                a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
+                a = getActivationModel().clampActivation(
+                        getStateVariableValue(s, STATE_ACTIVATION_NAME));
             } else {
-                a = clampActivation(getControl(s));
+                a = getActivationModel().clampActivation(getControl(s));
             }
 
             const TendonForceLengthCurve& fseCurve =
@@ -874,9 +848,10 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         // Compute dynamic quantities.
         double a = SimTK::NaN;
         if(!get_ignore_activation_dynamics()) {
-            a = clampActivation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
+            a = getActivationModel().clampActivation(
+                    getStateVariableValue(s, STATE_ACTIVATION_NAME));
         } else {
-            a = clampActivation(getControl(s));
+            a = getActivationModel().clampActivation(getControl(s));
         }
 
         // Compute the stiffness of the muscle fiber.
@@ -1567,7 +1542,7 @@ calcActiveFiberForceAlongTendon(double activation,
 
     try {
         //Clamp activation to a legal range
-        double ca = clampActivation(activation);
+        double ca = getActivationModel().clampActivation(activation);
 
         //Normalize fiber length and velocity
         double lceN  = fiberLength/getOptimalFiberLength();
