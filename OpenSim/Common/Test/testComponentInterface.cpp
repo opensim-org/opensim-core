@@ -832,6 +832,7 @@ void testListInputs() {
     cout << tabReporter->getReport() << endl;
 
     tabReporter->clearReport();
+    ASSERT(tabReporter->getReport().getNumRows() == 0);
 }
 
 
