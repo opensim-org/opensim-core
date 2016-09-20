@@ -45,7 +45,6 @@ void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testFilterByFrameType();
-void testPhysicalFramesAddedInNonTreeOrder();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -61,12 +60,6 @@ public:
 int main()
 {
     SimTK::Array_<std::string> failures;
-
-    try { testPhysicalFramesAddedInNonTreeOrder(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalFramesAddedInNonTreeOrder");
-    }
 
     try { testBody(); }
     catch (const std::exception& e){
@@ -395,33 +388,4 @@ void testFilterByFrameType()
     ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
 }
-
-void testPhysicalFramesAddedInNonTreeOrder()
-{
-    Model pendulum("double_pendulum.osim");
-
-    SimTK::Transform X_RO;
-    X_RO.setP(SimTK::Vec3(0.1, 0.2, 0.3));
-    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::ZAxis);
-
-    // create PhysicalOffsetFrames Distal and Proximal to identify their
-    // relative location to the w.r.t a Body in the Model.
-    PhysicalOffsetFrame* offsetFrameDistal = new PhysicalOffsetFrame();
-    offsetFrameDistal->setName("offsetFrameDistal");
-    offsetFrameDistal->setOffsetTransform(X_RO);
-    pendulum.addComponent(offsetFrameDistal);
-
-    PhysicalOffsetFrame* offsetFrameProximal = new PhysicalOffsetFrame();
-    offsetFrameProximal->setName("offsetFrameProximal");
-    offsetFrameProximal->setOffsetTransform(~X_RO);
-    pendulum.addComponent(offsetFrameProximal);
-
-    // But now hook them up in reverse order such that offsetFrame2 is connected
-    // to rod2 of the pendulum and offsetFrame1 is connected to offsetFrame1
-    offsetFrameProximal->setParentFrame(pendulum.getComponent<Body>("rod2"));
-    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
-
-    SimTK::State& s = pendulum.initSystem();
-}
-
 
