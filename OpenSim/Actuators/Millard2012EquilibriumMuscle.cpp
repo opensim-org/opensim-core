@@ -61,6 +61,14 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // Switch to undamped model if damping coefficient is small.
+    if (get_fiber_damping() < MIN_NONZERO_DAMPING_COEFFICIENT) {
+        set_fiber_damping(0.0);
+        use_fiber_damping = false;
+    } else {
+        use_fiber_damping = true;
+    }
+
     // Set the names of the muscle curves.
     const std::string& namePrefix = getName();
 
@@ -127,33 +135,38 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     fpeCurve.ensureCurveUpToDate();
     fseCurve.ensureCurveUpToDate();
 
-    // Set properties of subcomponents.
-
-    // Fiber shortening velocity becomes unstable as pennation angle approaches
-    // Pi/2 because the kinematic equation for fiber velocity approaches a
-    // singularity as cos(phi) -> 0. We place an upper limit on the pennation
-    // angle (the maximum_pennation_angle property) to avoid this singularity.
-    // The pennation model subcomponent ensures that the maximum_pennation_angle
-    // property is within an appropriate range.
-    //
-    // Length ("l") of fiber (contractile element, "ce") along tendon ("AT"):
-    //      lceAT = lce*cos(phi)
-    // Velocity of fiber along tendon:
-    //      dlceAT = dlcedt*cos(phi) - lce*sin(phi)*dphidt
-    // Velocity of fiber:
-    //      dlcedt = (dlceAT + lce*sin(phi)*dphidt) / cos(phi)
+    // Check values of properties related to fiber kinematics and set properties
+    // of pennation model subcomponent. Values of optimal_fiber_length,
+    // pennation_angle_at_optimal, and maximum_pennation_angle are checked by
+    // MuscleFixedWidthPennationModel.
     auto& penMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx);
     penMdl.set_optimal_fiber_length(getOptimalFiberLength());
     penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
 
+    const double defaultFibLen = get_default_fiber_length();
+    SimTK_ERRCHK1_ALWAYS(defaultFibLen == clampFiberLength(defaultFibLen),
+        "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
+        "%s: default_fiber_length exceeds the permissible range",
+        getName().c_str());
+
+    // Check values of properties related to activation dynamics and set
+    // properties of activation dynamics model subcomponent. Values of
+    // activation_time_constant, deactivation_time_constant, and
+    // minimum_activation are checked by MuscleFirstOrderActivationDynamicModel.
     if (!get_ignore_activation_dynamics()) {
         auto& actMdl =
             updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
         actMdl.set_activation_time_constant(get_activation_time_constant());
         actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
         actMdl.set_minimum_activation(get_minimum_activation());
+
+        const double defaultAct = get_default_activation();
+        SimTK_ERRCHK1_ALWAYS(defaultAct == actMdl.clampActivation(defaultAct),
+            "Millard2012EquilibriumMuscle::extendFinalizeFromProperties",
+            "%s: default_activation exceeds the permissible range",
+            getName().c_str());
     }
 
     // Compute and store values that are used frequently.
@@ -304,25 +317,15 @@ setMuscleConfiguration(bool ignoreTendonCompliance,
 }
 
 void Millard2012EquilibriumMuscle::setFiberDamping(double dampingCoefficient)
-{
-    if(dampingCoefficient < MIN_NONZERO_DAMPING_COEFFICIENT) {
-        set_fiber_damping(0.0);
-        use_fiber_damping = false;
-    } else {
-        set_fiber_damping(dampingCoefficient);
-        use_fiber_damping = true;
-    }
-}
+{   set_fiber_damping(dampingCoefficient); }
 
 void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
-{
-    set_default_activation(getActivationModel().clampActivation(activation));
-}
+{   set_default_activation(activation); }
 
 void Millard2012EquilibriumMuscle::
 setActivation(SimTK::State& s, double activation) const
 {
-    if(get_ignore_activation_dynamics()) {
+    if (get_ignore_activation_dynamics()) {
         SimTK::Vector& controls(_model->updControls(s));
         setControls(SimTK::Vector(1, activation), controls);
         _model->setControls(s, controls);
@@ -335,56 +338,40 @@ setActivation(SimTK::State& s, double activation) const
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
-{
-    set_default_fiber_length(clampFiberLength(fiberLength));
-}
+{   set_default_fiber_length(fiberLength); }
 
 void Millard2012EquilibriumMuscle::
 setActivationTimeConstant(double activationTimeConstant)
-{
-    set_activation_time_constant(max(0.0, activationTimeConstant));
-}
+{   set_activation_time_constant(activationTimeConstant); }
 
 void Millard2012EquilibriumMuscle::
 setDeactivationTimeConstant(double deactivationTimeConstant)
-{
-    set_deactivation_time_constant(max(0.0, deactivationTimeConstant));
-}
+{   set_deactivation_time_constant(deactivationTimeConstant); }
 
 void Millard2012EquilibriumMuscle::
 setMinimumActivation(double minimumActivation)
-{
-    set_minimum_activation(min(1.0, max(0.0, minimumActivation)));
-}
+{   set_minimum_activation(minimumActivation); }
 
 void Millard2012EquilibriumMuscle::setActiveForceLengthCurve(
 ActiveForceLengthCurve& aActiveForceLengthCurve)
-{
-    set_ActiveForceLengthCurve(aActiveForceLengthCurve);
-}
+{   set_ActiveForceLengthCurve(aActiveForceLengthCurve); }
 
 void Millard2012EquilibriumMuscle::setForceVelocityCurve(
 ForceVelocityCurve& aForceVelocityCurve)
-{
-    set_ForceVelocityCurve(aForceVelocityCurve);
-}
+{   set_ForceVelocityCurve(aForceVelocityCurve); }
 
 void Millard2012EquilibriumMuscle::setFiberForceLengthCurve(
 FiberForceLengthCurve& aFiberForceLengthCurve)
-{
-    set_FiberForceLengthCurve(aFiberForceLengthCurve);
-}
+{   set_FiberForceLengthCurve(aFiberForceLengthCurve); }
 
 void Millard2012EquilibriumMuscle::setTendonForceLengthCurve(
 TendonForceLengthCurve& aTendonForceLengthCurve)
-{
-    set_TendonForceLengthCurve(aTendonForceLengthCurve);
-}
+{   set_TendonForceLengthCurve(aTendonForceLengthCurve); }
 
 void Millard2012EquilibriumMuscle::
 setFiberLength(SimTK::State& s, double fiberLength) const
 {
-    if(!get_ignore_tendon_compliance()) {
+    if (!get_ignore_tendon_compliance()) {
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
                          clampFiberLength(fiberLength));
         markCacheVariableInvalid(s,"lengthInfo");
