@@ -77,6 +77,11 @@ namespace OpenSim {
         validateDependentsMetaData();
     }
 
+    bool
+    AbstractDataTable::hasColumnLabels() const {
+        return _dependentsMetaData.hasKey("labels");
+    }
+
     std::vector<std::string> 
     AbstractDataTable::getColumnLabels() const {
         const auto& absArray = 

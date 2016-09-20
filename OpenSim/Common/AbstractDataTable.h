@@ -256,6 +256,9 @@ public:
     /// \endcode
     /// @{
 
+    /** Does the table have non-zero number of column labels.                 */
+    bool hasColumnLabels() const;
+
     /** Get column labels.                                                    
 
     \throws KeyNotFound If column labels have not be set for the table.       */
