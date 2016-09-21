@@ -238,8 +238,10 @@ size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
         pointers.push_back(std::unique_ptr<C>(creator()));
         // poll the change in memory usage
         size_t mem1 = getCurrentRSS();
-        // store change in memory usage (negative values are invalid)
-        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
+        // change in memory usage (negative values are invalid)
+        size_t delta = mem1 > mem0 ? mem1 - mem0 : 0;
+        if(delta) // store only valid values (creator cannot create 0 bytes)
+            deltas.push_back(delta);
     }
 
     OPENSIM_THROW_IF(deltas.size() < 2, OpenSim::Exception,
@@ -262,23 +264,35 @@ size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
 void validateMemoryUseEstimates()
 {
     size_t nSamples = 5;
-    size_t size = 20 * 1024; // 20 * 1KB;
+    // Approximate size of a small OpenSim model
+    size_t size = 1000 * 1024; // 1K * 1KB = 1MB;
 
-    auto creator = [size]() { 
-        char* block =  new char[size];
-        // initialize the block to ensure it is now allocated
-        for (size_t i = 0; i < size; ++i) {
-            block[i] = rand();
+    struct Block {
+        Block(size_t size) {
+            // allocate block of stuff of specified size
+            p = (char*)malloc(size);
+            // do some random initialization
+            for (size_t i = 0; i < size; i+=1024) {
+                p[i] = rand();
+            }
         }
-        return block;
+        ~Block() {
+            free(p);
+        }
+        // member is pointer to allocated block
+        char* p{};
     };
 
-    size_t delta = estimateMemoryChangeForCreator<char>(creator, nSamples);
+    auto creator = [size]() { 
+        return new Block(size);
+    };
 
-    std::cout << "delta = " << delta << " expected: " << size << std::endl;
+    size_t delta = estimateMemoryChangeForCreator<Block>(creator, nSamples);
 
     OPENSIM_THROW_IF(delta < size/2, OpenSim::Exception,
-        "Cannot estimate memory usage due to invalid getRSS() evaluation.");
+        "Cannot estimate memory usage due to invalid getRSS() evaluation."
+        "Estimated "+ std::to_string(delta) + "B but expected " +
+        std::to_string(size) + "B.");
 }
 
 // Estimate the change in memory usage resulting from executing a command
