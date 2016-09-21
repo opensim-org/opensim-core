@@ -163,7 +163,7 @@ void testMemoryUsage(const string& modelFile)
     };
 
     size_t model_size = 
-        estimateMemoryChangeForCreator<Model>(creator, 10);
+        estimateMemoryChangeForCreator<Model>(creator, 5);
 
     OPENSIM_THROW_IF(model_size == 0, OpenSim::Exception,
         "Model size was estimated to be zero.");
