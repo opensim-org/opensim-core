@@ -84,6 +84,9 @@ namespace OpenSim {
 
     std::vector<std::string> 
     AbstractDataTable::getColumnLabels() const {
+        OPENSIM_THROW_IF(!hasColumnLabels(),
+                         NoColumnLabels);
+        
         const auto& absArray = 
             _dependentsMetaData.getValueArrayForKey("labels");
         std::vector<std::string> labels{};
@@ -95,6 +98,9 @@ namespace OpenSim {
 
     const std::string& 
     AbstractDataTable::getColumnLabel(const size_t columnIndex) const {
+        OPENSIM_THROW_IF(!hasColumnLabels(),
+                         NoColumnLabels);
+
         const auto& labels = 
             _dependentsMetaData.getValueArrayForKey("labels");
         
@@ -117,6 +123,9 @@ namespace OpenSim {
                                       const std::string& columnLabel) {
         using namespace SimTK;
         using namespace std;
+
+        OPENSIM_THROW_IF(!hasColumnLabels(),
+                         NoColumnLabels);
 
         ValueArray<std::string> newLabels{};
         const auto& oldLabels = 
@@ -144,6 +153,9 @@ namespace OpenSim {
 
     size_t 
     AbstractDataTable::getColumnIndex(const std::string& columnLabel) const {
+        OPENSIM_THROW_IF(!hasColumnLabels(),
+                         NoColumnLabels);
+
         const auto& absArray = 
             _dependentsMetaData.getValueArrayForKey("labels");
         for(size_t i = 0; i < absArray.size(); ++i)
@@ -155,6 +167,9 @@ namespace OpenSim {
 
     bool 
     AbstractDataTable::hasColumn(const std::string& columnLabel) const {
+        OPENSIM_THROW_IF(!hasColumnLabels(),
+                         NoColumnLabels);
+
         const auto& absArray = 
             _dependentsMetaData.getValueArrayForKey("labels");
         for(size_t i = 0; i < absArray.size(); ++i)
