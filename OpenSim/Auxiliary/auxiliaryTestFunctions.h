@@ -222,12 +222,70 @@ inline void revertToVersionNumber1(const std::string& filenameOld,
     }
 }
 
-// Estimate the change in memory usage for a given command
+// Estimate the memory usage of a *creator* that heap allocates an object
+// of type C and returns a pointer to it. Creator can also perform any 
+// initialization before returning the pointer.
+template <typename C, typename T>
+size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
+{
+    std::vector<std::unique_ptr<C>> pointers;
+    std::vector<size_t> deltas;
+
+    for (size_t i = 0; i < nSamples; ++i) {
+        size_t mem0 = getCurrentRSS();
+        // Execute the desired creator 
+        // store in unique_ptrs to delay deletion
+        pointers.push_back(std::unique_ptr<C>(creator()));
+        // poll the change in memory usage
+        size_t mem1 = getCurrentRSS();
+        // store change in memory usage (negative values are invalid)
+        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
+    }
+
+    OPENSIM_THROW_IF(deltas.size() < 2, OpenSim::Exception,
+        "Insufficient number of nonzero samples to estimate memory change. "
+        "Consider increasing the number of samples.");
+
+    size_t nmedian = deltas.size() / 2;
+    // sort the deltas up to and including the nth element
+    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+
+    return deltas[nmedian];
+}
+
+// Determine if getRSS is providing reliable estimates of memory usage by
+// testing against an allocation of known size and verifying that the change
+// memory use is detected. Employ this method to validate the use of
+// memory use estimators (e.g. estimateMemoryChangeForCreator and
+// estimateMemoryChangeForCommand). Do this at the beginning of your test 
+// involving checks for memory use.
+void validateMemoryUseEstimates()
+{
+    size_t nSamples = 5;
+    size_t size = 20 * 1024; // 20 * 1KB;
+
+    auto creator = [size]() { 
+        char* block =  new char[size];
+        // initialize the block to ensure it is now allocated
+        for (size_t i = 0; i < size; ++i) {
+            block[i] = rand();
+        }
+        return block;
+    };
+
+    size_t delta = estimateMemoryChangeForCreator<char>(creator, nSamples);
+
+    std::cout << "delta = " << delta << " expected: " << size << std::endl;
+
+    OPENSIM_THROW_IF(delta < size/2, OpenSim::Exception,
+        "Cannot estimate memory usage due to invalid getRSS() evaluation.");
+}
+
+// Estimate the change in memory usage resulting from executing a command
 template <typename T>
 size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
 {
     std::vector<size_t> deltas;
-    std::cout << "command of type: " << typeid(T).name() << std::endl;
 
     for (size_t i = 0; i < nSamples; ++i) {
         size_t mem0 = getCurrentRSS();
@@ -237,34 +295,16 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         // poll the change in memory usage
         size_t mem1 = getCurrentRSS();
+        // store change in memory usage (negative values are invalid)
         deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
     }
 
-    size_t nmedian = nSamples / 2;
+    size_t nmedian = deltas.size() / 2;
+    // sort the deltas up to and including the nth element
     std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
-
-    std::cout << "median: " << deltas[nmedian] <<
-        "    max: " << *std::max_element(deltas.begin(), deltas.end()) << std::endl;
 
     return deltas[nmedian];
 }
 
-bool isGetRSSValid() 
-{
-    size_t size = 20 * 1024; // 20 * 1KB;
-    // This should yield a change in memory usage of exactly 20KB;
-    char* charBlock = nullptr;
-    auto command = [size, charBlock]() {
-        // This should yield a change in memory usage of exactly 20KB;
-        char* charBlock = (char*)std::malloc(size * sizeof(char));
-        for (size_t i = 1; i < size; ++i) {
-            charBlock[i] = charBlock[i - 1];
-        }
-    };
-    size_t delta = estimateMemoryChangeForCommand(command, 10);
-
-    free(charBlock);
-    return delta == size;
-}
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
