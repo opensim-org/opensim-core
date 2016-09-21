@@ -54,6 +54,17 @@ public:
         const auto& rx = myUniversalJoint.
                          getCoordinate(UniversalJoint::Coord::Rotation1X);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myUniversalJoint.getCoordinate(opensim.UniversalJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rx = myUniversalJoint.getCoordinate(UniversalJoint.Coord.Rotation1X);
+        \endcode
     */
     enum class Coord: unsigned {
         Rotation1X,

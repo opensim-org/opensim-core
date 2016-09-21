@@ -52,6 +52,17 @@ public:
         const auto& rz = myPlanarJoint.
                          getCoordinate(PlanarJoint::Coord::RotationZ);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rz = myPlanarJoint.getCoordinate(opensim.PlanarJoint.Coord_RotationZ)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rz = myPlanarJoint.getCoordinate(PlanarJoint.Coord.RotationZ);
+        \endcode
     */
     enum class Coord: unsigned {
         RotationZ,
