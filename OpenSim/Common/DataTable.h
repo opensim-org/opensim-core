@@ -121,6 +121,18 @@ public:
         *this = std::move(*table);
     }
 
+    /** Retrieve the number of components each element (of type ETY) of the 
+    table is made of. Some examples:
+    <table>
+    <tr><td>Table Type</td><td>Element Type</td><td>Num of Components</td></tr>
+    <tr><td>DataTable<double, double></td><td>double</td><td>1</td></tr>
+    <tr><td>DataTable<double, Vec3></td><td>Vec3</td><td>3</td></tr>
+    <tr><td>DataTable<double, Quaternion></td><td>Quaternion</td><td>4</td></tr>
+    </table>                                                                  */
+    unsigned numComponentsPerElement() const override {
+        return numComponentsPerElement_impl(ETY{});
+    }
+
     /// @name Row accessors/mutators.
     /// Following get/upd functions operate on matrix and not the independent
     /// column.
@@ -564,9 +576,25 @@ protected:
         // No operation.
     }
 
+    static constexpr
+    unsigned numComponentsPerElement_impl(double) {
+        return 1;
+    }
+    template<int M>
+    static constexpr
+    unsigned numComponentsPerElement_impl(SimTK::Vec<M>) {
+        return M;
+    }
+    template<int M, int N>
+    static constexpr
+    unsigned numComponentsPerElement_impl(SimTK::Vec<M, SimTK::Vec<N>>) {
+        return M * N;
+    }
+
     std::vector<ETX>    _indData;
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
+
 
 /** Print DataTable out to a stream. Metadata is not printed to the stream as it
 is currently allowed to contain objects that do not support this operation.   

@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <iostream>
 
@@ -181,6 +181,22 @@ int main() {
         throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
                 "(\"Filename\").getValue<std::string>() != std::string"
                 "{\"/path/to/file\"}"};
+
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, double    >{})).
+            numComponentsPerElement() == 1);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, Vec3      >{})).
+            numComponentsPerElement() == 3);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, UnitVec3  >{})).
+            numComponentsPerElement() == 3);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, Quaternion>{})).
+            numComponentsPerElement() == 4);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, SpatialVec>{})).
+            numComponentsPerElement() == 6);
 
     return 0;
 }

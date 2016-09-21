@@ -154,6 +154,10 @@ public:
     virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
 
+    /** Get number of components per element of the DataTable. See documentation
+    for DataTable on possible return values.                                  */
+    virtual unsigned numComponentsPerElement() const = 0;
+
     /** Get number of rows.                                                   */
     size_t getNumRows() const;
 
