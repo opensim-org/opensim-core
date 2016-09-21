@@ -50,10 +50,8 @@ int main()
     try {
         LoadOpenSimLibrary("osimActuators");
         testStates("arm26.osim");
-        if (isGetRSSValid()) {
-            testMemoryUsage("arm26.osim");
-            testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
-        }
+        testMemoryUsage("arm26.osim");
+        testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
     }
     catch (const Exception& e) {
         cout << "testInitState failed: ";
@@ -152,22 +150,32 @@ void testMemoryUsage(const string& modelFile)
 {
     using namespace SimTK;
 
+    // Throw an exception if we cannot validate estimates
+    // of memory with current instrumentation
+    validateMemoryUseEstimates();
+
     //=========================================================================
     // Estimate the size of the model when loaded into memory
-    auto loader = [modelFile]() {
-        OpenSim::Model model(modelFile);
-        model.finalizeFromProperties();
+    auto creator = [modelFile]() { 
+        Model* model = new Model(modelFile);
+        model->finalizeFromProperties();
+        return model;
     };
-    size_t model_size = estimateMemoryChangeForCommand(loader, 10);
+
+    size_t model_size = 
+        estimateMemoryChangeForCreator<Model>(creator, 10);
+
+    OPENSIM_THROW_IF(model_size == 0, OpenSim::Exception,
+        "Model size was estimated to be zero.");
 
     Model model(modelFile);
-    State state = model.initSystem();
+    State& state = model.initSystem();
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
 
     // determine the change in memory usage due to invoking model.initialiState
-    auto command = [&model]() mutable { model.initializeState(); };
+    auto command = [&model, state]() mutable { state = model.initializeState(); };
     const size_t leak = estimateMemoryChangeForCommand(command, MAX_N_TRIES);
 
     long double leak_percent = 100.0 * double(leak) / model_size;
