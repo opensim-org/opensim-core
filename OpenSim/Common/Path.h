@@ -36,11 +36,13 @@ namespace OpenSim {
 * by designated separators (e.g., "/" or "\"). The string name related to each
 * level is called a "pathElement" here.
 *
+* \if developer
 * This class stores the list of levels as a vector of strings. One char is used
 * to denote a path separator when either reading in or writing the Path out to
 * a string. A bool is stored to determine whether this Path should be resolved
 * relative to the root (denoted with a leading separator char) or not.
-*
+* \endif
+
 * @author Carmichael Ong
 */
 class OSIMCOMMON_API Path {
@@ -50,7 +52,8 @@ public:
     Path() = default;
 
     /// Construct Path from a string, given separator character and a string
-    /// of invalidChars. Performs a cleanPath() at the end of construction.
+    /// of invalidChars. Will also clean up the path by removing "." and
+    /// resolving ".." when possible.
     Path(const std::string path,
          const char separator,
          const std::string invalidChars);

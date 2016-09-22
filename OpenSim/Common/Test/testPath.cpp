@@ -24,8 +24,9 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-/* The purpose of this test is strictly to check that classed derived from
- * the Path class work the objects/components they are meant to service. 
+/* The purpose of this test is strictly to check that classes derived from
+ * the Path class work outside of the objects/components they are meant to 
+ * service (i.e. check that the path logic works).
  */
 
 using namespace OpenSim;
@@ -85,7 +86,7 @@ void testComponentPath() {
     // argument can't be a relative path
     ASSERT_THROW(Exception, relPath1.formAbsolutePath(&relPath2));
     
-    /* Test findRelativePath(). Both paths must be absolute */
+    /* Test formRelativePath(). Both paths must be absolute */
     // Test path that go up and back down the tree
     ASSERT(absPath1.formRelativePath(&absPath2).toString() == "../../../../c/d");
     ASSERT(absPath2.formRelativePath(&absPath1).toString() == "../../e/f/g/h");
