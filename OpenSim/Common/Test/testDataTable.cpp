@@ -260,6 +260,68 @@ int main() {
         // DataTable_<double, Vec6      > tableVec6_fail{tableDouble};
         // DataTable_<double, SpatialVec> tableVec6_fail{tableDouble};
     }
+    {
+        TimeSeriesTable_<Vec3> tableVec3{};
+        tableVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+        
+        TimeSeriesTable_<double> tableDouble{tableVec3};
+        ASSERT(tableDouble.getColumnLabels().size() == 9);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 9);
+        ASSERT(tableDouble.getRowAtIndex(0)[0] == 1);
+        ASSERT(tableDouble.getRowAtIndex(1)[0] == 3);
+        ASSERT(tableDouble.getRowAtIndex(2)[0] == 2);
+        ASSERT(tableDouble.getRowAtIndex(0)[8] == 3);
+        ASSERT(tableDouble.getRowAtIndex(1)[8] == 2);
+        ASSERT(tableDouble.getRowAtIndex(2)[8] == 1);
+ 
+        TimeSeriesTable_<Quaternion> tableQuat{}; 
+        tableQuat.setColumnLabels({"col0", "col1", "col2"});
+        tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
+        tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
+        tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
+
+        tableDouble = tableQuat;
+        ASSERT(tableDouble.getColumnLabels().size() == 12);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 12);
+
+        TimeSeriesTable_<Vec3> tableUnitVec3{};
+        tableUnitVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableUnitVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableUnitVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableUnitVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        tableDouble = tableUnitVec3;
+        ASSERT(tableDouble.getColumnLabels().size() == 9);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 9);
+
+        // TimeSeriesTable_<SpatialVec> tableSpatialVec{};
+        // tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
+        // tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
+        //                                 {{2, 2, 2}, {2, 2, 2}},
+        //                                 {{3, 3, 3}, {3, 3, 3}}});
+        // tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
+        //                                 {{1, 1, 1}, {1, 1, 1}},
+        //                                 {{2, 2, 2}, {2, 2, 2}}});
+        // tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
+        //                                 {{3, 3, 3}, {3, 3, 3}},
+        //                                 {{1, 1, 1}, {1, 1, 1}}});
+
+        // tableDouble = tableSpatialVec;
+        // ASSERT(tableDouble.getColumnLabels().size() == 18);
+        // ASSERT(tableDouble.getNumRows()             == 3);
+        // ASSERT(tableDouble.getNumColumns()          == 18);
+
+        // Following will fail to compile -- no matching constructor.
+        // TimeSeriesTable_<Vec3      > tableVec3_fail{tableDouble};
+        // TimeSeriesTable_<Vec6      > tableVec6_fail{tableDouble};
+        // TimeSeriesTable_<SpatialVec> tableVec6_fail{tableDouble};
+    }
 
     return 0;
 }
