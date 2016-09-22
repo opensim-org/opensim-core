@@ -106,6 +106,9 @@ public:
     TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
     ~TimeSeriesTable_()                                  = default;
+
+    using DataTable_<double, ETY>::DataTable_;
+    using DataTable_<double, ETY>::operator=;
     
     /** Construct a TimeSeriesTable_ from a DataTable_.                       
 
