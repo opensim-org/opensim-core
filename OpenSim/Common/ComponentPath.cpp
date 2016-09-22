@@ -30,22 +30,22 @@ using namespace std;
 const char ComponentPath::separator = '/';
 const std::string ComponentPath::invalidChars = "\\/*+";
 
-ComponentPath::ComponentPath(const string path) :
+ComponentPath::ComponentPath(const string& path) :
     Path(path, getSeparator(), getInvalidChars())
 {}
 
-ComponentPath::ComponentPath(std::vector<std::string> pathVec, bool isAbsolute) :
+ComponentPath::ComponentPath(std::vector<std::string>& pathVec, bool isAbsolute) :
     Path(pathVec, getSeparator(), getInvalidChars(), isAbsolute)
 {}
 
-ComponentPath ComponentPath::formAbsolutePath(ComponentPath* otherPath)
+ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) const
 {
     vector<string> absPathVec = formAbsolutePathVec(otherPath);
     return ComponentPath(absPathVec, true);
 
 }
 
-ComponentPath ComponentPath::formRelativePath(ComponentPath* otherPath)
+ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const
 {
     vector<string> relPathVec = formRelativePathVec(otherPath);
     return ComponentPath(relPathVec, false);
@@ -57,7 +57,7 @@ ComponentPath ComponentPath::getParentPath()
     return ComponentPath(parentPathVec, isAbsolute());
 }
 
-std::string ComponentPath::getParentPathStr()
+std::string ComponentPath::getParentPathString()
 {
     return getParentPath().toString();
 }

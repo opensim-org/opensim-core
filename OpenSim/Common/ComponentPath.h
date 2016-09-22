@@ -51,11 +51,11 @@ public:
     
     /// Construct a ComponentPath from a string. This will clean up the
     /// path, removing and resolving "." and ".." when possible.
-    ComponentPath(const std::string path);
+    ComponentPath(const std::string& path);
 
     /// Constructor a ComponentPath from a vector that contains all subtree
     /// node names and a bool that indicates if the path is an absolute path.
-    ComponentPath(std::vector<std::string> pathVec, bool isAbsolute);
+    ComponentPath(std::vector<std::string>& pathVec, bool isAbsolute);
 
     // Operators
     bool operator==(const ComponentPath& other) const
@@ -74,19 +74,19 @@ public:
 
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
-    ComponentPath formAbsolutePath(ComponentPath* otherPath);
+    ComponentPath formAbsolutePath(const ComponentPath& otherPath) const;
 
     /// Find the relative Path between this Path and another Path (otherPath)
     /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
     /// absolute.
-    ComponentPath formRelativePath(ComponentPath* otherPath);
+    ComponentPath formRelativePath(const ComponentPath& otherPath) const;
 
     /// Return the sub-path that contains all subdirectory levels 
     /// except for the last one.
     ComponentPath getParentPath();
 
     /// Return the parent path as a string.
-    std::string getParentPathStr();
+    std::string getParentPathString();
 
     /// Return a string of a subdirectory name at a specified level. This is
     /// 0 indexed.

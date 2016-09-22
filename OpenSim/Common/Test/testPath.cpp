@@ -75,29 +75,29 @@ void testComponentPath() {
     /* Test formAbsolutePath(). Test a variety of paths. The argument 
      * in formAbsolutePath() must be an absolute path itself. */
     // Test without any ".."
-    ASSERT(relPath1.formAbsolutePath(&absPath3).toString() == absStr1);
-    ASSERT(relPath2.formAbsolutePath(&absPath3).toString() == absStr2);
+    ASSERT(relPath1.formAbsolutePath(absPath3).toString() == absStr1);
+    ASSERT(relPath2.formAbsolutePath(absPath3).toString() == absStr2);
     // Any absolute path should return itself
-    ASSERT(absPath1.formAbsolutePath(&absPath2) == absPath1);
+    ASSERT(absPath1.formAbsolutePath(absPath2) == absPath1);
     // Test if this works from root.
-    ASSERT(relPath1.formAbsolutePath(&rootPath).toString() == "/c/d");
+    ASSERT(relPath1.formAbsolutePath(rootPath).toString() == "/c/d");
     // Test with lots of ".."
-    ASSERT(relPath3.formAbsolutePath(&absPath2) == absPath1);
+    ASSERT(relPath3.formAbsolutePath(absPath2) == absPath1);
     // argument can't be a relative path
-    ASSERT_THROW(Exception, relPath1.formAbsolutePath(&relPath2));
+    ASSERT_THROW(Exception, relPath1.formAbsolutePath(relPath2));
     
     /* Test formRelativePath(). Both paths must be absolute */
     // Test path that go up and back down the tree
-    ASSERT(absPath1.formRelativePath(&absPath2).toString() == "../../../../c/d");
-    ASSERT(absPath2.formRelativePath(&absPath1).toString() == "../../e/f/g/h");
+    ASSERT(absPath1.formRelativePath(absPath2).toString() == "../../../../c/d");
+    ASSERT(absPath2.formRelativePath(absPath1).toString() == "../../e/f/g/h");
     // Test path that just goes down a tree
-    ASSERT(absPath1.formRelativePath(&absPath3).toString() == "c/d");
+    ASSERT(absPath1.formRelativePath(absPath3).toString() == "c/d");
     // Test path that only goes up the tree
-    ASSERT(absPath3.formRelativePath(&absPath2).toString() == "../../../..");
+    ASSERT(absPath3.formRelativePath(absPath2).toString() == "../../../..");
     // Throw exceptions if either or both paths are not absolute
-    ASSERT_THROW(Exception, relPath1.formRelativePath(&absPath2));
-    ASSERT_THROW(Exception, absPath2.formRelativePath(&relPath2));
-    ASSERT_THROW(Exception, relPath2.formRelativePath(&relPath1));
+    ASSERT_THROW(Exception, relPath1.formRelativePath(absPath2));
+    ASSERT_THROW(Exception, absPath2.formRelativePath(relPath2));
+    ASSERT_THROW(Exception, relPath2.formRelativePath(relPath1));
 
 
     /* Test paths with "." and ".." */
@@ -156,7 +156,7 @@ void testComponentPath() {
     // Test if getParentPath() returns correct ComponentPath object
     ASSERT(numberedAbsPath.getParentPath() == numberedAbsPathParent);
     // Test if getParentPathStr() returns correct string
-    ASSERT(numberedAbsPath.getParentPathStr() == numberedAbsPathParentStr);
+    ASSERT(numberedAbsPath.getParentPathString() == numberedAbsPathParentStr);
     // Loop through all levels of the subtree and see if names match
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedAbsPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
@@ -167,7 +167,7 @@ void testComponentPath() {
     std::string numberedRelPathParentStr = "zero/one/two/three";
     ComponentPath numberedRelPathParent(numberedRelPathParentStr);
     ASSERT(numberedRelPath.getParentPath() == numberedRelPathParent);
-    ASSERT(numberedRelPath.getParentPathStr() == numberedRelPathParentStr);
+    ASSERT(numberedRelPath.getParentPathString() == numberedRelPathParentStr);
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }

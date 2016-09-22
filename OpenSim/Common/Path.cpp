@@ -92,11 +92,11 @@ std::string Path::toString() const
 void Path::insertPathElement(size_t pos, const std::string& pathElement) 
 {
     if (pos > getPathLength()) {
-        OPENSIM_THROW(Exception, "insertPathElement: pos must be between 0 and path length");
+        OPENSIM_THROW(Exception, "Index is out of range of elements");
     }
 
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "invalid character used in path element");
+        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
     }
     _path.insert(_path.begin() + pos, pathElement);
 }
@@ -104,49 +104,49 @@ void Path::insertPathElement(size_t pos, const std::string& pathElement)
 void Path::erasePathElement(size_t pos)
 {
     if (pos > getPathLength() - 1) {
-        OPENSIM_THROW(Exception, "erasePathElement: pos is out of range of elements");
+        OPENSIM_THROW(Exception, "Index is out of range of elements");
     }
 
     _path.erase(_path.begin() + pos);
 }
 
-std::vector<std::string> Path::formAbsolutePathVec(Path* otherPath) 
+std::vector<std::string> Path::formAbsolutePathVec(const Path& otherPath) const
 {
     if (_isAbsolute) {
         return _path;
     }
     
-    if (!otherPath->_isAbsolute) {
-        OPENSIM_THROW(Exception, "getOatherPathVec: otherPath must be an absolute path");
+    if (!otherPath._isAbsolute) {
+        OPENSIM_THROW(Exception, "'otherPath' must be an absolute path");
     }
 
     std::vector<std::string> pathVec;
-    for (auto pathElement : otherPath->_path) {
+    for (const auto& pathElement : otherPath._path) {
         pathVec.push_back(pathElement);
     }
 
-    for (auto pathElement : _path) {
+    for (const auto& pathElement : _path) {
         pathVec.push_back(pathElement);
     }
 
     return pathVec;
 }
 
-std::vector<std::string> Path::formRelativePathVec(Path* otherPath) 
+std::vector<std::string> Path::formRelativePathVec(const Path& otherPath) const
 {
-    if (!this->_isAbsolute || !otherPath->_isAbsolute) {
-        OPENSIM_THROW(Exception, "getRelativePathVec: both paths must be absolute to find relative path");
+    if (!this->_isAbsolute || !otherPath._isAbsolute) {
+        OPENSIM_THROW(Exception, "Both paths must be absolute paths");
     }
 
     size_t thisPathLength = this->getPathLength();
-    size_t otherPathLength = otherPath->getPathLength();
+    size_t otherPathLength = otherPath.getPathLength();
 
     // find how many elements at the head are in common
     size_t searchLength = std::min(thisPathLength, otherPathLength);
     bool match = true;
     size_t ind = 0;
     while (match && ind < searchLength) {
-        if (this->_path[ind] != otherPath->_path[ind]) {
+        if (this->_path[ind] != otherPath._path[ind]) {
             match = false;
         }
         else {
@@ -202,7 +202,7 @@ void Path::cleanPath()
     }
 
     if (!_path.empty() && _path[0] == ".." && _isAbsolute) {
-        OPENSIM_THROW(Exception, "absolute path cannot start with ''..''");
+        OPENSIM_THROW(Exception, "Absolute path cannot start with '..'");
     }
 }
 
@@ -217,7 +217,7 @@ bool Path::isLegalPathElement(const std::string& pathElement)
 void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "invalid character used in path element");
+        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
     }
     _path.push_back(pathElement);
 }

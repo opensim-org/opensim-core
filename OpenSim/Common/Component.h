@@ -2090,7 +2090,7 @@ protected:
         ComponentPath curCompPath(".");
 
         while (ind < pathLength && current) {
-            currentSubpath = pathToFind.getSubcomponentNameAtLevel(ind);
+            currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
             ComponentPath currentPathName(current->getName());
 
             if (currentSubpath == upPath && current->hasParent())
@@ -2821,7 +2821,7 @@ void Input<T>::findAndConnect(const Component& root) {
         parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
                            annotation);
         ComponentPath outputPath(outputPathStr);
-        std::string componentPathStr = outputPath.getParentPathStr();
+        std::string componentPathStr = outputPath.getParentPathString();
         std::string outputName = outputPath.getComponentName();
         try {
             const AbstractOutput* output = nullptr;

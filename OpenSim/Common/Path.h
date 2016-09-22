@@ -78,13 +78,14 @@ public:
     std::string toString() const;
 
     /// Return true if this Path is an absolute path.
-    bool isAbsolute() { return _isAbsolute; };
+    bool isAbsolute() const { return _isAbsolute; };
 
     /// Return the number of elements in the Path
     size_t getPathLength() const { return _path.size(); };
 
     /// Push a string to the back of a path (i.e. the end). First checks if the
-    /// pathElement is legal. Does not change if path is absolute or relative.
+    /// pathElement is valid. This function does not alter whether this path is
+    /// absolute or relative.
     void pushBack(const std::string& pathElement) {
         appendPathElement(pathElement);
     }
@@ -98,26 +99,26 @@ public:
 protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
-    std::vector<std::string> formAbsolutePathVec(Path* otherPath);
+    std::vector<std::string> formAbsolutePathVec(const Path& otherPath) const;
 
     /// Find the relative Path between this Path and another Path (otherPath)
     /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
     /// absolute.
-    std::vector<std::string> formRelativePathVec(Path* otherPath);
+    std::vector<std::string> formRelativePathVec(const Path& otherPath) const;
 
     /// Return the the sub-path that contains all pathElements except for
     /// the last one.
-    std::vector<std::string> getParentPathVec()
+    std::vector<std::string> getParentPathVec() const
     {
         return getSubPathVec(0, getPathLength() - 1);
     }
 
     /// Return the pathElement from the specified position as a string. This
     /// does not do any checks on the bounds.
-    std::string getPathElement(size_t pos) { return _path[pos]; };
+    std::string getPathElement(size_t pos) const { return _path[pos]; };
 
     /// Return the last pathElement as a string.
-    std::string getPathName() { return _path[getPathLength() - 1]; };
+    std::string getPathName() const { return _path[getPathLength() - 1]; };
 
 private:
     /// Insert a pathElement at the specified position. Note that this could
@@ -142,7 +143,7 @@ private:
     void cleanPath();
 
     /// Return the sub-path, on the range [first, last).
-    std::vector<std::string> getSubPathVec(size_t first, size_t last)
+    std::vector<std::string> getSubPathVec(size_t first, size_t last) const
     {
         std::vector<std::string> subPath(_path.begin() + first,
             _path.begin() + last);
