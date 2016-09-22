@@ -34,6 +34,12 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
+namespace {
+    template<typename A, typename B>
+    using enable_if_same =
+        typename std::enable_if<std::is_same<A, B>::value>::type;
+}
+
 /** DataTable_ is a in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
 independent column and a set of dependent columns. The type of the independent 
@@ -121,6 +127,132 @@ public:
         *this = std::move(*table);
     }
 
+    /** Contruct DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes provided.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy-construct this table from. This table can be
+                of for example DataTable_<double, Quaternion>, 
+                DataTable_<double, Vec6>.
+    \param suffixes Suffixes to be used for column-labels in this table when
+                    splitting columns of 'that' table. For example a column 
+                    labelled 'marker' from DataTable_<double, Vec3> will be
+                    split into 3 columns named
+                    \code
+                    std::string{'marker' + suffixes[0]},
+                    std::string{'marker' + suffixes[1]},
+                    std::string{'marker' + suffixes[2]}
+                    \endcode
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY,
+             typename ThisETY = ETY,
+             typename = enable_if_same<ThisETY, double>>
+    DataTable_(const DataTable_<double, ThatETY>& that,
+               const std::vector<std::string>& suffixes) :
+    AbstractDataTable{that} {
+        std::vector<std::string> thatLabels{};
+        try {
+            thatLabels = that.getColumnLabels();
+        } catch(const Exception&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "DataTable 'that' has no column labels.");
+        }
+        OPENSIM_THROW_IF(that.getNumRows() == 0 || that.getNumColumns() == 0,
+                         InvalidArgument,
+                         "DataTable 'that' has zero rows/columns.");
+        OPENSIM_THROW_IF(!suffixes.empty() &&
+                         suffixes.size() != that.numComponentsPerElement(),
+                         InvalidArgument,
+                         "'suffixes' must contain same number of elements as "
+                         "number of components per element of DataTable 'that'."
+                         "See documentation for numComponentsPerElement().");
+
+        std::vector<std::string> thisLabels{};
+        for(const auto& label : thatLabels) {
+            if(suffixes.empty()) {
+                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
+                    thisLabels.push_back(label + "_" + std::to_string(i));
+            } else {
+                for(const auto& suffix : suffixes)
+                    thisLabels.push_back(label + suffix);
+            }
+        }
+        setColumnLabels(thisLabels);
+
+        for(unsigned r = 0; r < that.getNumRows(); ++r) {
+            const auto& thatInd = that.getIndependentColumn().at(r);
+            const auto& thatRow = that.getRowAtIndex(r);
+            std::vector<ETY> row{};
+            for(unsigned c = 0; c < that.getNumColumns(); ++c)
+                for(unsigned i = 0; i < that.numComponentsPerElement(); ++i)
+                    row.push_back(thatRow[c][i]);
+            appendRow(thatInd, row);
+        }
+    }
+
+    /** Contruct DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes of form "_1",
+    "_2", "_3" and so on.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy-construct this table from. This table can be
+                of for example DataTable_<double, Quaternion>, 
+                DataTable_<double, Vec6>.
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY,
+             typename ThisETY = ETY,
+             typename = enable_if_same<ThisETY, double>>
+    explicit DataTable_(const DataTable_<double, ThatETY>& that) :
+    DataTable_(that, std::vector<std::string>{}) {
+        // No operation.
+    }
+
+    /** Copy assign a DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes of form "_1",
+    "_2", "_3" and so on.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy assign from. This table can be
+                of for example DataTable_<double, Quaternion>, 
+                DataTable_<double, Vec6>.
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY,
+             typename ThisETY = ETY,
+             typename = enable_if_same<ThisETY, double>>
+    DataTable_& operator=(const DataTable_<double, ThatETY>& that) {
+        return operator=(DataTable_{that});
+    }
+    
     /** Retrieve the number of components each element (of type ETY) of the 
     table is made of. Some examples:
     <table>
