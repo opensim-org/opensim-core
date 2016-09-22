@@ -1996,21 +1996,22 @@ protected:
         ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
-            std::string compName = comp.getName();
+            // if a child of this Component, one should not need
+            // to specify this Component's full path name
             ComponentPath compFullPath(comp.getFullPathName());
             ComponentPath thisFullPathPlusSubname(getFullPathName());
             thisFullPathPlusSubname.pushBack(subname);
-
-            // if a child of this Component, one should not need
-            // to specify this Component's full path name 
             if (compFullPath == thisFullPathPlusSubname) {
                 foundCs.push_back(&comp);
                 break;
-            } // otherwise, we just have a type and name match
-              // which we may need to support for compatibility with older models
-              // where only names were used (not path or type)
-              // TODO replace with an exception -aseth
-            else if (compName == subname) {
+            } 
+
+            // otherwise, we just have a type and name match
+            // which we may need to support for compatibility with older models
+            // where only names were used (not path or type)
+            // TODO replace with an exception -aseth
+            std::string compName = comp.getName();
+            if (compName == subname) {
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
