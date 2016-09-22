@@ -172,6 +172,11 @@ MuscleFirstOrderActivationDynamicModel.
 \li kg: kilograms
 \li s: seconds
 
+<B>Caution</B>
+
+The Millard2012AccelerationMuscle class is experimental and has not been
+extensively tested in all operational conditions.
+
 <B>Usage</B>
 
  Note that this object should be updated through the set methods provided. 
