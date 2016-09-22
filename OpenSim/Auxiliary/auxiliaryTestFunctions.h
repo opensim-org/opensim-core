@@ -286,7 +286,15 @@ void validateMemoryUseEstimates(const size_t nSamples = 11)
         return new Block(size);
     };
 
-    size_t delta = estimateMemoryChangeForCreator<Block>(creator, nSamples);
+    size_t delta = 0;
+    try {
+        delta = estimateMemoryChangeForCreator<Block>(creator, nSamples);
+    }
+    catch (const std::exception& ex) {
+        OPENSIM_THROW(OpenSim::Exception,
+            "Failed to estimate change in memory usage. Details:\n"
+            + std::string(ex.what()) );
+    }
 
     OPENSIM_THROW_IF(delta < size/2, OpenSim::Exception,
         "Cannot estimate memory usage due to invalid getRSS() evaluation."
