@@ -2087,7 +2087,7 @@ protected:
         size_t ind = 0;
         ComponentPath currentSubpath;
         ComponentPath upPath("..");
-        ComponentPath curDirPath(".");
+        ComponentPath curCompPath(".");
 
         while (ind < pathLength && current) {
             currentSubpath = pathToFind.getSubcomponentNameAtLevel(ind);
@@ -2095,15 +2095,16 @@ protected:
 
             if (currentSubpath == upPath && current->hasParent())
                 current = &current->getParent();
-            // if current in dir keep drilling down the path 
+            // if currentPathName matches currentSubpath traversing the path
             else if (currentPathName == currentSubpath) {
                 ind++;
                 continue;
             }
-            // if dir is empty we are at root or have a nameless comp
-            // if dir is '.' we are in the right parent, and loop again
-            // so that dir is the name of the component we want.
-            else if (!currentSubpath.toString().empty() && currentSubpath != curDirPath) {
+            // if currentSubpath is empty we are at root or have a nameless 
+            // comp
+            // if currentSubpath is '.' we are in the right parent, and loop
+            // again so that currentSubpath is the name of the component we want
+            else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentFullPathPlusSubpath(current->getFullPathName());
@@ -2111,9 +2112,9 @@ protected:
                 for (const Component& comp : compsList) {
                     ComponentPath compFullPath(comp.getFullPathName());
                     std::string compName = comp.getName();
-                    // Match for the dir
+                    // Check if we're in the right component
                     if (compFullPath == currentFullPathPlusSubpath) {
-                        // In the right dir and has matching name
+                        // In the right component and has matching name
                         // update current to this comp
                         current = &comp;
                         if (compName == pathNameToFind) {
@@ -2127,7 +2128,7 @@ protected:
                         // get out of this list and start going down the new current
                         break;
                     }
-                    // No match in this dir
+                    // No match in this component
                     current = nullptr;
                 }
             }
