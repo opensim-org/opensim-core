@@ -312,10 +312,18 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
         size_t mem0 = getCurrentRSS();
         // Execute the desired command
         command();
-        // wait a millisecond to allow memory usage to settle
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        // poll the change in memory usage
-        size_t mem1 = getCurrentRSS();
+        // initialize post-command memory usage to an error causing size
+        size_t mem1 = std::numeric_limits<std::size_t>::max();
+        int cnt = 0;
+        // wait up to 100ms total for memory usage to settle
+        do {
+            // poll the change in memory usage
+            mem1 = getCurrentRSS();
+            // wait just a ms
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // verify that memory usage is stable over the wait, otherwise continue
+        } while ((getCurrentRSS() != mem1) && (++cnt < 100));
+
         // store change in memory usage (negative values are invalid)
         deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
     }
