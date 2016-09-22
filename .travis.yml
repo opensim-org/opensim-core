@@ -143,7 +143,7 @@ before_install:
   # Initialize environment variable.
   - export TESTS_TO_EXCLUDE="unmatched" # This is just for the regex.
   ## On OSX, we know that testInitState fails; exclude it.
-  ##- if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
   - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testCMC|testOptimizationExample|testWrapping"; fi
   
