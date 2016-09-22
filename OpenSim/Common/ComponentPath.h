@@ -60,12 +60,12 @@ public:
     // Operators
     bool operator==(const ComponentPath& other) const
     {
-        return this->getString() == other.getString();
+        return this->toString() == other.toString();
     }
 
     bool operator!=(const ComponentPath& other) const
     {
-        return this->getString() != other.getString();
+        return this->toString() != other.toString();
     }
 
     // Override virtual functions

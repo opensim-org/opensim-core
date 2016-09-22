@@ -75,7 +75,7 @@ Path::Path(std::vector<std::string> pathVec,
     cleanPath();
 }
 
-std::string Path::getString() const
+std::string Path::toString() const
 {
     std::string outString;
     if (_isAbsolute) outString.append(1, _separator);

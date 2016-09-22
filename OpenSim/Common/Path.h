@@ -72,7 +72,7 @@ public:
 
     /// Write out the path to a string with each element separated by the
     /// specified separator.
-    std::string getString() const;
+    std::string toString() const;
 
     /// Return true if this Path is an absolute path.
     bool isAbsolute() { return _isAbsolute; };

@@ -2015,7 +2015,7 @@ protected:
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
                 if (comp.getDebugLevel() > 0) {
-                    std::string details = msg + " Found '" + compFullPath.getString() + 
+                    std::string details = msg + " Found '" + compFullPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " + 
                         comp.getConcreteClassName() + ", but it "
                         "is not on specified path.\n";
@@ -2102,11 +2102,11 @@ protected:
             // if dir is empty we are at root or have a nameless comp
             // if dir is '.' we are in the right parent, and loop again
             // so that dir is the name of the component we want.
-            else if (!currentSubpath.getString().empty() && currentSubpath != curDirPath) {
+            else if (!currentSubpath.toString().empty() && currentSubpath != curDirPath) {
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentFullPathPlusSubpath(current->getFullPathName());
-                currentFullPathPlusSubpath.pushBack(currentSubpath.getString());
+                currentFullPathPlusSubpath.pushBack(currentSubpath.toString());
                 for (const Component& comp : compsList) {
                     ComponentPath compFullPath(comp.getFullPathName());
                     std::string compName = comp.getName();
@@ -2698,21 +2698,21 @@ void Connector<C>::findAndConnect(const Component& root) {
 
     try {
         if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path.getString());
+            comp =  &root.template getComponent<C>(path.toString());
         }
         else {
-            comp =  &getOwner().template getComponent<C>(path.getString());
+            comp =  &getOwner().template getComponent<C>(path.toString());
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
-        comp =  root.template findComponent<C>(path.getString());
+        comp =  root.template findComponent<C>(path.toString());
     }
     if (comp)
         connect(*comp);
     else
         OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-            path.getString(),
+            path.toString(),
             C::getClassName(),
             getName() );
 }
@@ -2748,9 +2748,9 @@ void Input<T>::connect(const AbstractOutput& output,
             // serialized
             int numPreexistingConnectees = getNumConnectees();
             if (ix < numPreexistingConnectees)
-                setConnecteeName(path.getString(), ix);
+                setConnecteeName(path.toString(), ix);
             else
-                appendConnecteeName(path.getString());
+                appendConnecteeName(path.toString());
 
             // Use the same annotation for each channel.
             std::string annoToStore = annotation.empty() ?
@@ -2794,9 +2794,9 @@ void Input<T>::connect(const AbstractChannel& channel,
         // Set the connectee name so the connection can be serialized.
         int numPreexistingConnectees = getNumConnectees();
         if (ix < numPreexistingConnectees)
-            setConnecteeName(path.getString(), ix);
+            setConnecteeName(path.toString(), ix);
         else
-            appendConnecteeName(path.getString());
+            appendConnecteeName(path.toString());
         
         // Annotation.
         std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
@@ -2826,7 +2826,7 @@ void Input<T>::findAndConnect(const Component& root) {
 
             if (outputPath.isAbsolute()) { //absolute path name
                 if (componentPathStr.empty()) {
-                    output = &root.getOutput(outputPath.getString());
+                    output = &root.getOutput(outputPath.toString());
                 }
                 else {
                     output = &root.getComponent(componentPathStr).getOutput(outputName);
@@ -2835,7 +2835,7 @@ void Input<T>::findAndConnect(const Component& root) {
 
             else { // relative path name
                 if (componentPathStr.empty()) {
-                    output = &getOwner().getOutput(outputPath.getString());
+                    output = &getOwner().getOutput(outputPath.toString());
                 }
                 else {
                     output = &getOwner().getComponent(componentPathStr).getOutput(outputName);

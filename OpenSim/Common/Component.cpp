@@ -627,7 +627,7 @@ std::string Component::getFullPathName() const
     // The root must have a leading '/' 
     ComponentPath path(pathVec, true);
 
-    return path.getString();
+    return path.toString();
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const
@@ -635,7 +635,7 @@ std::string Component::getRelativePathName(const Component& wrt) const
     ComponentPath thisP(getFullPathName());
     ComponentPath wrtP(wrt.getFullPathName());
 
-    return thisP.formRelativePath(&wrtP).getString();
+    return thisP.formRelativePath(&wrtP).toString();
 }
 
 const Component::StateVariable* Component::

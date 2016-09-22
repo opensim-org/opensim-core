@@ -40,9 +40,9 @@ void testComponentPath() {
     ComponentPath absPath1(absStr1);
     ComponentPath absPath2(absStr2);
     ComponentPath absPath3(absStr3);
-    ASSERT(absPath1.getString() == absStr1);
-    ASSERT(absPath2.getString() == absStr2);
-    ASSERT(absPath3.getString() == absStr3);
+    ASSERT(absPath1.toString() == absStr1);
+    ASSERT(absPath2.toString() == absStr2);
+    ASSERT(absPath3.toString() == absStr3);
 
     // Relative paths
     string relStr1 = "c/d";
@@ -51,17 +51,17 @@ void testComponentPath() {
     ComponentPath relPath1(relStr1);
     ComponentPath relPath2(relStr2);
     ComponentPath relPath3(relStr3);
-    ASSERT(relPath1.getString() == relStr1);
-    ASSERT(relPath2.getString() == relStr2);
-    ASSERT(relPath3.getString() == relStr3);
+    ASSERT(relPath1.toString() == relStr1);
+    ASSERT(relPath2.toString() == relStr2);
+    ASSERT(relPath3.toString() == relStr3);
 
     // Paths that will have an empty vector of strings
     string emptyStr = "";
     string rootStr = "/";
     ComponentPath emptyPath(emptyStr);
     ComponentPath rootPath(rootStr);
-    ASSERT(emptyPath.getString() == emptyStr);
-    ASSERT(rootPath.getString() == rootStr);
+    ASSERT(emptyPath.toString() == emptyStr);
+    ASSERT(rootPath.toString() == rootStr);
 
 
     /* Test the equality operator */
@@ -74,12 +74,12 @@ void testComponentPath() {
     /* Test formAbsolutePath(). Test a variety of paths. The argument 
      * in formAbsolutePath() must be an absolute path itself. */
     // Test without any ".."
-    ASSERT(relPath1.formAbsolutePath(&absPath3).getString() == absStr1);
-    ASSERT(relPath2.formAbsolutePath(&absPath3).getString() == absStr2);
+    ASSERT(relPath1.formAbsolutePath(&absPath3).toString() == absStr1);
+    ASSERT(relPath2.formAbsolutePath(&absPath3).toString() == absStr2);
     // Any absolute path should return itself
     ASSERT(absPath1.formAbsolutePath(&absPath2) == absPath1);
     // Test if this works from root.
-    ASSERT(relPath1.formAbsolutePath(&rootPath).getString() == "/c/d");
+    ASSERT(relPath1.formAbsolutePath(&rootPath).toString() == "/c/d");
     // Test with lots of ".."
     ASSERT(relPath3.formAbsolutePath(&absPath2) == absPath1);
     // argument can't be a relative path
@@ -87,12 +87,12 @@ void testComponentPath() {
     
     /* Test findRelativePath(). Both paths must be absolute */
     // Test path that go up and back down the tree
-    ASSERT(absPath1.formRelativePath(&absPath2).getString() == "../../../../c/d");
-    ASSERT(absPath2.formRelativePath(&absPath1).getString() == "../../e/f/g/h");
+    ASSERT(absPath1.formRelativePath(&absPath2).toString() == "../../../../c/d");
+    ASSERT(absPath2.formRelativePath(&absPath1).toString() == "../../e/f/g/h");
     // Test path that just goes down a tree
-    ASSERT(absPath1.formRelativePath(&absPath3).getString() == "c/d");
+    ASSERT(absPath1.formRelativePath(&absPath3).toString() == "c/d");
     // Test path that only goes up the tree
-    ASSERT(absPath3.formRelativePath(&absPath2).getString() == "../../../..");
+    ASSERT(absPath3.formRelativePath(&absPath2).toString() == "../../../..");
     // Throw exceptions if either or both paths are not absolute
     ASSERT_THROW(Exception, relPath1.formRelativePath(&absPath2));
     ASSERT_THROW(Exception, absPath2.formRelativePath(&relPath2));
@@ -103,11 +103,11 @@ void testComponentPath() {
     // Remove all ".", clean up ".." and ignore "/" at the end
     string oddStr1 = "/a/././b/c/..//d/.././";
     ComponentPath oddPath1(oddStr1);
-    ASSERT(oddPath1.getString() == absPath3.getString());
+    ASSERT(oddPath1.toString() == absPath3.toString());
     // Test ".." at the end of a path
     string oddStr2 = "/a/b/c/d/../..";
     ComponentPath oddPath2(oddStr2);
-    ASSERT(oddPath2.getString() == absPath3.getString());
+    ASSERT(oddPath2.toString() == absPath3.toString());
     // Test ".." at the beginning of an absolute path (should throw exception)
     string oddStr3 = "/../b/c/d";
     ASSERT_THROW(Exception, ComponentPath oddPath3(oddStr3));

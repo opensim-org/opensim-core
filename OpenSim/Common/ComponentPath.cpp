@@ -59,7 +59,7 @@ ComponentPath ComponentPath::getParentPath()
 
 std::string ComponentPath::getParentPathStr()
 {
-    return getParentPath().getString();
+    return getParentPath().toString();
 }
 
 std::string ComponentPath::getSubcomponentNameAtLevel(size_t index)
