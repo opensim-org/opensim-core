@@ -237,9 +237,9 @@ Both pre-increment i and post-increment i are available. When you don’t look a
 
 
 ```cpp
-/*YES*/ for (int i; i < limit; ++i);
+/*YES*/ for (int i = 0; i < limit; ++i);
 
-/*NO*/ for (int i; i < limit; i++);
+/*NO*/ for (int i = 0; i < limit; i++);
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
