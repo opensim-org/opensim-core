@@ -2001,12 +2001,9 @@ protected:
             ComponentPath thisFullPathPlusSubname(getFullPathName());
             thisFullPathPlusSubname.pushBack(subname);
 
-            if (compFullPath.getString() == subname) {
-                foundCs.push_back(&comp);
-                break;
-            } // if a child of this Component, one should not need
-              // to specify this Component's full path name 
-            else if (compFullPath == thisFullPathPlusSubname) {
+            // if a child of this Component, one should not need
+            // to specify this Component's full path name 
+            if (compFullPath == thisFullPathPlusSubname) {
                 foundCs.push_back(&comp);
                 break;
             } // otherwise, we just have a type and name match
