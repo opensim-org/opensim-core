@@ -34,7 +34,8 @@ namespace OpenSim {
 * An abstract class for handling a Path. A Path refers to a list of strings that
 * represent a different level in a hierarchical structure. Each level is divided
 * by designated separators (e.g., "/" or "\"). The string name related to each
-* level is called a "pathElement" here.
+* level is called a "pathElement" here. This class is unrelated to the
+* GeometryPath class used in PathActuators.
 *
 * \if developer
 * This class stores the list of levels as a vector of strings. One char is used
