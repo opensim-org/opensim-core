@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth, Cassidy Kelly, Peter Loan               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -40,7 +40,9 @@ int main()
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
         Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard, 
+            std::vector<double>(24, 0.2), __FILE__, __LINE__, 
+            "testInverseKinematicsGait2354 failed");
         cout << "testInverseKinematicsGait2354 passed" << endl;
 
         InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
@@ -49,7 +51,9 @@ int main()
         ik2.setModel(mdl);
         ik2.run();
         Storage result2(ik2.getOutputMotionFileName());
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard, 
+            std::vector<double>(24, 0.2), __FILE__, __LINE__, 
+            "testInverseKinematicsGait2354 GUI workflow failed");
         cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
 
         InverseKinematicsTool ik3("constraintTest_setup_ik.xml");

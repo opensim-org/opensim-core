@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,8 +36,28 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                              Muscle Exceptions
+//==============================================================================
+class MuscleCannotEquilibrate : public Exception {
+public:
+    MuscleCannotEquilibrate(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const Object& obj,
+                            const std::string& detail) :
+        Exception(file, line, func, obj, detail) {
+        std::string msg = "Unable to compute equilibrium for this muscle.\n";
+        msg += "Please verify that the initial activation is valid and that ";
+        msg += "the length of the musculotendon actuator doesn't produce a ";
+        msg += "pennation angle of 90 degrees or a negative fiber length.";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                                    Muscle
+//==============================================================================
 /**
  * A base class for modeling a muscle-tendon actuator. It defines muscle parameters
  * and methods to PathActuator, but does not implement all of the necessary methods,

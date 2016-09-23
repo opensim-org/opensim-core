@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,11 +43,16 @@ private:
 public:
     using AbstractValue = SimTK::AbstractValue;
 
+    /** Does a key-value pair corresponding to the given key currently exist ?*/
+    bool hasKey(const std::string& key) const {
+        return _dictionary.find(key) != _dictionary.end();
+    }
+
     /** Get the first entry of the array corresponding to the given key.      
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return (*(_dictionary.at(key)))[0];
     }
@@ -74,7 +79,7 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return *(_dictionary.at(key));
     }
@@ -124,11 +129,8 @@ public:
     Dictionary::const_iterator getKeyValueEnd() const {
         return _dictionary.cend();
     }
-private:
-    bool isKeyNotFound(const std::string& key) const {
-        return _dictionary.find(key) == _dictionary.end();
-    }
 
+private:
     Dictionary _dictionary;
 };
 

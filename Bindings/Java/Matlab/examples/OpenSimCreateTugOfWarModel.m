@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %   
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
 %                                                                         %   
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -74,15 +74,14 @@ blockToGround        = FreeJoint('blockToGround', ...
                             block, zeroVec3, zeroVec3);
 
 % Set bounds on coordinates
-jointCoordinateSet=blockToGround.getCoordinateSet();
 angleRange 	  = [-pi/2, pi/2];
 positionRange = [-1, 1];
-jointCoordinateSet.get(0).setRange(angleRange);
-jointCoordinateSet.get(1).setRange(angleRange);
-jointCoordinateSet.get(2).setRange(angleRange);
-jointCoordinateSet.get(3).setRange(positionRange);
-jointCoordinateSet.get(4).setRange(positionRange);
-jointCoordinateSet.get(5).setRange(positionRange);
+blockToGround.upd_coordinates(0).setRange(angleRange);
+blockToGround.upd_coordinates(1).setRange(angleRange);
+blockToGround.upd_coordinates(2).setRange(angleRange);
+blockToGround.upd_coordinates(3).setRange(positionRange);
+blockToGround.upd_coordinates(4).setRange(positionRange);
+blockToGround.upd_coordinates(5).setRange(positionRange);
 
 % Add the block body to the model
 model.addBody(block)

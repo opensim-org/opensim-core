@@ -226,8 +226,8 @@ foreach(test_file
         "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/TRCFileWithNANs.trc"
         "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
         "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/singleLeglanding_2.c3d"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/jogging.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
@@ -319,3 +319,7 @@ add_dependencies(RunPythonTests PythonBindings)
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+# Install example files (not installed next to the python package).
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")

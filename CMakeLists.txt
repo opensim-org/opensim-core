@@ -8,13 +8,7 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-if(MSVC)
-    # To properly support Visual Studio 2015.
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 3.1.3)
-else()
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 2.8.8)
-endif()
-cmake_minimum_required(VERSION ${OPENSIM_REQUIRED_CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.2)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -172,6 +166,7 @@ else()
 endif()
 
 set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+set(OPENSIM_INSTALL_PYTHONEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Python")
 
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)

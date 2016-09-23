@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -202,21 +202,30 @@ protected:
                          TimeOutOfRange, 
                          time, timeCol.front(), timeCol.back());
 
-        const auto colInd = _table.getColumnIndex(columnLabel);
+        const auto colInd = 
+            static_cast<int>(_table.getColumnIndex(columnLabel));
         auto lb = std::lower_bound(timeCol.begin(), timeCol.end(), time);
         if(lb == timeCol.begin())
             return _table.getMatrix().getElt(0, colInd);
         else if(lb == timeCol.end())
-            return _table.getMatrix().getElt(timeCol.size() - 1, colInd);
+            return _table.
+                   getMatrix().
+                   getElt(static_cast<int>(timeCol.size() - 1), colInd);
         else if(*lb == time)
-            return _table.getMatrix().getElt(lb - timeCol.begin(), colInd);
+            return _table.
+                   getMatrix().
+                   getElt(static_cast<int>(lb - timeCol.begin()), colInd);
         else {
             auto prevTime = *(lb - 1);
             auto nextTime = *lb;
-            auto prevElt = _table.getMatrix().getElt(lb - 1 - timeCol.begin(), 
-                                                     colInd);
-            auto nextElt = _table.getMatrix().getElt(lb - timeCol.begin(), 
-                                                     colInd);
+            auto prevElt = _table.
+                           getMatrix().
+                           getElt(static_cast<int>(lb - 1 - timeCol.begin()),
+                                  colInd);
+            auto nextElt = _table.
+                           getMatrix().
+                           getElt(static_cast<int>(lb - timeCol.begin()), 
+                                  colInd);
             auto elt = ((time - prevTime) / (nextTime - prevTime)) * 
                        (nextElt - prevElt) + prevElt;
             return elt;

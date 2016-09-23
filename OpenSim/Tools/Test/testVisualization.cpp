@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,6 +24,7 @@
 #include <fstream>
 #include <stdint.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -32,7 +33,8 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
-void testVisModel(string fileName);
+void testVisModel(Model& model, const std::string filename_for_standard);
+Model createModel4AppearanceTest();
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -101,7 +103,10 @@ int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
-        testVisModel("BuiltinGeometry.osim");
+        Model testModel("BuiltinGeometry.osim");
+        testVisModel(testModel, "vis_BuiltinGeometry.txt");
+        Model testModel2 = createModel4AppearanceTest();
+        testVisModel(testModel2, "vis_AppearanceTest.txt");
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -111,24 +116,26 @@ int main()
     return 0;
 }
 
-void testVisModel(string fileName)
+void testVisModel(Model& model, const std::string standard_filename)
 {
-
-    Model* model = new Model(fileName, true);
-    SimTK::State& si = model->initSystem();
+    bool visualDebug = false; // Turn on only if you want to see API visualizer live
+    if (visualDebug) 
+        model.setUseVisualizer(true);
+    SimTK::State& si = model.initSystem();
+    if (visualDebug) 
+        model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
-    model->generateDecorations(true, mdh, si, geometryToDisplay);
+    model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
-    model->generateDecorations(false, mdh, si, geometryToDisplay);
+    model.generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     DecorativeGeometryImplementationText dgiText;
     for (unsigned i = 0; i < geometryToDisplay.size(); i++)
         geometryToDisplay[i].implementGeometry(dgiText);
 
-    std::string baseName = fileName.substr(0, fileName.find_last_of('.'));
-    std::ifstream t("vis_" + baseName + ".txt");
-    if (!t.good()) throw OpenSim::Exception("Could not open file.");
+    std::ifstream t(standard_filename);
+    if (!t.good()) throw OpenSim::Exception("Could not open file. "+ standard_filename);
     std::stringstream buffer;
     buffer << t.rdbuf();
     std::string fromFile = buffer.str();
@@ -138,6 +145,38 @@ void testVisModel(string fileName)
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
     int same = fromFile.compare(fromModel);
-    delete model;
-    ASSERT(same == 0, __FILE__, __LINE__, "Files do not match.");
+    ASSERT(same == 0, __FILE__, __LINE__, "Files containing visualization primitives do not match.");
+}
+
+Model createModel4AppearanceTest()
+{
+    Model modelWithGroundOnly;
+    Sphere* unitSphere = new Sphere(1.0);
+    const Ground& ground = modelWithGroundOnly.getGround();
+    //DecorativeGeometry default is Rep : 3 shaded in std file
+    modelWithGroundOnly.updGround().attachGeometry(unitSphere);
+    // Create offset frame and add to model
+    SimTK::Transform translate(Vec3(1.0, 0., 0.));
+    PhysicalOffsetFrame* oframe = new PhysicalOffsetFrame(ground, translate);
+    modelWithGroundOnly.addFrame(oframe);
+    // Change color and opacity
+    Sphere* offsetSphere = unitSphere->clone();
+    offsetSphere->upd_Appearance().set_color(SimTK::Cyan);
+    offsetSphere->upd_Appearance().set_opacity(0.5);
+    oframe->attachGeometry(offsetSphere);
+    PhysicalOffsetFrame* ooframe = new PhysicalOffsetFrame(ground, Vec3(2.0, 0., 0.));
+    modelWithGroundOnly.addFrame(ooframe);
+    // invisible Sphere
+    Sphere* ooffsetSphere = unitSphere->clone();
+    // Hidden   
+    ooffsetSphere->upd_Appearance().set_visible(false);
+    ooframe->attachGeometry(ooffsetSphere);
+    PhysicalOffsetFrame* oooframe = new PhysicalOffsetFrame(ground, Vec3(3.0, 0., 0.));
+    modelWithGroundOnly.addFrame(oooframe);
+    // Wireframe Sphere
+    Sphere* oooffsetSphere = unitSphere->clone();
+    //DecorativeGeometry::DrawWireframe is Rep : 2 in std file
+    oooffsetSphere->upd_Appearance().set_representation(DecorativeGeometry::DrawWireframe);
+    oooframe->attachGeometry(oooffsetSphere);
+    return modelWithGroundOnly; // Return a copy
 }

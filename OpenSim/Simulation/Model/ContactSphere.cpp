@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -95,10 +95,10 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     const auto X_BP = X_BF * X_FP;
     geometry.push_back(SimTK::DecorativeSphere(getRadius())
                            .setTransform(X_BP)
-                           .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
+                           .setRepresentation(get_Appearance().get_representation())
                            .setBodyId(getFrame().getMobilizedBodyIndex())
-                           .setColor(SimTK::Vec3(0,1,0))
-                           .setOpacity(0.5));
+                           .setColor(get_Appearance().get_color())
+                           .setOpacity(get_Appearance().get_opacity()));
 }
 
 } // end of namespace OpenSim

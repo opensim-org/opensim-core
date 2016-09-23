@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -60,8 +60,8 @@ public:
     //==========================================================================
     OpenSim_DECLARE_PROPERTY(representation, int,
      "The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(texture_file, std::string,
-        "Name of file containing texture.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(texture, std::string,
+        "Name of texture e.g. metal, bone. This is a hint to the GUI/Visualizer, implementation is Visualization dependent.");
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -74,42 +74,10 @@ public:
     virtual ~SurfaceProperties() {};
 
     bool hasTexture() {
-        return !getProperty_texture_file().empty();
+        return !getProperty_texture().empty();
     }
     //========================================================================
 };  // END of class SurfaceProperties
-
-//=============================================================================
-/** CurveProperties class holds the Appearance properties of Geometry
-displayed in the OpenSim visualizer or GUI.The attributes in this
-class are specific to curves or line drawings so that thickness, line-style
-etc. can be maintained. 
-*/
-//=============================================================================
-class OSIMSIMULATION_API CurveProperties : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(CurveProperties, Object);
-public:
-    //=========================================================================
-    // PROPERTIES
-    //=========================================================================
-    OpenSim_DECLARE_PROPERTY(thickness, double,
-        "The thickness of lines used to render a curve or a drawing. ");
-
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-public:
-    CurveProperties() {
-        constructProperties();
-    }
-    virtual ~CurveProperties() {};
-
-private:
-    void constructProperties() {
-        constructProperty_thickness(1.0);
-    }
-    //=========================================================================
-};  // END of class CurveProperties
 
 //=============================================================================
 //=============================================================================
@@ -140,8 +108,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(SurfaceProperties,
         "Visuals applied to surfaces associated with this Appearance.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(CurveProperties,
-        "Visuals applied to curves or line drawings associated with this Appearance.");
 
 
     //--------------------------------------------------------------------------
@@ -186,8 +152,7 @@ private:
         constructProperty_visible(true);
         constructProperty_opacity(1.0);
         // White by default, shows as a shade of gray
-        constructProperty_color(SimTK::Vec3(1.0)); 
-        constructProperty_CurveProperties(CurveProperties());
+        constructProperty_color(SimTK::White); 
         constructProperty_SurfaceProperties(SurfaceProperties());
     }
     //=========================================================================

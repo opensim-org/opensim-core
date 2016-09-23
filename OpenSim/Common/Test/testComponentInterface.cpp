@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -809,11 +809,12 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs to desired model outputs
-    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
-    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    // wire up table reporter inputs (using conveniece method) to desired 
+    // model outputs
+    tabReporter->updInput().connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput().connect(bar.getOutput("activation"));
+    tabReporter->updInput().connect(foo.getOutput("Output1"));
+    tabReporter->updInput().connect(bar.getOutput("PotentialEnergy"));
 
     theWorld.connect();
     theWorld.buildUpSystem(system);

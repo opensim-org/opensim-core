@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -45,34 +45,29 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 // DESTRUCTOR
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Manager::~Manager()
-{
-    // DESTRUCTORS
-    delete _stateStore;
-    _integ = NULL;
-}
 
 
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Construct a simulation manager.
- *
- * @param model pointer to model for the simulation.
- */
-Manager::Manager(Model& model):
+Manager::Manager(Model& model) : Manager(model, true)
+{
+    _defaultInteg.reset(
+            new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
+    _integ = *_defaultInteg;
+}
+
+Manager::Manager(Model& aModel, SimTK::Integrator& integ)
+        : Manager(aModel, true) {
+    setIntegrator(integ);
+}
+
+// Private constructor to handle common tasks of the two constructors above.
+Manager::Manager(Model& model, bool dummyVar) :
        _model(&model),
-       _integ(NULL),               
-       _stateStore(NULL),
        _performAnalyses(true),
        _writeToStorage(true),
-       _controllerSet(&model.updControllerSet() )
+       _controllerSet(&model.updControllerSet())
 {
     setNull();
 
@@ -85,23 +80,7 @@ Manager::Manager(Model& model):
     // SESSION NAME
     setSessionName(_model->getName());
 }
-//_____________________________________________________________________________
-/**
- * Construct a simulation manager.
- *
- * @param aModel model to integrate.
- * @param integ integrator used to do the integration
- */
-Manager::Manager(Model& aModel, SimTK::Integrator& integ) {    
-    new(this) Manager(aModel);
-    setIntegrator(integ);
-}
 
-//_____________________________________________________________________________
-/**
- * Construct a simulation manager.
- *
- */
 Manager::Manager()
 {
     setNull();
@@ -159,7 +138,7 @@ constructStorage()
     // STATES
     Array<string> stateNames = _model->getStateVariableNames();
     int ny = stateNames.getSize();
-    _stateStore = new Storage(512,"states");
+    _stateStore.reset(new Storage(512,"states"));
     columnLabels.setSize(0);
     columnLabels.append("time");
     for(int i=0;i<ny;i++) columnLabels.append(stateNames[i]);
@@ -183,7 +162,7 @@ void Manager::
 setSessionName(const string &aSessionName)
 {
     _sessionName = aSessionName;
-    if(_integ==NULL) return;
+    if(_integ.get() == nullptr) return;
 
     // STORAGE NAMES
     string name;
@@ -547,7 +526,7 @@ setModel(Model& aModel)
 SimTK::Integrator& Manager::
 getIntegrator() const
 {
-    return(*_integ);
+    return *_integ;
 }
 /**
  * Set the integrator.
@@ -555,9 +534,12 @@ getIntegrator() const
 void Manager::
 setIntegrator(SimTK::Integrator& integrator) 
 {   
-    _integ = &integrator;
-}
+    if (_integ.get() == &integrator) return;
 
+    _integ = &integrator;
+    // If we had been using the _defaultInteg, we no longer need it.
+    _defaultInteg.reset();
+}
 
 //-----------------------------------------------------------------------------
 // INITIAL AND FINAL TIME
@@ -649,7 +631,7 @@ getFirstDT() const
 void Manager::
 setStateStorage(Storage& aStorage)
 {
-    _stateStore = &aStorage;
+    _stateStore.reset(&aStorage);
 }
 //_____________________________________________________________________________
 /**
@@ -658,9 +640,9 @@ setStateStorage(Storage& aStorage)
 Storage& Manager::
 getStateStorage() const 
 {
-    if( _stateStore  == NULL )
+    if(!_stateStore)
         throw Exception("Manager::getStateStorage(): Storage is not set");
-    return(*_stateStore);
+    return *_stateStore;
 }
 
 TimeSeriesTable Manager::getStatesTable() const {
@@ -674,7 +656,7 @@ TimeSeriesTable Manager::getStatesTable() const {
 bool Manager::
 hasStateStorage() const
 {
-    return (_stateStore != NULL);
+    return _stateStore != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -691,7 +673,6 @@ bool Manager::
 integrate( SimTK::State& s, double dtFirst )
 {
     
-
     int step = 0;
 
     s.setTime( _ti );
@@ -702,6 +683,12 @@ integrate( SimTK::State& s, double dtFirst )
 }
 
 bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
+
+    if(!_integ) {
+        throw Exception("Manager::doIntegration(): "
+                "Integrator has not been set. Construct the Manager "
+                "with an integrator, or call Manager::setIntegrator().");
+    }
 
     // CLEAR ANY INTERRUPT
     // Halts must arrive during an integration.

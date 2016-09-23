@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -51,7 +51,9 @@ The parent class, Muscle.h, provides
 
 namespace OpenSim {
 
-
+//==============================================================================
+//                        Millard2012AccelerationMuscle
+//==============================================================================
 /**
 This class implements a 3 state (activation,fiber length and fiber velocity) 
 acceleration musculo-tendon model that has several advantages over 
@@ -169,6 +171,11 @@ MuscleFirstOrderActivationDynamicModel.
 \li N: Newtons
 \li kg: kilograms
 \li s: seconds
+
+<B>Caution</B>
+
+The Millard2012AccelerationMuscle class is experimental and has not been
+extensively tested in all operational conditions.
 
 <B>Usage</B>
 
@@ -627,6 +634,7 @@ public:
         according to their relative compliances.
         
         @param s the state of the system
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override final;
         
@@ -897,27 +905,36 @@ private:
                                           const AccelerationMuscleInfo& ami,
                                           std::string& caller) const;
 
-    //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
+    // Status flag returned by initMuscleState().
+    enum StatusFromInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
-    /*
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, fiber_velocity, passive_force,
+    // and tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
     @param s the system state
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
-    @param aMaxIterations the maximum number of Newton steps allowed before
-           attempts to initialize the model are given up, and an exception is 
-           thrown.
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations,
-                             double aNewtonStepFraction) const;
-    
-
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations,
+                        const double aNewtonStepFraction) const;
 
     /*
     This can only be called at the velocity stage at least.

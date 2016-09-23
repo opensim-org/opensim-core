@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -51,6 +51,10 @@
 #endif
 
 namespace OpenSim {
+
+//==============================================================================
+//                         Millard2012EquilibriumMuscle
+//==============================================================================
 /**
 This class implements a configurable equilibrium muscle model, as described in
 Millard et al.\ (2013). An equilibrium model assumes that the forces generated
@@ -419,7 +423,9 @@ public:
     the same force, distributing the velocity of the entire musculotendon
     actuator between the fiber and tendon according to their relative
     stiffnesses.
-        @param[in,out] s The state of the system. */
+        @param[in,out] s The state of the system.
+        @throws MuscleCannotEquilibrate
+    */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
 
     /** Computes the fiber length such that the fiber and tendon are developing
@@ -427,7 +433,9 @@ public:
     version of computeInitialFiberEquilibrium(). By setting velocities to zero,
     we obtain a reasonable and robust solution that provides a rough solution
     for fiber length.
-        @param[in,out] s The state of the system. */
+        @param[in,out] s The state of the system.
+        @throws MuscleCannotEquilibrate
+    */
     void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
         override;
 
@@ -726,24 +734,40 @@ private:
     // length
     double clampFiberLength(double lce) const;
 
+    // Status flag returned by estimateMuscleFiberState().
+    enum StatusFromEstimateMuscleFiberState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
+
+    // Associative array of values returned by estimateMuscleFiberState():
+    // solution_error, iterations, fiber_length, fiber_velocity, and
+    // tendon_force.
+    typedef std::map<std::string, double> ValuesFromEstimateMuscleFiberState;
+
     /* Solves fiber length and velocity to satisfy the equilibrium equations.
     The velocity of the entire musculotendon actuator is shared between the
     tendon and the fiber based on their relative mechanical stiffnesses.
-        @param aActivation the initial activation of the muscle
-        @param pathLength length of the whole musculotendon actuator
-        @param pathLengtheningSpeed lengthening speed of the muscle path
-        @param aSolTolerance the desired relative tolerance of the equilibrium
-    solution
-        @param aMaxIterations the maximum number of Newton steps allowed before
-    we give up attempting to initialize the model and throw an exception
-        @param staticSolution set to true to calculate the static equilibrium
-    solution, setting fiber and tendon velocities to zero */
-    SimTK::Vector estimateMuscleFiberState(double aActivation,
-                                           double pathLength,
-                                           double pathLengtheningSpeed,
-                                           double aSolTolerance,
-                                           int aMaxIterations,
-                                           bool staticSolution=false) const;
+
+    @param aActivation the initial activation of the muscle
+    @param pathLength length of the whole musculotendon actuator
+    @param pathLengtheningSpeed lengthening speed of the muscle path
+    @param aSolTolerance the desired relative tolerance of the equilibrium
+           solution
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
+    @param staticSolution set to true to calculate the static equilibrium
+           solution, setting fiber and tendon velocities to zero
+    */
+    std::pair<StatusFromEstimateMuscleFiberState,
+              ValuesFromEstimateMuscleFiberState>
+        estimateMuscleFiberState(const double aActivation,
+                                 const double pathLength,
+                                 const double pathLengtheningSpeed,
+                                 const double aSolTolerance,
+                                 const int aMaxIterations,
+                                 bool staticSolution=false) const;
 
 };
 } //end of namespace OpenSim

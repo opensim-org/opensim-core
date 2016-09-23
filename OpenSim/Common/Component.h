@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -2309,7 +2309,7 @@ private:
 
     // Internal use: mark as a subcomponent, a component that is owned by this 
     // Component by virtue of being one of its properties.
-    void markAsPropertySubcomponent(Component* subcomponent);
+    void markAsPropertySubcomponent(const Component* subcomponent);
 
     /// Invoke finalizeFromProperties() on the (sub)components of this Component.
     void componentsFinalizeFromProperties() const;
@@ -2464,7 +2464,7 @@ protected:
     // These are just references, don't delete them!
     // TODO: subcomponents should not be exposed to derived classes to trash.
     //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    SimTK::Array_<SimTK::ReferencePtr<Component>>  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous

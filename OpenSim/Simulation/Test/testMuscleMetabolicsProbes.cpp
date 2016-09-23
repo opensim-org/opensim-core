@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Thomas Uchida                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -378,8 +378,7 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     // Create slider joint between ground and block.
     SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
-    prisCoordSet[0].setName("xTranslation");
+    prismatic->updCoordinate().setName("xTranslation");
     model.addBody(block);
     model.addJoint(prismatic);
 
@@ -672,15 +671,15 @@ void testProbesUsingMillardMuscleSimulation()
     // Create slider joint between ground and block.
     SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
-    prisCoordSet[0].setName("xTranslation");
-    prisCoordSet[0].setRangeMin(-1);
-    prisCoordSet[0].setRangeMax(1);
+    auto& prisCoord = prismatic->updCoordinate();
+    prisCoord.setName("xTranslation");
+    prisCoord.setRangeMin(-1);
+    prisCoord.setRangeMax(1);
 
     // Prescribe motion.
     Sine motion(0.1, SimTK::Pi, 0);
-    prisCoordSet[0].setPrescribedFunction(motion);
-    prisCoordSet[0].setDefaultIsPrescribed(true);
+    prisCoord.setPrescribedFunction(motion);
+    prisCoord.setDefaultIsPrescribed(true);
     model.addBody(block);
     model.addJoint(prismatic);
 

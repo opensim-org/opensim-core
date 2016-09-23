@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Samuel R. Hamner                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -487,7 +487,7 @@ void testCoordinateLocking()
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
 
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
@@ -837,7 +837,7 @@ void testCoordinateCouplerConstraint()
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
     
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_thigh);
