@@ -1060,8 +1060,8 @@ void Component::markAsPropertySubcomponent(const Component* component)
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
     else{
-        auto compPath = component->getFullPathName();
-        auto foundPath = it->get()->getFullPathName();
+        auto compPath = component->getAbsolutePathName();
+        auto foundPath = it->get()->getAbsolutePathName();
         OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
                        component->getName(), getName());
     }

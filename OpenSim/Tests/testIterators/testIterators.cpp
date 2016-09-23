@@ -102,17 +102,17 @@ void testNestedComponentListConsistency() {
 
     std::cout << "Joints in the model: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
-        std::cout << "    " << joint.getFullPathName() << std::endl;
+        std::cout << "    " << joint.getAbsolutePathName() << std::endl;
         joints1.push_back(&joint);
     }
 
     std::cout << "Joints and Coordinates: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
         joints2.push_back(&joint);
-        std::cout << "    Joint: " << joint.getFullPathName() << std::endl;
+        std::cout << "    Joint: " << joint.getAbsolutePathName() << std::endl;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
             std::cout << "        Coord: "
-                      << coord.getFullPathName() << std::endl;
+                      << coord.getAbsolutePathName() << std::endl;
             coords.insert(&coord);
         }
     }
@@ -199,10 +199,10 @@ void testComponentListConst() {
 
     unsigned numJoints{}, numCoords{};
     for(const auto& joint : model.getComponentList<Joint>()) {
-        std::cout << "Joint: " << joint.getFullPathName() << std::endl;
+        std::cout << "Joint: " << joint.getAbsolutePathName() << std::endl;
         ++numJoints;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
-            std::cout << "Coord: " << coord.getFullPathName() << std::endl;
+            std::cout << "Coord: " << coord.getAbsolutePathName() << std::endl;
             ++numCoords;
         }
     }
