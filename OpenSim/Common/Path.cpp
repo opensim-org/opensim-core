@@ -98,6 +98,11 @@ void Path::insertPathElement(size_t pos, const std::string& pathElement)
     if (!isLegalPathElement(pathElement)) {
         OPENSIM_THROW(Exception, "Invalid character used in pathElement");
     }
+
+    if (pathElement.empty()) {
+        OPENSIM_THROW(Exception, "pathElement cannot be an empty string");
+    }
+
     _path.insert(_path.begin() + pos, pathElement);
 }
 
@@ -219,5 +224,10 @@ void Path::appendPathElement(const std::string& pathElement)
     if (!isLegalPathElement(pathElement)) {
         OPENSIM_THROW(Exception, "Invalid character used in pathElement");
     }
+
+    if (pathElement.empty()) {
+        OPENSIM_THROW(Exception, "pathElement cannot be an empty string");
+    }
+
     _path.push_back(pathElement);
 }

@@ -124,8 +124,8 @@ protected:
 private:
     /// Insert a pathElement at the specified position. Note that this could
     /// cause a path to become illegal (e.g., adding ".." to the front of 
-    /// an absolute path). The pathElement is checked to ensure no illegal
-    /// characters are used.
+    /// an absolute path). An Exception is thrown if the pathElement
+    /// contains an invalid character or if it is an empty string.
     void insertPathElement(size_t pos, const std::string& pathElement);
 
     /// Erase a pathElement at the specified position. Note that this could
@@ -134,7 +134,8 @@ private:
     void erasePathElement(size_t pos);
 
     /// Append a pathElement to the Path, first checking if the pathElement
-    /// is legal.
+    /// is legal. An Exception is thrown if the pathElement contains an 
+    /// invalid character or if it is an empty string.
     void appendPathElement(const std::string& pathElement);
 
     /// Cleans up a path. This includes removing "." and resolving ".." if

@@ -141,10 +141,12 @@ void testComponentPath() {
 
     /* Test invalid characters in pushBack(). Unlike the invalid
      * character test above, "/" should be considered invalid since
-     * pushBack() cannot add multiple levels at once. */
+     * pushBack() cannot add multiple levels at once. It is also 
+     * invalid to attempt to add an empty pathElement. */
     ASSERT_THROW(Exception, path1.pushBack("a\\b"));
     ASSERT_THROW(Exception, path1.pushBack("a+b*"));
     ASSERT_THROW(Exception, path1.pushBack("test/this"));
+    ASSERT_THROW(Exception, path1.pushBack(""));
 
     /* Test functions for getting certain parts of ComponentPath. */
     // Create a path "/zero/one/two/three/four"
