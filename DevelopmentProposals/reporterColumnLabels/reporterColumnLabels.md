@@ -64,7 +64,7 @@ The selected design involves four main changes:
 4. Create `setAlias()` methods analogous to the current `getAnnotation()` methods so the user can change the alias after (but not before) connecting.
 
 Several other designs would satisfy the requirements; four rejected proposals are listed below.
-As a general note, it may be useful to add a `setAnnotation()` method (e.g., if a fully connected model was loaded from file).
+All these designs could benefit from a `setAnnotation()` method (e.g., if a fully connected model was loaded from file).
 
 **Rejected Design 1**
 
