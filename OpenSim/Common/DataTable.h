@@ -34,12 +34,6 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
-namespace {
-    template<typename A, typename B>
-    using enable_if_same =
-        typename std::enable_if<std::is_same<A, B>::value>::type;
-}
-
 /** DataTable_ is a in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
 independent column and a set of dependent columns. The type of the independent 
@@ -154,12 +148,14 @@ public:
     \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
     \throws InvalidArgument If 'suffixes' does not contain same number of
                             elements as that.numComponentsPerElement().       */
-    template<typename ThatETY,
-             typename ThisETY = ETY,
-             typename = enable_if_same<ThisETY, double>>
+    template<typename ThatETY>
     DataTable_(const DataTable_<double, ThatETY>& that,
                const std::vector<std::string>& suffixes) :
     AbstractDataTable{that} {
+        static_assert(std::is_same<ETY, double>::value,
+                      "Only DataTable_<double, double> can be constructed from"
+                      " other tables of type DataTable_<double, ETY>.");
+
         std::vector<std::string> thatLabels{};
         try {
             thatLabels = that.getColumnLabels();
@@ -219,9 +215,7 @@ public:
     \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
     \throws InvalidArgument If 'suffixes' does not contain same number of
                             elements as that.numComponentsPerElement().       */
-    template<typename ThatETY,
-             typename ThisETY = ETY,
-             typename = enable_if_same<ThisETY, double>>
+    template<typename ThatETY>
     explicit DataTable_(const DataTable_<double, ThatETY>& that) :
     DataTable_(that, std::vector<std::string>{}) {
         // No operation.
@@ -246,9 +240,7 @@ public:
     \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
     \throws InvalidArgument If 'suffixes' does not contain same number of
                             elements as that.numComponentsPerElement().       */
-    template<typename ThatETY,
-             typename ThisETY = ETY,
-             typename = enable_if_same<ThisETY, double>>
+    template<typename ThatETY>
     DataTable_& operator=(const DataTable_<double, ThatETY>& that) {
         return operator=(DataTable_{that});
     }

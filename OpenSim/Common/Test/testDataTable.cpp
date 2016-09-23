@@ -257,7 +257,7 @@ int main() {
         // ASSERT(tableDouble.getNumRows()             == 3);
         // ASSERT(tableDouble.getNumColumns()          == 18);
 
-        // Following will fail to compile -- no matching constructor.
+        // Following will fail to compile.
         // DataTable_<double, Vec3      > tableVec3_fail{tableDouble};
         // DataTable_<double, Vec6      > tableVec6_fail{tableDouble};
         // DataTable_<double, SpatialVec> tableVec6_fail{tableDouble};
@@ -319,7 +319,7 @@ int main() {
         // ASSERT(tableDouble.getNumRows()             == 3);
         // ASSERT(tableDouble.getNumColumns()          == 18);
 
-        // Following will fail to compile -- no matching constructor.
+        // Following will fail to compile.
         // TimeSeriesTable_<Vec3      > tableVec3_fail{tableDouble};
         // TimeSeriesTable_<Vec6      > tableVec6_fail{tableDouble};
         // TimeSeriesTable_<SpatialVec> tableVec6_fail{tableDouble};
