@@ -83,18 +83,18 @@ public:
 
     /// Return the sub-path that contains all subdirectory levels 
     /// except for the last one.
-    ComponentPath getParentPath();
+    ComponentPath getParentPath() const;
 
     /// Return the parent path as a string.
-    std::string getParentPathString();
+    std::string getParentPathString() const;
 
     /// Return a string of a subdirectory name at a specified level. This is
     /// 0 indexed.
-    std::string getSubcomponentNameAtLevel(size_t index);
+    std::string getSubcomponentNameAtLevel(size_t index) const;
 
     /// Return a string of the name of the Component related to a 
     /// ComponentPath. This is just the last level of a ComponentPath.
-    std::string getComponentName();
+    std::string getComponentName() const;
 
 private:
     static const char separator;

@@ -153,7 +153,7 @@ private:
 
     /// Return true if pathElement does not contain any chars from the list
     /// of _invalidChars
-    bool isLegalPathElement(const std::string& pathElement);
+    bool isLegalPathElement(const std::string& pathElement) const;
 
     // Path variables
     std::vector<std::string> _path;

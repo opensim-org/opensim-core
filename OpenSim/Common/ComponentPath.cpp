@@ -51,23 +51,23 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
     return ComponentPath(relPathVec, false);
 }
 
-ComponentPath ComponentPath::getParentPath()
+ComponentPath ComponentPath::getParentPath() const
 {
     vector<string> parentPathVec = getParentPathVec();
     return ComponentPath(parentPathVec, isAbsolute());
 }
 
-std::string ComponentPath::getParentPathString()
+std::string ComponentPath::getParentPathString() const
 {
     return getParentPath().toString();
 }
 
-std::string ComponentPath::getSubcomponentNameAtLevel(size_t index)
+std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const
 {
     return getPathElement(index);
 }
 
-std::string ComponentPath::getComponentName() 
+std::string ComponentPath::getComponentName() const
 {
     return getSubcomponentNameAtLevel(getPathLength() - 1);
 }

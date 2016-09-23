@@ -206,7 +206,7 @@ void Path::cleanPath()
     }
 }
 
-bool Path::isLegalPathElement(const std::string& pathElement) 
+bool Path::isLegalPathElement(const std::string& pathElement) const
 {
     if (pathElement.find_first_of(_invalidChars) != std::string::npos) {
         return false;
