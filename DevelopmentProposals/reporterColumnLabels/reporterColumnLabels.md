@@ -54,10 +54,19 @@ and forcing the user to specify an annotation for each Output may not be practic
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
-Several designs would satisfy the requirements; four are proposed here.
+The selected design involves four main changes:
+
+1. Rename "annotation" to "alias" (e.g., `AbstractInput::getAnnotation()` becomes `AbstractInput::getAlias()`).
+2. If the user provides the optional second argument when connecting an Output to an Input, store the string as the Input's alias; otherwise, the alias remains null.
+3. Create `getShortLabel()` and `getLongLabel()` methods on Input:
+  - `getShortLabel()` will be called by ConsoleReporter and will return `isNull(alias) ? output_name : alias`.
+  - `getLongLabel()` will be called by TableReporter and will return `isNull(alias) ? full_path_name : alias`.
+4. Create `setAlias()` methods analogous to the current `getAnnotation()` methods so the user can change the alias after (but not before) connecting.
+
+Several other designs would satisfy the requirements; four rejected proposals are listed below.
 As a general note, it may be useful to add a `setAnnotation()` method (e.g., if a fully connected model was loaded from file).
 
-**Design 1**
+**Rejected Design 1**
 
 Store an empty string in `_annotations` if no annotation was provided when `Input::connect()` was called.
 When writing the column label, use the `_annotations` value if it is not empty; otherwise,
@@ -68,7 +77,7 @@ It seems natural to generate a default column label when reporting rather than w
 so there is presumably a good reason for wanting to generate a default when `Input::connect()` is called
 (though always using the Output's full path name in the TableReporter is inconsistent).
 
-**Design 2**
+**Rejected Design 2**
 
 To retain the current behavior of storing the Output's name at connect time,
 the `_annotations` member variable can be changed from a `std::vector<std::string>` to a `std::vector< std::pair<bool, std::string> >`.
@@ -82,7 +91,7 @@ else //TableReporter
 end
 ```
 
-**Design 3**
+**Rejected Design 3**
 
 This design also retains the current behavior of storing the Output's name at connect time.
 The `_annotation` would be stored in `Input::connect()` as follows:
@@ -94,7 +103,7 @@ else
 end
 ```
 
-**Design 4**
+**Rejected Design 4**
 
 This design also retains the current behavior of storing the Output's name at connect time,
 and also allows the user to specify a preference for whether to use short or long default column labels.
@@ -112,8 +121,7 @@ The ConsoleReporter would use `_annotation.first` and the TableReporter would us
 but it would also be possible to include a flag that allows the user to switch between short and long default column labels at report time.
 
 ### Interfaces
-Design 4 could potentially introduce a flag that can be set by the user.
-All other designs have no effect on the interface.
+The selected design has no effect on the interface.
 
 ### Bindings
 There are no known implications for Python and Java bindings.
