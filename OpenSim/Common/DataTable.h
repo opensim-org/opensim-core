@@ -646,7 +646,9 @@ protected:
     void splitElementAndPushBack(std::vector<double>&,
                                  ...) {
         static_assert(!std::is_same<ETY, double>::value,
-                      "Unsupported type.");
+                      "This constructor cannot be used to construct from "
+                      "DataTable<double, ThatETY> where ThatETY is an "
+                      "unsupported type.");
     }
     
     /** Check if row index is out of range.                                   */
