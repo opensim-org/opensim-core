@@ -54,7 +54,7 @@ class TestAccessSubcomponents(unittest.TestCase):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
 
         comps = model.getMuscleList()
-        comps.setFilter(osim.ComponentFilterFullPathNameContainsString('BIC'))
+        comps.setFilter(osim.ComponentFilterAbsolutePathNameContainsString('BIC'))
         count = 0
         BICnames = ['BIClong', 'BICshort']
         for comp in comps:
