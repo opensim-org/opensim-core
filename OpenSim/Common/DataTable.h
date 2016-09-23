@@ -153,16 +153,17 @@ public:
                const std::vector<std::string>& suffixes) :
     AbstractDataTable{that} {
         static_assert(std::is_same<ETY, double>::value,
-                      "Only DataTable_<double, double> can be constructed from"
-                      " other tables of type DataTable_<double, ETY>.");
+                      "This constructor can only be used to construct "
+                      "DataTable_<double, double>.");
+        static_assert(!std::is_same<ThatETY, double>::value,
+                      "This constructor cannot be used to construct from "
+                      "DataTable_<double, double>. Use the copy constructor "
+                      "instead.");
 
         std::vector<std::string> thatLabels{};
-        try {
-            thatLabels = that.getColumnLabels();
-        } catch(const Exception&) {
-            OPENSIM_THROW(InvalidArgument,
-                          "DataTable 'that' has no column labels.");
-        }
+        OPENSIM_THROW_IF(!that.hasColumnLabels(),
+                         InvalidArgument,
+                         "DataTable 'that' has no column labels.");
         OPENSIM_THROW_IF(that.getNumRows() == 0 || that.getNumColumns() == 0,
                          InvalidArgument,
                          "DataTable 'that' has zero rows/columns.");
@@ -174,7 +175,7 @@ public:
                          "See documentation for numComponentsPerElement().");
 
         std::vector<std::string> thisLabels{};
-        for(const auto& label : thatLabels) {
+        for(const auto& label : that.getColumnLabels()) {
             if(suffixes.empty()) {
                 for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
                     thisLabels.push_back(label + "_" + std::to_string(i));
@@ -190,8 +191,7 @@ public:
             const auto& thatRow = that.getRowAtIndex(r);
             std::vector<ETY> row{};
             for(unsigned c = 0; c < that.getNumColumns(); ++c)
-                for(unsigned i = 0; i < that.numComponentsPerElement(); ++i)
-                    row.push_back(thatRow[c][i]);
+                splitElementAndPushBack(row, thatRow[c]);
             appendRow(thatInd, row);
         }
     }
@@ -622,6 +622,33 @@ public:
     /// @}
 
 protected:
+    // Split element into constituent components and append the components to
+    // the given vector. For example Vec3 has 3 components.
+    template<int N>
+    static
+    void splitElementAndPushBack(std::vector<double>& row,
+                                 const SimTK::Vec<N>& elem) {
+        for(unsigned i = 0; i < N; ++i)
+            row.push_back(elem[i]);
+    }
+    // Split element into constituent components and append the components to 
+    // the given vector. . For example Vec<2, Vec3> has 6 components.
+    template<int M, int N>
+    static
+    void splitElementAndPushBack(std::vector<double>& row,
+                                 const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
+        for(unsigned i = 0; i < M; ++i)
+            for(unsigned j = 0; j < N; ++j)
+                row.push_back(elem[i][j]);
+    }
+    // Unsupported type.
+    static
+    void splitElementAndPushBack(std::vector<double>&,
+                                 ...) {
+        static_assert(!std::is_same<ETY, double>::value,
+                      "Unsupported type.");
+    }
+    
     /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
