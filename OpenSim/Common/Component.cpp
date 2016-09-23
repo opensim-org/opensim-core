@@ -185,8 +185,8 @@ void Component::finalizeFromProperties()
     }
 
     markPropertiesAsSubcomponents();
-    extendFinalizeFromProperties();
     componentsFinalizeFromProperties();
+    extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
 }
 
@@ -213,7 +213,7 @@ void Component::connect(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
-        // the last chance to finalize before addToSystm.
+        // the last chance to finalize before addToSystem.
         finalizeFromProperties();
     }
 
@@ -264,7 +264,9 @@ void Component::connect(Component &root)
         }
     }
 
-    // Allow derived Components to handle/check their connections
+    // Allow derived Components to handle/check their connections and also 
+    // override the order in which its subcomponents are ordered when 
+    // adding subcomponents to the System
     extendConnect(root);
 
     componentsConnect(root);
@@ -319,6 +321,11 @@ void Component::disconnect()
 
 void Component::addToSystem(SimTK::MultibodySystem& system) const
 {
+    // If being asked to be added to the same System that it is already
+    // a part, there is nothing to be done.
+    if (hasSystem() && (&getSystem() == &system)) {
+        return;
+    }
     baseAddToSystem(system);
     extendAddToSystem(system);
     componentsAddToSystem(system);
@@ -352,12 +359,28 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 
 void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
 {
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
-        _memberSubcomponents[i]->addToSystem(system);
-    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
-        _propertySubcomponents[i]->addToSystem(system);
-    for(unsigned int i=0; i<_adoptedSubcomponents.size(); ++i)
-        _adoptedSubcomponents[i]->addToSystem(system);
+    // If _orderedSubcomponents is specified, then use this Component's
+    // specification for the order in which subcomponents are added. At a
+    // minimum the order for all immediate subcomponents must be specified.
+    if (_orderedSubcomponents.size() >= getNumImmediateSubcomponents()) {
+        for (const auto& compRef : _orderedSubcomponents) {
+            compRef->addToSystem(system);
+        }
+    }
+    else if (_orderedSubcomponents.size() == 0) {
+        // Otherwise, invoke on all immediate subcomponents in tree order
+        auto mySubcomponents = getImmediateSubcomponents();
+        for (const auto& compRef : mySubcomponents) {
+            compRef->addToSystem(system);
+        }
+    }
+    else {
+        OPENSIM_THROW_FRMOBJ(Exception, 
+            "_orderedSubcomponents specified, but its size does not reflect the "
+            "the number of immediate subcomponents. Verify that you have included "
+            "all immediate subcomponents in the ordered list."
+        )
+    }
 }
 
 void Component::initStateFromProperties(SimTK::State& state) const
@@ -1053,6 +1076,17 @@ bool Component::constructOutputForStateVariable(const std::string& name)
     return constructOutput<double>(name, func, SimTK::Stage::Model);
 }
 
+// helper method to specify the order of subcomponents.
+void Component::setNextSubcomponentInSystem(const Component& sub) const
+{
+    auto it =
+        std::find(_orderedSubcomponents.begin(), _orderedSubcomponents.end(),
+            SimTK::ReferencePtr<const Component>(&sub));
+    if (it == _orderedSubcomponents.end()) {
+        _orderedSubcomponents.push_back(SimTK::ReferencePtr<const Component>(&sub));
+    }
+}
+
 // mark components owned as properties as subcomponents
 void Component::markPropertiesAsSubcomponents()
 {
@@ -1149,6 +1183,25 @@ void Component::adoptSubcomponent(Component* subcomponent)
 
     subcomponent->setParent(*this);
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
+}
+
+std::vector<SimTK::ReferencePtr<const Component>> 
+    Component::getImmediateSubcomponents() const
+{
+    std::vector<SimTK::ReferencePtr<const Component>> mySubcomponents;
+    for (auto& compRef : _memberSubcomponents) {
+        mySubcomponents.push_back(
+            SimTK::ReferencePtr<const Component>(compRef.get()) );
+    }
+    for (auto& compRef : _propertySubcomponents) {
+        mySubcomponents.push_back(
+            SimTK::ReferencePtr<const Component>(compRef.get()) );
+    }
+    for (auto& compRef : _adoptedSubcomponents) {
+        mySubcomponents.push_back(
+            SimTK::ReferencePtr<const Component>(compRef.get()) );
+    }
+    return mySubcomponents;
 }
 
 
