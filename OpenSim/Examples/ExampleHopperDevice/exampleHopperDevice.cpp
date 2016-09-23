@@ -32,7 +32,7 @@ This interactive example consists of three steps:
   Step 2. Build an assistive device and test it on a simple testbed.
   Step 3. Connect the device to the hopper to increase hop height.
 
-To start working through this example, go to main() at the bottom of this file.
+To start working through this example, go to run() at the bottom of this file.
 From there, you will be directed to specific files and methods in this project
 that need to be completed. Now, hop to it! */
 
@@ -168,11 +168,8 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 } // namespace OpenSim
 
 
-//------------------------------------------------------------------------------
-// START HERE! Toggle "if (false)" to "if (true)" to enable/disable each step in
-// the exercise. The project should execute without making any changes (you
-// should see the unassisted hopper hop slightly).
-//------------------------------------------------------------------------------
+void run(bool showVisualizer, bool simulateOnce);
+
 int main(int argc, char* argv[]) {
     //==========================================================================
     // Command line argument parsing.
@@ -193,7 +190,28 @@ int main(int argc, char* argv[]) {
             showVisualizer = false;
         else if(strcmp(argv[i], "simulateOnce") == 0)
             simulateOnce = true;
-        
+
+    try {
+        run(showVisualizer, simulateOnce);
+    }
+    catch (const std::exception& ex) {
+        std::cout << "Hopper Example Failed to run due to the following Exception: " 
+            << ex.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+
+//------------------------------------------------------------------------------
+// START HERE! Toggle "if (false)" to "if (true)" to enable/disable each step in
+// the exercise. The project should execute without making any changes (you
+// should see the unassisted hopper hop slightly).
+//------------------------------------------------------------------------------
+
+
+void run(bool showVisualizer, bool simulateOnce)
+{
     using namespace OpenSim;
 
     //==========================================================================
@@ -328,6 +346,4 @@ int main(int argc, char* argv[]) {
         SimTK::State& sHD = assistedHopper.initSystem();
         simulate(assistedHopper, sHD, simulateOnce);
     }
-
-    return 0;
 };

@@ -252,8 +252,8 @@ computeErrors(const SimTK::State& s, double aT)
 {
     // COMPUTE ERRORS
     //std::cout<<_coordinateName<<std::endl;
-    //std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
-    //std::cout<<"_q->getValue() = "<<_q->getValue()<<std::endl;
+    //std::cout<<"_pTrk[0]->calcValue(aT) = "<< _pTrk[0]->calcValue(SimTK::Vector(1, aT)) <<std::endl;
+    //std::cout<<"_q->getValue(s) = "<<_q->getValue(s)<<std::endl;
     _pErr[0] = _pTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getValue(s);
     if(_vTrk[0]==NULL) {
         std::vector<int> derivComponents(1);
