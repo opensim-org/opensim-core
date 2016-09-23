@@ -240,22 +240,22 @@ int main() {
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 9);
 
-        // DataTable_<double, SpatialVec> tableSpatialVec{};
-        // tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
-        // tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
-        //                                 {{2, 2, 2}, {2, 2, 2}},
-        //                                 {{3, 3, 3}, {3, 3, 3}}});
-        // tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
-        //                                 {{1, 1, 1}, {1, 1, 1}},
-        //                                 {{2, 2, 2}, {2, 2, 2}}});
-        // tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
-        //                                 {{3, 3, 3}, {3, 3, 3}},
-        //                                 {{1, 1, 1}, {1, 1, 1}}});
+        DataTable_<double, SpatialVec> tableSpatialVec{};
+        tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
+        tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}}});
+        tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}}});
+        tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}}});
 
-        // tableDouble = tableSpatialVec;
-        // ASSERT(tableDouble.getColumnLabels().size() == 18);
-        // ASSERT(tableDouble.getNumRows()             == 3);
-        // ASSERT(tableDouble.getNumColumns()          == 18);
+        tableDouble = tableSpatialVec;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
 
         // Following will fail to compile.
         // DataTable_<double, Vec3      > tableVec3_fail{tableDouble};
@@ -302,22 +302,22 @@ int main() {
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 9);
 
-        // TimeSeriesTable_<SpatialVec> tableSpatialVec{};
-        // tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
-        // tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
-        //                                 {{2, 2, 2}, {2, 2, 2}},
-        //                                 {{3, 3, 3}, {3, 3, 3}}});
-        // tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
-        //                                 {{1, 1, 1}, {1, 1, 1}},
-        //                                 {{2, 2, 2}, {2, 2, 2}}});
-        // tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
-        //                                 {{3, 3, 3}, {3, 3, 3}},
-        //                                 {{1, 1, 1}, {1, 1, 1}}});
+        TimeSeriesTable_<SpatialVec> tableSpatialVec{};
+        tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
+        tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}}});
+        tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}}});
+        tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}}});
 
-        // tableDouble = tableSpatialVec;
-        // ASSERT(tableDouble.getColumnLabels().size() == 18);
-        // ASSERT(tableDouble.getNumRows()             == 3);
-        // ASSERT(tableDouble.getNumColumns()          == 18);
+        tableDouble = tableSpatialVec;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
 
         // Following will fail to compile.
         // TimeSeriesTable_<Vec3      > tableVec3_fail{tableDouble};
