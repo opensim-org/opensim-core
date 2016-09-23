@@ -57,9 +57,9 @@ static const std::string hopperHeightCoord{"/Dennis/slider/yCoord"};
 
 #pragma endregion
 
-//TODO: Provide the full path names of the PhysicalOffsetFrames defined on the
-//      hopper for attaching the assistive device. See buildHopperModel.cpp and
-//      showSubcomponentInfo() in helperMethods.h.
+//TODO: Provide the absolute path names of the PhysicalOffsetFrames defined on
+//      the hopper for attaching the assistive device. See buildHopperModel.cpp
+//      and showSubcomponentInfo() in helperMethods.h.
 // [Step 3, Task A]
 //static const std::string thighAttachment{"/Dennis/?????"}; //fill this in
 //static const std::string shankAttachment{"/Dennis/?????"}; //fill this in

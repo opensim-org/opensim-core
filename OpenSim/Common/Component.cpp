@@ -553,10 +553,10 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
 unsigned Component::printComponentsMatching(const std::string& substring) const
 {
     auto components = getComponentList();
-    components.setFilter(ComponentFilterFullPathNameContainsString(substring));
+    components.setFilter(ComponentFilterAbsolutePathNameContainsString(substring));
     unsigned count = 0;
     for (const auto& comp : components) {
-        std::cout << comp.getFullPathName() << std::endl;
+        std::cout << comp.getAbsolutePathName() << std::endl;
         ++count;
     }
     return count;
@@ -613,7 +613,7 @@ void Component::setParent(const Component& parent)
     _parent.reset(&parent);
 }
 
-std::string Component::getFullPathName() const
+std::string Component::getAbsolutePathName() const
 {
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
@@ -632,8 +632,8 @@ std::string Component::getFullPathName() const
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    ComponentPath thisP(getFullPathName());
-    ComponentPath wrtP(wrt.getFullPathName());
+    ComponentPath thisP(getAbsolutePathName());
+    ComponentPath wrtP(wrt.getAbsolutePathName());
 
     return thisP.formRelativePath(wrtP).toString();
 }
@@ -694,11 +694,11 @@ Array<std::string> Component::getStateVariableNames() const
 
 /** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
-        stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
+        stateNames[i] = (getAbsolutePathName() + "/" + stateNames[i]);
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getFullPathName();// *this);
+        const std::string& pathName = comp.getAbsolutePathName();// *this);
         Array<std::string> subStateNames = 
             comp.getStateVariablesNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
@@ -1060,8 +1060,8 @@ void Component::markAsPropertySubcomponent(Component* component)
             _propertySubcomponents.push_back(SimTK::ReferencePtr<Component>(component));
         }
         else{
-            auto compPath = component->getFullPathName();
-            auto foundPath = it->get()->getFullPathName();
+            auto compPath = component->getAbsolutePathName();
+            auto foundPath = it->get()->getAbsolutePathName();
             OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
                            component->getName(), getName());
         }

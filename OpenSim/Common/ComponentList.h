@@ -79,16 +79,16 @@ public:
     }
 };
 
-/** A component is considered a match if its full path name contains the
+/** A component is considered a match if its absolute path name contains the
 given string. */
-class OSIMCOMMON_API ComponentFilterFullPathNameContainsString
+class OSIMCOMMON_API ComponentFilterAbsolutePathNameContainsString
         : public ComponentFilter {
 public:
-    ComponentFilterFullPathNameContainsString(const std::string& substring)
+    ComponentFilterAbsolutePathNameContainsString(const std::string& substring)
         : _substring(substring) {}
     bool isMatch(const Component& comp) const override;
-    ComponentFilterFullPathNameContainsString* clone() const override {
-        return new ComponentFilterFullPathNameContainsString(*this);
+    ComponentFilterAbsolutePathNameContainsString* clone() const override {
+        return new ComponentFilterAbsolutePathNameContainsString(*this);
     }
 private:
     std::string _substring;

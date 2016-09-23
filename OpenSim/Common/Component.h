@@ -546,12 +546,13 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete pathname for this Component to its ancestral Component,
-     *  which is the root of the tree to which this Component belongs.
-     * For example: a Coordinate Components would have a full path name like:
-     *  `/arm26/elbow_r/flexion`. Accessing a Component by its fullPathName from
-     * root is guaranteed to be unique. */
-    std::string getFullPathName() const;
+    /** Get the complete (absolute) pathname for this Component to its 
+     * ancestral Component, which is the root of the tree to which this 
+     * Component belongs.
+     * For example: a Coordinate Component would have an absolute path name 
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
+     * absolutePathName from root is guaranteed to be unique. */
+    std::string getAbsolutePathName() const;
 
 
     /** Get the relative pathname of this Component with respect to another one */
@@ -663,12 +664,12 @@ public:
     }
 
 
-    /** Print a list to the console of all components whose full path name
-     * contains the given string. You might use this if (a) you know the name of
-     * a component in your model but don't know its full path, (b) if you want
-     * to find all components with a given name, or (c) to get a list of all
-     * components on the right leg of a model (if all components on the right
-     * side have "_r" in their name).
+    /** Print a list to the console of all components whose absolute path name
+     * contains the given string. You might use this if (a) you know the name 
+     * of a component in your model but don't know its absolute path, (b) if 
+     * you want to find all components with a given name, or (c) to get a list
+     * of all components on the right leg of a model (if all components on the
+     * right side have "_r" in their name).
      *
      * A function call like:
      * @code{.cpp}
@@ -1961,7 +1962,7 @@ protected:
         of StateVariables by name. 
         
         NOTE: If the component name or the state variable name is ambiguous, 
-         an exception is thrown. To disambiguate use the full name provided
+         an exception is thrown. To disambiguate use the absolute path provided
          by owning component(s). */
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
@@ -1974,11 +1975,11 @@ protected:
             throw Exception(msg);
         }
 
-        ComponentPath thisFullPath(getFullPathName());
+        ComponentPath thisAbsPath(getAbsolutePathName());
         ComponentPath pathToFind(name);
 
         const C* found = NULL;
-        if (thisFullPath == pathToFind) {
+        if (thisAbsPath == pathToFind) {
             found = dynamic_cast<const C*>(this);
             if (found)
                 return found;
@@ -1997,11 +1998,11 @@ protected:
         
         for (const C& comp : compsList) {
             // if a child of this Component, one should not need
-            // to specify this Component's full path name
-            ComponentPath compFullPath(comp.getFullPathName());
-            ComponentPath thisFullPathPlusSubname(getFullPathName());
-            thisFullPathPlusSubname.pushBack(subname);
-            if (compFullPath == thisFullPathPlusSubname) {
+            // to specify this Component's absolute path name
+            ComponentPath compAbsPath(comp.getAbsolutePathName());
+            ComponentPath thisAbsPathPlusSubname(getAbsolutePathName());
+            thisAbsPathPlusSubname.pushBack(subname);
+            if (compAbsPath == thisAbsPathPlusSubname) {
                 foundCs.push_back(&comp);
                 break;
             } 
@@ -2016,7 +2017,7 @@ protected:
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
                 if (comp.getDebugLevel() > 0) {
-                    std::string details = msg + " Found '" + compFullPath.toString() +
+                    std::string details = msg + " Found '" + compAbsPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " + 
                         comp.getConcreteClassName() + ", but it "
                         "is not on specified path.\n";
@@ -2107,13 +2108,13 @@ protected:
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
-                ComponentPath currentFullPathPlusSubpath(current->getFullPathName());
-                currentFullPathPlusSubpath.pushBack(currentSubpath.toString());
+                ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
+                currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
                 for (const Component& comp : compsList) {
-                    ComponentPath compFullPath(comp.getFullPathName());
+                    ComponentPath compAbsPath(comp.getAbsolutePathName());
                     std::string compName = comp.getName();
                     // Check if we're in the right component
-                    if (compFullPath == currentFullPathPlusSubpath) {
+                    if (compAbsPath == currentAbsPathPlusSubpath) {
                         // In the right component and has matching name
                         // update current to this comp
                         current = &comp;
