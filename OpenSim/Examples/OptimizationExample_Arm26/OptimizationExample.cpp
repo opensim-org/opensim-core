@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -211,7 +211,8 @@ int main()
         manager.integrate(si);
 
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "Arm26_optimized_states.sto");
+        STOFileAdapter_<double>::write(statesTable, 
+                                      "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

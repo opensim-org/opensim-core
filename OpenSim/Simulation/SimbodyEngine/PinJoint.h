@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -46,7 +46,8 @@ class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
 public:
-    /** Index of Coordinate for use as an argument to getCoordinate().
+    /** Index of Coordinate for use as an argument to getCoordinate() and
+        updCoordinate().
 
         <b>C++ example</b>
         \code{.cpp}
@@ -70,9 +71,20 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get the Coordinate associated with this Joint. @see Coord */
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to the Coordinate associated with this Joint.
+        @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
         return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to the Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
     }
 
 protected:

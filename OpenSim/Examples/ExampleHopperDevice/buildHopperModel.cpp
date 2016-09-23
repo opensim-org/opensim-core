@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  buildHopper.cpp                          *
+ *                       OpenSim:  buildHopperModel.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -42,7 +42,7 @@ buildHopper() is doing. */
 
 namespace OpenSim {
 
-Model buildHopper() {
+Model buildHopper(bool showVisualizer) {
     using SimTK::Vec3;
     using SimTK::Inertia;
 
@@ -87,16 +87,17 @@ Model buildHopper() {
     hopper.addJoint(knee);
 
     // Set the coordinate names and default values. Note that we need "auto&"
-    // here so that we get a reference to the CoordinateSet rather than a copy.
-    auto& sliderCoord = sliderToGround->upd_CoordinateSet()[0];
+    // here so that we get a reference to the Coordinate rather than a copy.
+    auto& sliderCoord =
+        sliderToGround->updCoordinate(SliderJoint::Coord::TranslationX);
     sliderCoord.setName("yCoord");
     sliderCoord.setDefaultValue(1.);
 
-    auto& hipCoord = hip->upd_CoordinateSet()[0];
+    auto& hipCoord = hip->updCoordinate(PinJoint::Coord::RotationZ);
     hipCoord.setName("hipFlexion");
     hipCoord.setDefaultValue(0.35);
 
-    auto& kneeCoord = knee->upd_CoordinateSet()[0];
+    auto& kneeCoord = knee->updCoordinate(PinJoint::Coord::RotationZ);
     kneeCoord.setName("kneeFlexion");
     kneeCoord.setDefaultValue(0.75);
 
@@ -188,8 +189,9 @@ Model buildHopper() {
     thigh->attachGeometry(linkGeometry);
     shank->attachGeometry(linkGeometry->clone());
 
-    hopper.setUseVisualizer(true);
-
+    if(showVisualizer)
+        hopper.setUseVisualizer(true);
+    
     return hopper;
 }
 

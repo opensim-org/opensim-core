@@ -32,6 +32,14 @@ environment:
       JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27-x64"
 
+branches:
+  except:
+  # Branches containing Development Proposals do not need to be tested.
+  # Exclude any branch whose name starts with devprop (case-insensitive).
+  # For example, devprop-feature and DEVPROP_feature are ignored.
+  # The forward slashes indicate to AppVeyor that we are giving a regex.
+  - /^(?i:devprop).*$/
+
 init:
   # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
   # so we must add v2.7 64bit earlier on the PATH so that CMake finds it when
@@ -53,6 +61,7 @@ nuget:
   account_feed: true
 
 install:
+  - cmake --version
 
   ## Use Chocolatey to install SWIG.
   - choco install swig --version 3.0.6 --yes > $null

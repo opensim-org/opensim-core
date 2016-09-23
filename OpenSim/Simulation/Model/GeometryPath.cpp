@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -89,9 +89,6 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     Array<PathPoint *> pathPrototype;
     addCacheVariable<Array<PathPoint *> >
         ("current_path", pathPrototype, SimTK::Stage::Position);
-    // When displaying, cache the set of points to be used to draw the path.
-    addCacheVariable<Array<PathPoint *> >
-        ("current_display_path", pathPrototype, SimTK::Stage::Position);
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
@@ -124,20 +121,14 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     if (fixed) { return; }
     // Ensure that the state has been realized to Stage::Dynamics to give
     // clients of this path a chance to calculate meaningful color information.
+    // TODO: this should be removed. Generate decorations is reporting it should 
+    // not force computations.
     this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
 
-    this->updateDisplayPath(state);
+    const Array<PathPoint*>& pathPoints =
+        getCacheVariableValue<Array<PathPoint*> >(state, "current_path");
 
-    // Even though these are Points which are Components they are completey 
-    // orphaned and not part of any system since they are populated during 
-    // a simulation. TODO we need another data structure to be a DecorativePath
-    // which simply an array of points in ground or on MBs.
-    // Trying to getLocationInGround(state) will faile due to no underlying system.
-    const Array<PathPoint*>& points = getCurrentDisplayPath(state);
-
-    if (points.getSize() == 0) { return; }
-
-    const PathPoint* lastPoint = points[0];
+    const PathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
 
     Vec3 lastPos = lastPoint->getLocationInGround(state);
@@ -145,23 +136,43 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
     Vec3 pos;
-    for (int j = 1; j < points.getSize(); j++) {
-        const PathPoint* point = points[j];
 
-        // the body (PhysicalFrame) IS part of the actual Model and its system
-        // so we can ask it for its transform w.r.t. Ground
-        pos = point->getLocationInGround(state);
+    for (int i = 1; i < pathPoints.getSize(); ++i) {
+        PathPoint* point = pathPoints[i];
+        PathWrapPoint* pwp = dynamic_cast<PathWrapPoint*>(point);
 
-        if (hints.get_show_path_points())
-            DefaultGeometry::drawPathPoint(mbix, pos, getColor(state), appendToThis);
-
-        
-        // Line segments will be in ground frame
-        appendToThis.push_back(DecorativeLine(lastPos, pos)
-            .setLineThickness(4)
-            .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
-
-        lastPos = pos;
+        if (pwp) {
+            // A PathWrapPoint provides points on the wrapping surface as Vec3s
+            Array<Vec3>& surfacePoints = pwp->getWrapPath();
+            // The surface points are expressed w.r.t. the wrap surface's body frame.
+            // Transform the surface points into the ground reference frame to draw
+            // the surface point as the wrapping portion of the GeometryPath
+            const Transform& X_BG = pwp->getBody().getTransformInGround(state);
+            // Cycle through each surface point and draw it the Ground frame
+            for (int j = 0; j<surfacePoints.getSize(); ++j) {
+                // transform the surface point into the Ground reference frame
+                pos = X_BG*surfacePoints[j];
+                if (hints.get_show_path_points())
+                    DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                        appendToThis);
+                // Line segments will be in ground frame
+                appendToThis.push_back(DecorativeLine(lastPos, pos)
+                    .setLineThickness(4)
+                    .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
+                lastPos = pos;
+            }
+        } 
+        else { // otherwise a regular PathPoint so just draw its location
+            pos = point->getLocationInGround(state);
+            if (hints.get_show_path_points())
+                DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                    appendToThis);
+            // Line segments will be in ground frame
+            appendToThis.push_back(DecorativeLine(lastPos, pos)
+                .setLineThickness(4)
+                .setColor(getColor(state)).setBodyId(0).setIndexOnBody(i));
+            lastPos = pos;
+        }
     }
 }
 
@@ -401,22 +412,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
 //_____________________________________________________________________________
 /*
- * get the current display path of the path
- *
- * @return The array of currently active path points, plus points along the
- * surfaces of the wrap objects (if any).
- * 
- */
-const OpenSim::Array<PathPoint*>& GeometryPath::
-getCurrentDisplayPath(const SimTK::State& s) const
-{
-    // update the geometry to make sure the current display path is up to date.
-    // updateGeometry(s);
-    return getCacheVariableValue<Array <PathPoint*> >(s, "current_display_path" );
-}
-
-//_____________________________________________________________________________
-/*
  * Update the geometric representation of the path.
  * The resulting geometry is maintained at the VisibleObject layer.
  * This function should not be made public. It is called internally
@@ -427,14 +422,6 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
 {
     // Check if the current path needs to recomputed.
     computePath(s);
-
-    // If display path is current do not need to recompute it.
-    if (isCacheVariableValid(s, "current_display_path"))
-        return;
-   
-    // Updating the display path will also validate the current_display_path 
-    // cache variable.
-    updateDisplayPath(s);
 }
 
 //=============================================================================
@@ -1192,43 +1179,6 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
         const_cast<Self*>(this)->_maSolver.reset(new MomentArmSolver(*_model));
 
     return _maSolver->solve(s, aCoord,  *this);
-}
-
-//_____________________________________________________________________________
-/*
- * Update the cache entry for current_display_path
- */
-void GeometryPath::updateDisplayPath(const SimTK::State& s) const
-{
-    Array<PathPoint*>& currentDisplayPath = 
-        updCacheVariableValue<Array<PathPoint*> >(s, "current_display_path");
-
-    currentDisplayPath.setSize(0);
-
-    const Array<PathPoint*>& currentPath =  
-        getCacheVariableValue<Array<PathPoint*> >(s, "current_path");
-    for (int i=0; i<currentPath.getSize(); i++) {
-        PathPoint* mp = currentPath.get(i);
-        PathWrapPoint* mwp = dynamic_cast<PathWrapPoint*>(mp);
-        if (mwp) {
-            // If the point is a PathWrapPoint and has surfacePoints,
-            // then this is the second of two tangent points for the
-            // wrap instance. So add the surface points to the display
-            // path before adding the second tangent point.
-            // Note: the first surface point is coincident with the
-            // first tangent point, so don't add it to the path.
-            const Array<Vec3>& surfacePoints = mwp->getWrapPath();
-            for (int j=1; j<surfacePoints.getSize(); j++) {
-                PathWrapPoint* p = new PathWrapPoint();
-                p->setLocation(s, surfacePoints.get(j));
-                p->setBody(mwp->getBody());
-                currentDisplayPath.append(p);
-            }
-        }
-        currentDisplayPath.append(mp);
-    }
-
-    markCacheVariableValid(s, "current_display_path");
 }
 
 void GeometryPath::extendFinalizeFromProperties()

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth, Ayman Habib                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -100,12 +100,12 @@ int main()
         // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        blockToGround->upd_coordinates(0).setRange(angleRange);
-        blockToGround->upd_coordinates(1).setRange(angleRange);
-        blockToGround->upd_coordinates(2).setRange(angleRange);
-        blockToGround->upd_coordinates(3).setRange(positionRange);
-        blockToGround->upd_coordinates(4).setRange(positionRange);
-        blockToGround->upd_coordinates(5).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
         // Add the block body to the model
         osimModel.addBody(block);
@@ -173,7 +173,7 @@ int main()
 
         // Add a Muscle analysis
         MuscleAnalysis* muscAnalysis = new MuscleAnalysis(&osimModel);
-        Array<std::string> coords(blockToGround->get_coordinates(5).getName(),1);
+        Array<std::string> coords(blockToGround->getCoordinate(FreeJoint::Coord::TranslationZ).getName(),1);
         muscAnalysis->setCoordinates(coords);
         muscAnalysis->setComputeMoments(false);
         osimModel.addAnalysis(muscAnalysis);
@@ -232,10 +232,12 @@ int main()
         // Save the simulation results
         // Save the states
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "tugOfWar_fatigue_states.sto");
+        STOFileAdapter_<double>::write(statesTable, 
+                                      "tugOfWar_fatigue_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter::write(forcesTable, "tugOfWar_fatigue_forces.sto");
+        STOFileAdapter_<double>::write(forcesTable, 
+                                      "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results
         IO::makeDir("MuscleAnalysisResults");

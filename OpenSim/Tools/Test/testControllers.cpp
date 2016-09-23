@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -86,12 +86,12 @@ void testControlSetControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    auto& sliderCoord = blockToGround.upd_coordinates(0);
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
     sliderCoord.setName("xTranslation");
     sliderCoord.setRange(posRange);
@@ -181,11 +181,12 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create 6 coordinates (degrees-of-freedom) between the ground and block
-    auto& sliderCoord = blockToGround.upd_coordinates(0);
+
+    // Create 1 coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
     sliderCoord.setRange(posRange);
 
@@ -274,11 +275,12 @@ void testCorrectionControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    auto& sliderCoord = blockToGround.upd_coordinates(0);
+
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
     sliderCoord.setName("xTranslation");
     sliderCoord.setRange(posRange);

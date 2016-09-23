@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Copyright (c) 2005-2016 Stanford University and the Authors                *
 * Author(s): Ajay Seth, Matthew Millard                                      *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -225,7 +225,7 @@ void simulateMuscle(
         Vec3(0),
                         Vec3(0));
 
-    auto& sliderCoord = slider->upd_coordinates(0);
+    auto& sliderCoord = slider->updCoordinate();
     sliderCoord.setName("tx");
     sliderCoord.setDefaultValue(1.0);
     sliderCoord.setRangeMin(0);

@@ -8,9 +8,6 @@ file(GLOB TO_COMPILE "future*.cpp")
 include_directories(${OpenSim_SOURCE_DIR}
                     ${OpenSim_SOURCE_DIR}/Vendors)
 
-add_subdirectory(ExampleHopperDevice)
-
-
 set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"
     "futureOrientationInverseKinematics.trc"

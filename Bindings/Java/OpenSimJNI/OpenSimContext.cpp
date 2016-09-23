@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -120,12 +120,6 @@ double OpenSimContext::getMuscleLength(Muscle& m) {
 
 const Array<PathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
   return m.getGeometryPath().getCurrentPath(*_configState);
-}
-
-const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(GeometryPath& g) {
-  g.updateGeometry(*_configState);
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
-  return g.getCurrentDisplayPath(*_configState);
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {

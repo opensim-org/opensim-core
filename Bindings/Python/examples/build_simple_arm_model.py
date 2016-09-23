@@ -5,7 +5,7 @@
 # and supported by the US National Institutes of Health (U54 GM072970,    #
 # R24 HD065690) and by DARPA through the Warrior Web program.             #
 #                                                                         #
-# Copyright (c) 2005-2012 Stanford University and the Authors             #
+# Copyright (c) 2005-2016 Stanford University and the Authors             #
 # Author(s): Neil Dhir                                                    #
 #                                                                         #
 # Licensed under the Apache License, Version 2.0 (the "License");         #
@@ -94,7 +94,7 @@ biceps.addNewPathPoint("insertion",
 
 brain = osim.PrescribedController()
 brain.addActuator(biceps)
-brain.prescribeControlForActuator(1,  # Actuator's index in controller set
+brain.prescribeControlForActuator('biceps',  # Actuator's index in controller set
                                   osim.StepFunction(0.5, 3.0, 0.3, 1.0))
 
 # ---------------------------------------------------------------------------

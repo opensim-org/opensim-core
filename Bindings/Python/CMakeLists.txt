@@ -319,3 +319,7 @@ add_dependencies(RunPythonTests PythonBindings)
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+# Install example files (not installed next to the python package).
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")

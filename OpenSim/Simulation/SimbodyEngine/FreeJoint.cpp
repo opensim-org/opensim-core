@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -52,13 +52,13 @@ void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(s)){
-        double xangle = get_coordinates(0).getDefaultValue();
-        double yangle = get_coordinates(1).getDefaultValue();
-        double zangle = get_coordinates(2).getDefaultValue();
+        double xangle = getCoordinate(FreeJoint::Coord::Rotation1X).getDefaultValue();
+        double yangle = getCoordinate(FreeJoint::Coord::Rotation2Y).getDefaultValue();
+        double zangle = getCoordinate(FreeJoint::Coord::Rotation3Z).getDefaultValue();
         Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-        Vec3 t(get_coordinates(3).getDefaultValue(),
-            get_coordinates(4).getDefaultValue(),
-            get_coordinates(5).getDefaultValue());
+        Vec3 t(getCoordinate(FreeJoint::Coord::TranslationX).getDefaultValue(),
+               getCoordinate(FreeJoint::Coord::TranslationY).getDefaultValue(),
+               getCoordinate(FreeJoint::Coord::TranslationZ).getDefaultValue());
 
         //FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
         getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
@@ -77,11 +77,11 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
         Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
-        upd_coordinates(0).setDefaultValue(angles[0]);
-        upd_coordinates(1).setDefaultValue(angles[1]);
-        upd_coordinates(2).setDefaultValue(angles[2]);
-        upd_coordinates(3).setDefaultValue(t[0]); 
-        upd_coordinates(4).setDefaultValue(t[1]); 
-        upd_coordinates(5).setDefaultValue(t[2]);
+        updCoordinate(FreeJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
+        updCoordinate(FreeJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
+        updCoordinate(FreeJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
+        updCoordinate(FreeJoint::Coord::TranslationX).setDefaultValue(t[0]); 
+        updCoordinate(FreeJoint::Coord::TranslationY).setDefaultValue(t[1]); 
+        updCoordinate(FreeJoint::Coord::TranslationZ).setDefaultValue(t[2]);
     }
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -48,7 +48,8 @@ class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
 public:
-    /** Indices of Coordinates for use as arguments to getCoordinate().
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
 
         <b>C++ example</b>
         \code{.cpp}
@@ -109,9 +110,20 @@ public:
         @see Joint */
     using Joint::getCoordinate;
 
-    /** Get a Coordinate associated with this Joint. @see Coord */
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
     const Coordinate& getCoordinate(Coord idx) const {
         return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
     }
 
     // SCALE

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  * Contributer(s) :                                                           *
  *                                                                            *
@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Simulation/SimbodyEngine/PinJoint.h"
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -61,6 +62,68 @@ const int expectedNumJntComponents = 3;
 // Test using the iterator to skip over every other Component (Frame in this case)
 // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
 const int expectedNumCountSkipFrames = 3;
+
+namespace OpenSim {
+    
+class Device : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
+}; // end of Device
+    
+} // namespace OpenSim
+
+
+void testNestedComponentListConsistency() {
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    Model model(modelFilename);
+
+    auto device = new OpenSim::Device();
+    device->setName("device");
+
+    auto humerus = new OpenSim::Body("device_humerus", 1, Vec3(0), Inertia(0));
+    auto radius  = new OpenSim::Body("device_radius",  1, Vec3(0), Inertia(0));
+
+    auto shoulder = new OpenSim::PinJoint("device_shoulder",
+                                          model.getGround(), Vec3(0), Vec3(0),
+                                          *humerus, Vec3(0, 1, 0), Vec3(0));
+    auto elbow = new OpenSim::PinJoint("device_elbow",
+                                       *humerus, Vec3(0), Vec3(0),
+                                       *radius, Vec3(0, 1, 0), Vec3(0));
+
+    device->addComponent(shoulder);
+    device->addComponent(elbow);
+
+    model.addModelComponent(device);
+    model.finalizeFromProperties();
+
+    std::vector<const Joint*> joints1{}, joints2{};
+    std::set<const Coordinate*> coords{};
+
+    std::cout << "Joints in the model: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        std::cout << "    " << joint.getFullPathName() << std::endl;
+        joints1.push_back(&joint);
+    }
+
+    std::cout << "Joints and Coordinates: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        joints2.push_back(&joint);
+        std::cout << "    Joint: " << joint.getFullPathName() << std::endl;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            std::cout << "        Coord: "
+                      << coord.getFullPathName() << std::endl;
+            coords.insert(&coord);
+        }
+    }
+
+    // Joints list should be a unique set.
+    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    // Joints1 and Joints2 must be identical.
+    ASSERT(joints1 == joints2);
+    // Expected number of unique coordinates.
+    ASSERT(coords.size() == 4);
+}
 
 void testComponentListConst() {
 
@@ -133,6 +196,18 @@ void testComponentListConst() {
     // To test states we must have added the components to the system
     // which is done when the model creates and initializes the system
     SimTK::State state = model.initSystem();
+
+    unsigned numJoints{}, numCoords{};
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        std::cout << "Joint: " << joint.getFullPathName() << std::endl;
+        ++numJoints;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            std::cout << "Coord: " << coord.getFullPathName() << std::endl;
+            ++numCoords;
+        }
+    }
+    ASSERT(numJoints == 2);
+    ASSERT(numCoords == 2);
 
     int numJointsWithStateVariables = 0;
     ComponentList<const Joint> jointsWithStates = model.getComponentList<Joint>();
@@ -441,6 +516,7 @@ int main() {
         SimTK_SUBTEST(testComponentListNonConstWithConstIterator);
         SimTK_SUBTEST(testComponentListNonConstWithNonConstIterator);
         SimTK_SUBTEST(testComponentListComparisonOperators);
+        SimTK_SUBTEST(testNestedComponentListConsistency);
     SimTK_END_TEST();
 }
 

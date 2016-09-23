@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -891,6 +891,7 @@ void testEllipsoidJoint()
     // Test accessors.
     {
         EllipsoidJoint myEllipsoidJt;
+
         ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
                myEllipsoidJt.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
@@ -901,6 +902,11 @@ void testEllipsoidJoint()
                myEllipsoidJt.get_coordinates(2),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
+
+        ASSERT(myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
+               myEllipsoidJt.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
     }
 
 } // end testEllipsoidJoint
@@ -1082,6 +1088,8 @@ void testWeldJoint(bool randomizeBodyOrder)
         WeldJoint myWeldJoint;
         ASSERT_THROW(OpenSim::JointHasNoCoordinates,
                      myWeldJoint.getCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myWeldJoint.updCoordinate());
     }
 }
 
@@ -1178,6 +1186,7 @@ void testFreeJoint()
     // Test accessors.
     {
         FreeJoint myFreeJoint;
+
         ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X) ==
                myFreeJoint.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
@@ -1197,6 +1206,11 @@ void testFreeJoint()
                myFreeJoint.get_coordinates(5),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.getCoordinate());
+
+        ASSERT(myFreeJoint.updCoordinate(FreeJoint::Coord::Rotation1X) ==
+               myFreeJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.updCoordinate());
     }
 
 } // end testFreeJoint
@@ -1289,6 +1303,7 @@ void testBallJoint()
     // Test accessors.
     {
         BallJoint myBallJoint;
+
         ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X) ==
                myBallJoint.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
@@ -1299,6 +1314,11 @@ void testBallJoint()
                myBallJoint.get_coordinates(2),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.getCoordinate());
+
+        ASSERT(myBallJoint.updCoordinate(BallJoint::Coord::Rotation1X) ==
+               myBallJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.updCoordinate());
     }
 
 } // end testBallJoint
@@ -1451,11 +1471,19 @@ void testPinJoint()
     // Test accessors.
     {
         PinJoint myPinJoint;
+
         ASSERT(myPinJoint.getCoordinate(PinJoint::Coord::RotationZ) ==
                myPinJoint.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT(myPinJoint.getCoordinate() ==
                myPinJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+
+        ASSERT(myPinJoint.updCoordinate(PinJoint::Coord::RotationZ) ==
+               myPinJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myPinJoint.updCoordinate() ==
+               myPinJoint.upd_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
     }
 
@@ -1554,11 +1582,19 @@ void testSliderJoint()
     // Test accessors.
     {
         SliderJoint mySliderJoint;
+
         ASSERT(mySliderJoint.getCoordinate(SliderJoint::Coord::TranslationX) ==
                mySliderJoint.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT(mySliderJoint.getCoordinate() ==
                mySliderJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+
+        ASSERT(mySliderJoint.updCoordinate(SliderJoint::Coord::TranslationX) ==
+               mySliderJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(mySliderJoint.updCoordinate() ==
+               mySliderJoint.upd_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
     }
 
@@ -1655,6 +1691,7 @@ void testPlanarJoint()
     // Test accessors.
     {
         PlanarJoint myPlanarJoint;
+
         ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ) ==
                myPlanarJoint.get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
@@ -1665,6 +1702,11 @@ void testPlanarJoint()
                myPlanarJoint.get_coordinates(2),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.getCoordinate());
+
+        ASSERT(myPlanarJoint.updCoordinate(PlanarJoint::Coord::RotationZ) ==
+               myPlanarJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.updCoordinate());
     }
 
 } // end testPlanarJoint
@@ -2375,6 +2417,11 @@ void testCustomJointAccessors()
                      myCustomJoint0->getCoordinate(0));
         ASSERT_THROW(OpenSim::JointHasNoCoordinates,
                      myCustomJoint0->getCoordinate(1));
+
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->updCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->updCoordinate(0));
     }
     {
         Model myModel;
@@ -2393,6 +2440,14 @@ void testCustomJointAccessors()
                myCustomJoint1->get_coordinates(0),
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->getCoordinate(1));
+
+        ASSERT(myCustomJoint1->updCoordinate() ==
+               myCustomJoint1->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint1->updCoordinate(0) ==
+               myCustomJoint1->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->updCoordinate(1));
     }
     {
         Model myModel;
@@ -2415,12 +2470,22 @@ void testCustomJointAccessors()
                __FILE__, __LINE__, "Coordinate accessor failed");
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate());
         ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate(2));
+
+        ASSERT(myCustomJoint2->updCoordinate(0) ==
+               myCustomJoint2->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint2->updCoordinate(1) ==
+               myCustomJoint2->upd_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate());
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate(2));
     }
 }
 
 void testGimbalJointAccessors()
 {
     GimbalJoint myGimbalJoint;
+
     ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation1X) ==
            myGimbalJoint.get_coordinates(0),
            __FILE__, __LINE__, "Coordinate accessor failed");
@@ -2431,11 +2496,17 @@ void testGimbalJointAccessors()
            myGimbalJoint.get_coordinates(2),
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.getCoordinate());
+
+    ASSERT(myGimbalJoint.updCoordinate(GimbalJoint::Coord::Rotation1X) ==
+           myGimbalJoint.upd_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.updCoordinate());
 }
 
 void testUniversalJointAccessors()
 {
     UniversalJoint myUniversalJoint;
+
     ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation1X) ==
            myUniversalJoint.get_coordinates(0),
            __FILE__, __LINE__, "Coordinate accessor failed");
@@ -2443,4 +2514,9 @@ void testUniversalJointAccessors()
            myUniversalJoint.get_coordinates(1),
            __FILE__, __LINE__, "Coordinate accessor failed");
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.getCoordinate());
+
+    ASSERT(myUniversalJoint.updCoordinate(UniversalJoint::Coord::Rotation1X) ==
+           myUniversalJoint.upd_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.updCoordinate());
 }
