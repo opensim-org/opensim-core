@@ -79,9 +79,9 @@ std::string Path::toString() const
 {
     std::string outString;
     if (_isAbsolute) outString.append(1, _separator);
-    for (size_t i = 0; i < getPathLength(); ++i) {
+    for (size_t i = 0; i < getNumPathLevels(); ++i) {
         outString.append(_path[i]);
-        if (i != getPathLength() - 1) {
+        if (i != getNumPathLevels() - 1) {
             outString.append(1, _separator);
         }
     }
@@ -91,7 +91,7 @@ std::string Path::toString() const
 
 void Path::insertPathElement(size_t pos, const std::string& pathElement) 
 {
-    if (pos > getPathLength()) {
+    if (pos > getNumPathLevels()) {
         OPENSIM_THROW(Exception, "Index is out of range of elements");
     }
 
@@ -103,7 +103,7 @@ void Path::insertPathElement(size_t pos, const std::string& pathElement)
 
 void Path::erasePathElement(size_t pos)
 {
-    if (pos > getPathLength() - 1) {
+    if (pos > getNumPathLevels() - 1) {
         OPENSIM_THROW(Exception, "Index is out of range of elements");
     }
 
@@ -138,8 +138,8 @@ std::vector<std::string> Path::formRelativePathVec(const Path& otherPath) const
         OPENSIM_THROW(Exception, "Both paths must be absolute paths");
     }
 
-    size_t thisPathLength = this->getPathLength();
-    size_t otherPathLength = otherPath.getPathLength();
+    size_t thisPathLength = this->getNumPathLevels();
+    size_t otherPathLength = otherPath.getNumPathLevels();
 
     // find how many elements at the head are in common
     size_t searchLength = std::min(thisPathLength, otherPathLength);
@@ -172,7 +172,7 @@ std::vector<std::string> Path::formRelativePathVec(const Path& otherPath) const
 
 void Path::cleanPath() 
 {
-    size_t numPathElements = getPathLength();
+    size_t numPathElements = getNumPathLevels();
     size_t i = 0;
     while (i < numPathElements) {
         // remove any "." element

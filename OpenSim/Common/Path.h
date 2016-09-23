@@ -81,8 +81,8 @@ public:
     /// Return true if this Path is an absolute path.
     bool isAbsolute() const { return _isAbsolute; };
 
-    /// Return the number of elements in the Path
-    size_t getPathLength() const { return _path.size(); };
+    /// Return the number of levels (or elements) in the Path
+    size_t getNumPathLevels() const { return _path.size(); };
 
     /// Push a string to the back of a path (i.e. the end). First checks if the
     /// pathElement is valid. This function does not alter whether this path is
@@ -111,7 +111,7 @@ protected:
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {
-        return getSubPathVec(0, getPathLength() - 1);
+        return getSubPathVec(0, getNumPathLevels() - 1);
     }
 
     /// Return the pathElement from the specified position as a string. This
@@ -119,7 +119,7 @@ protected:
     std::string getPathElement(size_t pos) const { return _path[pos]; };
 
     /// Return the last pathElement as a string.
-    std::string getPathName() const { return _path[getPathLength() - 1]; };
+    std::string getPathName() const { return _path[getNumPathLevels() - 1]; };
 
 private:
     /// Insert a pathElement at the specified position. Note that this could

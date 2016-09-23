@@ -2084,13 +2084,13 @@ protected:
         const Component* current = this;
         ComponentPath pathToFind(path);
         std::string pathNameToFind = pathToFind.getComponentName();
-        size_t pathLength = pathToFind.getPathLength();
+        size_t numPathLevels = pathToFind.getNumPathLevels();
         size_t ind = 0;
         ComponentPath currentSubpath;
         ComponentPath upPath("..");
         ComponentPath curCompPath(".");
 
-        while (ind < pathLength && current) {
+        while (ind < numPathLevels && current) {
             currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
             ComponentPath currentPathName(current->getName());
 

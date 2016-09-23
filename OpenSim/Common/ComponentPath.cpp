@@ -69,5 +69,5 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const
 
 std::string ComponentPath::getComponentName() const
 {
-    return getSubcomponentNameAtLevel(getPathLength() - 1);
+    return getSubcomponentNameAtLevel(getNumPathLevels() - 1);
 }
