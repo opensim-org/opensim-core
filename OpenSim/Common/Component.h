@@ -2768,7 +2768,7 @@ void Connector<C>::findAndConnect(const Component& root) {
 
 template<class T>
 void Input<T>::connect(const AbstractOutput& output,
-                       const std::string& annotation) {
+                       const std::string& alias) {
     const auto* outT = dynamic_cast<const Output<T>*>(&output);
     if (outT) {
         if (!isListConnector()) {
@@ -2793,8 +2793,8 @@ void Input<T>::connect(const AbstractOutput& output,
             else {
                 pathName = pathName + "/" + chan.second.getName();
             }
-            if (!annotation.empty() && annotation != chan.second.getChannelName()) {
-                pathName += "(" + annotation + ")";
+            if (!alias.empty() && alias != chan.second.getChannelName()) {
+                pathName += "(" + alias + ")";
             }
 
             // set the connectee name so that the connection can be
@@ -2805,11 +2805,10 @@ void Input<T>::connect(const AbstractOutput& output,
             else
                 appendConnecteeName(pathName);
 
-            // Use the same annotation for each channel.
-            std::string annoToStore = annotation.empty() ?
-                                      chan.second.getChannelName() :
-                                      annotation;
-            _annotations.push_back(annoToStore);
+            // Use the same alias for each channel.
+            std::string aliasToStore = alias.empty() ?
+                                       chan.second.getChannelName() : alias;
+            _aliases.push_back(aliasToStore);
         }
     }
     else {
@@ -2823,7 +2822,7 @@ void Input<T>::connect(const AbstractOutput& output,
 
 template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
-             const std::string& annotation) {
+                       const std::string& alias) {
     const auto* chanT = dynamic_cast<const Channel*>(&channel);
     if (chanT) {
         if (!isListConnector()) {
@@ -2836,7 +2835,7 @@ void Input<T>::connect(const AbstractChannel& channel,
         _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
         
         // Update the connectee name as
-        // /<OwnerPath>/<Output>:<Channel><(annotation)>
+        // /<OwnerPath>/<Output>:<Channel><(alias)>
         const auto& outputsOwner = chanT->getOutput().getOwner();
         std::string pathName = outputsOwner.getRelativePathName(getOwner());
 
@@ -2846,8 +2845,8 @@ void Input<T>::connect(const AbstractChannel& channel,
         else {
             pathName = pathName + "/" + chanT->getName();
         }
-        if (!annotation.empty() && annotation != chanT->getChannelName()) {
-            pathName += "(" + annotation + ")";
+        if (!alias.empty() && alias != chanT->getChannelName()) {
+            pathName += "(" + alias + ")";
         }
         
         // Set the connectee name so the connection can be serialized.
@@ -2857,10 +2856,10 @@ void Input<T>::connect(const AbstractChannel& channel,
         else
             appendConnecteeName(pathName);
         
-        // Annotation.
-        std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
-                                  annotation;
-        _annotations.push_back(annoToStore);
+        // Alias.
+        std::string aliasToStore = alias.empty() ? chanT->getChannelName() :
+                                   alias;
+        _aliases.push_back(aliasToStore);
     }
     else {
         std::stringstream msg;
@@ -2873,10 +2872,10 @@ void Input<T>::connect(const AbstractChannel& channel,
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPath, channelName, annotation;
+    std::string outputPath, channelName, alias;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
-                           annotation);
+                           alias);
         std::string::size_type back = outputPath.rfind("/");
         std::string componentPath = outputPath.substr(0, back);
         std::string outputName = outputPath.substr(back + 1);
@@ -2902,7 +2901,7 @@ void Input<T>::findAndConnect(const Component& root) {
                 
             }
             const auto& channel = output->getChannel(channelName);
-            connect(channel, annotation);
+            connect(channel, alias);
         }
         catch (const Exception& ex) {
             std::stringstream msg;

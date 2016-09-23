@@ -369,67 +369,67 @@ public:
     /** Input-specific Connect. Connect this Input to a single-value Output or
      if this is a list Input and the output is a list Output, connect to 
      all the channels of the Output.
-     You can optionally provide an annotation of the output that is specific
+     You can optionally provide an alias of the output that is specific
      to its use by the component that owns this input. If this method
-     connects to multiple channels, the annotation will be used for all 
+     connects to multiple channels, the alias will be used for all 
      the channels. */
     virtual void connect(const AbstractOutput& output,
-                         const std::string& annotation = "") = 0;
+                         const std::string& alias = "") = 0;
     /** Connect to a single output channel. This can be used with either
     single-value or list Inputs.
-    You can optionally provide an annotation of the output that is specific
+    You can optionally provide an alias of the output that is specific
     to its use by the component that owns this input. */
     virtual void connect(const AbstractChannel& channel,
-                         const std::string& annotation = "") = 0;
+                         const std::string& alias = "") = 0;
     
-    /** An Annotation is a description of a channel that is specific to how
+    /** An alias is a description of a channel that is specific to how
     this input should use that channel. For example, the component
-    containing this Input might expect the annotations to be the names
-    of markers in the model. If no annotation was provided when connecting,
-    the annotation is the name of the channel. This method can be used only for
+    containing this Input might expect the aliases to be the names
+    of markers in the model. If no alias was provided when connecting,
+    the alias is the name of the channel. This method can be used only for
     non-list inputs. For list-inputs, use the other overload.                 */
-    virtual const std::string& getAnnotation() const = 0;
+    virtual const std::string& getAlias() const = 0;
 
-    /** An Annotation is a description of a channel that is specific to how
+    /** An alias is a description of a channel that is specific to how
     this input should use that channel. For example, the component
-    containing this Input might expect the annotations to be the names
-    of markers in the model. If no annotation was provided when connecting,
-    the annotation is the name of the channel. Specify the specific Channel 
+    containing this Input might expect the aliases to be the names
+    of markers in the model. If no alias was provided when connecting,
+    the alias is the name of the channel. Specify the specific Channel 
     desired through the index.                                                */
-    virtual const std::string& getAnnotation(unsigned index) const = 0;
-    // TODO what's the best way to serialize annotations?
+    virtual const std::string& getAlias(unsigned index) const = 0;
+    // TODO what's the best way to serialize aliases?
     
     /** Break up a connectee name into its output path, channel name
-     (empty for single-value outputs), and annotation. This function writes
-     to the passed-in outputPath, channelName, and annotation.
+     (empty for single-value outputs), and alias. This function writes
+     to the passed-in outputPath, channelName, and alias.
      
      Examples:
      @verbatim
      /foo/bar/output
      outputPath is "/foo/bar/output"
      channelName is ""
-     annotation is "output"
+     alias is "output"
      
       /foo/bar/output:channel
       outputPath is "/foo/bar/output"
       channelName is "channel"
-      annotation is "channel"
+      alias is "channel"
      
-      /foo/bar/output(anno)
+      /foo/bar/output(baz)
       outputPath is "/foo/bar/output"
       channelName is ""
-      annotation is "anno"
+      alias is "baz"
      
-      /foo/bar/output:channel(anno)
+      /foo/bar/output:channel(baz)
       outputPath is "/foo/bar/output"
       channelName is "channel"
-      annotation is "anno"
+      alias is "baz"
       @endverbatim
      */
     static bool parseConnecteeName(const std::string& connecteeName,
                                    std::string& outputPath,
                                    std::string& channelName,
-                                   std::string& annotation) {
+                                   std::string& alias) {
         auto lastSlash = connecteeName.rfind("/");
         auto colon = connecteeName.rfind(":");
         auto leftParen = connecteeName.rfind("(");
@@ -446,15 +446,15 @@ public:
             channelName = "";
         }
         
-        // Annotation.
+        // Alias.
         if (leftParen != std::string::npos && rightParen != std::string::npos) {
-            annotation = connecteeName.substr(leftParen + 1,
+            alias = connecteeName.substr(leftParen + 1,
                                               rightParen - (leftParen + 1));
         } else {
             if (!channelName.empty()) {
-                annotation = channelName;
+                alias = channelName;
             } else {
-                annotation = outputName;
+                alias = outputName;
             }
         }
         return true;
@@ -473,7 +473,7 @@ public:
     typedef typename Output<T>::Channel Channel;
 
     typedef std::vector<SimTK::ReferencePtr<const Channel>> ChannelList;
-    typedef std::vector<std::string> AnnotationList;
+    typedef std::vector<std::string> AliasList;
     
     /** Default constructor */
     Input() : AbstractInput() {}
@@ -492,10 +492,10 @@ public:
      */
     // Definition is in Component.h
     void connect(const AbstractOutput& output,
-                 const std::string& annotation = "") override;
+                 const std::string& alias = "") override;
     
     void connect(const AbstractChannel& channel,
-                 const std::string& annotation = "") override;
+                 const std::string& alias = "") override;
 
     /** Connect this Input given a root Component to search for
     the Output according to the connectee_name of this Input  */
@@ -503,7 +503,7 @@ public:
     
     void disconnect() override {
         _connectees.clear();
-        _annotations.clear();
+        _aliases.clear();
     }
     
     bool isConnected() const override {
@@ -557,22 +557,22 @@ public:
         return _connectees[index].getRef();
     }
     
-    const std::string& getAnnotation() const override {
+    const std::string& getAlias() const override {
         OPENSIM_THROW_IF(isListConnector(),
                          Exception,
-                         "Input<T>::getAnnotation(): an index must be "
+                         "Input<T>::getAlias(): an index must be "
                          "provided for a list input.");
 
-        return getAnnotation(0);
+        return getAlias(0);
     }
     
-    const std::string& getAnnotation(unsigned index) const override {
+    const std::string& getAlias(unsigned index) const override {
         OPENSIM_THROW_IF(index >= getNumConnectees(),
                          IndexOutOfRange,
                          index, 0, 
                          static_cast<unsigned>(getNumConnectees() - 1));
 
-        return _annotations[index];
+        return _aliases[index];
     }
     
     /** Access the values of all the channels connected to this Input as a 
@@ -609,9 +609,9 @@ public:
 
 private:
     SimTK::ResetOnCopy<ChannelList> _connectees;
-    // TODO I think the annotations need to be serialized, since
+    // TODO I think the aliases need to be serialized, since
     // tools may depend on them for interpreting the connected channels.
-    SimTK::ResetOnCopy<AnnotationList> _annotations;
+    SimTK::ResetOnCopy<AliasList> _aliases;
 }; // END class Input<Y>
         
 /// @name Creating Connectors to other objects for your Component

@@ -1061,31 +1061,31 @@ void testInputOutputConnections()
 }
 
 void testInputConnecteeNames() {
-    std::string outputPath, channelName, annotation;
+    std::string outputPath, channelName, alias;
     
     AbstractInput::parseConnecteeName("/foo/bar/output",
-                                      outputPath, channelName, annotation);
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "");
-    SimTK_TEST(annotation == "output");
+    SimTK_TEST(alias == "output");
     
     AbstractInput::parseConnecteeName("/foo/bar/output:channel",
-                                      outputPath, channelName, annotation);
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "channel");
-    SimTK_TEST(annotation == "channel");
+    SimTK_TEST(alias == "channel");
     
-    AbstractInput::parseConnecteeName("/foo/bar/output(anno)",
-                                      outputPath, channelName, annotation);
+    AbstractInput::parseConnecteeName("/foo/bar/output(baz)",
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "");
-    SimTK_TEST(annotation == "anno");
+    SimTK_TEST(alias == "baz");
     
-    AbstractInput::parseConnecteeName("/foo/bar/output:channel(anno)",
-                                      outputPath, channelName, annotation);
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel(baz)",
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "channel");
-    SimTK_TEST(annotation == "anno");
+    SimTK_TEST(alias == "baz");
     
     // TODO test invalid names as well.
 }
