@@ -154,6 +154,22 @@ class TestDataTable(unittest.TestCase):
                 str(col2[1]) == str(osim.Vec3(14, 16, 18)) and
                 str(col2[2]) == str(osim.Vec3(28, 32, 36)))
 
+        tableDouble = table.flatten()
+        assert tableDouble.getNumRows() == 3
+        assert tableDouble.getNumColumns() == 9
+        assert len(tableDouble.getColumnLabels()) == 9
+        assert tableDouble.getRowAtIndex(0)[0] == 1
+        assert tableDouble.getRowAtIndex(1)[0] == 2
+        assert tableDouble.getRowAtIndex(2)[0] == 4
+        assert tableDouble.getRowAtIndex(0)[8] == 9
+        assert tableDouble.getRowAtIndex(1)[8] == 18
+        assert tableDouble.getRowAtIndex(2)[8] == 36
+
+        tableDouble = table.flatten(['_x', '_y', '_z'])
+        assert tableDouble.getColumnLabels() == ('0_x', '0_y', '0_z',
+                                                 '1_x', '1_y', '1_z',
+                                                 '2_x', '2_y', '2_z')
+
     def test_TimeSeriesTableVec3(self):
         table = osim.TimeSeriesTableVec3()
         # Set columns labels.
@@ -188,3 +204,18 @@ class TestDataTable(unittest.TestCase):
             assert False
         except RuntimeError:
             pass
+
+        tableDouble = table.flatten()
+        assert tableDouble.getNumRows() == 2
+        assert tableDouble.getNumColumns() == 9
+        assert len(tableDouble.getColumnLabels()) == 9
+        assert tableDouble.getRowAtIndex(0)[0] == 1
+        assert tableDouble.getRowAtIndex(1)[0] == 2
+        assert tableDouble.getRowAtIndex(0)[8] == 9
+        assert tableDouble.getRowAtIndex(1)[8] == 18
+
+        tableDouble = table.flatten(['_x', '_y', '_z'])
+        assert tableDouble.getColumnLabels() == ('0_x', '0_y', '0_z',
+                                                 '1_x', '1_y', '1_z',
+                                                 '2_x', '2_y', '2_z')
+        

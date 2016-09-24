@@ -244,7 +244,28 @@ public:
     DataTable_& operator=(const DataTable_<double, ThatETY>& that) {
         return operator=(DataTable_{that});
     }
-    
+
+    /** Flatten the columns of this table to create a 
+    DataTable_<double, double>. The each column will be split into its 
+    constituent components. For example, each column of a 
+    DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
+    the resulting columns will be suffixed "_1", "_2", "_3" and so on. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    DataTable_<double, double> flatten() const {
+        return DataTable_<double, double>{*this};
+    }
+
+    /** Flatten the columns of this table to create a 
+    DataTable_<double, double>. The each column will be split into its 
+    constituent components. For example, each column of a 
+    DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
+    the resulting columns will be appended with 'suffixes' provided. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    DataTable_<double, double>
+    flatten(const std::vector<std::string>& suffixes) const {
+        return DataTable_<double, double>{*this, suffixes};
+    }
+
     /** Retrieve the number of components each element (of type ETY) of the 
     table is made of. Some examples:
     <table>

@@ -206,18 +206,35 @@ int main() {
         tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
         tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
-        
+
         DataTable_<double, double> tableDouble{tableVec3};
-        ASSERT(tableDouble.getColumnLabels().size() == 9);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 9);
+        std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
+                                           "col1_1", "col1_2", "col1_3",
+                                           "col2_1", "col2_2", "col2_3"};
+        ASSERT(tableDouble.getColumnLabels()   == expLabels);
+        ASSERT(tableDouble.getNumRows()        == 3);
+        ASSERT(tableDouble.getNumColumns()     == 9);
         ASSERT(tableDouble.getRowAtIndex(0)[0] == 1);
         ASSERT(tableDouble.getRowAtIndex(1)[0] == 3);
         ASSERT(tableDouble.getRowAtIndex(2)[0] == 2);
         ASSERT(tableDouble.getRowAtIndex(0)[8] == 3);
         ASSERT(tableDouble.getRowAtIndex(1)[8] == 2);
         ASSERT(tableDouble.getRowAtIndex(2)[8] == 1);
- 
+
+        auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
+        expLabels = {"col0_x", "col0_y", "col0_z",
+                     "col1_x", "col1_y", "col1_z",
+                     "col2_x", "col2_y", "col2_z"};
+        ASSERT(tableFlat.getColumnLabels()   == expLabels);
+        ASSERT(tableFlat.getNumRows()        == 3);
+        ASSERT(tableFlat.getNumColumns()     == 9);
+        ASSERT(tableFlat.getRowAtIndex(0)[0] == 1);
+        ASSERT(tableFlat.getRowAtIndex(1)[0] == 3);
+        ASSERT(tableFlat.getRowAtIndex(2)[0] == 2);
+        ASSERT(tableFlat.getRowAtIndex(0)[8] == 3);
+        ASSERT(tableFlat.getRowAtIndex(1)[8] == 2);
+        ASSERT(tableFlat.getRowAtIndex(2)[8] == 1);
+
         DataTable_<double, Quaternion> tableQuat{}; 
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
         tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
@@ -256,11 +273,6 @@ int main() {
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
-
-        // Following will fail to compile.
-        // DataTable_<double, Vec3      > tableVec3_fail{tableDouble};
-        // DataTable_<double, Vec6      > tableVec6_fail{tableDouble};
-        // DataTable_<double, SpatialVec> tableVec6_fail{tableDouble};
     }
     {
         TimeSeriesTable_<Vec3> tableVec3{};
@@ -270,9 +282,12 @@ int main() {
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
         
         TimeSeriesTable_<double> tableDouble{tableVec3};
-        ASSERT(tableDouble.getColumnLabels().size() == 9);
-        ASSERT(tableDouble.getNumRows()             == 3);
-        ASSERT(tableDouble.getNumColumns()          == 9);
+        std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
+                                           "col1_1", "col1_2", "col1_3",
+                                           "col2_1", "col2_2", "col2_3"};
+        ASSERT(tableDouble.getColumnLabels()   == expLabels);
+        ASSERT(tableDouble.getNumRows()        == 3);
+        ASSERT(tableDouble.getNumColumns()     == 9);
         ASSERT(tableDouble.getRowAtIndex(0)[0] == 1);
         ASSERT(tableDouble.getRowAtIndex(1)[0] == 3);
         ASSERT(tableDouble.getRowAtIndex(2)[0] == 2);
@@ -280,6 +295,20 @@ int main() {
         ASSERT(tableDouble.getRowAtIndex(1)[8] == 2);
         ASSERT(tableDouble.getRowAtIndex(2)[8] == 1);
  
+        auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
+        expLabels = {"col0_x", "col0_y", "col0_z",
+                     "col1_x", "col1_y", "col1_z",
+                     "col2_x", "col2_y", "col2_z"};
+        ASSERT(tableFlat.getColumnLabels()   == expLabels);
+        ASSERT(tableFlat.getNumRows()        == 3);
+        ASSERT(tableFlat.getNumColumns()     == 9);
+        ASSERT(tableFlat.getRowAtIndex(0)[0] == 1);
+        ASSERT(tableFlat.getRowAtIndex(1)[0] == 3);
+        ASSERT(tableFlat.getRowAtIndex(2)[0] == 2);
+        ASSERT(tableFlat.getRowAtIndex(0)[8] == 3);
+        ASSERT(tableFlat.getRowAtIndex(1)[8] == 2);
+        ASSERT(tableFlat.getRowAtIndex(2)[8] == 1);
+
         TimeSeriesTable_<Quaternion> tableQuat{}; 
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
         tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
@@ -318,11 +347,6 @@ int main() {
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
-
-        // Following will fail to compile.
-        // TimeSeriesTable_<Vec3      > tableVec3_fail{tableDouble};
-        // TimeSeriesTable_<Vec6      > tableVec6_fail{tableDouble};
-        // TimeSeriesTable_<SpatialVec> tableVec6_fail{tableDouble};
     }
 
     return 0;
