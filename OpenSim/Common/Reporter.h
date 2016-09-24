@@ -164,27 +164,17 @@ public:
     virtual ~TableReporter_() = default;
 
     /** Retrieve the report as a TimeSeriesTable.                             */
-    const TimeSeriesTable_<ValueT>& getReport() const {
-        return _outputTable;
-    }
-
-    /** Same as getReport().                                                  */
     const TimeSeriesTable_<ValueT>& getTable() const {
-        return getReport();
+        return _outputTable;
     }
 
     /** Clear the report. This can be used for example in loops performing 
     simulation. Each new iteration should start with an empty report and so this
     function can be used to clear the report at the end of each iteration.    */
-    void clearReport() {
+    void clearTable() {
         auto columnLabels = _outputTable.getColumnLabels();
         _outputTable = TimeSeriesTable_<ValueT>{};
         _outputTable.setColumnLabels(columnLabels);
-    }
-
-    /** Same as clearReport().                                                */
-    void clearTable() {
-        clearReport();
     }
 
 protected:
