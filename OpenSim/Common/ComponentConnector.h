@@ -366,39 +366,68 @@ public:
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
-    /** Input-specific Connect. Connect this Input to a single-value Output or
-     if this is a list Input and the output is a list Output, connect to 
-     all the channels of the Output.
-     You can optionally provide an alias of the output that is specific
-     to its use by the component that owns this input. If this method
-     connects to multiple channels, the alias will be used for all 
-     the channels. */
+    /** Connect this Input to a single-valued (single-channel) Output or, if
+    this is a list %Input and the %Output is a list %Output, connect to all the
+    channels of the %Output. You can optionally provide an alias that will be
+    used by the Component owning this %Input to refer to the %Output. If this
+    method connects to multiple channels, the alias will be used for all
+    channels. */
     virtual void connect(const AbstractOutput& output,
                          const std::string& alias = "") = 0;
-    /** Connect to a single output channel. This can be used with either
-    single-value or list Inputs.
-    You can optionally provide an alias of the output that is specific
-    to its use by the component that owns this input. */
+
+    /** Connect this Input to a single-valued (single-channel) Output. This
+    method can be used with both single-valued and list %Inputs. You can
+    optionally provide an alias that will be used by the Component owning this
+    %Input to refer to the %Output. */
     virtual void connect(const AbstractChannel& channel,
                          const std::string& alias = "") = 0;
-    
-    /** An alias is a description of a channel that is specific to how
-    this input should use that channel. For example, the component
-    containing this Input might expect the aliases to be the names
-    of markers in the model. If no alias was provided when connecting,
-    the alias is the name of the channel. This method can be used only for
-    non-list inputs. For list-inputs, use the other overload.                 */
+
+    /** Get the alias for a channel. An alias is a description for a channel
+    that is specific to how the Input will use the channel. For example, the
+    Component that owns this %Input might expect the aliases to be the names of
+    markers in the model. This method can be used only for non-list %Inputs; for
+    list %Inputs, use the single-argument overload. */
     virtual const std::string& getAlias() const = 0;
 
-    /** An alias is a description of a channel that is specific to how
-    this input should use that channel. For example, the component
-    containing this Input might expect the aliases to be the names
-    of markers in the model. If no alias was provided when connecting,
-    the alias is the name of the channel. Specify the specific Channel 
-    desired through the index.                                                */
+    /** Get the alias for the channel indicated by the provided index. An alias
+    is a description for a channel that is specific to how the Input will use
+    the channel. For example, the Component that owns this %Input might expect
+    the aliases to be the names of markers in the model. */
     virtual const std::string& getAlias(unsigned index) const = 0;
     // TODO what's the best way to serialize aliases?
-    
+
+    /** Set the alias for a channel. If this is a list Input, the aliases of all
+    channels will be set to the provided string. If you wish to set the alias of
+    only one channel, use the two-argument overload. */
+    virtual const void setAlias(const std::string& alias) const = 0;
+
+    /** Set the alias for the channel indicated by the provided index. */
+    virtual const void setAlias(unsigned index,
+                                const std::string& alias) const = 0;
+
+    /** Get the short label for this channel. If an alias has been set, the
+    short label is the alias; otherwise, the short label is the name of the
+    Output that has been connected to this Input. This method can be used only
+    for non-list %Inputs; for list %Inputs, use the single-argument overload. */
+    virtual const std::string& getShortLabel() const = 0;
+
+    /** Get the short label for the channel indicated by the provided index. If
+    an alias has been set, the short label is the alias; otherwise, the short
+    label is the name of the Output that has been connected to this Input. */
+    virtual const std::string& getShortLabel(unsigned index) const = 0;
+
+    /** Get the long label for this channel. If an alias has been set, the long
+    label is the alias; otherwise, the long label is the full path of the Output
+    that has been connected to this Input. This method can be used only for
+    non-list %Inputs; for list %Inputs, use the single-argument overload. */
+    virtual const std::string& getLongLabel() const = 0;
+
+    /** Get the long label for the channel indicated by the provided index. If
+    an alias has been set, the long label is the alias; otherwise, the long
+    label is the full path of the Output that has been connected to this
+    Input. */
+    virtual const std::string& getLongLabel(unsigned index) const = 0;
+
     /** Break up a connectee name into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
      to the passed-in outputPath, channelName, and alias.
@@ -560,8 +589,8 @@ public:
     const std::string& getAlias() const override {
         OPENSIM_THROW_IF(isListConnector(),
                          Exception,
-                         "Input<T>::getAlias(): an index must be "
-                         "provided for a list input.");
+                         "Input<T>::getAlias(): this is a list Input; an index "
+                         "must be provided.");
 
         return getAlias(0);
     }
