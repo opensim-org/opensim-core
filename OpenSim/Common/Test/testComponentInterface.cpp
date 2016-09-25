@@ -135,22 +135,25 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(inertia, double, 6,
         "inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
-    OpenSim_DECLARE_OUTPUT(Output1, double, getSomething, SimTK::Stage::Time)
+    OpenSim_DECLARE_OUTPUT(Output1, double, getSomething, SimTK::Stage::Time);
     OpenSim_DECLARE_OUTPUT(Output2, SimTK::Vec3, calcSomething,
-            SimTK::Stage::Time)
+            SimTK::Stage::Time);
 
-    OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position)
+    OpenSim_DECLARE_OUTPUT(Output3, double, getSomethingElse, SimTK::Stage::Time);
+
+    OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position);
 
     OpenSim_DECLARE_OUTPUT(BodyAcc, SpatialVec, calcSpatialAcc,
-            SimTK::Stage::Velocity)
+            SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_OUTPUT(return_by_ref, double, getReturnByRef,
             SimTK::Stage::Time);
-    
+
     OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(fiberLength, double, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_LIST_INPUT(listInput1, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
         constructProperties();
@@ -171,6 +174,10 @@ public:
 
         double t = state.getTime();
         return SimTK::Vec3(t, t*t, sqrt(t));
+    }
+
+    double getSomethingElse(const SimTK::State& state) const {
+        return 1.618;
     }
 
     SimTK::Vector getQ(const SimTK::State& state) const {
@@ -809,7 +816,7 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs (using conveniece method) to desired 
+    // wire up table reporter inputs (using convenience method) to desired 
     // model outputs
     tabReporter->updInput().connect(bar.getOutput("fiberLength"));
     tabReporter->updInput().connect(bar.getOutput("activation"));
@@ -1196,6 +1203,86 @@ void testTableSource() {
     std::cout << report << std::endl;
 }
 
+void testAliasesAndLabels() {
+    TheWorld* theWorld = new TheWorld();
+    theWorld->setName("world");
+
+    Foo* foo = new Foo();  foo->setName("foo");
+    Foo* bar = new Foo();  bar->setName("bar");
+
+    theWorld->addComponent(foo);
+    theWorld->addComponent(bar);
+
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getAlias());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getAlias(0));
+    ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias("qux"));
+    ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias(0, "qux"));
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getShortLabel());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getShortLabel(0));
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLongLabel());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLongLabel(0));
+
+    // Non-list Input, no alias.
+    foo->updInput("input1").connect( bar->getOutput("Output1") );
+    SimTK_TEST(foo->getInput("input1").getAlias().empty());
+    SimTK_TEST(foo->getInput("input1").getShortLabel() == "Output1");
+    SimTK_TEST(foo->getInput("input1").getLongLabel() == "/world/bar/Output1");
+
+    // Set alias.
+    foo->updInput("input1").setAlias("waldo");
+    SimTK_TEST(foo->getInput("input1").getAlias() == "waldo");
+    SimTK_TEST(foo->getInput("input1").getShortLabel() == "waldo");
+    SimTK_TEST(foo->getInput("input1").getLongLabel() == "waldo");
+
+    foo->updInput("input1").setAlias(0, "fred");
+    SimTK_TEST(foo->getInput("input1").getAlias() == "fred");
+    SimTK_TEST(foo->getInput("input1").getShortLabel() == "fred");
+    SimTK_TEST(foo->getInput("input1").getLongLabel() == "fred");
+
+    ASSERT_THROW(IndexOutOfRange, foo->getInput("input1").getAlias(1));
+    ASSERT_THROW(IndexOutOfRange, foo->updInput("input1").setAlias(1, "fred"));
+    ASSERT_THROW(IndexOutOfRange, foo->getInput("input1").getShortLabel(1));
+    ASSERT_THROW(IndexOutOfRange, foo->getInput("input1").getLongLabel(1));
+
+    foo->updInput("input1").disconnect();
+
+    // Non-list Input, with alias.
+    foo->updInput("input1").connect( bar->getOutput("Output1"), "baz" );
+    SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
+    SimTK_TEST(foo->getInput("input1").getShortLabel() == "baz");
+    SimTK_TEST(foo->getInput("input1").getLongLabel() == "baz");
+
+    // List Input, no aliases.
+    foo->updInput("listInput1").connect( bar->getOutput("Output1") );
+    foo->updInput("listInput1").connect( bar->getOutput("Output3") );
+
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getShortLabel());
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLongLabel());
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
+    SimTK_TEST(foo->getInput("listInput1").getShortLabel(0) == "Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLongLabel(0) == "/world/bar/Output1");
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
+    SimTK_TEST(foo->getInput("listInput1").getShortLabel(1) == "Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLongLabel(1) == "/world/bar/Output3");
+
+    foo->updInput("listInput1").disconnect();
+
+    // List Input, with aliases.
+    foo->updInput("listInput1").connect( bar->getOutput("Output1"), "plugh" );
+    foo->updInput("listInput1").connect( bar->getOutput("Output3"), "thud" );
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
+    SimTK_TEST(foo->getInput("listInput1").getShortLabel(0) == "plugh");
+    SimTK_TEST(foo->getInput("listInput1").getLongLabel(0) == "plugh");
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(1) == "thud");
+    SimTK_TEST(foo->getInput("listInput1").getShortLabel(1) == "thud");
+    SimTK_TEST(foo->getInput("listInput1").getLongLabel(1) == "thud");
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1214,5 +1301,6 @@ int main() {
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
+        SimTK_SUBTEST(testAliasesAndLabels);
     SimTK_END_TEST();
 }
