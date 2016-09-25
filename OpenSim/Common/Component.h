@@ -147,6 +147,20 @@ public:
     }
 };
 
+class InputNotConnected : public Exception {
+public:
+    InputNotConnected(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const Object& obj,
+                      const std::string& inputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Input '" + inputName;
+        msg += "' has not been connected.";
+        addMessage(msg);
+    }
+};
+
 class OutputNotFound : public Exception {
 public:
     OutputNotFound(const std::string& file,
@@ -2805,10 +2819,11 @@ void Input<T>::connect(const AbstractOutput& output,
             else
                 appendConnecteeName(pathName);
 
-            // Use the same alias for each channel.
-            std::string aliasToStore = alias.empty() ?
-                                       chan.second.getChannelName() : alias;
-            _aliases.push_back(aliasToStore);
+            // Use the provided alias for all channels.
+            //std::string aliasToStore = alias.empty() ?
+            //                           chan.second.getChannelName() : alias;
+            //_aliases.push_back(aliasToStore);
+            _aliases.push_back(alias);
         }
     }
     else {
@@ -2856,10 +2871,11 @@ void Input<T>::connect(const AbstractChannel& channel,
         else
             appendConnecteeName(pathName);
         
-        // Alias.
-        std::string aliasToStore = alias.empty() ? chanT->getChannelName() :
-                                   alias;
-        _aliases.push_back(aliasToStore);
+        // Store the provided alias.
+        //std::string aliasToStore = alias.empty() ? chanT->getChannelName() :
+        //                           alias;
+        //_aliases.push_back(aliasToStore);
+        _aliases.push_back(alias);
     }
     else {
         std::stringstream msg;

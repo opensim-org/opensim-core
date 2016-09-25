@@ -382,49 +382,48 @@ public:
     virtual void connect(const AbstractChannel& channel,
                          const std::string& alias = "") = 0;
 
-    /** Get the alias for a channel. An alias is a description for a channel
-    that is specific to how the Input will use the channel. For example, the
+    /** Get the alias for a Channel. An alias is a description for a %Channel
+    that is specific to how the Input will use the %Channel. For example, the
     Component that owns this %Input might expect the aliases to be the names of
     markers in the model. This method can be used only for non-list %Inputs; for
     list %Inputs, use the single-argument overload. */
     virtual const std::string& getAlias() const = 0;
 
-    /** Get the alias for the channel indicated by the provided index. An alias
-    is a description for a channel that is specific to how the Input will use
-    the channel. For example, the Component that owns this %Input might expect
+    /** Get the alias for the Channel indicated by the provided index. An alias
+    is a description for a %Channel that is specific to how the Input will use
+    the %Channel. For example, the Component that owns this %Input might expect
     the aliases to be the names of markers in the model. */
     virtual const std::string& getAlias(unsigned index) const = 0;
     // TODO what's the best way to serialize aliases?
 
-    /** Set the alias for a channel. If this is a list Input, the aliases of all
-    channels will be set to the provided string. If you wish to set the alias of
-    only one channel, use the two-argument overload. */
-    virtual const void setAlias(const std::string& alias) const = 0;
+    /** Set the alias for a Channel. If this is a list Input, the aliases of all
+    %Channels will be set to the provided string. If you wish to set the alias
+    of only one %Channel, use the two-argument overload. */
+    virtual void setAlias(const std::string& alias) = 0;
 
-    /** Set the alias for the channel indicated by the provided index. */
-    virtual const void setAlias(unsigned index,
-                                const std::string& alias) const = 0;
+    /** Set the alias for the Channel indicated by the provided index. */
+    virtual void setAlias(unsigned index, const std::string& alias) = 0;
 
-    /** Get the short label for this channel. If an alias has been set, the
+    /** Get the short label for this Channel. If an alias has been set, the
     short label is the alias; otherwise, the short label is the name of the
     Output that has been connected to this Input. This method can be used only
     for non-list %Inputs; for list %Inputs, use the single-argument overload. */
     virtual const std::string& getShortLabel() const = 0;
 
-    /** Get the short label for the channel indicated by the provided index. If
+    /** Get the short label for the Channel indicated by the provided index. If
     an alias has been set, the short label is the alias; otherwise, the short
-    label is the name of the Output that has been connected to this Input. */
+    label is the name of the %Channel that has been connected to this Input. */
     virtual const std::string& getShortLabel(unsigned index) const = 0;
 
-    /** Get the long label for this channel. If an alias has been set, the long
+    /** Get the long label for this Channel. If an alias has been set, the long
     label is the alias; otherwise, the long label is the full path of the Output
     that has been connected to this Input. This method can be used only for
     non-list %Inputs; for list %Inputs, use the single-argument overload. */
     virtual const std::string& getLongLabel() const = 0;
 
-    /** Get the long label for the channel indicated by the provided index. If
+    /** Get the long label for the Channel indicated by the provided index. If
     an alias has been set, the long label is the alias; otherwise, the long
-    label is the full path of the Output that has been connected to this
+    label is the full path of the %Channel that has been connected to this
     Input. */
     virtual const std::string& getLongLabel(unsigned index) const = 0;
 
@@ -580,8 +579,7 @@ public:
     const Channel& getChannel(unsigned index) const {
         OPENSIM_THROW_IF(index >= getNumConnectees(),
                          IndexOutOfRange,
-                         index, 0, 
-                         static_cast<unsigned>(getNumConnectees() - 1));
+                         index, 0, getNumConnectees() - 1u);
 
         return _connectees[index].getRef();
     }
@@ -598,12 +596,73 @@ public:
     const std::string& getAlias(unsigned index) const override {
         OPENSIM_THROW_IF(index >= getNumConnectees(),
                          IndexOutOfRange,
-                         index, 0, 
-                         static_cast<unsigned>(getNumConnectees() - 1));
+                         index, 0, getNumConnectees() - 1u);
 
         return _aliases[index];
     }
-    
+
+    void setAlias(const std::string& alias) override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+
+        for (unsigned i=0; i<getNumConnectees(); ++i)
+            setAlias(i, alias);
+    }
+
+    void setAlias(unsigned index, const std::string& alias) override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange,
+                         index, 0, getNumConnectees() - 1u);
+
+        _aliases[index] = alias;
+    }
+
+    const std::string& getShortLabel() const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+        OPENSIM_THROW_IF(isListConnector(),
+                         Exception,
+                         "Input<T>::getShortLabel(): this is a list Input; an "
+                         "index must be provided.");
+
+        return getShortLabel(0);
+    }
+
+    const std::string& getShortLabel(unsigned index) const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange,
+                         index, 0, getNumConnectees() - 1u);
+
+        const std::string alias = getAlias(index);
+        return !alias.empty() ? alias : getChannel(index).getChannelName();
+    }
+
+    const std::string& getLongLabel() const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+        OPENSIM_THROW_IF(isListConnector(),
+                         Exception,
+                         "Input<T>::getLongLabel(): this is a list Input; an "
+                         "index must be provided.");
+
+        return getLongLabel(0);
+    }
+
+    const std::string& getLongLabel(unsigned index) const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
+        OPENSIM_THROW_IF(index >= getNumConnectees(),
+                         IndexOutOfRange,
+                         index, 0, getNumConnectees() - 1u);
+
+        const std::string alias = getAlias(index);
+        return !alias.empty() ? alias : getChannel(index).getPathName();
+    }
+
     /** Access the values of all the channels connected to this Input as a 
     SimTK::Vector_<T>. The elements are in the same order as the channels.
     */
