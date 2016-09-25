@@ -264,7 +264,7 @@ inline void TableReporter_<SimTK::Vector, SimTK::Real>::
     
     if (_outputTable.getNumRows() == 0) {
         std::vector<std::string> labels;
-        const std::string& base = input.getChannel(0).getName();
+        const std::string& base = input.getLongLabel(0);
         for (int ix = 0; ix < result.size(); ++ix) {
             labels.push_back(base + "[" + std::to_string(ix)+"]");
         }
