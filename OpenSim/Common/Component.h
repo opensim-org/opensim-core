@@ -2820,9 +2820,6 @@ void Input<T>::connect(const AbstractOutput& output,
                 appendConnecteeName(pathName);
 
             // Use the provided alias for all channels.
-            //std::string aliasToStore = alias.empty() ?
-            //                           chan.second.getChannelName() : alias;
-            //_aliases.push_back(aliasToStore);
             _aliases.push_back(alias);
         }
     }
@@ -2872,9 +2869,6 @@ void Input<T>::connect(const AbstractChannel& channel,
             appendConnecteeName(pathName);
         
         // Store the provided alias.
-        //std::string aliasToStore = alias.empty() ? chanT->getChannelName() :
-        //                           alias;
-        //_aliases.push_back(aliasToStore);
         _aliases.push_back(alias);
     }
     else {
