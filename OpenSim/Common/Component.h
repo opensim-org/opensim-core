@@ -2793,7 +2793,7 @@ void Input<T>::connect(const AbstractOutput& output,
             else {
                 pathName = pathName + "/" + chan.second.getName();
             }
-            if (!alias.empty() && alias != chan.second.getChannelName()) {
+            if (!alias.empty()) {
                 pathName += "(" + alias + ")";
             }
 
@@ -2843,7 +2843,7 @@ void Input<T>::connect(const AbstractChannel& channel,
         else {
             pathName = pathName + "/" + chanT->getName();
         }
-        if (!alias.empty() && alias != chanT->getChannelName()) {
+        if (!alias.empty()) {
             pathName += "(" + alias + ")";
         }
         
