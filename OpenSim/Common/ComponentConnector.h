@@ -408,24 +408,24 @@ public:
     short label is the alias; otherwise, the short label is the name of the
     Output that has been connected to this Input. This method can be used only
     for non-list %Inputs; for list %Inputs, use the single-argument overload. */
-    virtual const std::string& getShortLabel() const = 0;
+    virtual std::string getShortLabel() const = 0;
 
     /** Get the short label for the Channel indicated by the provided index. If
     an alias has been set, the short label is the alias; otherwise, the short
     label is the name of the %Channel that has been connected to this Input. */
-    virtual const std::string& getShortLabel(unsigned index) const = 0;
+    virtual std::string getShortLabel(unsigned index) const = 0;
 
     /** Get the long label for this Channel. If an alias has been set, the long
     label is the alias; otherwise, the long label is the full path of the Output
     that has been connected to this Input. This method can be used only for
     non-list %Inputs; for list %Inputs, use the single-argument overload. */
-    virtual const std::string& getLongLabel() const = 0;
+    virtual std::string getLongLabel() const = 0;
 
     /** Get the long label for the Channel indicated by the provided index. If
     an alias has been set, the long label is the alias; otherwise, the long
     label is the full path of the %Channel that has been connected to this
     Input. */
-    virtual const std::string& getLongLabel(unsigned index) const = 0;
+    virtual std::string getLongLabel(unsigned index) const = 0;
 
     /** Break up a connectee name into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
@@ -585,6 +585,8 @@ public:
     }
     
     const std::string& getAlias() const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
         OPENSIM_THROW_IF(isListConnector(),
                          Exception,
                          "Input<T>::getAlias(): this is a list Input; an index "
@@ -594,6 +596,8 @@ public:
     }
     
     const std::string& getAlias(unsigned index) const override {
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
+                                InputNotConnected, getName());
         OPENSIM_THROW_IF(index >= getNumConnectees(),
                          IndexOutOfRange,
                          index, 0, getNumConnectees() - 1u);
@@ -619,7 +623,7 @@ public:
         _aliases[index] = alias;
     }
 
-    const std::string& getShortLabel() const override {
+    std::string getShortLabel() const override {
         OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
                                 InputNotConnected, getName());
         OPENSIM_THROW_IF(isListConnector(),
@@ -630,7 +634,7 @@ public:
         return getShortLabel(0);
     }
 
-    const std::string& getShortLabel(unsigned index) const override {
+    std::string getShortLabel(unsigned index) const override {
         OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
                                 InputNotConnected, getName());
         OPENSIM_THROW_IF(index >= getNumConnectees(),
@@ -641,7 +645,7 @@ public:
         return !alias.empty() ? alias : getChannel(index).getChannelName();
     }
 
-    const std::string& getLongLabel() const override {
+    std::string getLongLabel() const override {
         OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
                                 InputNotConnected, getName());
         OPENSIM_THROW_IF(isListConnector(),
@@ -652,7 +656,7 @@ public:
         return getLongLabel(0);
     }
 
-    const std::string& getLongLabel(unsigned index) const override {
+    std::string getLongLabel(unsigned index) const override {
         OPENSIM_THROW_IF_FRMOBJ(!isConnected(),
                                 InputNotConnected, getName());
         OPENSIM_THROW_IF(index >= getNumConnectees(),
@@ -660,7 +664,17 @@ public:
                          index, 0, getNumConnectees() - 1u);
 
         const std::string alias = getAlias(index);
-        return !alias.empty() ? alias : getChannel(index).getPathName();
+        if (!alias.empty())
+            return alias;
+
+        // Assemble full path.
+        const auto& owner = getChannel(index).getOutput().getOwner();
+        std::string fullPath = owner.getFullPathName();
+        if (fullPath.rfind("/") != (fullPath.length()-1))
+            fullPath += "/";
+        fullPath += getChannel(index).getChannelName();
+
+        return fullPath;
     }
 
     /** Access the values of all the channels connected to this Input as a 
