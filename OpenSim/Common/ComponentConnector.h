@@ -1,7 +1,7 @@
 #ifndef OPENSIM_COMPONENT_CONNECTOR_H_
 #define OPENSIM_COMPONENT_CONNECTOR_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Connector.h                           *
+ *                       OpenSim:  ComponentConnector.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -43,6 +43,23 @@
 //#include <Simbody.h>
 
 namespace OpenSim {
+
+//==============================================================================
+/// ComponentConnector Exceptions
+//==============================================================================
+class InputNotConnected : public Exception {
+public:
+    InputNotConnected(const std::string& file,
+                      size_t line,
+                      const std::string& func,
+                      const Object& obj,
+                      const std::string& inputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Input '" + inputName;
+        msg += "' has not been connected.";
+        addMessage(msg);
+    }
+};
 
 //=============================================================================
 //                        OPENSIM COMPONENT CONNECTOR

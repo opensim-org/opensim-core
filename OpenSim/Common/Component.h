@@ -147,20 +147,6 @@ public:
     }
 };
 
-class InputNotConnected : public Exception {
-public:
-    InputNotConnected(const std::string& file,
-                      size_t line,
-                      const std::string& func,
-                      const Object& obj,
-                      const std::string& inputName) :
-        Exception(file, line, func, obj) {
-        std::string msg = "Input '" + inputName;
-        msg += "' has not been connected.";
-        addMessage(msg);
-    }
-};
-
 class OutputNotFound : public Exception {
 public:
     OutputNotFound(const std::string& file,
