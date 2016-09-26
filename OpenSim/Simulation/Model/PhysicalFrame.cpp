@@ -220,6 +220,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
         int counter = 1;
         while (displayGeomIter != objectsIter->element_end()) {
             // Create a <Mesh> Element and populate it
+            bool attachToThisFrame = true;
             SimTK::Xml::Element meshNode("Mesh");
             std::string geomName = bodyName + "_geom_" + to_string(counter);
             meshNode.setAttributeValue("name", geomName);
@@ -237,6 +238,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
             }
             if (localXform.norm() > SimTK::Eps) {
                 // Create a Frame
+                attachToThisFrame = false;
                 std::string frameName = bodyName + "_geom_frame_" + to_string(counter);
                 SimTK::Xml::Element frameNode("frame_name", frameName);
                 meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
@@ -263,6 +265,19 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
+                SimTK::Xml::element_iterator parnetFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
+                while (parnetFrame->getRequiredAttributeValue("name") != frameName)
+                    parnetFrame++;
+                // if parnetFrame has no "attached_geometry" child, add one else find it
+
+                SimTK::Xml::element_iterator frameAttachedGeometry = parnetFrame->element_begin("attached_geometry");
+                if (frameAttachedGeometry == parnetFrame->element_end()) {
+                    SimTK::Xml::Element attachedGeomNode("attached_geometry");
+                    parnetFrame->insertNodeAfter(parnetFrame->node_end(), attachedGeomNode);
+                    frameAttachedGeometry = parnetFrame->element_begin("attached_geometry");
+                }
+                frameAttachedGeometry->insertNodeAfter(frameAttachedGeometry->element_end(), meshNode);
+
             }
             else
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
@@ -302,7 +317,9 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
             }
             meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
             // Insert Mesh into parent
-            geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
+            if (attachToThisFrame)
+                geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
+                        
             displayGeomIter++;
             counter++;
         }
@@ -324,5 +341,7 @@ void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& fram
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
     XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
-
+    SimTK::String fdump;
+    frameSetIter->writeToString(fdump);
+    std::cout << fdump << std::endl;
 }
