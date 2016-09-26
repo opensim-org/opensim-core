@@ -80,8 +80,8 @@ for iDefCoord = 1 : m
 
     %% Print the rotated markers to trc file.
     % THE BELOW LINES DO NOT WORK AND THERE IS CURRENTLY NO FIX
-    stofileadapter = STOFileAdapterVec3();
-    stofileadapter.write(markertable,'pendulum_markers.sto');
+    % stofileadapter = STOFileAdapterVec3();
+    % stofileadapter.write(markertable,'pendulum_markers.sto');
     
    
 end
