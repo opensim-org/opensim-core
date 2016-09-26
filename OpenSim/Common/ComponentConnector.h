@@ -447,29 +447,29 @@ public:
     /** Break up a connectee name into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
      to the passed-in outputPath, channelName, and alias.
-     
+
      Examples:
      @verbatim
      /foo/bar/output
      outputPath is "/foo/bar/output"
      channelName is ""
-     alias is "output"
-     
-      /foo/bar/output:channel
-      outputPath is "/foo/bar/output"
-      channelName is "channel"
-      alias is "channel"
-     
-      /foo/bar/output(baz)
-      outputPath is "/foo/bar/output"
-      channelName is ""
-      alias is "baz"
-     
-      /foo/bar/output:channel(baz)
-      outputPath is "/foo/bar/output"
-      channelName is "channel"
-      alias is "baz"
-      @endverbatim
+     alias is ""
+
+     /foo/bar/output:channel
+     outputPath is "/foo/bar/output"
+     channelName is "channel"
+     alias is ""
+
+     /foo/bar/output(baz)
+     outputPath is "/foo/bar/output"
+     channelName is ""
+     alias is "baz"
+
+     /foo/bar/output:channel(baz)
+     outputPath is "/foo/bar/output"
+     channelName is "channel"
+     alias is "baz"
+     @endverbatim
      */
     static bool parseConnecteeName(const std::string& connecteeName,
                                    std::string& outputPath,
@@ -681,14 +681,7 @@ public:
         if (!alias.empty())
             return alias;
 
-        // Assemble full path.
-        const auto& owner = getChannel(index).getOutput().getOwner();
-        std::string fullPath = owner.getFullPathName();
-        if (fullPath.rfind("/") != (fullPath.length()-1))
-            fullPath += "/";
-        fullPath += getChannel(index).getChannelName();
-
-        return fullPath;
+        return getChannel(index).getPathName();
     }
 
     /** Access the values of all the channels connected to this Input as a 
