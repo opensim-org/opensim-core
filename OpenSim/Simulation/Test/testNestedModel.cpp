@@ -25,7 +25,7 @@
 
 Tests Include:
     1. Pendulum Model with nested Device derived from ModelComponent 
-    1. Pendulum Model with a Device that is a Model
+    2. Pendulum Model with a Device that is a Model
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>

@@ -998,7 +998,7 @@ private:
     void createMultibodySystem();
 
     // Reorder the Model's Coordinates according to the underlying order
-    //   of the coordinates (Q) in the MultibodySystem
+    // of the coordinates (Q's) in the MultibodySystem
     void reorderCoordinatesAccordingToSystemMobilities();
 
     void createAssemblySolver(const SimTK::State& s);
