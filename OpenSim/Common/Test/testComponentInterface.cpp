@@ -1074,13 +1074,13 @@ void testInputConnecteeNames() {
                                       outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "");
-    SimTK_TEST(alias == "output");
+    SimTK_TEST(alias == "");
     
     AbstractInput::parseConnecteeName("/foo/bar/output:channel",
                                       outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "channel");
-    SimTK_TEST(alias == "channel");
+    SimTK_TEST(alias == "");
     
     AbstractInput::parseConnecteeName("/foo/bar/output(baz)",
                                       outputPath, channelName, alias);

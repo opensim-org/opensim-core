@@ -492,7 +492,12 @@ public:
         }
         
         // Alias.
-        alias = connecteeName.substr(leftParen + 1, rightParen - (leftParen + 1));
+        if (leftParen != std::string::npos && rightParen != std::string::npos) {
+            alias = connecteeName.substr(leftParen + 1,
+                                         rightParen - (leftParen + 1));
+        } else {
+            alias = "";
+        }
 
         return true;
     }
