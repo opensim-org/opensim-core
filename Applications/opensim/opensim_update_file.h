@@ -42,7 +42,7 @@ Options:
 
 Description:
   In an OpenSim XML file, the XML file format version appears as
-  the "Version" attribute the "OpenSimDocument" element. The XML file format
+  the "Version" attribute of the "OpenSimDocument" element. The XML file format
   version number is generally not the same as the OpenSim software version
   number.
 
