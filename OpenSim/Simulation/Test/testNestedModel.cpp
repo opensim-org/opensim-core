@@ -87,10 +87,10 @@ void testPendulumModelWithNestedJoints()
 
     // Connect the device to the pendulum
     auto bodies = pendulum->getComponentList<OpenSim::Body>();
-    auto& body = bodies.begin();
-    anchorA->updConnector("parent_frame").connect(*body);
-    body++;
-    anchorB->updConnector("parent_frame").connect(*body);
+    auto bodyIter = bodies.begin();
+    anchorA->updConnector("parent_frame").connect(*bodyIter);
+    bodyIter++;
+    anchorB->updConnector("parent_frame").connect(*bodyIter);
 
     State& s = pendulum->initSystem();
 }
