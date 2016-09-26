@@ -24,7 +24,8 @@
 /*=============================================================================
 
 Tests Include:
-    1. Pendulum Model with Device that includes WeldJoints
+    1. Pendulum Model with nested Device derived from ModelComponent 
+    1. Pendulum Model with a Device that is a Model
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -33,9 +34,6 @@ Tests Include:
 
 using namespace OpenSim;
 using namespace std;
-
-void testPendulumModelWithJointInDevice();
-void testPendulumModelWithDeviceModel();
 
 // Create Device as Concrete Container Component (like Model) of Components
 class Device : public ModelComponent {
@@ -46,14 +44,14 @@ class Device : public ModelComponent {
 //==============================================================================
 // Test Case Driver
 //==============================================================================
-
 template<class C>
 void testPendulumModelWithNestedJoints()
 {
     using namespace SimTK;
     Vec3 tolerance(SimTK::Eps);
 
-    cout << "Running testPendulumModelWithJointInDevice" << endl;
+    cout << "Running testPendulumModelWithNestedJoints<" << 
+        typeid(C).name() << ">" << endl;
 
     // Load the pendulum model
     Model* pendulum = new Model("double_pendulum.osim");
