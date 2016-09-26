@@ -59,6 +59,17 @@ public:
         \code{.cpp}
         const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myBallJoint.getCoordinate(opensim.BallJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rx = myBallJoint.getCoordinate(BallJoint.Coord.Rotation1X);
+        \endcode
     */
     enum class Coord: unsigned {
         Rotation1X,

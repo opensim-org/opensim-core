@@ -2465,20 +2465,32 @@ protected:
         bool hidden;
     };
 
-    /// Helper method to enable Component makers to specify the order of
-    /// subcomponents to be added to the System used by addToSystem().
-    /// Use this method in extendConnect() of your Component (or within 
-    /// your extendConnectToModel() for ModelComponents) to set the
+    /// Helper method to enable Component makers to specify the order of their
+    /// subcomponents to be added to the System during addToSystem(). It is
+    /// highly unlikely that you will need to reorder the subcomponents of your
+    /// custom component. This ability is primarily intended for Model (and 
+    /// other top-level) components that have the responsibility of creating a
+    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such
+    /// as MobilizedBodies must be added sequentially to form a Multibody tree.
+    /// SimTK::Constraints and SimTK::Forces must be applied to MobilizedBodies
+    /// that are already present in the MultibodySystem. The Model component
+    /// handles this order for you and should handle user-defined Components
+    /// without any issues. You should rarely need to use this method yourself.
+    /// If needed, use this method in extendConnect() of your Component (or
+    /// within your extendConnectToModel() for ModelComponents) to set the
     /// order of your subcomponents. For example, Model orders subcomponents
-    /// according to the multibody tree and adds bodies and joints in order
+    /// according to the Multibody tree and adds bodies and joints in order
     /// starting from Ground and growing outward.
-    /// If the subcomponent already appears in the order list setting it
+    /// If the subcomponent already appears in the ordered list setting it
     /// later in the list has no effect. The list remains unique.
+    /// NOTE: If you do need to set the order of your subcomponents, you must
+    /// do so for all your immediate subcomponents, otherwise those
+    /// components not in the ordered list will not be added to the System.
     void setNextSubcomponentInSystem(const Component& sub) const;
 
     /// resetSubcomponentOrder clears this Component's list of ordered
-    /// subcomponents (which leaves subcomponents untouched). Rebuild the
-    /// the list using setNextSubcomponentInSystem(), above.
+    /// subcomponents (but otherwise leaves subcomponents untouched). You can
+    /// form the ordered list using setNextSubcomponentInSystem() above.
     void resetSubcomponentOrder() {
         _orderedSubcomponents.clear();
     }
@@ -2527,8 +2539,8 @@ private:
     // used strictly to specify the order in which addToSystem() is invoked
     // on its subcomponents. The order is necessary for the construction
     // of Simbody elements (e.g. MobilizedBodies, Constraints, Forces, 
-    // Measures, ...) which cannot be added to the SimTK::MultibodySystem
-    // arbitrarily. In the case of MobilizedBodies, for example, the parent
+    // Measures, ...) which cannot be added to the SimTK::MultibodySystem in
+    // arbitrary order. In the case of MobilizedBodies, for example, the parent
     // MobilizedBody must be part of the system before the child can be added.
     // OpenSim::Model performs the mapping from User specifications to the
     // system order required by the SimTK::MultibodySystem.
