@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  testNested<odel.cpp                         *
+ *                      OpenSim:  testNestedModel.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
