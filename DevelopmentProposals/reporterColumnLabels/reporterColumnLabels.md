@@ -54,7 +54,7 @@ and forcing the user to specify an annotation for each Output may not be practic
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
-The selected design involves five main changes:
+The selected design involves six main changes:
 
 1. Rename "annotation" to "alias" (e.g., `AbstractInput::getAnnotation()` becomes `AbstractInput::getAlias()`).
 2. If the user provides the optional second argument when connecting an Output to an Input, store the string as the Input's alias; otherwise, the alias remains null.
