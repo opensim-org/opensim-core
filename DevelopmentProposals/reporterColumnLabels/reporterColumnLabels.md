@@ -153,4 +153,4 @@ It may be prudent to switch to a more explicit layout to separate the path, outp
 ```
 
 ### Pull Requests
-It does not appear to be necessary to split this project across multiple PRs.
+The selected design was implemented in [PR #1279](https://github.com/opensim-org/opensim-core/pull/1279).
