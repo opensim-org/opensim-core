@@ -492,16 +492,8 @@ public:
         }
         
         // Alias.
-        if (leftParen != std::string::npos && rightParen != std::string::npos) {
-            alias = connecteeName.substr(leftParen + 1,
-                                              rightParen - (leftParen + 1));
-        } else {
-            if (!channelName.empty()) {
-                alias = channelName;
-            } else {
-                alias = outputName;
-            }
-        }
+        alias = connecteeName.substr(leftParen + 1, rightParen - (leftParen + 1));
+
         return true;
     }
     
