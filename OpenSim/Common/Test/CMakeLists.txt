@@ -15,5 +15,5 @@ OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES} ${C3D_TEST_FILES} ${TRC_TEST_FILES} 
               ${MOT_TEST_FILES}
-    LINKLIBS ${BTK_LIBRARIES} osimCommon ${SIMTK_ALL_LIBS} 
+    LINKLIBS ${BTK_LIBRARIES} osimCommon osimSimulation ${SIMTK_ALL_LIBS} 
     )
