@@ -796,8 +796,8 @@ void Model::extendConnectToModel(Model &model)
 }
 
 
-// ModelComponent interface enables this model to be treated as a subcomponent of
-// another model by creating components in its system.
+// ModelComponent interface enables this model to be a subcomponent of another
+// model. In that case, it adds itself to the parent model's system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
