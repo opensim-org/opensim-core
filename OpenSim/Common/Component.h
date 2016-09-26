@@ -2793,7 +2793,10 @@ void Input<T>::connect(const AbstractOutput& output,
             else {
                 pathName = pathName + "/" + chan.second.getName();
             }
-            pathName += "(" + alias + ")";
+
+            // Append the alias, if one has been provided.
+            if (!alias.empty())
+                pathName += "(" + alias + ")";
 
             // set the connectee name so that the connection can be
             // serialized
@@ -2841,7 +2844,10 @@ void Input<T>::connect(const AbstractChannel& channel,
         else {
             pathName = pathName + "/" + chanT->getName();
         }
-        pathName += "(" + alias + ")";
+
+        // Append the alias, if one has been provided.
+        if (!alias.empty())
+            pathName += "(" + alias + ")";
 
         // Set the connectee name so the connection can be serialized.
         int numPreexistingConnectees = getNumConnectees();
