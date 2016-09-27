@@ -72,7 +72,13 @@ class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImp
         printout << "DecorativeMesh:" << dp.getMesh().getNumFaces() << " " << dp.getMesh().getNumVertices() << printCommonProps(dp) << std::endl;
     };
     void implementMeshFileGeometry(const DecorativeMeshFile& dp) override{
-        printout << "DecorativeMeshFile:" << dp.getMeshFile() << " " << printCommonProps(dp) << std::endl;
+        std::string filename = dp.getMeshFile();
+        std::size_t found = filename.find_last_of("/\\");
+        if (found == string::npos)
+            printout << "DecorativeMeshFile:" << filename << " " << printCommonProps(dp) << std::endl;
+        else
+            printout << "DecorativeMeshFile:" << filename.substr(found+1) << " " << printCommonProps(dp) << std::endl;
+
     };
     void implementArrowGeometry(const DecorativeArrow& dp) override{
         printout << "DecorativeArrow:" << dp.getStartPoint() << dp.getEndPoint() << dp.getTipLength() << printCommonProps(dp) << std::endl;
@@ -107,6 +113,8 @@ int main()
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
         Model testModel2 = createModel4AppearanceTest();
         testVisModel(testModel2, "vis_AppearanceTest.txt");
+        Model testModel3("double_pendulum33.osim");
+        testVisModel(testModel3, "vis_double_pendulum33.txt");
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -118,7 +126,7 @@ int main()
 
 void testVisModel(Model& model, const std::string standard_filename)
 {
-    bool visualDebug = false; // Turn on only if you want to see API visualizer live
+    bool visualDebug = true; // Turn on only if you want to see API visualizer live
     if (visualDebug) 
         model.setUseVisualizer(true);
     SimTK::State& si = model.initSystem();
