@@ -92,7 +92,7 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
     std::vector<double> comparisons;
     result.compareWithStandard(standard, columnsUsed, comparisons);
 
-    auto ncolumns = columnsUsed.size();
+    size_t ncolumns = columnsUsed.size();
 
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");
@@ -209,17 +209,131 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 // Storage can only read files with version <= 1.
 // This function can be removed when Storage class is removed.
 inline void revertToVersionNumber1(const std::string& filenameOld,
-                                   const std::string& filenameNew) {
-  std::regex versionline{R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)"};
-  std::ifstream fileOld{filenameOld};
-  std::ofstream fileNew{filenameNew};
-  std::string line{};
-  while(std::getline(fileOld, line)) {
-    if(std::regex_match(line, versionline))
-      fileNew << "version=1\n";
-    else
-      fileNew << line << "\n";
-  }
+    const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline))
+            fileNew << "version=1\n";
+        else
+            fileNew << line << "\n";
+    }
 }
+
+// Estimate the memory usage of a *creator* that heap allocates an object
+// of type C and returns a pointer to it. Creator can also perform any 
+// initialization before returning the pointer.
+template <typename C, typename T>
+size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
+{
+    std::vector<std::unique_ptr<C>> pointers;
+    std::vector<size_t> deltas;
+
+    for (size_t i = 0; i < nSamples; ++i) {
+        size_t mem0 = getCurrentRSS();
+        // Execute the desired creator 
+        // store in unique_ptrs to delay deletion
+        pointers.push_back(std::unique_ptr<C>(creator()));
+        // poll the change in memory usage
+        size_t mem1 = getCurrentRSS();
+        // change in memory usage (negative values are invalid)
+        size_t delta = mem1 > mem0 ? mem1 - mem0 : 0;
+        if(delta) // store only valid values (creator cannot create 0 bytes)
+            deltas.push_back(delta);
+    }
+
+    OPENSIM_THROW_IF(deltas.size() < 2, OpenSim::Exception,
+        "Insufficient number of nonzero samples to estimate memory change. "
+        "Consider increasing the number of samples.");
+
+    size_t nmedian = deltas.size() / 2;
+    // sort the deltas up to and including the nth element
+    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+
+    return deltas[nmedian];
+}
+
+// Determine if getRSS is providing reliable estimates of memory usage by
+// testing against an allocation of known size and verifying that the change
+// memory use is detected. Employ this method to validate the use of
+// memory use estimators (e.g. estimateMemoryChangeForCreator and
+// estimateMemoryChangeForCommand). Do this at the beginning of your test 
+// involving checks for memory use.
+void validateMemoryUseEstimates(const size_t nSamples = 11)
+{
+    // Approximate size of a small OpenSim model
+    size_t size = 1000 * 1024; // 1K * 1KB = 1MB;
+
+    struct Block {
+        Block(size_t size) {
+            // allocate block of stuff of specified size
+            p = (char*)malloc(size);
+            // do some random initialization
+            for (size_t i = 0; i < size; i+=1024) {
+                p[i] = rand();
+            }
+        }
+        ~Block() {
+            free(p);
+        }
+        // member is pointer to allocated block
+        char* p{};
+    };
+
+    auto creator = [size]() { 
+        return new Block(size);
+    };
+
+    size_t delta = 0;
+    try {
+        delta = estimateMemoryChangeForCreator<Block>(creator, nSamples);
+    }
+    catch (const std::exception& ex) {
+        OPENSIM_THROW(OpenSim::Exception,
+            "Failed to estimate change in memory usage. Details:\n"
+            + std::string(ex.what()) );
+    }
+
+    OPENSIM_THROW_IF(delta < size/2, OpenSim::Exception,
+        "Cannot estimate memory usage due to invalid getRSS() evaluation."
+        "Estimated "+ std::to_string(delta) + "B but expected " +
+        std::to_string(size) + "B.");
+}
+
+// Estimate the change in memory usage resulting from executing a command
+template <typename T>
+size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
+{
+    std::vector<size_t> deltas;
+
+    for (size_t i = 0; i < nSamples; ++i) {
+        size_t mem0 = getCurrentRSS();
+        // Execute the desired command
+        command();
+        // initialize post-command memory usage to an error causing size
+        size_t mem1 = std::numeric_limits<std::size_t>::max();
+        int cnt = 0;
+        // wait up to 100ms total for memory usage to settle
+        do {
+            // poll the change in memory usage
+            mem1 = getCurrentRSS();
+            // wait just a ms
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // verify that memory usage is stable over the wait, otherwise continue
+        } while ((getCurrentRSS() != mem1) && (++cnt < 100));
+
+        // store change in memory usage (negative values are invalid)
+        deltas.push_back(mem1 > mem0 ? mem1 - mem0 : 0);
+    }
+
+    size_t nmedian = deltas.size() / 2;
+    // sort the deltas up to and including the nth element
+    std::nth_element(deltas.begin(), deltas.begin() + nmedian, deltas.end());
+
+    return deltas[nmedian];
+}
+
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_

@@ -362,12 +362,16 @@ public:
     that can be implemented by subclasses of Components.
 
     Component ensures that the corresponding calls are propagated to all of its
-    (sub)components. */
+    subcomponents.*/
 
     ///@{
 
-    /** Update Component's internal data members based on properties.
-        Marks the Component as up to date with its properties. */
+    /** Define a Component's internal data members and structure according to
+        its properties. This includes its subcomponents as part of the component
+        ownership tree and identifies its parent (if present) in the tree.
+        finalizeFromProperties propagates to all of the component's
+        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
+        on itself.*/
     void finalizeFromProperties();
 
     /** Connect this Component to its aggregate component, which is the root
@@ -1450,12 +1454,23 @@ protected:
     */
     void adoptSubcomponent(Component* subcomponent);
 
+    /** Get the number of Subcomponents immediately owned by this Component */
+    size_t getNumImmediateSubcomponents() const {
+        return getNumMemberSubcomponents() + getNumPropertySubcomponents()
+            + getNumAdoptedSubcomponents();
+    }
+
     /** Get the number of Subcomponents that are data members of this Component */
     size_t getNumMemberSubcomponents() const;
     /** Get the number of Subcomponents that are properties of this Component */
     size_t getNumPropertySubcomponents() const;
     /** Get the number of Subcomponents adopted by this Component */
     size_t getNumAdoptedSubcomponents() const;
+
+    /** Access this Component's immediate subcomponents (not those owned by
+        subcomponents) */
+    std::vector<SimTK::ReferencePtr<const Component>>
+        getImmediateSubcomponents() const;
 
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
@@ -2376,7 +2391,9 @@ private:
         
         for (auto& it : _inputsTable) {
             it.second->setOwner(*this);
-    }
+        }
+
+        resetSubcomponentOrder();
     }
 
 protected:
@@ -2448,13 +2465,36 @@ protected:
         bool hidden;
     };
 
+    /// Helper method to enable Component makers to specify the order of their
+    /// subcomponents to be added to the System during addToSystem(). It is
+    /// highly unlikely that you will need to reorder the subcomponents of your
+    /// custom component. This ability is primarily intended for Model (and 
+    /// other top-level) components that have the responsibility of creating a
+    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such
+    /// as MobilizedBodies must be added sequentially to form a Multibody tree.
+    /// SimTK::Constraints and SimTK::Forces must be applied to MobilizedBodies
+    /// that are already present in the MultibodySystem. The Model component
+    /// handles this order for you and should handle user-defined Components
+    /// without any issues. You should rarely need to use this method yourself.
+    /// If needed, use this method in extendConnect() of your Component (or
+    /// within your extendConnectToModel() for ModelComponents) to set the
+    /// order of your subcomponents. For example, Model orders subcomponents
+    /// according to the Multibody tree and adds bodies and joints in order
+    /// starting from Ground and growing outward.
+    /// If the subcomponent already appears in the ordered list setting it
+    /// later in the list has no effect. The list remains unique.
+    /// NOTE: If you do need to set the order of your subcomponents, you must
+    /// do so for all your immediate subcomponents, otherwise those
+    /// components not in the ordered list will not be added to the System.
+    void setNextSubcomponentInSystem(const Component& sub) const;
 
+    /// resetSubcomponentOrder clears this Component's list of ordered
+    /// subcomponents (but otherwise leaves subcomponents untouched). You can
+    /// form the ordered list using setNextSubcomponentInSystem() above.
+    void resetSubcomponentOrder() {
+        _orderedSubcomponents.clear();
+    }
 
-    // Maintain pointers to subcomponents so we can invoke them automatically.
-    // These are just references, don't delete them!
-    // TODO: subcomponents should not be exposed to derived classes to trash.
-    //       Need to provide universal access via const iterators -aseth
-    SimTK::Array_<SimTK::ReferencePtr<Component>>  _propertySubcomponents;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -2487,10 +2527,26 @@ private:
     // subsystem.
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
+    // list of subcomponents that are contained in this Component's properties
+    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
     // Keep fixed list of data member Components upon construction
     SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
     SimTK::Array_<SimTK::ClonePtr<Component> > _adoptedSubcomponents;
+
+    // A flat list of subcomponents (immediate and otherwise) under this
+    // Component. This list must be populated prior to addToSystem(), and is
+    // used strictly to specify the order in which addToSystem() is invoked
+    // on its subcomponents. The order is necessary for the construction
+    // of Simbody elements (e.g. MobilizedBodies, Constraints, Forces, 
+    // Measures, ...) which cannot be added to the SimTK::MultibodySystem in
+    // arbitrary order. In the case of MobilizedBodies, for example, the parent
+    // MobilizedBody must be part of the system before the child can be added.
+    // OpenSim::Model performs the mapping from User specifications to the
+    // system order required by the SimTK::MultibodySystem.
+    // If the Component does not reset the list, it is by default the ownership
+    // tree order of its subcomponents.
+    mutable std::vector<SimTK::ReferencePtr<const Component> > _orderedSubcomponents;
 
     // Structure to hold modeling option information. Modeling options are
     // integers 0..maxOptionValue. At run time we keep them in a Simbody

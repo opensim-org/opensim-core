@@ -249,7 +249,9 @@ bool InverseDynamicsTool::run()
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
 
-        _model->setup();
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
+        // Initialize the model's underlying computational system and get its default state.
+        SimTK::State& s = _model->initSystem();
 
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
@@ -299,9 +301,7 @@ bool InverseDynamicsTool::run()
 
         }
 
-        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
-        // Initialize the model's underlying computational system and get its default state.
-        SimTK::State& s = _model->initSystem();
+
 
         // Exclude user-specified forces from the dynamics for this analysis
         disableModelForces(*_model, s, _excludedForces);
