@@ -40,7 +40,312 @@ The parent class, Muscle.h, provides
 namespace OpenSim {
 /**
 This class implements a muscle with implicit dynamics capabilities as described
- in van den Bogert et al. \(2011).
+ in van den Bogert et al[1].
+
+ The muscle is comprised of 4 components and is show below:
+- CE: Contractile Element
+- DE: Damping Element
+- PE: Parallel Elastic Element
+- SE: Series Elastic Element (tendon)
+
+\image html fig_VandenBogertMuscle.png
+
+
+
+The dimensions are:
+ - \f$h\f$ : Muscle height
+ - \f$ l_{m} \f$ : Length of the muscle contractile and parallel elastic element (also know as the
+ "muscle fiber length")
+ - \f$ l_{mt} \f$ -  Muscle and tendon fiber length
+ - \f$ l_{p} \f$ - Length of the fiber projected on to the line of action
+ of the tendon (also the length of the damping elements)
+ - \f$ l_{t} \f$ - Length of the tendon
+ - \f$ \phi \f$ - Pennation angle of the muscle fiber
+
+
+<B>Nomenclature </B> <BR>
+ Symbols with the a \f$ \bar{bar} \f$ indicate that the quantity has been normalized by a constant parameter.  For forces, this will all ways be \f$F_{m,opt}\f$.  For velocities and lengths this will be \f$l_{m_opt}\f$ (velocities will therefore have units of "optimal lengths per second")
+
+<table>
+<tr>
+<td colspan=3>
+</td>
+|Symbol | Description | Units |
+|--------|---------|----------|
+|a       | Activation (State Variable)      | unitless        |
+|\f$b_{de}\f$       | Damping, % of \f$F_{m,opt}\f$ per 1 optimal length per second   (Parameter: fiber_damping)  | N/m/s  |
+|\f$A_{hill} \f$       | Hill Constant (Parameter: force_velocity_hill_constant)| unitless   |
+|\f$ F_{se} \f$| Force in the Series Elastic Element (Calculated Value) | N |
+|\f$ F_{ce} \f$| Force in the Contractile Element  (Calculated Value) | N |
+|\f$ F_{de} \f$| Force in the Damping Element  (Calculated Value) |N|
+|\f$ F_{m,opt} \f$| Force in the contractile element under isometric conditions, at optimal length  (Parameter: max_isometric_force)  |N|
+|\f$ k_{pe} \f$| Parallel elastic element linear stiffness  (Derived Parameter) | N/m |
+|\f$ k_{pe,quad} \f$| Parallel elastic element linear stiffness (Derived Parameter) | \f$ N/m^{2} \f$|
+|\f$ k_{se} \f$| Series  elastic element (tendon) linear stiffness  (Derived Parameter) | N/m |
+|\f$ k_{se,quad} \f$| Series elastic element (tendon) linear stiffness (Derived Parameter) | \f$ N/m^{2} \f$|
+|\f$ \lambda \f$| Activation-Velocity Parameter (Derived Parameter)| unitless |
+|\f$ \lambda_{m} \f$|Activation-Velocity Parameter Slope (Parameter: activation_velocity_slope)| unitless |
+|\f$ \lambda_{o} \f$|Lambda value at zero Activation (Parameter: activation_velocity_intercept)| unitless |
+ |\f$ \phi_{ref} \f$|Pennation at optimal fiber length (Parameter: pennation_at_optimal_fiber_length) |rad|
+|\f$ \bar{l_{m,slack}} \f$ | length of muscle when parallel elastic element is slack (Parameter: fiber_slack_length_norm)| unitless |
+|\f$ l_{t,slack} \f$ | Slack Length of the tendon (Parameter: tendon_slack_length )| m |
+|\f$ \tau_{a} \f$| Activation Time Constant (Parameter: activation_time_constant)| 1/s |
+|\f$ \tau_{d} \f$ | Deactivation Time Constant (Parameter: deactivation_time_constant) |1/s|
+|\f$ u_{max} \f$ | Strain in tendon at \f$F_{m,opt}\f$  (Parameter: tendon_strain_at_max_iso_force) | m/m |
+|\f$ \bar{v_{max}} \f$ | Normalized maximum lengthining (concentric) velocity (Parameter: force_velocity_max_lengthening_force_norm) | unitless|
+|w | force-length width (Parameter: active_force_length_curve_width); This is the kShapeActive parameter in Thelen2003Muscle| unitless |
+ </tr>
+</table>
+
+------------------------------------------------------------------------------
+ <B>Force Balance</B> <BR>
+ The implicit muscle determines it's operating state by calculating the forces
+ which result in the tendon and muscle complexes being balanced (equivalent):
+ \f[
+ F_{se} - (F_{ce} + F_{pe})\cos\phi - F_{de} = 0
+ \f]
+
+
+ <B>Series Elastic Element Force, \f$ F_{se} \f$  </B> <BR>
+ This is the elastic force in the tendon and is a function of the length of the
+ tendon (\f$ l_{mt} - l_{m} \cos\phi \f$) which is :
+  \f[
+ F_{se} = \mathbf{f_{se}} (l_{mt} - l_{m} \cos\phi)
+ \f]
+
+
+ <B>Contractile Element Force, \f$ F_{ce} \f$ </B> <BR>
+ The contractile element force is:
+ \f[
+ F_{ce} = a*F_{m,opt} \mathbf{f_{l}}(l_{m}) \mathbf{f_{v}} (\dot{l_{m}})
+ \f]
+ \f$ \mathbf{f_{l}} \f$  and  \f$ \mathbf{f_{v}} \f$ are the muscle force-length and force-velocity relationships and are detailed below.
+
+
+ <B>Parallel Elastic Element Force, \f$ F_{pe} \f$ </B> <BR>
+ The elastic force in the muscle fiber is a function of the length of the contractile element:
+  \f[
+ F_{pe} = \mathbf{f_{pe}}(l_{m})
+ \f]
+
+
+ <B>ParallelDamping Element Force, \f$ F_{de} \f$ </B> <BR>
+ A dissipative force in the muscle fiber is modeled as a function of the velocity of the velocity of
+ the muscle fiber projected along the line of action of the tendon:
+ \f[
+ F_{de}=\mathbf{f_{de}}(\dot{l_{m}})
+\f]
+
+ ------------------------------------------------------------------------------
+ <B>Muscle State Equation</B> <BR>
+ The state equation for the muscle is then:
+
+ \f[
+ \mathbf{f_{se}} (l_{mt} - l_{m} \cos\phi)
+
+ - [aF_{m,opt} \mathbf{f_{l}}(l_{m}) \mathbf{f_{v}} (\dot{l_{m}})
+
+ + \mathbf{f_{pe}}(l_{ce})]
+ \cos\phi
+ - \mathbf{f_{de}}(\dot{l_{m}})
+ =0
+ \f]
+
+ The muscle length state variable is then chosen:
+
+\f[
+ x_{1}= l_{m}\cos\phi  = l_{p}
+ \f]
+
+ (This differs from other muscle models that use a state variable of \f$ l_{m} \f$.)
+
+  Due to the \f$ l_{m} \f$ and \f$ \dot{l_{m}}\f$ terms in the force-length and force-velocity relationship,
+  along with the \f$ \cos\phi \f$ term, intermediate equations are needed to convert from the state variable \f$ x_{1} \f$ to
+  \f$ \bar{l_{p}} \f$.
+
+
+
+  To remove the pennation angle \f$ \phi \f$ as a variable, a constant muscle volume assumption is used[2]:
+ \f[
+  l_{m} \sin\phi = l_{m,ref} \sin\phi_{ref} = h
+ \f]
+
+  This muscle uses the reference length of \f$ l_{m,ref}=l_{m,opt} \f$.  \f$ h \f$ is referred to as the muscle height (a constant).  \f$ \phi_{ref} \f$ and \f$ l_{ce,ref} \f$ are the pennation angle at a reference fiber length respectively.  If the pennation is less than 0.01 radians, the projected fiber length equals the fiber length (if pennation is zero, the muscle volume would be zero).
+
+  An implicit first order differential equation of state \f$ x_{1} \f$ can then be formed using the following two equations:
+ \f[
+  l_{m} = ({l_{p}}^2 + h^{2})^{0.5} = ({x_{1}}^2 + h^{2})^{0.5}
+ \f]
+\f[
+ \cos\phi=\frac {l_{p}}{l_{m}}=\frac {x_{1}}{l_{m}}
+ \f]
+
+
+Muscle activation, \f$ a \f$ is a function of the control signal (neural excitation), is modeled[3] as:
+
+ \f[
+  \dot{a}=(u-a)    (\frac{u}{\tau_{a}} + \frac{1-u}{\tau_{d}})
+\f]
+This is a first order differential equation and therefore the muscle has a second state variable \f$ x_{2}=a \f$.
+
+
+ Implicit formulation of muscles have the following advantages:<BR>
+ 1) This muscle does not have a singularity at zero activation,  \f$ a=0\f$  <BR>
+ 2) This muscle does not have a singularity at pennation=90 deg,  \f$ \phi=\pi \f$ <BR>
+ 3) This muscle has continuous derivatives.  This allows for use of gradient based solvers such as those commonly used in optimization. <BR>
+
+ The above singularities can cause very small time stepping by integrators when they are approached in simulation. <BR>
+
+  In the formulation of each of the force components, normalized values are used to help insure numerical stability and to allow comparison to standard muscle curves.  Also, the implementation of the \f$ x_{1} \f$ state variable uses a normalization:
+\f[
+ x_{1}= \frac{l_{m}\cos\phi} {l_{m,opt}} = \frac {l_{p}} {l_{m,opt}} = \bar{l_{p}}
+ \f]
+
+------------------------------------------------------------------------------
+
+ <B> Force Length Relationship, \f$ f_{l} \f$</B> <BR>
+ The force-length relationship of the muscle is modeled with a Gaussian curve [4]:
+ \f[
+ \mathbf{f_{l}} = e^{-d^{2}}
+ \f]
+
+ where:
+ \f[
+ d=\frac{l_{m}-l_{m,opt}}{w \cdot l_{m,opt}}
+\f]
+
+
+ \image html fig_VandenBogert2011Muscle_fl.png
+
+
+ <B>Force Velocity Relationship, \f$ f_{v} \f$</B> <BR>
+ The force-velocity relationship of the muscle is broken into two regimes:
+
+ For Muscle Shortening (\f$ \dot{l_{m}}<0 \f$), the Hill[5] concentric model is utilized:
+ \f[
+ \mathbf{f_{v}}=  \frac {\lambda v_{max} +\dot{l_{m}}}
+ {\lambda v_{max} -\frac{\dot{l_{m}}}{A_{Hill}}}
+\f]
+
+  For muscle elongating (\f$ \dot{l_{m}}>=0 \f$), the Katz[6] eccentric model is utilized:
+ \f[
+\mathbf{f_{v}} = \frac{\bar{f_{v,max}} * \dot{l_{m}} +c}
+{ \dot{l_{m}} +c}
+ \f]
+
+ where:
+  \f[
+c=\frac{\lambda \cdot v_{max} A_{hill} (f_{v,max}-1)}
+{A_{hill}+1}
+ \f]
+
+ The parameter \f$ \lambda \f$ in the force-velocity relationship provides a scalar to adjust the maximum lengthening velocity based upon muscle activation[7]:
+   \f[
+     \lambda = \lambda_{m}a + \lambda_{o}
+  \f]
+
+
+ \image html fig_VandenBogert2011Muscle_fv.png
+
+
+  <B>Parallel Elastic Element Force, \f$ F_{pe} \f$</B> <BR>
+
+ Calculation of the force in the parallel elastic element are expressed in terms of normalized force:
+ \f[
+ F_{pe} = F_{m,opt} \cdot \bar{F_{pe}}
+ \f]
+
+ Elongation of the parallel element from it's slack length (and relative to fiber's optimal length):
+ \f[
+ \bar{dl_{m}} = \frac {l_{m}} {l_{m,opt}}  -  \frac {l_{m,slack}} {l_{m,opt}} = \bar{l_{m}} -  \bar{l_{m,slack}}
+ \f]
+
+ If the parallel element's length is less than it's slack length (\f$ l_{m}<l_{m,slack} \f$, so \f$ \bar{dl_{m}} < 0 \f$) a light linear stiffnesss of 1 N/m is used:
+  \f[
+ \bar{k_{pe}} = 1\frac{N}{m}  \frac{l_{m,opt}} {F_{m,opt}}
+ \f]
+  \f[
+ \bar{F_{pe}} = \bar{k_{pe}} \bar{dl_{m}}
+ \f]
+
+ If the parallel element's length is greater than it's slack length (\f$ l_{m}>l_{m,slack} \f$, so \f$ \bar{dl_{m}} > 0 \f$) a quadratic stiffness is added:
+   \f[
+ \bar{k_{pe,quad}} = \frac{1}{w^{2}}
+ \f]
+ This insures that \f$ F_{pe} = F_{m,opt} \f$ when \f$ l_{m}=l_{m,opt}(1+w)\f$
+  \f[
+ \bar{F_{pe}} = \bar{k_{pe}} \bar{dl_{m}} + \bar{k_{pe,quad}} \bar{dl_{m}}^{2}
+ \f]
+
+
+ \image html fig_VandenBogert2011Muscle_PeeForce.png
+
+ <B> Series Elastic Element (Tendon) Force, \f$ F_{se} \f$ </B> <BR>
+
+
+The length of the tendon is:
+ \f[
+ l_{t} = l_{mt} - l_{p}
+ \f]
+
+ The elongation of the tendon is then
+ \f[
+ dl_{t}=l_{t}-l_{t,slack}
+ \f]
+
+  The force in the tendon is:
+   \f[
+ F_{se} = k_{se}dl_{t} + k_{se,quad}(dl_{t})^{2}
+ \f]
+
+If the tendon is not being stretched, a very light spring rate of 1N/m is used:
+  \f[
+ k_{se} = 1
+ \f]
+
+ If the tendon is being stretched an additional quadratic term is used so that
+ force in the tendon: \f$F_{se} = F_{m,opt}\f$  when the strain in the tendon = \f$u_{max}\f$:
+
+ \f[
+ k_{se,quad} = \frac{F_{m,opt}}{(u_{max}l_{t,slack})^{2}}
+ \f]
+
+
+
+To normalize the force (note that due to the quadratic terms, non-normalized lengths must be used):
+ \f[
+ \bar{F_{se}} = \frac{1}{F_{m,opt}} =\frac{dl_{t}}{F_{m,opt}} + \frac{1}{(u_{max} dl_{t})^{2}}
+ \f]
+
+  \image html fig_VandenBogert2011Muscle_SeeForce.png
+
+ <B>Parralel Damping Element Force, \f$  F_{de} \f$ </B> <BR>
+
+\f$  F_{de} \f$ is the viscous damping parallel to the contractile element. The damping is set such that it equals \f$b_{de}\f$ percent of \f$F_{m,opt}\f$ when the muscle velocity is 1 optimal length per second:
+
+  \f[
+ F_{de}  = b_{de} F_{m,opt} \frac {\dot{l_p}}{l_{m_opt}}
+ \f]
+
+  or in normalized terms:
+
+ \f[
+ \bar{F_{de}}  = b_{de} \bar{\dot{l_p}}
+ \f]
+
+ This damping is present in the model to provide numerical stability when activation of the muscle is zero.
+
+
+------------------------------------------------------------------------------
+  <B>References </B> <BR>
+ [1] van den Bogert A, Blana D, Heinrich D, Implicit methods for efficient musculoskeletal simulation and optimal control. Procedia IUTAM 2011; 2:297-316 <BR>
+ [2] Otten E. Concepts and models of functional architecture in skeletal muscle. Exerc Sport Sci Rev 1988; 16:89-137 <BR>
+ [3] He J, Levine WS, Loeb GE. Feedback gains for correcting small perturbations to standing posture. IEEE Trans Auto Control 1991; 36:322-32. <BR>
+ [4] Walker S, Schrodt I, Segment lengths and thin filament periods in skeletal muscle fibers of the rhesus monkey and the human. The Anatom Rec 1974; 178:63-81 <BR>
+ [5] Hill A, The heat of shortening and the dynamic constants of Muscle. Proc Royal Society 1938 126 <BR>
+ [6] Katz B, The relation between force and speed in muscular contraction. J Physiol 1939; 96:45-64 <BR>
+ [7] Chow J, Darling W, The maximum shortening velocity of muscle should be scaled with activation. J Appl Physiol 1999; 86(3):1025-31 <BR>
+
  */
     //TODO:  Add detailed muscle discription
 
@@ -139,79 +444,79 @@ public:
 //-------------------------------------------------------------------------
 // GET & SET Properties
 //-------------------------------------------------------------------------
-        /** @param the tendon strain at a load of Fmax*/
+        /** @param tendon_strain_at_max_iso_force The tendon strain at a load of Fmax*/
         void setFMaxTendonStrain(double tendon_strain_at_max_iso_force);
-        /** @returns the tendon strain at a load of Fmax*/
+        /** @returns The tendon strain at a load of Fmax*/
         double getFMaxTendonStrain() const;
 
-        /** @param the width parameter (W) of the force-length relationship of
+        /** @param flWidth The width parameter (W) of the force-length relationship of
         the muscle fiber (dimensionless)*/
         void setFlWidth(double flWidth);
-        /** @returns the width parameter (W) of the force-length relationship of
+        /** @returns The width parameter (W) of the force-length relationship of
         the muscle fiber (dimensionless)*/
         double getFlWidth() const;
 
-        /** @param the Hill parameter of the force-velocity relationship
+        /** @param fvAHill The Hill parameter of the force-velocity relationship
         (dimensionless)*/
         void setFvAHill(double fvAHill);
-        /** @returns the Hill parameter of the force-velocity relationship
+        /** @returns The Hill parameter of the force-velocity relationship
         (dimensionless)*/
         double getFvAHill() const;
 
-        /** @param the maximal eccentric force multiplier FV_{max}
+        /** @param fvMaxMultiplier The maximal eccentric force multiplier FV_{max}
         (dimensionless) */
         void setFvmaxMultiplier(double fvMaxMultiplier);
-        /** @returns the maximal eccentric force multiplier FV_{max}
+        /** @returns The maximal eccentric force multiplier FV_{max}
         (dimensionless) */
         double getFvmaxMultiplier() const;
 
-        /** @param the  damping coefficient of damper parallel to the fiber
+        /** @param dampingCoefficient The damping coefficient of damper parallel to the fiber
         (normalized to maxIsometricForce), b (s/m)*/
         void setDampingCoefficient(double dampingCoefficient);
-        /** @returns the  damping coefficient of damper parallel to the fiber
+        /** @returns The damping coefficient of damper parallel to the fiber
         (normalized to maxIsometricForce), b (s/m)*/
         double getDampingCoefficient() const;
 
-        /** @param the slack length of the parallel elastic element, divided by
+        /** @param normFiberSlackLength The slack length of the parallel elastic element, divided by
         fiber optimal length, L_{slack,fiber} (dimensionless)*/
         void setNormFiberSlackLength(double normFiberSlackLength);
-        /** @returns the slack length of the parallel elastic element, divided
+        /** @returns The slack length of the parallel elastic element, divided
         by fiber optimal length, L_{slack,fiber} (dimensionless)*/
         double getNormFiberSlackLength() const;
 
-        /** @param the activation time constant, T_{act} (s)*/
+        /** @param activTimeConstant The activation time constant, T_{act} (s)*/
         void setActivTimeConstant(double activTimeConstant);
-        /** @returns the activation time constant, T_{act} (s)*/
+        /** @returns The activation time constant, T_{act} (s)*/
         double getActivTimeConstant() const;
 
-        /** @param the deactivation time constant, T_{deact} (s)*/
-        void setDeactivTimeConstant(double deactivTimeConstant);
-        /** @returns the deactivation time constant, T_{deact} (s)*/
-        double getDeactivTimeConstant() const;
+        /** @param deactivationTimeConstant The deactivation time constant, T_{deact} (s)*/
+        void setDeactivationTimeConstant(double deactivationTimeConstant);
+        /** @returns The deactivation time constant, T_{deact} (s)*/
+        double getDeactivationTimeConstant() const;
 
-        /** @param the pennation angel at optimal fiber length,
+        /** @param pennAtOptFiberLength The pennation angel at optimal fiber length,
         phi_{opt} (rad)*/
         void setPennAtOptFiberLength(double pennAtOptFiberLength);
-        /** @returns the pennation angel at optimal fiber length,
+        /** @returns The pennation angel at optimal fiber length,
         phi_{opt} (rad)*/
         double getPennAtOptFiberLength() const;
 
-        /** @param the default muscle activation, (dimensionless)*/
+        /** @param defaultActivation The default muscle activation, (dimensionless)*/
         void setDefaultActivation(double defaultActivation);
-        /** @returns the default muscle activation, (dimensionless)*/
+        /** @returns The default muscle activation, (dimensionless)*/
         double getDefaultActivation() const;
 
-        /** @param the default muscle fiber length, ()*/
+        /** @param fiberLength The default muscle fiber length, ()*/
         void setDefaultFiberLength(double fiberLength);
-        /** @returns the default muscle fiber length, ()*/
+        /** @returns The default muscle fiber length, ()*/
         double getDefaultFiberLength() const;
 
 
         /**@param s The state of the system.
-        @param the muscle activation, (dimensionless)*/
+        @param activation The muscle activation, (dimensionless)*/
         void setActivation(SimTK::State& s,double activation) const override;
         /**@param s The state of the system.
-        @param fiberLength the muscle fiber length, ()*/
+        @param fiberLength The muscle fiber length, ()*/
         void setFiberLength(SimTK::State& s,double fiberLength) const;
 
         /* Calculate the muscle implicit residual.  Returns a state Vec2
@@ -225,7 +530,7 @@ public:
                 @param activdot_guess The muscle activation time derivative,
                 (1/s)
                 @param excitation The muscle excitation
-                @returns a vector of the muscle residual:
+                @returns Muscle residual vector:
                         \li 0: force (N)
                         \li 1: activation (unitless)*/
         SimTK::Vec2 getResidual(const SimTK::State& s,
@@ -235,10 +540,10 @@ public:
 
         //Hacks because cache variables not implemented yet
 
-        /**@param The state of the system.
+        /**@param s The state of the system.
            @returns The Fiber Length of the muscle.*/
-        double  getFiberLength(SimTK::State& s) const; //BTH
-        /**@param The state of the system.
+        double  getFiberLength(const SimTK::State& s) const; //BTH
+        /**@param s The state of the system.
            @returns The activation of the muscle.*/
         double  getActivation(const SimTK::State& s) const override;  // BTH
 
@@ -263,23 +568,11 @@ public:
 //==============================================================================
 // MUSCLE.H INTERFACE
 //==============================================================================
-        /** @param[in] s The state of the system.
-            @returns The tensile force the muscle is generating (N). */
+
         double computeActuation(const SimTK::State& s) const override final;
 
-        /** Computes the fiber length such that the fiber and tendon are
-        developing the same force, distributing the velocity of the entire
-        musculotendon actuator between the fiber and tendon according to their
-        relative stiffnesses.
-                @param[in,out] s The state of the system. */
         void computeInitialFiberEquilibrium(SimTK::State& s) const override;
 
-        /** Computes the fiber length such that the fiber and tendon are
-        developing the same force, assuming velocities are zero. This is a
-        static equilibrium version of computeInitialFiberEquilibrium(). By
-        setting velocities to zero, we obtain a reasonable and robust solution
-        that provides a rough solution for fiber length.
-                @param[in,out] s The state of the system. */
         void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                 override;
 
@@ -294,33 +587,34 @@ public:
 
 
         /** Calculates the muscle residuals.
-                @param muscleLength length of muscle (N)
-                @param projFibLength length of the muscle fiber projected inline
-                        with tendon (m)
-                @param activ muscle activation
-                @param projFiberVelocity velocity of the muscle fiber projected
-                        inline with tendon (m/s)
-                @param activ_dot time derivative of the muscle activation
+                @param muscleLength Length of muscle (m)
+                @param projFibLengthNorm Length of the muscle fiber projected inline
+                        with tendon and normalized by the optimal fiber length (m/m)
+                @param activ The muscle activation
+                @param projFibVelNorm Velocity of the muscle fiber projected
+                        inline with tendon and normalized by the optimal fiber length (1/s)
+                @param activdot Time derivative of the muscle activation
                 @param excitation The muscle control excitation
-                @param returnJacobians if = true, calculate and return the
+                @param returnJacobians If = true, calculate and return the
                         Jacobains. default is =  false, Jacobians are not calculated
                 @returns TBD for now see ImplicitResidual structure*/
-        ImplicitResidual calcImplicitResidual(double muslceLength,
-                                              double projFiberLength,
+        ImplicitResidual calcImplicitResidual(double muscleLength,
+                                              double projFibLengthNorm,
                                               double activ,
-                                              double projFiberVelocity,
-                                              double activ_dot,
+                                              double projFibVelNorm,
+                                              double activdot,
                                               double excitation,
                                               bool returnJacobians=false) const;
+
         /** Calculates the muscle residuals. (State equation form for vector
         manipulation)
                 @param y vector of:
                         \li 0: projected fiber length
                         \li 1: muscle activation
                 @param ydot_guess Vector of the guess for the derivative of y
-                @param muscleLength length of muscle (N)
+                @param muscleLength Length of muscle (m)
                 @param excitation Muscle control excitation
-                @param returnJacobians if = true, calculate and return the
+                @param returnJacobians If = true, calculate and return the
                         Jacobains. default is =  false, Jacobians are not calculated
                 @returns TBD for now see ImplicitResidual structure*/
         ImplicitResidual calcImplicitResidual(SimTK::Vec2 y,
@@ -336,8 +630,8 @@ public:
                 @param projFibVel_guess Guess of the fiber velocity
                         (projected in-line with the tendon)
                 @param activdot_guess Guess of the time derivative of activation
-                @param u excitation Muscle control excitation
-                @param returnJacobians if = true, calculate and return the
+                @param excitation Muscle control excitation
+                @param returnJacobians If = true, calculate and return the
                         Jacobains. default is = false, Jacobians are not calculated
                 @returns TBD for now see ImplicitResidual structure*/
         ImplicitResidual calcImplicitResidual(const SimTK::State& s,
@@ -363,7 +657,7 @@ public:
                                              bool argsAreNormalized=false) const;
 
 
-        /** @param projFibLength The projected (inline with tendon) length
+        /**@param projFibLen The projected (inline with tendon) length
             @param argsAreNormalized T: The values provided are normalized by the
             muscle's optimal length, F: Not normalized
             @returns The fiber length
@@ -373,7 +667,7 @@ public:
 
         /**@param fiberVelocity Velocity of the fiber
            @param fiberLength Fiber Length
-           @param projFiberLength projected fiber velocity (in-line with tendon)
+           @param projFiberLength Projected fiber velocity (in-line with tendon)
            @param argsAreNormalized T: The values provided are normalized by the
            muscle's optimal length, F: Not normalized
            @returns The projected fiber velocity
@@ -395,7 +689,7 @@ public:
 
         /**@param projFibVel Projected velocity of the fiber
            @param fiberLength Fiber Length
-           @param projFiberLength projected fiber velocity (in-line with tendon)
+           @param projFiberLength Projected fiber velocity (in-line with tendon)
            @param argsAreNormalized true: The values provided are normalized by the
            muscle's optimal length, false: Not normalized
            @returns The fiber velocity
@@ -405,7 +699,7 @@ public:
                                          bool argsAreNormalized=false) const;
 
         /**@param projFibVel Projected velocity of the fiber
-           @param projFiberLength projected fiber velocity (in-line with tendon)
+           @param projFiberLength Projected fiber velocity (in-line with tendon)
            @param argsAreNormalized true: The values provided are normalized by the
            muscle's optimal length, false: Not normalized
            @returns The fiber velocity
@@ -433,7 +727,7 @@ public:
         ImplicitResidual calcJacobianByFiniteDiff(SimTK::Vec2 y,
                                                   SimTK::Vec2 ydot,
                                                   double muscleLength,
-                                                  double excitation, double h ) const;
+                                                  double excitation, double stepSize ) const;
         /** Calculate Jacobian by finite difference
               @param muscleLength Muscle Length
               @param projFibLenNorm The projected fiber length (inline with
@@ -443,14 +737,14 @@ public:
               tendon) and normalized by muscle optimal length.
               @param activdot The time derivative of the muscle activation
               @param excitation The muscle control excitation
-              @param h The peturbation size of the finite step
+              @param stepSize The peturbation size of the finite step
               @returns TBD for now see ImplicitResidual structure*/
         ImplicitResidual calcJacobianByFiniteDiff(double muscleLength,
                                                   double projFibLenNorm,
                                                   double activ,
                                                   double projFibVelNorm,
                                                   double activdot, double excitation,
-                                                  double h) const;
+                                                  double stepSize) const;
 
 
 
@@ -482,24 +776,11 @@ public:
 
 
 
-
+        //TODO: Need doxygen
         SimTK::Vec2 calcSolveMuscle(const SimTK::State& s,
                                     double activ,
                                     SimTK::Vector yDotInitialGuess)
                                 const;
-
-
-
-
-
-        //class ImplicitSystemDerivativeSolver : public SimTK::OptimizerSystem {};
-
-        //Hacks for troubleshooting Mat22:
-        SimTK::Mat22  fixMat22(SimTK::Mat22 matIn,SimTK::Mat22 matFixed) const;
-        SimTK::Mat33 quickMat33() const;
-        SimTK::Mat22 quickMat22() const;
-        SimTK::Vec4 quickVec4() const;
-        SimTK::Vec4 flattenMat22(SimTK::Mat22 matIn) const;
 
 
 
