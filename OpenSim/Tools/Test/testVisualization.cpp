@@ -126,7 +126,7 @@ int main()
 
 void testVisModel(Model& model, const std::string standard_filename)
 {
-    bool visualDebug = true; // Turn on only if you want to see API visualizer live
+    bool visualDebug = false; // Turn on only if you want to see API visualizer live
     if (visualDebug) 
         model.setUseVisualizer(true);
     SimTK::State& si = model.initSystem();
