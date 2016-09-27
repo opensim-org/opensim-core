@@ -34,7 +34,7 @@ ComponentPath::ComponentPath(const string& path) :
     Path(path, getSeparator(), getInvalidChars())
 {}
 
-ComponentPath::ComponentPath(std::vector<std::string>& pathVec, bool isAbsolute) :
+ComponentPath::ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute) :
     Path(pathVec, getSeparator(), getInvalidChars(), isAbsolute)
 {}
 

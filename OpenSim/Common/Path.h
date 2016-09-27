@@ -62,7 +62,7 @@ public:
     /// Construct Path from a vector of strings (pathVec), given separator
     /// character and a string of invalidChars. Performs a cleanPath() at 
     /// the end of construction.
-    Path(std::vector<std::string> pathVec,
+    Path(const std::vector<std::string> pathVec,
          const char separator,
          const std::string invalidChars,
          bool isAbsolute);

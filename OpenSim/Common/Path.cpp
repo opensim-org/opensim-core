@@ -64,7 +64,7 @@ Path::Path(const std::string path,
     cleanPath();
 }
 
-Path::Path(std::vector<std::string> pathVec,
+Path::Path(const std::vector<std::string> pathVec,
            const char separator,
            const std::string invalidChars,
            bool isAbsolute) :

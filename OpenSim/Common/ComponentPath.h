@@ -55,7 +55,7 @@ public:
 
     /// Constructor a ComponentPath from a vector that contains all subtree
     /// node names and a bool that indicates if the path is an absolute path.
-    ComponentPath(std::vector<std::string>& pathVec, bool isAbsolute);
+    ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute);
 
     // Operators
     bool operator==(const ComponentPath& other) const
