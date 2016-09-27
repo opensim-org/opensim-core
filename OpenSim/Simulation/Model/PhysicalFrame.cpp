@@ -246,8 +246,8 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 SimTK::Xml::Element modelNode = bodyNode;
                 do {
                     modelNode = modelNode.getParentElement();
-                    SimTK::String edump;
-                    modelNode.writeToString(edump);
+                    //SimTK::String edump;
+                    //modelNode.writeToString(edump);
                 } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
 
                 SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
@@ -341,7 +341,4 @@ void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& fram
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
     XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
-    SimTK::String fdump;
-    frameSetIter->writeToString(fdump);
-    std::cout << fdump << std::endl;
 }
