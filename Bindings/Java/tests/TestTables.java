@@ -66,6 +66,30 @@ class TestTables {
                col3.get(2) == 3;
         assert table.hasColumn(0);
         assert table.hasColumn(2);
+        // Edit rows of the table.
+        row0 = table.getRowAtIndex(0);
+        row0.set(0, 10); row0.set(1, 10); row0.set(2, 10); row0.set(3, 10);
+        assert table.getRowAtIndex(0).get(0) == 10 &&
+               table.getRowAtIndex(0).get(1) == 10 &&
+               table.getRowAtIndex(0).get(2) == 10 &&
+               table.getRowAtIndex(0).get(3) == 10;
+        row2 = table.getRow(0.3);
+        row2.set(0, 20); row2.set(1, 20); row2.set(2, 20); row2.set(3, 20);
+        assert table.getRowAtIndex(2).get(0) == 20 &&
+               table.getRowAtIndex(2).get(1) == 20 &&
+               table.getRowAtIndex(2).get(2) == 20 &&
+               table.getRowAtIndex(2).get(3) == 20;
+        // Edit columns of the table.
+        VectorView col0 = table.getDependentColumnAtIndex(0);
+        col0.set(0, 30); col0.set(1, 30); col0.set(2, 30);
+        assert table.getDependentColumnAtIndex(0).get(0) == 30 &&
+               table.getDependentColumnAtIndex(0).get(1) == 30 &&
+               table.getDependentColumnAtIndex(0).get(2) == 30;
+        col3 = table.getDependentColumn("3");
+        col3.set(0, 40); col3.set(1, 40); col3.set(2, 40);
+        assert table.getDependentColumn("3").get(0) == 40 &&
+               table.getDependentColumn("3").get(1) == 40 &&
+               table.getDependentColumn("3").get(2) == 40;
         // Access element with index out of bounds. Exception expected.
         try {
             double shouldThrow = row0.get(4);
@@ -138,6 +162,50 @@ class TestTables {
                col2.get(1).get(1) == 2 && col2.get(1).get(2) == 2 &&
                col2.get(2).get(0) == 3 && col2.get(2).get(1) == 3 &&
                col2.get(2).get(2) == 3;
+        // Edit rows of the table.
+        row0 = table.getRowAtIndex(0);
+        elem.set(0, 10); elem.set(1, 10); elem.set(2, 10);
+        row0.set(0, elem); row0.set(1, elem);
+        row0.set(2, elem); row0.set(3, elem);
+        Vec3 elem0 = table.getRowAtIndex(0).get(0);
+        Vec3 elem1 = table.getRowAtIndex(0).get(1);
+        Vec3 elem2 = table.getRowAtIndex(0).get(2);
+        Vec3 elem3 = table.getRowAtIndex(0).get(3);
+        assert elem0.get(0) == 10 && elem0.get(1) == 10 && elem0.get(2) == 10 &&
+               elem1.get(0) == 10 && elem1.get(1) == 10 && elem1.get(2) == 10 &&
+               elem2.get(0) == 10 && elem2.get(1) == 10 && elem2.get(2) == 10 &&
+               elem3.get(0) == 10 && elem3.get(1) == 10 && elem3.get(2) == 10;
+        row2 = table.getRow(0.3);
+        elem.set(0, 20); elem.set(1, 20); elem.set(2, 20);
+        row2.set(0, elem); row2.set(1, elem);
+        row2.set(2, elem); row2.set(3, elem);
+        elem0 = table.getRow(0.3).get(0);
+        elem1 = table.getRow(0.3).get(1);
+        elem2 = table.getRow(0.3).get(2);
+        elem3 = table.getRow(0.3).get(3);
+        assert elem0.get(0) == 20 && elem0.get(1) == 20 && elem0.get(2) == 20 &&
+               elem1.get(0) == 20 && elem1.get(1) == 20 && elem1.get(2) == 20 &&
+               elem2.get(0) == 20 && elem2.get(1) == 20 && elem2.get(2) == 20 &&
+               elem3.get(0) == 20 && elem3.get(1) == 20 && elem3.get(2) == 20;
+        // Edit columns of the table.
+        col1 = table.getDependentColumnAtIndex(1);
+        elem.set(0, 30); elem.set(1, 30); elem.set(2, 30);
+        col1.set(0, elem); col1.set(1, elem); col1.set(2, elem);
+        elem0 = table.getDependentColumnAtIndex(1).get(0);
+        elem1 = table.getDependentColumnAtIndex(1).get(1);
+        elem2 = table.getDependentColumnAtIndex(1).get(2);
+        assert elem0.get(0) == 30 && elem0.get(1) == 30 && elem0.get(2) == 30 &&
+               elem1.get(0) == 30 && elem1.get(1) == 30 && elem1.get(2) == 30 &&
+               elem2.get(0) == 30 && elem2.get(1) == 30 && elem2.get(2) == 30;
+        col2 = table.getDependentColumn("2");
+        elem.set(0, 40); elem.set(1, 40); elem.set(2, 40);
+        col2.set(0, elem); col2.set(1, elem); col2.set(2, elem);
+        elem0 = table.getDependentColumn("2").get(0);
+        elem1 = table.getDependentColumn("2").get(1);
+        elem2 = table.getDependentColumn("2").get(2);
+        assert elem0.get(0) == 40 && elem0.get(1) == 40 && elem0.get(2) == 40 &&
+               elem1.get(0) == 40 && elem1.get(1) == 40 && elem1.get(2) == 40 &&
+               elem2.get(0) == 40 && elem2.get(1) == 40 && elem2.get(2) == 40;
     }
 
     public static void test_TimeSeriesTable() {

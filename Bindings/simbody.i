@@ -49,7 +49,6 @@ namespace SimTK {
          $self->updElt(0, i) = value;
      }
  }
-%exception;
 
 %extend RowVector_<double> {
      RowVector_(const std::vector<double>& row) {
