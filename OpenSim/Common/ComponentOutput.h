@@ -54,7 +54,7 @@ public:
      * this channel is a single-value Output, then this is just the Output's 
      * name. */
     virtual std::string getName() const = 0;
-    /** This returns the full path name of the component to which this channel
+    /** This returns the absolute path name of the component to which this channel
      * belongs prepended to the channel's name. For example, this 
      * method might return something like "/model/metabolics/heat_rate:soleus_r".
      */
@@ -338,7 +338,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getFullPathName() + "/" + getName();
+        return getOutput().getOwner().getAbsolutePathName() + "/" + getName();
     }
 private:
     mutable T _result;

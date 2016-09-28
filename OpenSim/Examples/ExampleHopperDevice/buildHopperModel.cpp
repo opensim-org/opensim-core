@@ -29,7 +29,8 @@ prevents the end of the lower cylinder from passing through the floor. A vastus
 muscle wraps around a cylinder (patella) at the knee and a controller (brain)
 generates the muscle excitation signal required to produce a small hop when the
 mechanism is simulated. Two PhysicalOffsetFrames have been defined for attaching
-an assistive device (to help the hopper hop higher); their full path names are:
+an assistive device (to help the hopper hop higher); their absolute path names
+are:
 
     - on the thigh: "/Dennis/thigh/deviceAttachmentPoint"
     - on the shank: "/Dennis/shank/deviceAttachmentPoint"

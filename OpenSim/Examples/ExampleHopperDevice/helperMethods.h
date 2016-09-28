@@ -34,8 +34,8 @@ namespace OpenSim {
 
 
 //------------------------------------------------------------------------------
-// Display the class name and full path name for each of the given Component's
-// descendants (children, grandchildren, etc.).
+// Display the class name and basolute path name for each of the given 
+// Component's descendants (children, grandchildren, etc.).
 //
 // Examples:
 //   showSubcomponentInfo(myComponent);         //show all descendant Components
@@ -111,7 +111,7 @@ inline void showSubcomponentInfo(const Component& comp)
     if (colonPos != std::string::npos)
         className = className.substr(colonPos+1, className.length()-colonPos);
 
-    cout << "Class name and full path name for descendants of '"
+    cout << "Class name and absolute path name for descendants of '"
          << comp.getName() << "' that are of type " << className << ":\n"
          << endl;
 
@@ -129,7 +129,7 @@ inline void showSubcomponentInfo(const Component& comp)
     for (const C& thisComp : compList) {
         const std::string thisClass = thisComp.getConcreteClassName();
         for (unsigned i=0u; i < maxlen-thisClass.length(); ++i) { cout << " "; }
-        cout << "[" << thisClass << "]  " << thisComp.getFullPathName() << endl;
+        cout << "[" << thisClass << "]  " << thisComp.getAbsolutePathName() << endl;
     }
     cout << endl;
 }
@@ -140,7 +140,7 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
 
     // Do not display header for Components with no outputs.
     if (comp.getNumOutputs() > 0) {
-        const std::string msg = "Outputs from " + comp.getFullPathName();
+        const std::string msg = "Outputs from " + comp.getAbsolutePathName();
         cout << msg << endl;
         for (unsigned i=0u; i<msg.size(); ++i) { cout << "="; }
         cout << endl;

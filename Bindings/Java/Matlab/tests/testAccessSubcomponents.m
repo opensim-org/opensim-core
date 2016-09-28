@@ -53,7 +53,7 @@ assert(countMuscles > 0);
 % TODO end
 
 % Use ComponentList filter.
-muscleList.setFilter(ComponentFilterFullPathNameContainsString('BIC'));
+muscleList.setFilter(ComponentFilterAbsolutePathNameContainsString('BIC'));
 muscleIter = muscleList.begin();
 countBICMuscles = 0;
 BICnames = {'BIClong', 'BICshort'};
