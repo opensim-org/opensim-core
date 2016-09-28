@@ -645,14 +645,19 @@ const Component::StateVariable* Component::
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    // first assume that the state variable named belongs to this
-    // top level component
+    // Split the prefix from the varName (part of string past the last "/")
+    // In the case where no "/" is found, prefix = name.
     std::string::size_type back = name.rfind("/");
     std::string prefix = name.substr(0, back);
-    // this is a bug (or misuse?)! if the name does not have a "/", then
-    // name = prefix = varName. back+1 = 0 due to uint
+
+    // In the case where no "/" is found, this assigns varName = name.
+    // When "/" is not found, back = UINT_MAX. Then, back + 1 = 0.
+    // Subtracting by UINT_MAX is effectively adding by 1, so the next line
+    // should work in all cases except if name.length() = UINT_MAX.
     std::string varName = name.substr(back + 1, name.length() - back);
 
+    // first assume that the state variable named belongs to this
+    // top level component
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(varName);
 
