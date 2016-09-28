@@ -106,9 +106,39 @@ class TestDataTable(unittest.TestCase):
         assert (col3[0] == 40 and
                 col3[1] == 40 and
                 col3[2] == 40)
-        # Access eleemnt with index out of bounds. Exception expected
+        # Access eleemnt with index out of bounds. Exception expected.
         try:
             shouldThrow = row0[5]
+            assert false
+        except RuntimeError:
+            pass
+        try:
+            shouldThrow = col1[5]
+            assert false
+        except RuntimeError:
+            pass
+        # Access row with index out of bounds. Exception expected.
+        try:
+            shouldThrow = table.getRowAtIndex(5)
+            assert false
+        except RuntimeError:
+            pass
+        # Access row with timestamp that does not exist. Exception expected.
+        try:
+            shouldThrow = table.getRow(5.5)
+            assert false
+        except RuntimeError:
+            pass
+        # Access column with index out of bounds. Exception expected.
+        try:
+            shouldThrow = table.getDependentColumnAtIndex(5)
+            assert false
+        except RuntimeError:
+            pass
+        # Access column with label that does not exist. Exception expected.
+        try:
+            shouldThrow = table.getDependentColumn('not-found')
+            assert false
         except RuntimeError:
             pass
 
