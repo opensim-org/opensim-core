@@ -131,7 +131,7 @@ public:
      }
 }
 
-%extend SimTK::RowVectorBase<Vec3> {
+%extend SimTK::RowVectorBase<SimTK::Vec3> {
      Vec3 get(size_t i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
@@ -149,7 +149,7 @@ public:
      }
 }
 
-%extend SimTK::VectorBase<Vec3> {
+%extend SimTK::VectorBase<SimTK::Vec3> {
      Vec3 get(size_t i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
