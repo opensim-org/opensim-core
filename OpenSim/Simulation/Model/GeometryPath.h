@@ -150,8 +150,6 @@ public:
     void setPreScaleLength( const SimTK::State& s, double preScaleLength);
     const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-    const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) const;
-
     double getLengtheningSpeed(const SimTK::State& s) const;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
@@ -220,7 +218,6 @@ private:
        (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 
     void constructProperties();
-    void updateDisplayPath(const SimTK::State& s) const;
     void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
                            int aIndex, const PhysicalFrame& aBody);
