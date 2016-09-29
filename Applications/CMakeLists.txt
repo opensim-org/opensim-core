@@ -11,4 +11,4 @@ if(OPENSIM_BUILD_INDIVIDUAL_APPS)
     add_subdirectory(versionUpdate)
 endif()
 
-add_subdirectory(opensim)
+add_subdirectory(opensim-cmd)

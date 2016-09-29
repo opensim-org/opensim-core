@@ -6,9 +6,9 @@ OpenSimAddTests(
     LINKLIBS SimTKcommon
     )
 
-add_dependencies(testCommandLineInterface opensim-cli)
+add_dependencies(testCommandLineInterface opensim-cmd)
 
 # Set preprocessor definitions used by the test to access other build products.
 set_property(TARGET testCommandLineInterface APPEND PROPERTY
-    COMPILE_DEFINITIONS OSIM_CLI_PATH="$<TARGET_FILE:opensim-cli>"
+    COMPILE_DEFINITIONS OSIM_CLI_PATH="$<TARGET_FILE:opensim-cmd>"
                         OSIM_ACTUATORS_LIB_PATH="$<TARGET_FILE:osimActuators>")

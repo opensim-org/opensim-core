@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  opensim.cpp                                *
+ *                       OpenSim:  opensim-cmd.cpp                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,10 +21,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "opensim_run_tool.h"
-#include "opensim_print_xml.h"
-#include "opensim_info.h"
-#include "opensim_update_file.h"
+#include "opensim-cmd_run-tool.h"
+#include "opensim-cmd_print-xml.h"
+#include "opensim-cmd_info.h"
+#include "opensim-cmd_update-file.h"
 
 #include <iostream>
 
@@ -38,9 +38,9 @@ static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim [--library=<path>]... <command> [<args>...]
-  opensim -h | --help
-  opensim -V | --version
+  opensim-cmd [--library=<path>]... <command> [<args>...]
+  opensim-cmd -h | --help
+  opensim-cmd -V | --version
 
 Options:
   -L <path>, --library <path>  Load a plugin before executing the requested
@@ -60,9 +60,9 @@ Available commands:
   Pass -h or --help to any of these commands to learn how to use them.
 
 Examples:
-  opensim -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
-  opensim --library ../plugins/libosimMyPlugin.so print-xml cmc
-  opensim --library=libosimMyCustomForce.dylib info Model gravity
+  opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
+  opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml cmc
+  opensim-cmd --library=libosimMyCustomForce.dylib info Model gravity
 
 )";
 
@@ -117,8 +117,8 @@ int main(int argc, const char** argv) {
     const auto& command = args["<command>"].asString();
 
     if (commands.count(command) == 0) {
-        std::cout << "'" << command << "' is not an opensim command. "
-            << "See 'opensim --help'." << std::endl;
+        std::cout << "'" << command << "' is not an opensim-cmd command. "
+            << "See 'opensim-cmd --help'." << std::endl;
         return EXIT_FAILURE;
     }
 

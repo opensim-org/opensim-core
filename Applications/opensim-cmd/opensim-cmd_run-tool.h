@@ -1,7 +1,7 @@
-#ifndef OPENSIM_RUN_TOOL_H_
-#define OPENSIM_RUN_TOOL_H_
+#ifndef OPENSIM_CMD_RUN_TOOL_H_
+#define OPENSIM_CMD_RUN_TOOL_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  opensim_run_tool.h                         *
+ *                       OpenSim:  opensim-cmd_run-tool.h                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -34,8 +34,8 @@ static const char HELP_RUN_TOOL[] =
 R"(Run a tool (e.g., Inverse Kinematics) from an XML setup file.
 
 Usage:
-  opensim [options]... run-tool <setup-xml-file>
-  opensim run-tool -h | --help
+  opensim-cmd [options]... run-tool <setup-xml-file>
+  opensim-cmd run-tool -h | --help
 
 Options:
   -L <path>, --library <path>  Load a plugin.
@@ -54,13 +54,13 @@ Description:
 
   This command will also recognize tools from plugins.
 
-  Use `opensim print-xml` to generate a template <setup-xml-file>.
+  Use `opensim-cmd print-xml` to generate a template <setup-xml-file>.
 
 Examples:
-  opensim run-tool CMC_setup.xml
-  opensim -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
-  opensim --library ../plugins/libosimMyPlugin.so run-tool Forward_setup.xml
-  opensim --library=libosimMyCustomForce.dylib run-tool CMC_setup.xml
+  opensim-cmd run-tool CMC_setup.xml
+  opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
+  opensim-cmd --library ../plugins/libosimMyPlugin.so run-tool Forward_setup.xml
+  opensim-cmd --library=libosimMyCustomForce.dylib run-tool CMC_setup.xml
 )";
 
 int run_tool(int argc, const char** argv) {
@@ -102,4 +102,4 @@ int run_tool(int argc, const char** argv) {
     return EXIT_FAILURE;
 }
 
-#endif // OPENSIM_RUN_TOOL_H_
+#endif // OPENSIM_CMD_RUN_TOOL_H_

@@ -1,7 +1,7 @@
-#ifndef OPENSIM_UPDATE_FILE_H_
-#define OPENSIM_UPDATE_FILE_H_
+#ifndef OPENSIM_CMD_UPDATE_FILE_H_
+#define OPENSIM_CMD_UPDATE_FILE_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  opensim_update_file.h                      *
+ *                       OpenSim:  opensim-cmd_update-file.h                  *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -34,8 +34,8 @@ static const char HELP_UPDATE_FILE[] =
 R"(Update an .osim, .xml (e.g., setup) or .sto file to this version's format.
 
 Usage:
-  opensim [options]... update-file <input-file> <output-file>
-  opensim update-file -h | --help
+  opensim-cmd [options]... update-file <input-file> <output-file>
+  opensim-cmd update-file -h | --help
 
 Options:
   -L <path>, --library <path>  Load a plugin.
@@ -47,9 +47,9 @@ Description:
   number.
 
 Examples:
-  opensim update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
-  opensim update-file RRA_taskset_v3.3.xml RRA_taskset_updated.osim
-  opensim update-file data_v3.3.sto data_updated.sto
+  opensim-cmd update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
+  opensim-cmd update-file RRA_taskset_v3.3.xml RRA_taskset_updated.osim
+  opensim-cmd update-file data_v3.3.sto data_updated.sto
 )";
 
 int update_file(int argc, const char** argv) {
@@ -101,4 +101,4 @@ int update_file(int argc, const char** argv) {
 }
 
 
-#endif // OPENSIM_UPDATE_FILE_H_
+#endif // OPENSIM_CMD_UPDATE_FILE_H_

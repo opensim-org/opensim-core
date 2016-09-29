@@ -1,7 +1,7 @@
-#ifndef OPENSIM_PRINT_XML_H_
-#define OPENSIM_PRINT_XML_H_
+#ifndef OPENSIM_CMD_PRINT_XML_H_
+#define OPENSIM_CMD_PRINT_XML_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  opensim_print_xml.h                        *
+ *                       OpenSim:  opensim-cmd_print-xml.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -34,8 +34,8 @@ static const char HELP_PRINT_XML[] =
 R"(Print a template XML file for a Tool or class.
 
 Usage:
-  opensim [options]... print-xml <tool-or-class> [<output-file>]
-  opensim print-xml -h | --help
+  opensim-cmd [options]... print-xml <tool-or-class> [<output-file>]
+  opensim-cmd print-xml -h | --help
 
 Options:
   -L <path>, --library <path>  Load a plugin.
@@ -61,12 +61,12 @@ Description:
   file is written with the name `default_<class-name>.xml` to the current
   directory. 
 
-  You can run a Tool setup file with `opensim run-tool`.
+  You can run a Tool setup file with `opensim-cmd run-tool`.
 
 Examples:
-  opensim print-xml cmc
-  opensim print-xml Analyze
-  opensim print-xml Millard2012EquilibriumMuscle 
+  opensim-cmd print-xml cmc
+  opensim-cmd print-xml Analyze
+  opensim-cmd print-xml Millard2012EquilibriumMuscle 
 )";
 
 int print_xml(int argc, const char** argv) {
@@ -114,4 +114,4 @@ int print_xml(int argc, const char** argv) {
     return EXIT_SUCCESS;
 }
 
-#endif // OPENSIM_PRINT_XML_H_
+#endif // OPENSIM_CMD_PRINT_XML_H_

@@ -29,15 +29,15 @@ endif()
 # "opensim" would conflict with the "OpenSim" folder in the build directory (on
 # case-insensitive filesystems). However, the executable is renamed to
 # "opensim" when it is installed.
-OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim
-    SOURCES opensim_run_tool.h
-            opensim_print_xml.h
-            opensim_info.h
-            opensim_update_file.h
+OpenSimAddApplication(NAME opensim-cmd
+    SOURCES opensim-cmd_run-tool.h
+            opensim-cmd_print-xml.h
+            opensim-cmd_info.h
+            opensim-cmd_update-file.h
             parse_arguments.h
     )
 
-target_link_libraries(opensim-cli docopt)
+target_link_libraries(opensim-cmd docopt)
 
 if(BUILD_TESTING)
     subdirs(test)

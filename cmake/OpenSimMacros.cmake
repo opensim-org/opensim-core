@@ -225,21 +225,17 @@ endfunction()
 # Create an application/executable. To be used in the Appliations directory.
 # NAME: Name of the application. Must also be the name of the source file
 #   containing main() (without the .cpp extension).
-# INSTALL_AS (optional): Name for the executable file when it is installed. On
-#   Windows, we append ".exe" to the provided name. By default, the application
-#   is installed as NAME.
 # SOURCES: Additional header/source files to compile into this target. 
 #
 # Here's an example:
-#   OpenSimAddApplication(NAME opensim-cli INSTALL_AS opensim
-#                         SOURCES opensim_run_tool.h)
+#   OpenSimAddApplication(NAME opensim-cmd SOURCES opensim-cmd_run-tool.h)
 function(OpenSimAddApplication)
 
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
     set(options)
-    set(oneValueArgs NAME INSTALL_AS)
+    set(oneValueArgs NAME)
     set(multiValueArgs SOURCES)
     cmake_parse_arguments(
         OSIMADDAPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -253,19 +249,7 @@ function(OpenSimAddApplication)
         FOLDER "Applications")
 
     # Install.
-    if(OSIMADDAPP_INSTALL_AS)
-        if(WIN32)
-            set(OSIMADDAPP_INSTALL_AS "${OSIMADDAPP_INSTALL_AS}.exe")
-        endif()
-        # We prefer to use generator expressions, but these are only
-        # available in more recent versions of CMake.
-        set(target_path "$<TARGET_FILE:${OSIMADDAPP_NAME}>")
-        # install(TARGETS) does not have a RENAME; must use install(PROGRAMS).
-        install(PROGRAMS "${target_path}" DESTINATION ${CMAKE_INSTALL_BINDIR}
-                                          RENAME ${OSIMADDAPP_INSTALL_AS})
-    else()
-        install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-    endif()
+    install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # RPATH (so that the executable finds libraries without using env. vars).
     if(${OPENSIM_USE_INSTALL_RPATH})
