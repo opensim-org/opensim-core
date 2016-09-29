@@ -57,6 +57,17 @@ public:
         \code{.cpp}
         const auto& rx = myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myFreeJoint.getCoordinate(opensim.FreeJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rx = myFreeJoint.getCoordinate(FreeJoint.Coord.Rotation1X);
+        \endcode
     */
     enum class Coord: unsigned {
         Rotation1X,

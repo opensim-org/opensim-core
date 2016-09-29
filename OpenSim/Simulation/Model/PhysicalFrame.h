@@ -167,9 +167,7 @@ protected:
     underlying MultibodySystem. The PhysicalFrame's MobilizedBodyIndex must be
     set by the end of PhysicalFrame::addToSystem()
         */
-    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        const_cast<Self*>(this)->_mbIndex = mbix; 
-    }
+    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const;
 
     /** Extend how PhysicalFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override {

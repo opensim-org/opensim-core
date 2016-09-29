@@ -27,7 +27,7 @@
 
 using namespace OpenSim;
 
-bool ComponentFilterFullPathNameContainsString::isMatch(const Component& comp)
+bool ComponentFilterAbsolutePathNameContainsString::isMatch(const Component& comp)
         const {
-    return comp.getFullPathName().find(_substring) != std::string::npos;
+    return comp.getAbsolutePathName().find(_substring) != std::string::npos;
 }
