@@ -5,6 +5,18 @@
 # docopt_DIR.
 find_package(docopt 0.6.1
              HINTS "${OPENSIM_DEPENDENCIES_DIR}/docopt/lib/cmake/docopt")
+if(WIN32)
+    # Back out the directory containing docopt.dll
+    # The docopt-config.cmake file does not define a variable containing
+    # the docopt installation directory.
+    # The location of docopt-config.cmake within the docopt installation is
+    # lib/cmake/docopt.
+    # docopt_DIR is the path to the docopt-config.cmake file.
+    # So we remove the last two directories from docopt_DIR.
+    get_filename_component(docopt_lib_dir ${docopt_DIR} PATH)
+    get_filename_component(docopt_lib_dir ${docopt_lib_dir} PATH)
+    CopyDependencyDLLsForWin(docopt ${docopt_lib_dir})
+endif()
 
 if(NOT docopt_FOUND)
     message(FATAL_ERROR "Dependency 'docopt' not found, but is needed for \
