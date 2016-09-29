@@ -243,7 +243,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
             if (localXformIter != displayGeomIter->element_end()) {
                 localXform = localXformIter->getValueAs<SimTK::Vec6>();
             }
-            if (localXform.norm() > SimTK::Eps) {
+            if (localXform.norm() > SimTK::Eps || outerTransform.norm() > SimTK::Eps) {
                 // Create a Frame
                 attachToThisFrame = false;
                 std::string frameName = bodyName + "_geom_frame_" + to_string(counter);
@@ -269,7 +269,10 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                     frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
                     frameSetObjectsIter = frameSetNode.element_begin("objects");
                 }
-                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
+                // Following line should compose the two transforms localXform, outerTransform
+                // Keeping in mind scale factors. For now just adding the two Vec6 to test since 
+                // in practice one of the two is always 0 and one set of Scale factors is 1.
+                createFrameForXform(frameSetObjectsIter, frameName, localXform+ outerTransform, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
                 SimTK::Xml::element_iterator parnetFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
