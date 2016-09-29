@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                             OpenSim: ComponentList.cpp                     *
+ *                       OpenSim: ComponentPath.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,8 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Authors: Ayman Habib                                                       *
- * Contributers : Chris Dembia                                                *
+ * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,12 +21,53 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ComponentList.h"
-#include "Component.h"
+#include "ComponentPath.h"
 
 using namespace OpenSim;
+using namespace std;
 
-bool ComponentFilterAbsolutePathNameContainsString::isMatch(const Component& comp)
-        const {
-    return comp.getAbsolutePathName().find(_substring) != std::string::npos;
+// Set static member variables.
+const char ComponentPath::separator = '/';
+const std::string ComponentPath::invalidChars = "\\/*+";
+
+ComponentPath::ComponentPath(const string& path) :
+    Path(path, getSeparator(), getInvalidChars())
+{}
+
+ComponentPath::ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute) :
+    Path(pathVec, getSeparator(), getInvalidChars(), isAbsolute)
+{}
+
+ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) const
+{
+    vector<string> absPathVec = formAbsolutePathVec(otherPath);
+    return ComponentPath(absPathVec, true);
+
+}
+
+ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const
+{
+    vector<string> relPathVec = formRelativePathVec(otherPath);
+    return ComponentPath(relPathVec, false);
+}
+
+ComponentPath ComponentPath::getParentPath() const
+{
+    vector<string> parentPathVec = getParentPathVec();
+    return ComponentPath(parentPathVec, isAbsolute());
+}
+
+std::string ComponentPath::getParentPathString() const
+{
+    return getParentPath().toString();
+}
+
+std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const
+{
+    return getPathElement(index);
+}
+
+std::string ComponentPath::getComponentName() const
+{
+    return getSubcomponentNameAtLevel(getNumPathLevels() - 1);
 }

@@ -48,6 +48,7 @@
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
+#include "ComponentPath.h"
 #include <functional>
 
 #include "simbody/internal/MultibodySystem.h"
@@ -549,12 +550,13 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete pathname for this Component to its ancestral Component,
-     *  which is the root of the tree to which this Component belongs.
-     * For example: a Coordinate Components would have a full path name like:
-     *  `/arm26/elbow_r/flexion`. Accessing a Component by its fullPathName from
-     * root is guaranteed to be unique. */
-    std::string getFullPathName() const;
+    /** Get the complete (absolute) pathname for this Component to its 
+     * ancestral Component, which is the root of the tree to which this 
+     * Component belongs.
+     * For example: a Coordinate Component would have an absolute path name 
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
+     * absolutePathName from root is guaranteed to be unique. */
+    std::string getAbsolutePathName() const;
 
 
     /** Get the relative pathname of this Component with respect to another one */
@@ -666,12 +668,12 @@ public:
     }
 
 
-    /** Print a list to the console of all components whose full path name
-     * contains the given string. You might use this if (a) you know the name of
-     * a component in your model but don't know its full path, (b) if you want
-     * to find all components with a given name, or (c) to get a list of all
-     * components on the right leg of a model (if all components on the right
-     * side have "_r" in their name).
+    /** Print a list to the console of all components whose absolute path name
+     * contains the given string. You might use this if (a) you know the name 
+     * of a component in your model but don't know its absolute path, (b) if 
+     * you want to find all components with a given name, or (c) to get a list
+     * of all components on the right leg of a model (if all components on the
+     * right side have "_r" in their name).
      *
      * A function call like:
      * @code{.cpp}
@@ -1975,7 +1977,7 @@ protected:
         of StateVariables by name. 
         
         NOTE: If the component name or the state variable name is ambiguous, 
-         an exception is thrown. To disambiguate use the full name provided
+         an exception is thrown. To disambiguate use the absolute path provided
          by owning component(s). */
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
@@ -1988,19 +1990,21 @@ protected:
             throw Exception(msg);
         }
 
-        std::vector<const C*> foundCs;
+        ComponentPath thisAbsPath(getAbsolutePathName());
+        ComponentPath pathToFind(name);
 
         const C* found = NULL;
-        std::string::size_type front = name.rfind("/");
-        size_t len = name.length();
-        std::string subname = front< len ? name.substr(front + 1, len - front) : name;
-
-        if (this->getFullPathName() == name) {
+        if (thisAbsPath == pathToFind) {
             found = dynamic_cast<const C*>(this);
             if (found)
                 return found;
         }
-        else if (this->getName() == subname) {
+
+        std::vector<const C*> foundCs;
+
+        std::string subname = pathToFind.getComponentName();
+        std::string thisName = this->getName();
+        if (thisName == subname) {
             if ( (found = dynamic_cast<const C*>(this)) )
                 foundCs.push_back(found);
         }
@@ -2008,25 +2012,27 @@ protected:
         ComponentList<const C> compsList = this->template getComponentList<C>();
         
         for (const C& comp : compsList) {
-            std::string compFullPathName = comp.getFullPathName();
-            if (compFullPathName == subname) {
+            // if a child of this Component, one should not need
+            // to specify this Component's absolute path name
+            ComponentPath compAbsPath(comp.getAbsolutePathName());
+            ComponentPath thisAbsPathPlusSubname(getAbsolutePathName());
+            thisAbsPathPlusSubname.pushBack(subname);
+            if (compAbsPath == thisAbsPathPlusSubname) {
                 foundCs.push_back(&comp);
                 break;
-            } // if a child of this Component, one should not need
-              // to specify this Component's full path name 
-            else if (compFullPathName == (getFullPathName() + "/" + subname)) {
-                foundCs.push_back(&comp);
-                break;
-            } // otherwise, we just have a type and name match
-              // which we may need to support for compatibility with older models
-              // where only names were used (not path or type)
-              // TODO replace with an exception -aseth
-            else if (comp.getName() == subname) {
+            } 
+
+            // otherwise, we just have a type and name match
+            // which we may need to support for compatibility with older models
+            // where only names were used (not path or type)
+            // TODO replace with an exception -aseth
+            std::string compName = comp.getName();
+            if (compName == subname) {
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
                 if (comp.getDebugLevel() > 0) {
-                    std::string details = msg + " Found '" + compFullPathName + 
+                    std::string details = msg + " Found '" + compAbsPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " + 
                         comp.getConcreteClassName() + ", but it "
                         "is not on specified path.\n";
@@ -2090,40 +2096,44 @@ protected:
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
     {
-        std::string::size_type front = 0;
-        std::string::size_type back = path.rfind('/');
-        std::string dir = "";
-        std::string currentPath = "";
         const Component* current = this;
+        ComponentPath pathToFind(path);
+        std::string pathNameToFind = pathToFind.getComponentName();
+        size_t numPathLevels = pathToFind.getNumPathLevels();
+        size_t ind = 0;
+        ComponentPath currentSubpath;
+        ComponentPath upPath("..");
+        ComponentPath curCompPath(".");
 
-        const std::string compName = back < std::string::npos ? path.substr(back+1) : path;
-        back = 0;
+        while (ind < numPathLevels && current) {
+            currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
+            ComponentPath currentPathName(current->getName());
 
-        while (back < std::string::npos && current) {
-            back = path.find('/', front);
-            dir = path.substr(front, back - front);
-
-            if (dir == ".." && current->hasParent())
+            if (currentSubpath == upPath && current->hasParent())
                 current = &current->getParent();
-            // if current in dir keep drilling down the path 
-            else if (current->getName() == dir) {
-                front = back + 1;
+            // if currentPathName matches currentSubpath traversing the path
+            else if (currentPathName == currentSubpath) {
+                ind++;
                 continue;
             }
-            // if dir is empty we are at root or have a nameless comp
-            // if dir is '.' we are in the right parent, and loop again
-            // so that dir is the name of the component we want.
-            else if (!dir.empty() && dir != ".") {
+            // if currentSubpath is empty we are at root or have a nameless 
+            // comp
+            // if currentSubpath is '.' we are in the right parent, and loop
+            // again so that currentSubpath is the name of the component we want
+            else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
-                currentPath = current->getFullPathName();
+                ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
+                currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
                 for (const Component& comp : compsList) {
-                    // Match for the dir
-                    if (comp.getFullPathName() == currentPath + "/" + dir) {
-                        // In the right dir and has matching name
+                    ComponentPath compAbsPath(comp.getAbsolutePathName());
+                    std::string compName = comp.getName();
+                    // Check if we're in the right component
+                    if (compAbsPath == currentAbsPathPlusSubpath) {
+                        // In the right component and has matching name
                         // update current to this comp
                         current = &comp;
-                        if (comp.getName() == compName) {
+                        if (compName == pathNameToFind) {
                             // now verify type
                             const C* compC = dynamic_cast<const C*>(&comp);
                             if (compC)
@@ -2134,14 +2144,14 @@ protected:
                         // get out of this list and start going down the new current
                         break;
                     }
-                    // No match in this dir
+                    // No match in this component
                     current = nullptr;
                 }
             }
-            front = back + 1;
+            ind++;
         }
 
-        if (dir == compName)
+        if (currentSubpath == pathNameToFind)
             return dynamic_cast<const C*>(current);
 
         return nullptr;
@@ -2742,26 +2752,26 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
  
-    const std::string& path = getConnecteeName();
+    ComponentPath path(getConnecteeName());
     const C* comp = nullptr;
 
     try {
-        if (path[0] == '/') { //absolute path name
-            comp =  &root.template getComponent<C>(path);
+        if (path.isAbsolute()) {
+            comp =  &root.template getComponent<C>(path.toString());
         }
-        else { // relative path name
-            comp =  &getOwner().template getComponent<C>(path);
+        else {
+            comp =  &getOwner().template getComponent<C>(path.toString());
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
-        comp =  root.template findComponent<C>(path);
+        comp =  root.template findComponent<C>(path.toString());
     }
     if (comp)
         connect(*comp);
     else
         OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-            path,
+            path.toString(),
             C::getClassName(),
             getName() );
 }
@@ -2784,26 +2794,22 @@ void Input<T>::connect(const AbstractOutput& output,
             _connectees.push_back(
                 SimTK::ReferencePtr<const Channel>(&chan.second) );
 
-            //update the connectee_name as /<OwnerPath>/<Output:Channel> name
-            std::string pathName =
-                output.getOwner().getRelativePathName(getOwner());
-            if (pathName.rfind("/") == (pathName.length()-1)) { 
-                pathName = pathName + chan.second.getName();
-            }
-            else {
-                pathName = pathName + "/" + chan.second.getName();
-            }
+            // Update the connectee name as
+            // <RelOwnerPath>/<Output><(annotation)>
+            ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
+            std::string outputName = chan.second.getName();
             if (!annotation.empty() && annotation != chan.second.getChannelName()) {
-                pathName += "(" + annotation + ")";
+                outputName += "(" + annotation + ")";
             }
+            path.pushBack(outputName);
 
             // set the connectee name so that the connection can be
             // serialized
             int numPreexistingConnectees = getNumConnectees();
             if (ix < numPreexistingConnectees)
-                setConnecteeName(pathName, ix);
+                setConnecteeName(path.toString(), ix);
             else
-                appendConnecteeName(pathName);
+                appendConnecteeName(path.toString());
 
             // Use the same annotation for each channel.
             std::string annoToStore = annotation.empty() ?
@@ -2836,26 +2842,20 @@ void Input<T>::connect(const AbstractChannel& channel,
         _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
         
         // Update the connectee name as
-        // /<OwnerPath>/<Output>:<Channel><(annotation)>
-        const auto& outputsOwner = chanT->getOutput().getOwner();
-        std::string pathName = outputsOwner.getRelativePathName(getOwner());
-
-        if (pathName.rfind("/") == (pathName.length() - 1)) {
-            pathName = pathName + chanT->getName();
-        }
-        else {
-            pathName = pathName + "/" + chanT->getName();
-        }
+        // <RelOwnerPath>/<Channel><(annotation)>
+        ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
+        std::string channelName = chanT->getName();
         if (!annotation.empty() && annotation != chanT->getChannelName()) {
-            pathName += "(" + annotation + ")";
+            channelName += "(" + annotation + ")";
         }
+        path.pushBack(channelName);
         
         // Set the connectee name so the connection can be serialized.
         int numPreexistingConnectees = getNumConnectees();
         if (ix < numPreexistingConnectees)
-            setConnecteeName(pathName, ix);
+            setConnecteeName(path.toString(), ix);
         else
-            appendConnecteeName(pathName);
+            appendConnecteeName(path.toString());
         
         // Annotation.
         std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
@@ -2873,31 +2873,31 @@ void Input<T>::connect(const AbstractChannel& channel,
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPath, channelName, annotation;
+    std::string outputPathStr, channelName, annotation;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix), outputPath, channelName,
+        parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
                            annotation);
-        std::string::size_type back = outputPath.rfind("/");
-        std::string componentPath = outputPath.substr(0, back);
-        std::string outputName = outputPath.substr(back + 1);
+        ComponentPath outputPath(outputPathStr);
+        std::string componentPathStr = outputPath.getParentPathString();
+        std::string outputName = outputPath.getComponentName();
         try {
             const AbstractOutput* output = nullptr;
 
-            if (outputPath[0] == '/') { //absolute path name
-                if (componentPath.empty()) {
-                    output = &root.getOutput(outputPath);
+            if (outputPath.isAbsolute()) { //absolute path name
+                if (componentPathStr.empty()) {
+                    output = &root.getOutput(outputPath.toString());
                 }
                 else {
-                    output = &root.getComponent(componentPath).getOutput(outputName);
+                    output = &root.getComponent(componentPathStr).getOutput(outputName);
                 }
             }
 
             else { // relative path name
-                if (componentPath.empty()) {
-                    output = &getOwner().getOutput(outputPath);
+                if (componentPathStr.empty()) {
+                    output = &getOwner().getOutput(outputPath.toString());
                 }
                 else {
-                    output = &getOwner().getComponent(componentPath).getOutput(outputName);
+                    output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
                 }
                 
             }
@@ -2908,7 +2908,7 @@ void Input<T>::findAndConnect(const Component& root) {
             std::stringstream msg;
             msg << getConcreteClassName() << " '" << getName();
             msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
-            msg << outputPath << "'";
+            msg << outputPathStr << "'";
             if (!channelName.empty()) {
                 msg << " and channel '" << channelName << "'";
             }
