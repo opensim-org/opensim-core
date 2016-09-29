@@ -28,6 +28,8 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
+    5. PhysicalOffsetFrame on PhysicalOffsetFrame in non-Multibody tree order
+    6. Filtering of Frames by their type
       
      Add tests here as Frames are added to OpenSim
 
@@ -44,6 +46,7 @@ void testBody();
 void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
 void testFilterByFrameType();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
@@ -60,7 +63,7 @@ public:
 int main()
 {
     SimTK::Array_<std::string> failures;
-
+/*
     try { testBody(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBody");
@@ -82,6 +85,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() << endl;
         failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
+    }
+*/
+    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder");
     }
 
     try { testFilterByFrameType(); }
@@ -330,6 +339,45 @@ void testPhysicalOffsetFrameOnBodySerialize()
     ASSERT(rod1.getMobilizedBodyIndex() == myExtraFrame.getMobilizedBodyIndex(),
         __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
+}
+
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
+{
+    Model pendulum("double_pendulum.osim");
+
+    SimTK::Transform X_RO;
+    X_RO.setP(SimTK::Vec3(0.1, 0.2, 0.3));
+    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::ZAxis);
+
+    // create PhysicalOffsetFrames Distal and Proximal to identify their
+    // relative location to w.r.t a Body in the Model.
+    PhysicalOffsetFrame* offsetFrameDistal = new PhysicalOffsetFrame();
+    offsetFrameDistal->setName("offsetFrameDistal");
+    offsetFrameDistal->setOffsetTransform(X_RO);
+    pendulum.addComponent(offsetFrameDistal);
+
+    PhysicalOffsetFrame* offsetFrameProximal = new PhysicalOffsetFrame();
+    offsetFrameProximal->setName("offsetFrameProximal");
+    offsetFrameProximal->setOffsetTransform(~X_RO);
+    pendulum.addComponent(offsetFrameProximal);
+
+    // Now attach them such that offsetFrameProximal is attached to rod2 of
+    // the pendulum and offsetFrameDistal is attached to offsetFrameProximal
+    const Body& rod2 = pendulum.getComponent<Body>("rod2");
+    offsetFrameProximal->setParentFrame(rod2);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    cout << "In testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder prior to "
+        << " initSystem()" << endl;
+    SimTK::State& s = pendulum.initSystem();
+
+    // make sure that this offsetFrameDistal knows that it is rigidly fixed 
+    // to the same MobilizedBody as the rod2 Body
+    ASSERT(rod2.getMobilizedBodyIndex() == 
+                offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
+        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
+        "incorrect MobilizedBodyIndex");
+
 }
 
 void testFilterByFrameType()
