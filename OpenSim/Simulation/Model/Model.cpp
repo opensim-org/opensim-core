@@ -733,11 +733,29 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Now include all remaining Components beginning with PhysicalFrames
+    // Now include all remaining Components beginning with PhysicalOffsetFrames
     // since Constraints, Forces and other components can only be applied to
-    // PhyicalFrames.
+    // PhyicalFrames, which include PhysicalOffsetFrames.
+    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
+    // be added to the System first. So for each PhysicalOffsetFrame locate its
+    // parent and verify its presence in the _orderedList otherwise add it first.
     auto poFrames = getComponentList<PhysicalOffsetFrame>();
     for (const auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are handled by the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and be attched
+        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        const PhysicalOffsetFrame* parentPof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
+        std::vector<const PhysicalOffsetFrame*> parentPofs;
+        while (parentPof) {
+            parentPofs.push_back(parentPof);
+            parentPof =
+                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+        }
+        while (parentPofs.size()) {
+            setNextSubcomponentInSystem(*parentPofs.back());
+            parentPofs.pop_back();
+        }
         setNextSubcomponentInSystem(pof);
     }
 
