@@ -208,7 +208,8 @@ void testNoCommand() {
     // Unrecognized command.
     // =====================
     testCommand("bleepbloop", EXIT_FAILURE, 
-            "'bleepbloop' is not an opensim command. See 'opensim --help'.\n");
+            "'bleepbloop' is not an opensim-cmd command. "
+            "See 'opensim-cmd --help'.\n");
 }
 
 // http://stackoverflow.com/questions/5343190/how-do-i-replace-all-instances-of-a-string-with-another-string
