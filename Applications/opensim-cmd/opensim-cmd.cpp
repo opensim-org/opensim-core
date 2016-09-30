@@ -44,10 +44,11 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin before executing the requested
-                 command. The <path> to the library can be absolute or relative
-                 to the current directory. Make sure to include the library's 
-                 extension (e.g., .dll, .so, .dylib). You can load multiple
-                 plugins by repeating this option.
+                 command. The <path> to the library can be absolute, or
+                 relative to the current directory. Make sure to include the
+                 library's extension (e.g., .dll, .so, .dylib). If <path>
+                 contains spaces, surround <path> in quotes. You can load
+                 multiple plugins by repeating this option.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 

@@ -242,8 +242,11 @@ void testLoadPluginLibraries(const std::string& subcommand) {
 
     // Load an actual library, including the file extension.
     // =====================================================
+    // OSIM_ACTUATORS_LIB_PATH is a preprocessor definition that is defined
+    // when compiling this executable.
     std::string lib = MAKE_STRING(OSIM_ACTUATORS_LIB_PATH);
 
+    // Get rid of the quotes surrounding `lib`.
     std::string expectLib = lib.substr(1, lib.size() - 2);
     #ifdef _WIN32
         // When the library name gets printed back to us, the 
