@@ -338,7 +338,7 @@ void testPrintXML() {
     // Successful input.
     // =================
     testCommand("print-xml cmc", EXIT_SUCCESS,
-            "Printing 'default_CMCTool.xml'.\n");
+            "Printing 'default_Setup_CMCTool.xml'.\n");
     testCommand("print-xml Millard2012EquilibriumMuscle", EXIT_SUCCESS,
             "Printing 'default_Millard2012EquilibriumMuscle.xml'.\n");
     testCommand("print-xml cmc default_cmc_setup.xml", EXIT_SUCCESS,
@@ -347,9 +347,9 @@ void testPrintXML() {
     // Tool names are case-insensitive.
     // ================================
     testCommand("print-xml CmC", EXIT_SUCCESS,
-            "Printing 'default_CMCTool.xml'.\n");
+            "Printing 'default_Setup_CMCTool.xml'.\n");
     testCommand("print-xml FORwarD", EXIT_SUCCESS,
-            "Printing 'default_ForwardTool.xml'.\n");
+            "Printing 'default_Setup_ForwardTool.xml'.\n");
     testCommand("print-xml Analyze default_analyze_setup.xml", EXIT_SUCCESS,
             "Printing 'default_analyze_setup.xml'.\n");
 

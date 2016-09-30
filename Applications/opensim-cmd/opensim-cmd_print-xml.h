@@ -57,9 +57,10 @@ Description:
          analyze  Obtain muscle-related quantites, joint loads; 
                   perform Static Optimization; etc.
 
-  The template file is written to <output-file> if provided; otherwise, the
-  file is written with the name `default_<class-name>.xml` to the current
-  directory. 
+  The template file is written to <output-file> if provided. Otherwise, the
+  file is written to the current directory with the name
+  `default_Setup_<tool-class-name>.xml` when given a Tool name, or 
+  `default_<class-name>.xml` otherwise.
 
   You can run a Tool setup file with `opensim-cmd run-tool`.
 
@@ -84,6 +85,7 @@ int print_xml(int argc, const char** argv) {
     std::string toolOrClass = args["<tool-or-class>"].asString();
     std::string toolLowerCase = SimTK::String::toLower(toolOrClass);
     std::string className;
+    bool isBuiltInTool = true;
     if      (toolLowerCase == "scale")   className = "ScaleTool";
     else if (toolLowerCase == "ik")      className = "InverseKinematicsTool";
     else if (toolLowerCase == "id")      className = "InverseDynamicsTool";
@@ -91,12 +93,20 @@ int print_xml(int argc, const char** argv) {
     else if (toolLowerCase == "cmc")     className = "CMCTool";
     else if (toolLowerCase == "forward") className = "ForwardTool";
     else if (toolLowerCase == "analyze") className = "AnalyzeTool";
-    else                                 className = toolOrClass;
+    else {
+        className = toolOrClass;
+        isBuiltInTool = false;
+    }
 
     // Output file.
     std::string outputFile;
-    if (args["<output-file>"]) outputFile = args["<output-file>"].asString();
-    else                       outputFile = "default_" + className + ".xml";
+    if (args["<output-file>"]) {
+        outputFile = args["<output-file>"].asString();
+    } else {
+        outputFile = "default_";
+        if (isBuiltInTool) outputFile += "Setup_";
+        outputFile += className + ".xml";
+    }
 
 
     // Print the XML file.
