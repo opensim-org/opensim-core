@@ -82,16 +82,22 @@ int run_tool(int argc, const char** argv) {
     // Detect and run the tool.
     if (auto* tool = dynamic_cast<AbstractTool*>(obj)) {
         // AbstractTool.
+        std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
+                  << std::endl;
         const bool success = tool->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
     } else if (auto* tool = dynamic_cast<Tool*>(obj)) {
         // Tool.
+        std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
+                  << std::endl;
         const bool success = tool->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
     } else if (auto* scale = dynamic_cast<ScaleTool*>(obj)) {
         // ScaleTool.
+        std::cout << "Preparing to run " << scale->getConcreteClassName() << "."
+                  << std::endl;
         const bool success = scale->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;

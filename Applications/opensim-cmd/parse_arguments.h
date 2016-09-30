@@ -47,13 +47,12 @@ parse_arguments(std::string const& doc,
         std::cout << version << std::endl;
         std::exit(0);
     } catch (DocoptLanguageError const& error) {
-        std::cerr << "Docopt usage string could not be parsed" << std::endl;
+        std::cerr << "Docopt usage string could not be parsed." << std::endl;
         std::cerr << error.what() << std::endl;
         std::exit(-1);
     } catch (DocoptArgumentError const& error) {
-        std::cerr << error.what();
-        std::cout << std::endl;
-        std::cout << doc << std::endl;
+        std::cerr << error.what() << "." << std::endl;
+        std::cerr << "Use --help to get more information." << std::endl;
         std::exit(-1);
     }
 }
