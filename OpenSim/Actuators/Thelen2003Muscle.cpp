@@ -155,7 +155,7 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_Af(0.25); 
     constructProperty_Flen(1.4);    //was 1.8, 
     constructProperty_fv_linear_extrap_threshold(0.95);
-    //acos(0.05) = 84.26 degrees
+    //acos(0.1) = 84.26 degrees
     constructProperty_maximum_pennation_angle(acos(0.1));
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.050);
