@@ -64,8 +64,8 @@ The dimensions are:
 
 
 <B>Nomenclature </B> <BR>
- Symbols with the a \f$ \bar{bar} \f$ indicate that the quantity has been normalized by a constant parameter.  For forces, this will all ways be \f$F_{m,opt}\f$.  For velocities and lengths this will be \f$l_{m_opt}\f$ (velocities will therefore have units of "optimal lengths per second")
-
+ - Symbols with the a \f$ \bar{bar} \f$ indicate that the quantity has been normalized by a constant parameter.  For forces, this will all ways be \f$F_{m,opt}\f$.  For velocities and lengths this will be \f$l_{m_opt}\f$ (velocities will therefore have units of "optimal lengths per second")
+ - Muscle velocities sign convention is the positive is lengthening (eccentric)
 <table>
 <tr>
 <td colspan=3>
@@ -73,7 +73,7 @@ The dimensions are:
 |Symbol | Description | Units |
 |--------|---------|----------|
 |a       | Activation (State Variable)      | unitless        |
-|\f$b_{de}\f$       | Damping, % of \f$F_{m,opt}\f$ per 1 optimal length per second   (Parameter: fiber_damping)  | N/m/s  |
+|\f$b_{de}\f$       | Damping, % of \f$F_{m,opt}\f$ per 1 optimal length per second   (Parameter: fiber_damping)  | unitless  |
 |\f$A_{hill} \f$       | Hill Constant (Parameter: force_velocity_hill_constant)| unitless   |
 |\f$ F_{se} \f$| Force in the Series Elastic Element (Calculated Value) | N |
 |\f$ F_{ce} \f$| Force in the Contractile Element  (Calculated Value) | N |
@@ -86,13 +86,14 @@ The dimensions are:
 |\f$ \lambda \f$| Activation-Velocity Parameter (Derived Parameter)| unitless |
 |\f$ \lambda_{m} \f$|Activation-Velocity Parameter Slope (Parameter: activation_velocity_slope)| unitless |
 |\f$ \lambda_{o} \f$|Lambda value at zero Activation (Parameter: activation_velocity_intercept)| unitless |
- |\f$ \phi_{ref} \f$|Pennation at optimal fiber length (Parameter: pennation_at_optimal_fiber_length) |rad|
+|\f$ \phi_{ref} \f$|Pennation at optimal fiber length (Parameter: pennation_at_optimal_fiber_length) |rad|
 |\f$ \bar{l_{m,slack}} \f$ | length of muscle when parallel elastic element is slack (Parameter: fiber_slack_length_norm)| unitless |
 |\f$ l_{t,slack} \f$ | Slack Length of the tendon (Parameter: tendon_slack_length )| m |
 |\f$ \tau_{a} \f$| Activation Time Constant (Parameter: activation_time_constant)| 1/s |
 |\f$ \tau_{d} \f$ | Deactivation Time Constant (Parameter: deactivation_time_constant) |1/s|
 |\f$ u_{max} \f$ | Strain in tendon at \f$F_{m,opt}\f$  (Parameter: tendon_strain_at_max_iso_force) | m/m |
-|\f$ \bar{v_{max}} \f$ | Normalized maximum lengthining (concentric) velocity (Parameter: force_velocity_max_lengthening_force_norm) | unitless|
+|\f$ \bar{v_{max}} \f$ | Normalized maximum velocity (Parameter: force_velocity_max_lengthening_force_norm) | unitless|
+|\f$ \bar{f_{v,max}} \f$ | Normalized maximal lengthening (eccentric) force (Parameter: force_velocity_max_lengthening_force_norm) | unitless |
 |w | force-length width (Parameter: active_force_length_curve_width); This is the kShapeActive parameter in Thelen2003Muscle| unitless |
  </tr>
 </table>
@@ -229,7 +230,7 @@ This is a first order differential equation and therefore the muscle has a secon
 
   For muscle elongating (\f$ \dot{l_{m}}>=0 \f$), the Katz[6] eccentric model is utilized:
  \f[
-\mathbf{f_{v}} = \frac{\bar{f_{v,max}} * \dot{l_{m}} +c}
+\mathbf{f_{v}} = \frac{\bar{f_{v,max}}  \dot{l_{m}} +c}
 { \dot{l_{m}} +c}
  \f]
 
@@ -369,17 +370,17 @@ public:
 
         OpenSim_DECLARE_PROPERTY(active_force_length_curve_width, double,
         "force-length shape factor");
-        //W (dimensionless) width parameter of the force-length relationship of
+        //w (dimensionless) width parameter of the force-length relationship of
         // the muscle fiber
 
         OpenSim_DECLARE_PROPERTY(force_velocity_hill_constant, double,
         "force-velocity shape factor");
-        //AHill (dimensionless) Hill parameter of the force-velocity
+        //A_{Hill} (dimensionless) Hill parameter of the force-velocity
         // relationship
 
         OpenSim_DECLARE_PROPERTY(force_velocity_max_lengthening_force_norm, double,
         "maximum normalized lengthening force");
-        //FV_{max} (dimensionless) maximal eccentric force
+        //\bar{f_{v,max}} (dimensionless) maximal eccentric force
 
         //OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
         //    "Optimal Length of Contractile Element"
@@ -388,26 +389,28 @@ public:
 
         OpenSim_DECLARE_PROPERTY(fiber_damping, double,
         "The linear damping of the fiber");
-        //b (s/m) damping coefficient of damper parallel to the fiber
-        //      (normalized to maxIsometricForce)
+        //b_{de} damping coefficient of damper parallel to the fiber
+        //
 
         OpenSim_DECLARE_PROPERTY(fiber_slack_length_norm, double,
                                  "(dimensionless) slack length of the parallel "
                                          "elastic element, divided by Lceopt");
-        //L_{slack,fiber}(dimensionless) slack length of the fiber (PEE)
+        //L_{m,slack} (dimensionless) slack length of the fiber (PEE)
 
 
         OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
         "Activation time(s)");
-        //T_{act} (s) Activation time
+        //T_{a} (s) Activation time
 
         OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
         "Deactivation time(s)");
-        //T_{deact} (s) Deactivation time
+        //T_{d} (s) Deactivation time
 
         OpenSim_DECLARE_PROPERTY(pennation_at_optimal_fiber_length, double,
                                  "pennation at optimal fiber length "
                                          "equilibrium");
+        //\psi_{ref} (rad)
+
 
         OpenSim_DECLARE_PROPERTY(default_activation, double,
                                  "default activation");
@@ -516,8 +519,8 @@ public:
         @param activation The muscle activation, (dimensionless)*/
         void setActivation(SimTK::State& s,double activation) const override;
         /**@param s The state of the system.
-        @param fiberLength The muscle fiber length, ()*/
-        void setFiberLength(SimTK::State& s,double fiberLength) const;
+        @param projFibLenNorm The muscle fiber length projected on the tendon (normalized by the optimal muscle length), (dimensionless)*/
+        void setProjFiberLengthNorm(SimTK::State& s, double projFibLenNorm) const;
 
         /* Calculate the muscle implicit residual.  Returns a state Vec2
         containing the force residual and activation residual.  When these
@@ -541,8 +544,8 @@ public:
         //Hacks because cache variables not implemented yet
 
         /**@param s The state of the system.
-           @returns The Fiber Length of the muscle.*/
-        double  getFiberLength(const SimTK::State& s) const; //BTH
+           @returns The muscle fiber length projected on the tendon .*/
+        double  getProjFiberLengthNorm(const SimTK::State& s) const; //BTH
         /**@param s The state of the system.
            @returns The activation of the muscle.*/
         double  getActivation(const SimTK::State& s) const override;  // BTH
