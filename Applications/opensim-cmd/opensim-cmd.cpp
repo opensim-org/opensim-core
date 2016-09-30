@@ -60,9 +60,13 @@ Available commands:
   Pass -h or --help to any of these commands to learn how to use them.
 
 Examples:
+  opensim-cmd run-tool InverseDynamics_Setup.xml
+  opensim-cmd print-xml cmc
+  opensim-cmd info PathActuator
+  opensim-cmd update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
   opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
-  opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml cmc
-  opensim-cmd --library=libosimMyCustomForce.dylib info Model gravity
+  opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml MyCustomTool
+  opensim-cmd --library=libosimMyCustomForce.dylib info MyCustomForce
 
 )";
 
