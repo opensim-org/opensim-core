@@ -64,7 +64,7 @@ The dimensions are:
 
 
 <B>Nomenclature </B> <BR>
- - Symbols with the a \f$ \bar{bar} \f$ indicate that the quantity has been normalized by a constant parameter.  For forces, this will all ways be \f$F_{m,opt}\f$.  For velocities and lengths this will be \f$l_{m_opt}\f$ (velocities will therefore have units of "optimal lengths per second")
+ - Symbols with the a \f$ \bar{bar} \f$ indicate that the quantity has been normalized by a constant parameter.  For forces, this will all ways be \f$F_{m,opt}\f$.  For velocities and lengths this will be \f$l_{m,opt}\f$ (velocities will therefore have units of "optimal lengths per second")
  - Muscle velocities sign convention is the positive is lengthening (eccentric)
 <table>
 <tr>
@@ -315,7 +315,7 @@ If the tendon is not being stretched, a very light spring rate of 1N/m is used:
 
 To normalize the force (note that due to the quadratic terms, non-normalized lengths must be used):
  \f[
- \bar{F_{se}} = \frac{1}{F_{m,opt}} =\frac{dl_{t}}{F_{m,opt}} + \frac{1}{(u_{max} dl_{t})^{2}}
+ \bar{F_{se}} = \frac{F_{se}}{F_{m,opt}} =\frac{k_{se}dl_{t}}{F_{m,opt}} + \frac{dl_{t}^2}{(u_{max}l_{t,slack})^{2}}
  \f]
 
   \image html fig_VandenBogert2011Muscle_SeeForce.png
@@ -325,7 +325,7 @@ To normalize the force (note that due to the quadratic terms, non-normalized len
 \f$  F_{de} \f$ is the viscous damping parallel to the contractile element. The damping is set such that it equals \f$b_{de}\f$ percent of \f$F_{m,opt}\f$ when the muscle velocity is 1 optimal length per second:
 
   \f[
- F_{de}  = b_{de} F_{m,opt} \frac {\dot{l_p}}{l_{m_opt}}
+ F_{de}  = b_{de} F_{m,opt} \frac {\dot{l_p}}{l_{m,opt}}
  \f]
 
   or in normalized terms:

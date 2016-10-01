@@ -201,6 +201,7 @@ double aTendonSlackLength, double aPennationAngle)
 
     setName(aName);
     setMaxIsometricForce(aMaxIsometricForce);
+    setMaxIsometricForce(aMaxIsometricForce);
     setOptimalFiberLength(aOptimalFiberLength);
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);

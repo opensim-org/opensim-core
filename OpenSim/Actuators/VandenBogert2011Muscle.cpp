@@ -833,7 +833,7 @@ calcImplicitResidual(double muscleLength, double projFibLenNorm, double activ,
     double fRes = F4 - (activ * F1 * F2 + F3)*cosPenn - F5;
 
 
-// This is just here for troubleshooting
+
 if (getDebugLevel()>0){
     cout << "-------------------------" << endl;
     cout << "activ: " << activ << endl;
