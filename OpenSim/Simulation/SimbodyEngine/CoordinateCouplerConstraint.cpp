@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,9 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "CoordinateCouplerConstraint.h"
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/Constraint.h"
 
 // Helper class to construct functions when user's specify a dependency as qd = f(qi)
 // this function casts as C(q) = 0 = f(qi) - qd;

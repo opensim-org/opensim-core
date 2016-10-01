@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,11 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
-#include "SimTKcommon.h"
 #include "StorageInterface.h"
 #include "TimeSeriesTable.h"
 
@@ -302,11 +299,13 @@ public:
     double compareColumn(Storage& aOtherStorage, 
                          const std::string& aColumnName,
                          double startTime, double endTime=-1.0);
-    double compareColumnRMS(Storage& aOtherStorage, 
-                         const std::string& aColumnName,
-                         double startTime=SimTK::NaN, double endTime=SimTK::NaN);
+    double compareColumnRMS(const Storage& aOtherStorage, 
+                            const std::string& aColumnName,
+                            double startTime=SimTK::NaN, double endTime=SimTK::NaN) const;
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-    void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    void compareWithStandard(const Storage& standard, 
+                             std::vector<std::string>& columnsUsed, 
+                             std::vector<double>& comparisons) const;
     /** Force column labels for a Storage object to become unique. This is done
      * by prepending the string (n_) as needed where n=1, 2, ...
      *

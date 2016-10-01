@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Michael A. Sherman                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -20,28 +20,18 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
-#include <OpenSim/version.h>
-
-#include "Model.h"
-#include <OpenSim/Common/ModelDisplayHints.h>
 #include "ModelVisualizer.h"
-#include "MarkerSet.h"
-#include "BodySet.h"
-#include "ForceSet.h"
-
-#include "Simbody.h"
+#include "Model.h"
+#include <OpenSim/version.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <simbody/internal/Visualizer_InputListener.h>
+#include <simbody/internal/Visualizer_Reporter.h>
 
 #include <string>
 using std::string;
 #include <iostream>
 using std::cout; using std::cerr; using std::clog; using std::endl;
-#include <fstream>
 
 using namespace OpenSim;
 using namespace SimTK;

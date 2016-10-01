@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard, Ajay Seth, Peter Loan                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 
 
 // INCLUDE
-#include <simbody/internal/common.h>
-
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
@@ -41,8 +39,9 @@
 #endif
 
 namespace OpenSim {
+
 //==============================================================================
-//                          THELEN 2003 MUSCLE
+//                               Thelen2003Muscle
 //==============================================================================
 /**
  Implementation of a two state (activation and fiber-length) Muscle model by 
@@ -224,6 +223,8 @@ public:
         tendon are in static equilibrium and update the state
         
         Part of the Muscle.h interface
+
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
        
@@ -296,27 +297,38 @@ private:
       constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
-    //bool initializedModel;
-
-    //=====================================================================
-    // Private Accessor names
-    //=====================================================================
-    //This is so we can get some compiler checking on these string names
-
-
-    //=====================================================================
     // Private Computation
     //      -Computes curve values, derivatives and integrals
     //=====================================================================
 
-    //Initialization
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations) const;
+    // Status flag returned by initMuscleState().
+    enum StatusFromInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
-    
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, passive_force, and
+    // tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
+    @param s the system state
+    @param aActivation the initial activation of the muscle
+    @param aSolTolerance the desired relative tolerance of the equilibrium 
+           solution
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
+    */
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations) const;
+
     double calcFm(double ma, double fal, double fv, 
                  double fpe, double fiso) const;
 

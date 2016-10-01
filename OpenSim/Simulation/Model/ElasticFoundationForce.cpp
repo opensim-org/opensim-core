@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,10 +23,10 @@
 
 #include "ElasticFoundationForce.h"
 #include "ContactGeometry.h"
-#include "ContactGeometrySet.h"
 #include "ContactMesh.h"
 #include "Model.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+
+#include "simbody/internal/ElasticFoundationForce.h"
 
 namespace OpenSim {
 

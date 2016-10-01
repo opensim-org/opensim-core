@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2016 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                     *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,12 +24,16 @@
  * -------------------------------------------------------------------------- */
 
 #include <vector>
-#include <Simbody.h>
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <SimTKcommon/internal/IteratorRange.h>
 
 #include "osimSimulationDLL.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 
@@ -285,7 +289,7 @@ public:
 
     /** Export the continuous state variables to a data table, perhaps to write
      * to a file and postprocess in MATLAB/Python/Excel. The names of the
-     * columns in the table will be the full names of the continuous state
+     * columns in the table will be the absolute names of the continuous state
      * variables (e.g., `knee/flexion/angle`).
      *
      * You must provide a model that is compatible with this trajectory,
@@ -293,7 +297,7 @@ public:
      *
      * By default, all continuous state variables are written to the table
      * (one per column). If you only want some of them to be written to the
-     * table, use the `stateVars` argument to specify their full names
+     * table, use the `stateVars` argument to specify their absolute names
      * (e.g., `knee/flexion/angle`).
      *
      * @code
@@ -419,7 +423,7 @@ public:
             msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
             msg += std::to_string(numDepColumns) + "). You must provide a ";
             msg += "States Storage that has the same number ";
-            msg += "of entires in every row.";
+            msg += "of entries in every row.";
             addMessage(msg);
         }
     };

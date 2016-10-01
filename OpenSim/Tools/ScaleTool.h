@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,17 @@
 
 
 // INCLUDE
-#include <iostream>
-
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include "GenericModelMaker.h"
 #include "ModelScaler.h"
 #include "MarkerPlacer.h"
 
 namespace OpenSim {
+
+class GenericModelMaker;
+class Model;
 
 //=============================================================================
 //=============================================================================

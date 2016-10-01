@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,57 +26,45 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/ComponentSet.h>
-#include <OpenSim/Simulation/Model/ProbeSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include "Simbody.h"
+#include <OpenSim/Simulation/Model/ProbeSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
+#include "simbody/internal/Force_Gravity.h"
+#include "simbody/internal/GeneralContactSubsystem.h"
 
 
 namespace OpenSim {
 
+class Actuator;
 class Analysis;
 class Body;
-class Frame;
-class BodySet;
-class JointSet;
 class Constraint;
 class ConstraintSet;
+class ContactGeometry;
+class Controller;
 class CoordinateSet;
 class Force;
-class ForceSet;
-class Probe;
-class ProbeSet;
-class MarkerSet;
+class Frame;
 class Muscle;
-class ContactGeometry;
-class Actuator;
-class ContactGeometrySet;
 class Storage;
 class ScaleSet;
-class Controller;
-class ControllerSet;
-class ModelDisplayHints;
-class ComponentSet;
-class FrameSet;
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API

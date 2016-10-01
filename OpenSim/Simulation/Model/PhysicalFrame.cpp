@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Copyright (c) 2005-2016 Stanford University and the Authors                *
 * Author(s): Matt DeMers, Ayman Habib, Ajay Seth                             *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -65,6 +65,13 @@ const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
 SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
 {
     return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
+}
+
+void PhysicalFrame::setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!mbix.isValid(), Exception,
+        "Assigned an invalid SimTK::MobilizedBodyIndex");
+    const_cast<Self*>(this)->_mbIndex = mbix;
 }
 
 /*

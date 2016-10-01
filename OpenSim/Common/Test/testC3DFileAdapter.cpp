@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -95,13 +95,6 @@ void test(const std::string filename) {
 
 int main() {
     std::vector<std::string> filenames{};
-    filenames.push_back("jogging.c3d");
-    filenames.push_back("singleLeglanding_2.c3d");
-    filenames.push_back("aStaticTrial_2.c3d");
-    filenames.push_back("aStaticTrial.c3d");
-    filenames.push_back("doubleLegLanding.c3d");
-    filenames.push_back("sideCutting.c3d");
-    filenames.push_back("singleLegLanding.c3d");
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
 

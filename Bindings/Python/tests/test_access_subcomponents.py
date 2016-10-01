@@ -7,6 +7,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 class TestAccessSubcomponents(unittest.TestCase):
     def test_individual_components(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
@@ -51,7 +54,7 @@ class TestAccessSubcomponents(unittest.TestCase):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
 
         comps = model.getMuscleList()
-        comps.setFilter(osim.ComponentFilterFullPathNameContainsString('BIC'))
+        comps.setFilter(osim.ComponentFilterAbsolutePathNameContainsString('BIC'))
         count = 0
         BICnames = ['BIClong', 'BICshort']
         for comp in comps:
@@ -60,5 +63,3 @@ class TestAccessSubcomponents(unittest.TestCase):
             assert type(comp) == osim.Thelen2003Muscle
             count += 1
         assert count == 2
-        
-

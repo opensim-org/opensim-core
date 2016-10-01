@@ -124,12 +124,12 @@ macro(OpenSimAddPythonModule)
         # Note that the last optimization flag is what counts for GCC. So an -O0
         # later on the command line overrides a previous -O2.
         set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
-        # C++ does not allow "const const T," but SWIG generates "const const T"
-        # even if we did not use it in the orignal source code (bug in SWIG).
-        set(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-duplicate-decl-specifier")
     elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
         # TODO disable optimization on Windows.
-        set(_COMPILE_FLAGS "/wd4996")
+        # Don't warn about:
+        # 4996: deprecated functions.
+        # 4114: "const const T"
+        set(_COMPILE_FLAGS "/wd4996 /wd4114")
     endif()
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
@@ -226,8 +226,8 @@ foreach(test_file
         "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/TRCFileWithNANs.trc"
         "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
         "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/singleLeglanding_2.c3d"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/jogging.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
@@ -319,3 +319,7 @@ add_dependencies(RunPythonTests PythonBindings)
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
         DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+# Install example files (not installed next to the python package).
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,18 +28,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <iostream>
-#include <OpenSim/Common/Exception.h>
-
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
-
 #include "ActuatorForceTargetFast.h"
 #include "CMC_TaskSet.h"
-#include "CMC.h" 
+#include "CMC.h"
 #include "StateTrackingTask.h"
-
-#include <OpenSim/Common/Storage.h>
 
 using namespace std;
 using namespace OpenSim;

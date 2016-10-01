@@ -1,5 +1,5 @@
-#ifndef _XMLDocument_h_
-#define _XMLDocument_h_
+#ifndef OPENSIM_XMLDOCUMENT_H
+#define OPENSIM_XMLDOCUMENT_H
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  XMLDocument.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,10 +29,10 @@
 
 
 // INCLUDES
-#include <iostream> // Ayman: Remove .h extension per .NET 2003
 #include "osimCommonDLL.h"
-#include <SimTKcommon.h>
 #include "Array.h"
+#include "SimTKcommon/internal/Xml.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 //using namespace std;  // Ayman:per .NET 2003
 
@@ -125,4 +125,4 @@ public:
 //=============================================================================
 
 
-#endif // __XMLDocument_h__
+#endif // OPENSIM_XMLDOCUMENT_H

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -118,10 +118,9 @@ void testMcKibbenActuator()
     Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
     SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);
 
-    auto& coords = ballToGround->upd_CoordinateSet();
-    coords[0].setName("ball_d");
-    coords[0].setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
-    coords[0].set_prescribed(true);
+    ballToGround->updCoordinate().setName("ball_d");
+    ballToGround->updCoordinate().setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
+    ballToGround->updCoordinate().set_prescribed(true);
 
     model->addBody(ball);
     model->addJoint(ballToGround);
@@ -394,9 +393,8 @@ void testClutchedPathSpring()
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider->upd_CoordinateSet();
-    slider_coords[0].setName("block_h");
-    slider_coords[0].setRange(positionRange);
+    slider->updCoordinate().setName("block_h");
+    slider->updCoordinate().setRange(positionRange);
 
     model->addBody(pulleyBody);
     model->addJoint(weld);

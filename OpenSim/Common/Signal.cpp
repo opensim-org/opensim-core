@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,12 +27,15 @@
 
 
 // INCLUDES
-#include <iostream>
-#include <string>
 #include <math.h>
 #include "Signal.h"
 #include "Array.h"
-#include "SimTKsimbody.h"
+#include "SimTKcommon/Constants.h"
+#include "SimTKcommon/Orientation.h"
+#include "SimTKcommon/Scalar.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "simmath/internal/Spline.h"
+#include "simmath/internal/SplineFitter.h"
 
 using namespace OpenSim;
 using namespace std;

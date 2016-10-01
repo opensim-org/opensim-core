@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,10 +35,7 @@
     #endif
 #endif
 
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 
 const int PointKinematicsNAME_LENGTH = 256;
@@ -48,8 +45,9 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
 //=============================================================================
 namespace OpenSim { 
 
-class Model;
 class Body;
+class Model;
+class Storage;
 
 /**
  * A class for recording the kinematics of a point on a body
@@ -85,7 +83,6 @@ protected:
     std::string &_pointName;
     std::string &_relativeToBodyName;
 
-    double *_dy;
     double *_kin;
     Storage *_pStore;
     Storage *_vStore;

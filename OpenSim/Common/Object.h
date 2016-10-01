@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib, Ajay Seth, Michael A. Sherman   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,14 +36,12 @@
 // INCLUDES
 
 #include "osimCommonDLL.h"
-#include "XMLDocument.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property.h"
 
 #include <cstring>
 #include <cassert>
-#include <map>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -71,6 +69,10 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
     #define SWIG_DECLARE_EXCEPTION
 #endif
 
+// Forward-declare SimTK types.
+namespace SimTK {
+    typedef Vec<2, Vec3> SpatialVec;
+}
 
 namespace OpenSim { 
 

@@ -23,7 +23,10 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle:
+Let's simulate a simple arm whose elbow is actuated by a muscle, using 
+the C++ interface (You can find a python version of this example at 
+`Bindings/Python/examples/build_simple_arm_model.py`):
+
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
@@ -70,30 +73,42 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
     model.addComponent(reporter);
+
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    bodyGeometry.setColor(Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
+        "humerusCenter", "humerus", Transform(Vec3(0, 0.5, 0)));
+    humerus->addComponent(humerusCenter);
+    humerusCenter->attachGeometry(bodyGeometry.clone());
+    PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
+        "radiusCenter", "radius", Transform(Vec3(0, 0.5, 0)));
+    radius->addComponent(radiusCenter);
+    radiusCenter->attachGeometry(bodyGeometry.clone());
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix the hip at its default angle and begin with the knee flexed.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->getCoordinate().setLocked(state, true);
+    elbow->getCoordinate().setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
-    // Add display geometry.
+    // Configure the visualizer.
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     viz.setBackgroundColor(White);
-    // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
-    DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(humerus->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration( radius->getMobilizedBodyIndex(), Transform(center), geom);
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
+    
+    return 0;
 };
 ```
 
@@ -104,7 +119,7 @@ This code produces the following animation:
 and prints the following information to the console:
 
         [reporter]
-                time|  fiber_force|       value|
+                time|  fiber_force| elbow_angle|
                    0|     1.180969|   1.5707963|
                    1|     57.27509|  0.77066412|
                    2|    19.728411|   1.5680456|
@@ -118,7 +133,6 @@ and prints the following information to the console:
                   10|    35.784713|    1.507164|
 
 ---
-
 
 Building from the source code
 -----------------------------
@@ -137,7 +151,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able
@@ -147,8 +161,18 @@ On Windows using Visual Studio
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
       for Visual C++ 2015*.
-      You can uncheck all other boxes. If you have already installed Visual
-      Studio without C++ support, simply re-run the installer and select *Modify*.
+      You can uncheck all other boxes. If Visual Studio is installed without C++
+      support, CMake will report the following errors:
+      
+      ```
+      The C compiler identification is unknown
+      The CXX compiler identification is unknown
+      ```
+      
+      If you have already installed Visual Studio without C++ support, simply
+      re-run the installer and select *Modify*. Alternatively, go to
+      *File > New > Project...* in Visual Studio, select *Visual C++*, and click
+      *Install Visual C++ 2015 Tools for Windows Desktop*.
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
@@ -156,6 +180,9 @@ On Windows using Visual Studio
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -163,7 +190,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -260,6 +287,10 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
+           variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -356,11 +387,12 @@ ctest -C RelWithDebInfo --parallel 8
 On Mac OSX using Xcode
 ======================
 
-### For Mac OSX 10.10 Yosemite and OS X 10.11 El Capitan
+### For Mac OSX 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
 ```shell 
 sudo xcodebuild -license
 ``` 
+If you already have **Xcode**, update it to 7.3, or the latest version.
 
 Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
 ```shell
@@ -393,10 +425,10 @@ ctest -j8
 
 #### Get the dependencies
 
-* **operating system**: Mac OSX 10.8 or later.
+* **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
+* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -404,12 +436,15 @@ ctest -j8
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac OSX comes with python, but you could also use:
@@ -498,6 +533,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -578,16 +617,15 @@ On Ubuntu using Unix Makefiles
 
 #### Get the dependencies
 
-Most dependencies can be obtained via the Ubuntu software repositories. On each
-line below, we show the corresponding package.
+Most dependencies can be obtained via the Ubuntu software repositories;
+especially if you are using Ubuntu 15.10 or later. On each line below, we show
+the Ubuntu package names for the dependencies. You can find instructions for
+specific Ubuntu versions under 'For the impatient' below.
 
-* **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
-  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
-  or from this [third party
-  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
-* **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
+  `cmake-gui`. 
+* **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -595,18 +633,21 @@ line below, we show the corresponding package.
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
-    $ sudo apt-get install cmake-gui g++-4.8
+    $ sudo apt-get install cmake-gui g++-4.9
 
 And you could get all the optional dependencies via:
 
@@ -692,6 +733,10 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.

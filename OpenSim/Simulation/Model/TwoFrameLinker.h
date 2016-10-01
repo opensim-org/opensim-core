@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2015 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                     *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,10 +27,9 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
-
-class PhysicalOffsetFrame;
 
 //=============================================================================
 //=============================================================================
@@ -64,7 +63,7 @@ public:
 //==============================================================================
 
     OpenSim_DECLARE_CONNECTOR(frame1, F,
-            "The first frame participtting in this linker.");
+            "The first frame participating in this linker.");
     OpenSim_DECLARE_CONNECTOR(frame2, F,
             "The second frame participating in this linker.");
 

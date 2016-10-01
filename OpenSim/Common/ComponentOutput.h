@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,9 +34,35 @@
 #include <functional>
 #include <map>
 
+#include <SimTKcommon/internal/Stage.h>
+#include <SimTKcommon/internal/State.h>
+
 namespace OpenSim {
 
 class Component;
+
+/** One of the values of an Output. */
+class AbstractChannel {
+public:
+    virtual ~AbstractChannel() = default;
+    /** The name of this channel, or the name of the output that
+    contains this Channel if it's in a single-value Output. */
+    virtual const std::string& getChannelName() const = 0;
+    /** The name of the value type (e.g., `double`) produced by this channel. */
+    virtual std::string getTypeName() const = 0;
+    /** The name of this channel appended to the name of the output that
+     * contains this channel. The output name and channel name are separated by
+     * a colon (e.g., "markers:medial_knee"). If the output that contains
+     * this channel is a single-value Output, then this is just the Output's 
+     * name. */
+    virtual std::string getName() const = 0;
+    /** This returns the absolute path name of the component to which this channel
+     * belongs prepended to the channel's name. For example, this 
+     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     */
+    virtual std::string getPathName() const = 0;
+};
+
 
 //=============================================================================
 //                           OPENSIM COMPONENT OUTPUT
@@ -67,28 +93,6 @@ class Component;
  * to Inputs.
  * @author  Ajay Seth
  */
-
-/** One of the values of an Output. */
-class AbstractChannel {
-public:
-    virtual ~AbstractChannel() = default;
-    /** The name of this channel, or the name of the output that
-    contains this Channel if it's in a single-value Output. */
-    virtual const std::string& getChannelName() const = 0;
-    /** The name of the value type (e.g., `double`) produced by this channel. */
-    virtual std::string getTypeName() const = 0;
-    /** The name of this channel appended to the name of the output that
-     * contains this channel. The output name and channel name are separated by
-     * a colon (e.g., "markers:medial_knee"). If the output that contains
-     * this channel is a single-value Output, then this is just the Output's 
-     * name. */
-    virtual std::string getName() const = 0;
-    /** This returns the full path name of the component to which this channel
-     * belongs prepended to the channel's name. For example, this 
-     * method might return something like "/model/metabolics/heat_rate:soleus_r".
-     */
-    virtual std::string getPathName() const = 0;
-};
 
 class OSIMCOMMON_API AbstractOutput {
 public:
@@ -339,7 +343,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getFullPathName() + "/" + getName();
+        return getOutput().getOwner().getAbsolutePathName() + "/" + getName();
     }
 private:
     mutable T _result;

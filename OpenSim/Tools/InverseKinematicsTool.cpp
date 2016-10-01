@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,12 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "InverseKinematicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 #include <OpenSim/Common/IO.h>
@@ -44,8 +39,6 @@
 #include "IKTaskSet.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
-
-#include "SimTKsimbody.h"
 
 
 using namespace OpenSim;
@@ -261,8 +254,11 @@ bool InverseKinematicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.");
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
 
@@ -516,8 +512,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 Xml::node_iterator p = trialIter->node_begin();
                 for (; p!= trialIter->node_end(); ++p) {
                     iter->insertNodeAfter( iter->node_end(), p->clone());
-            }
-                // Append constraint_weight of 100 and accuracy of 1e-5
+                }
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                 iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
@@ -552,7 +547,6 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     for (; p!= trialIter->node_end(); ++p) {
                         root.insertNodeAfter( root.node_end(), p->clone());
                     }
-                    // Append constraint_weight of 100 and accuracy of 1e-5
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                     root.insertNodeAfter( root.node_end(), Xml::Element("constraint_weight", "20.0"));
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_accuracyProp.getComment()));

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth   *
  *            Michael Sherman                                                 *
  *                                                                            *
@@ -25,12 +25,14 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "Joint.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class CustomJoint;
-class Coordinate;
+class Joint;
 
 //==============================================================================
 //                            TRANSFORM AXIS

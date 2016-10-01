@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -38,7 +38,7 @@ int main() {
         if (rra.run()){
             checkCOM("subject01_RRA_adjusted.osim", "torso", SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), Array<double>(1e-4, 3));
             Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-            CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.5, 24), __FILE__, __LINE__, "testRRA: kinematics comparison failed");
+            CHECK_STORAGE_AGAINST_STANDARD(result, standard, std::vector<double>(24, 0.5), __FILE__, __LINE__, "testRRA: kinematics comparison failed");
         }
         else{
             throw(Exception("testRRA FAILED to run to completion."));

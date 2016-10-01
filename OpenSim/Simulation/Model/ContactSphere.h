@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -87,15 +87,15 @@ public:
      * %Set the radius of the sphere.
      */
     void setRadius(double radius);
+
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 private:
     // INITIALIZATION
     void setNull();
     void constructProperties();
-
-    // VISUALIZATION
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, 
-        const SimTK::State& s, 
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 
 //=============================================================================
 };  // END of class ContactSphere

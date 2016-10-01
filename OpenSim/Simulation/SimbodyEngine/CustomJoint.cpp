@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,10 +26,10 @@
 //=============================================================================
 #include "CustomJoint.h"
 #include "SpatialTransform.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include "simbody/internal/MobilizedBody_FunctionBased.h"
 
 
 //=============================================================================
@@ -164,7 +164,6 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 
 void CustomJoint::constructCoordinates()
 {
-    CoordinateSet& coordinateSet = upd_CoordinateSet();
     const SpatialTransform& spatialTransform = getSpatialTransform();
     OpenSim::Array<std::string> coordinateNames
         = spatialTransform.getCoordinateNames();
@@ -175,11 +174,12 @@ void CustomJoint::constructCoordinates()
     for (int i = 0; i < ncoords; i++){
         std::string coordName = spatialTransform.getCoordinateNames()[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
-        int coordIndex = coordinateSet.getIndex(coordName);
-        if (coordIndex < 0){
-            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
+        int coordIndex = getProperty_coordinates().findIndexForName(coordName);
+        if (coordIndex < 0) {
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined,
+                                             i);
         }
-        Coordinate& coord = coordinateSet.get(coordIndex);
+        Coordinate& coord = upd_coordinates(coordIndex);
         coord.setName(coordName);
 
 
@@ -241,31 +241,30 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         outb = getChildInternalRigidBody();
     }
 
-    const CoordinateSet& coords = get_CoordinateSet();
     const Array<std::string>& coordNames = getSpatialTransform().getCoordinateNames();
 
     // Some initializations
-    int numCoordinates = coords.getSize();  // Note- should check that all coordinates are used.
+    const int numCoords = numCoordinates();  // Note- should check that all coordinates are used.
     std::vector<std::vector<int> > coordinateIndices =
         getSpatialTransform().getCoordinateIndices();
     std::vector<const SimTK::Function*> functions =
         getSpatialTransform().getFunctions();
     std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-    SimTK_ASSERT1(numCoordinates == coordNames.getSize(),
+    SimTK_ASSERT1(numCoords == coordNames.getSize(),
         "%s list of coordinates does not match number of mobilities.",
         getConcreteClassName().c_str());
 
-    SimTK_ASSERT1(numCoordinates > 0,
+    SimTK_ASSERT1(numCoords > 0,
         "%s must have 1 or more mobilities (dofs).",
                   getConcreteClassName().c_str());
 
-    SimTK_ASSERT1(numCoordinates <= 6,
+    SimTK_ASSERT1(numCoords <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
         getConcreteClassName().c_str());
     assert(functions.size() == 6);
 
-    SimTK_ASSERT2(numCoordinates <= 6,
+    SimTK_ASSERT2(numCoords <= 6,
         "%s::%s must specify functions for complete spatial (6 axes) motion.",
         getConcreteClassName().c_str(),
                   getSpatialTransform().getConcreteClassName().c_str());
@@ -281,10 +280,10 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::MobilizedBody::FunctionBased
         simtkBody(inb, inbX, 
                   outb, outbX, 
-                    numCoordinates, functions,
+                    numCoords, functions,
                   coordinateIndices, axes, dir);
 
-    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoordinates, 0);
+    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoords, 0);
 }
 
 //=============================================================================

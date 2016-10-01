@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,6 +30,7 @@ in-memory container for data access and manipulation.                         */
 
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
+#include "SimTKcommon/internal/BigMatrix.h"
 
 namespace OpenSim {
 
@@ -524,7 +525,7 @@ protected:
                             for key "labels" does not have length equal to the
                             number of columns in the table. (3) If not all
                             entries in the metadata for dependent columns have
-                            the correct length (equal to nubmer of columns).  */
+                            the correct length (equal to number of columns).  */
     void validateDependentsMetaData() const override {
         size_t numCols{};
         try {

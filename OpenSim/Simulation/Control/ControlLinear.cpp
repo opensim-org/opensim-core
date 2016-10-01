@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,9 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Signal.h>
-#include <OpenSim/Common/Property_Deprecated.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertySet.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include "ControlLinear.h"
-#include "ControlLinearNode.h"
-#include "SimTKcommon.h"
 
 using namespace OpenSim;
 using namespace std;

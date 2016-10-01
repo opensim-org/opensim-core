@@ -2,7 +2,7 @@ set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
 # For building C++ wrapper.
-find_package(JNI 1.6 REQUIRED)
+find_package(JNI 1.7 REQUIRED)
 
 function(OpenSimGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
@@ -86,12 +86,11 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     # We purposefully wrap deprecated functions, so no need to see such warnings.
     set(COMPILE_FLAGS "-Wno-deprecated-declarations")
-    # C++ does not allow "const const T," but SWIG generates "const const T"
-    # even if we did not use it in the orignal source code (bug in SWIG).
-    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-duplicate-decl-specifier")
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
-    # Don't warn about deprecated functions.
-    set(COMPILE_FLAGS "/wd4996")
+    # Don't warn about:
+    # 4996: deprecated functions.
+    # 4114: "const const T"
+    set(COMPILE_FLAGS "/wd4996 /wd4114")
 endif()
 set_source_files_properties(
         ${SWIG_JAVA_SIMBODY_CXX_FILE}

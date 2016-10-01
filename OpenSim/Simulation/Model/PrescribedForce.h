@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman Matt S. DeMers                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,15 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include "OpenSim/Simulation/osimSimulationDLL.h"
-#include "OpenSim/Common/Function.h"
 #include "OpenSim/Common/FunctionSet.h"
 #include "Force.h"
 
 namespace OpenSim {
 
 class Model;
-class FunctionSet;
 class Storage;
 
 /** This applies to a PhysicalFrame a force and/or torque that is specified as a 

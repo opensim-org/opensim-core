@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -61,6 +61,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 
 #include <OpenSim/Common/SimmSpline.h>
@@ -68,6 +69,8 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <simbody/internal/MobilizedBody_BuiltIns.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -151,10 +154,22 @@ public:
 class CompoundJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
 
+public:
+    /** Indices of Coordinates. */
+    enum class Coord: unsigned {
+        Rotation1X,
+        Rotation2Y,
+        Rotation3Z
+    };
+
+private:
     /** Specify the Coordinates of this CompoundJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
 
 public:
     // CONSTRUCTION
@@ -230,6 +245,9 @@ void testCustomWithMultidimFunction();
 void testCustomVsCompoundJoint();
 void testEquivalentBodyForceFromGeneralizedForce();
 void testEquivalentBodyForceForGenForces(Model& model);
+void testCustomJointAccessors();
+void testGimbalJointAccessors();
+void testUniversalJointAccessors();
 
 // Multibody tree constructions tests
 void testAddedFreeJointForBodyWithoutJoint();
@@ -243,7 +261,7 @@ int main()
     SimTK::Array_<std::string> failures;
     //Register new Joint types for testing 
     Object::registerType(CompoundJoint());
-
+    
     // model connect should create a FreeJoint for bodies that are not
     // connected by a Joint.
     try { ++itc; testAddedFreeJointForBodyWithoutJoint(); }
@@ -340,6 +358,23 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl;
         failures.push_back("testEquivalentBodyForceFromGeneralizedForce");
+    }
+
+    // Test accessors.
+    try { ++itc; testCustomJointAccessors(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testCustomJointAccessors");
+    }
+    try { ++itc; testGimbalJointAccessors(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testGimbalJointAccessors");
+    }
+    try { ++itc; testUniversalJointAccessors(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testUniversalJointAccessors");
     }
 
     if (!failures.empty()) {
@@ -757,6 +792,7 @@ void testCustomJointVsFunctionBased()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testCustomJointVsFunctionBased FAILED\n");
+
 } // end of testCustomJointVsFunctionBased
 
 void testEllipsoidJoint()
@@ -806,11 +842,10 @@ void testEllipsoidJoint()
                           osim_thigh, hipInFemur, Vec3(0), ellipsoidRadii);
 
     // Rename hip coordinates for an ellipsoid joint
-    CoordinateSet& hip_coords = hip.upd_CoordinateSet();
-    for(int i=0; i<hip_coords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords[i].setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -852,6 +887,27 @@ void testEllipsoidJoint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testEllipsoidJoint FAILED\n");
+
+    // Test accessors.
+    {
+        EllipsoidJoint myEllipsoidJt;
+
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
+               myEllipsoidJt.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation2Y) ==
+               myEllipsoidJt.get_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation3Z) ==
+               myEllipsoidJt.get_coordinates(2),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
+
+        ASSERT(myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
+               myEllipsoidJt.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
+    }
 
 } // end testEllipsoidJoint
 
@@ -1026,6 +1082,15 @@ void testWeldJoint(bool randomizeBodyOrder)
     stringstream errorMessage;
     errorMessage << "testWeldJoint " << (randomizeBodyOrder ? "with random body order " : "") << "FAILED\n";
     compareSimulations(system, state, osimModel, osim_state, errorMessage.str());
+
+    // Test accessors.
+    {
+        WeldJoint myWeldJoint;
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myWeldJoint.getCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myWeldJoint.updCoordinate());
+    }
 }
 
 void testFreeJoint()
@@ -1071,11 +1136,10 @@ void testFreeJoint()
              osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a free joint
-    CoordinateSet& hip_coords = hip.upd_CoordinateSet();
-    for(int i=0; i<hip_coords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords[i].setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1118,6 +1182,37 @@ void testFreeJoint()
     stringstream errorMessage;
     errorMessage << "testFreeJoint using Euler angles FAILED\n";
     compareSimulations(system, state, osimModel, osim_state, errorMessage.str());
+
+    // Test accessors.
+    {
+        FreeJoint myFreeJoint;
+
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation1X) ==
+               myFreeJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation2Y) ==
+               myFreeJoint.get_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::Rotation3Z) ==
+               myFreeJoint.get_coordinates(2),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationX) ==
+               myFreeJoint.get_coordinates(3),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationY) ==
+               myFreeJoint.get_coordinates(4),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myFreeJoint.getCoordinate(FreeJoint::Coord::TranslationZ) ==
+               myFreeJoint.get_coordinates(5),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.getCoordinate());
+
+        ASSERT(myFreeJoint.updCoordinate(FreeJoint::Coord::Rotation1X) ==
+               myFreeJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myFreeJoint.updCoordinate());
+    }
+
 } // end testFreeJoint
 
 void testBallJoint()
@@ -1163,11 +1258,10 @@ void testBallJoint()
                          osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a ball joint
-    const CoordinateSet& hip_coords = hip.getCoordinateSet();
-    for(int i=0; i<hip_coords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords.get(i).setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1183,7 +1277,7 @@ void testBallJoint()
                           osim_shank, kneeInTibia, Vec3(0));
 
     // Rename knee coordinates for a pin joint
-    knee.getCoordinateSet()[0].setName("knee_q");
+    knee.upd_coordinates(0).setName("knee_q");
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1205,6 +1299,27 @@ void testBallJoint()
     stringstream errorMessage;
     errorMessage << "testBallJoint using Euler angles FAILED\n";
     compareSimulations(system, state, &osimModel, osim_state, errorMessage.str());
+
+    // Test accessors.
+    {
+        BallJoint myBallJoint;
+
+        ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X) ==
+               myBallJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation2Y) ==
+               myBallJoint.get_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myBallJoint.getCoordinate(BallJoint::Coord::Rotation3Z) ==
+               myBallJoint.get_coordinates(2),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.getCoordinate());
+
+        ASSERT(myBallJoint.updCoordinate(BallJoint::Coord::Rotation1X) ==
+               myBallJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myBallJoint.updCoordinate());
+    }
 
 } // end testBallJoint
 
@@ -1261,11 +1376,10 @@ void testPinJoint()
                     osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    CoordinateSet hip_coords = hip.getCoordinateSet();
-    for(int i=0; i<hip_coords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords.get(i).setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add hip joint to the model
@@ -1281,13 +1395,12 @@ void testPinJoint()
     // create pin knee joint
     PinJoint knee("knee", osim_thigh, kneeInFemur, oInP,
                           osim_shank, kneeInTibia, oInB);
-    knee.getCoordinateSet()[0].setName("knee_q");
+    knee.upd_coordinates(0).setName("knee_q");
 
     // verify that default copy constructor handles coordinates appropriately
     auto knee2(knee);
-    ASSERT(knee2.get_CoordinateSet().getSize() 
-        == knee.get_CoordinateSet().getSize());
-    ASSERT(knee2.get_CoordinateSet()[0].getName() == "knee_q");
+    ASSERT(knee2.numCoordinates() == knee.numCoordinates());
+    ASSERT(knee2.get_coordinates(0).getName() == "knee_q");
 
     PhysicalOffsetFrame thigh_offset("thigh_offset", osim_thigh,
         SimTK::Transform(Rotation(BodyRotationSequence,
@@ -1307,7 +1420,7 @@ void testPinJoint()
     knee3.append_frames(thigh_offset);
     knee3.append_frames(shank_offset);
     // use the same coordinate name
-    knee3.getCoordinateSet()[0].setName("knee_q");
+    knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.connect(*osimModel);
     knee3.dumpConnections();
@@ -1354,6 +1467,26 @@ void testPinJoint()
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state,
                        "testPinJoint FAILED\n");
+
+    // Test accessors.
+    {
+        PinJoint myPinJoint;
+
+        ASSERT(myPinJoint.getCoordinate(PinJoint::Coord::RotationZ) ==
+               myPinJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myPinJoint.getCoordinate() ==
+               myPinJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+
+        ASSERT(myPinJoint.updCoordinate(PinJoint::Coord::RotationZ) ==
+               myPinJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myPinJoint.updCoordinate() ==
+               myPinJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+    }
+
 } // end testPinJoint
 
 void testSliderJoint()
@@ -1404,11 +1537,10 @@ void testSliderJoint()
     PinJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    CoordinateSet& hipCoords = hip.upd_CoordinateSet();
-    for(int i=0; i<hipCoords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hipCoords[i].setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1423,8 +1555,7 @@ void testSliderJoint()
     SliderJoint knee("knee", osim_thigh, kneeInFemur, oInP,
                              osim_shank, kneeInTibia, oInB);
 
-    CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
-    kneeCoords[0].setName("knee_qx");
+    knee.upd_coordinates(0).setName("knee_qx");
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1447,6 +1578,26 @@ void testSliderJoint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, &osimModel, osim_state, "testSliderJoint FAILED\n");
+
+    // Test accessors.
+    {
+        SliderJoint mySliderJoint;
+
+        ASSERT(mySliderJoint.getCoordinate(SliderJoint::Coord::TranslationX) ==
+               mySliderJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(mySliderJoint.getCoordinate() ==
+               mySliderJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+
+        ASSERT(mySliderJoint.updCoordinate(SliderJoint::Coord::TranslationX) ==
+               mySliderJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(mySliderJoint.updCoordinate() ==
+               mySliderJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+    }
+
 } // end testSliderJoint
 
 void testPlanarJoint()
@@ -1497,11 +1648,10 @@ void testPlanarJoint()
     PlanarJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    CoordinateSet& hip_coords = hip.upd_CoordinateSet();
-    for(int i=0; i<hip_coords.getSize(); i++){
+    for(int i=0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords.get(i).setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh body which now also contains the hip joint to the model
@@ -1514,10 +1664,9 @@ void testPlanarJoint()
     // create planar knee joint
     PlanarJoint knee("knee", osim_thigh, kneeInFemur, oInP, osim_shank, kneeInTibia, oInB);
 
-    CoordinateSet& kneeCoords = knee.upd_CoordinateSet();
-    kneeCoords[0].setName("knee_rz");
-    kneeCoords[0].setName("knee_tx");
-    kneeCoords[0].setName("knee_ty");
+    knee.upd_coordinates(0).setName("knee_rz");
+    knee.upd_coordinates(1).setName("knee_tx");
+    knee.upd_coordinates(2).setName("knee_ty");
 
     // Add the shank body which now also contains the knee joint to the model
     osimModel.addBody(&osim_shank);
@@ -1538,6 +1687,28 @@ void testPlanarJoint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, &osimModel, osim_state, "testPlanarJoint FAILED\n");
+
+    // Test accessors.
+    {
+        PlanarJoint myPlanarJoint;
+
+        ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ) ==
+               myPlanarJoint.get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationX) ==
+               myPlanarJoint.get_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myPlanarJoint.getCoordinate(PlanarJoint::Coord::TranslationY) ==
+               myPlanarJoint.get_coordinates(2),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.getCoordinate());
+
+        ASSERT(myPlanarJoint.updCoordinate(PlanarJoint::Coord::RotationZ) ==
+               myPlanarJoint.upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myPlanarJoint.updCoordinate());
+    }
+
 } // end testPlanarJoint
 
 
@@ -2044,14 +2215,13 @@ void testAutomaticJointReversal()
 
     modelConstrained.addJoint(pelvisFree);
     
-    CoordinateSet& pelvisCoords = pelvisFree->upd_CoordinateSet();
-    for (int i = 0; i < pelvisCoords.getSize(); ++i) {
+    for (int i = 0; i < pelvisFree->numCoordinates(); ++i) {
         // don't tie assembly to coordinate default values
-        pelvisCoords[i].set_is_free_to_satisfy_constraints(true);
+        pelvisFree->upd_coordinates(i).set_is_free_to_satisfy_constraints(true);
     }
-    pelvisCoords[3].setDefaultValue(pelvisX.p()[0]);
-    pelvisCoords[4].setDefaultValue(pelvisX.p()[1]);
-    pelvisCoords[5].setDefaultValue(pelvisX.p()[2]);
+    pelvisFree->upd_coordinates(3).setDefaultValue(pelvisX.p()[0]);
+    pelvisFree->upd_coordinates(4).setDefaultValue(pelvisX.p()[1]);
+    pelvisFree->upd_coordinates(5).setDefaultValue(pelvisX.p()[2]);
 
     auto footConstraint = new WeldConstraint("footConstraint",
                                   cfoot, zvec, zvec, cground, footInGround, zvec);
@@ -2064,8 +2234,8 @@ void testAutomaticJointReversal()
     auto& off2 = footConstraint->getFrame2();
     auto& c2 = off2.getConnector<PhysicalFrame>("parent");
 
-    auto off1Path = off1.getFullPathName();
-    auto off2Path = off2.getFullPathName();
+    auto off1Path = off1.getAbsolutePathName();
+    auto off2Path = off2.getAbsolutePathName();
 
     /*auto& pathOff1 = */c1.getConnecteeName();
     /*auto& pathOff2 = */c2.getConnecteeName();
@@ -2144,11 +2314,10 @@ void testAutomaticLoopJointBreaker()
                           thigh, hipInFemur, zvec);
 
     // Rename hip coordinates for a ball joint
-    CoordinateSet hip_coords = hip.getCoordinateSet();
-    for (int i = 0; i<hip_coords.getSize(); i++){
+    for (int i = 0; i<hip.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "hip_q" << i;
-        hip_coords.get(i).setName(coord_name.str());
+        hip.upd_coordinates(i).setName(coord_name.str());
     }
 
     // Add the thigh hip to the model
@@ -2166,7 +2335,7 @@ void testAutomaticLoopJointBreaker()
                           shank, kneeInTibia, zvec);
 
     // Rename knee coordinate for a pin joint
-    knee.getCoordinateSet()[0].setName("knee_q");
+    knee.upd_coordinates(0).setName("knee_q");
 
     // Add the knee joint to the model
     model.addJoint(&knee);
@@ -2231,4 +2400,123 @@ void testAutomaticLoopJointBreaker()
 
     ASSERT_EQUAL(acc2, acc, SimTK::Vec3(SimTK::Eps));
     
+}
+
+void testCustomJointAccessors()
+{
+    {
+        Model myModel;
+        SpatialTransform myTransform0; //0 Coordinates
+        CustomJoint* myCustomJoint0 = new CustomJoint("myCustomJoint0",
+            myModel.getGround(), myModel.getGround(), myTransform0);
+        myModel.addJoint(myCustomJoint0);
+
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->getCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->getCoordinate(0));
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->getCoordinate(1));
+
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->updCoordinate());
+        ASSERT_THROW(OpenSim::JointHasNoCoordinates,
+                     myCustomJoint0->updCoordinate(0));
+    }
+    {
+        Model myModel;
+        SpatialTransform myTransform1; //1 Coordinate
+        myTransform1[0].setCoordinateNames(
+            OpenSim::Array<std::string>("coord0", 1, 1));
+        myTransform1[0].setFunction(new LinearFunction());
+        CustomJoint* myCustomJoint1 = new CustomJoint("myCustomJoint1",
+            myModel.getGround(), myModel.getGround(), myTransform1);
+        myModel.addJoint(myCustomJoint1);
+
+        ASSERT(myCustomJoint1->getCoordinate() ==
+               myCustomJoint1->get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint1->getCoordinate(0) ==
+               myCustomJoint1->get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->getCoordinate(1));
+
+        ASSERT(myCustomJoint1->updCoordinate() ==
+               myCustomJoint1->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint1->updCoordinate(0) ==
+               myCustomJoint1->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint1->updCoordinate(1));
+    }
+    {
+        Model myModel;
+        SpatialTransform myTransform2; //2 Coordinates
+        myTransform2[0].setCoordinateNames(
+            OpenSim::Array<std::string>("coord0", 1, 1));
+        myTransform2[0].setFunction(new LinearFunction());
+        myTransform2[1].setCoordinateNames(
+            OpenSim::Array<std::string>("coord1", 1, 1));
+        myTransform2[1].setFunction(new LinearFunction());
+        CustomJoint* myCustomJoint2 = new CustomJoint("myCustomJoint2",
+            myModel.getGround(), myModel.getGround(), myTransform2);
+        myModel.addJoint(myCustomJoint2);
+
+        ASSERT(myCustomJoint2->getCoordinate(0) ==
+               myCustomJoint2->get_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint2->getCoordinate(1) ==
+               myCustomJoint2->get_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate());
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->getCoordinate(2));
+
+        ASSERT(myCustomJoint2->updCoordinate(0) ==
+               myCustomJoint2->upd_coordinates(0),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myCustomJoint2->updCoordinate(1) ==
+               myCustomJoint2->upd_coordinates(1),
+               __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate());
+        ASSERT_THROW(OpenSim::InvalidCall, myCustomJoint2->updCoordinate(2));
+    }
+}
+
+void testGimbalJointAccessors()
+{
+    GimbalJoint myGimbalJoint;
+
+    ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation1X) ==
+           myGimbalJoint.get_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation2Y) ==
+           myGimbalJoint.get_coordinates(1),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation3Z) ==
+           myGimbalJoint.get_coordinates(2),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.getCoordinate());
+
+    ASSERT(myGimbalJoint.updCoordinate(GimbalJoint::Coord::Rotation1X) ==
+           myGimbalJoint.upd_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.updCoordinate());
+}
+
+void testUniversalJointAccessors()
+{
+    UniversalJoint myUniversalJoint;
+
+    ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation1X) ==
+           myUniversalJoint.get_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation2Y) ==
+           myUniversalJoint.get_coordinates(1),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.getCoordinate());
+
+    ASSERT(myUniversalJoint.updCoordinate(UniversalJoint::Coord::Rotation1X) ==
+           myUniversalJoint.upd_coordinates(0),
+           __FILE__, __LINE__, "Coordinate accessor failed");
+    ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.updCoordinate());
 }

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -179,7 +179,7 @@ protected:
     /** Validate the given row. 
 
     \throws InvalidRow If the timestamp for the row breaks strictly increasing
-                       property of the indepedent column.                     */
+                       property of the independent column.                     */
     void validateRow(size_t rowIndex,
                      const double& time, 
                      const RowVector& row) const override {

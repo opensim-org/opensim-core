@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,18 +25,16 @@
 // INCLUDES
 //=============================================================================
 #include "MarkerPlacer.h"
-#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include "IKCoordinateTask.h"
+#include "IKTaskSet.h"
 #include <OpenSim/Analyses/StatesReporter.h>
 //=============================================================================
 // STATICS

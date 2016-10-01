@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <SimTKmath.h>
-#include <SimTKlapack.h>
 #include "StaticOptimization.h"
 #include "StaticOptimizationTarget.h"
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>

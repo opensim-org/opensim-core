@@ -47,7 +47,7 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
-3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
+3. Make sure that your code executes as intended and that *all* tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) explains how to run the tests. If your changes introduce runtime options or branching in the code, please ensure that all options or branches are being tested and that exceptions are being thrown in invalid scenarios.
 
 4. Typo fixes can be merged by any member of the Development (Dev) Team.
 
@@ -175,7 +175,7 @@ shows protected members, nested classes, etc. When writing doxygen comments,
 you can use `\internal` or `\if developer ... \endif`
 for documentation that is only intended for developers.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
@@ -237,9 +237,9 @@ Both pre-increment i and post-increment i are available. When you don’t look a
 
 
 ```cpp
-/*YES*/ for (int i; i < limit; ++i);
+/*YES*/ for (int i = 0; i < limit; ++i);
 
-/*NO*/ for (int i; i < limit; i++);
+/*NO*/ for (int i = 0; i < limit; i++);
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
@@ -315,6 +315,7 @@ Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
 Andrew LaPre       |@ankela       |IK error output to file
+Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
 
 Contributor License Agreement
 -----------------------------

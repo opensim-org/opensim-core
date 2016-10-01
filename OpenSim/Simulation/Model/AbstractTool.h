@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,21 +29,15 @@
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include "ControllerSet.h"
 #include "AnalysisSet.h"
-#include "SimTKsimbody.h"
 #include "ForceSet.h"
 #include "ExternalLoads.h"
 
 namespace OpenSim { 
 
-class PrescribedForce;
-class GCVSpline;
-
 class Model;
 class ForceSet;
-class Body;
 
 
 //=============================================================================

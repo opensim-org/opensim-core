@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael A. Sherman, Ayman Habib                      *
  * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
@@ -277,7 +277,7 @@ private:
 
     // All coordinates (Simbody mobility) have associated constraints that
     // perform joint locking, prescribed motion and range of motion.
-    // Constraints are created upon setup: locked, precribedFunction
+    // Constraints are created upon setup: locked, prescribed Function
     // and range must be set.
     // NOTE: Changing the prescribed motion function requires topology to be realized
     //       so state is invalidated

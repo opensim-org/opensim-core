@@ -142,28 +142,28 @@ void addComponentsToModel(Model& osimModel)
         new FreeJoint("blockToGround", ground, locationInParent, orientationInParent,
                                        *block, locationInBody, orientationInBody);
 
-    // Get a reference to the coordinate set (6 degrees-of-freedom) between 
-    // the block and ground frames
-    CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
-
-    // Set the angle and position ranges for the coordinate set
+    // Set the angle and position ranges for the free (6-degree-of-freedom)
+    // joint between the block and ground frames.
     double angleRange[2] = { -SimTK::Pi / 2, SimTK::Pi / 2 };
     double positionRange[2] = { -1, 1 };
-    jointCoordinateSet[0].setRange(angleRange);
-    jointCoordinateSet[1].setRange(angleRange);
-    jointCoordinateSet[2].setRange(angleRange);
-    jointCoordinateSet[3].setRange(positionRange);
-    jointCoordinateSet[4].setRange(positionRange);
-    jointCoordinateSet[5].setRange(positionRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+    blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
     // GRAVITY
     // Obtain the default acceleration due to gravity
     Vec3 gravity = osimModel.getGravity();
 
     // Define non-zero default states for the free joint
-    jointCoordinateSet[3].setDefaultValue(constantDistance); // set x-translation value
-    double h_start = blockMass*gravity[1] / (stiffness*blockSideLength*blockSideLength);
-    jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
+    blockToGround->updCoordinate(FreeJoint::Coord::TranslationX)
+                   .setDefaultValue(constantDistance);
+    double h_start = blockMass*gravity[1] /
+                     (stiffness*blockSideLength*blockSideLength);
+    blockToGround->updCoordinate(FreeJoint::Coord::TranslationY)
+                   .setDefaultValue(h_start); //y-translation is height
 
     // Add the block and joint to the model
     osimModel.addComponent(block);
@@ -303,14 +303,14 @@ void compareResultsToStandard() {
             standard1("std_tugOfWar_states.sto");
 
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            Array<double>(0.02, 16), __FILE__, __LINE__,
+            std::vector<double>(16, 0.02), __FILE__, __LINE__,
             "testAddComponents::tugOfWar states failed");
         cout << "testAddComponents::tugOfWar states passed\n";
 
         Storage result2("tugOfWar_forces.sto"),
             standard2("std_tugOfWar_forces.mot");
 
-        Array<double> tols(1.0, 20);
+        std::vector<double> tols(20, 1.0);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 
@@ -382,10 +382,10 @@ int main()
         //////////////////////////////
         // Save the model states from forward integration
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
+        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
+        STOFileAdapter_<double>::write(forcesTable, "tugOfWar_forces.sto");
 
         compareResultsToStandard();
     }

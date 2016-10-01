@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Michael A. Sherman                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,6 +26,12 @@
 // INCLUDES
 #include "AbstractProperty.h"
 #include "Exception.h"
+
+#include "SimTKcommon/SmallMatrix.h"
+#include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/Transform.h"
+#include "SimTKcommon/internal/Array.h"
+#include "SimTKcommon/internal/ClonePtr.h"
 
 namespace OpenSim {
 

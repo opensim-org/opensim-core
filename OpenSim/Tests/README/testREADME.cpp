@@ -89,25 +89,35 @@ int main() {
     reporter->set_report_time_interval(1.0);
     reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
     reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"));
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
     model.addComponent(reporter);
+
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    bodyGeometry.setColor(Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
+        "humerusCenter", "humerus", Transform(Vec3(0, 0.5, 0)));
+    humerus->addComponent(humerusCenter);
+    humerusCenter->attachGeometry(bodyGeometry.clone());
+    PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
+        "radiusCenter", "radius", Transform(Vec3(0, 0.5, 0)));
+    radius->addComponent(radiusCenter);
+    radiusCenter->attachGeometry(bodyGeometry.clone());
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix the hip at its default angle and begin with the knee flexed.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->getCoordinate().setLocked(state, true);
+    elbow->getCoordinate().setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
-    // Add display geometry.
+    // Configure the visualizer.
 #ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     viz.setBackgroundColor(White);
-    // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
-    DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(humerus->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration( radius->getMobilizedBodyIndex(), Transform(center), geom);
 #endif
 
     // Simulate.
@@ -119,4 +129,6 @@ int main() {
     getchar();
 #endif
     manager.integrate(state);
+
+    return 0;
 };

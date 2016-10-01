@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,13 @@
 // INCLUDES
 //=============================================================================
 #include "InverseDynamicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
-#include "AnalyzeTool.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -244,15 +237,21 @@ bool InverseDynamicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.")
+
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
         _model->printBasicInfo(cout);
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
 
-        _model->setup();
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
+        // Initialize the model's underlying computational system and get its default state.
+        SimTK::State& s = _model->initSystem();
 
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
@@ -302,9 +301,7 @@ bool InverseDynamicsTool::run()
 
         }
 
-        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
-        // Initialize the model's underlying computational system and get its default state.
-        SimTK::State& s = _model->initSystem();
+
 
         // Exclude user-specified forces from the dynamics for this analysis
         disableModelForces(*_model, s, _excludedForces);

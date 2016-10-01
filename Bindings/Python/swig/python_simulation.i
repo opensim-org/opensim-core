@@ -73,6 +73,19 @@ MODEL_ADOPT_HELPER(Force);
 MODEL_ADOPT_HELPER(Controller);
 
 
+%pythonappend OpenSim::Frame::attachGeometry %{
+    geom._markAdopted()
+%}
+
+// PrescribedController::prescribeControlForActuator takes ownership of
+// the passed-in function.
+// There are two overloads of this function; we append to both of them.
+// args[1] is `Function* prescribedFunction`.
+%pythonappend OpenSim::PrescribedController::prescribeControlForActuator %{
+    args[1]._markAdopted()
+%}
+
+
 // Compensate for insufficient C++11 support in SWIG
 // =================================================
 /*

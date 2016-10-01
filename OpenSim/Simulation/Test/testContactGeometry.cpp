@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -356,21 +356,21 @@ void compareHertzAndMeshContactResults()
 
     // Hertz theory and ElasticFoundation will not be the same, but they should
     // yield similar results, to withing
-    Array<double> rms_tols_1(12, nforces);
+    std::vector<double> rms_tols_1(nforces, 12);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
             __FILE__, __LINE__,
             "ElasticFoundation FAILED to Match Hertz Contact ");
 
     // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
     // virtually identical
-    Array<double> rms_tols_2(0.5, nforces);
+    std::vector<double> rms_tols_2(nforces, 0.5);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
             __FILE__, __LINE__,
             "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
     // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
     // identical
-    Array<double> rms_tols_3(integ_accuracy, nforces);
+    std::vector<double> rms_tols_3(nforces, integ_accuracy);
     CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
             __FILE__, __LINE__,
             "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
@@ -490,7 +490,7 @@ void testIntermediateFrames() {
         // Initialize and set state.
         SimTK::State& state = model.initSystem();
         const auto& hinge = model.getJointSet().get("hinge");
-        const auto& coord = hinge.get_CoordinateSet()[0];
+        const auto& coord = hinge.getCoordinate();
         coord.setValue(state, 0.15 * SimTK::Pi);
 
         // Integrate.

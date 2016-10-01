@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,6 +25,11 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
+#include <simbody/internal/GeneralForceSubsystem.h>
+#include <simbody/internal/Force.h>
+#include <simbody/internal/MobilizedBody_Pin.h>
+#include <simbody/internal/MobilizedBody_Ground.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -389,6 +394,44 @@ void testMisc() {
     theWorld.setName("World");
     theWorld.finalizeFromProperties();
 
+    // ComponentHasNoSystem exception should be thrown if user attempts to read
+    // or write state, discrete, or cache variables before Component has an
+    // underlying MultibodySystem.
+    {
+        SimTK::State sBlank;
+        const std::string varName = "waldo"; //dummy name
+
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
+        ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableValues(sBlank));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setStateVariableValues(sBlank, SimTK::Vector(1, 0.)));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getStateVariableDerivativeValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getDiscreteVariableValue(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setDiscreteVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.getCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.setCacheVariableValue(sBlank, varName, 0.));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.updCacheVariableValue<double>(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableValid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.markCacheVariableInvalid(sBlank, varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+            theWorld.isCacheVariableValid(sBlank, varName));
+    }
+
     TheWorld* cloneWorld = theWorld.clone();
     cloneWorld->setName("ClonedWorld");
     cloneWorld->finalizeFromProperties();
@@ -429,7 +472,7 @@ void testMisc() {
 
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getFullPathName());
+    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
     // add a subcomponent
@@ -442,19 +485,19 @@ void testMisc() {
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -465,7 +508,7 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Query existing components.
@@ -707,7 +750,7 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -720,11 +763,11 @@ void testMisc() {
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getFullPathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getFullPathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
 
     theWorld.print("Nested_" + modelFile);
 }
@@ -767,11 +810,12 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs to desired model outputs
-    tabReporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("activation"));
-    tabReporter->updInput("inputs").connect(foo.getOutput("Output1"));
-    tabReporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
+    // wire up table reporter inputs (using conveniece method) to desired 
+    // model outputs
+    tabReporter->updInput().connect(bar.getOutput("fiberLength"));
+    tabReporter->updInput().connect(bar.getOutput("activation"));
+    tabReporter->updInput().connect(foo.getOutput("Output1"));
+    tabReporter->updInput().connect(bar.getOutput("PotentialEnergy"));
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -848,7 +892,7 @@ void testComponentPathNames()
     std::string fooWrtFoo = foo.getRelativePathName(foo);
     ASSERT(fooWrtFoo == "");
 
-    std::string topFullPath = top.getFullPathName();
+    std::string topAbsPath = top.getAbsolutePathName();
     std::string fooWrtTop = foo.getRelativePathName(top);
     ASSERT(fooWrtTop == "../A/B/C/D");
 
@@ -862,7 +906,7 @@ void testComponentPathNames()
 
     foo.setName("World3/bar2/foo1");
     fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "./foo1");
+    ASSERT(fooWrtBar == "foo1");
 
     bar.setName("LegWithConstrainedFoot/footConstraint");
     foo.setName("LegWithConstrainedFoot/foot");
@@ -891,18 +935,18 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fullPathC = C->getFullPathName();
-    ASSERT(fullPathC == "/Top/A/B/C");
+    std::string absPathC = C->getAbsolutePathName();
+    ASSERT(absPathC == "/Top/A/B/C");
 
-    std::string fullPathE = E->getFullPathName();
-    ASSERT(fullPathE == "/Top/A/D/E");
+    std::string absPathE = E->getAbsolutePathName();
+    ASSERT(absPathE == "/Top/A/D/E");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
                  /*auto& eref = */top.getComponent("E") );
 
-    auto& cref = top.getComponent(fullPathC);
-    auto& eref = top.getComponent(fullPathE);
+    auto& cref = top.getComponent(absPathC);
+    auto& eref = top.getComponent(absPathE);
 
     auto cFromE = cref.getRelativePathName(eref);
     ASSERT(cFromE == "../../B/C");
@@ -931,10 +975,10 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fFoo1FullPath = 
-        F->getComponent<Foo>("Foo1").getFullPathName();
-    std::string aBar2FullPath = 
-        A->getComponent<Bar>("Bar2").getFullPathName();
+    std::string fFoo1AbsPath = 
+        F->getComponent<Foo>("Foo1").getAbsolutePathName();
+    std::string aBar2AbsPath = 
+        A->getComponent<Bar>("Bar2").getAbsolutePathName();
     auto bar2FromBarFoo = 
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 
@@ -991,11 +1035,17 @@ void testInputOutputConnections()
 
     // do any other input/output connections
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
-    // Must throw an exception since subState0 is not a state of internalSub.
-    ASSERT_THROW(OpenSim::Exception, 
-        foo2->updInput("input1").connect(world.getOutput("./internalSub/subState0")));
-    // internalSub's state is "subState"
-    foo2->updInput("input1").connect(world.getOutput("./internalSub/subState"));
+
+    // Test various exceptions for inputs, outputs, connectors
+    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(OutputNotFound, 
+        world.getComponent("./internalSub").getOutput("subState0"));
+    // Ensure that getOutput does not perform a "find"
+    ASSERT_THROW(OutputNotFound,
+        world.getOutput("./internalSub/subState"));
+
+    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
 
     foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
     foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
@@ -1156,7 +1206,8 @@ void writeTimeSeriesTableForInputConnecteeSerialization() {
     table.setColumnLabels({"a", "b", "c", "d"});
     SimTK::RowVector row{4, 0.0}; row(1)=0.5; row(2)= 0.7; row(3)=0.8;
     for(unsigned i = 0; i < 4; ++i) table.appendRow(0.25 * i, row + i);
-    STOFileAdapter::write(table, dataFileNameForInputConnecteeSerialization);
+    STOFileAdapter_<double>::write(table,
+                                   dataFileNameForInputConnecteeSerialization);
 }
 
 void testListInputConnecteeSerialization() {
@@ -1251,9 +1302,6 @@ void testListInputConnecteeSerialization() {
         auto actualInputValues = Input<double>::downcast(input).getVector(s);
         
         SimTK_TEST_EQ(expectedInputValues, actualInputValues);
-        
-        // Check that `getInput()` can search through subcomponents.
-        SimTK_TEST(world.getInput("consumer/inputs") == input);
     }
 }
 
@@ -1330,7 +1378,6 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Check connectee names before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        std::cout << "DEBUG " << input1.getConnecteeName() << std::endl;
         SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
         SimTK_TEST(fiberLength.getConnecteeName() ==
                    "../producer/column:d(desert)");
@@ -1416,6 +1463,7 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListConnectors);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
     
@@ -1424,4 +1472,3 @@ int main() {
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
     SimTK_END_TEST();
 }
-
