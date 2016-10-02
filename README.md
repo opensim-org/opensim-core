@@ -818,7 +818,7 @@ In **Terminal** --
 sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
 sudo apt-add-repository --yes ppa:fenics-packages/fenics-exp
 sudo apt-get update
-sudo apt-get --yes install git cmake cmake-curses-gui clang-3.6 \
+sudo apt-get --force -yes install git cmake cmake-curses-gui clang-3.6 \
                            freeglut3-dev libxi-dev libxmu-dev \
                            liblapack-dev swig3.0 python-dev \
                            openjdk-7-jdk
