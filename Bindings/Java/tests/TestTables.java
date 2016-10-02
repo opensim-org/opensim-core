@@ -25,7 +25,7 @@ class TestTables {
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
-        TableRow row0 = table.getRowAtIndex(0);
+        RowVectorView row0 = table.getRowAtIndex(0);
         assert row0.get(0) == 1 &&
                row0.get(1) == 1 &&
                row0.get(2) == 1 &&
@@ -35,7 +35,7 @@ class TestTables {
         table.appendRow(0.2, row);
         assert table.getNumRows() == 2;
         assert table.getNumColumns() == 4;
-        TableRow row1 = table.getRow(0.2);
+        RowVectorView row1 = table.getRow(0.2);
         assert row1.get(0) == 2 &&
                row1.get(1) == 2 &&
                row1.get(2) == 2 &&
@@ -45,7 +45,7 @@ class TestTables {
         table.appendRow(0.3, row);
         assert table.getNumRows() == 3;
         assert table.getNumColumns() == 4;
-        TableRow row2 = table.getRow(0.3);
+        RowVectorView row2 = table.getRow(0.3);
         assert row2.get(0) == 3 &&
                row2.get(1) == 3 &&
                row2.get(2) == 3 &&
@@ -56,11 +56,11 @@ class TestTables {
                indCol.get(1) == 0.2 &&
                indCol.get(2) == 0.3;
         // Get dependent column.
-        TableCol col1 = table.getDependentColumnAtIndex(1);
+        VectorView col1 = table.getDependentColumnAtIndex(1);
         assert col1.get(0) == 1 &&
                col1.get(1) == 2 &&
                col1.get(2) == 3;
-        TableCol col3 = table.getDependentColumnAtIndex(3);
+        VectorView col3 = table.getDependentColumnAtIndex(3);
         assert col3.get(0) == 1 &&
                col3.get(1) == 2 &&
                col3.get(2) == 3;
@@ -80,7 +80,7 @@ class TestTables {
                table.getRowAtIndex(2).get(2) == 20 &&
                table.getRowAtIndex(2).get(3) == 20;
         // Edit columns of the table.
-        TableCol col0 = table.getDependentColumnAtIndex(0);
+        VectorView col0 = table.getDependentColumnAtIndex(0);
         col0.set(0, 30); col0.set(1, 30); col0.set(2, 30);
         assert table.getDependentColumnAtIndex(0).get(0) == 30 &&
                table.getDependentColumnAtIndex(0).get(1) == 30 &&
@@ -92,29 +92,7 @@ class TestTables {
                table.getDependentColumn("3").get(2) == 40;
         // Access element with index out of bounds. Exception expected.
         try {
-            double shouldThrow = row0.get(5);
-            assert false;
-        } catch (java.lang.RuntimeException exc) {}
-        try {
-            double shouldThrow = col1.get(5);
-            assert false;
-        } catch (java.lang.RuntimeException exc) {}
-        // Access row with index/time out of bounds. Exception expected.
-        try {
-            TableRow shouldThrow = table.getRowAtIndex(5);
-            assert false;
-        } catch (java.lang.RuntimeException exc) {}
-        try {
-            TableRow shouldThrow = table.getRow(5.5);
-            assert false;
-        } catch (java.lang.RuntimeException exc) {}
-        // Access column with index/label out of bounds. Exception expected.
-        try {
-            TableCol shouldThrow = table.getDependentColumnAtIndex(5);
-            assert false;
-        } catch (java.lang.RuntimeException exc) {}
-        try {
-            TableCol shouldThrow = table.getDependentColumn("not-found");
+            double shouldThrow = row0.get(4);
             assert false;
         } catch (java.lang.RuntimeException exc) {}
     }
@@ -133,7 +111,7 @@ class TestTables {
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
-        TableRowVec3 row0 = table.getRowAtIndex(0);
+        RowVectorViewVec3 row0 = table.getRowAtIndex(0);
         assert row0.get(0).get(0) == 1 && row0.get(0).get(1) == 1 &&
                row0.get(0).get(2) == 1 && row0.get(1).get(0) == 1 &&
                row0.get(1).get(1) == 1 && row0.get(1).get(2) == 1 &&
@@ -146,7 +124,7 @@ class TestTables {
         table.appendRow(0.2, row);
         assert table.getNumRows() == 2;
         assert table.getNumColumns() == 4;
-        TableRowVec3 row1 = table.getRowAtIndex(1);
+        RowVectorViewVec3 row1 = table.getRowAtIndex(1);
         assert row1.get(0).get(0) == 2 && row1.get(0).get(1) == 2 &&
                row1.get(0).get(2) == 2 && row1.get(1).get(0) == 2 &&
                row1.get(1).get(1) == 2 && row1.get(1).get(2) == 2 &&
@@ -159,7 +137,7 @@ class TestTables {
         table.appendRow(0.3, row);
         assert table.getNumRows() == 3;
         assert table.getNumColumns() == 4;
-        TableRowVec3 row2 = table.getRowAtIndex(2);
+        RowVectorViewVec3 row2 = table.getRowAtIndex(2);
         assert row2.get(0).get(0) == 3 && row2.get(0).get(1) == 3 &&
                row2.get(0).get(2) == 3 && row2.get(1).get(0) == 3 &&
                row2.get(1).get(1) == 3 && row2.get(1).get(2) == 3 &&
@@ -172,13 +150,13 @@ class TestTables {
                indCol.get(1) == 0.2 &&
                indCol.get(2) == 0.3;
         // Get dependent column.
-        TableColVec3 col1 = table.getDependentColumnAtIndex(1);
+        VectorViewVec3 col1 = table.getDependentColumnAtIndex(1);
         assert col1.get(0).get(0) == 1 && col1.get(0).get(1) == 1 &&
                col1.get(0).get(2) == 1 && col1.get(1).get(0) == 2 &&
                col1.get(1).get(1) == 2 && col1.get(1).get(2) == 2 &&
                col1.get(2).get(0) == 3 && col1.get(2).get(1) == 3 &&
                col1.get(2).get(2) == 3;
-        TableColVec3 col2 = table.getDependentColumn("2");
+        VectorViewVec3 col2 = table.getDependentColumn("2");
         assert col2.get(0).get(0) == 1 && col2.get(0).get(1) == 1 &&
                col2.get(0).get(2) == 1 && col2.get(1).get(0) == 2 &&
                col2.get(1).get(1) == 2 && col2.get(1).get(2) == 2 &&
@@ -240,7 +218,7 @@ class TestTables {
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
-        TableRow row0 = table.getRowAtIndex(0);
+        RowVectorView row0 = table.getRowAtIndex(0);
         assert row0.get(0) == 1 &&
                row0.get(1) == 1 &&
                row0.get(2) == 1 &&
@@ -250,7 +228,7 @@ class TestTables {
         table.appendRow(0.2, row);
         assert table.getNumRows() == 2;
         assert table.getNumColumns() == 4;
-        TableRow row1 = table.getRow(0.2);
+        RowVectorView row1 = table.getRow(0.2);
         assert row1.get(0) == 2 &&
                row1.get(1) == 2 &&
                row1.get(2) == 2 &&
@@ -277,7 +255,7 @@ class TestTables {
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
-        TableRowVec3 row0 = table.getRowAtIndex(0);
+        RowVectorViewVec3 row0 = table.getRowAtIndex(0);
         assert row0.get(0).get(0) == 1 && row0.get(0).get(1) == 1 &&
                row0.get(0).get(2) == 1 && row0.get(1).get(0) == 1 &&
                row0.get(1).get(1) == 1 && row0.get(1).get(2) == 1 &&
@@ -290,7 +268,7 @@ class TestTables {
         table.appendRow(0.2, row);
         assert table.getNumRows() == 2;
         assert table.getNumColumns() == 4;
-        TableRowVec3 row1 = table.getRowAtIndex(1);
+        RowVectorViewVec3 row1 = table.getRowAtIndex(1);
         assert row1.get(0).get(0) == 2 && row1.get(0).get(1) == 2 &&
                row1.get(0).get(2) == 2 && row1.get(1).get(0) == 2 &&
                row1.get(1).get(1) == 2 && row1.get(1).get(2) == 2 &&

@@ -8,7 +8,6 @@
 %{
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-#include "Bindings/Java/swig/FixedSizeArray.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -216,72 +215,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       private_addComponent(comp);
   }
 %}
-
-%include "FixedSizeArray.h"
-%template(TableRow)     OpenSim::FixedSizeArray_<double     , true>;
-%template(TableCol)     OpenSim::FixedSizeArray_<double     , false>;
-%template(TableRowVec3) OpenSim::FixedSizeArray_<SimTK::Vec3, true>;
-%template(TableColVec3) OpenSim::FixedSizeArray_<SimTK::Vec3, false>;
-
-%extend OpenSim::DataTable_<double, double> {
-    FixedSizeArray_<double, true>
-        getRowAtIndex(const unsigned index) {
-        return $self->getRowAtIndex(static_cast<size_t>(index));
-    }
-
-    FixedSizeArray_<double, true>
-        getRow(const double ind) {
-        return $self->getRow(ind);
-    }
-
-    FixedSizeArray_<double, false>
-        getDependentColumnAtIndex(const unsigned index) {
-        return $self->getDependentColumnAtIndex(static_cast<size_t>(index));
-    }
-
-    FixedSizeArray_<double, false>
-        getDependentColumn(const std::string columnLabel) {
-        return $self->getDependentColumn(columnLabel);
-    }
-}
-%ignore OpenSim::DataTable_<double, double>::getRowAtIndex;
-%ignore OpenSim::DataTable_<double, double>::getRow;
-%ignore OpenSim::DataTable_<double, double>::updRowAtIndex;
-%ignore OpenSim::DataTable_<double, double>::updRowAtIndex;
-%ignore OpenSim::DataTable_<double, double>::getDependentColumnAtIndex;
-%ignore OpenSim::DataTable_<double, double>::getDependentColumn;
-%ignore OpenSim::DataTable_<double, double>::updDependentColumnAtIndex;
-%ignore OpenSim::DataTable_<double, double>::updDependentColumn;
-
-%extend OpenSim::DataTable_<double, SimTK::Vec3> {
-    FixedSizeArray_<SimTK::Vec3, true>
-        getRowAtIndex(const unsigned index) {
-        return $self->getRowAtIndex(static_cast<size_t>(index));
-    }
-
-    FixedSizeArray_<SimTK::Vec3, true>
-        getRow(const double ind) {
-        return $self->getRow(ind);
-    }
-
-    FixedSizeArray_<SimTK::Vec3, false>
-        getDependentColumnAtIndex(const unsigned index) {
-        return $self->getDependentColumnAtIndex(static_cast<size_t>(index));
-    }
-
-    FixedSizeArray_<SimTK::Vec3, false>
-        getDependentColumn(const std::string columnLabel) {
-        return $self->getDependentColumn(columnLabel);
-    }
-}
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::getRowAtIndex;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::getRow;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::updRowAtIndex;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::updRowAtIndex;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::getDependentColumnAtIndex;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::getDependentColumn;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::updDependentColumnAtIndex;
-%ignore OpenSim::DataTable_<double, SimTK::Vec3>::updDependentColumn;
 
 %import "java_simbody.i"
 

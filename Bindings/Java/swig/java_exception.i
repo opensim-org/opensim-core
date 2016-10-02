@@ -19,7 +19,9 @@
 	  }
 	  catch(std::exception& _ex){
               jclass excep = jenv->FindClass("java/lang/RuntimeException");
-              if (excep)
+              if (excep){
                   jenv->ThrowNew(excep,_ex.what());
+                  return $null;
+              }
 	  }
 }
