@@ -95,6 +95,28 @@ class TestTables {
             double shouldThrow = row0.get(4);
             assert false;
         } catch (java.lang.RuntimeException exc) {}
+        try {
+            double shouldThrow = col1.get(5);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
+        // Access row with index/time out of bounds. Exception expected.
+        try {
+            RowVectorView shouldThrow = table.getRowAtIndex(5);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
+        try {
+            RowVectorView shouldThrow = table.getRow(5.5);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
+        // Access column with index/label out of bounds. Exception expected.
+        try {
+            VectorView shouldThrow = table.getDependentColumnAtIndex(5);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
+        try {
+            VectorView shouldThrow = table.getDependentColumn("not-found");
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
     }
 
     public static void test_DataTableVec3() {
