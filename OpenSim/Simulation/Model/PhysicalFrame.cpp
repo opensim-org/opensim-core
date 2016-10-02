@@ -212,7 +212,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 }
 
 void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
-    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform,
+    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransformVec6,
     SimTK::Xml::Element& geomSetElement)
 {
     std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
@@ -238,13 +238,21 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 geomFile = geomFileIter->getValueAs<SimTK::String>();
             }
             // transform
-            SimTK::Vec6 localXform(0.);
+            SimTK::Vec6 localXformVec6(0.);
             SimTK::Xml::element_iterator localXformIter = displayGeomIter->element_begin("transform");
             if (localXformIter != displayGeomIter->element_end()) {
-                localXform = localXformIter->getValueAs<SimTK::Vec6>();
+                localXformVec6 = localXformIter->getValueAs<SimTK::Vec6>();
             }
-            if (localXform.norm() > SimTK::Eps || outerTransform.norm() > SimTK::Eps) {
+            if (localXformVec6.norm() > SimTK::Eps || outerTransformVec6.norm() > SimTK::Eps) {
                 // Create a Frame
+                SimTK::Transform outerTransform(outerTransformVec6.getSubVec<3>(3));
+                outerTransform.updR().setRotationToBodyFixedXYZ(outerTransformVec6.getSubVec<3>(0));
+                SimTK::Transform innerTransform(localXformVec6.getSubVec<3>(3));
+                innerTransform.updR().setRotationToBodyFixedXYZ(localXformVec6.getSubVec<3>(0));
+                SimTK::Transform composed = outerTransform.compose(innerTransform);
+                SimTK::Vec6 composedXformVec6(0.);
+                composedXformVec6.updSubVec<3>(3) = composed.p();
+                composedXformVec6.updSubVec<3>(0) = composed.R().convertRotationToBodyFixedXYZ();
                 attachToThisFrame = false;
                 std::string frameName = bodyName + "_geom_frame_" + to_string(counter);
                 SimTK::Xml::Element frameNode("frame_name", frameName);
@@ -272,7 +280,8 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 // Following line should compose the two transforms localXform, outerTransform
                 // Keeping in mind scale factors. For now just adding the two Vec6 to test since 
                 // in practice one of the two is always 0 and one set of Scale factors is 1.
-                createFrameForXform(frameSetObjectsIter, frameName, localXform+ outerTransform, bodyName);
+
+                createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
                 SimTK::Xml::element_iterator parnetFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
