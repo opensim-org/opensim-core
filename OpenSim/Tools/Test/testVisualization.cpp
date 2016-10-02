@@ -105,6 +105,13 @@ private:
     }
 };
 
+std::string trim_right_copy(
+    const std::string& s,
+    const std::string& delimiters = " \n\r\t")
+{
+    return s.substr(0, s.find_last_not_of(delimiters) + 1);
+}
+
 int main()
 {
     try {
@@ -152,7 +159,7 @@ void testVisModel(Model& model, const std::string standard_filename)
     cout << fromModel << endl;
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
-    int same = fromFile.compare(fromModel);
+    int same = trim_right_copy(fromFile).compare(trim_right_copy(fromModel));
     ASSERT(same == 0, __FILE__, __LINE__, 
         "Visualization primitives from model do not match standard from file `"
         + standard_filename + "'.");
@@ -190,3 +197,5 @@ Model createModel4AppearanceTest()
     oooframe->attachGeometry(oooffsetSphere);
     return modelWithGroundOnly; // Return a copy
 }
+
+
