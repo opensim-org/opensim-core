@@ -356,6 +356,53 @@ class TestTables {
             table.appendRow(0.15, row);
             assert false;
         } catch(java.lang.RuntimeException exc) {}
+        // Flatten table into table of doubles.
+        TimeSeriesTable tableDouble = table.flatten();
+        assert tableDouble.getNumRows() == 2;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_1");
+        assert tableDouble.getColumnLabel( 1).equals("0_2");
+        assert tableDouble.getColumnLabel( 2).equals("0_3");
+        assert tableDouble.getColumnLabel( 3).equals("1_1");
+        assert tableDouble.getColumnLabel( 4).equals("1_2");
+        assert tableDouble.getColumnLabel( 5).equals("1_3");
+        assert tableDouble.getColumnLabel( 6).equals("2_1");
+        assert tableDouble.getColumnLabel( 7).equals("2_2");
+        assert tableDouble.getColumnLabel( 8).equals("2_3");
+        assert tableDouble.getColumnLabel( 9).equals("3_1");
+        assert tableDouble.getColumnLabel(10).equals("3_2");
+        assert tableDouble.getColumnLabel(11).equals("3_3");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
+        tableDouble = table.flatten(suffixes);
+        assert tableDouble.getNumRows() == 2;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_x");
+        assert tableDouble.getColumnLabel( 1).equals("0_y");
+        assert tableDouble.getColumnLabel( 2).equals("0_z");
+        assert tableDouble.getColumnLabel( 3).equals("1_x");
+        assert tableDouble.getColumnLabel( 4).equals("1_y");
+        assert tableDouble.getColumnLabel( 5).equals("1_z");
+        assert tableDouble.getColumnLabel( 6).equals("2_x");
+        assert tableDouble.getColumnLabel( 7).equals("2_y");
+        assert tableDouble.getColumnLabel( 8).equals("2_z");
+        assert tableDouble.getColumnLabel( 9).equals("3_x");
+        assert tableDouble.getColumnLabel(10).equals("3_y");
+        assert tableDouble.getColumnLabel(11).equals("3_z");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
     }
 
     public static void main(String[] args) {
