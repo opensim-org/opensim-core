@@ -820,7 +820,7 @@ sudo apt-add-repository --yes ppa:fenics-packages/fenics-exp
 sudo apt-get update
 sudo apt-get --yes install git cmake cmake-curses-gui clang-3.6 \
                            freeglut3-dev libxi-dev libxmu-dev \
-                           liblapack-dev swig3.0 python-dev \
+                           liblapack-dev swig3.1 python-dev \
                            openjdk-7-jdk
 sudo rm -f /usr/bin/cc /usr/bin/c++
 sudo ln -s /usr/bin/clang-3.6 /usr/bin/cc
