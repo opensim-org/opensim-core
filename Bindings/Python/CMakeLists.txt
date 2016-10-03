@@ -255,32 +255,14 @@ set_target_properties(PythonBindings PROPERTIES
 # source tree. It's important to run the tests in the source tree so that
 # one can edit the tests and immediately re-run the tests without any
 # intermediate file copying.
-# TODO when minimum cmake is v3.0.0 and add_test WORKING_DIRECTORY supports
-# generator expressions, use the following instead:
-#   add_test(NAME python
-#       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-#       COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-#                   --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-#                   --verbose
-#       )
-if(MSVC OR XCODE)
-    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-        add_test(NAME python_${cfg}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${cfg}"
-            COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+# It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
+# ${OPENSIM_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
+add_test(NAME python_tests
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
                 --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
                 --verbose
-            CONFIGURATIONS ${cfg}
-            )
-    endforeach()
-else()
-    add_test(NAME python
-        WORKING_DIRECTORY "${OPENSIM_PYTHON_BINARY_DIR}"
-        COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-            --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-            --verbose
-        )
-endif()
+    )
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
@@ -289,13 +271,8 @@ if(WIN32)
     # build configuration, which is filled in for `$<CONFIG>`. We also don't
     # want to accidentally use a different OpenSim build/installation somewhere
     # on the machine.
-    # TODO use the commented-out version when moving to CMake 3.0.
-    #set_tests_properties(python PROPERTIES ENVIRONMENT
-    #    "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
-    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-        set_tests_properties(python_${cfg} PROPERTIES ENVIRONMENT
-            "PATH=${CMAKE_BINARY_DIR}/${cfg}")
-    endforeach()
+    set_tests_properties(python PROPERTIES ENVIRONMENT
+        "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
 endif()
 
 # Allow MSVC users to run only the python tests directly from the MSVC GUI.
