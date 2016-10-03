@@ -42,31 +42,41 @@ class TestReporter {
         state.setTime(0.3);
         model.realizeReport(state);
 
-        assert tableReporter.getTable().getColumnLabels().size()      == 2;
-        assert tableReporter.getTable().getColumnLabel(0).
+        table = tableReporter.getTable();
+
+        assert table.getColumnLabels().size()          == 2;
+        assert table.getColumnLabel(0).
                                       equals("/model/table_source/column:col1");
-        assert tableReporter.getTable().getColumnLabel(1).
+        assert table.getColumnLabel(1).
                                       equals("/model/table_source/column:col2");
-        assert tableReporter.getTable().getNumRows()                  == 3;
-        assert tableReporter.getTable().getNumColumns()               == 2;
-        assert tableReporter.getTable().getRowAtIndex(0).get(0)       == 1;
-        assert tableReporter.getTable().getRowAtIndex(0).get(1)       == 1;
-        assert tableReporter.getTable().getRowAtIndex(1).get(0)       == 2;
-        assert tableReporter.getTable().getRowAtIndex(1).get(1)       == 2;
-        assert tableReporter.getTable().getRowAtIndex(2).get(0)       == 3;
-        assert tableReporter.getTable().getRowAtIndex(2).get(1)       == 3;
-        assert tableReporter.getTable().getIndependentColumn().get(0) == 0.1;
-        assert tableReporter.getTable().getIndependentColumn().get(1) == 0.2;
-        assert tableReporter.getTable().getIndependentColumn().get(2) == 0.3;
+        assert table.getNumRows()                      == 3;
+        assert table.getNumColumns()                   == 2;
+        assert table.getRowAtIndex(0).get(0)           == 1;
+        assert table.getRowAtIndex(0).get(1)           == 1;
+        assert table.getRowAtIndex(1).get(0)           == 2;
+        assert table.getRowAtIndex(1).get(1)           == 2;
+        assert table.getRowAtIndex(2).get(0)           == 3;
+        assert table.getRowAtIndex(2).get(1)           == 3;
+        assert table.getIndependentColumn().get(0)     == 0.1;
+        assert table.getIndependentColumn().get(1)     == 0.2;
+        assert table.getIndependentColumn().get(2)     == 0.3;
 
         for(int iteration = 0; iteration < 4; ++iteration) {
             tableReporter.clearTable();
-            assert tableReporter.getTable().getNumRows()                  == 0;
-            assert tableReporter.getTable().getNumColumns()               == 0;
-            assert tableReporter.getTable().getColumnLabels().size()      == 2;
-            assert tableReporter.getTable().getColumnLabel(0).
+            assert table.getNumRows()                  == 0;
+            assert table.getNumColumns()               == 0;
+            assert table.getColumnLabels().size()      == 2;
+            assert table.getColumnLabel(0).
                                       equals("/model/table_source/column:col1");
-            assert tableReporter.getTable().getColumnLabel(1).
+            assert table.getColumnLabel(1).
+                                      equals("/model/table_source/column:col2");
+            // Make sure the table reference is still valid.
+            assert table.getNumRows()                  == 0;
+            assert table.getNumColumns()               == 0;
+            assert table.getColumnLabels().size()      == 2;
+            assert table.getColumnLabel(0).
+                                      equals("/model/table_source/column:col1");
+            assert table.getColumnLabel(1).
                                       equals("/model/table_source/column:col2");
         
             state = model.initSystem();
@@ -77,25 +87,22 @@ class TestReporter {
             state.setTime(0.3);
             model.realizeReport(state);
 
-            assert tableReporter.getTable().getColumnLabels().size()      == 2;
-            assert tableReporter.getTable().getColumnLabel(0).
+            assert table.getColumnLabels().size()      == 2;
+            assert table.getColumnLabel(0).
                                       equals("/model/table_source/column:col1");
-            assert tableReporter.getTable().getColumnLabel(1).
+            assert table.getColumnLabel(1).
                                       equals("/model/table_source/column:col2");
-            assert tableReporter.getTable().getNumRows()                  == 3;
-            assert tableReporter.getTable().getNumColumns()               == 2;
-            assert tableReporter.getTable().getRowAtIndex(0).get(0)       == 1;
-            assert tableReporter.getTable().getRowAtIndex(0).get(1)       == 1;
-            assert tableReporter.getTable().getRowAtIndex(1).get(0)       == 2;
-            assert tableReporter.getTable().getRowAtIndex(1).get(1)       == 2;
-            assert tableReporter.getTable().getRowAtIndex(2).get(0)       == 3;
-            assert tableReporter.getTable().getRowAtIndex(2).get(1)       == 3;
-            assert tableReporter.getTable().
-                                 getIndependentColumn().get(0) == 0.1;
-            assert tableReporter.getTable().
-                                 getIndependentColumn().get(1) == 0.2;
-            assert tableReporter.getTable().
-                                 getIndependentColumn().get(2) == 0.3;
+            assert table.getNumRows()                  == 3;
+            assert table.getNumColumns()               == 2;
+            assert table.getRowAtIndex(0).get(0)       == 1;
+            assert table.getRowAtIndex(0).get(1)       == 1;
+            assert table.getRowAtIndex(1).get(0)       == 2;
+            assert table.getRowAtIndex(1).get(1)       == 2;
+            assert table.getRowAtIndex(2).get(0)       == 3;
+            assert table.getRowAtIndex(2).get(1)       == 3;
+            assert table.getIndependentColumn().get(0) == 0.1;
+            assert table.getIndependentColumn().get(1) == 0.2;
+            assert table.getIndependentColumn().get(2) == 0.3;
         }
     }
 
