@@ -263,6 +263,15 @@ add_test(NAME python_tests
                 --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
                 --verbose
     )
+# Similar as above, but for the example files. These files aren't named as
+# test_*.py, so we must specify a more general search pattern.
+add_test(NAME python_examples
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/examples"
+                --pattern *.py
+                --verbose
+    )
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
