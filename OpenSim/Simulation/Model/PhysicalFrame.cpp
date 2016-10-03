@@ -278,8 +278,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                     frameSetObjectsIter = frameSetNode.element_begin("objects");
                 }
                 // Following line should compose the two transforms localXform, outerTransform
-                // Keeping in mind scale factors. For now just adding the two Vec6 to test since 
-                // in practice one of the two is always 0 and one set of Scale factors is 1.
+                // Keeping in mind scale factors. 
 
                 createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
 

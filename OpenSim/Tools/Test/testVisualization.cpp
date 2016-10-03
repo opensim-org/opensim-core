@@ -35,6 +35,7 @@ using namespace SimTK;
 
 void testVisModel(Model& model, const std::string filename_for_standard);
 Model createModel4AppearanceTest();
+bool testVisModelAgainstStandard(Model& model);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -105,13 +106,6 @@ private:
     }
 };
 
-std::string trim_right_copy(
-    const std::string& s,
-    const std::string& delimiters = " \n\r\t")
-{
-    return s.substr(0, s.find_last_not_of(delimiters) + 1);
-}
-
 int main()
 {
     try {
@@ -121,7 +115,7 @@ int main()
         Model testModel2 = createModel4AppearanceTest();
         testVisModel(testModel2, "vis_AppearanceTest.txt");
         Model testModel3("double_pendulum33.osim");
-        testVisModel(testModel3, "vis_double_pendulum33.txt");
+        testVisModelAgainstStandard(testModel3);
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -159,7 +153,7 @@ void testVisModel(Model& model, const std::string standard_filename)
     cout << fromModel << endl;
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
-    int same = trim_right_copy(fromFile).compare(trim_right_copy(fromModel));
+    int same = fromFile.compare(fromModel);
     ASSERT(same == 0, __FILE__, __LINE__, 
         "Visualization primitives from model do not match standard from file `"
         + standard_filename + "'.");
@@ -197,5 +191,91 @@ Model createModel4AppearanceTest()
     oooframe->attachGeometry(oooffsetSphere);
     return modelWithGroundOnly; // Return a copy
 }
-
-
+// Eventually all tests will go thru this function instead of comparing files then reference
+// can be passed in.
+bool testVisModelAgainstStandard(Model& model) {
+    bool visualDebug = false; // Turn on only if you want to see API visualizer live
+    if (visualDebug)
+        model.setUseVisualizer(true);
+    SimTK::State& si = model.initSystem();
+    if (visualDebug)
+        model.getVisualizer().show(si);
+    ModelDisplayHints mdh;
+    SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
+    model.generateDecorations(true, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
+    model.generateDecorations(false, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
+    // Frame Ground
+    SimTK::Array_<DecorativeGeometry> primitives_double_pendulum33;
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame rod 1
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Sphere rod 1
+    primitives_double_pendulum33.push_back(
+        DecorativeMeshFile("sphere.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.1).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame body 2
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Sphere rod 2
+    primitives_double_pendulum33.push_back(
+        DecorativeMeshFile("sphere.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.1).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Offset frame rod1
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White).setIndexOnBody(0).setScale(0.2)
+        .setOpacity(1).setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Cylinder rod1
+    primitives_double_pendulum33.push_back(
+        DecorativeMeshFile("cylinder.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Offset frame rod2
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Cylinder rod2
+    primitives_double_pendulum33.push_back(
+        DecorativeMeshFile("cylinder.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Two more offset frames
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
+    primitives_double_pendulum33.push_back(
+        DecorativeFrame(1).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
+    int i = 0;
+    for (SimTK::DecorativeGeometry* nextGeom = primitives_double_pendulum33.begin();
+        nextGeom != primitives_double_pendulum33.end(); 
+        ++nextGeom) {
+            DecorativeGeometryImplementationText dgiTextFromStandard;
+            nextGeom->implementGeometry(dgiTextFromStandard);
+            DecorativeGeometryImplementationText dgiTextFromModel;
+            geometryToDisplay[i].implementGeometry(dgiTextFromModel);
+            ASSERT(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString());
+            ++i;
+    }
+    return true;
+}
