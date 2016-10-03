@@ -802,6 +802,16 @@ public:
        return _coordinateSet; 
     }
 
+    /** Coordinates in the CoordinateSet do not have a predefined order. In
+        some instances it is helpful to get the coordinates in order of 
+        generalized coordinates in the Multibody Tree as defined in the 
+        MultibodySystem when the System is created. For example, computing the
+        generalized forces from the System, yields a vector of generalized forces
+        in order of the Multibody Tree.*/
+    std::vector<std::reference_wrapper<const Coordinate>>
+        getCoordinatesInMultibodyTreeOrder() const;
+
+
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
 
@@ -996,10 +1006,6 @@ private:
     void createMultibodyTree();
 
     void createMultibodySystem();
-
-    // Reorder the Model's Coordinates according to the underlying order
-    // of the coordinates (Q's) in the MultibodySystem
-    void reorderCoordinatesAccordingToSystemMobilities();
 
     void createAssemblySolver(const SimTK::State& s);
 
