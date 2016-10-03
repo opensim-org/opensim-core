@@ -231,6 +231,9 @@ class TestDataTable(unittest.TestCase):
         assert tableDouble.getNumRows() == 3
         assert tableDouble.getNumColumns() == 9
         assert len(tableDouble.getColumnLabels()) == 9
+        assert tableDouble.getColumnLabels() == ('0_1', '0_2', '0_3',
+                                                 '1_1', '1_2', '1_3',
+                                                 '2_1', '2_2', '2_3')
         assert tableDouble.getRowAtIndex(0)[0] == 1
         assert tableDouble.getRowAtIndex(1)[0] == 2
         assert tableDouble.getRowAtIndex(2)[0] == 4
