@@ -240,7 +240,6 @@ class TestDataTable(unittest.TestCase):
         assert tableDouble.getRowAtIndex(0)[8] == 9
         assert tableDouble.getRowAtIndex(1)[8] == 18
         assert tableDouble.getRowAtIndex(2)[8] == 36
-
         tableDouble = table.flatten(['_x', '_y', '_z'])
         assert tableDouble.getColumnLabels() == ('0_x', '0_y', '0_z',
                                                  '1_x', '1_y', '1_z',
