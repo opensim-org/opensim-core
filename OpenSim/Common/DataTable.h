@@ -132,12 +132,13 @@ public:
     \tparam ThatETY Datatype of the matrix underlying the given DataTable.
 
     \param that DataTable to copy-construct this table from. This table can be
-                of for example DataTable_<double, Quaternion>, 
-                DataTable_<double, Vec6>.
-    \param suffixes Suffixes to be used for column-labels in this table when
-                    splitting columns of 'that' table. For example a column 
-                    labelled 'marker' from DataTable_<double, Vec3> will be
-                    split into 3 columns named
+                of different SimTK::Vec<X> types, for example DataTable_<double,
+                Vec<3>>, DataTable_<double, Quaternion>, DataTable_<double, 
+                Vec6> etc.
+    \param suffixes Suffixes to be used for column-labels of individual 
+                    components/columns in this table when splitting columns of 
+                    'that' table. For example a column labeled 'marker' from 
+                    DataTable_<double, Vec3> will be split into 3 columns named
                     \code
                     std::string{'marker' + suffixes[0]},
                     std::string{'marker' + suffixes[1]},
@@ -246,7 +247,7 @@ public:
     }
 
     /** Flatten the columns of this table to create a 
-    DataTable_<double, double>. The each column will be split into its 
+    DataTable_<double, double>. Each column will be split into its 
     constituent components. For example, each column of a 
     DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
     the resulting columns will be suffixed "_1", "_2", "_3" and so on. See
@@ -256,7 +257,7 @@ public:
     }
 
     /** Flatten the columns of this table to create a 
-    DataTable_<double, double>. The each column will be split into its 
+    DataTable_<double, double>. Each column will be split into its 
     constituent components. For example, each column of a 
     DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
     the resulting columns will be appended with 'suffixes' provided. See
