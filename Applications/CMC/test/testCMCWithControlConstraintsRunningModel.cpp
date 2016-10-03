@@ -33,6 +33,7 @@ using namespace std;
 void testRunningModel();
 
 int main() {
+
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
     //Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
     //Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
@@ -65,14 +66,14 @@ void testRunningModel()
 
     int nq = results.getColumnLabels().getSize()-1;
 
-    // Tracking kinematics angles in degrees should be within 3 degrees (see standard versus input)
+    // Tracking kinematics angles in degrees should be within 3 degrees
     std::vector<double> rms_tols(nq, 3.00);
     rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
     rms_tols[4] = 0.0025;
     rms_tols[5] = 0.0025;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, 
-        __FILE__, __LINE__, "testRunningModel tracking failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__,
+        "testRunningModel tracking failed");
 
     Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
     Storage standard_states("std_runningModel_CMC_states.sto");
@@ -86,7 +87,7 @@ void testRunningModel()
         rms_states_tols[i] = 0.2; // velocities
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, 
+    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols,
         __FILE__, __LINE__, "testRunningModel activations failed");
 
     cout << "\n testRunningModel passed\n" << endl;

@@ -205,7 +205,7 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
         mutableThis->upd_prescribed() = false;
     }
 
-    //TODO add clamping
+    //Now add clamping
     addModelingOption("is_clamped", 1);
 
     SimTK::SubsystemIndex sbsix =

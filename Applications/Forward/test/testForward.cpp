@@ -72,7 +72,7 @@ int main() {
     try { testGait2354(); 
         cout << "\ngait2354 test PASSED " << endl; }
     catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354"); }        
+        { cout << e.what() <<endl; failures.push_back("testGait2354"); }
 
     // finally include a controller
     try { testGait2354WithController(); 
@@ -132,23 +132,25 @@ void testPendulumExternalLoad() {
     int nc = forward.getModel().getNumCoordinates();
     for (int j = 0; j < nc; ++j) {      
         stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        message << "t=" << time <<" state# "<< j << " " 
+            << standard.getColumnLabels()[j+1] << " std=" << data[j] 
+            <<"  computed=" << state->getData()[j];
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
     }
 }
 
 
 void testPendulumExternalLoadWithPointInGround() {
-    ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");cout << endl;
+    ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");
     forward.run();
+
     Storage results("Results/pendulum_ext_gravity_point_in_ground_states.sto");
     ASSERT(results.getFirstTime() == 0.0);
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
-
     Array<double> data;
     int i = results.getSize() - 1;
     StateVector* state = results.getStateVector(i);
@@ -160,7 +162,8 @@ void testPendulumExternalLoadWithPointInGround() {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
         cout << message.str() << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << endl;
     }
 }
@@ -182,7 +185,8 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, 
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 
@@ -194,7 +198,8 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, 
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 }
@@ -219,7 +224,7 @@ void testGait2354()
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
     
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, 
         __FILE__, __LINE__, "testGait2354 failed");
 }
 

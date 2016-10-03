@@ -122,13 +122,9 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
        return( _model);
   }
 
-  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const State& s) const  {
-
-     Vector& q = _model->getMultibodySystem().getMatterSubsystem().updQ( const_cast<SimTK::State&>(_completeState) );
-     Vector& u = _model->getMultibodySystem().getMatterSubsystem().updU( const_cast<SimTK::State&>(_completeState) );
-
+  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const State& s) const
+  {
      /* set generalized coordinates and speeds from spline sets */
-    int i;
     int nq = _model->getNumCoordinates();
     int nu = _model->getNumSpeeds();
     double t;
@@ -146,14 +142,23 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
         _qSet->evaluate(_uWork,1,t);
     }
 
-    for(i=0;i<nq;i++) q[i] = _qWork[i] + _qCorrections[i];
-    for(i=0;i<nu;i++) u[i] = _uWork[i] + _uCorrections[i];
+    /* Hack to obtain a mutable state in a const method */
+    State& mutableCompState = const_cast<SimTK::State&>(_completeState);
 
+    // Update the coordinate values to pose the model while computing muscle
+    // controls
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (int i = 0; i < nq; ++i) {
+        // the last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
+        coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], i==(nq-1));
+        coords[i].setSpeedValue(mutableCompState, _uWork[i] + _uCorrections[i]);
+    }
 
      /* copy  muscle states computed from the actuator system to the muscle states
         for the complete system  then compute forces*/
-     const_cast<SimTK::State&>(_completeState).updZ() = s.getZ();
-     const_cast<SimTK::State&>(_completeState).updTime() = t;
+    mutableCompState.updZ() = s.getZ();
+    mutableCompState.updTime() = t;
 
      _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
@@ -163,8 +168,6 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 /*
     cout << "_qWork=" << _qWork << endl;
     cout << "_uWork=" << _uWork << endl;
-    cout << "q=" << q << endl;
-    cout << "u=" << u << endl;
     cout << "actuatorStates=" << s.getZ() << endl;
     cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
     cout << " Actuator dydt=" << _completeState.getZDot() << endl;

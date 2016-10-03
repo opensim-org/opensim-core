@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 
 // Sub-models used by this muscle model
+#include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
@@ -215,6 +216,8 @@ public:
         "Deactivation time constant (in seconds).");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
         "Activation lower bound.");
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "Maximum pennation angle (in radians).");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ActiveForceLengthCurve,
         "Active-force-length curve.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(ForceVelocityCurve,
@@ -296,14 +299,12 @@ public:
     /** @returns The TendonForceLengthCurve used by this model. */
     const TendonForceLengthCurve& getTendonForceLengthCurve() const;
 
-    /** @returns The MuscleFixedWidthPennationModel used by this model. */
+    /** @returns The MuscleFixedWidthPennationModel owned by this model. */
     const MuscleFixedWidthPennationModel& getPennationModel() const;
 
-    /** @returns The maximum pennation angle permitted by this muscle model.
-    Note that this equilibrium model, like all equilibrium models, has a
-    singularity when pennation approaches Pi/2. Thus, the maximum pennation
-    angle must be less than Pi/2. */
-    double getMaximumPennationAngle() const;
+    /** @returns The MuscleFirstOrderActivationDynamicModel owned by this
+    model. */
+    const MuscleFirstOrderActivationDynamicModel& getActivationModel() const;
 
     /** @returns The minimum fiber length, which is the maximum of two values:
     the smallest fiber length allowed by the pennation model, and the minimum
@@ -486,13 +487,6 @@ public:
 protected:
     void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
-    /** @returns Activation clamped to the permissible range (i.e., between
-    minimum_activation and 1.0). */
-    double clampActivation(double activation) const;
-
-    /** Calculate activation rate. */
-    double calcActivationDerivative(double activation, double excitation) const;
-
     /** Gets the derivative of an actuator state by index.
         @param s The state.
         @param aStateName The name of the state to get.
@@ -564,9 +558,6 @@ private:
 
     void setNull();
     void constructProperties();
-
-    // Builds the components that are necessary to simulate using this muscle.
-    void buildMuscle();
 
     // Rebuilds muscle model if any of its properties have changed.
     void extendFinalizeFromProperties() override;
@@ -712,11 +703,13 @@ private:
 // PRIVATE UTILITY CLASS MEMBERS
 //==============================================================================
 
-    // This object defines the pennation model used for this muscle model. Using
-    // a ClonePtr saves us from having to write a destructor, copy constructor,
-    // or copy assignment. This will be zeroed on construction, cleaned up on
-    // destruction, and cloned when copying.
-    MuscleFixedWidthPennationModel penMdl;
+    // Subcomponents owned by the muscle. The properties of these subcomponents
+    // are set in extendFinalizeFromProperties() from the properties of the
+    // muscle.
+    MemberSubcomponentIndex penMdlIdx{
+      constructSubcomponent<MuscleFixedWidthPennationModel>("penMdl") };
+    MemberSubcomponentIndex actMdlIdx{
+      constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     // Singularity-free inverse of ForceVelocityCurve.
     ForceVelocityInverseCurve fvInvCurve;
@@ -731,7 +724,7 @@ private:
     bool isFiberStateClamped(double lce, double dlceN) const;
 
     // Returns the maximum of the minimum fiber length and the current fiber
-    // length
+    // length.
     double clampFiberLength(double lce) const;
 
     // Status flag returned by estimateMuscleFiberState().

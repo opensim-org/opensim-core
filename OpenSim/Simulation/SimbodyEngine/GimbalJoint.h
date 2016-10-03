@@ -52,6 +52,17 @@ public:
         const auto& rx = myGimbalJoint.
                          getCoordinate(GimbalJoint::Coord::Rotation1X);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myGimbalJoint.getCoordinate(opensim.GimbalJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rx = myGimbalJoint.getCoordinate(GimbalJoint.Coord.Rotation1X);
+        \endcode
     */
     enum class Coord: unsigned {
         Rotation1X,
