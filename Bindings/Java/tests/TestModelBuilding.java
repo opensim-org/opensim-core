@@ -20,29 +20,29 @@ class TestModelBuilding {
 
         PinJoint shoulder = new PinJoint("shoulder", arm.getGround(), zv, zv, hum, zv, zoz);
         PinJoint elbow = new PinJoint("elbow", hum, zv, zv, rad, zv, zoz);
-        /*
-        biceps = Millard2012AccelerationMuscle('biceps', ...
-            200.0, ...  % Max isometric force
-            0.6, ...    % Optimal fibre length
-            0.55, ...   % Tendon slack length
-            0.0);       % Pennation angle
-        biceps.addNewPathPoint('origin', hum, ArrayDouble.createVec3([0 0.8 0]));
-        biceps.addNewPathPoint('insert', rad, ArrayDouble.createVec3([0 0.7 0]));
+        
+        Millard2012AccelerationMuscle biceps = new Millard2012AccelerationMuscle("biceps",
+            200.0,      // Max isometric force
+            0.6,        // Optimal fibre length
+            0.55,       // Tendon slack length
+            0.0);       // Pennation angle
+        biceps.addNewPathPoint("origin", hum, ArrayDouble.createVec3(new double[]{0, 0.8, 0}));
+        biceps.addNewPathPoint("insert", rad, ArrayDouble.createVec3(new double[]{0, 0.7, 0}));
 
-        cns = PrescribedController();
+        PrescribedController cns = new PrescribedController();
         cns.addActuator(biceps);
-        cns.prescribeControlForActuator(0, ... % Index in controller set
-            StepFunction(0.5, 3.0, 0.3, 1.0)); % XXX What does these parameters mean?
-
-        */
+        StepFunction testFunction = new StepFunction(0.5, 3.0, 0.3, 1.0);
+        cns.prescribeControlForActuator(0,      //Index in controller set
+            testFunction); 
+        System.gc(); // Request gc could free testFunction and crash
         arm.addBody(hum);
         arm.addBody(rad);
         arm.addJoint(shoulder);
         arm.addJoint(elbow);
-        /*
+        
         arm.addForce(biceps);
         arm.addController(cns);
-
+        /*
         reporter = TableReporter();
         reporter.set_report_time_interval(1.0); % Why is this not camelCase?
         reporter.updInput('inputs').connect(biceps.getOutput('fiber_force'));
@@ -53,13 +53,14 @@ class TestModelBuilding {
         State state = arm.initSystem();
         arm.updCoordinateSet().get(0).setLocked(state, true);
         arm.updCoordinateSet().get(1).setValue(state, 0.5*3.14);
-        //arm.equilibrateMuscles(state);
+        arm.equilibrateMuscles(state);
 
         System.out.println("Test finished!");
     }
     catch (IOException ex){
         System.exit(-1);
     }
+    System.gc();
     // TODO to cause test to fail: System.exit(-1);
   }
 }
