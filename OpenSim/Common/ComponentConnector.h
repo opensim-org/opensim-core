@@ -216,9 +216,12 @@ protected:
      * future, we hope to fix this mechanism so that Connectors retain the
      * values of these member values even after deserialization, and so this
      * call will not be necessary. */
-    void restoreMembers(const Component& o, bool isList = false) {
+    void restoreMembers(const Component& o,
+            const std::vector<std::string>& connecteeNamesTODO,
+            bool isList = false) {
         _owner.reset(&o);
         _isList = isList;
+        _connecteeNamesTODO = connecteeNamesTODO;
         if (!_isList) {
             OPENSIM_THROW_IF_FRMOBJ(updProperty_connectee_name().size() > 1,
                     Exception, "Connector '" + getName() + "' has multiple "
@@ -239,6 +242,10 @@ protected:
     AbstractConnector(bool isList) : _isList(isList) {
         constructProperties();
     }
+    
+    const std::vector<std::string>& getConnecteeNames() const {
+        return _connecteeNamesTODO;
+    }
 
 private:
     void constructProperties() {
@@ -250,7 +257,7 @@ private:
     }
     SimTK::Stage connectAtStage = SimTK::Stage::Empty;
     bool _isList = false;
-
+    std::vector<std::string> _connecteeNamesTODO;
     SimTK::ReferencePtr<const Component> _owner;
 
     friend Component;
@@ -844,10 +851,11 @@ int Class::constructConnector_##cname() {                                   \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _input_##iname {                                               \
+    int _input_##iname {                                                    \
         this->template constructInput<T>(#iname, istage)                    \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    OpenSim_DECLARE_PROPERTY_FOR_CONNECTOR(input_##iname##_connectees, "TODO"); \
     
 /** Create a list input, which can connect to more than one Channel. This
  * makes sense for components like reporters that can handle a flexible
@@ -867,7 +875,7 @@ int Class::constructConnector_##cname() {                                   \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    int _input_##iname {                                               \
+    int _input_##iname {                                                    \
         this->template constructInput<T>(#iname, istage, true)              \
     };                                                                      \
     /** @endcond                                                         */

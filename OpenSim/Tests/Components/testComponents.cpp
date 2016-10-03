@@ -60,42 +60,42 @@ int main()
         availableComponents.push_back(availableGeometry[i]);
     }
 
-    // next with type Point
-    ArrayPtrs<Point> availablePoints;
-    Object::getRegisteredObjectsOfGivenType(availablePoints);
-    for (int i = 0; i < availablePoints.size(); ++i) {
-        availableComponents.push_back(availablePoints[i]);
-    }
-
-    // then type Joint
-    ArrayPtrs<Joint> availableJoints;
-    Object::getRegisteredObjectsOfGivenType(availableJoints);
-    for (int i = 0; i < availableJoints.size(); ++i) {
-        availableComponents.push_back(availableJoints[i]);
-    }
-
-    // then type TwoFrameLinker<Constraint>
-    ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
-    Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
-    for (int i = 0; i < availableLink2Constraints.size(); ++i) {
-        availableComponents.push_back(availableLink2Constraints[i]);
-    }
-
-    // then type TwoFrameLinker<Force> which are all the BushingForces
-    ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
-    Object::getRegisteredObjectsOfGivenType(availableBushingForces);
-    for (int i = 0; i < availableBushingForces.size(); ++i) {
-        availableComponents.push_back(availableBushingForces[i]);
-    }
-
-    // Test PrescribedForce
-    std::unique_ptr<PrescribedForce> f(new PrescribedForce());
-    availableComponents.push_back(f.get());
-    // continue with other Constraints, Forces, Actuators, ...
-    //Examples of updated forces that pass
-    ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
-    Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
-    availableComponents.push_back(availablePointToPointSpring[0]);
+     // next with type Point
+     ArrayPtrs<Point> availablePoints;
+     Object::getRegisteredObjectsOfGivenType(availablePoints);
+     for (int i = 0; i < availablePoints.size(); ++i) {
+         availableComponents.push_back(availablePoints[i]);
+     }
+ 
+     // then type Joint
+     ArrayPtrs<Joint> availableJoints;
+     Object::getRegisteredObjectsOfGivenType(availableJoints);
+     for (int i = 0; i < availableJoints.size(); ++i) {
+         availableComponents.push_back(availableJoints[i]);
+     }
+ 
+     // then type TwoFrameLinker<Constraint>
+     ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
+     Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
+     for (int i = 0; i < availableLink2Constraints.size(); ++i) {
+         availableComponents.push_back(availableLink2Constraints[i]);
+     }
+ 
+     // then type TwoFrameLinker<Force> which are all the BushingForces
+     ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
+     Object::getRegisteredObjectsOfGivenType(availableBushingForces);
+     for (int i = 0; i < availableBushingForces.size(); ++i) {
+         availableComponents.push_back(availableBushingForces[i]);
+     }
+ 
+     // Test PrescribedForce
+     std::unique_ptr<PrescribedForce> f(new PrescribedForce());
+     availableComponents.push_back(f.get());
+     // continue with other Constraints, Forces, Actuators, ...
+     //Examples of updated forces that pass
+     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
+     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
+     availableComponents.push_back(availablePointToPointSpring[0]);
 
     /** //Uncomment when dependencies of CoordinateCouplerConstraints are 
     // specified as Connectors 
@@ -448,7 +448,14 @@ void testSerialization(Component* instance)
 
     Object* deserializedInstance =
         static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
+    /*
+    // This is required by
+    deserializedComp->finalizeFromProperties();
+    */
 
+    // TODO const auto* deserCompTODO = dynamic_cast<Component*>(deserializedInstance);
+    // TODO std::cout << "DEBUG " << instance->getInput("transform").isListConnector() << " " <<
+    // TODO                          deserCompTODO->getInput("transform").isListConnector() << std::endl;
     if (!(*deserializedInstance == *instance))
     {
         cout << "XML for serialized instance:" << endl;

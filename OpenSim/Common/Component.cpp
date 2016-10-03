@@ -218,15 +218,28 @@ void Component::finalizeFromProperties()
     // a pointer to its component (this) so that it can invoke its methods.
     for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
         AbstractConnector& connector = upd_connectors(ixc);
-        connector.restoreMembers(*this);
+        connector.restoreMembers(*this, {} /*TODO*/);
         _connectorsTable[connector.getName()] = ixc;
     }
     
     for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
         AbstractInput& input = upd_inputs(ixi);
+        const auto& inputName = input.getName();
         // The inputsTable holds an std::pair, whose second entry is `isList`.
-        input.restoreMembers(*this, _inputsTable[input.getName()].second);
-        _inputsTable[input.getName()].first = ixi;
+        const std::string propName = "input_" + inputName + "_connectees";
+        // TODO check "hasProperty()"? Should not be necessary.
+        const auto& prop = Property<std::string>::getAs(getPropertyByName(propName));
+        // TODO have the Input actually fetch this information from the property
+        // rather than rebuilding the list.
+        std::vector<std::string> connecteeNames(prop.size());
+        for (int ixname = 0; ixname < prop.size(); ++ixname) {
+            connecteeNames[ixname] = prop[ixname];
+        }
+        
+        
+        input.restoreMembers(*this, connecteeNames,
+                             _inputsTable[inputName].second);
+        _inputsTable[inputName].first = ixi;
     }
     
     for (auto& it : _outputsTable) {
