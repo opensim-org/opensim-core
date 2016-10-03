@@ -109,6 +109,8 @@ public:
 
     using DataTable_<double, ETY>::DataTable_;
     using DataTable_<double, ETY>::operator=;
+    /** Flatten the columns of this table to create a TimeSeriesTable_<double>.
+    See documentation of DataTable_::flatten() for details.                   */
     using DataTable_<double, ETY>::flatten;
     
     /** Construct a TimeSeriesTable_ from a DataTable_.                       
