@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <iostream>
 
@@ -49,7 +50,9 @@ int main() {
 
     TimeSeriesTable table{};
     {
+        ASSERT(!table.hasColumnLabels());
         table.setColumnLabels({"0", "1", "2", "3"});
+        ASSERT(table.hasColumnLabels());
         assert(table.hasColumn("1"));
         assert(table.hasColumn("2"));
         assert(!table.hasColumn("column-does-not-exist"));

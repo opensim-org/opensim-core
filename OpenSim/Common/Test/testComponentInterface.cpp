@@ -471,7 +471,7 @@ void testMisc() {
 
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getFullPathName());
+    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
     // add a subcomponent
@@ -484,19 +484,19 @@ void testMisc() {
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -507,7 +507,7 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Query existing components.
@@ -749,7 +749,7 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -762,11 +762,11 @@ void testMisc() {
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getFullPathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getFullPathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
 
     theWorld.print("Nested_" + modelFile);
 }
@@ -894,7 +894,7 @@ void testComponentPathNames()
     std::string fooWrtFoo = foo.getRelativePathName(foo);
     ASSERT(fooWrtFoo == "");
 
-    std::string topFullPath = top.getFullPathName();
+    std::string topAbsPath = top.getAbsolutePathName();
     std::string fooWrtTop = foo.getRelativePathName(top);
     ASSERT(fooWrtTop == "../A/B/C/D");
 
@@ -908,7 +908,7 @@ void testComponentPathNames()
 
     foo.setName("World3/bar2/foo1");
     fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "./foo1");
+    ASSERT(fooWrtBar == "foo1");
 
     bar.setName("LegWithConstrainedFoot/footConstraint");
     foo.setName("LegWithConstrainedFoot/foot");
@@ -937,18 +937,18 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fullPathC = C->getFullPathName();
-    ASSERT(fullPathC == "/Top/A/B/C");
+    std::string absPathC = C->getAbsolutePathName();
+    ASSERT(absPathC == "/Top/A/B/C");
 
-    std::string fullPathE = E->getFullPathName();
-    ASSERT(fullPathE == "/Top/A/D/E");
+    std::string absPathE = E->getAbsolutePathName();
+    ASSERT(absPathE == "/Top/A/D/E");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
                  /*auto& eref = */top.getComponent("E") );
 
-    auto& cref = top.getComponent(fullPathC);
-    auto& eref = top.getComponent(fullPathE);
+    auto& cref = top.getComponent(absPathC);
+    auto& eref = top.getComponent(absPathE);
 
     auto cFromE = cref.getRelativePathName(eref);
     ASSERT(cFromE == "../../B/C");
@@ -977,10 +977,10 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fFoo1FullPath = 
-        F->getComponent<Foo>("Foo1").getFullPathName();
-    std::string aBar2FullPath = 
-        A->getComponent<Bar>("Bar2").getFullPathName();
+    std::string fFoo1AbsPath = 
+        F->getComponent<Foo>("Foo1").getAbsolutePathName();
+    std::string aBar2AbsPath = 
+        A->getComponent<Bar>("Bar2").getAbsolutePathName();
     auto bar2FromBarFoo = 
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 

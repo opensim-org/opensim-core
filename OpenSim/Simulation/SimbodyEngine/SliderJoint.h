@@ -51,6 +51,17 @@ public:
         const auto& tx = mySliderJoint.
                          getCoordinate(SliderJoint::Coord::TranslationX);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        tx = mySliderJoint.getCoordinate(opensim.SliderJoint.Coord_TranslationX)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        tx = mySliderJoint.getCoordinate(SliderJoint.Coord.TranslationX);
+        \endcode
     */
     enum class Coord: unsigned {
         TranslationX

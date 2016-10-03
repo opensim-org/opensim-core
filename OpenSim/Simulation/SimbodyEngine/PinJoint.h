@@ -53,6 +53,17 @@ public:
         \code{.cpp}
         const auto& rz = myPinJoint.getCoordinate(PinJoint::Coord::RotationZ);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rz = myPinJoint.getCoordinate(opensim.PinJoint.Coord_RotationZ)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rz = myPinJoint.getCoordinate(PinJoint.Coord.RotationZ);
+        \endcode
     */
     enum class Coord: unsigned {
         RotationZ

@@ -42,8 +42,8 @@ class TestConsistentWithJython(unittest.TestCase):
         newMass = forearm.getMass() * massScale
         forearm.setMass(newMass)
     
-        # Get full path name of original.old model
-        fullPathName = oldModel.getInputFileName()
+        # Get absolute path name of original.old model
+        absPathName = oldModel.getInputFileName()
     
         # Change the name of the modified model
         newName = os.path.join(test_dir, 'Arm26_makeUlnaHeavy.osim')
@@ -81,8 +81,8 @@ class TestConsistentWithJython(unittest.TestCase):
             oldSL = currentMuscle.getTendonSlackLength()
             currentMuscle.setTendonSlackLength(oldSL * tendonSlackLengthScale)
     
-        #get full path name of original model
-        fullPathName = oldModel.getInputFileName()
+        #get absolute path name of original model
+        absPathName = oldModel.getInputFileName()
     
         #Change pathname to output file name
         newName = os.path.join(test_dir, 'Arm26_alterTendonSlackLength.osim')
