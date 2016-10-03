@@ -28,9 +28,7 @@
 # simple arm which consists of two bodies, two joints, a muscle and a     #
 # controller. All model elements are labeled with their appropriate       #
 # biomechanical namesakes for easy identification and clarity of          #
-# demonstration. Further, the model does not include forward simulation,  #
-# but instead saves the model to an .osim file which can be used in the   #
-# OpenSim plotter or the graphics window.                                 #
+# demonstration.                                                          #
 # ------------------------------------------------------------------------#
 
 import opensim as osim
