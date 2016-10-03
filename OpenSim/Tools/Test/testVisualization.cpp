@@ -112,10 +112,13 @@ int main()
         LoadOpenSimLibrary("osimActuators");
         Model testModel("BuiltinGeometry.osim");
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
+        std::cout << "BuiltinGeometry Passed" << std::endl;
         Model testModel2 = createModel4AppearanceTest();
         testVisModel(testModel2, "vis_AppearanceTest.txt");
+        std::cout << "Appearance test Passed" << std::endl;
         Model testModel3("double_pendulum33.osim");
         testVisModelAgainstStandard(testModel3);
+        std::cout << "double_pendulum33 test Passed" << std::endl;
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -274,7 +277,8 @@ bool testVisModelAgainstStandard(Model& model) {
             nextGeom->implementGeometry(dgiTextFromStandard);
             DecorativeGeometryImplementationText dgiTextFromModel;
             geometryToDisplay[i].implementGeometry(dgiTextFromModel);
-            ASSERT(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString());
+            if (!(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString()))
+                throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
             ++i;
     }
     return true;
