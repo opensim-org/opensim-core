@@ -140,6 +140,14 @@ namespace OpenSim {
         $self->setColumnLabels(columnLabels);
     }
 }
+%extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
 %ignore OpenSim::DataTable_<double, double>::flatten;
 %include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
