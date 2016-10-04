@@ -289,7 +289,7 @@ public:
 
     /** Export the continuous state variables to a data table, perhaps to write
      * to a file and postprocess in MATLAB/Python/Excel. The names of the
-     * columns in the table will be the full names of the continuous state
+     * columns in the table will be the absolute names of the continuous state
      * variables (e.g., `knee/flexion/angle`).
      *
      * You must provide a model that is compatible with this trajectory,
@@ -297,7 +297,7 @@ public:
      *
      * By default, all continuous state variables are written to the table
      * (one per column). If you only want some of them to be written to the
-     * table, use the `stateVars` argument to specify their full names
+     * table, use the `stateVars` argument to specify their absolute names
      * (e.g., `knee/flexion/angle`).
      *
      * @code

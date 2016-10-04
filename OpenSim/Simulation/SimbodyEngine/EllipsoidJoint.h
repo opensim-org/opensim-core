@@ -56,6 +56,17 @@ public:
         const auto& rx = myEllipsoidJoint.
                          getCoordinate(EllipsoidJoint::Coord::Rotation1X);
         \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myEllipsoidJoint.getCoordinate(opensim.EllipsoidJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java/Matlab example</b>
+        \code{.java}
+        rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
+        \endcode
     */
     enum class Coord: unsigned {
         Rotation1X,

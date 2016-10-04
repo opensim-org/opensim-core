@@ -577,10 +577,10 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
 unsigned Component::printComponentsMatching(const std::string& substring) const
 {
     auto components = getComponentList();
-    components.setFilter(ComponentFilterFullPathNameContainsString(substring));
+    components.setFilter(ComponentFilterAbsolutePathNameContainsString(substring));
     unsigned count = 0;
     for (const auto& comp : components) {
-        std::cout << comp.getFullPathName() << std::endl;
+        std::cout << comp.getAbsolutePathName() << std::endl;
         ++count;
     }
     return count;
@@ -637,88 +637,29 @@ void Component::setParent(const Component& parent)
     _parent.reset(&parent);
 }
 
-std::string Component::getFullPathName() const
+std::string Component::getAbsolutePathName() const
 {
-    std::string pathName = getName();
+    std::vector<std::string> pathVec;
+    pathVec.push_back(getName());
+
     const Component* up = this;
 
     while (up && up->hasParent()) {
         up = &up->getParent();
-        pathName = up->getName() + "/" + pathName;
+        pathVec.insert(pathVec.begin(), up->getName());
     }
     // The root must have a leading '/' 
-    pathName = "/" + pathName;
+    ComponentPath path(pathVec, true);
 
-    return pathName;
+    return path.toString();
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    std::string thisP = getFullPathName();
-    std::string wrtP = wrt.getFullPathName();
+    ComponentPath thisP(getAbsolutePathName());
+    ComponentPath wrtP(wrt.getAbsolutePathName());
 
-    IO::TrimWhitespace(thisP);
-    IO::TrimWhitespace(wrtP);
-
-    size_t ni = thisP.length();
-    size_t nj = wrtP.length();
-    // the limit on the common substring size is the smallest of the two
-    size_t limit = ni <= nj ? ni : nj;
-    size_t ix = 1, jx = 0;
-    size_t last = 0;
-
-    // Loop through the paths to pick up a bigger substring that matches
-    while ( !thisP.compare(0, ix, wrtP, 0, ix) && (ix < std::string::npos) ) {
-        last = ix;
-        // step ahead to the next node if there is one
-        ix = thisP.find('/', last+1);
-        // step along both strings
-        jx = wrtP.find('/', last+1);
-
-        // if no more nodes for this path try complete match of final node name
-        if (ix == std::string::npos && last < limit)
-            ix = ni;
-
-        // if no more nodes for wrt path try complete match of final node name
-        if (jx == std::string::npos && last < limit)
-            jx = nj;
-
-        // verify that the both paths are in sync
-        if (ix != jx) { // if not break to use the current last index of match
-            break;
-        }
-     }
-
-    // Include the delimiter in the common string iff we are not at the end of string
-    // and not at the root
-    if ((0 < last) && (last < limit) && thisP[last] == '/') {
-        last = last + 1;
-    }
-
-    std::string common = thisP.substr(0, last);
-    std::string stri = thisP.substr(last, ni-last);
-    std::string strj = wrtP.substr(last, nj-last);
-
-    std::string prefix  = "";
-
-    // the whole wrt path is part of the common path
-    if (strj.empty() && stri[0] == '/') {
-        prefix = ".";
-    }
-    // if there is a remainder in the wrtP then move at least one
-    else if (!strj.empty() && strj[0] != '/') {
-        prefix += "../";
-    }
-
-    last = 0;
-    // process all the '/' nodes in the wrtP up to the common path
-    while ((jx = strj.find('/', last)) < std::string::npos) {
-        prefix += "../";
-        last = jx + 1;
-    }
-
-    // return the relative path 
-    return prefix + stri;
+    return thisP.formRelativePath(wrtP).toString();
 }
 
 const Component::StateVariable* Component::
@@ -727,12 +668,19 @@ const Component::StateVariable* Component::
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    // first assume that the state variable named belongs to this
-    // top level component
+    // Split the prefix from the varName (part of string past the last "/")
+    // In the case where no "/" is found, prefix = name.
     std::string::size_type back = name.rfind("/");
     std::string prefix = name.substr(0, back);
+
+    // In the case where no "/" is found, this assigns varName = name.
+    // When "/" is not found, back = UINT_MAX. Then, back + 1 = 0.
+    // Subtracting by UINT_MAX is effectively adding by 1, so the next line
+    // should work in all cases except if name.length() = UINT_MAX.
     std::string varName = name.substr(back + 1, name.length() - back);
 
+    // first assume that the state variable named belongs to this
+    // top level component
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(varName);
 
@@ -743,14 +691,14 @@ const Component::StateVariable* Component::
     const StateVariable* found = nullptr;
     const Component* comp = traversePathToComponent<Component>(prefix);
 
-    if (comp){
+    if (comp) {
         found = comp->findStateVariable(varName);
     }
 
     // Path not given or could not find it along given path name
     // Now try complete search.
     if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i){
+        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
             comp = _propertySubcomponents[i]->findComponent(prefix, &found);
             if (found) {
                 return found;
@@ -775,11 +723,11 @@ Array<std::string> Component::getStateVariableNames() const
 
 /** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
-        stateNames[i] = (getFullPathName() + "/" + stateNames[i]);
+        stateNames[i] = (getAbsolutePathName() + "/" + stateNames[i]);
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getFullPathName();// *this);
+        const std::string& pathName = comp.getAbsolutePathName();// *this);
         Array<std::string> subStateNames = 
             comp.getStateVariablesNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
@@ -1151,8 +1099,8 @@ void Component::markAsPropertySubcomponent(const Component* component)
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
     else{
-        auto compPath = component->getFullPathName();
-        auto foundPath = it->get()->getFullPathName();
+        auto compPath = component->getAbsolutePathName();
+        auto foundPath = it->get()->getAbsolutePathName();
         OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
                        component->getName(), getName());
     }

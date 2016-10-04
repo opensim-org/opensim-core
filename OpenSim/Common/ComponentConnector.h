@@ -298,17 +298,17 @@ public:
         if (objT) {
             connectee = *objT;
 
-            std::string objPathName = objT->getFullPathName();
-            std::string ownerPathName = getOwner().getFullPathName();
+            std::string objPathName = objT->getAbsolutePathName();
+            std::string ownerPathName = getOwner().getAbsolutePathName();
 
-            // check if the full pathname is just /name
+            // check if the absolute pathname is just /name
             if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
                 // in which case we likely are connecting to an orphan
                 // (yet to adopted component) which the API permits when passing
                 // in the dependency directly.
                 // better off stripping off the / to identify it as a "floating"
-                // Component and we will need to find its full path next time
-                // we try to connect
+                // Component and we will need to find its absolute path next 
+                // time we try to connect
                 setConnecteeName(objT->getName());
             }
             // This can happen when top level components like a Joint and Body

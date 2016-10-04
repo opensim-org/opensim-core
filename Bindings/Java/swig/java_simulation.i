@@ -125,6 +125,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %javamethodmodifiers OpenSim::Model::addContactGeometry "private";
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
+%javamethodmodifiers OpenSim::Model::addJoint "private";
 
 %rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
@@ -134,6 +135,10 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::Model::addContactGeometry private_addContactGeometry;
 %rename OpenSim::Model::addController private_addController;
 %rename OpenSim::Model::addAnalysis private_addAnalysis;
+%rename OpenSim::Model::addJoint private_addJoint;
+
+%rename OpenSim::PrescribedController::prescribeControlForActuator prescribeControlForActuator_private;
+%javamethodmodifiers OpenSim::PrescribedController::prescribeControlForActuator_private "private";
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
@@ -200,6 +205,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       aController.markAdopted();
       private_addController(aController);
   }
+
+  public void addJoint(Joint aJoint) {
+      aJoint.markAdopted();
+      private_addJoint(aJoint);
+  }
 %}
 
 %extend OpenSim::Model {
@@ -211,6 +221,18 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         self->updDefaultControls() = newControls;
     }
 }
+
+%typemap(javacode) OpenSim::PrescribedController %{
+    public void prescribeControlForActuator(int index, Function prescribedFunction) {
+       prescribedFunction.markAdopted();
+       prescribeControlForActuator_private(index, prescribedFunction);
+    }
+    
+    public void prescribeControlForActuator(String name, Function prescribedFunction) {
+       prescribedFunction.markAdopted();
+       prescribeControlForActuator_private(name, prescribedFunction);
+    }
+%}
 
 
 %javamethodmodifiers OpenSim::Frame::attachGeometry "private";
