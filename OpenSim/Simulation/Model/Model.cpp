@@ -499,7 +499,8 @@ std::vector<std::reference_wrapper<const Coordinate>>
     int nc = getNumCoordinates();
     auto coordinates = getComponentList<Coordinate>();
 
-    std::vector<std::reference_wrapper<const Coordinate>> coordinatesInTreeOrder;
+    std::vector<std::reference_wrapper<const Coordinate>> 
+        coordinatesInTreeOrder(nc, std::cref<Coordinate>(*coordinates.begin()));
 
     // We have a valid MultibodySystem underlying the Coordinates
     const SimTK::State& s = getWorkingState();
@@ -520,8 +521,7 @@ std::vector<std::reference_wrapper<const Coordinate>>
         SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
             "in this Model.");
 
-        coordinatesInTreeOrder.insert(coordinatesInTreeOrder.begin()+cix,
-                                      std::cref<Coordinate>(coord));
+        coordinatesInTreeOrder.at(cix) = std::cref<Coordinate>(coord);
         cnt++;
     }
 
