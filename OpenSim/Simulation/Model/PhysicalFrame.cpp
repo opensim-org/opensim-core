@@ -238,22 +238,29 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 geomFile = geomFileIter->getValueAs<SimTK::String>();
             }
             // transform
-            SimTK::Vec6 localXformVec6(0.);
-            SimTK::Xml::element_iterator localXformIter = displayGeomIter->element_begin("transform");
-            if (localXformIter != displayGeomIter->element_end()) {
-                localXformVec6 = localXformIter->getValueAs<SimTK::Vec6>();
+            SimTK::Vec6 innerXformVec6(0.);
+            SimTK::Xml::element_iterator innerXformIter = displayGeomIter->element_begin("transform");
+            if (innerXformIter != displayGeomIter->element_end()) {
+                innerXformVec6 = innerXformIter->getValueAs<SimTK::Vec6>();
             }
-            if (localXformVec6.norm() > SimTK::Eps || outerTransformVec6.norm() > SimTK::Eps) {
-                // Create a Frame
+            // Old geometry/visibleObject could specify 2 transforms one per DisplayGeometry 
+            // and one for the whole visibleObject.
+            // We'll attach to the frame only if both transforms are identity
+            attachToThisFrame = (innerXformVec6.norm() < SimTK::Eps)
+                && (outerTransformVec6.norm() < SimTK::Eps);
+            // In practice no models were found where both innerTransform and outerTransform were
+            // non trivial or scale factors were specified in both
+            if (!attachToThisFrame) {
+                // Create a Vec6 by composing inner and outer transforms
                 SimTK::Transform outerTransform(outerTransformVec6.getSubVec<3>(3));
                 outerTransform.updR().setRotationToBodyFixedXYZ(outerTransformVec6.getSubVec<3>(0));
-                SimTK::Transform innerTransform(localXformVec6.getSubVec<3>(3));
-                innerTransform.updR().setRotationToBodyFixedXYZ(localXformVec6.getSubVec<3>(0));
+                SimTK::Transform innerTransform(innerXformVec6.getSubVec<3>(3));
+                innerTransform.updR().setRotationToBodyFixedXYZ(innerXformVec6.getSubVec<3>(0));
                 SimTK::Transform composed = outerTransform.compose(innerTransform);
                 SimTK::Vec6 composedXformVec6(0.);
                 composedXformVec6.updSubVec<3>(3) = composed.p();
                 composedXformVec6.updSubVec<3>(0) = composed.R().convertRotationToBodyFixedXYZ();
-                attachToThisFrame = false;
+                // Create a new frame and attach geometry to it
                 std::string frameName = bodyName + "_geom_frame_" + to_string(counter);
                 SimTK::Xml::Element frameNode("frame_name", frameName);
                 meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
@@ -261,8 +268,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 SimTK::Xml::Element modelNode = bodyNode;
                 do {
                     modelNode = modelNode.getParentElement();
-                    //SimTK::String edump;
-                    //modelNode.writeToString(edump);
+
                 } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
 
                 SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
@@ -277,9 +283,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                     frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
                     frameSetObjectsIter = frameSetNode.element_begin("objects");
                 }
-                // Following line should compose the two transforms localXform, outerTransform
-                // Keeping in mind scale factors. 
-
+                // Create Frame from composed transform
                 createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
