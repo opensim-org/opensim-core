@@ -812,7 +812,7 @@ public:
         in order of the Multibody Tree and now that can be attributed to 
         corresponding generalized Coordinates of the Model. 
         Throws if the MultibodySystem is not valid. */
-    std::vector<std::reference_wrapper<const Coordinate>>
+    std::vector<SimTK::ReferencePtr<const Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
 

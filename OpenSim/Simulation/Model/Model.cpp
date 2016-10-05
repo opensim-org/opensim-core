@@ -490,7 +490,7 @@ void Model::createMultibodySystem()
 }
 
 
-std::vector<std::reference_wrapper<const Coordinate>> 
+std::vector<SimTK::ReferencePtr<const Coordinate>> 
     Model::getCoordinatesInMultibodyTreeOrder() const
 {
     OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
@@ -499,8 +499,9 @@ std::vector<std::reference_wrapper<const Coordinate>>
     int nc = getNumCoordinates();
     auto coordinates = getComponentList<Coordinate>();
 
-    std::vector<std::reference_wrapper<const Coordinate>> 
-        coordinatesInTreeOrder(nc, std::cref<Coordinate>(*coordinates.begin()));
+    std::vector<SimTK::ReferencePtr<const Coordinate>> 
+        coordinatesInTreeOrder(nc, 
+            SimTK::ReferencePtr<const Coordinate>(*coordinates.begin()));
 
     // We have a valid MultibodySystem underlying the Coordinates
     const SimTK::State& s = getWorkingState();

@@ -60,7 +60,6 @@ const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 StaticOptimizationTarget::
 StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, bool useMusclePhysiology)
 {
-
     // ALLOCATE STATE ARRAYS
     _recipAreaSquared.setSize(aNP);
     _recipOptForceSquared.setSize(aNP);
@@ -77,7 +76,7 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
     _accelerationIndices.setSize(0);
     auto coordinates = aModel->getCoordinatesInMultibodyTreeOrder();
     for (int i = 0; i < coordinates.size(); ++i) {
-        const Coordinate& coord = coordinates[i].get();
+        const Coordinate& coord = *coordinates[i];
         if(!coord.isConstrained(s)) {
             _accelerationIndices.append(i);
         }
@@ -588,7 +587,7 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
 
     // CONSTRAINTS
     for(int i=0; i<getNumConstraints(); i++) {
-        const Coordinate& coord = coordinates[_accelerationIndices[i]].get();
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
             string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();

@@ -453,7 +453,7 @@ record(const SimTK::State& s)
 
             for(int acc=0;acc<nacc;acc++) {
                 if(fabs(constraints(acc)) > tolConstraints) {
-                    const Coordinate& coord = coordinates[_accelerationIndices[acc]].get();
+                    const Coordinate& coord = *coordinates[_accelerationIndices[acc]];
                     msgIncomplete += "   ";
                     msgIncomplete += coord.getName();
                     msgIncomplete += ": constraint violation = ";
@@ -562,7 +562,7 @@ begin(SimTK::State& s )
         _accelerationIndices.setSize(0);
         auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
         for(int i=0; i<coordinates.size(); ++i) {
-            const Coordinate& coord = coordinates[i].get();
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 Array<int> inds = _statesStore->
                     getColumnIndicesForIdentifier(coord.getName()) ;

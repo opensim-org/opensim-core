@@ -170,7 +170,7 @@ constructColumnLabels()
            for (int i=0; i < _numCoordinateActuators; i++) {
               Force& force = _forceSet->get(i);
               for(int i=0; i<coordinates.size(); ++i) {
-                 const Coordinate& coord = coordinates[i].get();
+                 const Coordinate& coord = *coordinates[i];
                  if(coord.getName()==force.getName()) {
                     if(coord.getMotionType() == Coordinate::Rotational) {
                         labels.append(force.getName()+"_moment");
@@ -341,7 +341,7 @@ record(const SimTK::State& s)
     auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
 
     for(int i=0; i<nacc; i++) {
-        const Coordinate& coord = coordinates[_accelerationIndices[i]].get();
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
             string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
@@ -456,7 +456,7 @@ begin(SimTK::State& s )
         _accelerationIndices.setSize(0);
         auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
         for(int i=0; i<coordinates.size(); ++i) {
-            const Coordinate& coord = coordinates[i].get();
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 _accelerationIndices.append(i);
             }

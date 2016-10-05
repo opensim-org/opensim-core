@@ -281,7 +281,7 @@ bool InverseDynamicsTool::run()
 
             //Functions must correspond to model coordinates and their order for the solver
             for(int i=0; i<nq; i++){
-                const Coordinate& coord = coords[i].get();
+                const Coordinate& coord = *coords[i];
                 if(coordFunctions->contains(coord.getName())){
                     coordFunctions->insert(i,coordFunctions->get(coord.getName()));
                 }
@@ -346,8 +346,8 @@ bool InverseDynamicsTool::run()
         // We can get the Coordinates in Tree order from the Model.
         Array<string> labels("time", nq+1);
         for(int i=0; i<nq; i++){
-            labels[i+1] = coords[i].get().getName();
-            labels[i+1] += (coords[i].get().getMotionType() == Coordinate::Rotational) ? 
+            labels[i+1] = coords[i]->getName();
+            labels[i+1] += (coords[i]->getMotionType() == Coordinate::Rotational) ? 
                 "_moment" : "_force";
         }
 

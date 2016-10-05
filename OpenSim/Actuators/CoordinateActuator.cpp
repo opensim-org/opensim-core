@@ -162,7 +162,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
     as.setSize(0);
     auto coordinates = aModel.getCoordinatesInMultibodyTreeOrder();
     for(int i=0; i < coordinates.size(); ++i) {
-        const Coordinate& coord = coordinates[i].get();
+        const Coordinate& coord = *coordinates[i];
         if(!aIncludeLockedAndConstrainedCoordinates && (coord.isConstrained(s))) continue;
         CoordinateActuator *actuator = new CoordinateActuator();
         actuator->setCoordinate(const_cast<Coordinate*>(&coord));
