@@ -449,7 +449,7 @@ record(const SimTK::State& s)
             SimTK::Vector constraints;
             target.constraintFunc(_parameters,true,constraints);
 
-            auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
+            auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
 
             for(int acc=0;acc<nacc;acc++) {
                 if(fabs(constraints(acc)) > tolConstraints) {
@@ -560,7 +560,7 @@ begin(SimTK::State& s )
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom 
         // (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
-        auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
+        auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
         for(int i=0; i<coordinates.size(); ++i) {
             const Coordinate& coord = coordinates[i].get();
             if(!coord.isConstrained(sWorkingCopy)) {
