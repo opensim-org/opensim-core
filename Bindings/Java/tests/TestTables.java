@@ -1,3 +1,6 @@
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.io.File;
 import org.opensim.modeling.*;
 
 class TestTables {
@@ -405,10 +408,52 @@ class TestTables {
         assert tableDouble.getRowAtIndex(1).get(11) == 2;
     }
 
-    public static void main(String[] args) {
+    public static void test_FlattenWithIK() throws java.io.IOException {
+        String srcDir = new String("../../../../../Bindings/Java/Matlab/" +
+                                   "examples/testData/Subject01/");
+        String setupFileName = new String("subject01_Setup_IK_generic.xml");
+        String fileName = srcDir + "IKSetup/" + setupFileName;
+        Files.copy((new File(fileName)).toPath(),
+                   (new File(setupFileName)).toPath(),
+                   StandardCopyOption.REPLACE_EXISTING);
+        String markerFileName = new String("walk_free_01.trc");
+        fileName = srcDir + "MarkerData/" + markerFileName;
+        Files.copy((new File(fileName)).toPath(),
+                   (new File(markerFileName)).toPath(),
+                   StandardCopyOption.REPLACE_EXISTING);
+        String modelFileName = new String("subject01_gait2392_scaled.osim");
+        fileName = srcDir + modelFileName;
+        Files.copy((new File(fileName)).toPath(),
+                   (new File(modelFileName)).toPath(),
+                   StandardCopyOption.REPLACE_EXISTING);
+
+        TRCFileAdapter trcAdapter = new TRCFileAdapter();
+        TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");
+        TimeSeriesTable markerTableFlat = markerTable.flatten(suffixes);
+        STOFileAdapter stoAdapter = new STOFileAdapter();
+        markerFileName = "walk_free_01.sto";
+        stoAdapter.write(markerTableFlat, markerFileName);
+
+        InverseKinematicsTool ikTool = new InverseKinematicsTool(setupFileName);
+        ikTool.setName("ik_test");
+        ikTool.setModel(new Model(modelFileName));
+        ikTool.setMarkerDataFileName(markerFileName);
+        StdVectorDouble timeColumn = markerTable.getIndependentColumn();
+        ikTool.setStartTime(timeColumn.get(0));
+        ikTool.setEndTime(timeColumn.get((int)(timeColumn.size() - 1)));
+        String ikResultsFileName = new String("ik_results.mot");
+        ikTool.setOutputMotionFileName(ikResultsFileName);
+
+        ikTool.run();
+    }
+
+    public static void main(String[] args)  throws java.io.IOException {
         test_DataTable();
         test_DataTableVec3();
         test_TimeSeriesTable();
         test_TimeSeriesTableVec3();
+        test_FlattenWithIK();
     }
 }
