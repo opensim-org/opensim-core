@@ -494,7 +494,7 @@ std::vector<std::reference_wrapper<const Coordinate>>
     Model::getCoordinatesInMultibodyTreeOrder() const
 {
     OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
-        "Attempting to reorder Coordinates without a valid System.");
+        "Cannot order Coordinates without a valid MultibodySystem.");
 
     int nc = getNumCoordinates();
     auto coordinates = getComponentList<Coordinate>();
@@ -505,7 +505,7 @@ std::vector<std::reference_wrapper<const Coordinate>>
     // We have a valid MultibodySystem underlying the Coordinates
     const SimTK::State& s = getWorkingState();
     SimTK_ASSERT_ALWAYS(nc <= s.getNQ(),
-        "Number of Coordinates exceeds the number of mobilities in "
+        "Number of Coordinates exceeds the number of generalized coordinates in "
         "the underlying MultibodySystem.");
 
     auto& matter = getSystem().getMatterSubsystem();
@@ -526,8 +526,8 @@ std::vector<std::reference_wrapper<const Coordinate>>
     }
 
     SimTK_ASSERT_ALWAYS(cnt == nc,
-        "Reordered Coordinates do not correspond to the number of "
-        "Coordinates in the Model.");
+        "The number of ordered Coordinates does not correspond to the number of "
+        "Coordinates in the Model's CoordinateSet.");
 
     return coordinatesInTreeOrder;
 }
