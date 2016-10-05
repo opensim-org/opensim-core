@@ -409,23 +409,9 @@ class TestTables {
     }
 
     public static void test_FlattenWithIK() throws java.io.IOException {
-        String srcDir = new String("../../../../../Bindings/Java/Matlab/" +
-                                   "examples/testData/Subject01/");
         String setupFileName = new String("subject01_Setup_IK_generic.xml");
-        String fileName = srcDir + "IKSetup/" + setupFileName;
-        Files.copy((new File(fileName)).toPath(),
-                   (new File(setupFileName)).toPath(),
-                   StandardCopyOption.REPLACE_EXISTING);
         String markerFileName = new String("walk_free_01.trc");
-        fileName = srcDir + "MarkerData/" + markerFileName;
-        Files.copy((new File(fileName)).toPath(),
-                   (new File(markerFileName)).toPath(),
-                   StandardCopyOption.REPLACE_EXISTING);
         String modelFileName = new String("subject01_gait2392_scaled.osim");
-        fileName = srcDir + modelFileName;
-        Files.copy((new File(fileName)).toPath(),
-                   (new File(modelFileName)).toPath(),
-                   StandardCopyOption.REPLACE_EXISTING);
 
         TRCFileAdapter trcAdapter = new TRCFileAdapter();
         TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
