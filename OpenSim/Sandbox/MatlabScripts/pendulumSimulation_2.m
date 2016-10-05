@@ -27,66 +27,44 @@
 import org.opensim.modeling.*
 
 
-time_interval = 0.01;
+time_interval = 0.1;
 
+model = Model('double_pendulum_markers.osim');
+%  Add a console reporter to print the muscle fiber force and elbow angle.
+reporter = ConsoleReporter();
+reporter.set_report_time_interval(0.1);
+reporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'pin1_angle' );
+reporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
+model.addComponent(reporter);
 
+%% add a table reporter for the coordinates
+coordinateReporter = TableReporter();
+coordinateReporter.set_report_time_interval(time_interval)
+coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'q1' );
+coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
+model.addComponent(coordinateReporter);
+
+stofileadapter = STOFileAdapter();
 
 for n = 1 : 10
    
-    model = Model('double_pendulum_markers.osim');
-
     disp(['This is loop ' num2str(n) ''])
-    %  Add a console reporter to print the muscle fiber force and elbow angle.
-        reporter = ConsoleReporter();
-        reporter.set_report_time_interval(0.1);
-        reporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'pin1_angle' );
-        reporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
-        model.addComponent(reporter);
-
-    %% add a table reporter for the coordinates
-    coordinateReporter = TableReporter();
-    coordinateReporter.set_report_time_interval(time_interval)
-    coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'q1' );
-    coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
-    model.addComponent(coordinateReporter);
-
-    %% add a table reporter for the markers
-%     markerReporter = TableReporterVec3();
-%     markerReporter.set_report_time_interval(time_interval);
-% 
-%     nMarkers = model.getMarkerSet.getSize;
-%     for iMarker = 0 : nMarkers - 1
-%         markerReporter.updInput('inputs').connect(model.getMarkerSet.get(iMarker).getOutput('location'), char(model.getMarkerSet.get(iMarker).getName) );
-%     end
-% 
-%     model.addComponent(markerReporter);
-    
+       
     % Simulate.
     state = model.initSystem();
     manager = Manager(model);
-    manager.setInitialTime(0); manager.setFinalTime(10.0);
+    manager.setInitialTime(0); manager.setFinalTime(n);
     manager.integrate(state);
 
-
-    
     % get the coordinate and marker tables
     coordinatetable = coordinateReporter.getTable; 
     % print coordinates to file
-    stofileadapter = STOFileAdapter();
     stofileadapter.write(coordinatetable,'pendulum_coordinates.sto');
-    % clear the reporter
-    coordinateReporter.clearTable ; 
+    
     % clear the table
+    coordinateReporter.clearTable ; 
     clear coordinatetable
     
-    % markertable = markerReporter.getTable;
-    % Print the rotated markers to trc file.
-    % THE BELOW LINES DO NOT WORK AND THERE IS CURRENTLY NO FIX
-    % stofileadapter = STOFileAdapterVec3();
-    % stofileadapter.write(markertable,'pendulum_markers.sto');
-    % markerReporter.clearTable ;
-   
-    clear model
 end
 
 
