@@ -146,7 +146,7 @@ before_install:
   
   ## Set compiler flags.
   - export CXX_FLAGS="-Werror -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"
-  - # Use this to ignore warnings on only Linux: if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS <add warnings here>"; fi;
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-inconsistent-missing-override"; fi;
 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
