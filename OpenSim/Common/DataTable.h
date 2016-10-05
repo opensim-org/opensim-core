@@ -269,12 +269,12 @@ public:
 
     /** Retrieve the number of components each element (of type ETY) of the 
     table is made of. Some examples:
-    <table>
-    <tr><td>Table Type</td><td>Element Type</td><td>Num of Components</td></tr>
-    <tr><td>DataTable<double, double></td><td>double</td><td>1</td></tr>
-    <tr><td>DataTable<double, Vec3></td><td>Vec3</td><td>3</td></tr>
-    <tr><td>DataTable<double, Quaternion></td><td>Quaternion</td><td>4</td></tr>
-    </table>                                                                  */
+
+    Table Type                    | Element Type | Num of Components
+    ------------------------------|--------------|------------------
+    DataTable<double, double>     | double       | 1
+    DataTable<double, Vec3>       | Vec3         | 3
+    DataTable<double, Quaternion> | Quaternion   | 4                          */
     unsigned numComponentsPerElement() const override {
         return numComponentsPerElement_impl(ETY{});
     }
