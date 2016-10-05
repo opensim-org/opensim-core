@@ -28,6 +28,7 @@ using namespace OpenSim;
 VandenBogert2011Muscle::VandenBogert2011Muscle()
 {
     constructProperties();
+    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /*
@@ -44,6 +45,7 @@ VandenBogert2011Muscle::VandenBogert2011Muscle
     setOptimalFiberLength(optimalFiberLength);
     setTendonSlackLength(tendonSlackLength);
     setPennationAngleAtOptimalFiberLength(pennationAngle);
+    finalizeFromProperties();
 }
 
 
@@ -78,6 +80,14 @@ void VandenBogert2011Muscle::constructProperties()
     //constructProperty_max_contraction_velocity(10*optimal_fiber_length);
 }
 
+
+
+
+void VandenBogert2011Muscle::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+}
 
 //--------------------------------------------------------------------------
 // GET & SET Properties
@@ -149,11 +159,11 @@ double VandenBogert2011Muscle::getDefaultFiberLength() const
 void VandenBogert2011Muscle::setProjFiberLengthNorm(SimTK::State& s, double projFibLenNorm)
             const
 {
-
+    //In other muscles this is setFiberLength
         setStateVariableValue(s, "projected_fiber_length_normalized",projFibLenNorm);
-        //markCacheVariableInvalid(s,"lengthInfo");
-        //markCacheVariableInvalid(s,"velInfo");
-        //markCacheVariableInvalid(s,"dynamicsInfo");
+        markCacheVariableInvalid(s,"lengthInfo");
+        markCacheVariableInvalid(s,"velInfo");
+        markCacheVariableInvalid(s,"dynamicsInfo");
     }
 
 
@@ -210,27 +220,9 @@ double  VandenBogert2011Muscle::getActivation(const SimTK::State& s) const
 
 double  VandenBogert2011Muscle::computeActuation(const SimTK::State& s) const
 {
-    double activ = 0.0; //BTH
-    //double activ = getActivation(s);
-
-
-
-    // For now we will start with static guess
-    // TODO: figure out how to use previous state as guess
-    SimTK::Vector ydotInitialGuess(2);
-    ydotInitialGuess[0] = 0.0;
-    ydotInitialGuess[1] = 0.0;
-    SimTK::Vec2 sdot = calcSolveMuscle(s, activ, ydotInitialGuess);
-
-    VandenBogert2011Muscle::ImplicitResidual Result = VandenBogert2011Muscle::calcImplicitResidual(s,
-                                          sdot[0],
-                                          sdot[1],
-                                          activ,
-                                          0);
-
-    //TODO: Could probably add a check here that residuals =0
-
-    return(Result.forceTendon);
+    const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+    setActuation(s, mdi.tendonForce);
+    return mdi.tendonForce;
 }
 
 
@@ -258,7 +250,7 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
                                                         activation);
 
     setActuation(s, lenghAndForce[1]);
-    setStateVariableValue(s, "projected_fiber_length_normalized", lenghAndForce[0]);
+    setProjFiberLengthNorm(s,lenghAndForce[0]);
 
     //TODO:  Millard Muscle handles non-convergence here and zero muscle length.
     //     Need to consider adding.
@@ -266,16 +258,31 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
 }
 
 
+void VandenBogert2011Muscle::
+postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+{
+    //TODO:  I have not really thought through if there are special cases for this muscle
+    GeometryPath& path = upd_GeometryPath();
+    path.postScale(s, aScaleSet);
+
+    if (path.getPreScaleLength(s) > 0.0) {
+        double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+        path.setPreScaleLength(s, 0.0);
+    }
+}
+
 //==============================================================================
 // MODELCOMPONENT INTERFACE REQUIREMENTS
 //==============================================================================
 
-/*
+
 void VandenBogert2011Muscle::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 }
-*/
+
 
 // Define new states and their derivatives in the underlying system
 void VandenBogert2011Muscle::extendAddToSystem(SimTK::MultibodySystem& system)
@@ -316,16 +323,21 @@ void VandenBogert2011Muscle::extendSetPropertiesFromState(const SimTK::State& s)
 void VandenBogert2011Muscle::computeStateVariableDerivatives(const SimTK::State& s) const
 {
 
-    double activ = getActivation(s);
+    double excitation = getControl(s);
     // For now we will start with static guess
     // TODO: figure out how to use previous state as guess
     SimTK::Vector ydotInitialGuess(2);
     ydotInitialGuess[0] = 0.0;
     ydotInitialGuess[1] = 0.0;
-    SimTK::Vec2 sdot = calcSolveMuscle(s, activ, ydotInitialGuess);
+    double projFibVelNorm = calcSolveMuscle(s, excitation, ydotInitialGuess);
+    setStateVariableDerivativeValue(s, "projected_fiber_length_normalized", projFibVelNorm );
 
-    setStateVariableDerivativeValue(s, "projected_fiber_length_normalized", sdot[0]);
-    setStateVariableDerivativeValue(s, "activation", sdot[1]);
+
+    double adot =getActivationDerivative(s);
+    setStateVariableDerivativeValue(s, "activation",  adot);
+
+
+
 }
 
 
@@ -360,13 +372,13 @@ public:
         //The constraints function is the residuals
 
         double projFibVelNorm_guess = new_yDotGuess[0];
-        double activdot_guess = new_yDotGuess[1];
+        double activdot = 0;  //BTH - big hack here.  Remove this
 
-        VandenBogert2011Muscle::ImplicitResidual results = p_muscle->calcImplicitResidual(si,projFibVelNorm_guess,activdot_guess,excitation,0);
+        VandenBogert2011Muscle::ImplicitResidual results = p_muscle->calcImplicitResidual(si,projFibVelNorm_guess,activdot,excitation,0);
 
 
         constraints[0] = results.forceResidual;
-        constraints[1] = results.activResidual;
+        //constraints[1] = results.activResidual;
 
         return 0;
     }
@@ -875,8 +887,7 @@ if (getDebugLevel()>0){
 
     //----------------------Activation dynamics equation-------------------//
 
-    double activationResidual = activdot - (excitation - activ) *
-                    (excitation / activTimeConstant + (1 - excitation) / deactivationTimeConstant );
+    double activationResidual = activdot - calcActivationDerivative(activ,excitation);
     SimTK::Vec2 df_du;
     double dActRes_dactiv = 0;
     double dActRes_dactivdot = 0;
@@ -948,6 +959,87 @@ if (getDebugLevel()>0){
 
 return results; }
 
+
+
+double VandenBogert2011Muscle::
+calcActivationDerivative(double activation, double excitation) const
+{
+
+    double activationDerivative=(excitation - activation) *
+    (excitation / getActivTimeConstant() + (1 - excitation) / getDeactivationTimeConstant());
+
+    return activationDerivative;
+}
+
+
+double VandenBogert2011Muscle::
+getActivationDerivative(const SimTK::State& s) const
+{
+    double activationDerivative =
+            calcActivationDerivative(getActivation(s),getExcitation(s));
+
+    return activationDerivative;
+}
+
+
+
+
+
+//==============================================================================
+// MUSCLE INTERFACE REQUIREMENTS -- MUSCLE LENGTH INFO
+//==============================================================================
+void VandenBogert2011Muscle::calcMuscleLengthInfo(const SimTK::State& s,
+                                                        MuscleLengthInfo& mli) const
+{
+    // Get musculotendon actuator properties.
+    //double maxIsoForce    = getMaxIsometricForce();
+    double optFiberLength = getOptimalFiberLength();
+    double tendonSlackLen = getTendonSlackLength();
+
+    try {
+
+        double projFibLengthNorm = getStateVariableValue(s, "projected_fiber_length_normalized");
+
+        mli.normFiberLength = projFibLenToFiberLength(projFibLengthNorm,true);
+        mli.fiberLength = mli.normFiberLength * optFiberLength ;
+
+        mli.pennationAngle    = penMdl.calcPennationAngle(mli.fiberLength);
+        mli.cosPennationAngle = cos(mli.pennationAngle);
+        mli.sinPennationAngle = sin(mli.pennationAngle);
+        mli.fiberLengthAlongTendon = mli.fiberLength * mli.cosPennationAngle;
+
+        // Necessary even for the rigid tendon, as it might have gone slack.
+        mli.tendonLength      = penMdl.calcTendonLength(mli.cosPennationAngle,
+                                                        mli.fiberLength, getLength(s));
+        mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
+        mli.tendonStrain      = mli.normTendonLength - 1.0;
+
+        mli.fiberPassiveForceLengthMultiplier =
+                fpeCurve.calcValue(mli.normFiberLength);
+        mli.fiberActiveForceLengthMultiplier =
+                falCurve.calcValue(mli.normFiberLength);
+
+    } catch(const std::exception &x) {
+        std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
+                                  "calcMuscleLengthInfo from " + getName() + "\n"
+                          + x.what();
+        throw OpenSim::Exception(msg);
+    }
+}
+
+
+
+
+
+ double VandenBogert2011Muscle::getProjFiberVelNorm(const SimTK::State& s) const
+ {
+     double excitation = getExcitation(s);
+     SimTK::Vector projFibVelNormGuess; //BTH - Should make this use the current state derivative value if possible
+     projFibVelNormGuess[0]=0;
+     double projFiberVelocityNorm = calcSolveMuscle(s, excitation, projFibVelNormGuess);
+
+     return projFiberVelocityNorm;
+ }
 
 
 
@@ -1165,25 +1257,30 @@ SimTK::Vec2 VandenBogert2011Muscle::calcFiberStaticEquilbirum(
 //------------------------------------------------------------------------------
 //Calculate the ydot values to drive the residuals to 0 and "balance" the muscle
 
-SimTK::Vec2 VandenBogert2011Muscle::calcSolveMuscle(const SimTK::State& s,
-          double activ, SimTK::Vector yDotInitialGuess) const {
+double VandenBogert2011Muscle::calcSolveMuscle(const SimTK::State& s,
+          double excitation, SimTK::Vector projFibVelNormGuess) const {
 
 //SimTK::Vector VandenBogert2011Muscle::calcSolveMuscle(const SimTK::State& s,
 //         double activ, SimTK::Vector yDotInitialGuess)  {
 
     SimTK::State stemp=s;
-    ImplicitSystemForwardEulerStep sys(2, stemp, activ);
+
+    //ImplicitSystemForwardEulerStep sys(2, stemp, activ);
+    ImplicitSystemForwardEulerStep sys(1, stemp, excitation);
 
     //TODO:  Need come up with reasonable bounds
-    SimTK::Vector lower_bounds(2);
+    //SimTK::Vector lower_bounds(2);
+    SimTK::Vector lower_bounds(1);
     lower_bounds[0] = -SimTK::Infinity;
-    lower_bounds[1] = -SimTK::Infinity;
+    //lower_bounds[1] = -SimTK::Infinity;
 
-    SimTK::Vector upper_bounds(2);
+    //SimTK::Vector upper_bounds(2);
+    SimTK::Vector upper_bounds(1);
     upper_bounds[0] = SimTK::Infinity;
-    upper_bounds[1] = SimTK::Infinity;
+    //upper_bounds[1] = SimTK::Infinity;
 
     sys.setParameterLimits(lower_bounds, upper_bounds);
+
 
     SimTK::Optimizer opt(sys, SimTK::InteriorPoint); //Create the optimizer
 
@@ -1194,13 +1291,13 @@ SimTK::Vec2 VandenBogert2011Muscle::calcSolveMuscle(const SimTK::State& s,
     opt.setMaxIterations(100);
     opt.setLimitedMemoryHistory(500);
 
-    opt.optimize(yDotInitialGuess);  // Optimize
+    opt.optimize(projFibVelNormGuess);  // Optimize
 
-    SimTK::Vec2 ydot;
-    ydot[0]=yDotInitialGuess[0];
-    ydot[1]=yDotInitialGuess[1];
 
-    return ydot;
+    double projFibVelNorm=projFibVelNormGuess[0];
+    //ydot[1]=yDotInitialGuess[1];
+
+    return projFibVelNorm;
 };
 
 

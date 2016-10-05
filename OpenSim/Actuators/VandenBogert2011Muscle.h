@@ -36,6 +36,7 @@ The parent class, Muscle.h, provides
     5. max_contraction_velocity
 */
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 namespace OpenSim {
 /**
@@ -643,6 +644,20 @@ public:
                                               double excitation,
                                               bool returnJacobians=false) const;
 
+
+        /** Calculates the time derivative of activation.
+              @param activation Muscle activation
+              @param excitation Muscle control excitation
+              @returns activationDerivative The derivative of the activation wrt time*/
+        double calcActivationDerivative(double activation, double excitation) const;
+
+        /** Get the time derivative of activation of the state.
+              @param s The state of the system. (provides activation and excitation)
+              @returns activationDerivative The derivative of the activation wrt time*/
+        double getActivationDerivative(const SimTK::State& s) const;
+
+        double getProjFiberVelNorm(const SimTK::State& s) const;
+
         //Convience methods for converting between muscle length, projected
         // muscle length, and normalized values.  Need to do this because I am
         // sticking with the convention that external to the muscle,
@@ -780,7 +795,7 @@ public:
 
 
         //TODO: Need doxygen
-        SimTK::Vec2 calcSolveMuscle(const SimTK::State& s,
+        double calcSolveMuscle(const SimTK::State& s,
                                     double activ,
                                     SimTK::Vector yDotInitialGuess)
                                 const;
@@ -792,12 +807,15 @@ public:
 //=============================================================================
     protected:
 
+        void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
 
 //==============================================================================
 // MUSCLE INTERFACE REQUIREMENTS
 //==============================================================================
 
+
+    void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
     /* Not implmented (yet)
         void calcMuscleLengthInfo(const SimTK::State& s,
                                   MuscleLengthInfo& mli) const override;
@@ -821,7 +839,7 @@ public:
 //==============================================================================
 
         /** Sets up the ModelComponent from the model, if necessary */
-        //void extendConnectToModel(Model& model) override;
+        void extendConnectToModel(Model& model) override;
         //Removed per Chris Dembia comments
 
         /** add new dynamical states to the multibody system corresponding
@@ -846,11 +864,23 @@ public:
 // DATA
 //=============================================================================
 
-
-
     private:
         /** construct the new properties and set their default values */
         void constructProperties();
+
+
+        // Rebuilds muscle model if any of its properties have changed.
+        void extendFinalizeFromProperties() override;
+
+//==============================================================================
+// PRIVATE UTILITY CLASS MEMBERS
+//==============================================================================
+
+        // This object defines the pennation model used for this muscle model. Using
+        // a ClonePtr saves us from having to write a destructor, copy constructor,
+        // or copy assignment. This will be zeroed on construction, cleaned up on
+        // destruction, and cloned when copying.
+        MuscleFixedWidthPennationModel penMdl;
 
     };  // END of class VandenBogert2011Muscle
 } // end of namespace OpenSim
