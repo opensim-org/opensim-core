@@ -318,11 +318,6 @@ SimTK::State& Model::initializeState() {
     // default state that is stored inside the System.
     _workingState = getMultibodySystem().getDefaultState();
 
-    // Once we have the System topology realized, we can reorder
-    // Coordinates so they are aligned with generalized coordinates (q)
-    // in the State
-    reorderCoordinatesAccordingToSystemMobilities();
-
     // Set the Simbody modeling option that tells any joints that use 
     // quaternions to use Euler angles instead.
     _matter->setUseEulerAngles(_workingState, true);
@@ -495,25 +490,29 @@ void Model::createMultibodySystem()
 }
 
 
-void Model::reorderCoordinatesAccordingToSystemMobilities()
+std::vector<SimTK::ReferencePtr<const Coordinate>> 
+    Model::getCoordinatesInMultibodyTreeOrder() const
 {
     OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
-        "Attempting to reorder Coordinates according to an invalid System.");
+        "Cannot order Coordinates without a valid MultibodySystem.");
 
-    auto& coordSet = updCoordinateSet();
+    int nc = getNumCoordinates();
+    auto coordinates = getComponentList<Coordinate>();
+
+    std::vector<SimTK::ReferencePtr<const Coordinate>> 
+        coordinatesInTreeOrder(nc, 
+            SimTK::ReferencePtr<const Coordinate>(*coordinates.begin()));
 
     // We have a valid MultibodySystem underlying the Coordinates
-    int nc = coordSet.getSize();
-    const SimTK::State& s = getModel().getWorkingState();
+    const SimTK::State& s = getWorkingState();
     SimTK_ASSERT_ALWAYS(nc <= s.getNQ(),
-        "Number of Coordinates exceeds the number of mobilities in "
+        "Number of Coordinates exceeds the number of generalized coordinates in "
         "the underlying MultibodySystem.");
 
     auto& matter = getSystem().getMatterSubsystem();
 
-    auto coordinates = updComponentList<Coordinate>();
-
     int cnt = 0;
+
     for (auto& coord : coordinates) {
         auto mbix = coord.getBodyIndex();
         auto mqix = coord.getMobilizerQIndex();
@@ -523,16 +522,16 @@ void Model::reorderCoordinatesAccordingToSystemMobilities()
         SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
             "in this Model.");
 
-        // Set the coordinate in the right slot in the CoordinateSet
-        coordSet.set(cix, &coord);
+        coordinatesInTreeOrder.at(cix) = std::cref<Coordinate>(coord);
         cnt++;
     }
 
     SimTK_ASSERT_ALWAYS(cnt == nc,
-        "Reordered Coordinates does not correspond to the number of "
-        "Coordinates in the Model.");
-}
+        "The number of ordered Coordinates does not correspond to the number of "
+        "Coordinates in the Model's CoordinateSet.");
 
+    return coordinatesInTreeOrder;
+}
 
 void Model::extendFinalizeFromProperties()
 {

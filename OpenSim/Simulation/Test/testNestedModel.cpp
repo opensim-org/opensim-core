@@ -23,9 +23,18 @@
 
 /*=============================================================================
 
+The purpose of these tests is to verify that ModelComponents can be nested in
+another ModelComponent and still compose a valid Model and resulting System.
+
 Tests Include:
-    1. Pendulum Model with nested Device derived from ModelComponent 
-    2. Pendulum Model with a Device that is a Model
+    1. Pendulum Model with nested Device derived from ModelComponent: In this
+       case ModelComponents (e.g. Bodies and Joints) are nested in a Device,
+       which is a ModelComponent. The appearance of Joints and Bodies in
+       nested ModelComponents should be handled by the top-level Model.
+    2. Pendulum Model with a Device that is a Model: In this case, 
+       ModelComponents are part of a device Model and that Model is nested in
+       a bigger (the top-level) Model. As in 1., the ModelComponents inside
+       the nested Model should be handled appropriately to form a valid System.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -85,12 +94,11 @@ void testPendulumModelWithNestedJoints()
     // add the device to the pendulum model
     pendulum->addModelComponent(device);
 
-    // Connect the device to the pendulum
-    auto bodies = pendulum->getComponentList<OpenSim::Body>();
-    auto bodyIter = bodies.begin();
-    anchorA->updConnector("parent_frame").connect(*bodyIter);
-    bodyIter++;
-    anchorB->updConnector("parent_frame").connect(*bodyIter);
+    // Connect the device to bodies of the pendulum
+    const auto& rod1 = pendulum->getComponent<OpenSim::Body>("rod1");
+    const auto& rod2 = pendulum->getComponent<OpenSim::Body>("rod2");
+    anchorA->updConnector("parent_frame").connect(rod1);
+    anchorB->updConnector("parent_frame").connect(rod2);
 
     State& s = pendulum->initSystem();
 }

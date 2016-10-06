@@ -259,15 +259,15 @@ bool InverseDynamicsTool::run()
         string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
         IO::chDir(directoryOfSetupFile);
 
-        const CoordinateSet &coords = _model->getCoordinateSet();
+        auto coords = _model->getCoordinatesInMultibodyTreeOrder();
         int nq = _model->getNumCoordinates();
 
         FunctionSet *coordFunctions = NULL;
-        //Storage *coordinateValues = NULL;
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
-                cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
+                cout << "\n\nLow-pass filtering coordinates data with a cutoff frequency of "
+                    << _lowpassCutoffFrequency << "..." << endl << endl;
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
                 _coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
                 if (getVerboseLevel()==Debug) _coordinateValues->print("coordinateDataFiltered.sto");
@@ -281,13 +281,14 @@ bool InverseDynamicsTool::run()
 
             //Functions must correspond to model coordinates and their order for the solver
             for(int i=0; i<nq; i++){
-                if(coordFunctions->contains(coords[i].getName())){
-                    coordFunctions->insert(i,coordFunctions->get(coords[i].getName()));
+                const Coordinate& coord = *coords[i];
+                if(coordFunctions->contains(coord.getName())){
+                    coordFunctions->insert(i,coordFunctions->get(coord.getName()));
                 }
                 else{
-                    coordFunctions->insert(i,new Constant(coords[i].getDefaultValue()));
+                    coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
                     std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate "
-                        << coords[i].getName() << " assuming default value" 
+                        << coord.getName() << " assuming default value" 
                         << std::endl;
                 }
             }
@@ -297,8 +298,8 @@ bool InverseDynamicsTool::run()
         }
         else{
             IO::chDir(saveWorkingDirectory);
-            throw Exception("InverseDynamicsTool: no coordinate file found, or setCoordinateValues() was not called.");
-
+            throw Exception("InverseDynamicsTool: no coordinate file found, "
+                " or setCoordinateValues() was not called.");
         }
 
         // Exclude user-specified forces from the dynamics for this analysis
@@ -331,20 +332,23 @@ bool InverseDynamicsTool::run()
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
         ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
-
-
         success = true;
 
-        cout << "InverseDynamicsTool: " << nt << " time frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+        cout << "InverseDynamicsTool: " << nt << " time frames in " 
+            << (double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
     
         JointSet jointsForEquivalentBodyForces;
         getJointsByName(*_model, _jointsForReportingBodyForces, jointsForEquivalentBodyForces);
         int nj = jointsForEquivalentBodyForces.getSize();
 
+        // Generalized forces from ID Solver are in MultibodyTree order and not
+        // necessarily in the order of the Coordinates in the Model.
+        // We can get the Coordinates in Tree order from the Model.
         Array<string> labels("time", nq+1);
         for(int i=0; i<nq; i++){
-            labels[i+1] = coords[i].getName();
-            labels[i+1] += (coords[i].getMotionType() == Coordinate::Rotational) ? "_moment" : "_force";
+            labels[i+1] = coords[i]->getName();
+            labels[i+1] += (coords[i]->getMotionType() == Coordinate::Rotational) ? 
+                "_moment" : "_force";
         }
 
         Array<string> body_force_labels("time", 6*nj+1);

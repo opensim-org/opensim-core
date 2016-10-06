@@ -38,6 +38,7 @@ macro(OpenSimAddJavaTest TESTNAME)
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             add_test(NAME Java_${TESTNAME}_${cfg}
                 COMMAND ${Java_JAVA_EXECUTABLE}
+                        -enableassertions
                         -Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}
                         -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                         ${TESTNAME}
@@ -48,6 +49,7 @@ macro(OpenSimAddJavaTest TESTNAME)
     else()
         add_test(NAME Java_${TESTNAME}
             COMMAND ${Java_JAVA_EXECUTABLE}
+                    -enableassertions
                     -Djava.library.path=${CMAKE_BINARY_DIR}
                     -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                     ${TESTNAME}
@@ -104,7 +106,8 @@ OpenSimAddJavaTest(TestBasics)
 OpenSimAddJavaTest(TestIterators)
 OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
-
+OpenSimAddJavaTest(TestTables)
+OpenSimAddJavaTest(TestModelBuilding)
 
 
 
