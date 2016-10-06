@@ -97,7 +97,7 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");
 
-    for (int i = 0; i < ncolumns; ++i) {
+    for (size_t i = 0; i < ncolumns; ++i) {
         std::cout << "column:    " << columnsUsed[i] << std::endl;
         std::cout << "RMS error: " << comparisons[i] << std::endl;
         std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
