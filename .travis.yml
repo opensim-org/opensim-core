@@ -74,6 +74,11 @@ before_install:
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
   
   - cmake --version # To help debug any cmake-related issues.
+      
+  ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
+  # This prevents the build from failing with:
+  # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
+  - rvm get head
   
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
