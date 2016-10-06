@@ -112,7 +112,7 @@ arm.addController(brain)
 # Add a console reporter to print the muscle fibre force and elbow angle.
 # ---------------------------------------------------------------------------
 
-# We want to write our simulation results to a the console.
+# We want to write our simulation results to the console.
 reporter = osim.ConsoleReporter()
 reporter.set_report_time_interval(1.0)
 reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
