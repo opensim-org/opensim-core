@@ -114,7 +114,7 @@ void testTableReporerLabels() {
 
     // Check column headings for dependent variables reported by TableReporter,
     // which should be "/world/slider/sliderCoord/value" and "height".
-    const auto headings = reporter->getReport().getColumnLabels();
+    const auto headings = reporter->getTable().getColumnLabels();
     SimTK_TEST(headings[0] == "/world/slider/sliderCoord/value");
     SimTK_TEST(headings[1] == "height");
 }
