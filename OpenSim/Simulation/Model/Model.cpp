@@ -522,7 +522,7 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
         SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
             "in this Model.");
 
-        coordinatesInTreeOrder.at(cix) = std::cref<Coordinate>(coord);
+        coordinatesInTreeOrder.at(cix).reset(&coord);
         cnt++;
     }
 
