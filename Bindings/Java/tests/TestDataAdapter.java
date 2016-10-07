@@ -6,6 +6,7 @@ class TestDataAdapter {
         C3DFileAdapter c3dAdapter = new C3DFileAdapter();
         StdMapStringTimeSeriesTableVec3 tables =
             c3dAdapter.read("../../../../OpenSim/Common/Test/walking5.c3d");
+        
         TimeSeriesTableVec3 markerTable = tables.get("markers");
         assert markerTable.getNumRows()    == 1103;
         assert markerTable.getNumColumns() == 40;
@@ -14,15 +15,25 @@ class TestDataAdapter {
         assert markerTableFlat.getNumRows()    == 1103;
         assert markerTableFlat.getNumColumns() == 40 * 3;
 
-        String fileName = new String("testDataAdapter.mot");
+        String markerFileName = new String("markers.mot");
         STOFileAdapter stoAdapter = new STOFileAdapter();
-        stoAdapter.write(markerTableFlat, fileName);
+        stoAdapter.write(markerTableFlat, markerFileName);
 
-        TimeSeriesTable markerTableDouble = stoAdapter.read(fileName);
+        TimeSeriesTable markerTableDouble = stoAdapter.read(markerFileName);
         assert markerTableDouble.getNumRows()    == 1103;
         assert markerTableDouble.getNumColumns() == 40 * 3;
 
-        File file = new File(fileName);
+        TimeSeriesTableVec3 forceTable = tables.get("forces");
+        assert forceTable.getNumRows()    == 8824;
+        assert forceTable.getNumColumns() == 6;
+
+        TimeSeriesTable forceTableFlat = forceTable.flatten();
+        assert forceTableFlat.getNumRows()    == 8824;
+        assert forceTableFlat.getNumColumns() == 6 * 3;
+
+        File file = new File(markerFileName);
+        file.delete();
+        file = new File(forceFileName);
         file.delete();
     }
 
