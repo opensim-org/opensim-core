@@ -1,7 +1,7 @@
 import org.opensim.modeling.*;
 
 class TestReporter {
-    public static void test_TableReporter() throws java.io.IOException {
+    public static void test_TableReporter_1() throws java.io.IOException {
         // Prepare the table for table-source.
         TimeSeriesTable table = new TimeSeriesTable();
         StdVectorString labels = new StdVectorString();
@@ -106,7 +106,76 @@ class TestReporter {
         }
     }
 
+    public static void test_TableReporter_2() throws java.io.IOException {
+        final double timeInterval = 0.1;
+        
+        String modelFileName = "../../../../../" +
+            "OpenSim/Sandbox/MatlabScripts/double_pendulum_markers.osim";
+        Model model = new Model(modelFileName);
+
+        ConsoleReporter consoleReporter = new ConsoleReporter();
+        consoleReporter.set_report_time_interval(timeInterval);
+        consoleReporter.
+            updInput("inputs").
+            connect(model.getCoordinateSet().get(0).getOutput("value"),
+                    "pin1_angle");
+        consoleReporter.
+            updInput("inputs").
+            connect(model.getCoordinateSet().get(1).getOutput("value"),
+                    "q2");
+        model.addComponent(consoleReporter);
+
+        TableReporter tableReporter = new TableReporter();
+        tableReporter.set_report_time_interval(timeInterval);
+        tableReporter.
+            updInput("inputs").
+            connect(model.getCoordinateSet().get(0).getOutput("value"),
+                    "q1");
+        tableReporter.
+            updInput("inputs").
+            connect(model.getCoordinateSet().get(1).getOutput("value"),
+                    "q2");
+        model.addComponent(tableReporter);
+
+        STOFileAdapter stoAdapter = new STOFileAdapter();
+
+        assert !tableReporter.getTable().hasColumnLabels();
+
+        for(int n = 1; n <= 10; ++n) {
+            assert tableReporter.getTable().getNumRows()    == 0;
+            assert tableReporter.getTable().getNumColumns() == 0;
+            
+            State state = model.initSystem();
+            Manager manager = new Manager(model);
+            manager.setInitialTime(0);
+            manager.setFinalTime(n);
+            manager.integrate(state);
+
+            TimeSeriesTable table = tableReporter.getTable();
+            stoAdapter.write(table, "pendulum_coordinates.sto");
+
+            assert table.getColumnLabels().size() == 2;
+            assert table.
+                   getColumnLabel(0).equals("/double_pendulum/pin1/q1/value");
+            assert table.
+                   getColumnLabel(1).equals("/double_pendulum/pin2/q2/value");
+            assert table.getNumRows()    == 1 + (n / timeInterval);
+            assert table.getNumColumns() == 2;
+
+            tableReporter.clearTable();
+
+            assert table.getColumnLabels().size() == 2;
+            assert table.
+                   getColumnLabel(0).equals("/double_pendulum/pin1/q1/value");
+            assert table.
+                   getColumnLabel(1).equals("/double_pendulum/pin2/q2/value");
+            assert table.getNumRows()    == 0;
+            assert table.getNumColumns() == 0;
+        }
+    }
+
     public static void main(String[] args) throws java.io.IOException {
-        test_TableReporter();
+        test_TableReporter_1();
+        test_TableReporter_2();
     }
 };
