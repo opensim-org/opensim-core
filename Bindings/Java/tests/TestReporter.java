@@ -154,20 +154,16 @@ class TestReporter {
             stoAdapter.write(table, "pendulum_coordinates.sto");
 
             assert table.getColumnLabels().size() == 2;
-            assert table.
-                   getColumnLabel(0).equals("/double_pendulum/pin1/q1/value");
-            assert table.
-                   getColumnLabel(1).equals("/double_pendulum/pin2/q2/value");
+            assert table.getColumnLabel(0).equals("q1");
+            assert table.getColumnLabel(1).equals("q2");
             assert table.getNumRows()    == 1 + (n / timeInterval);
             assert table.getNumColumns() == 2;
 
             tableReporter.clearTable();
 
             assert table.getColumnLabels().size() == 2;
-            assert table.
-                   getColumnLabel(0).equals("/double_pendulum/pin1/q1/value");
-            assert table.
-                   getColumnLabel(1).equals("/double_pendulum/pin2/q2/value");
+            assert table.getColumnLabel(0).equals("q1");
+            assert table.getColumnLabel(1).equals("q2");
             assert table.getNumRows()    == 0;
             assert table.getNumColumns() == 0;
         }
