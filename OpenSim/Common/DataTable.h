@@ -175,6 +175,32 @@ public:
                          "number of components per element of DataTable 'that'."
                          "See documentation for numComponentsPerElement().");
 
+        // If the dependents metadata is of std::string type,
+        // replicate it to match the new number of columns. If not of
+        // std::string type, drop the metadata because type information is
+        // required to interpret them.
+        // Column-labels will be handled separtely as they need suffix-ing.
+        for(const auto& key : _dependentsMetaData.getKeys()) {
+            if(key == "labels")
+                continue;
+
+            auto absValueArray = &_dependentsMetaData.updValueArrayForKey(key);
+            ValueArray<std::string>* valueArray{};
+            try {
+                valueArray =
+                    dynamic_cast<ValueArray<std::string>*>(absValueArray);
+            } catch (const std::bad_cast&) {
+                _dependentsMetaData.removeValueArrayForKey(key);
+                continue;
+            }
+            auto& values = valueArray->upd();
+            std::vector<SimTK::Value<std::string>> newValues{};
+            for(const auto& value : values)
+                for(auto i = 0u; i < that.numComponentsPerElement(); ++i)
+                    newValues.push_back(value);
+            values = std::move(newValues);
+        }
+
         std::vector<std::string> thisLabels{};
         for(const auto& label : that.getColumnLabels()) {
             if(suffixes.empty()) {
@@ -185,6 +211,7 @@ public:
                     thisLabels.push_back(label + suffix);
             }
         }
+        // This calls validateDependentsMetadata, so no need for explicit call.
         setColumnLabels(thisLabels);
 
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
