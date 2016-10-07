@@ -109,8 +109,7 @@ class TestReporter {
     public static void test_TableReporter_2() throws java.io.IOException {
         final double timeInterval = 0.1;
         
-        String modelFileName = "../../../../../" +
-            "OpenSim/Sandbox/MatlabScripts/double_pendulum_markers.osim";
+        String modelFileName = "double_pendulum_markers.osim";
         Model model = new Model(modelFileName);
 
         ConsoleReporter consoleReporter = new ConsoleReporter();

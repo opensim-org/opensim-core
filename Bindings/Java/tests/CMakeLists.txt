@@ -57,6 +57,11 @@ macro(OpenSimAddJavaTest TESTNAME)
             )
     endif()
 
+    string(CONCAT FILETOCOPY
+           "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/MatlabScripts/"
+           "double_pendulum_markers.osim")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestReporter")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestVisualization")
 
