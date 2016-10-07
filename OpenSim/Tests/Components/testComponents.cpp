@@ -183,9 +183,10 @@ void testComponent(const Component& instanceToTest)
     ComponentList<Component>::const_iterator it = comps.begin();
 
     while(sub) {
-        int nc = sub->getNumConnectors();
-        for (int i = 0; i < nc; ++i){
-            AbstractConnector& connector = sub->updConnector(i);
+        //int nc = sub->getNumConnectors();
+        //for (int i = 0; i < nc; ++i){
+        for (const auto& connectorName : sub->getConnectorNames()) {
+            AbstractConnector& connector = sub->updConnector(connectorName);
             string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;

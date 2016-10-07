@@ -337,11 +337,11 @@ protected:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
-        "List of connectors (structural dependencies) that this component has.");
+    //OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
+    //    "List of connectors (structural dependencies) that this component has.");
     
-    OpenSim_DECLARE_LIST_PROPERTY(inputs, AbstractInput,
-        "List of inputs (slots for outputs) that this component has.");
+    // TODO OpenSim_DECLARE_LIST_PROPERTY(inputs, AbstractInput,
+    // TODO     "List of inputs (slots for outputs) that this component has.");
 
     OpenSim_DECLARE_LIST_PROPERTY(components, Component,
         "List of components that this component owns and serializes.");
@@ -738,15 +738,15 @@ public:
         @see getConnector(int i);
      */
     int getNumConnectors() const {
-        return getProperty_connectors().size();
+        return int(_connectorsTable.size()); // getProperty_connectors().size();
     }
 
     /** Collect and return the names of the connectors in this
      * component. The names are in the same order as the connectors. */
     std::vector<std::string> getConnectorNames() {
-        std::vector<std::string> names(getNumConnectors());
-        for (int i = 0; i < getNumConnectors(); ++i) {
-            names[i] = get_connectors(i).getName(); 
+        std::vector<std::string> names;
+        for (const auto& it : _connectorsTable) {
+            names.push_back(it.first);
         }
         return names;
     }
@@ -826,7 +826,9 @@ public:
         auto it = _connectorsTable.find(name);
 
         if (it != _connectorsTable.end()) {
-            return get_connectors(it->second);
+            // TODO put this in a better place? Check if we must set it first.
+            it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
+            return it->second.getRef();
         }
 
         OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
@@ -872,18 +874,18 @@ public:
     @see getNumConnectors()
     @see getConnector(const std::string& name)
      */
-    const AbstractConnector& getConnector(int i) const {
+    /* TODO const AbstractConnector& getConnector(int i) const {
         return get_connectors(i);
-    }
+    }*/
 
     /** Access a writeable Connector by index. Make sure to provide a valid
     index; this function does not check that the index is valid.
     @see getNumConnectors()
     @see updConnector(const std::string& name)
     */
-    AbstractConnector& updConnector(int i) {
+    /* TODO AbstractConnector& updConnector(int i) {
         return upd_connectors(i);
-    }
+    }*/
 
     //@} end of Component Connector Access methods
 
@@ -894,7 +896,7 @@ public:
 
     /** Access the number of Inputs that this component has. */
     int getNumInputs() const {
-        return getProperty_inputs().size();
+        return int(_inputsTable.size());
     }
 
     /** Access the number of Outputs that this component has. */
@@ -938,9 +940,8 @@ public:
         auto it = _inputsTable.find(name);
 
         if (it != _inputsTable.end()) {
-            return get_inputs(it->second.first);
-            //                    ^      ^
-            //               std::pair index
+            // TODO set Input::_connecteeNameProp here, if necessary.
+            return it->second.getRef();
         }
 
         OPENSIM_THROW_FRMOBJ(InputNotFound, name);
@@ -2198,13 +2199,17 @@ protected:
     * incompatible or non-existant.
     */
     template <typename T>
-    int constructConnector(const std::string& name, bool isList = false) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, *this));
+    bool constructConnector(const std::string& name, bool isList = false) {
+        //int ix = updProperty_connectors().adoptAndAppendValue(
+         //   new Connector<T>(name, SimTK::Stage::Topology, *this));
         // Add pointer to connectorsTable so we can access connectors easily by
         // name.
-        _connectorsTable[name] = ix;
-        return ix;
+        //_connectorsTable[name] = ix;
+        // return ix;
+        
+        _connectorsTable[name].reset(
+                new Connector<T>(name, SimTK::Stage::Topology, *this, *this /*TODO temp*/));
+        return true;
     }
     
     /** Construct an output for a member function of the same component.
@@ -2319,15 +2324,13 @@ protected:
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
-    int constructInput(const std::string& name,
+    bool constructInput(const std::string& name,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
         const bool& isList = false) {
         
-        int ix = updProperty_inputs().adoptAndAppendValue(
-            new Input<T>(name, requiredAtStage, isList, *this));
-        // Add pointer to inputsTable so we can access inputs easily by name.
-        _inputsTable[name] = std::pair<int, bool>{ix, isList};
-        return ix;
+        _inputsTable[name].reset(
+                new Input<T>(name, requiredAtStage, isList, *this, *this /*TODO temp*/));
+        return true;
     }
     
     /// @}
@@ -2528,10 +2531,10 @@ private:
     // Table of Component's structural Connectors indexed by name.
     // Index is the slot in the connectors property where the concrete
     // Connector lives.
-    std::map<std::string, int> _connectorsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractConnector>/*int*/> _connectorsTable;
 
     // Table of Inputs holding the property index and isList setting.
-    std::map<std::string, std::pair<int, bool>> _inputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractInput>/*std::pair<int, bool>*/> _inputsTable;
 
     // Table of Component's Outputs indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;

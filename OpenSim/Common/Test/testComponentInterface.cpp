@@ -1428,15 +1428,23 @@ void testSingleValueInputConnecteeSerialization() {
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
         // connectee names for a single-value input.
-        auto& input1 = foo->updInput("input1");
-        AbstractProperty& connectee_name =
-                input1.updPropertyByName("connectee_name");
+        // TODO remove this line: auto& input1 = foo->updInput("input1");
+        auto& connectee_name = Property<std::string>::updAs(
+                        foo->updPropertyByName("connector_input1_connectees"));
         connectee_name.setAllowableListSize(0, 10);
-        connectee_name.appendValue<std::string>("apple");
-        connectee_name.appendValue<std::string>("banana");
-        connectee_name.appendValue<std::string>("lemon");
+        connectee_name.appendValue("apple");
+        connectee_name.appendValue("banana");
+        connectee_name.appendValue("lemon");
         
         world.print(modelFileNameMultipleValues);
+        
+        // TODO all the elements are simply treated as one value, containing
+        // strings. This exception used to be thrown because the property, upon
+        // initial construction, was able to contain multiple values; only later
+        // do the inputs learn if they are supposed to have 1 value.
+        // TODO instead, we can do an error check to make sure there were no spaces.
+        // TODO perhaps as part of finalizeFromProperties() (passed onto the
+        // Input/Connector).
     }
     // Deserialize.
     {
