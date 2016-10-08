@@ -113,6 +113,8 @@ private:
 //=============================================================================
     mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::ContactGeometry::TriangleMesh>>
         _geometry;
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMesh>>
+        _decorativeGeometry;
 
 //=============================================================================
 };  // END of class ContactMesh
