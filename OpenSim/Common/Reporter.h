@@ -188,7 +188,7 @@ protected:
 
         std::vector<std::string> labels;
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-            labels.push_back( input.getLongLabel(idx) );
+            labels.push_back( input.getLabel(idx) );
         }
         const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
     }
@@ -229,7 +229,7 @@ private:
             std::cout << "[" << this->getName() << "] " << "\n";
             std::cout << std::setw(_width) << "time" << "| ";
             for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-                const auto& outName = input.getShortLabel(idx);
+                const auto& outName = input.getLabel(idx);
                 const auto& truncName = 
                     static_cast<int>(outName.size()) <= _width ?
                     outName : outName.substr(outName.size() - _width);
@@ -264,7 +264,7 @@ inline void TableReporter_<SimTK::Vector, SimTK::Real>::
     
     if (_outputTable.getNumRows() == 0) {
         std::vector<std::string> labels;
-        const std::string& base = input.getLongLabel(0);
+        const std::string& base = input.getLabel(0);
         for (int ix = 0; ix < result.size(); ++ix) {
             labels.push_back(base + "[" + std::to_string(ix)+"]");
         }
