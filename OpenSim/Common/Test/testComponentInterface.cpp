@@ -521,7 +521,7 @@ void testMisc() {
 
 
     bar.updConnector<Foo>("childFoo").connect(foo2);
-    string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
+    string connectorName = bar.updConnector<Foo>("childFoo").getName();
 
     // Bar should connect now
     theWorld.connect();
@@ -1466,8 +1466,8 @@ int main() {
     Object::registerType(Bar());
     Object::registerType(TheWorld());
     // Register connector objects that are in use
-    Object::registerType(Connector<Foo>());
-    Object::registerType(Connector<Bar>());
+    // TODO Object::registerType(Connector<Foo>());
+    // TODO Object::registerType(Connector<Bar>());
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);

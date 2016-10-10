@@ -74,8 +74,8 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-class OSIMCOMMON_API AbstractConnector : public Object {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
+class OSIMCOMMON_API AbstractConnector /* TODO : public Object */ {
+    // TODO OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
 public:
     
 //==============================================================================
@@ -108,10 +108,10 @@ public:
                       bool isList,
                       const Component& owner,
                       Object& ownerAsObject) :
-            connectAtStage(connectAtStage),
+            _name(name),
+            _connectAtStage(connectAtStage),
             _connecteeNameIndex(connecteeNameIndex),
             _isList(isList), _owner(&owner), _ownerAsObject(&ownerAsObject) {
-        setName(name);
         // TODO setConnecteeNameProperty(ownerAsObject);
         // TODO only passing both a Component and an Object b/c Component is
         // an incomplete type in this header.
@@ -124,12 +124,19 @@ public:
 
     virtual ~AbstractConnector() {};
     
-    /** get the system Stage when the connection should be made */
-    SimTK::Stage getConnectAtStage() const {
-        return connectAtStage;
-    }
+    /// Create a dynamically-allocated copy. You must manage the memory
+    /// for the returned pointer.
+    /// This function facilitates the use of SimTK::ClonePtr<AbstractConnector>.
+    virtual AbstractConnector* clone() const = 0;
     
+    /// @name Accessors
+    /// @{
+    const std::string& getName() const { return _name; }
+    /** Get the system Stage when the connection should be made. */
+    SimTK::Stage getConnectAtStage() const { return _connectAtStage; }
+    /** Can this Connector have more than one connectee? */
     bool isListConnector() const { return _isList; }
+    /// @}
 
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
@@ -153,8 +160,7 @@ public:
     /** Generic access to the connectee. Not all connectors support this method
      * (e.g., the connectee for an Input is not an Object). */
     virtual const Object& getConnecteeAsObject() const {
-        OPENSIM_THROW_FRMOBJ(Exception,
-                "Not supported for this type of connector.");
+        OPENSIM_THROW(Exception, "Not supported for this type of connector.");
     }
 
     /** Connect this Connector to the provided connectee object. If this is a
@@ -325,8 +331,8 @@ private:
             updProperty_connectee_name().setAllowableListSize(1);
         }*/
     }
-    // TODO const std::string name;
-    SimTK::Stage connectAtStage = SimTK::Stage::Empty;
+    std::string _name;
+    SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteeNameIndex;
     bool _isList = false; // Use the property's isList to determine if isList.
     //mutable SimTK::ReferencePtr<Property<std::string>> _connecteeNameProp;
@@ -343,7 +349,7 @@ private:
 
 template<class T>
 class Connector : public AbstractConnector {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
+    // TODO OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
     
     /** Default constructor */
@@ -365,6 +371,8 @@ public:
         connectee(nullptr) {}
 
     virtual ~Connector() {}
+    
+    Connector<T>* clone() const override { return new Connector<T>(*this); }
 
     /** Is the Connector connected to object of type T? */
     bool isConnected() const override {
@@ -491,7 +499,7 @@ entries separated by a space. For example:
 @endverbatim
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
+    // TODO OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
     /** By default, Inputs are list connectors. */
     AbstractInput() : /* TODO should not need this now */ AbstractConnector(true) {}
@@ -511,7 +519,11 @@ public:
                           owner, ownerAsObject) {}
 
     virtual ~AbstractInput() {}
-
+    
+    // Change the return type of clone(). This is similar to what the Object
+    // macros do (see OpenSim_OBJECT_ABSTRACT_DEFS).
+    AbstractInput* clone() const override = 0;
+    
     // Connector interface
     void connect(const Object& object) override {
         std::stringstream msg;
@@ -623,7 +635,7 @@ public:
 /** An Input<Y> must be connected by an Output<Y> */
 template<class T>
 class  Input : public AbstractInput {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(Input, T, AbstractInput);
+    // TODO OpenSim_DECLARE_CONCRETE_OBJECT_T(Input, T, AbstractInput);
 public:
 
     typedef typename Output<T>::Channel Channel;
@@ -645,6 +657,8 @@ public:
           bool isList, const Component& owner, Object& ownerAsObject) :
         AbstractInput(name, connecteeNameIndex, connectAtStage, isList,
                       owner, ownerAsObject) {}
+    
+    Input<T>* clone() const override { return new Input<T>(*this); }
 
     /** Connect this Input to the provided (Abstract)Output.
      */

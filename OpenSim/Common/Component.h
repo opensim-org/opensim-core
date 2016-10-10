@@ -2937,14 +2937,14 @@ void Input<T>::findAndConnect(const Component& root) {
         }
         catch (const Exception& ex) {
             std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
+            msg << "Input<" << getConnecteeTypeName() << "> '";
+            msg << getName() << "' ERROR: Could not connect to Output '";
             msg << outputPathStr << "'";
             if (!channelName.empty()) {
                 msg << " and channel '" << channelName << "'";
             }
             msg << " (details: " << ex.getMessage() << ").";
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            OPENSIM_THROW(Exception, msg.str());
         }
     }
 }

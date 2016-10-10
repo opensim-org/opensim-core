@@ -65,6 +65,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
   try {
 
+    /* TODO
     Object::registerType(Connector<Component>());
 
     // Register commonly used Inputs for de/serialization
@@ -73,6 +74,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType(Input<SimTK::Vector>());
     Object::registerType(Input<SimTK::SpatialVec>());
     Object::registerType(Input<SimTK::Transform>());
+    */
 
     //SimTK::Xml::setXmlCondenseWhiteSpace(false);
     Object::registerType( FunctionSet() );

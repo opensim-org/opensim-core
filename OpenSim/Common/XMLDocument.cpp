@@ -452,7 +452,7 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
         
         // Create new element for this connector's connectee name.
         SimTK::Xml::Element newConnecteeNameElt( // TODO TODO 
-                "connector_" + connectorName + "_connectees");
+                "connector_" + connectorName + "_connectee_name");
         newConnecteeNameElt.setValue(connecteeName);
         componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
     }
