@@ -63,7 +63,7 @@ public:
 int main()
 {
     SimTK::Array_<std::string> failures;
-/*
+
     try { testBody(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBody");
@@ -86,7 +86,7 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
     }
-*/
+
     try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
