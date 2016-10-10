@@ -1335,12 +1335,12 @@ value of type T.
 // TODO internal documentation
 // TODO what is a good name for the property?
 // TODO do we even want to reveal get/upd/set for inputs?
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY_CONNECTEE_NAME(pname, comment)    \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname, std::string,                     \
-            = this->template addOptionalProperty<std::string>(#pname,comment)) \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY_DOCS_GET_UPD_SET(pname, std::string, comment,)
+//#define OpenSim_DECLARE_OPTIONAL_PROPERTY_CONNECTEE_NAME(pname, comment)    \
+//    /** @cond **/                                                           \
+//    OpenSim_DECLARE_PROPERTY_HELPER(pname, std::string,                     \
+//            = this->template addOptionalProperty<std::string>(#pname,comment)) \
+//    /** @endcond **/                                                        \
+//    OpenSim_DECLARE_OPTIONAL_PROPERTY_DOCS_GET_UPD_SET(pname, std::string, comment,)
 
 
 // TODO document

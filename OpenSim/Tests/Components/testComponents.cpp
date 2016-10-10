@@ -183,8 +183,6 @@ void testComponent(const Component& instanceToTest)
     ComponentList<Component>::const_iterator it = comps.begin();
 
     while(sub) {
-        //int nc = sub->getNumConnectors();
-        //for (int i = 0; i < nc; ++i){
         for (const auto& connectorName : sub->getConnectorNames()) {
             AbstractConnector& connector = sub->updConnector(connectorName);
             string dependencyTypeName = connector.getConnecteeTypeName();
@@ -235,6 +233,8 @@ void testComponent(const Component& instanceToTest)
         sub = const_cast<Component *>(&next);
         it++;
     }
+    
+    // TODO satisfy inputs as well.
 
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
@@ -449,14 +449,7 @@ void testSerialization(Component* instance)
 
     Object* deserializedInstance =
         static_cast<Object*>(Object::makeObjectFromFile(serializationFilename));
-    /*
-    // This is required by
-    deserializedComp->finalizeFromProperties();
-    */
 
-    // TODO const auto* deserCompTODO = dynamic_cast<Component*>(deserializedInstance);
-    // TODO std::cout << "DEBUG " << instance->getInput("transform").isListConnector() << " " <<
-    // TODO                          deserCompTODO->getInput("transform").isListConnector() << std::endl;
     if (!(*deserializedInstance == *instance))
     {
         cout << "XML for serialized instance:" << endl;

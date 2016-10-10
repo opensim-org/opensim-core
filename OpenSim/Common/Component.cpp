@@ -249,7 +249,7 @@ void Component::finalizeFromProperties()
     }
     */
     for (auto& it : _inputsTable) {
-        it.second->restoreMembers(*this, *this, false /* TODO */);
+        it.second->restoreMembers(*this, *this);
     }
     
     for (auto& it : _outputsTable) {

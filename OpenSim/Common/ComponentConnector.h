@@ -40,7 +40,6 @@
 // INCLUDES
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentList.h"
-//#include <Simbody.h>
 
 namespace OpenSim {
 
@@ -74,24 +73,16 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-class OSIMCOMMON_API AbstractConnector /* TODO : public Object */ {
-    // TODO OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractConnector, Object);
-public:
-    
-//==============================================================================
-// PROPERTIES
-//==============================================================================
-private:
-    //OpenSim_DECLARE_LIST_PROPERTY(connectee_name, std::string,
-    //    "Path to the component or output this Connector should connect to.");
+class OSIMCOMMON_API AbstractConnector {
+
+    // TODO to be consistent with Properties, replace "single-value" with "one-value"
+    // TODO should connectee_name property in Component be private:?
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Default constructor */
-    AbstractConnector() {
-    //    constructProperties();
-    }
+    AbstractConnector() = default;
 
     // default destructor, copy constructor
 
@@ -100,24 +91,22 @@ public:
         should be connected.
     @param name             name of the connector, usually describes its dependency. 
     @param connectAtStage   Stage at which Connector should be connected.
-    @param isList           Whether this Connector can have multiple connectees.
-    @param owner            Component to which this Connector belongs.*/
+    @param owner            Component to which this Connector belongs. */
     AbstractConnector(const std::string& name,
                       const PropertyIndex& connecteeNameIndex,
                       const SimTK::Stage& connectAtStage,
-                      bool isList,
                       const Component& owner,
                       Object& ownerAsObject) :
             _name(name),
             _connectAtStage(connectAtStage),
             _connecteeNameIndex(connecteeNameIndex),
-            _isList(isList), _owner(&owner), _ownerAsObject(&ownerAsObject) {
+            _owner(&owner), _ownerAsObject(&ownerAsObject),
+            _isList(getConnecteeNameProp().isListProperty()) {
         // TODO setConnecteeNameProperty(ownerAsObject);
         // TODO only passing both a Component and an Object b/c Component is
         // an incomplete type in this header.
         // TODO this constructor could take the Property<std::string> directly.
         // i.e., getProperty_input_<name>_connectee().
-    //    constructProperties();
     }
 
     // default copy assignment
@@ -150,8 +139,6 @@ public:
      * This is 1 for a non-list connector. */
     unsigned getNumConnectees() const {
         return static_cast<unsigned>(getConnecteeNameProp().size());
-        // auto num = getProperty_connectee_name().size();
-        //return static_cast<unsigned>(num);
     }
 
     /** Get the type of object this connector connects to. */
@@ -192,7 +179,6 @@ public:
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractConnector::setConnecteeName()");
         updConnecteeNameProp().setValue(ix, name);
-        // upd_connectee_name(ix) = name;
     }
 
     /** Get connectee name. This function can only be used if this connector is
@@ -210,13 +196,11 @@ public:
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractConnector::getConnecteeName()");
         return getConnecteeNameProp().getValue(ix);
-    //    return get_connectee_name(ix);
     }
 
     void appendConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Connector.");
-        // TODO updProperty_connectee_name().appendValue(name);
         updConnecteeNameProp().appendValue(name);
     }
 
@@ -236,8 +220,7 @@ protected:
      * values of these member values even after deserialization, and so this
      * call will not be necessary. */
     void restoreMembers(const Component& o,
-            Object& ownerAsObject,
-            bool isList = false /* TODO don't use anymore*/) const /*TODO okay?*/ {
+            Object& ownerAsObject) const /*TODO okay to be const w/mutable member? */ {
         _owner.reset(&o);
         _ownerAsObject.reset(&ownerAsObject);
         // TODO use PropertyIndex!
@@ -268,21 +251,6 @@ protected:
 
             
         }
-        // TODO _isList = isList;
-        //_connecteeNamesTODO = connecteeNamesTODO;
-        /*if (!_isList) {
-            OPENSIM_THROW_IF_FRMOBJ(updProperty_connectee_name().size() > 1,
-                    Exception, "Connector '" + getName() + "' has multiple "
-                               "entries in connectee_name property, but "
-                               "is a single-value connector.");
-            
-            // Single-value connector must have a value for this property.
-            if (updProperty_connectee_name().empty()) {
-                updProperty_connectee_name().appendValue("");
-            }
-            // Now we are sure the property has one entry; keep it that way.
-            updProperty_connectee_name().setAllowableListSize(1);
-        }*/
     }
     
     // TODO remove this method as soon as possible!
@@ -301,46 +269,32 @@ protected:
         _connecteeNameProp.reset(&Property<std::string>::updAs(abstractProp));
     }
     */
-    
-    /** To be used by subclasses that may want to alter the default setting
-    of if this is a list connector. */
-    AbstractConnector(bool isList) : _isList(isList) {
-        //constructProperties();
-    }
-    
-    /*
-    const std::vector<std::string>& getConnecteeNames() const {
-        return _connecteeNamesTODO;
-    }
-    */
 
 private:
     
+    /// Const access to the connectee_name property from the Component in which
+    /// this Connector resides.
     const Property<std::string>& getConnecteeNameProp() const {
         return _ownerAsObject->getProperty<std::string>(_connecteeNameIndex);
     }
-    // TODO sets ObjectUpToDate to false.
+    /// Writable access to the connectee_name property from the Component in
+    /// which this Connector resides. This will mark the Component as
+    /// not "up to date with properties"
+    /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteeNameProp() {
         return _ownerAsObject->updProperty<std::string>(_connecteeNameIndex);
     }
     
-    void constructProperties() {
-        /*constructProperty_connectee_name();
-        if (!_isList) {
-            updProperty_connectee_name().appendValue("");
-            updProperty_connectee_name().setAllowableListSize(1);
-        }*/
-    }
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteeNameIndex;
-    bool _isList = false; // Use the property's isList to determine if isList.
-    //mutable SimTK::ReferencePtr<Property<std::string>> _connecteeNameProp;
-    //std::vector<std::string> _connecteeNamesTODO;
     // non-const component ptr?
     mutable SimTK::ReferencePtr<const Component> _owner;
     mutable SimTK::ReferencePtr<Object> _ownerAsObject;
-
+    // _isList must be after _owner, as _owner is used to set its value.
+    bool _isList = false; // TODO Use the property's isList to determine if isList.
+    
+    /* So that Component can invoke restoreMembers(). TODO renaming restoreMembers? */
     friend Component;
 
 //=============================================================================
@@ -349,11 +303,10 @@ private:
 
 template<class T>
 class Connector : public AbstractConnector {
-    // TODO OpenSim_DECLARE_CONCRETE_OBJECT_T(Connector, T, AbstractConnector);
 public:
     
     /** Default constructor */
-    Connector() {}
+    Connector() = default;
 
     // default destructor, copy constructor
 
@@ -366,8 +319,7 @@ public:
     Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
               const SimTK::Stage& connectAtStage,
               const Component& owner, Object& ownerAsObject) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage,
-                          false, owner, ownerAsObject),
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner, /*TODO*/ownerAsObject),
         connectee(nullptr) {}
 
     virtual ~Connector() {}
@@ -499,23 +451,20 @@ entries separated by a space. For example:
 @endverbatim
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
-    // TODO OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractInput, AbstractConnector);
 public:
-    /** By default, Inputs are list connectors. */
-    AbstractInput() : /* TODO should not need this now */ AbstractConnector(true) {}
+    AbstractInput() = default;
     /** Convenience constructor
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
     @param name             name of the dependent (Abstract)Output.
     @param connectAtStage   Stage at which Input should be connected.
-    @param isList           Whether this Input can have multiple connectees.
     @param owner The component that contains this input. */
     AbstractInput(const std::string& name,
                   const PropertyIndex& connecteeNameIndex,
                   const SimTK::Stage& connectAtStage,
-                  bool isList, const Component& owner,
+                  const Component& owner,
                   Object& ownerAsObject) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, isList,
+        AbstractConnector(name, connecteeNameIndex, connectAtStage,
                           owner, ownerAsObject) {}
 
     virtual ~AbstractInput() {}
@@ -635,7 +584,6 @@ public:
 /** An Input<Y> must be connected by an Output<Y> */
 template<class T>
 class  Input : public AbstractInput {
-    // TODO OpenSim_DECLARE_CONCRETE_OBJECT_T(Input, T, AbstractInput);
 public:
 
     typedef typename Output<T>::Channel Channel;
@@ -644,24 +592,22 @@ public:
     typedef std::vector<std::string> AnnotationList;
     
     /** Default constructor */
-    Input() : AbstractInput() {}
+    Input() = default;
     /** Convenience constructor
     Create an Input<T> (Connector) that can only connect to an Output<T>
     name and stage at which it should be connected.
     @param name             name of the Output dependency.
     @param connectAtStage   Stage at which Input should be connected.
-    @param isList           Whether this Input can have multiple connectees.
     @param owner The component that contains this input. */
     Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
           const SimTK::Stage& connectAtStage,
-          bool isList, const Component& owner, Object& ownerAsObject) :
-        AbstractInput(name, connecteeNameIndex, connectAtStage, isList,
+          const Component& owner, Object& ownerAsObject) :
+        AbstractInput(name, connecteeNameIndex, connectAtStage,
                       owner, ownerAsObject) {}
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 
-    /** Connect this Input to the provided (Abstract)Output.
-     */
+    /** Connect this Input to the provided (Abstract)Output. */
     // Definition is in Component.h
     void connect(const AbstractOutput& output,
                  const std::string& annotation = "") override;
@@ -998,7 +944,7 @@ bool Class::constructConnector_##cname() {                                  \
     /** @cond                                                            */ \
     bool _has_input_##iname {                                               \
         this->template constructInput<T>(#iname,                            \
-                PropertyIndex_input_##iname##_connectee_names, istage, true)\
+                PropertyIndex_input_##iname##_connectee_names, istage)      \
     };                                                                      \
     /** @endcond                                                         */
 /// @}

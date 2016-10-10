@@ -337,11 +337,6 @@ protected:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    //OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
-    //    "List of connectors (structural dependencies) that this component has.");
-    
-    // TODO OpenSim_DECLARE_LIST_PROPERTY(inputs, AbstractInput,
-    // TODO     "List of inputs (slots for outputs) that this component has.");
 
     OpenSim_DECLARE_LIST_PROPERTY(components, Component,
         "List of components that this component owns and serializes.");
@@ -719,30 +714,20 @@ public:
 
 
     /** @name Component Connector Access methods
-        Access Connectors of this component in a generic way and also by name.
-    */
+        Access Connectors of this component by name. */
     //@{ 
-    
-    /** Get the number of Connectors and then access a Connector by index.
-        For example:
-        @code
-        for (int i = 0; i < myComp.getNumConnectors(); ++i){
-        const AbstractConnector& connector = myComp.getConnector(i);
-        // check status: e.g. is it connected?
-        ...
-        AbstractConnector& connector = myComp.updConnector(i);
-        // change the status: e.g. disconnect or change/define connectee;
-        }
-        @endcode
-        @see getNumConnectors()
-        @see getConnector(int i);
-     */
+    /** Get the number of Connectors in this Component. */
     int getNumConnectors() const {
-        return int(_connectorsTable.size()); // getProperty_connectors().size();
+        return int(_connectorsTable.size());
     }
 
-    /** Collect and return the names of the connectors in this
-     * component. The names are in the same order as the connectors. */
+    /** Collect and return the names of the connectors in this component. You
+     * can use this to iterate through the connectors:
+     * @code
+     * for (std::string name : comp.getConnectorNames()) {
+     *     const AbstractConnector& conn = getConnector(name);
+     * }
+     * @endcode */
     std::vector<std::string> getConnectorNames() {
         std::vector<std::string> names;
         for (const auto& it : _connectorsTable) {
@@ -827,7 +812,6 @@ public:
 
         if (it != _connectorsTable.end()) {
             // TODO put this in a better place? Check if we must set it first.
-            // it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
             
             // TODO const-correctness.
             it->second->restoreMembers(*this, const_cast<Self&>(*this));
@@ -871,25 +855,6 @@ public:
     template<typename T> Connector<T>& updConnector(const std::string& name) {
         return const_cast<Connector<T>&>(getConnector<T>(name));
     }
-
-    /** Access a read-only Connector by index. Make sure to provide a valid
-    index; this function does not check that the index is valid.
-    @see getNumConnectors()
-    @see getConnector(const std::string& name)
-     */
-    /* TODO const AbstractConnector& getConnector(int i) const {
-        return get_connectors(i);
-    }*/
-
-    /** Access a writeable Connector by index. Make sure to provide a valid
-    index; this function does not check that the index is valid.
-    @see getNumConnectors()
-    @see updConnector(const std::string& name)
-    */
-    /* TODO AbstractConnector& updConnector(int i) {
-        return upd_connectors(i);
-    }*/
-
     //@} end of Component Connector Access methods
 
     /** @name Component Inputs and Outputs Access methods
@@ -2209,20 +2174,14 @@ protected:
     */
     template <typename T>
     bool constructConnector(const std::string& name,
-            const PropertyIndex& connecteeNameIndex, bool isList = false) {
-        //int ix = updProperty_connectors().adoptAndAppendValue(
-         //   new Connector<T>(name, SimTK::Stage::Topology, *this));
-        // Add pointer to connectorsTable so we can access connectors easily by
-        // name.
-        //_connectorsTable[name] = ix;
-        // return ix;
-        
+                            const PropertyIndex& connecteeNameIndex) {
         _connectorsTable[name].reset(
                 new Connector<T>(name, connecteeNameIndex,
                         SimTK::Stage::Topology, *this, *this /*TODO temp*/));
         return true;
     }
     
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
@@ -2240,8 +2199,6 @@ protected:
 
        @see constructOutputForStateVariable()
      */
-
-#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
             T (CompType::*const memFunc)(const SimTK::State&) const,
@@ -2268,8 +2225,7 @@ protected:
      * output value by const reference (const T&). 
      * @warning ONLY use this with member functions that fetch quantities that
      * are stored within the passed-in SimTK::State. The function cannot return
-     * local variables.
-     */
+     * local variables. */
     template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
             const T& (CompType::*const memFunc)(const SimTK::State&) const,
@@ -2289,8 +2245,7 @@ protected:
     /** Construct an output that can have multiple channels. You add Channels
     to this Output in extendFinalizeFromProperties() using
     AbstractOutput::addChannel(). The member function
-    you provide must take the name of the channel whose value is requested.
-    */
+    you provide must take the name of the channel whose value is requested. */
     template <typename T, typename CompType>
     bool constructListOutput(const std::string& name,
              T (CompType::*const memFunc)(const SimTK::State&,
@@ -2330,19 +2285,20 @@ protected:
      * Output signal.  It is a placeholder for the Output and its type and
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
-     * non-existant. The also specifies at what stage the output must be valid
-     * for the component to consume it as an input.  if the Output's
+     * non-existant. This also specifies at what stage the output must be valid
+     * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
-     * thrown because the output cannot satisfy the Input's requirement. */
+     * thrown because the output cannot satisfy the Input's requirement. 
+     * Whether this is a one-value or list input is determined by the associated
+     * connectee_name property, which is identified by the connecteeNameIndex.
+     */
     template <typename T>
     bool constructInput(const std::string& name,
-        const PropertyIndex& connecteeNameIndex,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
-        const bool& isList = false) {
-        
+            const PropertyIndex& connecteeNameIndex,
+            const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
         _inputsTable[name].reset(
                 new Input<T>(name, connecteeNameIndex, requiredAtStage,
-                             isList, *this, *this /*TODO temp*/));
+                             *this, *this /*TODO temp*/));
         return true;
     }
     
@@ -2547,12 +2503,10 @@ private:
     // propertiesTable maintained by Object
 
     // Table of Component's structural Connectors indexed by name.
-    // Index is the slot in the connectors property where the concrete
-    // Connector lives.
-    std::map<std::string, SimTK::ClonePtr<AbstractConnector>/*int*/> _connectorsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractConnector>> _connectorsTable;
 
-    // Table of Inputs holding the property index and isList setting.
-    std::map<std::string, SimTK::ClonePtr<AbstractInput>/*std::pair<int, bool>*/> _inputsTable;
+    // Table of Component's Inputs indexed by name.
+    std::map<std::string, SimTK::ClonePtr<AbstractInput>> _inputsTable;
 
     // Table of Component's Outputs indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;

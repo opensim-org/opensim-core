@@ -1283,6 +1283,7 @@ void testListInputConnecteeSerialization() {
         TheWorld world(modelFileName);
         const auto& reporter = world.getComponent("consumer");
         const auto& input = reporter.getInput("inputs");
+        SimTK_TEST(input.isListConnector());
         // Check connectee names before *and* after connecting, since
         // the connecting process edits the connectee_name property.
         SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
@@ -1313,7 +1314,7 @@ void testSingleValueInputConnecteeSerialization() {
     // Build a model and serialize it.
     std::string modelFileName = "testComponentInterface_"
             "testSingleValueInputConnecteeSerialization_world.xml";
-    double expectedInput1Value(SimTK::NaN);
+    double expectedInput1Value = SimTK::NaN;
     {
         // Create the "model," which just contains a reporter.
         TheWorld world;
