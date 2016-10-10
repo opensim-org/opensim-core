@@ -22,7 +22,7 @@
 %  * -------------------------------------------------------------------------- */
 
 %% Read a model into memory, run a fwd simulation, 
-clear all; close all; 
+clear all; close all; clc;
 
 import org.opensim.modeling.*
 
@@ -33,49 +33,52 @@ timeInterval = 0.1;
 modelFileName = 'double_pendulum_markers.osim';
 model = Model(modelFileName);
 
+%% add a console reporter
 consoleReporter = ConsoleReporter();
 consoleReporter.set_report_time_interval(timeInterval);
 consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'pin1_angle');
 consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
 model.addComponent(consoleReporter);
 
-tableReporter = TableReporter();
-tableReporter.set_report_time_interval(timeInterval);
-tableReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'q1');
-tableReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
-model.addComponent(tableReporter);
+%% add a table reporter for the pendulum coordiantes
+coordinateReporter= TableReporter();
+coordinateReporter.set_report_time_interval(timeInterval);
+coordinateReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'q1');
+coordinateReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
+model.addComponent(coordinateReporter);
 
+%% add a Vec3 table reporter for the pendulum markers
+markerReporter= TableReporterVec3();
+markerReporter.set_report_time_interval(timeInterval);
+markerReporter.updInput('inputs').connect(model.getMarkerSet().get(0).getOutput('location'),'marker_1');
+markerReporter.updInput('inputs').connect(model.getMarkerSet().get(1).getOutput('location'),'marker_2');
+model.addComponent(markerReporter);
+
+
+%% define the adapters
 stoAdapter = STOFileAdapter();
-
-assert(~tableReporter.getTable().hasColumnLabels());
+stoAdapterVec3 = STOFileAdapterVec3();
 
 %%
-for n = 1 : 150
-    assert(tableReporter.getTable().getNumRows()    == 0);
-    assert(tableReporter.getTable().getNumColumns() == 0);
-
+for n = 1 : 40
+    % run a fwd simulation using the manager
     state = model.initSystem();
     manager = Manager(model);
     manager.setInitialTime(0);
     manager.setFinalTime(2);
     manager.integrate(state);
 
-    table = tableReporter.getTable();
+    % get the coordinate table from the reporter and write to file
+    table = coordinateReporter.getTable();
     stoAdapter.write(table, 'pendulum_coordinates.sto');
 
-    assert(table.getColumnLabels().size() == 2) ;
-    assert(table.getColumnLabel(0).equals('q1'));
-    assert(table.getColumnLabel(1).equals('q2'));
-    assert(table.getNumRows()    == 1 + (2 / timeInterval));
-    assert(table.getNumColumns() == 2);
+    % get the marker table from the reporter and write to file
+    tableVec3 = markerReporter.getTable();
+    stoAdapterVec3.write(tableVec3 , 'marker_locations.sto')
 
-    tableReporter.clearTable();
-
-    assert(table.getColumnLabels().size() == 2);
-    assert(table.getColumnLabel(0).equals('q1'));
-    assert(table.getColumnLabel(1).equals('q2'));
-    assert(table.getNumRows()    == 0);
-    assert(table.getNumColumns() == 0);
+    % clear the tables from the reporters
+    coordinateReporter.clearTable();
+    markerReporter.clearTable();
 end
 
 
