@@ -287,16 +287,16 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
-                SimTK::Xml::element_iterator parnetFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
-                while (parnetFrame->getRequiredAttributeValue("name") != frameName)
-                    parnetFrame++;
-                // if parnetFrame has no "attached_geometry" child, add one else find it
+                SimTK::Xml::element_iterator parentFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
+                while (parentFrame->getRequiredAttributeValue("name") != frameName)
+                    parentFrame++;
+                // if parentFrame has no "attached_geometry" child, add one else find it
 
-                SimTK::Xml::element_iterator frameAttachedGeometry = parnetFrame->element_begin("attached_geometry");
-                if (frameAttachedGeometry == parnetFrame->element_end()) {
+                SimTK::Xml::element_iterator frameAttachedGeometry = parentFrame->element_begin("attached_geometry");
+                if (frameAttachedGeometry == parentFrame->element_end()) {
                     SimTK::Xml::Element attachedGeomNode("attached_geometry");
-                    parnetFrame->insertNodeAfter(parnetFrame->node_end(), attachedGeomNode);
-                    frameAttachedGeometry = parnetFrame->element_begin("attached_geometry");
+                    parentFrame->insertNodeAfter(parentFrame->node_end(), attachedGeomNode);
+                    frameAttachedGeometry = parentFrame->element_begin("attached_geometry");
                 }
                 frameAttachedGeometry->insertNodeAfter(frameAttachedGeometry->element_end(), meshNode);
 
