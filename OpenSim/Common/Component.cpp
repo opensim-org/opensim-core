@@ -269,6 +269,7 @@ void Component::connect(Component &root)
     // adding subcomponents to the System
     extendConnect(root);
 
+    // Allow subcomponents to form their connections
     componentsConnect(root);
 
     // Forming connections changes the Connector which is a property
