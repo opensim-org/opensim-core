@@ -36,7 +36,7 @@ forces_double = forces.flatten(suffixes);
 
 % Write flattened forces table to .mot file format
 stofileadapter = STOFileAdapter();
-stofileadapter.write(forces_double,'test_walking_grf.mot')
+stofileadapter.write(forces_double,'test_walking_grf.sto')
 
 %% Define a rotation matix
 Rot = 90;

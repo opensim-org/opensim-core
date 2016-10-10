@@ -87,4 +87,6 @@ for n = 1 : 40
     markerReporter.clearTable();
 end
 
+trcAdapter = TRCFileAdapter();
+trcAdapter.write(tableVec3 , 'marker_locations.trc')
 
