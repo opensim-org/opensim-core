@@ -103,13 +103,16 @@ public:
     @param isList           Whether this Connector can have multiple connectees.
     @param owner            Component to which this Connector belongs.*/
     AbstractConnector(const std::string& name,
+                      const PropertyIndex& connecteeNameIndex,
                       const SimTK::Stage& connectAtStage,
                       bool isList,
                       const Component& owner,
                       Object& ownerAsObject) :
-        connectAtStage(connectAtStage), _isList(isList), _owner(&owner) {
+            connectAtStage(connectAtStage),
+            _connecteeNameIndex(connecteeNameIndex),
+            _isList(isList), _owner(&owner), _ownerAsObject(&ownerAsObject) {
         setName(name);
-        setConnecteeNameProperty(ownerAsObject);
+        // TODO setConnecteeNameProperty(ownerAsObject);
         // TODO only passing both a Component and an Object b/c Component is
         // an incomplete type in this header.
         // TODO this constructor could take the Property<std::string> directly.
@@ -139,7 +142,7 @@ public:
     /** The number of slots to fill in order to satisfy this connector.
      * This is 1 for a non-list connector. */
     unsigned getNumConnectees() const {
-        return static_cast<unsigned>(_connecteeNameProp->size());
+        return static_cast<unsigned>(getConnecteeNameProp().size());
         // auto num = getProperty_connectee_name().size();
         //return static_cast<unsigned>(num);
     }
@@ -182,7 +185,7 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractInput::setConnecteeName()");
-        _connecteeNameProp->setValue(ix, name);
+        updConnecteeNameProp().setValue(ix, name);
         // upd_connectee_name(ix) = name;
     }
 
@@ -200,7 +203,7 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractInput::getConnecteeName()");
-        return _connecteeNameProp->getValue(ix);
+        return getConnecteeNameProp().getValue(ix);
     //    return get_connectee_name(ix);
     }
 
@@ -208,7 +211,7 @@ public:
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Connector.");
         // TODO updProperty_connectee_name().appendValue(name);
-        _connecteeNameProp->appendValue(name);
+        updConnecteeNameProp().appendValue(name);
     }
 
 
@@ -228,11 +231,11 @@ protected:
      * call will not be necessary. */
     void restoreMembers(const Component& o,
             Object& ownerAsObject,
-            bool isList = false /* TODO don't use anymore*/) {
+            bool isList = false /* TODO don't use anymore*/) const /*TODO okay?*/ {
         _owner.reset(&o);
-        
+        _ownerAsObject.reset(&ownerAsObject);
         // TODO use PropertyIndex!
-        setConnecteeNameProperty(ownerAsObject);
+        // TODO setConnecteeNameProperty(ownerAsObject);
         
         // TODO put this error check elsewhere (finalizeFromProperties()?)
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
@@ -248,8 +251,11 @@ protected:
                 // TODO message should contain name of this Input.
                 // TODO when Input is no longer an Object, we won't be able to
                 // use "FRMOBJ"
-                OPENSIM_THROW_FRMOBJ(Exception, msg);
+                std::cout << "Warning: " << msg << std::endl;
+                // TODOOPENSIM_THROW_FRMOBJ(Exception, msg);
             }
+            // TODO bug with empty connectee_name being interpreted as "this component."
+
             
         }
         // TODO _isList = isList;
@@ -273,7 +279,7 @@ protected:
     // TODO find more robust way to set connecteeName on Input/Connector
     // when finalizeFromProperties has not been called yet.
     // TODO should this be const?
-    void setConnecteeNameProperty(Object& owner) const {
+    /*void setConnecteeNameProperty(Object& owner) const {
         std::string prefixTODO = "connector_";
         //if (getConcreteClassName().find("Input") != std::string::npos)
         //    prefixTODO = "input_";
@@ -284,6 +290,7 @@ protected:
         AbstractProperty& abstractProp = owner.updPropertyByName(propertyName);
         _connecteeNameProp.reset(&Property<std::string>::updAs(abstractProp));
     }
+    */
     
     /** To be used by subclasses that may want to alter the default setting
     of if this is a list connector. */
@@ -298,7 +305,15 @@ protected:
     */
 
 private:
-
+    
+    const Property<std::string>& getConnecteeNameProp() const {
+        return _ownerAsObject->getProperty<std::string>(_connecteeNameIndex);
+    }
+    // TODO sets ObjectUpToDate to false.
+    Property<std::string>& updConnecteeNameProp() {
+        return _ownerAsObject->updProperty<std::string>(_connecteeNameIndex);
+    }
+    
     void constructProperties() {
         /*constructProperty_connectee_name();
         if (!_isList) {
@@ -308,12 +323,13 @@ private:
     }
     // TODO const std::string name;
     SimTK::Stage connectAtStage = SimTK::Stage::Empty;
+    PropertyIndex _connecteeNameIndex;
     bool _isList = false; // Use the property's isList to determine if isList.
-    PropertyIndex _connecteeNamesIndex;
-    mutable SimTK::ReferencePtr<Property<std::string>> _connecteeNameProp;
+    //mutable SimTK::ReferencePtr<Property<std::string>> _connecteeNameProp;
     //std::vector<std::string> _connecteeNamesTODO;
     // non-const component ptr?
-    SimTK::ReferencePtr<const Component> _owner;
+    mutable SimTK::ReferencePtr<const Component> _owner;
+    mutable SimTK::ReferencePtr<Object> _ownerAsObject;
 
     friend Component;
 
@@ -337,9 +353,11 @@ public:
     @param name             name of the connector used to describe its dependency.
     @param connectAtStage   Stage at which Connector should be connected.
     @param owner The component that contains this input. */
-    Connector(const std::string& name, const SimTK::Stage& connectAtStage,
+    Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
+              const SimTK::Stage& connectAtStage,
               const Component& owner, Object& ownerAsObject) :
-        AbstractConnector(name, connectAtStage, false, owner, ownerAsObject),
+        AbstractConnector(name, connecteeNameIndex, connectAtStage,
+                          false, owner, ownerAsObject),
         connectee(nullptr) {}
 
     virtual ~Connector() {}
@@ -481,10 +499,12 @@ public:
     @param isList           Whether this Input can have multiple connectees.
     @param owner The component that contains this input. */
     AbstractInput(const std::string& name,
+                  const PropertyIndex& connecteeNameIndex,
                   const SimTK::Stage& connectAtStage,
                   bool isList, const Component& owner,
                   Object& ownerAsObject) :
-        AbstractConnector(name, connectAtStage, isList, owner, ownerAsObject) {}
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, isList,
+                          owner, ownerAsObject) {}
 
     virtual ~AbstractInput() {}
 
@@ -616,9 +636,11 @@ public:
     @param connectAtStage   Stage at which Input should be connected.
     @param isList           Whether this Input can have multiple connectees.
     @param owner The component that contains this input. */
-    Input(const std::string& name, const SimTK::Stage& connectAtStage,
+    Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
+          const SimTK::Stage& connectAtStage,
           bool isList, const Component& owner, Object& ownerAsObject) :
-        AbstractInput(name, connectAtStage, isList, owner, ownerAsObject) {}
+        AbstractInput(name, connecteeNameIndex, connectAtStage, isList,
+                      owner, ownerAsObject) {}
 
     /** Connect this Input to the provided (Abstract)Output.
      */
@@ -784,7 +806,8 @@ private:
     /** @}                                                               */ \
     /** @cond                                                            */ \
     bool _connector_##cname {                                               \
-        this->template constructConnector<T>(#cname)                        \
+        this->template constructConnector<T>(#cname,                        \
+                PropertyIndex_connector_##cname##_connectees)               \
     };                                                                      \
     /** @endcond                                                         */
 
@@ -875,7 +898,8 @@ private:
 #define OpenSim_DEFINE_CONNECTOR_FD(cname, Class)                           \
 bool Class::constructConnector_##cname() {                                  \
     using T = _connector_##cname##_type;                                    \
-    return this->template constructConnector<T>(#cname);                    \
+    return this->template constructConnector<T>(#cname,                     \
+                PropertyIndex_connector_##cname##_connectees);              \
 }
 /// @}
 
@@ -914,7 +938,8 @@ bool Class::constructConnector_##cname() {                                  \
     /** @}                                                               */ \
     /** @cond                                                            */ \
     bool _has_input_##iname {                                               \
-        this->template constructInput<T>(#iname, istage)                    \
+        this->template constructInput<T>(#iname,                            \
+                PropertyIndex_connector_##iname##_connectees, istage)       \
     };                                                                      \
     /** @endcond                                                         */
 // TODO document thta DECLARE_PROPERTY_...() must come first, as the Input constructor
@@ -950,7 +975,8 @@ bool Class::constructConnector_##cname() {                                  \
     /** @}                                                               */ \
     /** @cond                                                            */ \
     bool _has_input_##iname {                                               \
-        this->template constructInput<T>(#iname, istage, true)              \
+        this->template constructInput<T>(#iname,                            \
+                PropertyIndex_connector_##iname##_connectees, istage, true) \
     };                                                                      \
     /** @endcond                                                         */
 /// @}

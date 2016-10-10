@@ -25,6 +25,7 @@
 // INCLUDES
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
+#include "XMLDocument.h"
 
 using namespace SimTK;
 
@@ -1105,6 +1106,32 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
     if (it == _orderedSubcomponents.end()) {
         _orderedSubcomponents.push_back(SimTK::ReferencePtr<const Component>(&sub));
     }
+}
+
+void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30508) {
+            // TODO
+            SimTK::String strTODO;
+            node.writeToString(strTODO);
+            std::cout << "DEBUG" << getName() << strTODO << std::endl;
+            // Previous: <connectors>
+            //               <Connector_PhysicalFrame_ name="parent">
+            //                   <connectee_name>...</connectee_name>
+            //               </Connector_PhysicalFrame_>
+            //           </connectors>
+            // New:      <connector_parent_connectee_name>...
+            //               </connector_parent_connectee_name>
+            //
+            // Although the connector lives in template<class C> OffsetFrame,
+            // at the time that version 30508 was created, there were no other
+            // uses of OffsetFrame, so it is best to not pollute OffsetFrame
+            // unnecessarily.
+            XMLDocument::updateConnectors30508(node);
+        }
+    }
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 // mark components owned as properties as subcomponents

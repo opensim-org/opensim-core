@@ -827,7 +827,10 @@ public:
 
         if (it != _connectorsTable.end()) {
             // TODO put this in a better place? Check if we must set it first.
-            it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
+            // it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
+            
+            // TODO const-correctness.
+            it->second->restoreMembers(*this, const_cast<Self&>(*this));
             return it->second.getRef();
         }
 
@@ -941,6 +944,12 @@ public:
 
         if (it != _inputsTable.end()) {
             // TODO set Input::_connecteeNameProp here, if necessary.
+            
+            // TODO put this in a better place? Check if we must set it first.
+            // it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
+            
+            // TODO const-correctness.
+            it->second->restoreMembers(*this, const_cast<Self&>(*this));
             return it->second.getRef();
         }
 
@@ -2199,7 +2208,8 @@ protected:
     * incompatible or non-existant.
     */
     template <typename T>
-    bool constructConnector(const std::string& name, bool isList = false) {
+    bool constructConnector(const std::string& name,
+            const PropertyIndex& connecteeNameIndex, bool isList = false) {
         //int ix = updProperty_connectors().adoptAndAppendValue(
          //   new Connector<T>(name, SimTK::Stage::Topology, *this));
         // Add pointer to connectorsTable so we can access connectors easily by
@@ -2208,7 +2218,8 @@ protected:
         // return ix;
         
         _connectorsTable[name].reset(
-                new Connector<T>(name, SimTK::Stage::Topology, *this, *this /*TODO temp*/));
+                new Connector<T>(name, connecteeNameIndex,
+                        SimTK::Stage::Topology, *this, *this /*TODO temp*/));
         return true;
     }
     
@@ -2325,15 +2336,19 @@ protected:
      * thrown because the output cannot satisfy the Input's requirement. */
     template <typename T>
     bool constructInput(const std::string& name,
+        const PropertyIndex& connecteeNameIndex,
         const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
         const bool& isList = false) {
         
         _inputsTable[name].reset(
-                new Input<T>(name, requiredAtStage, isList, *this, *this /*TODO temp*/));
+                new Input<T>(name, connecteeNameIndex, requiredAtStage,
+                             isList, *this, *this /*TODO temp*/));
         return true;
     }
     
     /// @}
+    
+    
 
 private:
 
@@ -2514,6 +2529,9 @@ protected:
         _orderedSubcomponents.clear();
     }
 
+    /// Handle a change in XML syntax for Connectors.
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+            override;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
