@@ -781,7 +781,7 @@ void Model::extendConnectToModel(Model &model)
         // PhysicalOffsetFrame can be listed in any order and may be attached
         // to any other PhysicalOffsetFrame, so we need to find their parent(s)
         // in the tree and add them first.
-        pof.connectToModel(*this);
+        pof.connect(*this);
         const PhysicalOffsetFrame* parentPof =
             dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
         std::vector<const PhysicalOffsetFrame*> parentPofs;
