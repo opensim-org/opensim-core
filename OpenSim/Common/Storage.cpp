@@ -1250,7 +1250,7 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 
 
     for(int i=0; i<found.getSize(); ++i){
-        Array<double> data = *new Array<double>;
+        Array<double> data{};
         getDataColumn(found[i]-off, data);
         rData.append(data);
     }
