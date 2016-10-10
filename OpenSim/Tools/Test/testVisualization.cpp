@@ -144,6 +144,7 @@ void testVisModel(Model& model, const std::string standard_filename)
     cout << fromModel << endl;
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
+    cout << "Length:" << fromModel.length() << "vs." << fromFile.length() << std::endl;
     int same = fromFile.compare(fromModel);
     ASSERT(same == 0, __FILE__, __LINE__, 
         "Visualization primitives from model do not match standard from file `"
