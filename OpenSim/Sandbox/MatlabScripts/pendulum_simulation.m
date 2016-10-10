@@ -14,7 +14,7 @@
 %  * not use this file except in compliance with the License. You may obtain a  *
 %  * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
 %  *                                                                            *
-%  * Unless required by applicable law or agreed to in writic3d_readinng, software        *
+%  * Unless required by applicable law or agreed to in software                 *
 %  * distributed under the License is distributed on an "AS IS" BASIS,          *
 %  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
 %  * See the License for the specific language governing permissions and        *
@@ -65,7 +65,7 @@ model.addComponent(markerReporter);
 stoAdapter = STOFileAdapter();
 stoAdapterVec3 = STOFileAdapterVec3();
 
-%%
+%% run in a loop, writing over the file each time. 
 for n = 1 : 40
     % run a fwd simulation using the manager
     state = model.initSystem();

@@ -11,23 +11,24 @@
 %  * Author(s): James Dunne                                                    *
 %  * Contributor(s): Thomas Uchida, Chris Dembia                                 *
 %  *                                                                            *
-%  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+%  * Licensed under the Apache License, Version 2.0 (the 'License'); you may    *
 %  * not use this file except in compliance with the License. You may obtain a  *
 %  * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
 %  *                                                                            *
 %  * Unless required by applicable law or agreed to in writing, software        *
-%  * distributed under the License is distributed on an "AS IS" BASIS,          *
+%  * distributed under the License is distributed on an 'AS IS' BASIS,          *
 %  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
 %  * See the License for the specific language governing permissions and        *
 %  * limitations under the License.                                             *
 %  * -------------------------------------------------------------------------- */
 
 %% Matlab version of the Github example
+clear all; close all; clc;
 
 import org.opensim.modeling.*
 
 model = Model();
-%model.setUseVisualizer(true);
+model.setUseVisualizer(true);
 
 % origin, and moments and product   s of inertia of zero.
 humerus = Body('humerus', 1, Vec3(0), Inertia(0));
@@ -61,27 +62,39 @@ reporter.updInput('inputs').connect(biceps.getOutput('fiber_force'));
 reporter.updInput('inputs').connect(elbow.getCoordinate().getOutput('value'),'elbow_angle');
 model.addComponent(reporter);
 
-% Configure the model.
+
+%% add display geometry
+
+bodyGeometry = Ellipsoid(0.1, 0.5, 0.1);
+bodyGeometry.setColor( Vec3(1,1,1) )
+humerusCenter = PhysicalOffsetFrame();
+humerusCenter.setName('humerusCenter')
+humerusCenter.setParentFrame(humerus)
+humerusCenter.setOffsetTransform(Transform(Vec3(0, 0.5, 0)))
+humerus.addComponent(humerusCenter)
+humerusCenter.attachGeometry(bodyGeometry.clone())
+
+radiusCenter = PhysicalOffsetFrame();
+radiusCenter.setName('radiusCenter')
+radiusCenter.setParentFrame(radius)
+radiusCenter.setOffsetTransform(Transform(Vec3(0, 0.5, 0)))
+radius.addComponent(radiusCenter)
+radiusCenter.attachGeometry(bodyGeometry.clone())
+
+%% Configure the model.
 state = model.initSystem();
 % Fix the shoulder at its default angle and begin with the elbow flexed.
 shoulder.getCoordinate().setLocked(state, true);
 elbow.getCoordinate().setValue(state, 0.5 * pi);
 model.equilibrateMuscles(state);
 
-% Add display geometry.
-% model.updMatterSubsystem().setShowDefaultGeometry(true);
-% viz = model.updVisualizer().updSimbodyVisualizer();
-% viz.setBackgroundColor(White);
-% % Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
-% DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-% viz.addDecoration(humerus.getMobilizedBodyIndex(), Transform(center), geom);
-% viz.addDecoration( radius.getMobilizedBodyIndex(), Transform(center), geom);
-
-% Simulate.
+%% Simulate.
 manager = Manager(model);
-manager.setInitialTime(0); manager.setFinalTime(10.0);
+manager.setInitialTime(0); 
+manager.setFinalTime(10.0);
+manager.integrate(state);
 
-for i = 1 :10
-    manager.integrate(state);
-end
+% print model to file
+model.print('simpleArm.osim');
+
 
