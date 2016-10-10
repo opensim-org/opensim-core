@@ -60,7 +60,6 @@ const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 StaticOptimizationTarget::
 StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, bool useMusclePhysiology)
 {
-
     // ALLOCATE STATE ARRAYS
     _recipAreaSquared.setSize(aNP);
     _recipOptForceSquared.setSize(aNP);
@@ -75,16 +74,14 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 
     // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
     _accelerationIndices.setSize(0);
-    const CoordinateSet& coordSet = _model->getCoordinateSet();
-    for(int i=0; i<coordSet.getSize(); i++) {
-        const Coordinate& coord = coordSet.get(i);
+    auto coordinates = aModel->getCoordinatesInMultibodyTreeOrder();
+    for (int i = 0; i < coordinates.size(); ++i) {
+        const Coordinate& coord = *coordinates[i];
         if(!coord.isConstrained(s)) {
             _accelerationIndices.append(i);
         }
     }
-
 }
-
 
 //==============================================================================
 // CONSTRUCTION
@@ -586,9 +583,11 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
     Vector actualAcceleration(getNumConstraints());
     computeAcceleration(s, parameters, actualAcceleration);
 
+    auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
+
     // CONSTRAINTS
     for(int i=0; i<getNumConstraints(); i++) {
-        Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
             string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
