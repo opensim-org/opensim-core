@@ -802,6 +802,20 @@ public:
        return _coordinateSet; 
     }
 
+    /** Obtain a list of Model's Coordinates in the order they appear in the
+        MultibodySystem after Model::initSystem() has been called. 
+        Coordinates in the CoordinateSet do not have a predefined order. In
+        some instances it is helpful to get the coordinates in order of 
+        generalized coordinates in the Multibody Tree as defined in the 
+        underlying MultibodySystem. For example, computing the generalized
+        forces from the System, yields a vector of generalized forces
+        in order of the Multibody Tree and now that can be attributed to 
+        corresponding generalized Coordinates of the Model. 
+        Throws if the MultibodySystem is not valid. */
+    std::vector<SimTK::ReferencePtr<const Coordinate>>
+        getCoordinatesInMultibodyTreeOrder() const;
+
+
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
 
