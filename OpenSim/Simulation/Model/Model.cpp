@@ -775,11 +775,13 @@ void Model::extendConnectToModel(Model &model)
     // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
     // be added to the System first. So for each PhysicalOffsetFrame locate its
     // parent and verify its presence in the _orderedList otherwise add it first.
-    auto poFrames = getComponentList<PhysicalOffsetFrame>();
-    for (const auto& pof : poFrames) {
-        // Ground and Body type PhysicalFrames are handled by the Multibody graph
-        // PhysicalOffsetFrame can be listed in any order and be attched
+    auto poFrames = updComponentList<PhysicalOffsetFrame>();
+    for (auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are included in the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and may be attached
         // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        // in the tree and add them first.
+        pof.connectToModel(*this);
         const PhysicalOffsetFrame* parentPof =
             dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
         std::vector<const PhysicalOffsetFrame*> parentPofs;
