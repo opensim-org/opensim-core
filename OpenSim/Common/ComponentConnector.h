@@ -184,7 +184,7 @@ public:
     void setConnecteeName(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractInput::setConnecteeName()");
+                                "AbstractConnector::setConnecteeName()");
         updConnecteeNameProp().setValue(ix, name);
         // upd_connectee_name(ix) = name;
     }
@@ -202,7 +202,7 @@ public:
     const std::string& getConnecteeName(unsigned ix) const {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractInput::getConnecteeName()");
+                                "AbstractConnector::getConnecteeName()");
         return getConnecteeNameProp().getValue(ix);
     //    return get_connectee_name(ix);
     }
@@ -241,7 +241,8 @@ protected:
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
             if (connecteeName.find(" ") != std::string::npos) {
-                std::string msg = "Connectee name '" + connecteeName +
+                std::string msg = "In Connector '" + getName() +
+                        "', connectee name '" + connecteeName +
                         "' contains spaces, but spaces are not allowed.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
@@ -251,8 +252,11 @@ protected:
                 // TODO message should contain name of this Input.
                 // TODO when Input is no longer an Object, we won't be able to
                 // use "FRMOBJ"
+                // TODO Would ideally throw an exception, but some models *do*
+                // use spaces in names, and the error for this should be
+                // handled elsewhere.
+                // OPENSIM_THROW_FRMOBJ(Exception, msg);
                 std::cout << "Warning: " << msg << std::endl;
-                // TODOOPENSIM_THROW_FRMOBJ(Exception, msg);
             }
             // TODO bug with empty connectee_name being interpreted as "this component."
 
@@ -796,7 +800,8 @@ private:
  * @relates OpenSim::Connector
  */
 #define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(connector_##cname##_connectees, comment); \
+    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
+            connector_##cname##_connectee_name, comment);                   \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -807,7 +812,7 @@ private:
     /** @cond                                                            */ \
     bool _connector_##cname {                                               \
         this->template constructConnector<T>(#cname,                        \
-                PropertyIndex_connector_##cname##_connectees)               \
+                PropertyIndex_connector_##cname##_connectee_name)           \
     };                                                                      \
     /** @endcond                                                         */
 
@@ -858,7 +863,8 @@ private:
  * @relates OpenSim::Connector
  */
 #define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(connector_##cname##_connectees, comment); \
+    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
+            connector_##cname##_connectee_name, comment);                   \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -899,7 +905,7 @@ private:
 bool Class::constructConnector_##cname() {                                  \
     using T = _connector_##cname##_type;                                    \
     return this->template constructConnector<T>(#cname,                     \
-                PropertyIndex_connector_##cname##_connectees);              \
+                PropertyIndex_connector_##cname##_connectee_name);          \
 }
 /// @}
 
@@ -927,7 +933,8 @@ bool Class::constructConnector_##cname() {                                  \
  * @relates OpenSim::Input
  */
 #define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(connector_##iname##_connectees, comment); \
+    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(input_##iname##_connectee_name, \
+                                            comment);                       \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -939,7 +946,7 @@ bool Class::constructConnector_##cname() {                                  \
     /** @cond                                                            */ \
     bool _has_input_##iname {                                               \
         this->template constructInput<T>(#iname,                            \
-                PropertyIndex_connector_##iname##_connectees, istage)       \
+                PropertyIndex_input_##iname##_connectee_name, istage)       \
     };                                                                      \
     /** @endcond                                                         */
 // TODO document thta DECLARE_PROPERTY_...() must come first, as the Input constructor
@@ -963,7 +970,8 @@ bool Class::constructConnector_##cname() {                                  \
  */
 // TODO pass PropertyIndex_input_iname_connectee to constructInput().
 #define OpenSim_DECLARE_LIST_INPUT(iname, T, istage, comment)               \
-    OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(connector_##iname##_connectees, comment); \
+    OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(                          \
+            input_##iname##_connectee_names, comment);                      \
     /** @name Inputs (list)                                              */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -976,7 +984,7 @@ bool Class::constructConnector_##cname() {                                  \
     /** @cond                                                            */ \
     bool _has_input_##iname {                                               \
         this->template constructInput<T>(#iname,                            \
-                PropertyIndex_connector_##iname##_connectees, istage, true) \
+                PropertyIndex_input_##iname##_connectee_names, istage, true)\
     };                                                                      \
     /** @endcond                                                         */
 /// @}

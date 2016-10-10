@@ -1430,7 +1430,7 @@ void testSingleValueInputConnecteeSerialization() {
         // connectee names for a single-value input.
         // TODO remove this line: auto& input1 = foo->updInput("input1");
         auto& connectee_name = Property<std::string>::updAs(
-                        foo->updPropertyByName("connector_input1_connectees"));
+                        foo->updPropertyByName("input_input1_connectee_name"));
         connectee_name.setAllowableListSize(0, 10);
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");
@@ -1449,10 +1449,12 @@ void testSingleValueInputConnecteeSerialization() {
     // Deserialize.
     {
         // Single-value connectee cannot have multiple connectee_names.
-        // TODO SimTK_TEST_MUST_THROW_EXC(
-        // TODO     TheWorld world(modelFileNameMultipleValues),
-        // TODO    OpenSim::Exception);
-        // TODO for now, only a warning is generated.
+        // TODO Would ideally check for an exception, but we only emit a warning
+        // for now.
+        // SimTK_TEST_MUST_THROW_EXC(
+        //     TheWorld world(modelFileNameMultipleValues),
+        //     OpenSim::Exception);
+        TheWorld world(modelFileNameMultipleValues);
     }
 }
 
