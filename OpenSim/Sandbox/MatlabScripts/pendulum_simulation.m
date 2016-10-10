@@ -22,49 +22,60 @@
 %  * -------------------------------------------------------------------------- */
 
 %% Read a model into memory, run a fwd simulation, 
-
+clear all; close all; 
 
 import org.opensim.modeling.*
 
+%   public static void test_TableReporter_2() throws java.io.IOException {
+timeInterval = 0.1;
 
-time_interval = 0.1;
+% add a model
+modelFileName = 'double_pendulum_markers.osim';
+model = Model(modelFileName);
 
-model = Model('double_pendulum_markers.osim');
-%  Add a console reporter to print the muscle fiber force and elbow angle.
-reporter = ConsoleReporter();
-reporter.set_report_time_interval(0.1);
-reporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'pin1_angle' );
-reporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
-model.addComponent(reporter);
+consoleReporter = ConsoleReporter();
+consoleReporter.set_report_time_interval(timeInterval);
+consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'pin1_angle');
+consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
+model.addComponent(consoleReporter);
 
-%% add a table reporter for the coordinates
-coordinateReporter = TableReporter();
-coordinateReporter.set_report_time_interval(time_interval)
-coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(0).getOutput('value'), 'q1' );
-coordinateReporter.updInput('inputs').connect(model.getCoordinateSet.get(1).getOutput('value'), 'q2' );
-model.addComponent(coordinateReporter);
+tableReporter = TableReporter();
+tableReporter.set_report_time_interval(timeInterval);
+tableReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'q1');
+tableReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
+model.addComponent(tableReporter);
 
-stofileadapter = STOFileAdapter();
+stoAdapter = STOFileAdapter();
 
-for n = 1 : 10
-   
-    disp(['This is loop ' num2str(n) ''])
-       
-    % Simulate.
+assert(~tableReporter.getTable().hasColumnLabels());
+
+%%
+for n = 1 : 150
+    assert(tableReporter.getTable().getNumRows()    == 0);
+    assert(tableReporter.getTable().getNumColumns() == 0);
+
     state = model.initSystem();
     manager = Manager(model);
-    manager.setInitialTime(0); manager.setFinalTime(n);
+    manager.setInitialTime(0);
+    manager.setFinalTime(2);
     manager.integrate(state);
 
-    % get the coordinate and marker tables
-    coordinatetable = coordinateReporter.getTable; 
-    % print coordinates to file
-    stofileadapter.write(coordinatetable,'pendulum_coordinates.sto');
-    
-    % clear the table
-    coordinateReporter.clearTable ; 
-    clear coordinatetable
-    
+    table = tableReporter.getTable();
+    stoAdapter.write(table, 'pendulum_coordinates.sto');
+
+    assert(table.getColumnLabels().size() == 2) ;
+    assert(table.getColumnLabel(0).equals('q1'));
+    assert(table.getColumnLabel(1).equals('q2'));
+    assert(table.getNumRows()    == 1 + (2 / timeInterval));
+    assert(table.getNumColumns() == 2);
+
+    tableReporter.clearTable();
+
+    assert(table.getColumnLabels().size() == 2);
+    assert(table.getColumnLabel(0).equals('q1'));
+    assert(table.getColumnLabel(1).equals('q2'));
+    assert(table.getNumRows()    == 0);
+    assert(table.getNumColumns() == 0);
 end
 
 

@@ -34,7 +34,6 @@ suffixes.add('_z');
 % Flatten (Vec3 to double) the data to a times series table 
 forces_double = forces.flatten(suffixes);
 
-
 % Write flattened forces table to .mot file format
 stofileadapter = STOFileAdapter();
 stofileadapter.write(forces_double,'test_walking_grf.mot')
