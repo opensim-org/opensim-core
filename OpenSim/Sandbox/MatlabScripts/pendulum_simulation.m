@@ -36,6 +36,8 @@ model = Model(modelFileName);
 %% add a console reporter
 consoleReporter = ConsoleReporter();
 consoleReporter.set_report_time_interval(timeInterval);
+% When connecting the outputs, set the alias names 'pin1_anlge' and 'q2'. 
+% These will appear as the colomn labels
 consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'pin1_angle');
 consoleReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
 model.addComponent(consoleReporter);
@@ -43,6 +45,8 @@ model.addComponent(consoleReporter);
 %% add a table reporter for the pendulum coordiantes
 coordinateReporter= TableReporter();
 coordinateReporter.set_report_time_interval(timeInterval);
+% When connecting the outputs, set the alias names 'q1' and 'q2'. 
+% These will be the colomn labels when printed to file
 coordinateReporter.updInput('inputs').connect(model.getCoordinateSet().get(0).getOutput('value'),'q1');
 coordinateReporter.updInput('inputs').connect(model.getCoordinateSet().get(1).getOutput('value'),'q2');
 model.addComponent(coordinateReporter);
@@ -50,6 +54,8 @@ model.addComponent(coordinateReporter);
 %% add a Vec3 table reporter for the pendulum markers
 markerReporter= TableReporterVec3();
 markerReporter.set_report_time_interval(timeInterval);
+% When connecting the outputs, set the alias names 'marker_1' and 'marker_2'. 
+% These will be the colomn labels when printed to file
 markerReporter.updInput('inputs').connect(model.getMarkerSet().get(0).getOutput('location'),'marker_1');
 markerReporter.updInput('inputs').connect(model.getMarkerSet().get(1).getOutput('location'),'marker_2');
 model.addComponent(markerReporter);
