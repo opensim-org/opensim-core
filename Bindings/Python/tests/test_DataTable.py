@@ -226,6 +226,24 @@ class TestDataTable(unittest.TestCase):
         assert (str(col2[0]) == str(osim.Vec3( 7,  8,  9)) and
                 str(col2[1]) == str(osim.Vec3(14, 16, 18)) and
                 str(col2[2]) == str(osim.Vec3(28, 32, 36)))
+        # Flatten the table into table of doubles.
+        tableDouble = table.flatten()
+        assert tableDouble.getNumRows() == 3
+        assert tableDouble.getNumColumns() == 9
+        assert len(tableDouble.getColumnLabels()) == 9
+        assert tableDouble.getColumnLabels() == ('0_1', '0_2', '0_3',
+                                                 '1_1', '1_2', '1_3',
+                                                 '2_1', '2_2', '2_3')
+        assert tableDouble.getRowAtIndex(0)[0] == 1
+        assert tableDouble.getRowAtIndex(1)[0] == 2
+        assert tableDouble.getRowAtIndex(2)[0] == 4
+        assert tableDouble.getRowAtIndex(0)[8] == 9
+        assert tableDouble.getRowAtIndex(1)[8] == 18
+        assert tableDouble.getRowAtIndex(2)[8] == 36
+        tableDouble = table.flatten(['_x', '_y', '_z'])
+        assert tableDouble.getColumnLabels() == ('0_x', '0_y', '0_z',
+                                                 '1_x', '1_y', '1_z',
+                                                 '2_x', '2_y', '2_z')
         # Edit rows of the table.
         row0 = table.getRowAtIndex(0)
         row0[0] = osim.Vec3(10, 10, 10)
@@ -261,6 +279,7 @@ class TestDataTable(unittest.TestCase):
                 str(col2[1]) == str(osim.Vec3(40, 40, 40)) and
                 str(col2[2]) == str(osim.Vec3(40, 40, 40)))
 
+
     def test_TimeSeriesTableVec3(self):
         table = osim.TimeSeriesTableVec3()
         # Set columns labels.
@@ -295,3 +314,18 @@ class TestDataTable(unittest.TestCase):
             assert False
         except RuntimeError:
             pass
+
+        tableDouble = table.flatten()
+        assert tableDouble.getNumRows() == 2
+        assert tableDouble.getNumColumns() == 9
+        assert len(tableDouble.getColumnLabels()) == 9
+        assert tableDouble.getRowAtIndex(0)[0] == 1
+        assert tableDouble.getRowAtIndex(1)[0] == 2
+        assert tableDouble.getRowAtIndex(0)[8] == 9
+        assert tableDouble.getRowAtIndex(1)[8] == 18
+
+        tableDouble = table.flatten(['_x', '_y', '_z'])
+        assert tableDouble.getColumnLabels() == ('0_x', '0_y', '0_z',
+                                                 '1_x', '1_y', '1_z',
+                                                 '2_x', '2_y', '2_z')
+        
