@@ -139,10 +139,17 @@ namespace OpenSim {
     void setColumnLabels(const std::vector<std::string>& columnLabels) {
         $self->setColumnLabels(columnLabels);
     }
+
+    void addTableMetaDataString(const std::string& key,
+                                const std::string& value) {
+        $self->addTableMetaData<std::string>(key, value);
+    }
+    
     std::string
     getTableMetaDataString(const std::string& key) const {
         return $self->getTableMetaData<std::string>(key);
     }
+    
     std::vector<std::string>
     getDependentsMetaDataString(const std::string& key) const {
         const auto& depMetaData = $self->getDependentsMetaData();
