@@ -1,12 +1,23 @@
 function data = opensimTimeSeriesTableToMatlab(table)
 
 
+%%
+import org.opensim.modeling .*
+%%
 nCol = table.getNumColumns;
 nRow = table.getNumRows;
 
+%% 
 data = struct;
-rowdata = zeros(nRow, 3);
 
+%%
+if strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
+    rowdata = zeros(nRow, 3);
+elseif strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTable')
+    rowdata = zeros(nRow, 1);
+end
+
+%%
 for iCol = 0 : nCol -1
 
     if strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
@@ -33,10 +44,9 @@ for iCol = 0 : nCol -1
        new_col_label = col_label(temp(end-1)+1:temp(end)-1);
        eval(['[data.' new_col_label '] = rowdata;']);
     end
-
-
 end
 
+%%
 time = zeros(nRow,1);
 
 for iRow = 0 : nRow - 1
@@ -44,4 +54,5 @@ for iRow = 0 : nRow - 1
 end 
 
 [data.time] = time;
-    
+
+
