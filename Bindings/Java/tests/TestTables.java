@@ -1,3 +1,6 @@
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.io.File;
 import org.opensim.modeling.*;
 
 class TestTables {
@@ -184,6 +187,59 @@ class TestTables {
                col2.get(1).get(1) == 2 && col2.get(1).get(2) == 2 &&
                col2.get(2).get(0) == 3 && col2.get(2).get(1) == 3 &&
                col2.get(2).get(2) == 3;
+        // Flatten table into table of doubles.
+        DataTable tableDouble = table.flatten();
+        assert tableDouble.getNumRows() == 3;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_1");
+        assert tableDouble.getColumnLabel( 1).equals("0_2");
+        assert tableDouble.getColumnLabel( 2).equals("0_3");
+        assert tableDouble.getColumnLabel( 3).equals("1_1");
+        assert tableDouble.getColumnLabel( 4).equals("1_2");
+        assert tableDouble.getColumnLabel( 5).equals("1_3");
+        assert tableDouble.getColumnLabel( 6).equals("2_1");
+        assert tableDouble.getColumnLabel( 7).equals("2_2");
+        assert tableDouble.getColumnLabel( 8).equals("2_3");
+        assert tableDouble.getColumnLabel( 9).equals("3_1");
+        assert tableDouble.getColumnLabel(10).equals("3_2");
+        assert tableDouble.getColumnLabel(11).equals("3_3");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        assert tableDouble.getRowAtIndex(2).get( 0) == 3;
+        assert tableDouble.getRowAtIndex(2).get( 5) == 3;
+        assert tableDouble.getRowAtIndex(2).get(11) == 3;
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
+        tableDouble = table.flatten(suffixes);
+        assert tableDouble.getNumRows() == 3;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_x");
+        assert tableDouble.getColumnLabel( 1).equals("0_y");
+        assert tableDouble.getColumnLabel( 2).equals("0_z");
+        assert tableDouble.getColumnLabel( 3).equals("1_x");
+        assert tableDouble.getColumnLabel( 4).equals("1_y");
+        assert tableDouble.getColumnLabel( 5).equals("1_z");
+        assert tableDouble.getColumnLabel( 6).equals("2_x");
+        assert tableDouble.getColumnLabel( 7).equals("2_y");
+        assert tableDouble.getColumnLabel( 8).equals("2_z");
+        assert tableDouble.getColumnLabel( 9).equals("3_x");
+        assert tableDouble.getColumnLabel(10).equals("3_y");
+        assert tableDouble.getColumnLabel(11).equals("3_z");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        assert tableDouble.getRowAtIndex(2).get( 0) == 3;
+        assert tableDouble.getRowAtIndex(2).get( 5) == 3;
+        assert tableDouble.getRowAtIndex(2).get(11) == 3;
         // Edit rows of the table.
         row0 = table.getRowAtIndex(0);
         elem.set(0, 10); elem.set(1, 10); elem.set(2, 10);
@@ -303,12 +359,87 @@ class TestTables {
             table.appendRow(0.15, row);
             assert false;
         } catch(java.lang.RuntimeException exc) {}
+        // Flatten table into table of doubles.
+        TimeSeriesTable tableDouble = table.flatten();
+        assert tableDouble.getNumRows() == 2;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_1");
+        assert tableDouble.getColumnLabel( 1).equals("0_2");
+        assert tableDouble.getColumnLabel( 2).equals("0_3");
+        assert tableDouble.getColumnLabel( 3).equals("1_1");
+        assert tableDouble.getColumnLabel( 4).equals("1_2");
+        assert tableDouble.getColumnLabel( 5).equals("1_3");
+        assert tableDouble.getColumnLabel( 6).equals("2_1");
+        assert tableDouble.getColumnLabel( 7).equals("2_2");
+        assert tableDouble.getColumnLabel( 8).equals("2_3");
+        assert tableDouble.getColumnLabel( 9).equals("3_1");
+        assert tableDouble.getColumnLabel(10).equals("3_2");
+        assert tableDouble.getColumnLabel(11).equals("3_3");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
+        tableDouble = table.flatten(suffixes);
+        assert tableDouble.getNumRows() == 2;
+        assert tableDouble.getNumColumns() == 12;
+        assert tableDouble.getColumnLabels().size() == 12;
+        assert tableDouble.getColumnLabel( 0).equals("0_x");
+        assert tableDouble.getColumnLabel( 1).equals("0_y");
+        assert tableDouble.getColumnLabel( 2).equals("0_z");
+        assert tableDouble.getColumnLabel( 3).equals("1_x");
+        assert tableDouble.getColumnLabel( 4).equals("1_y");
+        assert tableDouble.getColumnLabel( 5).equals("1_z");
+        assert tableDouble.getColumnLabel( 6).equals("2_x");
+        assert tableDouble.getColumnLabel( 7).equals("2_y");
+        assert tableDouble.getColumnLabel( 8).equals("2_z");
+        assert tableDouble.getColumnLabel( 9).equals("3_x");
+        assert tableDouble.getColumnLabel(10).equals("3_y");
+        assert tableDouble.getColumnLabel(11).equals("3_z");
+        assert tableDouble.getRowAtIndex(0).get( 0) == 1;
+        assert tableDouble.getRowAtIndex(0).get( 5) == 1;
+        assert tableDouble.getRowAtIndex(0).get(11) == 1;
+        assert tableDouble.getRowAtIndex(1).get( 0) == 2;
+        assert tableDouble.getRowAtIndex(1).get( 5) == 2;
+        assert tableDouble.getRowAtIndex(1).get(11) == 2;
     }
 
-    public static void main(String[] args) {
+    public static void test_FlattenWithIK() throws java.io.IOException {
+        String setupFileName = new String("subject01_Setup_IK_generic.xml");
+        String markerFileName = new String("walk_free_01.trc");
+        String modelFileName = new String("subject01_gait2392_scaled.osim");
+
+        TRCFileAdapter trcAdapter = new TRCFileAdapter();
+        TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");
+        TimeSeriesTable markerTableFlat = markerTable.flatten(suffixes);
+        STOFileAdapter stoAdapter = new STOFileAdapter();
+        markerFileName = "walk_free_01.sto";
+        stoAdapter.write(markerTableFlat, markerFileName);
+
+        InverseKinematicsTool ikTool = new InverseKinematicsTool(setupFileName);
+        ikTool.setName("ik_test");
+        ikTool.setModel(new Model(modelFileName));
+        ikTool.setMarkerDataFileName(markerFileName);
+        StdVectorDouble timeColumn = markerTable.getIndependentColumn();
+        ikTool.setStartTime(timeColumn.get(0));
+        ikTool.setEndTime(timeColumn.get((int)(timeColumn.size() - 1)));
+        String ikResultsFileName = new String("ik_results.mot");
+        ikTool.setOutputMotionFileName(ikResultsFileName);
+
+        ikTool.run();
+    }
+
+    public static void main(String[] args)  throws java.io.IOException {
         test_DataTable();
         test_DataTableVec3();
         test_TimeSeriesTable();
         test_TimeSeriesTableVec3();
+        test_FlattenWithIK();
     }
 }
