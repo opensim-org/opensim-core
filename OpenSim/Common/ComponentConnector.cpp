@@ -33,5 +33,6 @@ AbstractConnector::getConnecteeNameProp() const {
 
 Property<std::string>&
 AbstractConnector::updConnecteeNameProp() {
-    return _owner->updProperty<std::string>(_connecteeNameIndex);
+    return const_cast<Component*>(_owner.get())->updProperty<std::string>(
+                _connecteeNameIndex);
 }

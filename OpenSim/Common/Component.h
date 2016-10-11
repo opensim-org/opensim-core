@@ -811,10 +811,15 @@ public:
         auto it = _connectorsTable.find(name);
 
         if (it != _connectorsTable.end()) {
-            // TODO put this in a better place? Check if we must set it first.
-            
-            // TODO const-correctness.
-            it->second->restoreMembers(const_cast<Self&>(*this));
+            // The following allows one to use a Connector immediately after
+            // copying the component;
+            // e.g., myComponent.clone().getConnector("a").getConnecteeName().
+            if (!it->second->hasOwner()) {
+                // The `this` pointer must be non-const because the Connector
+                // will want to be able to modify the connectee_name property.
+                const_cast<AbstractConnector*>(it->second.get())->setOwner(
+                        const_cast<Self&>(*this));
+            }
             return it->second.getRef();
         }
 
@@ -908,13 +913,16 @@ public:
         auto it = _inputsTable.find(name);
 
         if (it != _inputsTable.end()) {
-            // TODO set Input::_connecteeNameProp here, if necessary.
+            // The following allows one to use an Input immediately after
+            // copying the component;
+            // e.g., myComponent.clone().getInput("a").getConnecteeName().
+            if (!it->second->hasOwner()) {
             
-            // TODO put this in a better place? Check if we must set it first.
-            // it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
-            
-            // TODO const-correctness.
-            it->second->restoreMembers(const_cast<Self&>(*this));
+                // The `this` pointer must be non-const because the Connector
+                // will want to be able to modify the connectee_name property.
+                const_cast<AbstractInput*>(it->second.get())->setOwner(
+                        const_cast<Self&>(*this));
+            }
             return it->second.getRef();
         }
 

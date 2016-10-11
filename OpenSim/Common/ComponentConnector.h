@@ -86,11 +86,7 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** Default constructor */
-    AbstractConnector() = default;
-
-    // default destructor, copy constructor
-
+    
     /** Convenience constructor 
         Create a Connector with specified name and stage at which it
         should be connected.
@@ -107,7 +103,8 @@ public:
             _owner(&owner),
             _isList(getConnecteeNameProp().isListProperty()) {}
 
-    // default copy assignment
+
+    // default copy constructor, copy assignment
 
     virtual ~AbstractConnector() {};
     
@@ -208,18 +205,22 @@ public:
 
 protected:
     const Component& getOwner() const { return _owner.getRef(); }
-    /** Set the values of the member variables of this connector. This is
-     * called from Component::finalizeFromProperties().
-     * @note This is necessary because upon deserialization, the Connector is
-     * default-constructed, and the member variables are not stored in the
-     * serialization (because they should not be edited), but the containing
-     * Component does know what the values of these members should be. In the
-     * future, we hope to fix this mechanism so that Connectors retain the
-     * values of these member values even after deserialization, and so this
-     * call will not be necessary. */
-    void restoreMembers(Component& o) const /*TODO okay to be const w/mutable member? */ {
-        _owner.reset(&o);
-        // TODO put this error check elsewhere (finalizeFromProperties()?)
+    /** Set an internal pointer to the Component that contains this Connector.
+    This should only be called by Component.
+    This exists so that after the containing Component is copied, this Output
+    points to the new Component. This Connector needs to be able to modify
+    the associated connectee_name property in the Component. Thus, we require
+    a writeable reference. */
+    // We could avoid the need for this function by writing a custom copy
+    // constructor for Component.
+    void setOwner(Component& o) { _owner.reset(&o); }
+    /** This should be true immediately after copy construction or assignment.*/
+    bool hasOwner() const { return !_owner.empty(); }
+    
+    /** Check if entries of the connectee_name property contain spaces. */
+    void finalizeFromProperties() {
+        // TODO This check may go elsewhere once the connectee_name
+        // property is a ComponentPath (or a ChannelPath?).
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
             if (connecteeName.find(" ") != std::string::npos) {
@@ -229,39 +230,17 @@ protected:
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
                            "names for a single-value Connector?";
-                    // TODO Connector should be Inputs if this is an Input.
                 }
-                // TODO message should contain name of this Input.
-                // TODO when Input is no longer an Object, we won't be able to
-                // use "FRMOBJ"
                 // TODO Would ideally throw an exception, but some models *do*
                 // use spaces in names, and the error for this should be
                 // handled elsewhere.
-                // OPENSIM_THROW_FRMOBJ(Exception, msg);
+                // OPENSIM_THROW(Exception, msg);
                 std::cout << "Warning: " << msg << std::endl;
             }
-            // TODO bug with empty connectee_name being interpreted as "this component."
-
-            
+            // TODO There might be a bug with empty connectee_name being
+            // interpreted as "this component."
         }
     }
-    
-    // TODO remove this method as soon as possible!
-    // TODO find more robust way to set connecteeName on Input/Connector
-    // when finalizeFromProperties has not been called yet.
-    // TODO should this be const?
-    /*void setConnecteeNameProperty(Object& owner) const {
-        std::string prefixTODO = "connector_";
-        //if (getConcreteClassName().find("Input") != std::string::npos)
-        //    prefixTODO = "input_";
-        // TODO serious TODO: even Inputs' names are prefixed with "connector_"
-        
-        // TODO should not do string lookup!
-        std::string propertyName = prefixTODO + getName() + "_connectees";
-        AbstractProperty& abstractProp = owner.updPropertyByName(propertyName);
-        _connecteeNameProp.reset(&Property<std::string>::updAs(abstractProp));
-    }
-    */
 
 private:
     
@@ -277,12 +256,15 @@ private:
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteeNameIndex;
-    // non-const component ptr?
-    mutable /*TODO mutable okay?*/ SimTK::ReferencePtr<Component> _owner;
+    // Even though updConnecteeNameProp() requires non-const access to this
+    // pointer, we make this a const pointer to reduce the chance of mis-use.
+    // If this were a non-const pointer, then const functions in this class
+    // would be able to edit _owner (see declaration of ReferencePtr).
+    SimTK::ReferencePtr<const Component> _owner;
     // _isList must be after _owner, as _owner is used to set its value.
-    bool _isList = false; // TODO Use the property's isList to determine if isList.
+    bool _isList;
     
-    /* So that Component can invoke restoreMembers(). TODO renaming restoreMembers? */
+    /* So that Component can invoke setOwner(), etc. */
     friend Component;
 
 //=============================================================================
@@ -292,12 +274,6 @@ private:
 template<class T>
 class Connector : public AbstractConnector {
 public:
-    
-    /** Default constructor */
-    Connector() = default;
-
-    // default destructor, copy constructor
-
     /** Convenience constructor
     Create a Connector that can only connect to Object of type T with specified 
     name and stage at which it should be connected.
@@ -310,6 +286,8 @@ public:
         AbstractConnector(name, connecteeNameIndex, connectAtStage, owner),
         connectee(nullptr) {}
 
+    // default copy constructor
+    
     virtual ~Connector() {}
     
     Connector<T>* clone() const override { return new Connector<T>(*this); }
@@ -440,7 +418,6 @@ entries separated by a space. For example:
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
 public:
-    AbstractInput() = default;
     /** Convenience constructor
     Create an AbstractInput (Connector) that connects only to an AbstractOutput
     specified by name and stage at which it should be connected.
@@ -577,8 +554,6 @@ public:
     typedef std::vector<SimTK::ReferencePtr<const Channel>> ChannelList;
     typedef std::vector<std::string> AnnotationList;
     
-    /** Default constructor */
-    Input() = default;
     /** Convenience constructor
     Create an Input<T> (Connector) that can only connect to an Output<T>
     name and stage at which it should be connected.

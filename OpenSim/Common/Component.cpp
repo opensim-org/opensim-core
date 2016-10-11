@@ -179,10 +179,14 @@ void Component::finalizeFromProperties()
     // Provide connectors, inputs, and outputs with a pointer to its component
     // (this) so that it can invoke its methods.
     for (auto& it : _connectorsTable) {
-        it.second->restoreMembers(*this);
+        it.second->setOwner(*this);
+        // Let the Connector handle any errors in the connectee_name property.
+        it.second->finalizeFromProperties();
     }
     for (auto& it : _inputsTable) {
-        it.second->restoreMembers(*this);
+        it.second->setOwner(*this);
+        // Let the Connector handle any errors in the connectee_name property.
+        it.second->finalizeFromProperties();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
