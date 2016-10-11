@@ -8,14 +8,11 @@ import org.opensim.modeling.*
 
 %% make a empty table
 table = DataTable;
-    
+
+%% get the label names from the structure
 labels = fieldnames(table_array);    
 
-
-
 %% Set the number of columns and the column labels
-
-
 colnames = StdVectorString;
 for i = 1 : length(labels)
    
@@ -35,11 +32,10 @@ for ii  = 1 : length(table_array.(labels{1}))
     
 end
     
-
 %% write values to the OpenSim table
-for i  = 0 : table.getNumColumns -1
+for i  = 0 : length(labels) -1
 
-    if table.getColumnLabel(i).equals('time')
+    if strcmp(labels(i+1),'time')
 
         inCol = table.getIndependentColumn;
       
@@ -61,3 +57,10 @@ for i  = 0 : table.getNumColumns -1
   
 end 
 
+%% TODO: Decide to output a timerseries table or not
+
+try
+   timeseriestable = TimeSeriesTable(table);
+catch exception
+   'Times series table exception: Time has to be increasing'
+end

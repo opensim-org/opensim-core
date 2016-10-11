@@ -19,7 +19,9 @@ colnames = StdVectorString;
 
 for i = 1 : length(labels)
     
-    colnames.add( char( labels(i) ) )
+    if ~strcmp(labels{i},'time')
+        colnames.add(labels{i})
+    end
     
 end
 
@@ -29,23 +31,20 @@ table.setColumnLabels(colnames);
 elem = Vec3(0, 0, 0);
 elems = StdVectorVec3();
 
-for ii  = 1 : length(table_array.(labels{1}))
+for iCol = 1 : table.getColumnLabels.size
+      elems.add(elem); 
+end
 
-    for i = 1 : colnames.size
-
-        elems.add(elem); 
-
-
-    end
+for iRow  = 1 : length(table_array.(labels{1}))
     % Append row to the table.
     row = RowVectorOfVec3(elems);
     table.appendRow(0, row);
 end
 
 %% write values to the OpenSim table
-for i  = 0 : table.getNumColumns -1
+for i  = 0 : length(labels) -1
 
-    if table.getColumnLabel(i).equals('time')
+    if strcmp(labels(i+1),'time')
 
         inCol = table.getIndependentColumn;
       
@@ -73,6 +72,11 @@ for i  = 0 : table.getNumColumns -1
   
 end
 
-%% 
+%% TODO: Decide to output a timerseries table or not
 
+try
+   timeseriestable = TimeSeriesTableVec3(table);
+catch exception
+   'Times series table exception: Time has to be increasing'
+end
 

@@ -2,7 +2,7 @@ function data = opensimTimeSeriesTableToMatlab(table)
 
 
 %%
-import org.opensim.modeling .*
+import org.opensim.modeling.*
 %%
 nCol = table.getNumColumns;
 nRow = table.getNumRows;
