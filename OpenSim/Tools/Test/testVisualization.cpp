@@ -220,20 +220,20 @@ bool testVisModelAgainstStandard(Model& model) {
         DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Sphere rod 1
+    // Block rod 1
     primitives_double_pendulum33.push_back(
-        DecorativeMeshFile("sphere.vtp").setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.1).setOpacity(1)
+        DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(1).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Frame body 2
     primitives_double_pendulum33.push_back(
         DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Sphere rod 2
+    // Block rod 2
     primitives_double_pendulum33.push_back(
-        DecorativeMeshFile("sphere.vtp").setBodyId(2).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.1).setOpacity(1)
+        DecorativeMeshFile("block.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 1.5, 2 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Offset frame rod1
     primitives_double_pendulum33.push_back(
