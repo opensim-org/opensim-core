@@ -1937,17 +1937,17 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector* stateVec = new StateVector(originalVec->getTime());
-        stateVec->getData().setSize(numStates);  // default value 0f 0.
+        StateVector stateVec{originalVec->getTime()};
+        stateVec.getData().setSize(numStates);  // default value 0f 0.
         for(int column=0; column< numStates; column++){
             double valueInOriginalStorage=0.0;
             if (mapColumns[column]!=-1)
                 originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
 
-            stateVec->setDataValue(column, valueInOriginalStorage);
+            stateVec.setDataValue(column, valueInOriginalStorage);
 
         }
-        statesStorage.append(*stateVec);
+        statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
