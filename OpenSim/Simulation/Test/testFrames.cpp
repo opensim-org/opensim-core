@@ -343,6 +343,11 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
 void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
 {
+    // The order of the offset frames in the Model's "components" property list
+    // is specified to be the reverse of the order of the offset frames in the
+    // Multibody tree. This test ensures that the calls to addToSystem() for 
+    // PhysicalOffsetFrames occur in the order of the Multibody tree instead of
+    // the order in Model's property list, which can be arbitrary.
     Model pendulum("double_pendulum.osim");
 
     SimTK::Transform X_RO;
@@ -354,6 +359,8 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
     PhysicalOffsetFrame* offsetFrameDistal = new PhysicalOffsetFrame();
     offsetFrameDistal->setName("offsetFrameDistal");
     offsetFrameDistal->setOffsetTransform(X_RO);
+    // add Distal offset first so it appears before Proximal in the Model's
+    // property list.
     pendulum.addComponent(offsetFrameDistal);
 
     PhysicalOffsetFrame* offsetFrameProximal = new PhysicalOffsetFrame();
@@ -377,7 +384,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
                 offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
         "incorrect MobilizedBodyIndex");
-
 }
 
 void testFilterByFrameType()
