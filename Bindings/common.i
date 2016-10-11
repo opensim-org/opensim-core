@@ -135,6 +135,7 @@ namespace OpenSim {
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
 %ignore OpenSim::AbstractDataTable::setColumnLabels(
                                      const std::initializer_list<std::string>&);
+%template(StdVectorMatrix) std::vector<SimTK::Matrix_<double>>;
 %extend OpenSim::AbstractDataTable {
     void setColumnLabels(const std::vector<std::string>& columnLabels) {
         $self->setColumnLabels(columnLabels);
@@ -143,6 +144,17 @@ namespace OpenSim {
     void addTableMetaDataString(const std::string& key,
                                 const std::string& value) {
         $self->addTableMetaData<std::string>(key, value);
+    }
+    
+    std::vector<SimTK::Matrix_<double>>
+    getTableMetaDataVectorMatrix(const std::string& key) const {
+        return
+            $self->getTableMetaData<std::vector<SimTK::Matrix_<double>>>(key);
+    }
+    
+    std::vector<unsigned>
+    getTableMetaDataVectorUnsigned(const std::string& key) const {
+        return $self->getTableMetaData<std::vector<unsigned>>(key);
     }
     
     std::string
