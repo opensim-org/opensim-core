@@ -139,6 +139,21 @@ namespace OpenSim {
     void setColumnLabels(const std::vector<std::string>& columnLabels) {
         $self->setColumnLabels(columnLabels);
     }
+    std::string
+    getTableMetaDataString(const std::string& key) const {
+        return $self->getTableMetaData<std::string>(key);
+    }
+    std::vector<std::string>
+    getDependentsMetaDataString(const std::string& key) const {
+        const auto& depMetaData = $self->getDependentsMetaData();
+        const auto& absValArray = depMetaData.getValueArrayForKey(key);
+        const auto& values =
+            (dynamic_cast<const ValueArray<std::string>&>(absValArray)).get();
+        std::vector<std::string> metadata{};
+        for(const auto& val : values)
+            metadata.push_back(val.get());
+        return metadata;
+    }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {
     TimeSeriesTable_<double> flatten() {
