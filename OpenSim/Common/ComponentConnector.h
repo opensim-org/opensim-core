@@ -83,26 +83,6 @@ class OSIMCOMMON_API AbstractConnector {
     // TODO to be consistent with Properties, replace "single-value" with "one-value"
     // TODO should connectee_name property in Component be private:?
 public:
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-    
-    /** Convenience constructor 
-        Create a Connector with specified name and stage at which it
-        should be connected.
-    @param name             name of the connector, usually describes its dependency. 
-    @param connectAtStage   Stage at which Connector should be connected.
-    @param owner            Component to which this Connector belongs. */
-    AbstractConnector(const std::string& name,
-                      const PropertyIndex& connecteeNameIndex,
-                      const SimTK::Stage& connectAtStage,
-                      Component& owner) :
-            _name(name),
-            _connectAtStage(connectAtStage),
-            _connecteeNameIndex(connecteeNameIndex),
-            _owner(&owner),
-            _isList(getConnecteeNameProp().isListProperty()) {}
-
 
     // default copy constructor, copy assignment
 
@@ -204,6 +184,27 @@ public:
     virtual void disconnect() = 0;
 
 protected:
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    /** Create a Connector with specified name and stage at which it should be
+    connected.
+    @param name               name of the connector, usually describes its dependency.
+    @param connecteeNameIndex Index of the property in the containing Component
+                              that holds this Connector's connectee_name(s).
+    @param connectAtStage     Stage at which Connector should be connected.
+    @param owner              Component to which this Connector belongs. */
+    AbstractConnector(const std::string& name,
+                      const PropertyIndex& connecteeNameIndex,
+                      const SimTK::Stage& connectAtStage,
+                      Component& owner) :
+            _name(name),
+            _connectAtStage(connectAtStage),
+            _connecteeNameIndex(connecteeNameIndex),
+            _owner(&owner),
+            _isList(getConnecteeNameProp().isListProperty()) {}
+
+
     const Component& getOwner() const { return _owner.getRef(); }
     /** Set an internal pointer to the Component that contains this Connector.
     This should only be called by Component.
@@ -274,17 +275,6 @@ private:
 template<class T>
 class Connector : public AbstractConnector {
 public:
-    /** Convenience constructor
-    Create a Connector that can only connect to Object of type T with specified 
-    name and stage at which it should be connected.
-    @param name             name of the connector used to describe its dependency.
-    @param connectAtStage   Stage at which Connector should be connected.
-    @param owner The component that contains this input. */
-    Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
-              const SimTK::Stage& connectAtStage,
-              Component& owner) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner),
-        connectee(nullptr) {}
 
     // default copy constructor
     
@@ -368,6 +358,24 @@ public:
     }
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
+    
+protected:
+    /** Create a Connector that can only connect to Object of type T with 
+    specified name and stage at which it should be connected. Only Component
+    should ever construct this class.
+    @param name               name of the connector used to describe its dependency.
+    @param connecteeNameIndex Index of the property in the containing Component
+                              that holds this Connector's connectee_name(s).
+    @param connectAtStage     Stage at which Connector should be connected.
+    @param owner              The component that contains this input. */
+    Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
+              const SimTK::Stage& connectAtStage,
+              Component& owner) :
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner),
+        connectee(nullptr) {}
+        
+    /** So that Component can construct a Connector. */
+    friend Component;
 
 private:
     mutable SimTK::ReferencePtr<const T> connectee;
@@ -418,17 +426,6 @@ entries separated by a space. For example:
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
 public:
-    /** Convenience constructor
-    Create an AbstractInput (Connector) that connects only to an AbstractOutput
-    specified by name and stage at which it should be connected.
-    @param name             name of the dependent (Abstract)Output.
-    @param connectAtStage   Stage at which Input should be connected.
-    @param owner The component that contains this input. */
-    AbstractInput(const std::string& name,
-                  const PropertyIndex& connecteeNameIndex,
-                  const SimTK::Stage& connectAtStage,
-                  Component& owner) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner) {}
 
     virtual ~AbstractInput() {}
     
@@ -540,29 +537,34 @@ public:
         return true;
     }
     
+protected:
+    /** Create an AbstractInput (Connector) that connects only to an 
+    AbstractOutput specified by name and stage at which it should be connected.
+    Only Component should ever construct this class.
+    @param name              name of the dependent (Abstract)Output.
+    @param connecteeNameIndex Index of the property in the containing Component
+                              that holds this Input's connectee_name(s).
+    @param connectAtStage     Stage at which Input should be connected.
+    @param owner              The component that contains this input. */
+    AbstractInput(const std::string& name,
+                  const PropertyIndex& connecteeNameIndex,
+                  const SimTK::Stage& connectAtStage,
+                  Component& owner) :
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner) {}
+    
 //=============================================================================
 };  // END class AbstractInput
 
 
 /** An Input<Y> must be connected by an Output<Y> */
 template<class T>
-class  Input : public AbstractInput {
+class Input : public AbstractInput {
 public:
 
     typedef typename Output<T>::Channel Channel;
 
     typedef std::vector<SimTK::ReferencePtr<const Channel>> ChannelList;
     typedef std::vector<std::string> AnnotationList;
-    
-    /** Convenience constructor
-    Create an Input<T> (Connector) that can only connect to an Output<T>
-    name and stage at which it should be connected.
-    @param name             name of the Output dependency.
-    @param connectAtStage   Stage at which Input should be connected.
-    @param owner The component that contains this input. */
-    Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
-          const SimTK::Stage& connectAtStage, Component& owner) :
-        AbstractInput(name, connecteeNameIndex, connectAtStage, owner) {}
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 
@@ -680,6 +682,22 @@ public:
 
     SimTK_DOWNCAST(Input, AbstractInput);
 
+protected:
+    /** Create an Input<T> (Connector) that can only connect to an Output<T>
+    name and stage at which it should be connected. Only Component should ever
+    construct an Input.
+    @param name               name of the Output dependency.
+    @param connecteeNameIndex Index of the property in the containing Component
+                              that holds this Input's connectee_name(s).
+    @param connectAtStage     Stage at which Input should be connected.
+    @param owner              The component that contains this input. */
+    Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
+          const SimTK::Stage& connectAtStage, Component& owner) :
+        AbstractInput(name, connecteeNameIndex, connectAtStage, owner) {}
+    
+    /** So that Component can construct an Input. */
+    friend Component;
+    
 private:
     SimTK::ResetOnCopy<ChannelList> _connectees;
     // Annotations are serialized, since tools may depend on them for
