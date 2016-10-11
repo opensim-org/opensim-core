@@ -46,24 +46,28 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumColumns()  == 6
 
         tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
+
+        # Marker data read from C3D.
         markers = tables['markers']
         assert markers.getNumRows()    == 1103
         assert markers.getNumColumns() == 40
         assert markers.getTableMetaDataString('DataRate') == '250.000000'
         assert markers.getTableMetaDataString('Units') == 'mm'
 
+        # Flatten marker data.
         markersFlat = markers.flatten()
         assert markersFlat.getNumRows()    == 1103
         assert markersFlat.getNumColumns() == 40 * 3
 
+        # Make sure flattenned marker data is writable/readable to/from file.
         markersFilename = 'markers.sto'
         stoAdapter = osim.STOFileAdapter()
         stoAdapter.write(markersFlat, markersFilename)
-
         markersDouble = stoAdapter.read(markersFilename)
         assert markersDouble.getNumRows()    == 1103
         assert markersDouble.getNumColumns() == 40 * 3
-        
+
+        # Forces data read from C3d.
         forces = tables['forces']
         assert forces.getNumRows()     == 8824
         assert forces.getNumColumns()  == 6
@@ -71,16 +75,18 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getDependentsMetaDataString('units') == ('N', 'Nmm', 'mm',
                                                                'N', 'Nmm', 'mm')
 
+        # Flatten forces data.
         forcesFlat = forces.flatten()
         assert forcesFlat.getNumRows()    == 8824
         assert forcesFlat.getNumColumns() == 6 * 3
 
+        # Make sure flattenned forces data is writable/readable to/from file.
         forcesFilename = 'forces.sto'
         stoAdapter.write(forcesFlat, forcesFilename)
-
         forcesDouble = stoAdapter.read(forcesFilename)
         assert forcesDouble.getNumRows()    == 8824
         assert forcesDouble.getNumColumns() == 6 * 3
 
+        # Clean up.
         os.remove(markersFilename)
         os.remove(forcesFilename)
