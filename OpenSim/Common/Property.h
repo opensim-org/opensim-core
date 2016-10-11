@@ -1173,31 +1173,6 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // We actually also use this macro to document component outputs, etc.
 #define OpenSim_DOXYGEN_Q_PROPERTY(T, name)
 
-#define OpenSim_DECLARE_PROPERTY_DOCS_GET_UPD_SET(pname, T, comment, initComment) \
-    /** @name Properties (single-value)                                  */ \
-    /** @{                                                               */ \
-    /** comment initComment                                              */ \
-    /** This property appears in XML files under                         */ \
-    /** the tag <b>\<##pname##\></b>.                                    */ \
-    /** This property was generated with                                 */ \
-    /** the #OpenSim_DECLARE_PROPERTY macro;                             */ \
-    /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
-    /* This macro below is explained above.                              */ \
-    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
-    /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
-    /** @{                                                               */ \
-    /** Get the value of the <b> pname </b> property.                    */ \
-    const T& get_##pname() const                                            \
-    {   return this->getProperty_##pname().getValue(); }                    \
-    /** Get a writeable reference to the <b> pname </b> property.        */ \
-    T& upd_##pname()                                                        \
-    {   return this->updProperty_##pname().updValue(); }                    \
-    /** %Set the value of the <b> pname </b> property.                   */ \
-    void set_##pname(const T& value)                                        \
-    {   this->updProperty_##pname().setValue(value); }                      \
-    /** @}                                                               */
 
 /** Declare a required, single-value property of the given \a pname and 
 type \a T, with an associated \a comment. The value list for this property will
@@ -1228,19 +1203,54 @@ A data member is also created but is intended for internal use only:
             this->template addProperty<T>(#pname,comment,initValue);        \
     }                                                                       \
     /** @endcond **/                                                        \
-    OpenSim_DECLARE_PROPERTY_DOCS_GET_UPD_SET(pname, T, comment,)
+    /** @name Properties (single-value)                                  */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This property appears in XML files under                         */ \
+    /** the tag <b>\<##pname##\></b>.                                    */ \
+    /** This property was generated with                                 */ \
+    /** the #OpenSim_DECLARE_PROPERTY macro;                             */ \
+    /** see Property to learn about the property system.                 */ \
+    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /* This macro below is explained above.                              */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
+    /** @}                                                               */ \
+    /** @name Property-related methods                                   */ \
+    /** @{                                                               */ \
+    /** Get the value of the <b> pname </b> property.                    */ \
+    const T& get_##pname() const                                            \
+    {   return this->getProperty_##pname().getValue(); }                    \
+    /** Get a writeable reference to the <b> pname </b> property.        */ \
+    T& upd_##pname()                                                        \
+    {   return this->updProperty_##pname().updValue(); }                    \
+    /** %Set the value of the <b> pname </b> property.                   */ \
+    void set_##pname(const T& value)                                        \
+    {   this->updProperty_##pname().setValue(value); }                      \
+    /** @}                                                               */
     
+    
+// TODO connectee_name properties should show up nowhere in doxygen. THey
+// should only show up in the Input's doxygen showing what the tag name is.
+// TODO hide from doxygen
+// TODO internal documentation
+// TODO what is a good name for the property?
+// TODO do we even want to reveal get/upd/set for inputs?
+
+
 // TODO hide from doxygen
 // TODO internal documentation
 // TODO what is a good name for the property?
 // TODO want optional property instead.
 // TODO do we even want to reveal get/upd/set for inputs?
+// The initial/default value is an empty string.
 #define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)             \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname, std::string,                     \
-            = this->template addProperty<std::string>(#pname,comment,""))   \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_PROPERTY_DOCS_GET_UPD_SET(pname, std::string, comment,)
+    PropertyIndex PropertyIndex_##pname =                                   \
+            this->template addProperty<std::string>(#pname,comment,"");
+//
+//    /** @cond **/                                                           \
+//    OpenSim_DECLARE_PROPERTY_HELPER(pname, std::string,                     \
+//            = this->template addProperty<std::string>(#pname,comment,""))
+    /** @endcond **/
 
 // TODO default value could be "Unassigned". TODO ask in PR about what the
 // default connectee_name should be.
@@ -1283,11 +1293,25 @@ initialized with an object of type T.
     /** @}                                                               */
 
 
-// TODO document.
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY_DOCS_GET_UPD_SET(pname, T, comment, initComment) \
+/** Declare a property of the given \a pname containing an optional value of
+the given type T (that is, the value list can be of length 0 or 1 only).
+The property may be constructed as empty, or with initialization to a single
+value of type T.
+@relates OpenSim::Property **/
+#define OpenSim_DECLARE_OPTIONAL_PROPERTY(pname, T, comment)                \
+    /** @cond **/                                                           \
+    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
+    void constructProperty_##pname()                                        \
+    {   PropertyIndex_##pname =                                             \
+            this->template addOptionalProperty<T>(#pname, comment); }       \
+    void constructProperty_##pname(const T& initValue)                      \
+    {   PropertyIndex_##pname =                                             \
+            this->template addOptionalProperty<T>(#pname, comment,          \
+                                                  initValue); }             \
+    /** @endcond **/                                                        \
     /** @name Properties (optional)                                      */ \
     /** @{                                                               */ \
-    /** comment initComment                                              */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
     /** This property was generated with                                 */ \
@@ -1309,45 +1333,13 @@ initialized with an object of type T.
     void set_##pname(const T& value)                                        \
     {   this->updProperty_##pname().setValue(value); }                      \
     /** @}                                                               */
-
-/** Declare a property of the given \a pname containing an optional value of
-the given type T (that is, the value list can be of length 0 or 1 only).
-The property may be constructed as empty, or with initialization to a single
-value of type T.
-@relates OpenSim::Property **/
-#define OpenSim_DECLARE_OPTIONAL_PROPERTY(pname, T, comment)                \
-    /** @cond **/                                                           \
-    OpenSim_DECLARE_PROPERTY_HELPER(pname,T,)                               \
-    void constructProperty_##pname()                                        \
-    {   PropertyIndex_##pname =                                             \
-            this->template addOptionalProperty<T>(#pname, comment); }       \
-    void constructProperty_##pname(const T& initValue)                      \
-    {   PropertyIndex_##pname =                                             \
-            this->template addOptionalProperty<T>(#pname, comment,          \
-                                                  initValue); }             \
-    /** @endcond **/                                                        \
-    OpenSim_DECLARE_OPTIONAL_PROPERTY_DOCS_GET_UPD_SET(pname, T, comment,)
     
 
-// TODO connectee_name properties should show up nowhere in doxygen. THey
-// should only show up in the Input's doxygen showing what the tag name is.
-// TODO hide from doxygen
-// TODO internal documentation
-// TODO what is a good name for the property?
-// TODO do we even want to reveal get/upd/set for inputs?
-//#define OpenSim_DECLARE_OPTIONAL_PROPERTY_CONNECTEE_NAME(pname, comment)    \
-//    /** @cond **/                                                           \
-//    OpenSim_DECLARE_PROPERTY_HELPER(pname, std::string,                     \
-//            = this->template addOptionalProperty<std::string>(#pname,comment)) \
-//    /** @endcond **/                                                        \
-//    OpenSim_DECLARE_OPTIONAL_PROPERTY_DOCS_GET_UPD_SET(pname, std::string, comment,)
-
-
 // TODO document
-#define OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, T, comment, initComment)  \
+#define OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, T, comment)               \
     /** @name Properties (list)                                          */ \
     /** @{                                                               */ \
-    /** comment initComment                                              */ \
+    /** comment                                                          */ \
     /** This property appears in XML files under                         */ \
     /** the tag <b>\<##pname##\></b>.                                    */ \
     /** This property holds a \a list of objects, and was generated with */ \
@@ -1368,7 +1360,7 @@ supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_RANGE()
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY(pname, T, comment)                    \
-    OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, T, comment,)                  \
+    OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, T, comment)                   \
     /** @}                                                               */ \
     /** @name Property-related methods                                   */ \
     /** @{                                                               */ \
@@ -1385,15 +1377,19 @@ supports a %size() method and operator[] element selection.
 // TODO should this property have different comments from the rest?
 // TODO property type should be ComponentPath.
 #define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)       \
-    OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, std::string, comment, "TODO") \
-    /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
-    /** @{                                                               */ \
-    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, std::string, comment,       \
-                                         0, std::numeric_limits<int>::max(),\
-            = this->template addListProperty<std::string>                   \
-                (#pname, comment, 0, std::numeric_limits<int>::max()))      \
-    /** @cond **/                                                           \
+    PropertyIndex PropertyIndex_##pname =                                   \
+            this->template addListProperty<std::string>                     \
+                (#pname, comment, 0, std::numeric_limits<int>::max());
+
+//    OpenSim_DECLARE_LIST_PROPERTY_DOCS(pname, std::string, comment)         \
+//    /** @}                                                               */ \
+//    /** @name Property-related methods                                   */ \
+//    /** @{                                                               */ \
+//    OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, std::string, comment,       \
+//                                         0, std::numeric_limits<int>::max(),\
+//            = this->template addListProperty<std::string>                   \
+//                (#pname, comment, 0, std::numeric_limits<int>::max()))      \
+//    /** @cond **/
 
 
 /** Declare a property of the given \a pname containing a list of values of 

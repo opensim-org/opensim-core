@@ -734,8 +734,7 @@ private:
  * not get copied properly if you create a custom copy constructor.
  *
  * @see Component::constructConnector()
- * @relates OpenSim::Connector
- */
+ * @relates OpenSim::Connector */
 #define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
             connector_##cname##_connectee_name, comment);                   \
@@ -797,8 +796,7 @@ private:
  * @warning This macro is experimental and may be removed in future versions.
  *
  * @see Component::constructConnector()
- * @relates OpenSim::Connector
- */
+ * @relates OpenSim::Connector */
 #define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
             connector_##cname##_connectee_name, comment);                   \
@@ -829,8 +827,7 @@ private:
  * @warning This macro is experimental and may be removed in future versions.
  *
  * @see #OpenSim_DECLARE_CONNECTOR_FD
- * @relates OpenSim::Connector
- */
+ * @relates OpenSim::Connector */
 // This macro defines the method that the in-class member initializer calls
 // to construct the Connector. The reason why this must be in the .cpp file is
 // that putting the template member function `template <typename T>
@@ -867,8 +864,7 @@ bool Class::constructConnector_##cname() {                                  \
  *  };
  *  @endcode
  * @see Component::constructInput()
- * @relates OpenSim::Input
- */
+ * @relates OpenSim::Input */
 #define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(input_##iname##_connectee_name, \
                                             comment);                       \
@@ -903,8 +899,7 @@ bool Class::constructConnector_##cname() {                                  \
  * number of input values. 
  *
  * @see Component::constructInput()
- * @relates OpenSim::Input
- */
+ * @relates OpenSim::Input */
 // TODO pass PropertyIndex_input_iname_connectee to constructInput().
 #define OpenSim_DECLARE_LIST_INPUT(iname, T, istage, comment)               \
     OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(                          \
