@@ -38,8 +38,13 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/ComponentOutput.h"
-#include "OpenSim/Common/ComponentList.h"
+#include "osimCommonDLL.h"
+
+#include "ComponentOutput.h"
+#include "ComponentList.h"
+#include "Object.h"
+#include "Exception.h"
+#include "Property.h"
 
 namespace OpenSim {
 
@@ -95,19 +100,12 @@ public:
     AbstractConnector(const std::string& name,
                       const PropertyIndex& connecteeNameIndex,
                       const SimTK::Stage& connectAtStage,
-                      const Component& owner,
-                      Object& ownerAsObject) :
+                      Component& owner) :
             _name(name),
             _connectAtStage(connectAtStage),
             _connecteeNameIndex(connecteeNameIndex),
-            _owner(&owner), _ownerAsObject(&ownerAsObject),
-            _isList(getConnecteeNameProp().isListProperty()) {
-        // TODO setConnecteeNameProperty(ownerAsObject);
-        // TODO only passing both a Component and an Object b/c Component is
-        // an incomplete type in this header.
-        // TODO this constructor could take the Property<std::string> directly.
-        // i.e., getProperty_input_<name>_connectee().
-    }
+            _owner(&owner),
+            _isList(getConnecteeNameProp().isListProperty()) {}
 
     // default copy assignment
 
@@ -219,13 +217,8 @@ protected:
      * future, we hope to fix this mechanism so that Connectors retain the
      * values of these member values even after deserialization, and so this
      * call will not be necessary. */
-    void restoreMembers(const Component& o,
-            Object& ownerAsObject) const /*TODO okay to be const w/mutable member? */ {
+    void restoreMembers(Component& o) const /*TODO okay to be const w/mutable member? */ {
         _owner.reset(&o);
-        _ownerAsObject.reset(&ownerAsObject);
-        // TODO use PropertyIndex!
-        // TODO setConnecteeNameProperty(ownerAsObject);
-        
         // TODO put this error check elsewhere (finalizeFromProperties()?)
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
@@ -274,23 +267,18 @@ private:
     
     /// Const access to the connectee_name property from the Component in which
     /// this Connector resides.
-    const Property<std::string>& getConnecteeNameProp() const {
-        return _ownerAsObject->getProperty<std::string>(_connecteeNameIndex);
-    }
+    const Property<std::string>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
     /// which this Connector resides. This will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
-    Property<std::string>& updConnecteeNameProp() {
-        return _ownerAsObject->updProperty<std::string>(_connecteeNameIndex);
-    }
+    Property<std::string>& updConnecteeNameProp();
     
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteeNameIndex;
     // non-const component ptr?
-    mutable SimTK::ReferencePtr<const Component> _owner;
-    mutable SimTK::ReferencePtr<Object> _ownerAsObject;
+    mutable /*TODO mutable okay?*/ SimTK::ReferencePtr<Component> _owner;
     // _isList must be after _owner, as _owner is used to set its value.
     bool _isList = false; // TODO Use the property's isList to determine if isList.
     
@@ -318,8 +306,8 @@ public:
     @param owner The component that contains this input. */
     Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
               const SimTK::Stage& connectAtStage,
-              const Component& owner, Object& ownerAsObject) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner, /*TODO*/ownerAsObject),
+              Component& owner) :
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner),
         connectee(nullptr) {}
 
     virtual ~Connector() {}
@@ -462,10 +450,8 @@ public:
     AbstractInput(const std::string& name,
                   const PropertyIndex& connecteeNameIndex,
                   const SimTK::Stage& connectAtStage,
-                  const Component& owner,
-                  Object& ownerAsObject) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage,
-                          owner, ownerAsObject) {}
+                  Component& owner) :
+        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner) {}
 
     virtual ~AbstractInput() {}
     
@@ -600,10 +586,8 @@ public:
     @param connectAtStage   Stage at which Input should be connected.
     @param owner The component that contains this input. */
     Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
-          const SimTK::Stage& connectAtStage,
-          const Component& owner, Object& ownerAsObject) :
-        AbstractInput(name, connecteeNameIndex, connectAtStage,
-                      owner, ownerAsObject) {}
+          const SimTK::Stage& connectAtStage, Component& owner) :
+        AbstractInput(name, connecteeNameIndex, connectAtStage, owner) {}
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 

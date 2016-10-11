@@ -176,82 +176,14 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
     
-    // Make sure connectors and inputs properties are not messed up
-    // (e.g., containing connectors that don't exist in this component).
-    
-    // Helper function that does the actual check.
-    // TODO remove this lambda:
-    //auto checkPropertyAndTableNames = [this](
-    //        const std::string& type, /*connector or input*/
-    //        const AbstractProperty& prop,
-    //        const std::vector<std::string>& namesFromTable /*must be sorted*/) {
-    //    // Create (sorted) vector of connector names from the property.
-    //    std::vector<std::string> namesFromProp(prop.size());
-    //    for (int ixc = 0; ixc < prop.size(); ++ixc)
-    //        namesFromProp[ixc] = prop.getValueAsObject(ixc).getName();
-    //    std::sort(namesFromProp.begin(), namesFromProp.end());
-    //  // Check that the two (sorted) vectors of names match.
-    //    if (namesFromProp != namesFromTable) {
-    //        std::stringstream msg;
-    //        msg << "Expected " << type << " ";
-    //        for (const auto& name : namesFromTable) msg << name << ", ";
-    //        msg.seekp(-2, msg.end); // Remove the extra comma and space.
-    //        msg << " but got ";
-    //        for (const auto& name : namesFromProp) msg << name << ", ";
-    //        msg.seekp(-2, msg.end); // Remove the extra comma and space.
-    //        msg << ". This may result from a malformed <" << type
-    //            << "> property.";
-    //        OPENSIM_THROW_FRMOBJ(Exception, msg.str());
-    //    }
-    //};
-    
-    /*
-    // Because _connectorsTable is an (ordered) std::map, this will be sorted.
-    std::vector<std::string> conNamesFromTable;
-    for (const auto& it : _connectorsTable)
-        conNamesFromTable.push_back(it.first);
-    checkPropertyAndTableNames("connectors", getProperty_connectors(),
-                                             conNamesFromTable);
-    
-    std::vector<std::string> inputNamesFromTable;
-    for (const auto& it : _inputsTable) inputNamesFromTable.push_back(it.first);
-    checkPropertyAndTableNames("inputs", getProperty_inputs(),
-                                         inputNamesFromTable);
-    */
-    // Sync the connectors and inputs, and provide each input and output with
-    // a pointer to its component (this) so that it can invoke its methods.
-    //for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
-    //    AbstractConnector& connector = upd_connectors(ixc);
+    // Provide connectors, inputs, and outputs with a pointer to its component
+    // (this) so that it can invoke its methods.
     for (auto& it : _connectorsTable) {
-        it.second->restoreMembers(*this, *this);
-        // TODO _connectorsTable[connector.getName()] = ixc;
+        it.second->restoreMembers(*this);
     }
-    
-    /*
-    for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
-        AbstractInput& input = upd_inputs(ixi);
-        const auto& inputName = input.getName();
-        // The inputsTable holds an std::pair, whose second entry is `isList`.
-        const std::string propName = "input_" + inputName + "_connectees";
-        // TODO check "hasProperty()"? Should not be necessary.
-        const auto& prop = Property<std::string>::getAs(getPropertyByName(propName));
-        // TODO have the Input actually fetch this information from the property
-        // rather than rebuilding the list.
-        std::vector<std::string> connecteeNames(prop.size());
-        for (int ixname = 0; ixname < prop.size(); ++ixname) {
-            connecteeNames[ixname] = prop[ixname];
-        }
-        
-        
-        input.restoreMembers(*this, connecteeNames,
-                             _inputsTable[inputName].second);
-        _inputsTable[inputName].first = ixi;
-    }
-    */
     for (auto& it : _inputsTable) {
-        it.second->restoreMembers(*this, *this);
+        it.second->restoreMembers(*this);
     }
-    
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
     }

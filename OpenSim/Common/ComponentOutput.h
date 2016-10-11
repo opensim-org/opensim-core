@@ -31,6 +31,8 @@
  */
 
 // INCLUDES
+#include "Exception.h"
+
 #include <functional>
 #include <map>
 

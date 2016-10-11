@@ -814,7 +814,7 @@ public:
             // TODO put this in a better place? Check if we must set it first.
             
             // TODO const-correctness.
-            it->second->restoreMembers(*this, const_cast<Self&>(*this));
+            it->second->restoreMembers(const_cast<Self&>(*this));
             return it->second.getRef();
         }
 
@@ -914,7 +914,7 @@ public:
             // it->second->setConnecteeNameProperty(*const_cast<Self*>(this));
             
             // TODO const-correctness.
-            it->second->restoreMembers(*this, const_cast<Self&>(*this));
+            it->second->restoreMembers(const_cast<Self&>(*this));
             return it->second.getRef();
         }
 
@@ -2177,7 +2177,7 @@ protected:
                             const PropertyIndex& connecteeNameIndex) {
         _connectorsTable[name].reset(
                 new Connector<T>(name, connecteeNameIndex,
-                        SimTK::Stage::Topology, *this, *this /*TODO temp*/));
+                                 SimTK::Stage::Topology, *this));
         return true;
     }
     
@@ -2297,8 +2297,7 @@ protected:
             const PropertyIndex& connecteeNameIndex,
             const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
         _inputsTable[name].reset(
-                new Input<T>(name, connecteeNameIndex, requiredAtStage,
-                             *this, *this /*TODO temp*/));
+                new Input<T>(name, connecteeNameIndex, requiredAtStage, *this));
         return true;
     }
     
