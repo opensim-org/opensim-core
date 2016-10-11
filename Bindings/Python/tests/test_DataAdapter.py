@@ -71,7 +71,26 @@ class TestDataAdapter(unittest.TestCase):
         forces = tables['forces']
         assert forces.getNumRows()     == 8824
         assert forces.getNumColumns()  == 6
-        forces.getTableMetaDataString('DataRate') == '2000.000000'
+        assert forces.getTableMetaDataString('DataRate') == '2000.000000'
+        assert forces.getTableMetaDataVectorUnsigned('Types') == (2, 2)
+        fpCalMats = forces.getTableMetaDataVectorMatrix("CalibrationMatrices")
+        assert len(fpCalMats) == 2
+        assert fpCalMats[0].nrow() == 6
+        assert fpCalMats[0].ncol() == 6
+        assert fpCalMats[1].nrow() == 6
+        assert fpCalMats[1].ncol() == 6
+        fpCorners = forces.getTableMetaDataVectorMatrix("Corners")
+        assert len(fpCorners) == 2
+        assert fpCorners[0].nrow() == 3
+        assert fpCorners[0].ncol() == 4
+        assert fpCorners[1].nrow() == 3
+        assert fpCorners[1].ncol() == 4
+        fpOrigins = forces.getTableMetaDataVectorMatrix("Origins")
+        assert len(fpOrigins) == 2
+        assert fpOrigins[0].nrow() == 3
+        assert fpOrigins[0].ncol() == 1
+        assert fpOrigins[1].nrow() == 3
+        assert fpOrigins[1].ncol() == 1
         assert forces.getDependentsMetaDataString('units') == ('N', 'Nmm', 'mm',
                                                                'N', 'Nmm', 'mm')
 

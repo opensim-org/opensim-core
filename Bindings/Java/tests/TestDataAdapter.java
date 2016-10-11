@@ -34,6 +34,38 @@ class TestDataAdapter {
         assert forceTable.getNumColumns() == 6;
         assert forceTable.
                getTableMetaDataString("DataRate").equals("2000.000000");
+        StdVectorUnsigned fpTypes =
+            forceTable.getTableMetaDataVectorUnsigned("Types");
+        assert fpTypes.size() == 2;
+        assert fpTypes.get(0) == 2;
+        assert fpTypes.get(1) == 2;
+        StdVectorMatrix fpCalMatrices =
+            forceTable.getTableMetaDataVectorMatrix("CalibrationMatrices");
+        assert fpCalMatrices.size() == 2;
+        Matrix calMatrix0 = fpCalMatrices.get(0);
+        assert calMatrix0.nrow() == 6;
+        assert calMatrix0.ncol() == 6;
+        Matrix calMatrix1 = fpCalMatrices.get(1);
+        assert calMatrix1.nrow() == 6;
+        assert calMatrix1.ncol() == 6;
+        StdVectorMatrix fpCorners =
+            forceTable.getTableMetaDataVectorMatrix("Corners");
+        assert fpCorners.size() == 2;
+        Matrix corner0 = fpCorners.get(0);
+        assert corner0.nrow() == 3;
+        assert corner0.ncol() == 4;
+        Matrix corner1 = fpCorners.get(1);
+        assert corner1.nrow() == 3;
+        assert corner1.ncol() == 4;
+        StdVectorMatrix fpOrigins =
+            forceTable.getTableMetaDataVectorMatrix("Origins");
+        assert fpOrigins.size() == 2;
+        Matrix origin0 = fpOrigins.get(0);
+        assert origin0.nrow() == 3;
+        assert origin0.ncol() == 1;
+        Matrix origin1 = fpOrigins.get(1);
+        assert origin1.nrow() == 3;
+        assert origin1.ncol() == 1;
         StdVectorString units = forceTable.getDependentsMetaDataString("units");
         assert units.size() == 6;
         assert units.get(0).equals("N");
@@ -42,6 +74,7 @@ class TestDataAdapter {
         assert units.get(3).equals("N");
         assert units.get(4).equals("Nmm");
         assert units.get(5).equals("mm");
+            
 
         // Flatten forces data.
         TimeSeriesTable forceTableFlat = forceTable.flatten();
