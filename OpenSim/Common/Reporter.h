@@ -163,8 +163,18 @@ public:
     TableReporter_() = default;
     virtual ~TableReporter_() = default;
 
-    const TimeSeriesTable_<ValueT>& getReport() const {
+    /** Retrieve the report as a TimeSeriesTable.                             */
+    const TimeSeriesTable_<ValueT>& getTable() const {
         return _outputTable;
+    }
+
+    /** Clear the report. This can be used for example in loops performing 
+    simulation. Each new iteration should start with an empty report and so this
+    function can be used to clear the report at the end of each iteration.    */
+    void clearTable() {
+        auto columnLabels = _outputTable.getColumnLabels();
+        _outputTable = TimeSeriesTable_<ValueT>{};
+        _outputTable.setColumnLabels(columnLabels);
     }
 
 protected:
@@ -177,7 +187,16 @@ protected:
               const auto& value = chan.getValue(state);
               result[idx] = value;
         }
-        const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), result);
+        try {
+            const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(),
+                                                            result);
+        } catch(const InvalidTimestamp& exception) {
+            OPENSIM_THROW(Exception,
+                          "Attempting to update reporter with rows having "
+                          "invalid timestamps. Hint: If running simulation in "
+                          "a loop, use clearTable() to clear table at the end"
+                          "of each loop.\n\n" + std::string{exception.what()});
+        }
     }
 
 
