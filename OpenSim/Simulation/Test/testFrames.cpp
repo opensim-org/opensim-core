@@ -343,6 +343,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
 void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
 {
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder" << endl;
     // The order of the offset frames in the Model's "components" property list
     // is specified to be the reverse of the order of the offset frames in the
     // Multibody tree. This test ensures that the calls to addToSystem() for 
@@ -374,8 +375,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
     offsetFrameProximal->setParentFrame(rod2);
     offsetFrameDistal->setParentFrame(*offsetFrameProximal);
 
-    cout << "In testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder prior to "
-        << " initSystem()" << endl;
     SimTK::State& s = pendulum.initSystem();
 
     // make sure that this offsetFrameDistal knows that it is rigidly fixed 
@@ -384,10 +383,27 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
                 offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
         "incorrect MobilizedBodyIndex");
+
+    // Now test that we cannot get stuck in a loop of PhysicalOffsetFrames
+    // so create one deliberately.
+    PhysicalOffsetFrame* offsetFrameMiddle = new PhysicalOffsetFrame();
+    offsetFrameMiddle->setName("offsetFrameMiddle");
+    offsetFrameMiddle->setOffsetTransform(X_RO);
+    pendulum.addComponent(offsetFrameMiddle);
+
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameMiddle->setParentFrame(*offsetFrameProximal);
+    offsetFrameDistal->setParentFrame(*offsetFrameMiddle);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(Exception, pendulum.initSystem());
 }
 
 void testFilterByFrameType()
 {
+    cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
 
