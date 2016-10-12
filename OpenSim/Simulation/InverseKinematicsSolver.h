@@ -38,12 +38,13 @@ class MarkersReference;
 /**
  * Solve for the coordinates (degrees of freedom) of the model that satisfy the
  * set of constraints imposed on the model and the set of desired coordinate
- * values.  The InverseKinematics provides the option to convert the problem to
- * an approximate one where the constraint violations are treated as penalties
- * to be minimized rather than strictly enforced. This can speed up the solution
- * and can be used to seed the constrained problem closer to the solution.
+ * values. The InverseKinematicsSolver provides the option to convert the
+ * problem to an approximate one where the constraint violations are treated as
+ * penalties to be minimized rather than strictly enforced. This can speed up
+ * the solution and can be used to seed the constrained problem closer to the
+ * solution.
  *
- * The InverseKinematics objective: 
+ * The InverseKinematicsSolver objective:
  * \f[
  *   min: J = sum(Wm_i*(m_i-md_i)^T*(m_i-md_i)) + sum(Wq_j*(q_j-qd_j)^2) +
  *            [Wc*sum(c_{err})^2]
@@ -52,7 +53,7 @@ class MarkersReference;
  * and qd_j are model and desired joint coordinates. Wm_i and Wq_j are the
  * marker and coordinate weightings, respectively, and Wc is the weighting on
  * constraint errors. When Wc == Infinity, the second term is not included,
- * but instead q is subject to the constraint equations: 
+ * but instead q is subject to the constraint equations:
  *      \f[ c_{err} = G(q)-Go = 0 \f]
  *
  * When the model (and the number of goals) is guaranteed not to change and
@@ -66,9 +67,9 @@ class MarkersReference;
  */
 class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 {
-//=============================================================================
+//==============================================================================
 // METHODS
-//=============================================================================
+//==============================================================================
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -92,23 +93,23 @@ public:
         to track a desired trajectory of coordinate values. */
     //virtual void track(SimTK::State &s);
 
-    /** Change the weighting of a marker to take effect when assemble() or
-        track() is called next, given the marker's name. */
+    /** Change the weighting of a marker, given the marker's name. Takes effect
+        when assemble() or track() is called next. */
     void updateMarkerWeight(const std::string &markerName, double value);
-    /** Change the weighting of a marker to take effect when assemble() or
-        track() is called next, given the marker's index. */
+    /** Change the weighting of a marker, given the marker's index. Takes effect
+        when assemble() or track() is called next. */
     void updateMarkerWeight(int markerIndex, double value);
-    /** Change the weighting of a marker to take effect when assemble() or
-        track() is called next. Update all marker weights, specified in the same
-        order as they appear in the MarkersReference that was passed in when the
+    /** Change the weighting of all markers. Takes effect when assemble() or
+        track() is called next. Marker weights are specified in the same order
+        as they appear in the MarkersReference that was passed in when the
         solver was constructed. */
     void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
-    /** Compute and return a marker's spatial location in ground, given the
-        marker's name. */
+    /** Compute and return a marker's spatial location in the ground frame,
+        given the marker's name. */
     SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);
-    /** Compute and return a marker's spatial location in ground, given the
-        marker's index. */
+    /** Compute and return a marker's spatial location in the ground frame,
+        given the marker's index. */
     SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
     /** Compute and return the spatial locations of all markers, expressed in
         the ground frame. */
