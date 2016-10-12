@@ -940,9 +940,9 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     //setOn(_on);
     setActive(_active[0],_active[1],_active[2]);
     //setWeight(_w[0],_w[1],_w[2]);
-    setKP(_kp[0],_kp[1],_kp[2]);
-    setKV(_kv[0],_kv[1],_kv[2]);
-    setKA(_ka[0],_ka[1],_ka[2]);
+    //setKP(_kp[0],_kp[1],_kp[2]);
+    //setKV(_kv[0],_kv[1],_kv[2]);
+    //setKA(_ka[0],_ka[1],_ka[2]);
     setDirection_0(_r0);
     setDirection_1(_r1);
     setDirection_2(_r2);
