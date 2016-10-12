@@ -1556,9 +1556,6 @@ int main() {
     Object::registerType(Foo());
     Object::registerType(Bar());
     Object::registerType(TheWorld());
-    // Register connector objects that are in use
-    // TODO Object::registerType(Connector<Foo>());
-    // TODO Object::registerType(Connector<Bar>());
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);

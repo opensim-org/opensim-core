@@ -110,23 +110,17 @@ private:
 //==============================================================================
 Component::Component() : Object()
 {
-    // TODO constructProperty_connectors();
-    // TODO constructProperty_inputs();
     constructProperty_components();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
-    // TODO constructProperty_connectors();
-    // TODO constructProperty_inputs();
     constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
-    // TODO constructProperty_connectors();
-    // TODO constructProperty_inputs();
     constructProperty_components();
 }
 
