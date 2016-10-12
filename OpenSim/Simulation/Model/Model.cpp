@@ -786,7 +786,13 @@ void Model::extendConnectToModel(Model &model)
             dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
         std::vector<const PhysicalOffsetFrame*> parentPofs;
         while (parentPof) {
+            const auto found =
+                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(), Exception,
+                "PhysicalOffsetFrames are not permitted to form loops.");
             parentPofs.push_back(parentPof);
+            // Given a chain of offsets, the most proximal must have Ground or 
+            // Body as its parent. When that happens we can stop.
             parentPof =
                 dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
         }
