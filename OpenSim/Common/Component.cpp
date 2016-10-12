@@ -1515,8 +1515,7 @@ void Component::dumpConnections() const {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
                 std::cout << input->getConnecteeName(i) << " ";
                 // TODO as is, requires the input connections to be satisfied. 
-                // std::cout << " (annotation: " << input.getAnnotation(i) 
-                //           << ") ";
+                // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }
             std::cout << std::endl;
         }

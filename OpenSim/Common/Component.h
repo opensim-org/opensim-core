@@ -2766,7 +2766,7 @@ void Connector<C>::findAndConnect(const Component& root) {
 
 template<class T>
 void Input<T>::connect(const AbstractOutput& output,
-                       const std::string& annotation) {
+                       const std::string& alias) {
     const auto* outT = dynamic_cast<const Output<T>*>(&output);
     if (!outT) {
         std::stringstream msg;
@@ -2796,9 +2796,11 @@ void Input<T>::connect(const AbstractOutput& output,
         // <RelOwnerPath>/<Output><:Channel><(annotation)>
         ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
         std::string outputName = chan.second.getName();
-        if (!annotation.empty() && annotation != chan.second.getChannelName()) {
-            outputName += "(" + annotation + ")";
-        }
+
+        // Append the alias, if one has been provided.
+        if (!alias.empty())
+            outputName += "(" + alias + ")";
+
         path.pushBack(outputName);
 
         // set the connectee name so that the connection can be
@@ -2809,17 +2811,14 @@ void Input<T>::connect(const AbstractOutput& output,
         else
             appendConnecteeName(path.toString());
 
-        // Use the same annotation for each channel.
-        std::string annoToStore = annotation.empty() ?
-                                  chan.second.getChannelName() :
-                                  annotation;
-        _annotations.push_back(annoToStore);
+        // Use the provided alias for all channels.
+        _aliases.push_back(alias);
     }
 }
 
 template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
-                       const std::string& annotation) {
+                       const std::string& alias) {
     const auto* chanT = dynamic_cast<const Channel*>(&channel);
     if (!chanT) {
         std::stringstream msg;
@@ -2845,9 +2844,11 @@ void Input<T>::connect(const AbstractChannel& channel,
     // <RelOwnerPath>/<Output><:Channel><(annotation)>
     ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
     std::string channelName = chanT->getName();
-    if (!annotation.empty() && annotation != chanT->getChannelName()) {
-        channelName += "(" + annotation + ")";
-    }
+
+    // Append the alias, if one has been provided.
+    if (!alias.empty())
+        channelName += "(" + alias + ")";
+
     path.pushBack(channelName);
     
     // Set the connectee name so the connection can be serialized.
@@ -2857,25 +2858,23 @@ void Input<T>::connect(const AbstractChannel& channel,
     else
         appendConnecteeName(path.toString());
     
-    // Annotation.
-    std::string annoToStore = annotation.empty() ? chanT->getChannelName() :
-                                                   annotation;
-    _annotations.push_back(annoToStore);
+    // Store the provided alias.
+    _aliases.push_back(alias);
 }
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPathStr, channelName, annotation;
+    std::string outputPathStr, channelName, alias;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
-                           annotation);
+                           alias);
         ComponentPath outputPath(outputPathStr);
         std::string componentPathStr = outputPath.getParentPathString();
         std::string outputName = outputPath.getComponentName();
         try {
             const AbstractOutput* output = nullptr;
 
-            if (outputPath.isAbsolute()) { //absolute path name
+            if (outputPath.isAbsolute()) { //absolute path string
                 if (componentPathStr.empty()) {
                     output = &root.getOutput(outputPath.toString());
                 }
@@ -2884,7 +2883,7 @@ void Input<T>::findAndConnect(const Component& root) {
                 }
             }
 
-            else { // relative path name
+            else { // relative path string
                 if (componentPathStr.empty()) {
                     output = &getOwner().getOutput(outputPath.toString());
                 }
@@ -2894,7 +2893,7 @@ void Input<T>::findAndConnect(const Component& root) {
                 
             }
             const auto& channel = output->getChannel(channelName);
-            connect(channel, annotation);
+            connect(channel, alias);
         }
         catch (const Exception& ex) {
             std::stringstream msg;

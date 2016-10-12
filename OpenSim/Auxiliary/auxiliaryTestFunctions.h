@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include "getRSS.h"
 
 #include <fstream>
@@ -97,7 +98,7 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");
 
-    for (int i = 0; i < ncolumns; ++i) {
+    for (size_t i = 0; i < ncolumns; ++i) {
         std::cout << "column:    " << columnsUsed[i] << std::endl;
         std::cout << "RMS error: " << comparisons[i] << std::endl;
         std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
@@ -209,7 +210,7 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 // Storage can only read files with version <= 1.
 // This function can be removed when Storage class is removed.
 inline void revertToVersionNumber1(const std::string& filenameOld,
-    const std::string& filenameNew) {
+                                   const std::string& filenameNew) {
     std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
     std::ifstream fileOld{ filenameOld };
     std::ofstream fileNew{ filenameNew };
@@ -217,6 +218,26 @@ inline void revertToVersionNumber1(const std::string& filenameOld,
     while (std::getline(fileOld, line)) {
         if (std::regex_match(line, versionline))
             fileNew << "version=1\n";
+        else
+            fileNew << line << "\n";
+    }
+}
+
+// Add number of rows (nRows) and number of columns (nColumns) to the header of
+// the STO file. Note that nColumns will include time, so it will be number of
+// columns in the matrix plus 1 (for time).
+inline void addNumRowsNumColumns(const std::string& filenameOld,
+                                 const std::string& filenameNew) {
+    auto table = OpenSim::STOFileAdapter_<double>::read(filenameOld);
+    std::regex endheader{ R"( *endheader *)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, endheader))
+            fileNew << "nRows="    << table.getNumRows()        << "\n"
+                    << "nColumns=" << table.getNumColumns() + 1 << "\n"
+                    << "endheader\n";
         else
             fileNew << line << "\n";
     }

@@ -50,7 +50,8 @@ for i = 0:(names.size() - 1)
 end
 
 % Access a specific concrete connectee.
-assert(Body.safeDownCast(joint.getConnectee('child_frame')).getMass() == 2);
+body = Body.safeDownCast(joint.getConnectee('child_frame'));
+assert(body.getMass() == 2);
 
 % Connect a connector.
 offset.updConnector('parent').connect(ground);
@@ -72,7 +73,8 @@ for i = 0:(names.size() - 1)
 end
 
 % Access the value of a concrete Output.
-OutputDouble.safeDownCast(coord.getOutput('speed')).getValue(state);
+concreteOutput = OutputDouble.safeDownCast(coord.getOutput('speed'));
+concreteOutput.getValue(state);
 
 % Channels
 % --------
@@ -90,7 +92,7 @@ assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
 % ==========================
 % Only need the abstract types in order to connect.
 rep.updInput('inputs').connect(coord.getOutput('value'));
-% With annotation:
+% With alias:
 rep.updInput('inputs').connect(coord.getOutput('speed'), 'target');
 % These commands use the AbstractChannel.
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c1'));
@@ -117,7 +119,8 @@ end
 
 % Access the value of a concerete Input.
 % The value 1 comes from column 2 of the TableSource.
-assert(InputDouble.safeDownCast(rep.getInput('inputs')).getValue(state, 3)==1);
+concreteInput = InputDouble.safeDownCast(rep.getInput('inputs'));
+assert(concreteInput.getValue(state, 3)==1);
 % TODO Concrete channels are not wrapped yet.
 % TODO InputDouble.safeDownCast(comp.getInput(name)).getChannel(0).getValue(s);
 

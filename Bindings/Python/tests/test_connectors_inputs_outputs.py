@@ -215,14 +215,15 @@ class TestInputsOutputs(unittest.TestCase):
         s = m.initSystem()
 
         # Access and iterate through AbstractInputs, using names.
-        expectedAnnos = ['value', 'spd', 'col1', 'second_col']
+        expectedShortLabels = ['value', 'spd', 'col1', 'second_col']
         i = 0
         for name in rep.getInputNames():
             # Actually, there is only one input, which we connected to 4
             # channels.
             assert rep.getInput(name).getNumConnectees() == 4
             for j in range(4):
-                assert rep.getInput(name).getAnnotation(j) == expectedAnnos[j]
+                assert (rep.getInput(name).getShortLabel(j) ==
+                        expectedShortLabels[j])
             i += 1
 
         # Access concrete Input.
