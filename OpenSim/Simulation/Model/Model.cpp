@@ -788,8 +788,8 @@ void Model::extendConnectToModel(Model &model)
         while (parentPof) {
             const auto found =
                 std::find(parentPofs.begin(), parentPofs.end(), parentPof);
-            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(), Exception,
-                "PhysicalOffsetFrames are not permitted to form loops.");
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
+                PhysicalOffsetFramesFormLoop, (*found)->getName());
             parentPofs.push_back(parentPof);
             // Given a chain of offsets, the most proximal must have Ground or 
             // Body as its parent. When that happens we can stop.
