@@ -39,8 +39,24 @@ void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
+// This component, used solely for testing, is used to satisfy the Inputs of
+// the components we test.
+class OutputGenerator : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(OutputGenerator, Component);
+public:
+    OpenSim_DECLARE_OUTPUT(outdouble, double, calcDouble, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outvec3, SimTK::Vec3, calcVec3, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outxform, SimTK::Transform, calcXform, SimTK::Stage::Model);
+    double calcDouble(const SimTK::State&) const {return 0.0;}
+    SimTK::Vec3 calcVec3(const SimTK::State&) const {return SimTK::Vec3(0);}
+    SimTK::Transform calcXform(const SimTK::State&) const
+    {return SimTK::Transform(SimTK::Vec3(0));}
+};
+
 int main()
 {
+    Object::registerType(OutputGenerator());
+
     SimTK::Array_<std::string> failures;
 
     // get all registered Components
@@ -60,42 +76,42 @@ int main()
         availableComponents.push_back(availableGeometry[i]);
     }
 
-     // next with type Point
-     ArrayPtrs<Point> availablePoints;
-     Object::getRegisteredObjectsOfGivenType(availablePoints);
-     for (int i = 0; i < availablePoints.size(); ++i) {
-         availableComponents.push_back(availablePoints[i]);
-     }
- 
-     // then type Joint
-     ArrayPtrs<Joint> availableJoints;
-     Object::getRegisteredObjectsOfGivenType(availableJoints);
-     for (int i = 0; i < availableJoints.size(); ++i) {
-         availableComponents.push_back(availableJoints[i]);
-     }
- 
-     // then type TwoFrameLinker<Constraint>
-     ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
-     Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
-     for (int i = 0; i < availableLink2Constraints.size(); ++i) {
-         availableComponents.push_back(availableLink2Constraints[i]);
-     }
- 
-     // then type TwoFrameLinker<Force> which are all the BushingForces
-     ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
-     Object::getRegisteredObjectsOfGivenType(availableBushingForces);
-     for (int i = 0; i < availableBushingForces.size(); ++i) {
-         availableComponents.push_back(availableBushingForces[i]);
-     }
- 
-     // Test PrescribedForce
-     std::unique_ptr<PrescribedForce> f(new PrescribedForce());
-     availableComponents.push_back(f.get());
-     // continue with other Constraints, Forces, Actuators, ...
-     //Examples of updated forces that pass
-     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
-     Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
-     availableComponents.push_back(availablePointToPointSpring[0]);
+    // next with type Point
+    ArrayPtrs<Point> availablePoints;
+    Object::getRegisteredObjectsOfGivenType(availablePoints);
+    for (int i = 0; i < availablePoints.size(); ++i) {
+     availableComponents.push_back(availablePoints[i]);
+    }
+
+    // then type Joint
+    ArrayPtrs<Joint> availableJoints;
+    Object::getRegisteredObjectsOfGivenType(availableJoints);
+    for (int i = 0; i < availableJoints.size(); ++i) {
+     availableComponents.push_back(availableJoints[i]);
+    }
+
+    // then type TwoFrameLinker<Constraint>
+    ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
+    Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
+    for (int i = 0; i < availableLink2Constraints.size(); ++i) {
+     availableComponents.push_back(availableLink2Constraints[i]);
+    }
+
+    // then type TwoFrameLinker<Force> which are all the BushingForces
+    ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
+    Object::getRegisteredObjectsOfGivenType(availableBushingForces);
+    for (int i = 0; i < availableBushingForces.size(); ++i) {
+     availableComponents.push_back(availableBushingForces[i]);
+    }
+
+    // Test PrescribedForce
+    std::unique_ptr<PrescribedForce> f(new PrescribedForce());
+    availableComponents.push_back(f.get());
+    // continue with other Constraints, Forces, Actuators, ...
+    //Examples of updated forces that pass
+    ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
+    Object::getRegisteredObjectsOfGivenType(availablePointToPointSpring);
+    availableComponents.push_back(availablePointToPointSpring[0]);
 
     /** //Uncomment when dependencies of CoordinateCouplerConstraints are 
     // specified as Connectors 
@@ -177,12 +193,12 @@ void testComponent(const Component& instanceToTest)
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
+
     // First make sure Connectors are satisfied.
     Component* sub = instance;
-    auto comps = instance->getComponentList<Component>();
-    ComponentList<Component>::const_iterator it = comps.begin();
-
-    while(sub) {
+    auto comps = instance->updComponentList<Component>();
+    ComponentList<Component>::iterator itc = comps.begin();
+    while (sub) {
         for (const auto& connectorName : sub->getConnectorNames()) {
             AbstractConnector& connector = sub->updConnector(connectorName);
             string dependencyTypeName = connector.getConnecteeTypeName();
@@ -211,31 +227,66 @@ void testComponent(const Component& instanceToTest)
                 continue;
             }
 
-            Object* dependency =
-                Object::newInstanceOfType(dependencyTypeName);
-
+            std::unique_ptr<Object> dependency;
             if (dynamic_cast< Connector<Frame>*>(&connector) ||
                 dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
-                dependency = Object::newInstanceOfType("Body");
+                dependency.reset(Object::newInstanceOfType("Body"));
+            } else {
+                dependency.reset(Object::newInstanceOfType(dependencyTypeName));
             }
 
             if (dependency) {
                 //give it some random values including a name
-                randomize(dependency);
+                randomize(dependency.get());
                 connector.setConnecteeName(dependency->getName());
 
                 // add the dependency 
-                addObjectAsComponentToModel(dependency, model);
+                addObjectAsComponentToModel(dependency.release(), model);
             }
         }
-        const Component& next = *it;
+        
+        Component& next = *itc;
         //Now keep checking the subcomponents
-        sub = const_cast<Component *>(&next);
-        it++;
+        sub = &next;
+        itc++;
     }
     
-    // TODO satisfy inputs as well.
-
+    // Now make sure Inputs are satisfied.
+    // We'll use the custom OutputGenerator class to satisfy the inputs.
+    OutputGenerator* outputGen = new OutputGenerator();
+    outputGen->setName("output_gen");
+    model.addComponent(outputGen);
+    for (auto& sub : model.updComponentList()) {
+        for (const auto& inputName : sub.getInputNames()) {
+            AbstractInput& input = sub.updInput(inputName);
+            
+            // Special case: Geometry cannot have both its input and connector
+            // connected.
+            if (dynamic_cast<Geometry*>(&sub) && inputName == "transform") {
+                input.setConnecteeName("");
+                continue;
+            }
+            
+            string dependencyTypeName = input.getConnecteeTypeName();
+            cout << "Input '" << input.getName() << "' has dependency on: " <<
+                "Output<" << dependencyTypeName << ">" << endl;
+            
+            // Find an output of the correct type.
+            bool foundAnOutput = false;
+            for (const auto& ito : outputGen->getOutputs()) {
+                const AbstractOutput* output = ito.second.get();
+                if (dependencyTypeName == output->getTypeName()) {
+                    input.setConnecteeName(output->getChannel("").getPathName());
+                    foundAnOutput = true;
+                }
+            }
+            if (!foundAnOutput) {
+                throw Exception("OutputGenerator does not provide an output "
+                                "of type " + dependencyTypeName + ".");
+            }
+        }
+    }
+    
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
     try{
