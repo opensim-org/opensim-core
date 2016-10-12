@@ -384,8 +384,17 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
         "incorrect MobilizedBodyIndex");
 
-    // Now test that we cannot get stuck in a loop of PhysicalOffsetFrames
-    // so create one deliberately.
+    // Verify that a direct loop throws an exception
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
+
+    // Now test that we do not get stuck in a loop of PhysicalOffsetFrames
+    // for more than two frames
     PhysicalOffsetFrame* offsetFrameMiddle = new PhysicalOffsetFrame();
     offsetFrameMiddle->setName("offsetFrameMiddle");
     offsetFrameMiddle->setOffsetTransform(X_RO);
@@ -398,7 +407,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
 
     // Check that loop causes an exception to be thrown and that
     // connecting does not run endlessly.
-    ASSERT_THROW(Exception, pendulum.initSystem());
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
 }
 
 void testFilterByFrameType()
