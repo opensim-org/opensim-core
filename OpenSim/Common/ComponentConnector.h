@@ -81,7 +81,6 @@ namespace OpenSim {
 class OSIMCOMMON_API AbstractConnector {
 
     // TODO to be consistent with Properties, replace "single-value" with "one-value"
-    // TODO should connectee_name property in Component be private:?
 public:
 
     // default copy constructor, copy assignment
@@ -712,10 +711,8 @@ private:
 // Connectors and Inputs have an associated connectee_name property in the
 // Component that contains them. These macros are used to create that property.
 #ifndef SWIG
-// TODO connectee_name properties should show up nowhere in doxygen. THey
-// should only show up in the Input's doxygen showing what the tag name is.
 // TODO internal documentation
-// TODO property type should be ComponentPath.
+// TODO property type should be ComponentPath/OutputPath/ChannelPath.
 
 // The initial/default value is an empty string.
 #define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)             \
@@ -759,9 +756,14 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Connector will
  * not get copied properly if you create a custom copy constructor.
+ * We may add support for custom copy constructors with Connectors in the
+ * future.
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector */
+// The DECLARE_PROPERTY macro must come first, as the Connector constructor
+// requires the PropertyIndex (and Property) created by the DECLARE_PROPERTY
+// macro.
 #define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
             connector_##cname##_connectee_name,                             \
@@ -782,9 +784,6 @@ private:
                 PropertyIndex_connector_##cname##_connectee_name)           \
     };                                                                      \
     /** @endcond                                                         */
-
-// TODO change connectee_name property comment.
-
 
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
@@ -825,6 +824,13 @@ private:
  * The "FD" in the name of this macro stands for "forward-declared."
  *
  * @warning This macro is experimental and may be removed in future versions.
+ *
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Connector will
+ * not get copied properly if you create a custom copy constructor.
+ * We may add support for custom copy constructors with Connectors in the
+ * future.
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector */
@@ -897,8 +903,16 @@ bool Class::constructConnector_##cname() {                                  \
  *      ...
  *  };
  *  @endcode
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Input will
+ * not get copied properly if you create a custom copy constructor.
+ * We may add support for custom copy constructors with Inputs in the future.
+ *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
+// The DECLARE_PROPERTY macro must come first, as the Input constructor requires
+// the PropertyIndex (and Property) created by the DECLARE_PROPERTY macro.
 #define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(input_##iname##_connectee_name, \
             "Path to an output (channel) to satisfy the one-value Input '"  \
@@ -919,8 +933,6 @@ bool Class::constructConnector_##cname() {                                  \
                 PropertyIndex_input_##iname##_connectee_name, istage)       \
     };                                                                      \
     /** @endcond                                                         */
-// TODO document thta DECLARE_PROPERTY_...() must come first, as the Input constructor
-// will expect the property already exists.
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called first
@@ -931,6 +943,11 @@ bool Class::constructConnector_##cname() {                                  \
 /** Create a list input, which can connect to more than one Channel. This
  * makes sense for components like reporters that can handle a flexible
  * number of input values. 
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The Input will
+ * not get copied properly if you create a custom copy constructor.
+ * We may add support for custom copy constructors with Inputs in the future.
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
