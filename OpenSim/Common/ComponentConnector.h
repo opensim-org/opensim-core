@@ -79,8 +79,6 @@ namespace OpenSim {
  * @author  Ajay Seth
  */
 class OSIMCOMMON_API AbstractConnector {
-
-    // TODO to be consistent with Properties, replace "single-value" with "one-value"
 public:
 
     // default copy constructor, copy assignment
