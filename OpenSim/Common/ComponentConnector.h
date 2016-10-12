@@ -704,6 +704,33 @@ private:
     // interpreting the connected channels.
     SimTK::ResetOnCopy<AnnotationList> _annotations;
 }; // END class Input<Y>
+
+
+// =============================================================================
+// Macros for declaring Connectors and Inputs.
+// =============================================================================
+// Connectors and Inputs have an associated connectee_name property in the
+// Component that contains them. These macros are used to create that property.
+#ifndef SWIG
+// TODO connectee_name properties should show up nowhere in doxygen. THey
+// should only show up in the Input's doxygen showing what the tag name is.
+// TODO internal documentation
+// TODO property type should be ComponentPath.
+
+// The initial/default value is an empty string.
+#define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)             \
+    PropertyIndex PropertyIndex_##pname =                                   \
+            this->template addProperty<std::string>(#pname,comment,"");
+#define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)       \
+    PropertyIndex PropertyIndex_##pname =                                   \
+            this->template addListProperty<std::string>                     \
+                (#pname, comment, 0, std::numeric_limits<int>::max());
+#else
+// No need to wrap internal PropertyIndex.
+#define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)
+#define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)
+#endif
+
         
 /// @name Creating Connectors to other objects for your Component
 /// Use these macros at the top of your component class declaration,
@@ -737,10 +764,14 @@ private:
  * @relates OpenSim::Connector */
 #define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
-            connector_##cname##_connectee_name, comment);                   \
+            connector_##cname##_connectee_name,                             \
+            "Path to a Component to satisfy the Connector '"                \
+            #cname "' of type " #T " (description: " comment ").");         \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
+    /** In an XML file, you can set this Connector's connectee name      */ \
+    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
     /** This connector was generated with the                            */ \
     /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
@@ -799,11 +830,14 @@ private:
  * @relates OpenSim::Connector */
 #define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
-            connector_##cname##_connectee_name, comment);                   \
+            connector_##cname##_connectee_name,                             \
+            "Path to a Component to satisfy the Connector '"                \
+            #cname "' of type " #T " (description: " comment ").");         \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This is an %OpenSim Connector.                                   */ \
+    /** In an XML file, you can set this Connector's connectee name      */ \
+    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -867,11 +901,14 @@ bool Class::constructConnector_##cname() {                                  \
  * @relates OpenSim::Input */
 #define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
     OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(input_##iname##_connectee_name, \
-                                            comment);                       \
+            "Path to an output (channel) to satisfy the one-value Input '"  \
+            #iname "' of type " #T " (description: " comment ").");         \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input is needed at stage istage.                            */ \
+    /** In an XML file, you can set this Input's connectee name          */ \
+    /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro.                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
@@ -884,10 +921,7 @@ bool Class::constructConnector_##cname() {                                  \
     /** @endcond                                                         */
 // TODO document thta DECLARE_PROPERTY_...() must come first, as the Input constructor
 // will expect the property already exists.
-    
-// TODO edit comment arg to DECLARE_PROPERTY(): should contain type, etc. Something
-// more generic, not what the user put (that can be seen in doxygen).
-// TODO above: rename to singular "connectee" for single-value kind.
+
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called first
 // within these macros, b/c the connectee_name property must exist before the
@@ -900,15 +934,19 @@ bool Class::constructConnector_##cname() {                                  \
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
-// TODO pass PropertyIndex_input_iname_connectee to constructInput().
 #define OpenSim_DECLARE_LIST_INPUT(iname, T, istage, comment)               \
     OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(                          \
-            input_##iname##_connectee_names, comment);                      \
+            input_##iname##_connectee_names,                                \
+            "Paths to outputs (channels) to satisfy the list Input '"       \
+            #iname "' of type " #T " (description: " comment "). "          \
+            "To specify multiple paths, put spaces between them.");         \
     /** @name Inputs (list)                                              */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input can connect to multiple outputs, all of which are     */ \
     /** needed at stage istage.                                          */ \
+    /** In an XML file, you can set this Input's connectee name          */ \
+    /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
