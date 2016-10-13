@@ -732,7 +732,7 @@ void testMisc() {
     system3.realize(s, Stage::Velocity);
 
     // Get the results of integrating the system forward
-    const TimeSeriesTable_<Real>& results = reporter->getReport();
+    const TimeSeriesTable_<Real>& results = reporter->getTable();
     ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
         "Number of rows in Reporter results not equal to number of time intervals.");
     cout << "************** Contents of Table of Results ****************" << endl;
@@ -836,7 +836,10 @@ void testListInputs() {
     }
 
     cout << "  TableReporterMixedOutputs (contents)" << endl;
-    cout << tabReporter->getReport() << endl;
+    cout << tabReporter->getTable() << endl;
+
+    tabReporter->clearTable();
+    ASSERT(tabReporter->getTable().getNumRows() == 0);
 }
 
 
@@ -1164,7 +1167,7 @@ void testTableSource() {
     theWorld.connect();
     theWorld.buildUpSystem(system);
 
-    const auto& report = tableReporter->getReport();
+    const auto& report = tableReporter->getTable();
 
     State s = system.realizeTopology();
 

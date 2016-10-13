@@ -97,6 +97,16 @@ public:
         return res.second;
     }
 
+    /** Get a writable reference to the array corresponding to a given key.
+
+    \throws KeyNotFound If key is not found.                                  */
+    AbstractValueArray&
+    updValueArrayForKey(const std::string& key) {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        return *(_dictionary.at(key));
+    }
+
     /** Remove a key and its associated array.                                */
     void removeValueForKey(const std::string& key) {
         _dictionary.erase(key);

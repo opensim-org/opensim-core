@@ -32,6 +32,7 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "Storage.h"
+#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 
 //=============================================================================
 // STATICS
@@ -479,9 +480,15 @@ finish:
  */
 void MarkerData::readStoFile(const string& aFileName)
 {
-
     if (aFileName.empty())
         throw Exception("MarkerData.readStoFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
+
+    // If the file was written by STOFileAdapter, make the file readable by
+    // Storage. Calls below have no effect otherwise.
+    std::string tmpFileName{"tmp.sto"};
+    revertToVersionNumber1(aFileName, tmpFileName);
+    addNumRowsNumColumns(tmpFileName, aFileName);
+    std::remove(tmpFileName.c_str());
 
     Storage store(aFileName);
 
@@ -496,7 +503,8 @@ void MarkerData::readStoFile(const string& aFileName)
 
     for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
         SimTK::String markerNameWithSuffix = iter->second;
-        size_t dotIndex = markerNameWithSuffix.toLower().find_last_of(".x");
+        size_t dotIndex =
+            SimTK::String::toLower(markerNameWithSuffix).find_last_of(".x");
         SimTK::String candidateMarkerName = markerNameWithSuffix.substr(0, dotIndex-1);
         _markerNames.append(candidateMarkerName);
     }
@@ -527,7 +535,6 @@ void MarkerData::readStoFile(const string& aFileName)
         }
         _frames.append(frame);
    }
-   
 }
 /**
  * Helper function to check column labels of passed in Storage for possibly being a MarkerName, and if true
