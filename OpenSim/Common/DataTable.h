@@ -694,6 +694,7 @@ public:
         const char        fillChar{' '};
         const char        newlineChar{'\n'};
         const std::string indColLabel{"time"};
+        const std::string suffixChar{"_"};
 
         // Set all the un-specified parameters to defaults.
         if(splitSize   == 0)
@@ -721,7 +722,13 @@ public:
         // time column label and all the column labels from table.
         table.push_back({std::string{}, indColLabel});
         for(const auto& col : cols)
-            table.front().push_back(getColumnLabel(col));
+            if(numComponentsPerElement() == 1)
+                table.front().push_back(getColumnLabel(col));
+            else
+                for(unsigned c = 0; c < numComponentsPerElement(); ++c)
+                    table.front().push_back(getColumnLabel(col) +
+                                            suffixChar +
+                                            std::to_string(c + 1));
 
         // Fill up the rows, including row-number, time column, row data.
         for(const auto& row : rows) {
@@ -729,7 +736,9 @@ public:
             rowData.push_back(std::to_string(row) + rowNumSepChar);
             rowData.push_back(toStr(getIndependentColumn()[row]));
             for(const auto& col : cols)
-                rowData.push_back(toStr(getMatrix().getElt(row, col)));
+                for(const auto& comp :
+                        splitElement(getMatrix().getElt(row, col)))
+                        rowData.push_back(toStr(comp));
             table.push_back(std::move(rowData));
         }
 
@@ -818,6 +827,17 @@ protected:
                       "This constructor cannot be used to construct from "
                       "DataTable<double, ThatETY> where ThatETY is an "
                       "unsupported type.");
+    }
+    template<typename ELT>
+    static
+    std::vector<double> splitElement(const ELT& elt) {
+        std::vector<double> result{};
+        splitElementAndPushBack(result, elt);
+        return result;
+    }
+    static
+    std::vector<double> splitElement(const double& elt) {
+        return {elt};
     }
     
     /** Check if row index is out of range.                                   */
