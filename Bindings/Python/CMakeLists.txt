@@ -280,8 +280,10 @@ if(WIN32)
     # build configuration, which is filled in for `$<CONFIG>`. We also don't
     # want to accidentally use a different OpenSim build/installation somewhere
     # on the machine.
-    set_tests_properties(python PROPERTIES ENVIRONMENT
-        "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+    foreach(folder tests examples)
+        set_tests_properties(python_${folder} PROPERTIES ENVIRONMENT
+            "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
+    endforeach()
 endif()
 
 # Allow MSVC users to run only the python tests directly from the MSVC GUI.
@@ -291,10 +293,10 @@ endif()
 add_custom_target(RunPythonTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
                                    ${OPENSIM_TEST_BUILD_CONFIG}
-                                   --extra-verbose
+                                   --extra-verbose)
+set_target_properties(RunPythonTests PROPERTIES
     PROJECT_LABEL "Python - run tests"
-    FOLDER "Bindings"
-    )
+    FOLDER "Bindings")
 
 add_dependencies(RunPythonTests PythonBindings)
 
