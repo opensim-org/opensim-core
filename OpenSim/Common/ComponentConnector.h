@@ -509,28 +509,16 @@ public:
     /** %Set the alias for the Channel indicated by the provided index. */
     virtual void setAlias(unsigned index, const std::string& alias) = 0;
 
-    /** Get the short label for this Channel. If an alias has been set, the
-    short label is the alias; otherwise, the short label is the name of the
-    Output that has been connected to this Input. This method can be used only
-    for non-list %Inputs; for list %Inputs, use the single-argument overload. */
-    virtual std::string getShortLabel() const = 0;
+    /** Get the label for this Channel. If an alias has been set, the label is
+    the alias; otherwise, the label is the full path of the Output that has been
+    connected to this Input. This method can be used only for non-list %Inputs;
+    for list %Inputs, use the single-argument overload. */
+    virtual std::string getLabel() const = 0;
 
-    /** Get the short label for the Channel indicated by the provided index. If
-    an alias has been set, the short label is the alias; otherwise, the short
-    label is the name of the %Channel that has been connected to this Input. */
-    virtual std::string getShortLabel(unsigned index) const = 0;
-
-    /** Get the long label for this Channel. If an alias has been set, the long
-    label is the alias; otherwise, the long label is the full path of the Output
-    that has been connected to this Input. This method can be used only for
-    non-list %Inputs; for list %Inputs, use the single-argument overload. */
-    virtual std::string getLongLabel() const = 0;
-
-    /** Get the long label for the Channel indicated by the provided index. If
-    an alias has been set, the long label is the alias; otherwise, the long
-    label is the full path of the %Channel that has been connected to this
-    Input. */
-    virtual std::string getLongLabel(unsigned index) const = 0;
+    /** Get the label for the Channel indicated by the provided index. If an
+    alias has been set, the label is the alias; otherwise, the label is the full
+    path of the %Channel that has been connected to this Input. */
+    virtual std::string getLabel(unsigned index) const = 0;
 
     /** Break up a connectee name into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
@@ -722,41 +710,23 @@ public:
         _aliases[index] = alias;
     }
 
-    std::string getShortLabel() const override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
+    std::string getLabel() const override {
+        OPENSIM_THROW_IF(!isConnected(),
+                         InputNotConnected, getName());
         OPENSIM_THROW_IF(isListConnector(),
                          Exception,
-                         "Input<T>::getShortLabel(): this is a list Input; an "
-                         "index must be provided.");
+                         "Input<T>::getLabel(): this is a list Input; an index "
+                         "must be provided.");
 
-        return getShortLabel(0);
+        return getLabel(0);
     }
 
-    std::string getShortLabel(unsigned index) const override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
+    std::string getLabel(unsigned index) const override {
+        OPENSIM_THROW_IF(!isConnected(),
+                         InputNotConnected, getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
-                                "Input<T>::getShortLabel()");
-
-        const std::string alias = getAlias(index);
-        return !alias.empty() ? alias : getChannel(index).getChannelName();
-    }
-
-    std::string getLongLabel() const override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
-        OPENSIM_THROW_IF(isListConnector(),
-                         Exception,
-                         "Input<T>::getLongLabel(): this is a list Input; an "
-                         "index must be provided.");
-
-        return getLongLabel(0);
-    }
-
-    std::string getLongLabel(unsigned index) const override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
-                                "Input<T>::getLongLabel()");
+                                "Input<T>::getLabel()");
 
         const std::string alias = getAlias(index);
         if (!alias.empty())

@@ -1477,57 +1477,47 @@ void testAliasesAndLabels() {
     ASSERT_THROW(InputNotConnected, foo->getInput("input1").getAlias(0));
     ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias("qux"));
     ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias(0, "qux"));
-    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getShortLabel());
-    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getShortLabel(0));
-    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLongLabel());
-    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLongLabel(0));
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLabel());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLabel(0));
 
     // Non-list Input, no alias.
     foo->updInput("input1").connect( bar->getOutput("Output1") );
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
-    SimTK_TEST(foo->getInput("input1").getShortLabel() == "Output1");
-    SimTK_TEST(foo->getInput("input1").getLongLabel() == "/world/bar/Output1");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar/Output1");
 
     // Set alias.
     foo->updInput("input1").setAlias("waldo");
     SimTK_TEST(foo->getInput("input1").getAlias() == "waldo");
-    SimTK_TEST(foo->getInput("input1").getShortLabel() == "waldo");
-    SimTK_TEST(foo->getInput("input1").getLongLabel() == "waldo");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "waldo");
 
     foo->updInput("input1").setAlias(0, "fred");
     SimTK_TEST(foo->getInput("input1").getAlias() == "fred");
-    SimTK_TEST(foo->getInput("input1").getShortLabel() == "fred");
-    SimTK_TEST(foo->getInput("input1").getLongLabel() == "fred");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "fred");
 
     using SimTKIndexOutOfRange = SimTK::Exception::IndexOutOfRange;
     ASSERT_THROW(SimTKIndexOutOfRange, foo->getInput("input1").getAlias(1));
     ASSERT_THROW(SimTKIndexOutOfRange, foo->updInput("input1").setAlias(1, "fred"));
-    ASSERT_THROW(SimTKIndexOutOfRange, foo->getInput("input1").getShortLabel(1));
-    ASSERT_THROW(SimTKIndexOutOfRange, foo->getInput("input1").getLongLabel(1));
+    ASSERT_THROW(SimTKIndexOutOfRange, foo->getInput("input1").getLabel(1));
 
     foo->updInput("input1").disconnect();
 
     // Non-list Input, with alias.
     foo->updInput("input1").connect( bar->getOutput("Output1"), "baz" );
     SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
-    SimTK_TEST(foo->getInput("input1").getShortLabel() == "baz");
-    SimTK_TEST(foo->getInput("input1").getLongLabel() == "baz");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "baz");
 
     // List Input, no aliases.
     foo->updInput("listInput1").connect( bar->getOutput("Output1") );
     foo->updInput("listInput1").connect( bar->getOutput("Output3") );
 
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
-    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getShortLabel());
-    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLongLabel());
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
-    SimTK_TEST(foo->getInput("listInput1").getShortLabel(0) == "Output1");
-    SimTK_TEST(foo->getInput("listInput1").getLongLabel(0) == "/world/bar/Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar/Output1");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
-    SimTK_TEST(foo->getInput("listInput1").getShortLabel(1) == "Output3");
-    SimTK_TEST(foo->getInput("listInput1").getLongLabel(1) == "/world/bar/Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar/Output3");
 
     foo->updInput("listInput1").disconnect();
 
@@ -1536,12 +1526,10 @@ void testAliasesAndLabels() {
     foo->updInput("listInput1").connect( bar->getOutput("Output3"), "thud" );
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
-    SimTK_TEST(foo->getInput("listInput1").getShortLabel(0) == "plugh");
-    SimTK_TEST(foo->getInput("listInput1").getLongLabel(0) == "plugh");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "plugh");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1) == "thud");
-    SimTK_TEST(foo->getInput("listInput1").getShortLabel(1) == "thud");
-    SimTK_TEST(foo->getInput("listInput1").getLongLabel(1) == "thud");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
 int main() {

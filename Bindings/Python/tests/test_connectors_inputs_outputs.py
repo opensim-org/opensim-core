@@ -209,15 +209,15 @@ class TestInputsOutputs(unittest.TestCase):
         s = m.initSystem()
 
         # Access and iterate through AbstractInputs, using names.
-        expectedShortLabels = ['value', 'spd', 'col1', 'second_col']
+        expectedLabels = ['/model_/pin/pin_coord_0/value', 'spd',
+                          '/model_/source/column:col1', 'second_col']
         i = 0
         for name in rep.getInputNames():
             # Actually, there is only one input, which we connected to 4
             # channels.
             assert rep.getInput(name).getNumConnectees() == 4
             for j in range(4):
-                assert (rep.getInput(name).getShortLabel(j) ==
-                        expectedShortLabels[j])
+                assert (rep.getInput(name).getLabel(j) == expectedLabels[j])
             i += 1
 
         # Access concrete Input.
