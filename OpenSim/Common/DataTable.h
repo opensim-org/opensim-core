@@ -673,15 +673,21 @@ public:
 
     /// @}
 
-    std::string toString(const unsigned splitSize = 25,
-                         const unsigned maxWidth  = 80,
-                         const unsigned precision = 4) {
+    std::string toString(std::vector<unsigned> rows      = {},
+                         std::vector<unsigned> cols      = {},
+                         unsigned              splitSize = 25,
+                         unsigned              maxWidth  = 80,
+                         unsigned              precision = 4) {
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
         OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
                          EmptyTable);
-        
+
+        // Defaults
+        const unsigned    defSplitSize{25};
+        const unsigned    defMaxWidth{80};
+        const unsigned    defPrecision{4};
         const unsigned    columnSpacing{1};
         const float       excessAllocation{1.25};
         const char        rowNumSepChar{':'};
@@ -689,25 +695,45 @@ public:
         const char        newlineChar{'\n'};
         const std::string indColLabel{"time"};
 
+        // Set all the un-specified parameters to defaults.
+        if(splitSize   == 0)
+            splitSize  = defSplitSize;
+        if(defMaxWidth == 0)
+            maxWidth   = defMaxWidth;
+        if(precision   == 0)
+            precision  = defPrecision;
+        if(rows.empty())
+            for(unsigned i = 0; i < getNumRows()   ; ++i)
+                rows.push_back(i);
+        if(cols.empty())
+            for(unsigned i = 0; i < getNumColumns(); ++i)
+                cols.push_back(i);
+
         auto toStr = [&] (const double val) {
             std::ostringstream stream{};
             stream << std::fixed << std::setprecision(precision) << val;
             return stream.str();
         };
-        
-        std::vector<std::vector<std::string>> table{getColumnLabels()};
-        table.front().insert(table.front().begin(), indColLabel);
-        table.front().insert(table.front().begin(), std::string{});
-        for(unsigned row = 0; row < getNumRows(); ++row) {
+
+        std::vector<std::vector<std::string>> table{};
+
+        // Fill up column labels, including row-number label (empty string),
+        // time column label and all the column labels from table.
+        table.push_back({std::string{}, indColLabel});
+        for(const auto& col : cols)
+            table.front().push_back(getColumnLabel(col));
+
+        // Fill up the rows, including row-number, time column, row data.
+        for(const auto& row : rows) {
             std::vector<std::string> rowData{};
-            rowData.push_back(std::to_string(row + 1) + rowNumSepChar);
+            rowData.push_back(std::to_string(row) + rowNumSepChar);
             rowData.push_back(toStr(getIndependentColumn()[row]));
-            for(unsigned col = 0; col < getNumColumns(); ++col) {
+            for(const auto& col : cols)
                 rowData.push_back(toStr(getMatrix().getElt(row, col)));
-            }
             table.push_back(std::move(rowData));
         }
 
+        // Compute width of each column.
         std::vector<size_t> columnWidths(table.front().size(), 0);
         for(const auto& row : table) {
             for(unsigned col = 0; col < row.size(); ++col)
@@ -723,6 +749,7 @@ public:
                                                 static_cast<size_t>(0))};
         result.reserve(totalWidth * table.size() * excessAllocation);
 
+        // Fill up the result string.
         size_t beginRow{1};
         size_t endRow{std::min(beginRow + splitSize, table.size())};
         while(beginRow < endRow) {
