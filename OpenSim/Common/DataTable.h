@@ -677,7 +677,7 @@ public:
                          std::vector<unsigned> cols      = {},
                          unsigned              splitSize = 25,
                          unsigned              maxWidth  = 80,
-                         unsigned              precision = 4) {
+                         unsigned              precision = 4) const {
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
@@ -944,25 +944,7 @@ Meant to be used for Debugging only.                                          */
 template<typename ETX, typename ETY>
 std::ostream& operator<<(std::ostream& outStream,
                          const DataTable_<ETX, ETY>& table) {
-    outStream << "----------------------------------------------------------\n";
-    outStream << "NumRows: " << table.getNumRows()    << std::endl;
-    outStream << "NumCols: " << table.getNumColumns() << std::endl;
-    outStream << "Column-Labels: ";
-    const auto& labels = table.getColumnLabels();
-    if(!labels.empty()) {
-        outStream << "['" << labels[0] << "'";
-        if(labels.size() > 1)
-            for(size_t l = 1; l < labels.size(); ++l)
-                outStream << " '" << labels[l] << "'";
-        outStream << "]" << std::endl;
-    }
-    for(size_t r = 0; r < table.getNumRows(); ++r) {
-        outStream << table.getIndependentColumn().at(r) << " ";
-        outStream << table.getRowAtIndex(r) << std::endl;
-    }
-
-    outStream << "----------------------------------------------------------\n";
-    return outStream;
+    return (outStream << table.toString());
 }
 
 /** See DataTable_ for details on the interface.                              */
