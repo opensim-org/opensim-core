@@ -476,6 +476,6 @@ computeAccelerations(const SimTK::State& s )
 void CMC_Point::
 updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    CMC_Task::updateFromXMLNode(aNode);
+    CMC_Task::updateFromXMLNode(aNode, versionNumber);
     setPoint(_point);
 }

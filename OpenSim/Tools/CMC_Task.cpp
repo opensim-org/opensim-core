@@ -918,19 +918,3 @@ computeEffectiveMassMatrix()
     printf("CMC_Task.computeEffectiveMassMatrix: ERROR- this method ");
     printf("should be overridden in derived classes.\n");
 }
-
-
-//=============================================================================
-// XML
-//=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void CMC_Task::
-updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) {
-    TrackingTask::updateFromXMLNode(aNode, versionNumber);
-}
