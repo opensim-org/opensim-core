@@ -769,11 +769,37 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Now include all remaining Components beginning with PhysicalFrames
+    // Now include all remaining Components beginning with PhysicalOffsetFrames
     // since Constraints, Forces and other components can only be applied to
-    // PhyicalFrames.
-    auto poFrames = getComponentList<PhysicalOffsetFrame>();
-    for (const auto& pof : poFrames) {
+    // PhyicalFrames, which include PhysicalOffsetFrames.
+    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
+    // be added to the System first. So for each PhysicalOffsetFrame locate its
+    // parent and verify its presence in the _orderedList otherwise add it first.
+    auto poFrames = updComponentList<PhysicalOffsetFrame>();
+    for (auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are included in the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and may be attached
+        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        // in the tree and add them first.
+        pof.connect(*this);
+        const PhysicalOffsetFrame* parentPof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
+        std::vector<const PhysicalOffsetFrame*> parentPofs;
+        while (parentPof) {
+            const auto found =
+                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
+                PhysicalOffsetFramesFormLoop, (*found)->getName());
+            parentPofs.push_back(parentPof);
+            // Given a chain of offsets, the most proximal must have Ground or 
+            // Body as its parent. When that happens we can stop.
+            parentPof =
+                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+        }
+        while (parentPofs.size()) {
+            setNextSubcomponentInSystem(*parentPofs.back());
+            parentPofs.pop_back();
+        }
         setNextSubcomponentInSystem(pof);
     }
 
