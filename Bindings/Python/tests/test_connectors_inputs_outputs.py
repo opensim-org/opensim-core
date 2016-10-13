@@ -57,13 +57,7 @@ class TestConnectors(unittest.TestCase):
         # Connect up the model.
         model.initSystem()
 
-        # By index.
-        count_by_index = 0
-        names = ["parent_frame", "child_frame"]
-        for i in range(shoulder.getNumConnectors()):
-            count_by_index += 1
-            assert shoulder.getConnector(i).getName() == names[i]
-        assert count_by_index == 2
+        names = ["child_frame", "parent_frame"]
 
         # By name.
         count_by_name = 0

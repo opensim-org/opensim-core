@@ -372,6 +372,12 @@ public:
 
     SimTK_DOWNCAST(Connector, AbstractConnector);
     
+    /** For use in python/java/MATLAB bindings. */
+    // This method exists for consistency with Object's safeDownCast.
+    static Connector<T>* safeDownCast(AbstractConnector* base) {
+        return dynamic_cast<Connector<T>*>(base);
+    }
+    
 protected:
     /** Create a Connector that can only connect to Object of type T with 
     specified name and stage at which it should be connected. Only Component
@@ -790,6 +796,12 @@ public:
     }
 
     SimTK_DOWNCAST(Input, AbstractInput);
+    
+    /** For use in python/java/MATLAB bindings. */
+    // This method exists for consistency with Object's safeDownCast.
+    static Input<T>* safeDownCast(AbstractInput* base) {
+        return dynamic_cast<Input<T>*>(base);
+    }
 
 protected:
     /** Create an Input<T> (Connector) that can only connect to an Output<T>

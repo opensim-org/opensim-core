@@ -43,7 +43,7 @@ for i = 0:(names.size() - 1)
 end
 
 % Access (and iterate through) a component's connectees as objects.
-expectedNames = {'ground', 'block'};
+expectedNames = {'block', 'ground'};
 for i = 0:(names.size() - 1)
     obj = joint.getConnectee(names.get(i)); % this is an object.
     assert(strcmp(obj.getName(), expectedNames{i+1}));
@@ -105,15 +105,15 @@ rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
 
 % Access (and iterate through) the AbstractInputs, using names.
 names = rep.getInputNames();
-expectedAnnos = {'value', 'target', 'c1', 'second_col'};
+expectedAliases = {'', 'target', '', 'second_col'};
 for i = 0:(names.size() - 1)
     % Actually, there is only one Input, named 'inputs'.
     % We connected it to 4 channels.
     numConnectees = rep.getInput(names.get(i)).getNumConnectees();
     assert(numConnectees == 4);
     for j = 0:(numConnectees - 1)
-        assert(strcmp(rep.getInput(names.get(i)).getAnnotation(j), ...
-                      expectedAnnos{j+1}));
+        assert(strcmp(rep.getInput(names.get(i)).getAlias(j), ...
+                      expectedAliases{j+1}));
     end
 end
 
