@@ -78,6 +78,10 @@ int main() {
     }
     // Print out the DataTable to console.
     std::cout << table << std::endl;
+    try {
+        std::cout << table.toString() << std::endl;
+        throw Exception{"Test failed: Exception expected."};
+    } catch(const OpenSim::EmptyTable&) {}
 
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
@@ -110,6 +114,7 @@ int main() {
 
     // Print out the DataTable to console.
     std::cout << table << std::endl;
+    std::cout << table.toString() << std::endl;
 
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})

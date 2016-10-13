@@ -673,11 +673,16 @@ public:
 
     /// @}
 
-    std::string toString(const unsigned splitSize     = 3,
-                         const unsigned maxWidth      = 30,
-                         const bool     showRowNum    = true,
-                         const unsigned precision     = 4,
-                         const unsigned columnSpacing = 1) {
+    std::string toString(const unsigned splitSize = 25,
+                         const unsigned maxWidth  = 80,
+                         const unsigned precision = 4) {
+        static_assert(std::is_same<ETX, double>::value,
+                      "This function can only be called for a table with "
+                      "independent column of type 'double'.");
+        OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
+                         EmptyTable);
+        
+        const unsigned    columnSpacing{1};
         const float       excessAllocation{1.25};
         const char        rowNumSepChar{':'};
         const char        fillChar{' '};
@@ -692,12 +697,10 @@ public:
         
         std::vector<std::vector<std::string>> table{getColumnLabels()};
         table.front().insert(table.front().begin(), indColLabel);
-        if(showRowNum)
-            table.front().insert(table.front().begin(), std::string{});
+        table.front().insert(table.front().begin(), std::string{});
         for(unsigned row = 0; row < getNumRows(); ++row) {
             std::vector<std::string> rowData{};
-            if(showRowNum)
-                rowData.push_back(std::to_string(row + 1) + rowNumSepChar);
+            rowData.push_back(std::to_string(row + 1) + rowNumSepChar);
             rowData.push_back(toStr(getIndependentColumn()[row]));
             for(unsigned col = 0; col < getNumColumns(); ++col) {
                 rowData.push_back(toStr(getMatrix().getElt(row, col)));
@@ -715,36 +718,48 @@ public:
         columnWidths.front() -= 1;
 
         std::string result{};
-        size_t width{std::accumulate(columnWidths.cbegin(),
-                                     columnWidths.cend(),
-                                     static_cast<size_t>(0))};
-        result.reserve(width * table.size() * excessAllocation);
+        const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
+                                                columnWidths.cend(),
+                                                static_cast<size_t>(0))};
+        result.reserve(totalWidth * table.size() * excessAllocation);
 
-        size_t beginCol{1};
-        size_t endCol{columnWidths.size()};
-        while(beginCol < endCol) {
-            while(width > maxWidth) {
-                --endCol;
-                width -= columnWidths[endCol];
-            }
-            for(const auto& row : table) {
-                result.append(columnWidths[0] - row[0].length(),
-                              fillChar);
-                result.append(row[0]);
+        size_t beginRow{1};
+        size_t endRow{std::min(beginRow + splitSize, table.size())};
+        while(beginRow < endRow) {
+            size_t beginCol{1};
+            size_t endCol{columnWidths.size()};
+            while(beginCol < endCol) {
+                size_t width = std::accumulate(columnWidths.cbegin() + beginCol,
+                                               columnWidths.cbegin() + endCol,
+                                               static_cast<size_t>(0));
+                while(width > maxWidth) {
+                    --endCol;
+                    width -= columnWidths[endCol];
+                }
+                result.append(columnWidths[0], fillChar);
                 for(unsigned col = beginCol; col < endCol; ++col) {
-                    result.append(columnWidths[col] - row[col].length(),
+                    result.append(columnWidths[col] - table[0][col].length(),
                                   fillChar);
-                    result.append(row[col]);
+                    result.append(table[0][col]);
                 }
                 result.push_back(newlineChar);
+                for(unsigned row = beginRow; row < endRow; ++row) {
+                    result.append(columnWidths[0] - table[row][0].length(),
+                                  fillChar);
+                    result.append(table[row][0]);
+                    for(unsigned col = beginCol; col < endCol; ++col) {
+                        result.append(columnWidths[col] -
+                                      table[row][col].length(), fillChar);
+                        result.append(table[row][col]);
+                    }
+                    result.push_back(newlineChar);
+                }
+                beginCol = endCol;
+                endCol = columnWidths.size();
             }
-            beginCol = endCol;
-            endCol = columnWidths.size();
-            width = std::accumulate(columnWidths.cbegin() + beginCol,
-                                    columnWidths.cbegin() + endCol,
-                                    static_cast<size_t>(0));
+            beginRow = endRow;
+            endRow = std::min(beginRow + splitSize, table.size());
         }
-
         return result;
     }
 
