@@ -171,7 +171,7 @@ void Component::finalizeFromProperties()
     }
     
     // Provide connectors, inputs, and outputs with a pointer to its component
-    // (this) so that it can invoke its methods.
+    // (this) so that they can invoke the component's methods.
     for (auto& it : _connectorsTable) {
         it.second->setOwner(*this);
         // Let the Connector handle any errors in the connectee_name property.
@@ -219,8 +219,6 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    //for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
-    //   AbstractConnector& connector = upd_connectors(ixc);
     for (auto& it : _connectorsTable) {
         auto& connector = it.second;
         connector->disconnect();
@@ -236,8 +234,6 @@ void Component::connect(Component &root)
         }
     }
 
-    //for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
-    //    AbstractInput& input = upd_inputs(ixi);
     for (auto& it : _inputsTable) {
         auto& input = it.second;
 
@@ -313,9 +309,8 @@ void Component::disconnect()
     }
     
     // Must also clear the input's connections.
-    for (/*const */auto& it : _inputsTable) {
+    for (auto& it : _inputsTable) {
         it.second->disconnect();
-        //upd_inputs(it.second.first).disconnect();
     }
 
     //now clear all the stored system indices from this component
@@ -1477,8 +1472,6 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumConnectors() == 0) std::cout << " none";
     std::cout << std::endl;
-    //for (int ixc = 0; ixc < getProperty_connectors().size(); ++ixc){
-    //    const auto& connector = get_connectors(ixc);
     for (const auto& it : _connectorsTable) {
         const auto& connector = it.second;
         std::cout << "  " << connector->getConnecteeTypeName() << " '"
@@ -1497,8 +1490,6 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
-    //for (int ixi = 0; ixi < getProperty_inputs().size(); ++ixi) {
-    //    const auto& input = get_inputs(ixi);
     for (const auto& it : _inputsTable) {
         const auto& input = it.second;
         std::cout << "  " << input->getConnecteeTypeName() << " '"

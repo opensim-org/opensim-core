@@ -605,7 +605,7 @@ void testMisc() {
 
     // Test the output that returns by const T&.
     SimTK_TEST(foo.getOutputValue<double>(s, "return_by_ref") == s.getTime());
-    
+
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
         
@@ -1448,20 +1448,14 @@ void testSingleValueInputConnecteeSerialization() {
         connectee_name.appendValue("lemon");
         
         world.print(modelFileNameMultipleValues);
-        
-        // TODO all the elements are simply treated as one value, containing
-        // strings. This exception used to be thrown because the property, upon
-        // initial construction, was able to contain multiple values; only later
-        // do the inputs learn if they are supposed to have 1 value.
-        // TODO instead, we can do an error check to make sure there were no spaces.
-        // TODO perhaps as part of finalizeFromProperties() (passed onto the
-        // Input/Connector).
     }
     // Deserialize.
     {
         // Single-value connectee cannot have multiple connectee_names.
         // TODO Would ideally check for an exception, but we only emit a warning
-        // for now.
+        // for now. This is because the way we determine if multiple
+        // connectee names were specified is by looking for spaces, but old
+        // models used have spaces in their names.
         // SimTK_TEST_MUST_THROW_EXC(
         //     TheWorld world(modelFileNameMultipleValues),
         //     OpenSim::Exception);

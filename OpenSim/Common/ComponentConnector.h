@@ -103,17 +103,20 @@ public:
     
     /// Create a dynamically-allocated copy. You must manage the memory
     /// for the returned pointer.
-    /// This function facilitates the use of SimTK::ClonePtr<AbstractConnector>.
+    /// This function exists to facilitate the use of
+    /// SimTK::ClonePtr<AbstractConnector>.
     virtual AbstractConnector* clone() const = 0;
     
-    /// @name Accessors
-    /// @{
     const std::string& getName() const { return _name; }
     /** Get the system Stage when the connection should be made. */
     SimTK::Stage getConnectAtStage() const { return _connectAtStage; }
     /** Can this Connector have more than one connectee? */
     bool isListConnector() const { return _isList; }
-    /// @}
+    /** The number of slots to fill in order to satisfy this connector.
+     * This is 1 for a non-list connector. */
+    unsigned getNumConnectees() const {
+        return static_cast<unsigned>(getConnecteeNameProp().size());
+    }
 
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
@@ -123,12 +126,6 @@ public:
      */
     virtual bool isConnected() const = 0;
     
-    /** The number of slots to fill in order to satisfy this connector.
-     * This is 1 for a non-list connector. */
-    unsigned getNumConnectees() const {
-        return static_cast<unsigned>(getConnecteeNameProp().size());
-    }
-
     /** Get the type of object this connector connects to. */
     virtual std::string getConnecteeTypeName() const = 0;
 
@@ -138,20 +135,23 @@ public:
         OPENSIM_THROW(Exception, "Not supported for this type of connector.");
     }
 
-    /** Connect this Connector to the provided connectee object. If this is a
+    /** Connect this %Connector to the provided connectee object. If this is a
         list connector, the connectee is appended to the list of connectees;
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this Connector according to its connectee_name property
-        given a root Component to search its subcomponents for the connect_to
+    /** Connect this %Connector according to its connectee_name property
+        given a root %Component to search its subcomponents for the connect_to
         Component. */
     virtual void findAndConnect(const Component& root) {
         throw Exception("findAndConnect() not implemented; not supported "
                         "for this type of connector", __FILE__, __LINE__);
     }
 
-    /** Set connectee name. This function can only be used if this connector is
+    /** Disconnect this %Connector from its connectee. */
+    virtual void disconnect() = 0;
+
+    /** %Set connectee name. This function can only be used if this connector is
     not a list connector.                                                     */
     void setConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF(_isList,
@@ -160,7 +160,7 @@ public:
         setConnecteeName(name, 0);
     }
 
-    /** Set connectee name of a connectee among a list of connectees. This
+    /** %Set connectee name of a connectee among a list of connectees. This
     function is used if this connector is a list connector.                   */
     void setConnecteeName(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
@@ -192,10 +192,6 @@ public:
         updConnecteeNameProp().appendValue(name);
     }
 
-
-    /** Disconnect this Connector from its connectee. */
-    virtual void disconnect() = 0;
-
 protected:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -219,19 +215,20 @@ protected:
 
 
     const Component& getOwner() const { return _owner.getRef(); }
-    /** Set an internal pointer to the Component that contains this Connector.
+    /** %Set an internal pointer to the Component that contains this Connector.
     This should only be called by Component.
-    This exists so that after the containing Component is copied, this Output
-    points to the new Component. This Connector needs to be able to modify
+    This exists so that after the containing Component is copied, the 'owner'
+    is the new Component. This Connector needs to be able to modify
     the associated connectee_name property in the Component. Thus, we require
     a writeable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
     void setOwner(Component& o) { _owner.reset(&o); }
-    /** This should be true immediately after copy construction or assignment.*/
+    /** This will be false immediately after copy construction or assignment.*/
     bool hasOwner() const { return !_owner.empty(); }
     
-    /** Check if entries of the connectee_name property contain spaces. */
+    /** Check if entries of the connectee_name property contain spaces; if so,
+    print out a warning. */
     void finalizeFromProperties() {
         // TODO This check may go elsewhere once the connectee_name
         // property is a ComponentPath (or a ChannelPath?).
@@ -259,10 +256,13 @@ protected:
 private:
     
     /// Const access to the connectee_name property from the Component in which
-    /// this Connector resides.
+    /// this Connector resides. The name of that property is something like
+    /// 'connector_<name>_connectee_name'. This is a special type of property
+    /// that users cannot easily access (e.g., there is no macro-generated
+    /// `get_connector_<name>_connectee_name()` function).
     const Property<std::string>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
-    /// which this Connector resides. This will mark the Component as
+    /// which this Connector resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteeNameProp();
@@ -400,15 +400,26 @@ An AbstractInput enables maintenance of a list of unconnected Inputs.
 An Input can either be a single-value Input or a list Input. A list Input
 can connect to multiple (Output) Channels.
 
-#### Syntax of `connectee_name`
+#### XML Syntax of a connectee name
 
-The XML representation of this class allows one to specify, via the
-`connectee_name` property, the outputs/channels that should be connected to
-this input (that is, the connectees). The syntax for the `connectee_name`
+For every %Input that a component has, the XML representation of the component
+contains an element named `input_<input_name>_connectee_name` (or
+`input_<input_name>_connectee_names` for list inputs). For example, a component
+that has an Input named `desired_angle` might look like the following in XML:
+@code
+    <MyComponent name="my_comp">
+        <input_desired_angle_connectee_name>
+            ../foo/angle
+        </input_desired_angle_connectee_name>
+        ...
+    </MyComponent>
+@endcode
+You use this field to specify the outputs/channels that should be connected to
+this input (that is, the connectees). The syntax for the connectee name
 property is as follows:
-@verbatim
+@code
 <path/to/component/><output_name>[:<channel_name>][(<alias>)]
-@endverbatim
+@endcode
 Angle brackets indicate fields that one would fill in, and square brackets
 indicate optional fields. The `<path/to/component>` can be relative or
 absolute, and describes the location of the Component that contains the 
@@ -430,11 +441,13 @@ Here are some examples:
  - `/leg_model/soleus/activation`: This connectee name uses the absolute path
    to component `soleus`, which has an output named `activation`.
 
-List inputs can contain multiple entries in its `connectee_name`, with the
+List inputs can contain multiple entries in its connectee name, with the
 entries separated by a space. For example:
-@verbatim
-../marker_data/column:left_ankle ../marker_data/column:right_ankle ../averager/output(knee_joint_center)
-@endverbatim
+@code
+<input_experimental_markers_connectee_names>
+    ../marker_data/column:left_ankle ../marker_data/column:right_ankle ../averager/output(knee_joint_center)
+</input_experimental_markers_connectee_names>
+@endcode
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
 public:
@@ -482,12 +495,12 @@ public:
     the aliases to be the names of markers in the model. */
     virtual const std::string& getAlias(unsigned index) const = 0;
 
-    /** Set the alias for a Channel. If this is a list Input, the aliases of all
+    /** %Set the alias for a Channel. If this is a list Input, the aliases of all
     %Channels will be set to the provided string. If you wish to set the alias
     of only one %Channel, use the two-argument overload. */
     virtual void setAlias(const std::string& alias) = 0;
 
-    /** Set the alias for the Channel indicated by the provided index. */
+    /** %Set the alias for the Channel indicated by the provided index. */
     virtual void setAlias(unsigned index, const std::string& alias) = 0;
 
     /** Get the short label for this Channel. If an alias has been set, the
@@ -806,19 +819,22 @@ private:
 // Macros for declaring Connectors and Inputs.
 // =============================================================================
 // Connectors and Inputs have an associated connectee_name property in the
-// Component that contains them. These macros are used to create that property.
-#ifndef SWIG
-// TODO internal documentation
+// Component that contains the Connector/Input. These macros are used to create
+// that property.
 // TODO property type should be ComponentPath/OutputPath/ChannelPath.
-
+#ifndef SWIG
 // The initial/default value is an empty string.
 #define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)             \
+    /** @cond                                                            */ \
     PropertyIndex PropertyIndex_##pname =                                   \
-            this->template addProperty<std::string>(#pname,comment,"");
+            this->template addProperty<std::string>(#pname,comment,"");     \
+    /** @endcond                                                         */
 #define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)       \
+    /** @cond                                                            */ \
     PropertyIndex PropertyIndex_##pname =                                   \
             this->template addListProperty<std::string>                     \
-                (#pname, comment, 0, std::numeric_limits<int>::max());
+                (#pname, comment, 0, std::numeric_limits<int>::max());      \
+    /** @endcond                                                         */
 #else
 // No need to wrap internal PropertyIndex.
 #define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)
@@ -1020,6 +1036,9 @@ bool Class::constructConnector_##cname() {                                  \
     /** This input is needed at stage istage.                            */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
+    /** The syntax for a connectee name is                               */ \
+    /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
+    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro.                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
@@ -1061,6 +1080,9 @@ bool Class::constructConnector_##cname() {                                  \
     /** needed at stage istage.                                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
+    /** The syntax for a connectee name is                               */ \
+    /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
+    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \

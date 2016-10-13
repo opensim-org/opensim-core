@@ -80,28 +80,28 @@ int main()
     ArrayPtrs<Point> availablePoints;
     Object::getRegisteredObjectsOfGivenType(availablePoints);
     for (int i = 0; i < availablePoints.size(); ++i) {
-     availableComponents.push_back(availablePoints[i]);
+        availableComponents.push_back(availablePoints[i]);
     }
 
     // then type Joint
     ArrayPtrs<Joint> availableJoints;
     Object::getRegisteredObjectsOfGivenType(availableJoints);
     for (int i = 0; i < availableJoints.size(); ++i) {
-     availableComponents.push_back(availableJoints[i]);
+        availableComponents.push_back(availableJoints[i]);
     }
 
     // then type TwoFrameLinker<Constraint>
     ArrayPtrs<TwoFrameLinker<Constraint, PhysicalFrame> > availableLink2Constraints;
     Object::getRegisteredObjectsOfGivenType(availableLink2Constraints);
     for (int i = 0; i < availableLink2Constraints.size(); ++i) {
-     availableComponents.push_back(availableLink2Constraints[i]);
+        availableComponents.push_back(availableLink2Constraints[i]);
     }
 
     // then type TwoFrameLinker<Force> which are all the BushingForces
     ArrayPtrs<TwoFrameLinker<Force, PhysicalFrame> > availableBushingForces;
     Object::getRegisteredObjectsOfGivenType(availableBushingForces);
     for (int i = 0; i < availableBushingForces.size(); ++i) {
-     availableComponents.push_back(availableBushingForces[i]);
+        availableComponents.push_back(availableBushingForces[i]);
     }
 
     // Test PrescribedForce

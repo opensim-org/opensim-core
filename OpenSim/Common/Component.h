@@ -814,6 +814,9 @@ public:
             // The following allows one to use a Connector immediately after
             // copying the component;
             // e.g., myComponent.clone().getConnector("a").getConnecteeName().
+            // Since we use the default copy constructor for Component,
+            // the copied AbstractConnector cannot know its new owner
+            // immediately after copying.
             if (!it->second->hasOwner()) {
                 // The `this` pointer must be non-const because the Connector
                 // will want to be able to modify the connectee_name property.
@@ -916,6 +919,9 @@ public:
             // The following allows one to use an Input immediately after
             // copying the component;
             // e.g., myComponent.clone().getInput("a").getConnecteeName().
+            // Since we use the default copy constructor for Component,
+            // the copied AbstractConnector (base class of AbstractInput)
+            // cannot know its new owner immediately after copying.
             if (!it->second->hasOwner()) {
             
                 // The `this` pointer must be non-const because the Connector
@@ -2178,7 +2184,10 @@ protected:
     * another Component. It serves as a placeholder for the Component and its
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
-    * incompatible or non-existant.
+    * incompatible or non-existant. The connecteeNameIndex is provided to this 
+    * function via the OpenSim_DECLARE_CONNECTOR macro, and identifies the
+    * property in this Component that holds the connectee names for this
+    * connector.
     */
     template <typename T>
     bool constructConnector(const std::string& name,
@@ -2297,9 +2306,11 @@ protected:
      * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
-     * Whether this is a one-value or list input is determined by the associated
-     * connectee_name property, which is identified by the connecteeNameIndex.
-     */
+     * The connecteeNameIndex is provided to this 
+     * function via the OpenSim_DECLARE_[LIST_]INPUT macro, and identifies the
+     * property in this Component that holds the connectee names for this
+     * input. Whether this is a one-value or list input is determined by the 
+     * associated connectee_name property. */
     template <typename T>
     bool constructInput(const std::string& name,
             const PropertyIndex& connecteeNameIndex,
@@ -2308,10 +2319,7 @@ protected:
                 new Input<T>(name, connecteeNameIndex, requiredAtStage, *this));
         return true;
     }
-    
     /// @}
-    
-    
 
 private:
 

@@ -451,7 +451,7 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
         connecteeNameElt->getValueAs<std::string>(connecteeName);
         
         // Create new element for this connector's connectee name.
-        SimTK::Xml::Element newConnecteeNameElt( // TODO TODO 
+        SimTK::Xml::Element newConnecteeNameElt(
                 "connector_" + connectorName + "_connectee_name");
         newConnecteeNameElt.setValue(connecteeName);
         componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
