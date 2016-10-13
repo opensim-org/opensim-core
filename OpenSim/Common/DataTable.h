@@ -32,6 +32,9 @@ in-memory container for data access and manipulation.                         */
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 
+#include <iomanip>
+#include <numeric>
+
 namespace OpenSim {
 
 /** DataTable_ is an in-memory storage container for data with support for 
@@ -669,6 +672,81 @@ public:
     }
 
     /// @}
+
+    std::string toString(const unsigned splitSize     = 3,
+                         const unsigned maxWidth      = 30,
+                         const bool     showRowNum    = true,
+                         const unsigned precision     = 4,
+                         const unsigned columnSpacing = 1) {
+        const float       excessAllocation{1.25};
+        const char        rowNumSepChar{':'};
+        const char        fillChar{' '};
+        const char        newlineChar{'\n'};
+        const std::string indColLabel{"time"};
+
+        auto toStr = [&] (const double val) {
+            std::ostringstream stream{};
+            stream << std::fixed << std::setprecision(precision) << val;
+            return stream.str();
+        };
+        
+        std::vector<std::vector<std::string>> table{getColumnLabels()};
+        table.front().insert(table.front().begin(), indColLabel);
+        if(showRowNum)
+            table.front().insert(table.front().begin(), std::string{});
+        for(unsigned row = 0; row < getNumRows(); ++row) {
+            std::vector<std::string> rowData{};
+            if(showRowNum)
+                rowData.push_back(std::to_string(row + 1) + rowNumSepChar);
+            rowData.push_back(toStr(getIndependentColumn()[row]));
+            for(unsigned col = 0; col < getNumColumns(); ++col) {
+                rowData.push_back(toStr(getMatrix().getElt(row, col)));
+            }
+            table.push_back(std::move(rowData));
+        }
+
+        std::vector<size_t> columnWidths(table.front().size(), 0);
+        for(const auto& row : table) {
+            for(unsigned col = 0; col < row.size(); ++col)
+                columnWidths.at(col) =
+                    std::max(columnWidths.at(col),
+                             row[col].length() + columnSpacing);
+        }
+        columnWidths.front() -= 1;
+
+        std::string result{};
+        size_t width{std::accumulate(columnWidths.cbegin(),
+                                     columnWidths.cend(),
+                                     static_cast<size_t>(0))};
+        result.reserve(width * table.size() * excessAllocation);
+
+        size_t beginCol{1};
+        size_t endCol{columnWidths.size()};
+        while(beginCol < endCol) {
+            while(width > maxWidth) {
+                --endCol;
+                width -= columnWidths[endCol];
+            }
+            for(const auto& row : table) {
+                result.append(columnWidths[0] - row[0].length(),
+                              fillChar);
+                result.append(row[0]);
+                for(unsigned col = beginCol; col < endCol; ++col) {
+                    result.append(columnWidths[col] - row[col].length(),
+                                  fillChar);
+                    result.append(row[col]);
+                }
+                result.push_back(newlineChar);
+            }
+            beginCol = endCol;
+            endCol = columnWidths.size();
+            width = std::accumulate(columnWidths.cbegin() + beginCol,
+                                    columnWidths.cbegin() + endCol,
+                                    static_cast<size_t>(0));
+        }
+
+        return result;
+    }
 
 protected:
     // Split element into constituent components and append the components to
