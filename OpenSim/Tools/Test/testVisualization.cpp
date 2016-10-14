@@ -127,7 +127,7 @@ int main()
 
         // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
         // have a non-trivial transform.
-        Model composedTransformsModel("doubleTransform33.osim");
+        Model composedTransformsModel("doubletransform33.osim");
         populate_composedTransformPrimitives(standard);
         // Enable next line after checking standard output
         testVisModelAgainstStandard(composedTransformsModel, standard);
