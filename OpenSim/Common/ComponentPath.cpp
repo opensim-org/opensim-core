@@ -69,5 +69,10 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const
 
 std::string ComponentPath::getComponentName() const
 {
+    if (getNumPathLevels() == 0) {
+        std::string emptyStr{};
+        return emptyStr;
+    }
+
     return getSubcomponentNameAtLevel(getNumPathLevels() - 1);
 }

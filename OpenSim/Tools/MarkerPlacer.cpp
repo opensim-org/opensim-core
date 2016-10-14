@@ -276,21 +276,21 @@ bool MarkerPlacer::processModel(Model* aModel,
     for(int i=0; i< _ikTaskSet.getSize(); i++){
         IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i]);
         if (coordTask && coordTask->getApply()){
-            CoordinateReference *coordRef = NULL;
+            std::unique_ptr<CoordinateReference> coordRef{};
             if(coordTask->getValueType() == IKCoordinateTask::FromFile){
                 index = coordFunctions->getIndex(coordTask->getName(), index);
                 if(index >= 0){
-                    coordRef = new CoordinateReference(coordTask->getName(),coordFunctions->get(index));
+                    coordRef.reset(new CoordinateReference(coordTask->getName(),coordFunctions->get(index)));
                 }
             }
             else if((coordTask->getValueType() == IKCoordinateTask::ManualValue)){
                 Constant reference(Constant(coordTask->getValue()));
-                coordRef = new CoordinateReference(coordTask->getName(), reference);
+                coordRef.reset(new CoordinateReference(coordTask->getName(), reference));
             }
             else{ // assume it should be held at its current/default value
                 double value = aModel->getCoordinateSet().get(coordTask->getName()).getValue(s);
                 Constant reference = Constant(value);
-                coordRef = new CoordinateReference(coordTask->getName(), reference);
+                coordRef.reset(new CoordinateReference(coordTask->getName(), reference));
             }
 
             if(coordRef == NULL)
