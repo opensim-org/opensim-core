@@ -113,11 +113,11 @@ protected:
     /** Whether or not to check the target time. */
     bool _checkTargetTime;
     /** Storage object for the position errors. */
-    Storage *_pErrStore;
+    std::shared_ptr<Storage> _pErrStore;
     /** Storage object for the velocity errors. */
-    Storage *_vErrStore;
+    std::shared_ptr<Storage> _vErrStore;
     /** Storage object for the stress term weight. */
-    Storage *_stressTermWeightStore;
+    std::shared_ptr<Storage> _stressTermWeightStore;
 
     ControlSet _controlSet;
     /** List of parameters in the control set that are serving as the
