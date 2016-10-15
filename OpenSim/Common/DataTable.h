@@ -1013,9 +1013,7 @@ protected:
 };  // DataTable_
 
 
-/** Print DataTable out to a stream. Metadata is not printed to the stream as it
-is currently allowed to contain objects that do not support this operation.   
-Meant to be used for Debugging only.                                          */
+/** Print DataTable out to a stream.                                          */
 template<typename ETX, typename ETY>
 std::ostream& operator<<(std::ostream& outStream,
                          const DataTable_<ETX, ETY>& table) {
