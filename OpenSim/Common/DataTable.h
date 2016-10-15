@@ -673,6 +673,53 @@ public:
 
     /// @}
 
+    /** Get a string representation of the table, including the key-value pairs
+    in the table metadata. Table metadat will be of the form:
+    \code
+    key => value-converted-to-string
+    \endcode
+    For example:
+    \code
+    DataRate => 2000.00000
+    Units => mm
+    \endcode
+    For values in the table metadata that do not support the operation of stream
+    insertion (operator<<), the value for metadata will be:
+    \code
+    key => <cannot-convert-to-string>
+    \endcode
+    Some examples to call this function:
+    \code
+    // All rows, all columns.
+    auto tableAsString = table.toString();
+    // First 5 rows, all columns.
+    auto tableAsString = table.toString({1, 2, 3, 4, 5});
+    // All rows, first 5 columns.
+    auto tableAsString = table.toString({}, {1, 2, 3, 4, 5});
+    // Rows 5, 3, 1 (in that order) and columns 8, 6, 4 (in that order).
+    auto tableAsString = table.toString({5, 3, 1}, {8, 6, 4});
+    \endcode
+
+    \param rows **[Default = all rows]** Sequence of indices of rows to be 
+                printed. Rows will be printed exactly in the order specified in 
+                the sequence. Default behavior is to print all rows. 
+    \param columnLabels **[Default = all rows]** Sequence of labels of columns 
+                        to be printed. Columns will be printed exactly in the 
+                        order specified in the sequence. Default behavior is to 
+                        print all columns.
+    \param withMetaData **[Default = true]** Whether or not table metadata 
+                        should be printed. Default behavior is to print table 
+                        metadata.
+    \param splitSize **[Default = 25]** Number of rows to print at a time. 
+                     Default behavior is to print 25 rows at a time. 
+    \param maxWidth **[Default = 80]** Maximum number of characters to print per
+                    line. The columns are split accordingly to make the table 
+                    readable. This is useful in terminals/consoles with narrow 
+                    width. Default behavior is to limit number characters per 
+                    line to 80.
+    \param precision **[Default = 4]** Precision of the floating-point numbers 
+                     printed. Default behavior is to print floating-point 
+                     numbers with 4 places to the right of decimal point.     */
     std::string toString(std::vector<unsigned>    rows         = {},
                          std::vector<std::string> columnLabels = {},
                          const bool               withMetaData = true,
@@ -686,6 +733,8 @@ public:
                              splitSize, maxWidth, precision);
     }
 
+protected:
+    // Implement toString.
     std::string toString_impl(std::vector<unsigned> rows         = {},
                               std::vector<unsigned> cols         = {},
                               const bool            withMetaData = true,
@@ -826,7 +875,6 @@ public:
         return result;
     }
 
-protected:
     // Split element into constituent components and append the components to
     // the given vector. For example Vec3 has 3 components.
     template<int N>
