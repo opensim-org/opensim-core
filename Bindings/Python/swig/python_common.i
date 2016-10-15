@@ -281,6 +281,11 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
     }
 }
 
+%extend OpenSim::DataTable_ {
+    std::string __str__() const {
+        return $self->toString();
+    }
+}
 
 // Include all the OpenSim code.
 // =============================
