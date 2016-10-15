@@ -114,6 +114,7 @@ int main() {
     // Print out the DataTable to console.
     std::cout << table << std::endl;
     std::cout << table.toString({}, {"1", "4"});
+    std::cout << table.toString({-1, -2}, {"1", "4"});
 
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})

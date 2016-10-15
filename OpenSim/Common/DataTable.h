@@ -693,16 +693,23 @@ public:
     // All rows, all columns.
     auto tableAsString = table.toString();
     // First 5 rows, all columns.
-    auto tableAsString = table.toString({1, 2, 3, 4, 5});
-    // All rows, first 5 columns.
-    auto tableAsString = table.toString({}, {1, 2, 3, 4, 5});
-    // Rows 5, 3, 1 (in that order) and columns 8, 6, 4 (in that order).
-    auto tableAsString = table.toString({5, 3, 1}, {8, 6, 4});
+    auto tableAsString = table.toString({0, 1, 2, 3, 4});
+    // All rows, 3 columns with specified labels.
+    auto tableAsString = table.toString({}, {"col12", "col35", "col4"});
+    // Rows 5th, 3rd, 1st (in that order) and columns with specified lables (in 
+    // that order).
+    auto tableAsString = table.toString({4, 2, 0}, {"col10", "col5", "col2"});
+    // Lets say the table has 10 rows. Following will get last 3 rows in the 
+    // order specified. All columns.
+    auto tableAsString = table.toString({-1, -2, -3})
     \endcode
 
     \param rows **[Default = all rows]** Sequence of indices of rows to be 
                 printed. Rows will be printed exactly in the order specified in 
-                the sequence. Default behavior is to print all rows. 
+                the sequence. Index begins at 0, ie. first row is 0. Negative
+                indices refer to rows starting from last row. Index -1 refers to
+                last row, -2 refers to row previous to last row and so on.
+                Default behavior is to print all rows. 
     \param columnLabels **[Default = all rows]** Sequence of labels of columns 
                         to be printed. Columns will be printed exactly in the 
                         order specified in the sequence. Default behavior is to 
@@ -720,27 +727,27 @@ public:
     \param precision **[Default = 4]** Precision of the floating-point numbers 
                      printed. Default behavior is to print floating-point 
                      numbers with 4 places to the right of decimal point.     */
-    std::string toString(std::vector<unsigned>    rows         = {},
+    std::string toString(std::vector<int>         rows         = {},
                          std::vector<std::string> columnLabels = {},
                          const bool               withMetaData = true,
                          unsigned                 splitSize    = 25,
                          unsigned                 maxWidth     = 80,
                          unsigned                 precision    = 4) const {
-        std::vector<unsigned> cols{};
+        std::vector<int> cols{};
         for(const auto& label : columnLabels)
-            cols.push_back(getColumnIndex(label));
+            cols.push_back(static_cast<int>(getColumnIndex(label)));
         return toString_impl(rows, cols, withMetaData,
                              splitSize, maxWidth, precision);
     }
 
 protected:
     // Implement toString.
-    std::string toString_impl(std::vector<unsigned> rows         = {},
-                              std::vector<unsigned> cols         = {},
-                              const bool            withMetaData = true,
-                              unsigned              splitSize    = 25,
-                              unsigned              maxWidth     = 80,
-                              unsigned              precision    = 4) const {
+    std::string toString_impl(std::vector<int> rows         = {},
+                              std::vector<int> cols         = {},
+                              const bool       withMetaData = true,
+                              unsigned         splitSize    = 25,
+                              unsigned         maxWidth     = 80,
+                              unsigned         precision    = 4) const {
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
@@ -768,10 +775,10 @@ protected:
         if(precision   == 0)
             precision  = defPrecision;
         if(rows.empty())
-            for(unsigned i = 0; i < getNumRows()   ; ++i)
+            for(int i = 0; i < getNumRows()   ; ++i)
                 rows.push_back(i);
         if(cols.empty())
-            for(unsigned i = 0; i < getNumColumns(); ++i)
+            for(int i = 0; i < getNumColumns(); ++i)
                 cols.push_back(i);
 
         auto toStr = [&] (const double val) {
@@ -785,7 +792,9 @@ protected:
         // Fill up column labels, including row-number label (empty string),
         // time column label and all the column labels from table.
         table.push_back({std::string{}, indColLabel});
-        for(const auto& col : cols)
+        for(int col : cols) {
+            if(col < 0)
+                col += getNumColumns();
             if(numComponentsPerElement() == 1)
                 table.front().push_back(getColumnLabel(col));
             else
@@ -793,9 +802,12 @@ protected:
                     table.front().push_back(getColumnLabel(col) +
                                             suffixChar +
                                             std::to_string(c + 1));
+        }
 
         // Fill up the rows, including row-number, time column, row data.
-        for(const auto& row : rows) {
+        for(int row : rows) {
+            if(row < 0)
+                row += getNumRows();
             std::vector<std::string> rowData{};
             rowData.push_back(std::to_string(row) + rowNumSepChar);
             rowData.push_back(toStr(getIndependentColumn()[row]));
