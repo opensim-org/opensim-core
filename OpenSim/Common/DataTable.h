@@ -673,18 +673,19 @@ public:
 
     /// @}
 
-    std::string toString(std::vector<unsigned> rows      = {},
-                         std::vector<unsigned> cols      = {},
-                         unsigned              splitSize = 25,
-                         unsigned              maxWidth  = 80,
-                         unsigned              precision = 4) const {
+    std::string toString(std::vector<unsigned> rows         = {},
+                         std::vector<unsigned> cols         = {},
+                         const bool            withMetaData = true,
+                         unsigned              splitSize    = 25,
+                         unsigned              maxWidth     = 80,
+                         unsigned              precision    = 4) const {
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
         OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
                          EmptyTable);
 
-        // Defaults
+        // Defaults.
         const unsigned    defSplitSize{25};
         const unsigned    defMaxWidth{80};
         const unsigned    defPrecision{4};
@@ -695,6 +696,7 @@ public:
         const char        newlineChar{'\n'};
         const std::string indColLabel{"time"};
         const std::string suffixChar{"_"};
+        const std::string metaDataSep{" => "};
 
         // Set all the un-specified parameters to defaults.
         if(splitSize   == 0)
@@ -753,10 +755,22 @@ public:
         columnWidths.front() -= 1;
 
         std::string result{};
+
+        // Fill up metadata.
+        if(withMetaData) {
+            for(const auto& key : getTableMetaDataKeys()) {
+                result.append(key);
+                result.append(metaDataSep);
+                result.append(getTableMetaDataAsString(key));
+                result.push_back(newlineChar);
+            }
+        }
+        
         const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
                                                 columnWidths.cend(),
                                                 static_cast<size_t>(0))};
-        result.reserve(totalWidth * table.size() * excessAllocation);
+        result.reserve((totalWidth * table.size() * excessAllocation) +
+                       result.capacity());
 
         // Fill up the result string.
         size_t beginRow{1};
