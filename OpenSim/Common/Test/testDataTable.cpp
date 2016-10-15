@@ -77,9 +77,8 @@ int main() {
                                 "table.getColumnIndex(labels.at(i)) != i"};
     }
     // Print out the DataTable to console.
-    std::cout << table << std::endl;
     try {
-        std::cout << table.toString() << std::endl;
+        std::cout << table << std::endl;
         throw Exception{"Test failed: Exception expected."};
     } catch(const OpenSim::EmptyTable&) {}
 
@@ -114,7 +113,7 @@ int main() {
 
     // Print out the DataTable to console.
     std::cout << table << std::endl;
-    std::cout << table.toString({3, 1}, {}, 0, 30) << std::endl;
+    std::cout << table.toString({}, {"1", "4"});
 
     // Retrieve added metadata and rows to check.
     if(table.getNumRows() != unsigned{5})
@@ -215,6 +214,8 @@ int main() {
         tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
 
+        std::cout << tableVec3 << std::endl;
+
         DataTable_<double, double> tableDouble{tableVec3};
         std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
                                            "col1_1", "col1_2", "col1_3",
@@ -254,6 +255,8 @@ int main() {
             ASSERT(row2[8] == 1);
         }
 
+        std::cout << tableFlat << std::endl;
+
         std::cout << "Test DataTable flattenning constructor for Quaternion."
                   << std::endl;
         DataTable_<double, Quaternion> tableQuat{}; 
@@ -261,6 +264,8 @@ int main() {
         tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
         tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
         tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
+
+        std::cout << tableQuat << std::endl;
 
         tableDouble = tableQuat;
         ASSERT(tableDouble.getColumnLabels().size() == 12);
@@ -274,6 +279,8 @@ int main() {
         tableUnitVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
         tableUnitVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableUnitVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        std::cout << tableUnitVec3 << std::endl;
 
         tableDouble = tableUnitVec3;
         ASSERT(tableDouble.getColumnLabels().size() == 9);
@@ -294,10 +301,14 @@ int main() {
                                         {{3, 3, 3}, {3, 3, 3}},
                                         {{1, 1, 1}, {1, 1, 1}}});
 
+        std::cout << tableSpatialVec << std::endl;
+
         tableDouble = tableSpatialVec;
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
+
+        std::cout << tableDouble << std::endl;
     }
     {
         std::cout << "Test TimeSeriesTable flattenning constructor for Vec3"
@@ -307,6 +318,8 @@ int main() {
         tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
         tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        std::cout << tableVec3 << std::endl;
         
         TimeSeriesTable_<double> tableDouble{tableVec3};
         std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
@@ -326,6 +339,8 @@ int main() {
             ASSERT(row1[8] == 2);
             ASSERT(row2[8] == 1);
         }
+
+        std::cout << tableDouble << std::endl;
 
         std::cout << "Test TimeSeriesTable flatten() for Vec3." << std::endl;
         auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
@@ -347,6 +362,8 @@ int main() {
             ASSERT(row2[8] == 1);
         }
 
+        std::cout << tableFlat << std::endl;
+
         std::cout << "Test TimeSeriesTable flattenning constructor for "
                      "Quaternion" << std::endl;
         TimeSeriesTable_<Quaternion> tableQuat{}; 
@@ -355,10 +372,14 @@ int main() {
         tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
         tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
 
+        std::cout << tableQuat << std::endl;
+
         tableDouble = tableQuat;
         ASSERT(tableDouble.getColumnLabels().size() == 12);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 12);
+
+        std::cout << tableDouble << std::endl;
 
         std::cout << "Test TimeSeriesTable flattenning constructor for UnitVec3"
                   << std::endl;
@@ -368,10 +389,14 @@ int main() {
         tableUnitVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableUnitVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
 
+        std::cout << tableUnitVec3 << std::endl;
+
         tableDouble = tableUnitVec3;
         ASSERT(tableDouble.getColumnLabels().size() == 9);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 9);
+
+        std::cout << tableDouble << std::endl;
 
         std::cout << "Test TimeSeriesTable flattenning constructor for "
                      "SpatialVec" << std::endl;
@@ -387,10 +412,14 @@ int main() {
                                         {{3, 3, 3}, {3, 3, 3}},
                                         {{1, 1, 1}, {1, 1, 1}}});
 
+        std::cout << tableSpatialVec << std::endl;
+
         tableDouble = tableSpatialVec;
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
+        
+        std::cout << tableDouble << std::endl;
     }
 
     return 0;
