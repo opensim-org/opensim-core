@@ -673,12 +673,25 @@ public:
 
     /// @}
 
-    std::string toString(std::vector<unsigned> rows         = {},
-                         std::vector<unsigned> cols         = {},
-                         const bool            withMetaData = true,
-                         unsigned              splitSize    = 25,
-                         unsigned              maxWidth     = 80,
-                         unsigned              precision    = 4) const {
+    std::string toString(std::vector<unsigned>    rows         = {},
+                         std::vector<std::string> columnLabels = {},
+                         const bool               withMetaData = true,
+                         unsigned                 splitSize    = 25,
+                         unsigned                 maxWidth     = 80,
+                         unsigned                 precision    = 4) const {
+        std::vector<unsigned> cols{};
+        for(const auto& label : columnLabels)
+            cols.push_back(getColumnIndex(label));
+        return toString_impl(rows, cols, withMetaData,
+                             splitSize, maxWidth, precision);
+    }
+
+    std::string toString_impl(std::vector<unsigned> rows         = {},
+                              std::vector<unsigned> cols         = {},
+                              const bool            withMetaData = true,
+                              unsigned              splitSize    = 25,
+                              unsigned              maxWidth     = 80,
+                              unsigned              precision    = 4) const {
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
