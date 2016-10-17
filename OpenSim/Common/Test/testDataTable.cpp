@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <iostream>
 
@@ -49,7 +49,9 @@ int main() {
 
     TimeSeriesTable table{};
     {
+        ASSERT(!table.hasColumnLabels());
         table.setColumnLabels({"0", "1", "2", "3"});
+        ASSERT(table.hasColumnLabels());
         assert(table.hasColumn("1"));
         assert(table.hasColumn("2"));
         assert(!table.hasColumn("column-does-not-exist"));
@@ -181,6 +183,210 @@ int main() {
         throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
                 "(\"Filename\").getValue<std::string>() != std::string"
                 "{\"/path/to/file\"}"};
+
+    std::cout << "Test numComponentsPerElement()." << std::endl;
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, double    >{})).
+            numComponentsPerElement() == 1);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, Vec3      >{})).
+            numComponentsPerElement() == 3);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, UnitVec3  >{})).
+            numComponentsPerElement() == 3);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, Quaternion>{})).
+            numComponentsPerElement() == 4);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, SpatialVec>{})).
+            numComponentsPerElement() == 6);
+
+    {
+        std::cout << "Test DataTable flattenning constructor for Vec3."
+                  << std::endl;
+        DataTable_<double, Vec3> tableVec3{};
+        tableVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        DataTable_<double, double> tableDouble{tableVec3};
+        std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
+                                           "col1_1", "col1_2", "col1_3",
+                                           "col2_1", "col2_2", "col2_3"};
+        ASSERT(tableDouble.getColumnLabels()   == expLabels);
+        ASSERT(tableDouble.getNumRows()        == 3);
+        ASSERT(tableDouble.getNumColumns()     == 9);
+        {
+            const auto& row0 = tableDouble.getRowAtIndex(0);
+            const auto& row1 = tableDouble.getRowAtIndex(1);
+            const auto& row2 = tableDouble.getRowAtIndex(2);
+            ASSERT(row0[0] == 1);
+            ASSERT(row1[0] == 3);
+            ASSERT(row2[0] == 2);
+            ASSERT(row0[8] == 3);
+            ASSERT(row1[8] == 2);
+            ASSERT(row2[8] == 1);
+        }
+
+        std::cout << "Test DataTable flatten() for Vec3." << std::endl;
+        auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
+        expLabels = {"col0_x", "col0_y", "col0_z",
+                     "col1_x", "col1_y", "col1_z",
+                     "col2_x", "col2_y", "col2_z"};
+        ASSERT(tableFlat.getColumnLabels()   == expLabels);
+        ASSERT(tableFlat.getNumRows()        == 3);
+        ASSERT(tableFlat.getNumColumns()     == 9);
+        {
+            const auto& row0 = tableFlat.getRowAtIndex(0);
+            const auto& row1 = tableFlat.getRowAtIndex(1);
+            const auto& row2 = tableFlat.getRowAtIndex(2);
+            ASSERT(row0[0] == 1);
+            ASSERT(row1[0] == 3);
+            ASSERT(row2[0] == 2);
+            ASSERT(row0[8] == 3);
+            ASSERT(row1[8] == 2);
+            ASSERT(row2[8] == 1);
+        }
+
+        std::cout << "Test DataTable flattenning constructor for Quaternion."
+                  << std::endl;
+        DataTable_<double, Quaternion> tableQuat{}; 
+        tableQuat.setColumnLabels({"col0", "col1", "col2"});
+        tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
+        tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
+        tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
+
+        tableDouble = tableQuat;
+        ASSERT(tableDouble.getColumnLabels().size() == 12);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 12);
+
+        std::cout << "Test DataTable flattenning constructor for UnitVec3."
+                  << std::endl;
+        DataTable_<double, Vec3> tableUnitVec3{};
+        tableUnitVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableUnitVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableUnitVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableUnitVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        tableDouble = tableUnitVec3;
+        ASSERT(tableDouble.getColumnLabels().size() == 9);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 9);
+
+        std::cout << "Test DataTable flattenning constructor for SpatialVec."
+                  << std::endl;
+        DataTable_<double, SpatialVec> tableSpatialVec{};
+        tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
+        tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}}});
+        tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}}});
+        tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}}});
+
+        tableDouble = tableSpatialVec;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
+    }
+    {
+        std::cout << "Test TimeSeriesTable flattenning constructor for Vec3"
+                  << std::endl;
+        TimeSeriesTable_<Vec3> tableVec3{};
+        tableVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+        
+        TimeSeriesTable_<double> tableDouble{tableVec3};
+        std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
+                                           "col1_1", "col1_2", "col1_3",
+                                           "col2_1", "col2_2", "col2_3"};
+        ASSERT(tableDouble.getColumnLabels() == expLabels);
+        ASSERT(tableDouble.getNumRows()      == 3);
+        ASSERT(tableDouble.getNumColumns()   == 9);
+        {
+            const auto& row0 = tableDouble.getRowAtIndex(0);
+            const auto& row1 = tableDouble.getRowAtIndex(1);
+            const auto& row2 = tableDouble.getRowAtIndex(2);
+            ASSERT(row0[0] == 1);
+            ASSERT(row1[0] == 3);
+            ASSERT(row2[0] == 2);
+            ASSERT(row0[8] == 3);
+            ASSERT(row1[8] == 2);
+            ASSERT(row2[8] == 1);
+        }
+
+        std::cout << "Test TimeSeriesTable flatten() for Vec3." << std::endl;
+        auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
+        expLabels = {"col0_x", "col0_y", "col0_z",
+                     "col1_x", "col1_y", "col1_z",
+                     "col2_x", "col2_y", "col2_z"};
+        ASSERT(tableFlat.getColumnLabels()   == expLabels);
+        ASSERT(tableFlat.getNumRows()        == 3);
+        ASSERT(tableFlat.getNumColumns()     == 9);
+        {
+            const auto& row0 = tableFlat.getRowAtIndex(0);
+            const auto& row1 = tableFlat.getRowAtIndex(1);
+            const auto& row2 = tableFlat.getRowAtIndex(2);
+            ASSERT(row0[0] == 1);
+            ASSERT(row1[0] == 3);
+            ASSERT(row2[0] == 2);
+            ASSERT(row0[8] == 3);
+            ASSERT(row1[8] == 2);
+            ASSERT(row2[8] == 1);
+        }
+
+        std::cout << "Test TimeSeriesTable flattenning constructor for "
+                     "Quaternion" << std::endl;
+        TimeSeriesTable_<Quaternion> tableQuat{}; 
+        tableQuat.setColumnLabels({"col0", "col1", "col2"});
+        tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
+        tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
+        tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
+
+        tableDouble = tableQuat;
+        ASSERT(tableDouble.getColumnLabels().size() == 12);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 12);
+
+        std::cout << "Test TimeSeriesTable flattenning constructor for UnitVec3"
+                  << std::endl;
+        TimeSeriesTable_<Vec3> tableUnitVec3{};
+        tableUnitVec3.setColumnLabels({"col0", "col1", "col2"});
+        tableUnitVec3.appendRow(0.1, {{1, 1, 1}, {2, 2, 2}, {3, 3, 3}});
+        tableUnitVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
+        tableUnitVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
+
+        tableDouble = tableUnitVec3;
+        ASSERT(tableDouble.getColumnLabels().size() == 9);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 9);
+
+        std::cout << "Test TimeSeriesTable flattenning constructor for "
+                     "SpatialVec" << std::endl;
+        TimeSeriesTable_<SpatialVec> tableSpatialVec{};
+        tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
+        tableSpatialVec.appendRow(0.1, {{{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}}});
+        tableSpatialVec.appendRow(0.2, {{{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}},
+                                        {{2, 2, 2}, {2, 2, 2}}});
+        tableSpatialVec.appendRow(0.3, {{{2, 2, 2}, {2, 2, 2}},
+                                        {{3, 3, 3}, {3, 3, 3}},
+                                        {{1, 1, 1}, {1, 1, 1}}});
+
+        tableDouble = tableSpatialVec;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
+    }
 
     return 0;
 }

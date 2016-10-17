@@ -43,11 +43,16 @@ private:
 public:
     using AbstractValue = SimTK::AbstractValue;
 
+    /** Does a key-value pair corresponding to the given key currently exist ?*/
+    bool hasKey(const std::string& key) const {
+        return _dictionary.find(key) != _dictionary.end();
+    }
+
     /** Get the first entry of the array corresponding to the given key.      
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return (*(_dictionary.at(key)))[0];
     }
@@ -74,7 +79,7 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return *(_dictionary.at(key));
     }
@@ -90,6 +95,16 @@ public:
 
         auto res = _dictionary.emplace(key, Value{abstractValueArray.clone()});
         return res.second;
+    }
+
+    /** Get a writable reference to the array corresponding to a given key.
+
+    \throws KeyNotFound If key is not found.                                  */
+    AbstractValueArray&
+    updValueArrayForKey(const std::string& key) {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        return *(_dictionary.at(key));
     }
 
     /** Remove a key and its associated array.                                */
@@ -124,11 +139,8 @@ public:
     Dictionary::const_iterator getKeyValueEnd() const {
         return _dictionary.cend();
     }
-private:
-    bool isKeyNotFound(const std::string& key) const {
-        return _dictionary.find(key) == _dictionary.end();
-    }
 
+private:
     Dictionary _dictionary;
 };
 

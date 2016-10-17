@@ -121,7 +121,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     setNull();
 
     // OPEN FILE
-    ifstream *fp = IO::OpenInputFile(aFileName);
+    std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
     if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
 
     int nr=0,nc=0;
@@ -177,8 +177,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }else{  //MM the modifications below are to make the Storage class
             //well behaved when it is given data that does not contain a 
             //time or a range column
@@ -192,8 +190,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }
     // If what we read was really a sIMM motion file, adjust the data 
     // to account for different assumptions between SIMM.mot OpenSim.sto
@@ -1250,7 +1246,7 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 
 
     for(int i=0; i<found.getSize(); ++i){
-        Array<double> data = *new Array<double>;
+        Array<double> data{};
         getDataColumn(found[i]-off, data);
         rData.append(data);
     }

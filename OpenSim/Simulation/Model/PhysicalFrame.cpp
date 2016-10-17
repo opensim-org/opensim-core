@@ -67,6 +67,13 @@ SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
     return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
 }
 
+void PhysicalFrame::setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!mbix.isValid(), Exception,
+        "Assigned an invalid SimTK::MobilizedBodyIndex");
+    const_cast<Self*>(this)->_mbIndex = mbix;
+}
+
 /*
 * Implementation of Frame interface by PhysicalFrame.
 * 

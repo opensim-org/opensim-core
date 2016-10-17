@@ -79,6 +79,19 @@ public:
     }
 };
 
+class NoColumnLabels : public Exception {
+public:
+    NoColumnLabels(const std::string& file,
+                   size_t line,
+                   const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "Table has no column-labels. Use setColumnLabels() to"
+                          " add labels.";
+
+        addMessage(msg);
+    }
+};
+
 class IncorrectMetaDataLength : public Exception {
 public:
     IncorrectMetaDataLength(const std::string& file,
@@ -153,6 +166,10 @@ public:
     AbstractDataTable& operator=(AbstractDataTable&&)        = default;
     virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
+
+    /** Get number of components per element of the DataTable. See documentation
+    for DataTable on possible return values.                                  */
+    virtual unsigned numComponentsPerElement() const = 0;
 
     /** Get number of rows.                                                   */
     size_t getNumRows() const;
@@ -256,16 +273,19 @@ public:
     /// \endcode
     /// @{
 
+    /** Does the table have non-zero number of column labels.                 */
+    bool hasColumnLabels() const;
+
     /** Get column labels.                                                    
 
-    \throws KeyNotFound If column labels have not be set for the table.       */
+    \throws NoColumnLabels If column labels have not be set for the table.    */
     std::vector<std::string> getColumnLabels() const;
 
     /** Get column label of a given column.                                   
 
     \throws ColumnIndexOutOfRange If columnIndex is out of range of number of
                                   columns.                                    
-    \throws KeyNotFound If column labels have not be set for the table.       */
+    \throws NoColumnLabels If column labels have not be set for the table.    */
     const std::string& getColumnLabel(const size_t columnIndex) const;
 
     /** %Set column labels using a pair of iterators.
@@ -338,6 +358,7 @@ public:
 
     /** %Set the label for a column.                                          
 
+    \throws NoColumnLabels If table has no column labels.
     \throws ColumnIndexOutOfRange If columnIndex is out of range for number of
                                   columns in the table.                       */
     void setColumnLabel(const size_t columnIndex,
@@ -345,10 +366,13 @@ public:
 
     /** Get index of a column label.                                          
 
+    \throw NoColumnLabels If table has no column labels.
     \throw KeyNotFound If columnLabel is not found to be label for any column.*/
     size_t getColumnIndex(const std::string& columnLabel) const;
 
-    /** Check if the table has a column with the given label.                 */
+    /** Check if the table has a column with the given label.
+
+    \throw NoColumnLabels If table has no column labels.                     */
     bool hasColumn(const std::string& columnLabel) const;
 
     /// @} End of Column-labels related accessors/mutators.

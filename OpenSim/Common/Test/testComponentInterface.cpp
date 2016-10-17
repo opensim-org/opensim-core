@@ -135,22 +135,25 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(inertia, double, 6,
         "inertia {Ixx, Iyy, Izz, Ixy, Ixz, Iyz}");
 
-    OpenSim_DECLARE_OUTPUT(Output1, double, getSomething, SimTK::Stage::Time)
+    OpenSim_DECLARE_OUTPUT(Output1, double, getSomething, SimTK::Stage::Time);
     OpenSim_DECLARE_OUTPUT(Output2, SimTK::Vec3, calcSomething,
-            SimTK::Stage::Time)
+            SimTK::Stage::Time);
 
-    OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position)
+    OpenSim_DECLARE_OUTPUT(Output3, double, getSomethingElse, SimTK::Stage::Time);
+
+    OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position);
 
     OpenSim_DECLARE_OUTPUT(BodyAcc, SpatialVec, calcSpatialAcc,
-            SimTK::Stage::Velocity)
+            SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_OUTPUT(return_by_ref, double, getReturnByRef,
             SimTK::Stage::Time);
-    
+
     OpenSim_DECLARE_INPUT(input1, double, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(AnglesIn, Vector, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(fiberLength, double, SimTK::Stage::Model, "");
     OpenSim_DECLARE_INPUT(activation, double, SimTK::Stage::Model, "");
+    OpenSim_DECLARE_LIST_INPUT(listInput1, double, SimTK::Stage::Model, "");
 
     Foo() : Component() {
         constructProperties();
@@ -171,6 +174,10 @@ public:
 
         double t = state.getTime();
         return SimTK::Vec3(t, t*t, sqrt(t));
+    }
+
+    double getSomethingElse(const SimTK::State& state) const {
+        return 1.618;
     }
 
     SimTK::Vector getQ(const SimTK::State& state) const {
@@ -471,7 +478,7 @@ void testMisc() {
 
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getFullPathName());
+    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
     // add a subcomponent
@@ -484,19 +491,19 @@ void testMisc() {
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -507,7 +514,7 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Query existing components.
@@ -725,7 +732,7 @@ void testMisc() {
     system3.realize(s, Stage::Velocity);
 
     // Get the results of integrating the system forward
-    const TimeSeriesTable_<Real>& results = reporter->getReport();
+    const TimeSeriesTable_<Real>& results = reporter->getTable();
     ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
         "Number of rows in Reporter results not equal to number of time intervals.");
     cout << "************** Contents of Table of Results ****************" << endl;
@@ -749,7 +756,7 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -762,11 +769,11 @@ void testMisc() {
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getFullPathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getFullPathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
 
     theWorld.print("Nested_" + modelFile);
 }
@@ -809,7 +816,7 @@ void testListInputs() {
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs (using conveniece method) to desired 
+    // wire up table reporter inputs (using convenience method) to desired 
     // model outputs
     tabReporter->updInput().connect(bar.getOutput("fiberLength"));
     tabReporter->updInput().connect(bar.getOutput("activation"));
@@ -829,7 +836,10 @@ void testListInputs() {
     }
 
     cout << "  TableReporterMixedOutputs (contents)" << endl;
-    cout << tabReporter->getReport() << endl;
+    cout << tabReporter->getTable() << endl;
+
+    tabReporter->clearTable();
+    ASSERT(tabReporter->getTable().getNumRows() == 0);
 }
 
 
@@ -891,7 +901,7 @@ void testComponentPathNames()
     std::string fooWrtFoo = foo.getRelativePathName(foo);
     ASSERT(fooWrtFoo == "");
 
-    std::string topFullPath = top.getFullPathName();
+    std::string topAbsPath = top.getAbsolutePathName();
     std::string fooWrtTop = foo.getRelativePathName(top);
     ASSERT(fooWrtTop == "../A/B/C/D");
 
@@ -905,7 +915,7 @@ void testComponentPathNames()
 
     foo.setName("World3/bar2/foo1");
     fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "./foo1");
+    ASSERT(fooWrtBar == "foo1");
 
     bar.setName("LegWithConstrainedFoot/footConstraint");
     foo.setName("LegWithConstrainedFoot/foot");
@@ -934,18 +944,18 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fullPathC = C->getFullPathName();
-    ASSERT(fullPathC == "/Top/A/B/C");
+    std::string absPathC = C->getAbsolutePathName();
+    ASSERT(absPathC == "/Top/A/B/C");
 
-    std::string fullPathE = E->getFullPathName();
-    ASSERT(fullPathE == "/Top/A/D/E");
+    std::string absPathE = E->getAbsolutePathName();
+    ASSERT(absPathE == "/Top/A/D/E");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
                  /*auto& eref = */top.getComponent("E") );
 
-    auto& cref = top.getComponent(fullPathC);
-    auto& eref = top.getComponent(fullPathE);
+    auto& cref = top.getComponent(absPathC);
+    auto& eref = top.getComponent(absPathE);
 
     auto cFromE = cref.getRelativePathName(eref);
     ASSERT(cFromE == "../../B/C");
@@ -974,10 +984,10 @@ void testComponentPathNames()
 
     top.dumpSubcomponents();
 
-    std::string fFoo1FullPath = 
-        F->getComponent<Foo>("Foo1").getFullPathName();
-    std::string aBar2FullPath = 
-        A->getComponent<Bar>("Bar2").getFullPathName();
+    std::string fFoo1AbsPath = 
+        F->getComponent<Foo>("Foo1").getAbsolutePathName();
+    std::string aBar2AbsPath = 
+        A->getComponent<Bar>("Bar2").getAbsolutePathName();
     auto bar2FromBarFoo = 
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 
@@ -1061,31 +1071,31 @@ void testInputOutputConnections()
 }
 
 void testInputConnecteeNames() {
-    std::string outputPath, channelName, annotation;
+    std::string outputPath, channelName, alias;
     
     AbstractInput::parseConnecteeName("/foo/bar/output",
-                                      outputPath, channelName, annotation);
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "");
-    SimTK_TEST(annotation == "output");
+    SimTK_TEST(alias == "");
     
     AbstractInput::parseConnecteeName("/foo/bar/output:channel",
-                                      outputPath, channelName, annotation);
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "channel");
-    SimTK_TEST(annotation == "channel");
+    SimTK_TEST(alias == "");
     
-    AbstractInput::parseConnecteeName("/foo/bar/output(anno)",
-                                      outputPath, channelName, annotation);
+    AbstractInput::parseConnecteeName("/foo/bar/output(baz)",
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "");
-    SimTK_TEST(annotation == "anno");
+    SimTK_TEST(alias == "baz");
     
-    AbstractInput::parseConnecteeName("/foo/bar/output:channel(anno)",
-                                      outputPath, channelName, annotation);
+    AbstractInput::parseConnecteeName("/foo/bar/output:channel(baz)",
+                                      outputPath, channelName, alias);
     SimTK_TEST(outputPath == "/foo/bar/output");
     SimTK_TEST(channelName == "channel");
-    SimTK_TEST(annotation == "anno");
+    SimTK_TEST(alias == "baz");
     
     // TODO test invalid names as well.
 }
@@ -1157,7 +1167,7 @@ void testTableSource() {
     theWorld.connect();
     theWorld.buildUpSystem(system);
 
-    const auto& report = tableReporter->getReport();
+    const auto& report = tableReporter->getTable();
 
     State s = system.realizeTopology();
 
@@ -1196,6 +1206,74 @@ void testTableSource() {
     std::cout << report << std::endl;
 }
 
+void testAliasesAndLabels() {
+    TheWorld* theWorld = new TheWorld();
+    theWorld->setName("world");
+
+    Foo* foo = new Foo();  foo->setName("foo");
+    Foo* bar = new Foo();  bar->setName("bar");
+
+    theWorld->addComponent(foo);
+    theWorld->addComponent(bar);
+
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getAlias());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getAlias(0));
+    ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias("qux"));
+    ASSERT_THROW(InputNotConnected, foo->updInput("input1").setAlias(0, "qux"));
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLabel());
+    ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLabel(0));
+
+    // Non-list Input, no alias.
+    foo->updInput("input1").connect( bar->getOutput("Output1") );
+    SimTK_TEST(foo->getInput("input1").getAlias().empty());
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar/Output1");
+
+    // Set alias.
+    foo->updInput("input1").setAlias("waldo");
+    SimTK_TEST(foo->getInput("input1").getAlias() == "waldo");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "waldo");
+
+    foo->updInput("input1").setAlias(0, "fred");
+    SimTK_TEST(foo->getInput("input1").getAlias() == "fred");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "fred");
+
+    ASSERT_THROW(IndexOutOfRange, foo->getInput("input1").getAlias(1));
+    ASSERT_THROW(IndexOutOfRange, foo->updInput("input1").setAlias(1, "fred"));
+    ASSERT_THROW(IndexOutOfRange, foo->getInput("input1").getLabel(1));
+
+    foo->updInput("input1").disconnect();
+
+    // Non-list Input, with alias.
+    foo->updInput("input1").connect( bar->getOutput("Output1"), "baz" );
+    SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "baz");
+
+    // List Input, no aliases.
+    foo->updInput("listInput1").connect( bar->getOutput("Output1") );
+    foo->updInput("listInput1").connect( bar->getOutput("Output3") );
+
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
+    ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar/Output1");
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar/Output3");
+
+    foo->updInput("listInput1").disconnect();
+
+    // List Input, with aliases.
+    foo->updInput("listInput1").connect( bar->getOutput("Output1"), "plugh" );
+    foo->updInput("listInput1").connect( bar->getOutput("Output3"), "thud" );
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "plugh");
+
+    SimTK_TEST(foo->getInput("listInput1").getAlias(1) == "thud");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1214,5 +1292,6 @@ int main() {
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testTableSource);
+        SimTK_SUBTEST(testAliasesAndLabels);
     SimTK_END_TEST();
 }

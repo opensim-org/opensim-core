@@ -90,10 +90,10 @@ int main(int argc,char **argv)
  
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
-            ForwardTool *tool = new ForwardTool();
-            tool->setName("default");
+            ForwardTool tool{};
+            tool.setName("default");
             Object::setSerializeAllDefaults(true);
-            tool->print("default_Setup_Forward.xml");
+            tool.print("default_Setup_Forward.xml");
             Object::setSerializeAllDefaults(false);
             cout << "Created file default_Setup_Forward.xml with default setup" << endl;
             return(0);

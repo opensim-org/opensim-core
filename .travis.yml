@@ -22,7 +22,7 @@ matrix:
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
       
 branches:
-  exclude:
+  except:
   # Branches containing Development Proposals do not need to be tested.
   # Exclude any branch whose name starts with devprop (case-insensitive).
   # For example, devprop-feature and DEVPROP_feature are ignored.
@@ -73,10 +73,12 @@ before_install:
   # Stop build if comment contains [skip travis].
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
   
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew unlink cmake; fi
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install cmake; fi
-  - cmake --version
+  - cmake --version # To help debug any cmake-related issues.
+      
+  ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
+  # This prevents the build from failing with:
+  # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
+  - rvm get head
   
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
@@ -148,8 +150,8 @@ before_install:
   - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testCMC|testOptimizationExample|testWrapping"; fi
   
   ## Set compiler flags.
-  - export CXX_FLAGS="-Werror"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
+  - export CXX_FLAGS="-Werror -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-inconsistent-missing-override"; fi;
 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR

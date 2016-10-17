@@ -64,6 +64,8 @@ ExpressionProgram::ExpressionProgram(const ExpressionProgram& program) {
 ExpressionProgram& ExpressionProgram::operator=(const ExpressionProgram& program) {
     maxArgs = program.maxArgs;
     stackSize = program.stackSize;
+    for(auto& op : operations)
+        delete op;
     operations.resize(program.operations.size());
     for (int i = 0; i < (int) operations.size(); i++)
         operations[i] = program.operations[i]->clone();
