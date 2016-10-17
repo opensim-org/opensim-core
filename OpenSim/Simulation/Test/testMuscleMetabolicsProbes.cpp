@@ -1206,7 +1206,7 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     // Integrate rates and check total energy liberation results at time t1.
     //--------------------------------------------------------------------------
-    Storage* probeStorageInt = probeStorage.integrate(t0, t1);
+    std::unique_ptr<Storage> probeStorageInt{probeStorage.integrate(t0, t1)};
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_probesInteg.sto";
         probeStorageInt->print(fname);

@@ -235,7 +235,7 @@ double *sigr;
     for (i=0;i<N;i++)  sigf[i] = sigr[i];
 
     // CLEANUP
-    if(sigr!=NULL)  delete sigr;
+    if(sigr!=NULL)  delete[] sigr;
 
   return(0);
 }

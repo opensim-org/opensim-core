@@ -231,7 +231,7 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storag
 
 ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
 {
-    if(!&getModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
+    if(!hasModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
         throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
 
     if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
