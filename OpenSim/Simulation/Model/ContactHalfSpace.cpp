@@ -69,21 +69,20 @@ void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& 
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
+    if (!hints.get_show_contact_geometry()) return;
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation
     //    properties.
-    if (hints.get_show_contact_geometry()) {
-        const auto& X_BF = getFrame().findTransformInBaseFrame();
-        const auto& X_FP = getTransform();
-        const auto X_BP = X_BF * X_FP;
-        geometry.push_back(SimTK::DecorativeBrick(Vec3{.005, 0.5, 0.5})
-            .setTransform(X_BP)
-            .setRepresentation(get_Appearance().get_representation())
-            .setBodyId(getFrame().getMobilizedBodyIndex())
-            .setColor(get_Appearance().get_color())
-            .setOpacity(get_Appearance().get_opacity()));
-    }
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    geometry.push_back(SimTK::DecorativeBrick(Vec3{.005, 0.5, 0.5})
+        .setTransform(X_BP)
+        .setRepresentation(get_Appearance().get_representation())
+        .setBodyId(getFrame().getMobilizedBodyIndex())
+        .setColor(get_Appearance().get_color())
+        .setOpacity(get_Appearance().get_opacity()));
 }
 
 
