@@ -472,6 +472,9 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         endif()
     endif()
 endif()
+if(PLATFORM_NAME MATCHES Linux)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
     "" 
