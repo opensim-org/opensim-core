@@ -140,6 +140,16 @@ public:
         return _dictionary.cend();
     }
 
+    /** Get value corresponding to the given key as string.
+
+    \throws KeyNotFound If key is not found.                                  */
+    std::string getValueAsString(const std::string& key) const {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        
+        return _dictionary.at(key)->toString(0);
+    }
+
 private:
     Dictionary _dictionary;
 };

@@ -215,6 +215,13 @@ public:
         }
     }
 
+    /** Get table metadata for a given key as a string.
+
+    \throws KeyNotFound If the key provided is not found in table metadata.   */
+    std::string getTableMetaDataAsString(const std::string& key) const {
+        return _tableMetaData.getValueAsString(key);
+    }
+
     /** Remove key-value pair associated with the given key from table 
     metadata.                                                                 */
     void removeTableMetaDataKey(const std::string& key);
