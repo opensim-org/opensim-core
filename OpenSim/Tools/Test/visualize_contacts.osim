@@ -148,7 +148,7 @@
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
-					<filename>sphere_10cm_radius.obj</filename>
+					<filename>sphere.vtp</filename>
 				</ContactMesh>
 				<ContactMesh name="ball2">
 					<!--List of connectors (structural dependencies) that this component has.-->
@@ -163,7 +163,7 @@
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
-					<filename>sphere_10cm_radius.obj</filename>
+					<filename>sphere.vtp</filename>
 				</ContactMesh>
         <ContactSphere name="ball3">
           <!--List of connectors (structural dependencies) that this component has.-->
@@ -178,7 +178,7 @@
           <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
           <orientation>0 0 0</orientation>
           <!--Radius of the sphere (default: 0).-->
-          <radius>0.10000000000000001</radius>
+          <radius>0.250000000000000001</radius>
         </ContactSphere>
         <ContactHalfSpace name="plane">
           <!--List of connectors (structural dependencies) that this component has.-->
