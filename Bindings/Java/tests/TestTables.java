@@ -33,6 +33,7 @@ class TestTables {
                row0.get(1) == 1 &&
                row0.get(2) == 1 &&
                row0.get(3) == 1;
+        System.out.println(table);
         // Append another row to table.
         row.set(0, 2); row.set(1, 2); row.set(2, 2); row.set(3, 2);
         table.appendRow(0.2, row);
@@ -43,6 +44,7 @@ class TestTables {
                row1.get(1) == 2 &&
                row1.get(2) == 2 &&
                row1.get(3) == 2;
+        System.out.println(table);
         // Append another row to table.
         row.set(0, 3); row.set(1, 3); row.set(2, 3); row.set(3, 3);
         table.appendRow(0.3, row);
@@ -53,6 +55,7 @@ class TestTables {
                row2.get(1) == 3 &&
                row2.get(2) == 3 &&
                row2.get(3) == 3;
+        System.out.println(table);
         // Get independent column.
         StdVectorDouble indCol = table.getIndependentColumn();
         assert indCol.get(0) == 0.1 &&
@@ -82,6 +85,7 @@ class TestTables {
                table.getRowAtIndex(2).get(1) == 20 &&
                table.getRowAtIndex(2).get(2) == 20 &&
                table.getRowAtIndex(2).get(3) == 20;
+        System.out.println(table);
         // Edit columns of the table.
         VectorView col0 = table.getDependentColumnAtIndex(0);
         col0.set(0, 30); col0.set(1, 30); col0.set(2, 30);
@@ -93,6 +97,7 @@ class TestTables {
         assert table.getDependentColumn("3").get(0) == 40 &&
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
+        System.out.println(table);
         // Access element with index out of bounds. Exception expected.
         try {
             double shouldThrow = row0.get(4);
@@ -143,6 +148,7 @@ class TestTables {
                row0.get(2).get(0) == 1 && row0.get(2).get(1) == 1 &&
                row0.get(2).get(2) == 1 && row0.get(3).get(0) == 1 &&
                row0.get(3).get(1) == 1 && row0.get(3).get(2) == 1;
+        System.out.println(table);
         // Append another row to the table.
         elem.set(0, 2); elem.set(1, 2); elem.set(2, 2);
         row.set(0, elem); row.set(1, elem); row.set(2, elem); row.set(3, elem);
@@ -156,6 +162,7 @@ class TestTables {
                row1.get(2).get(0) == 2 && row1.get(2).get(1) == 2 &&
                row1.get(2).get(2) == 2 && row1.get(3).get(0) == 2 &&
                row1.get(3).get(1) == 2 && row1.get(3).get(2) == 2;
+        System.out.println(table);
         // Append another row to the table.
         elem.set(0, 3); elem.set(1, 3); elem.set(2, 3);
         row.set(0, elem); row.set(1, elem); row.set(2, elem); row.set(3, elem);
@@ -169,6 +176,7 @@ class TestTables {
                row2.get(2).get(0) == 3 && row2.get(2).get(1) == 3 &&
                row2.get(2).get(2) == 3 && row2.get(3).get(0) == 3 &&
                row2.get(3).get(1) == 3 && row2.get(3).get(2) == 3;
+        System.out.println(table);
         // Get independent column.
         StdVectorDouble indCol = table.getIndependentColumn();
         assert indCol.get(0) == 0.1 &&
@@ -213,6 +221,8 @@ class TestTables {
         assert tableDouble.getRowAtIndex(2).get( 0) == 3;
         assert tableDouble.getRowAtIndex(2).get( 5) == 3;
         assert tableDouble.getRowAtIndex(2).get(11) == 3;
+        System.out.println(tableDouble);
+
         StdVectorString suffixes = new StdVectorString();
         suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
         tableDouble = table.flatten(suffixes);
@@ -240,6 +250,7 @@ class TestTables {
         assert tableDouble.getRowAtIndex(2).get( 0) == 3;
         assert tableDouble.getRowAtIndex(2).get( 5) == 3;
         assert tableDouble.getRowAtIndex(2).get(11) == 3;
+        System.out.println(tableDouble);
         // Edit rows of the table.
         row0 = table.getRowAtIndex(0);
         elem.set(0, 10); elem.set(1, 10); elem.set(2, 10);
@@ -265,6 +276,7 @@ class TestTables {
                elem1.get(0) == 20 && elem1.get(1) == 20 && elem1.get(2) == 20 &&
                elem2.get(0) == 20 && elem2.get(1) == 20 && elem2.get(2) == 20 &&
                elem3.get(0) == 20 && elem3.get(1) == 20 && elem3.get(2) == 20;
+        System.out.println(table);
         // Edit columns of the table.
         col1 = table.getDependentColumnAtIndex(1);
         elem.set(0, 30); elem.set(1, 30); elem.set(2, 30);
@@ -284,6 +296,7 @@ class TestTables {
         assert elem0.get(0) == 40 && elem0.get(1) == 40 && elem0.get(2) == 40 &&
                elem1.get(0) == 40 && elem1.get(1) == 40 && elem1.get(2) == 40 &&
                elem2.get(0) == 40 && elem2.get(1) == 40 && elem2.get(2) == 40;
+        System.out.println(table);
     }
 
     public static void test_TimeSeriesTable() {
@@ -301,6 +314,7 @@ class TestTables {
                row0.get(1) == 1 &&
                row0.get(2) == 1 &&
                row0.get(3) == 1;
+        System.out.println(table);
         // Append another row to the table.        
         row.set(0, 2); row.set(1, 2); row.set(2, 2); row.set(3, 2);
         table.appendRow(0.2, row);
@@ -311,12 +325,14 @@ class TestTables {
                row1.get(1) == 2 &&
                row1.get(2) == 2 &&
                row1.get(3) == 2;
+        System.out.println(table);
         // Append another row to the table with a timestamp
         // less than the previous one. Exception expected.
         try {
             table.appendRow(0.15, row);
             assert false;
         } catch(java.lang.RuntimeException exc) {}
+        System.out.println(table);
     }
 
     public static void test_TimeSeriesTableVec3() {
@@ -340,6 +356,7 @@ class TestTables {
                row0.get(2).get(0) == 1 && row0.get(2).get(1) == 1 &&
                row0.get(2).get(2) == 1 && row0.get(3).get(0) == 1 &&
                row0.get(3).get(1) == 1 && row0.get(3).get(2) == 1;
+        System.out.println(table);
         // Append another row to the table.
         elem.set(0, 2); elem.set(1, 2); elem.set(2, 2);
         row.set(0, elem); row.set(1, elem); row.set(2, elem); row.set(3, elem);
@@ -353,12 +370,14 @@ class TestTables {
                row1.get(2).get(0) == 2 && row1.get(2).get(1) == 2 &&
                row1.get(2).get(2) == 2 && row1.get(3).get(0) == 2 &&
                row1.get(3).get(1) == 2 && row1.get(3).get(2) == 2;
+        System.out.println(table);
         // Append another row to the table with a timestamp
         // less than the previous one. Exception expected.
         try {
             table.appendRow(0.15, row);
             assert false;
         } catch(java.lang.RuntimeException exc) {}
+        System.out.println(table);
         // Flatten table into table of doubles.
         TimeSeriesTable tableDouble = table.flatten();
         assert tableDouble.getNumRows() == 2;
@@ -382,6 +401,8 @@ class TestTables {
         assert tableDouble.getRowAtIndex(1).get( 0) == 2;
         assert tableDouble.getRowAtIndex(1).get( 5) == 2;
         assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        System.out.println(tableDouble);
+
         StdVectorString suffixes = new StdVectorString();
         suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
         tableDouble = table.flatten(suffixes);
@@ -406,6 +427,7 @@ class TestTables {
         assert tableDouble.getRowAtIndex(1).get( 0) == 2;
         assert tableDouble.getRowAtIndex(1).get( 5) == 2;
         assert tableDouble.getRowAtIndex(1).get(11) == 2;
+        System.out.println(tableDouble);
     }
 
     public static void test_FlattenWithIK() throws java.io.IOException {
@@ -415,9 +437,11 @@ class TestTables {
 
         TRCFileAdapter trcAdapter = new TRCFileAdapter();
         TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
+        System.out.println(markerTable);
         StdVectorString suffixes = new StdVectorString();
         suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");
         TimeSeriesTable markerTableFlat = markerTable.flatten(suffixes);
+        System.out.println(markerTableFlat);
         STOFileAdapter stoAdapter = new STOFileAdapter();
         markerFileName = "walk_free_01.sto";
         stoAdapter.write(markerTableFlat, markerFileName);
