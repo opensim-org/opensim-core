@@ -73,6 +73,23 @@ class ScaleSet;
     #endif
 #endif
 
+//==============================================================================
+/// Model  Exceptions
+//==============================================================================
+class PhysicalOffsetFramesFormLoop : public Exception {
+public:
+    PhysicalOffsetFramesFormLoop(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& frameName) :
+        Exception(file, line, func, obj) {
+        std::string msg =
+            "PhysicalOffsetFrames are not permitted to form loops.\n'" + 
+            frameName + "' already part of a branch of PhysicalOffsetFrames.";
+        addMessage(msg);
+    }
+};
 
 //==============================================================================
 //                                  MODEL

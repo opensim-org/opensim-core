@@ -58,7 +58,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            // Create the integrator for the simulation.
            p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
            p_integrator->setAccuracy(1.0e-7);
-           p_manager = new Manager(osimModel, *p_integrator);
+           p_manager.reset(new Manager(osimModel, *p_integrator));
        }
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
@@ -107,7 +107,7 @@ private:
     int numControls;
     State& si;
     Model& osimModel;
-    SimTK::ReferencePtr<Manager> p_manager;
+    std::unique_ptr<Manager> p_manager;
     SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
 
  };

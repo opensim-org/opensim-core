@@ -486,8 +486,9 @@ void MarkerData::readStoFile(const string& aFileName)
     // If the file was written by STOFileAdapter, make the file readable by
     // Storage. Calls below have no effect otherwise.
     std::string tmpFileName{"tmp.sto"};
-    revertToVersionNumber1(aFileName, tmpFileName);
-    addNumRowsNumColumns(tmpFileName, aFileName);
+    bool versionChanged{revertToVersionNumber1(aFileName, tmpFileName)};
+    if(versionChanged)
+        addNumRowsNumColumns(tmpFileName, aFileName);
     std::remove(tmpFileName.c_str());
 
     Storage store(aFileName);

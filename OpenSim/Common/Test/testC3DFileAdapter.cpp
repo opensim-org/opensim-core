@@ -66,6 +66,9 @@ void test(const std::string filename) {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
 
+    std::cout << marker_table->toString({6, 7, 8, 9, 10}) << std::endl;
+    std::cout <<  force_table->toString({6, 7, 8, 9, 10}) << std::endl;
+    
     {
         using namespace OpenSim;
         using MT = TimeSeriesTableVec3;
@@ -99,6 +102,7 @@ int main() {
     filenames.push_back("walking5.c3d");
 
     for(const auto& filename : filenames) {
+        std::cout << "Test reading '" + filename + "'." << std::endl;
         test(filename);
     }
 
