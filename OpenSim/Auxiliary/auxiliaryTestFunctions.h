@@ -207,20 +207,24 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 }
 
 // Change version number of the file to 1 so that Storage can read it.
-// Storage can only read files with version <= 1.
+// Storage can only read files with version <= 1. Returns 'true' if
+// version number was changed. Returns 'false' if no change.
 // This function can be removed when Storage class is removed.
-inline void revertToVersionNumber1(const std::string& filenameOld,
+inline bool revertToVersionNumber1(const std::string& filenameOld,
                                    const std::string& filenameNew) {
-    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*2[ \t]*)" };
     std::ifstream fileOld{ filenameOld };
     std::ofstream fileNew{ filenameNew };
     std::string line{};
+    bool changedVersion{false};
     while (std::getline(fileOld, line)) {
-        if (std::regex_match(line, versionline))
+        if (std::regex_match(line, versionline)) {
             fileNew << "version=1\n";
-        else
+            changedVersion = true;
+        } else
             fileNew << line << "\n";
     }
+    return changedVersion;
 }
 
 // Add number of rows (nRows) and number of columns (nColumns) to the header of
