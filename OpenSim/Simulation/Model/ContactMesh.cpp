@@ -140,6 +140,8 @@ void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
+    // Guard against the case where the Force was disabled or mesh failed to load.
+    if (_decorativeGeometry == nullptr) return;
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation
