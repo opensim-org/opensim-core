@@ -542,6 +542,10 @@ void simulateMuscle(
         fiberPassivePwrSto->getDataColumn(  "#1",fiberPassivePwrDat);
         tendonPwrSto->getDataColumn("#1", tendonPwrDat);
         musclePwrSto->getDataColumn("#1",musclePwrDat);
+        std::unique_ptr<double[]>  fiberActivePwrDat_ptr{fiberActivePwrDat};
+        std::unique_ptr<double[]> fiberPassivePwrDat_ptr{fiberPassivePwrDat};
+        std::unique_ptr<double[]>       tendonPwrDat_ptr{tendonPwrDat};
+        std::unique_ptr<double[]>       musclePwrDat_ptr{musclePwrDat};
 
         double dKEPEW_dt = 0;
         

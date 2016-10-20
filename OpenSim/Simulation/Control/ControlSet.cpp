@@ -1055,11 +1055,13 @@ ControlSet::ExtractControl(const Storage& storage,int index)
     // TIME
     double *times = NULL;
     int nTimes = storage.getTimeColumn(times);
+    std::unique_ptr<double[]> times_ptr{times};
 
     // VALUE
     int nValues = nTimes;
     double *values = NULL;
     storage.getDataColumn(index,values);
+    std::unique_ptr<double[]> values_ptr{values};
 
     // CONSTRUCT LINEAR CONTROL NODE
     ControlLinear *control = new ControlLinear;

@@ -33,7 +33,8 @@ int main() {
         double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
         PiecewiseLinearFunction f1(6, x, y);
         FunctionAdapter adapter(f1);
-        const SimTK::Function& f2 = *f1.createSimTKFunction();
+        std::unique_ptr<SimTK::Function> func_ptr{f1.createSimTKFunction()};
+        const SimTK::Function& f2 = *func_ptr;
         SimTK::Vector xvec(1);
         vector<int> deriv(1, 0);
         for (int i = 0; i < 100; ++i) {

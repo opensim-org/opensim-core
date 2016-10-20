@@ -34,17 +34,17 @@ in-memory container for data access and manipulation.                         */
 
 namespace OpenSim {
 
-/** DataTable_ is a in-memory storage container for data with support for 
+/** DataTable_ is an in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
 independent column and a set of dependent columns. The type of the independent 
 column can be configured using ETX (template param). The type of the dependent 
 columns, which together form a matrix, can be configured using ETY (template 
-param). Independent and Dependent columns can contain metadata. DataTable_ as a 
-whole can contain metadata.                                                   
+param). Independent and dependent columns can contain metadata. DataTable_ as a 
+whole can contain metadata.
 
-\tparam ETX Type of each element of the underlying matrix holding dependent 
-            data.
-\tparam ETY Type of each element of the column holding independent data.      */
+\tparam ETX Type of each element of the column holding independent data.
+\tparam ETY Type of each element of the underlying matrix holding dependent 
+            data.                                                             */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
     static_assert(!std::is_reference<ETY>::value,

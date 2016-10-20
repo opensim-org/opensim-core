@@ -119,18 +119,21 @@ This code produces the following animation:
 and prints the following information to the console:
 
         [reporter]
-                time|  fiber_force| elbow_angle|
-                   0|     1.180969|   1.5707963|
-                   1|     57.27509|  0.77066412|
-                   2|    19.728411|   1.5680456|
-                   3|    56.090431|   1.4419861|
-                   4|     34.54835|    1.508348|
-                   5|    32.603721|   1.5180237|
-                   6|    37.136052|   1.5021235|
-                   7|    35.698502|   1.5071888|
-                   8|     34.18601|   1.5079186|
-                   9|    34.341649|    1.506727|
-                  10|    35.784713|    1.507164|
+                    |           /m|             |
+                    | odel_/biceps|             |
+                time| /fiber_force|  elbow_angle|
+        ------------| ------------| ------------|
+                   0|     1.180969|    1.5707963|
+                   1|     57.27509|   0.77066412|
+                   2|    19.728411|    1.5680456|
+                   3|    56.090431|    1.4419861|
+                   4|     34.54835|     1.508348|
+                   5|    32.603721|    1.5180237|
+                   6|    37.136052|    1.5021235|
+                   7|    35.698502|    1.5071888|
+                   8|     34.18601|    1.5079186|
+                   9|    34.341649|     1.506727|
+                  10|    35.784713|     1.507164|
 
 ---
 
@@ -876,7 +879,7 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
-##### Ubuntu 16.04 Xenial Xerus
+##### Ubuntu 16.04 Xenial Xerus AND Ubuntu 16.10 Yakkety Yak
 In **Terminal** --
 ```shell
 sudo apt-get update
@@ -905,7 +908,6 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
-
 
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-core

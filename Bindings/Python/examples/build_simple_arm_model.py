@@ -33,9 +33,13 @@
 
 import opensim as osim
 
+import sys
+# Are we running this script as a test? Users can ignore this line!
+running_as_test = 'unittest' in str().join(sys.argv)
+
 # Define global model where the arm lives.
 arm = osim.Model()
-arm.setUseVisualizer(True)
+if not running_as_test: arm.setUseVisualizer(True)
 
 # ---------------------------------------------------------------------------
 # Create two links, each with a mass of 1 kg, centre of mass at the body's
