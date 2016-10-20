@@ -144,7 +144,7 @@
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0 0 0</location>
+					<location>1 2 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
@@ -159,7 +159,7 @@
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0 0 0</location>
+					<location>1 1 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
@@ -174,7 +174,7 @@
             </Connector_PhysicalFrame_>
           </connectors>
           <!--Location of geometry center in the PhysicalFrame.-->
-          <location>0 0 0</location>
+          <location>0 1 0</location>
           <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
           <orientation>0 0 0</orientation>
           <!--Radius of the sphere (default: 0).-->
@@ -193,19 +193,19 @@
           <!--Location of geometry center in the PhysicalFrame.-->
           <location>0 0 0</location>
           <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-          <orientation>1.57 0 .785</orientation>
+          <orientation>0 0 .785</orientation>
           <!--Default appearance for this Geometry-->
           <Appearance>
             <!--Flag indicating whether the associated Geometry is visible or hidden.-->
             <visible>true</visible>
             <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
-            <opacity>1</opacity>
+            <opacity>0.7</opacity>
             <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
             <color>0 1 1</color>
             <!--Visuals applied to surfaces associated with this Appearance.-->
             <SurfaceProperties>
               <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
-              <representation>2</representation>
+              <representation>3</representation>
             </SurfaceProperties>
           </Appearance>
         </ContactHalfSpace>
