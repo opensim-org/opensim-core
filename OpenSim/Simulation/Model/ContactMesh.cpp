@@ -156,6 +156,7 @@ void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints
         .setRepresentation(get_Appearance().get_representation())
         .setBodyId(getFrame().getMobilizedBodyIndex())
         .setColor(get_Appearance().get_color())
+        .setScale(1)
         .setOpacity(get_Appearance().get_opacity()));
     
 }

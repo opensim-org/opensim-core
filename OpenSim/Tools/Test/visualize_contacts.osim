@@ -193,7 +193,7 @@
           <!--Location of geometry center in the PhysicalFrame.-->
           <location>0 0 0</location>
           <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-          <orientation>0 0 .785</orientation>
+          <orientation>0  0 .5</orientation>
           <!--Default appearance for this Geometry-->
           <Appearance>
             <!--Flag indicating whether the associated Geometry is visible or hidden.-->
