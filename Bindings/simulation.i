@@ -229,3 +229,10 @@
 %template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
 %template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
 %template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
+
+%include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
+%include <OpenSim/Actuators/Thelen2003Muscle.h>
+%include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+
