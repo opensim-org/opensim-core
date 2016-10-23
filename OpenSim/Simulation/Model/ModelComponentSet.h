@@ -93,7 +93,7 @@ public:
 
 #ifndef SWIG
     /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return _model.get(); }
+    bool hasModel() const { return _model.get() != nullptr; }
     /**
      * Get this Model this set is part of.
      */

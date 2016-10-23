@@ -22,6 +22,21 @@
  * -------------------------------------------------------------------------- */
 
 //=============================================================================
+// INCLUDES
+//=============================================================================
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+
+#include "SimbodyEngine.h"
+#include "Coordinate.h"
+
+//=============================================================================
 // EXCEPTIONS
 //=============================================================================
 class CannotUsePhysicalOffsetFrame : public Exception {
@@ -36,21 +51,6 @@ public:
         addMessage(msg);
     }
 };
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-
-#include "SimbodyEngine.h"
-#include "Coordinate.h"
-
 
 //=============================================================================
 // STATICS
