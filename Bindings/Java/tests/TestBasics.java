@@ -47,13 +47,7 @@ class TestBasics {
             int count = 0;
             MuscleIterator iter = muscleList.begin();
             while(!iter.equals(muscleList.end())) {
-                assert iter.hasProperty("max_isometric_force");
-                assert iter.hasProperty("optimal_fiber_length");
-                assert iter.hasProperty("tendon_slack_length");
-                assert iter.hasProperty("pennation_angle_at_optimal");
-                assert iter.hasProperty("max_contraction_velocity");
-                assert iter.hasProperty("ignore_tendon_compliance");
-                assert iter.hasProperty("ignore_activation_dynamics");
+                assert iter.__ref__() instanceof Muscle;
                 
                 iter.next();
                 ++count;
@@ -68,17 +62,7 @@ class TestBasics {
             int count = 0;
             Thelen2003MuscleIterator iter = thelenMuscleList.begin();
             while(!iter.equals(thelenMuscleList.end())) {
-                assert iter.hasProperty("FmaxTendonStrain");
-                assert iter.hasProperty("FmaxMuscleStrain");
-                assert iter.hasProperty("KshapeActive");
-                assert iter.hasProperty("KshapePassive");
-                assert iter.hasProperty("Af");
-                assert iter.hasProperty("Flen");
-                assert iter.hasProperty("fv_linear_extrap_threshold");
-                assert iter.hasProperty("maximum_pennation_angle");
-                assert iter.hasProperty("activation_time_constant");
-                assert iter.hasProperty("deactivation_time_constant");
-                assert iter.hasProperty("minimum_activation");
+                assert iter.__ref__() instanceof Thelen2003Muscle;
                 
                 iter.next();
                 ++count;
@@ -95,13 +79,7 @@ class TestBasics {
             Millard2012EquilibriumMuscleIterator iter =
                 millardMuscleList.begin();
             while(!iter.equals(millardMuscleList.end())) {
-                assert iter.hasProperty("fiber_damping");
-                assert iter.hasProperty("default_activation");
-                assert iter.hasProperty("default_fiber_length");
-                assert iter.hasProperty("activation_time_constant");
-                assert iter.hasProperty("deactivation_time_constant");
-                assert iter.hasProperty("minimum_activation");
-                assert iter.hasProperty("maximum_pennation_angle");
+                assert iter.__ref__() instanceof Millard2012EquilibriumMuscle;
                 
                 iter.next();
                 ++count;
