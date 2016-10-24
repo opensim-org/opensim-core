@@ -94,7 +94,7 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     const auto& X_BF = getFrame().findTransformInBaseFrame();
     const auto& X_FP = getTransform();
     const auto X_BP = X_BF * X_FP;
-    geometry.push_back(SimTK::DecorativeSphere(getRadius())
+    geometry.push_back(SimTK::DecorativeSphere(getRadius()).setScale(1)
                            .setTransform(X_BP)
                            .setRepresentation(get_Appearance().get_representation())
                            .setBodyId(getFrame().getMobilizedBodyIndex())
