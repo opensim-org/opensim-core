@@ -247,6 +247,6 @@
     OpenSim::ComponentListIterator<const OpenSim::Millard2012EquilibriumMuscle>;
 
 %template(getThelen2003MuscleList)
-  OpenSim::Model::getComponentList<Thelen2003Muscle>;
+  OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
 %template(getMillard2012EquilibriumMuscleList)
   OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;
