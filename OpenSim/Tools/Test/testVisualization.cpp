@@ -173,6 +173,11 @@ void testVisModel(Model& model, const std::string standard_filename)
     ASSERT(same == 0, __FILE__, __LINE__, 
         "Visualization primitives from model do not match standard from file `"
         + standard_filename + "'.");
+    if (visualDebug) {
+        char c;
+        std::cout << "press any key to continue" << std::endl;
+        std::cin >> c;
+    }
 }
 
 Model createModel4AppearanceTest()
@@ -234,6 +239,11 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
             if (!(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString()))
                 throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
             ++i;
+    }
+    if (visualDebug) {
+        char c;
+        std::cout << "press any key to continue" << std::endl;
+        std::cin >> c;
     }
     return true;
 }
