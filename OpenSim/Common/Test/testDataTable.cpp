@@ -422,6 +422,83 @@ int main() {
         
         std::cout << tableDouble << std::endl;
     }
+    {
+        std::cout << "Test DataTable packing." << std::endl;
+        DataTable_<double, double> tableDouble{};
+        tableDouble.setColumnLabels({"col0_x", "col0_y", "col0_z",
+                                     "col1_x", "col1_y", "col1_z",
+                                     "col2_x", "col2_y", "col2_z",
+                                     "col3_x", "col3_y", "col3_z"});
+        tableDouble.appendRow(1, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+        tableDouble.appendRow(2, {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+        tableDouble.appendRow(3, {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3});
+        tableDouble.addTableMetaData("string", std::string{"string"});
+        tableDouble.addTableMetaData("int", 10);
+
+        ASSERT(tableDouble.getColumnLabels().size() == 12);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 12);
+
+        std::cout << tableDouble << std::endl;
+
+        std::cout << "Test DataTable packing for Vec3 with suffix specified."
+                  << std::endl;
+        DataTable_<double, SimTK::Vec3> tableVec3_1{tableDouble,
+                                                    {"_x", "_y", "_z"}};
+        std::vector<std::string> expLabels{"col0", "col1", "col2", "col3"};
+        ASSERT(tableVec3_1.getColumnLabels() == expLabels);
+        ASSERT(tableVec3_1.getNumRows()      == 3);
+        ASSERT(tableVec3_1.getNumColumns()   == 4);
+        ASSERT(tableVec3_1.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableVec3_1.getTableMetaData<int>("int")            == 10);
+        std::cout << tableVec3_1 << std::endl;
+            
+        std::cout << "Test DataTable packing for Vec3 with suffix unspecified."
+                  << std::endl;
+        DataTable_<double, SimTK::Vec3> tableVec3_2{tableDouble};
+        ASSERT(tableVec3_2.getColumnLabels() == expLabels);
+        ASSERT(tableVec3_2.getNumRows()      == 3);
+        ASSERT(tableVec3_2.getNumColumns()   == 4);
+        ASSERT(tableVec3_2.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableVec3_2.getTableMetaData<int>("int")            == 10);
+        std::cout << tableVec3_2 << std::endl;
+
+        std::cout << "Test DataTable packing for UnitVec3." << std::endl;
+        DataTable_<double, SimTK::UnitVec3> tableUVec3{tableDouble};
+        ASSERT(tableUVec3.getColumnLabels() == expLabels);
+        ASSERT(tableUVec3.getNumRows()      == 3);
+        ASSERT(tableUVec3.getNumColumns()   == 4);
+        ASSERT(tableUVec3.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableUVec3.getTableMetaData<int>("int")            == 10);
+        std::cout << tableUVec3 << std::endl;
+
+        std::cout << "Test DataTable packing for Quaternion." << std::endl;
+        tableDouble.setColumnLabels({"col0.0", "col0.1", "col0.2", "col0.3",
+                                     "col1.0", "col1.1", "col1.2", "col1.3",
+                                     "col2.0", "col2.1", "col2.2", "col2.3"});
+        DataTable_<double, SimTK::Quaternion> tableQuat{tableDouble};
+        expLabels = {"col0", "col1", "col2"};
+        ASSERT(tableQuat.getColumnLabels() == expLabels);
+        ASSERT(tableQuat.getNumRows()      == 3);
+        ASSERT(tableQuat.getNumColumns()   == 3);
+        ASSERT(tableQuat.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableQuat.getTableMetaData<int>("int")            == 10);
+        std::cout << tableQuat << std::endl;
+
+        std::cout << "Test DataTable packing for SpatialVec" << std::endl;
+        tableDouble.setColumnLabels({"col0.0", "col0.1", "col0.2",
+                                     "col0.3", "col0.4", "col0.5",
+                                     "col1.0", "col1.1", "col1.2",
+                                     "col1.3", "col1.4", "col1.5"});
+        DataTable_<double, SimTK::SpatialVec> tableSVec{tableDouble};
+        expLabels = {"col0", "col1"};
+        ASSERT(tableSVec.getColumnLabels() == expLabels);
+        ASSERT(tableSVec.getNumRows()      == 3);
+        ASSERT(tableSVec.getNumColumns()   == 2);
+        ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
+        std::cout << tableSVec << std::endl;
+    }
 
     return 0;
 }
