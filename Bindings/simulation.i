@@ -229,3 +229,24 @@
 %template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
 %template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
 %template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
+
+%include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
+%include <OpenSim/Actuators/Thelen2003Muscle.h>
+%include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+
+%template(Thelen2003MuscleList)
+    OpenSim::ComponentList<const OpenSim::Thelen2003Muscle>;
+%template(Thelen2003MuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Thelen2003Muscle>;
+
+%template(Millard2012EquilibriumMuscleList)
+    OpenSim::ComponentList<const OpenSim::Millard2012EquilibriumMuscle>;
+%template(Millard2012EquilibriumMuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Millard2012EquilibriumMuscle>;
+
+%template(getThelen2003MuscleList)
+  OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
+%template(getMillard2012EquilibriumMuscleList)
+  OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;

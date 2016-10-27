@@ -46,9 +46,37 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumColumns()  == 6
 
         tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
+
         markers = tables['markers']
-        forces = tables['forces']
         assert markers.getNumRows()    == 1103
         assert markers.getNumColumns() == 40
+
+        markersFlat = markers.flatten()
+        assert markersFlat.getNumRows()    == 1103
+        assert markersFlat.getNumColumns() == 40 * 3
+
+        markersFilename = 'markers.mot'
+        stoAdapter = osim.STOFileAdapter()
+        stoAdapter.write(markersFlat, markersFilename)
+
+        markersDouble = stoAdapter.read(markersFilename)
+        assert markersDouble.getNumRows()    == 1103
+        assert markersDouble.getNumColumns() == 40 * 3
+        
+        forces = tables['forces']
         assert forces.getNumRows()     == 8824
         assert forces.getNumColumns()  == 6
+
+        forcesFlat = forces.flatten()
+        assert forcesFlat.getNumRows()    == 8824
+        assert forcesFlat.getNumColumns() == 6 * 3
+
+        forcesFilename = 'forces.mot'
+        stoAdapter.write(forcesFlat, forcesFilename)
+
+        forcesDouble = stoAdapter.read(forcesFilename)
+        assert forcesDouble.getNumRows()    == 8824
+        assert forcesDouble.getNumColumns() == 6 * 3
+
+        os.remove(markersFilename)
+        os.remove(forcesFilename)
