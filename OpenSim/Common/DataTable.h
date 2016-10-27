@@ -220,10 +220,125 @@ public:
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatInd = that.getIndependentColumn().at(r);
             const auto& thatRow = that.getRowAtIndex(r);
-            std::vector<ETY> row{};
+            std::vector<ETY> thisRow{};
             for(unsigned c = 0; c < that.getNumColumns(); ++c)
-                splitElementAndPushBack(row, thatRow[c]);
-            appendRow(thatInd, row);
+                splitElementAndPushBack(thisRow, thatRow[c]);
+            appendRow(thatInd, thisRow);
+        }
+    }
+
+    explicit DataTable_(const DataTable_<double, double>& that,
+                        const std::vector<std::string>& suffixes) :
+        AbstractDataTable{that} {
+        static_assert(!std::is_same<ETY, double>::value,
+                      "This constructor cannot be used to construct "
+                      "DataTable_<double, double>. Maybe use the copy "
+                      "constructor instead.");
+
+        OPENSIM_THROW_IF(!that.hasColumnLabels(),
+                         InvalidArgument,
+                         "DataTable 'that' has no column labels.");
+        OPENSIM_THROW_IF(that.getNumRows() == 0 || that.getNumColumns() == 0,
+                         InvalidArgument,
+                         "DataTable 'that' has zero rows/columns.");
+        OPENSIM_THROW_IF(!suffixes.empty() &&
+                         suffixes.size() != numComponentsPerElement(),
+                         InvalidArgument,
+                         "'suffixes' must contain same number of elements as "
+                         "number of components per element of 'this' DataTable."
+                         " See documentation for numComponentsPerElement().");
+        OPENSIM_THROW_IF(std::lldiv(that.getNumColumns(),
+                                    numComponentsPerElement()).rem != 0,
+                         InvalidArgument,
+                         "Input DataTable must contain " +
+                         std::to_string(numComponentsPerElement()) + "x "
+                         "number of columns.");
+
+        const auto& thatLabels = that.getColumnLabels();
+        for(unsigned i = 0; i < thatLabels.size(); ++i)
+            OPENSIM_THROW_IF(thatLabels[i].length() < 2,
+                             InvalidArgument,
+                             "Column label at index " + std::to_string(i) +
+                             " is too short to have a suffix.");
+
+        // Guess suffixes from columns labels of that table.
+        std::vector<std::string> suffs{suffixes};
+        if(suffs.empty()) {
+            for(unsigned i = 0; i < numComponentsPerElement(); ++i) {
+                std::string suff{thatLabels[i][thatLabels[i].size() - 1]};
+                char nonSuffChar{thatLabels[i][thatLabels[i].size() - 2]};
+                bool foundNonSuffChar{false};
+                while(!foundNonSuffChar) {
+                    for(unsigned c = i;
+                        c < thatLabels.size();
+                        c += numComponentsPerElement()) {
+                        try {
+                            if(thatLabels[c].at(thatLabels[c].size() - 1 -
+                                                suff.length()) != nonSuffChar) {
+                                foundNonSuffChar = true;
+                                break;
+                            }
+                        } catch(const std::out_of_range&) {
+                            OPENSIM_THROW(InvalidArgument,
+                                          "Cannot guess the suffix from column"
+                                          " label at index " +
+                                          std::to_string(c));
+                        }
+                    }
+                    if(!foundNonSuffChar) {
+                        suff.insert(suff.begin(), nonSuffChar);
+                        try {
+                            nonSuffChar =
+                                thatLabels[i].at(thatLabels[i].size() - 1 -
+                                                 suff.length());
+                        } catch(const std::out_of_range&) {
+                            OPENSIM_THROW(InvalidArgument,
+                                          "Cannot guess the suffix from column"
+                                          " label at index " +
+                                          std::to_string(i));
+                        }
+                    }
+                }
+                suffs.push_back(suff);
+            }
+        }
+
+        // Form column labels for this table from that table.
+        std::vector<std::string> thisLabels{};
+        for(unsigned c = 0; c < thatLabels.size(); ) {
+            for(unsigned i = 0; i < numComponentsPerElement(); ++i, ++c) {
+                const auto& thatLabel = thatLabels[c];
+                OPENSIM_THROW_IF(thatLabel.compare(thatLabel.length() -
+                                                   suffs[i].length(),
+                                                   suffs[i].length(),
+                                                   suffs[i]) != 0,
+                                 InvalidArgument,
+                                 "Suffix not found in column label '" +
+                                 thatLabel + "'. Expected suffix '" +
+                                 suffs[i] + "'.");
+
+                if(i == 0) {
+                    auto thisLabel = thatLabel.substr(0,
+                                                      thatLabel.length() -
+                                                      suffs[i].length());
+                    thisLabels.push_back(thisLabel);
+                }
+            }
+        }
+        setColumnLabels(thisLabels);
+
+        // Form rows for this table from that table.
+        for(unsigned r = 0; r < that.getNumRows(); ++r) {
+            const auto& thatInd = that.getIndependentColumn().at(r);
+            auto thatRow = that.getRowAtIndex(r);
+            std::vector<ETY> thisRow{};
+            for(unsigned c = 0;
+                c < that.getNumColumns();
+                c += numComponentsPerElement()) {
+                thisRow.push_back(makeElement(thatRow.begin() + c,
+                                              thatRow.end()));
+            }
+            appendRow(thatInd, thisRow);
         }
     }
 
@@ -926,6 +1041,45 @@ protected:
     std::vector<double> splitElement(const double& elt) {
         return {elt};
     }
+
+    template<int N, typename Iter>
+    static
+    void makeElement_helper(SimTK::Vec<N>& elem,
+                            Iter begin, Iter end) {
+        for(unsigned i = 0; i < N; ++i) {
+            OPENSIM_THROW_IF(begin == end,
+                             InvalidArgument,
+                             "Iterators do not produce enough elements."
+                             "Expected: " + std::to_string(N) + " Received: " +
+                             std::to_string(i));
+                
+            elem[i] = *begin++;
+        }
+    }
+    template<int M, int N, typename Iter>
+    static
+    void makeElement_helper(SimTK::Vec<M, SimTK::Vec<N>>& elem,
+                            Iter begin, Iter end) {
+        for(unsigned i = 0; i < M; ++i) {
+            for(unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                                 InvalidArgument,
+                                 "Iterators do not produce enough elements."
+                                 "Expected: " + std::to_string(M * N) +
+                                 " Received: " + std::to_string((i + 1) * j));
+
+                elem[i][j] = *begin++;
+            }
+        }
+    }
+    template<typename Iter>
+    static
+    ETY makeElement(Iter begin, Iter end) {
+        ETY elem{};
+        makeElement_helper(elem, begin, end);
+        return elem;
+    }
+    
     
     /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
