@@ -131,6 +131,7 @@ public:
     DataTable<double, double> of 9 columns and 4 rows where each component of
     SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
     will use column labels of source table appended with suffixes provided.
+    This constructor only makes sense for DataTable_<double, double>.
 
     \tparam ThatETY Datatype of the matrix underlying the given DataTable.
 
@@ -227,6 +228,35 @@ public:
         }
     }
 
+    /** Construct this DataTable from a DataTable_<double, double>. This is the
+    opposite operation of flatten(). Multiple consecutive columns of the given
+    DataTable will be 'packed' together to form columns of this DataTable. For
+    example, if this DataTable is of type DataTable_<double, Vec3>, then every
+    3 consecutive columns of the given DataTable will form one column of this
+    DataTable. The column labels of this table will be formed by stripping out
+    the suffixes from the column labels of the given DataTable. For the same 
+    example above, if columns labels of the given DataTable are -- 
+    "col0.x", "col0.y", "col0.x", "col1.x", "col1.y", "col1.x" -- the column 
+    labels of this DataTable will be -- "col0", "col1" -- where suffixes are
+    stripped out. This constructor will try to guess the suffixes used. If 
+    unable to do so, it will throw an exception. Suffixes used can also be 
+    specified as arguments. 
+    This constructor only makes sense for DataTable_<double, "not double">.
+
+    \param that DataTable to copy-construct this DataTable from.
+    \param suffixes Suffixes used in the input DataTable to distinguish 
+                    individual components. For example, if column labels are -- 
+                    "force.x", "force.y", "force.z" -- suffixes will be -- ".x",
+                    ".y", ".z".
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has no rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of 
+                            elements as this->numComponentsPerElement().
+    \throws InvalidArgument If number of columns in 'that' DataTable is not a
+                            multiple of this->numComponentsPerElement().
+    \throws InvalidArgument If suffixes cannot be extracted from column-labels 
+                            of 'that' DataTable.                              */
     explicit DataTable_(const DataTable_<double, double>& that,
                         const std::vector<std::string>& suffixes) :
         AbstractDataTable{that} {
@@ -412,11 +442,30 @@ public:
         return DataTable_<double, double>{*this, suffixes};
     }
 
+    /** Pack the columns of this table to create a DataTable_<double, ThatETY>,
+    where 'ThatETY' is the template parameter which can be SimTK::Vec3, 
+    SimTK::UnitVec3, SimTK::Quaternion, SimTK::SpatialVec and so on. Multiple
+    consecutive columns of this table will be packed into one column of the 
+    resulting table. For example while creating a DataTable_<double, Quaternion>
+    , every group of 4 consecutive columns of this table will form one column 
+    of the resulting table. The column-labels of the resulting table will be
+    formed by stripping the suffixes in the column-labels of this table.
+    This function will attempt to guess the suffixes of column-labels. See
+    documenation for constructor DataTable_::DataTable_().                    */
     template<typename ThatETY>
     DataTable_<double, ThatETY> pack() const {
         return DataTable_<double, ThatETY>{*this};
     }
 
+    /** Pack the columns of this table to create a DataTable_<double, ThatETY>,
+    where 'ThatETY' is the template parameter which can be SimTK::Vec3, 
+    SimTK::UnitVec3, SimTK::Quaternion, SimTK::SpatialVec and so on. Multiple
+    consecutive columns of this table will be packed into one column of the 
+    resulting table. For example while creating a DataTable_<double, Quaternion>
+    , every group of 4 consecutive columns of this table will form one column 
+    of the resulting table. The column-labels of the resulting table will be
+    formed by stripping the suffixes in the column-labels of this table. See
+    documenation for constructor DataTable_::DataTable_().                    */
     template<typename ThatETY>
     DataTable_<double, ThatETY>
     pack(const std::vector<std::string>& suffixes) const {
