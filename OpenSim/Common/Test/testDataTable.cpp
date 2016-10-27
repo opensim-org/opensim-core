@@ -443,8 +443,7 @@ int main() {
 
         std::cout << "Test DataTable packing for Vec3 with suffix specified."
                   << std::endl;
-        DataTable_<double, SimTK::Vec3> tableVec3_1{tableDouble,
-                                                    {"_x", "_y", "_z"}};
+        auto tableVec3_1 = tableDouble.pack<SimTK::Vec3>({"_x", "_y", "_z"});
         std::vector<std::string> expLabels{"col0", "col1", "col2", "col3"};
         ASSERT(tableVec3_1.getColumnLabels() == expLabels);
         ASSERT(tableVec3_1.getNumRows()      == 3);
@@ -455,7 +454,7 @@ int main() {
             
         std::cout << "Test DataTable packing for Vec3 with suffix unspecified."
                   << std::endl;
-        DataTable_<double, SimTK::Vec3> tableVec3_2{tableDouble};
+        auto tableVec3_2 = tableDouble.pack<SimTK::Vec3>();
         ASSERT(tableVec3_2.getColumnLabels() == expLabels);
         ASSERT(tableVec3_2.getNumRows()      == 3);
         ASSERT(tableVec3_2.getNumColumns()   == 4);
@@ -464,7 +463,7 @@ int main() {
         std::cout << tableVec3_2 << std::endl;
 
         std::cout << "Test DataTable packing for UnitVec3." << std::endl;
-        DataTable_<double, SimTK::UnitVec3> tableUVec3{tableDouble};
+        auto tableUVec3 = tableDouble.pack<SimTK::UnitVec3>();
         ASSERT(tableUVec3.getColumnLabels() == expLabels);
         ASSERT(tableUVec3.getNumRows()      == 3);
         ASSERT(tableUVec3.getNumColumns()   == 4);
@@ -476,7 +475,7 @@ int main() {
         tableDouble.setColumnLabels({"col0.0", "col0.1", "col0.2", "col0.3",
                                      "col1.0", "col1.1", "col1.2", "col1.3",
                                      "col2.0", "col2.1", "col2.2", "col2.3"});
-        DataTable_<double, SimTK::Quaternion> tableQuat{tableDouble};
+        auto tableQuat = tableDouble.pack<SimTK::Quaternion>();
         expLabels = {"col0", "col1", "col2"};
         ASSERT(tableQuat.getColumnLabels() == expLabels);
         ASSERT(tableQuat.getNumRows()      == 3);
@@ -490,7 +489,7 @@ int main() {
                                      "col0.3", "col0.4", "col0.5",
                                      "col1.0", "col1.1", "col1.2",
                                      "col1.3", "col1.4", "col1.5"});
-        DataTable_<double, SimTK::SpatialVec> tableSVec{tableDouble};
+        auto tableSVec = tableDouble.pack<SimTK::SpatialVec>();
         expLabels = {"col0", "col1"};
         ASSERT(tableSVec.getColumnLabels() == expLabels);
         ASSERT(tableSVec.getNumRows()      == 3);
