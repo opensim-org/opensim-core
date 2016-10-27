@@ -412,6 +412,17 @@ public:
         return DataTable_<double, double>{*this, suffixes};
     }
 
+    template<typename ThatETY>
+    DataTable_<double, ThatETY> pack() const {
+        return DataTable_<double, ThatETY>{*this};
+    }
+
+    template<typename ThatETY>
+    DataTable_<double, ThatETY>
+    pack(const std::vector<std::string>& suffixes) const {
+        return DataTable_<double, ThatETY>{*this, suffixes};
+    }
+
     /** Retrieve the number of components each element (of type ETY) of the 
     table is made of. Some examples:
 
