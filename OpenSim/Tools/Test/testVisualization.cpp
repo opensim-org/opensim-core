@@ -179,7 +179,7 @@ void testVisModel(Model& model, const std::string standard_filename)
         + standard_filename + "'.");
     if (visualDebug) {
         char c;
-        std::cout << "press any key to continue" << std::endl;
+        std::cout << "press Enter (or Return) to continue" << std::endl;
         std::cin >> c;
     }
 }
@@ -246,7 +246,7 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
     }
     if (visualDebug) {
         char c;
-        std::cout << "press any key to continue" << std::endl;
+        std::cout << "press Enter (or Return) to continue" << std::endl;
         std::cin >> c;
     }
     return true;
