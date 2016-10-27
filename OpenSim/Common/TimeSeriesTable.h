@@ -112,6 +112,11 @@ public:
     /** Flatten the columns of this table to create a TimeSeriesTable_<double>.
     See documentation of DataTable_::flatten() for details.                   */
     using DataTable_<double, ETY>::flatten;
+    /** Pack the columns of this table (which should be TimeSeriesTable_<double>
+    ) to create a TimeSeriesTable_<SimTK::Vec3>, TimeSeriesTable_<SimTK::Vec6>,
+    TimeSeriesTable_<SimTK::UnitVec3> and so on. See documentation for 
+    DataTable_::pack().                                                       */
+    using DataTable_<double, ETY>::pack;
     
     /** Construct a TimeSeriesTable_ from a DataTable_.                       
 
