@@ -152,6 +152,7 @@ class TestTables {
         assert tableVec3.getColumnLabel(3).equals("col3");
         assert tableVec3.getNumRows()    == 3;
         assert tableVec3.getNumColumns() == 4;
+        System.out.println(tableVec3);
         tableVec3 = table.packVec3();
         assert tableVec3.getColumnLabel(0).equals("col0");
         assert tableVec3.getColumnLabel(1).equals("col1");
@@ -159,6 +160,7 @@ class TestTables {
         assert tableVec3.getColumnLabel(3).equals("col3");
         assert tableVec3.getNumRows()    == 3;
         assert tableVec3.getNumColumns() == 4;
+        System.out.println(tableVec3);
         DataTableUnitVec3 tableUnitVec3 = table.packUnitVec3();
         assert tableUnitVec3.getColumnLabel(0).equals("col0");
         assert tableUnitVec3.getColumnLabel(1).equals("col1");
@@ -166,6 +168,7 @@ class TestTables {
         assert tableUnitVec3.getColumnLabel(3).equals("col3");
         assert tableUnitVec3.getNumRows()    == 3;
         assert tableUnitVec3.getNumColumns() == 4;
+        System.out.println(tableUnitVec3);
         labels = new StdVectorString();
         labels.add("col0.0"); labels.add("col0.1"); labels.add("col0.2");
         labels.add("col0.3"); labels.add("col1.0"); labels.add("col1.1");
@@ -178,6 +181,7 @@ class TestTables {
         assert tableQuat.getColumnLabel(2).equals("col2");
         assert tableQuat.getNumRows()    == 3;
         assert tableQuat.getNumColumns() == 3;
+        System.out.println(tableQuat);
         labels = new StdVectorString();
         labels.add("col0.0"); labels.add("col0.1"); labels.add("col0.2");
         labels.add("col0.3"); labels.add("col0.4"); labels.add("col0.5");
@@ -189,6 +193,7 @@ class TestTables {
         assert tableSVec.getColumnLabel(1).equals("col1");
         assert tableSVec.getNumRows()    == 3;
         assert tableSVec.getNumColumns() == 2;
+        System.out.println(tableSVec);
     }
 
     public static void test_DataTableVec3() {
@@ -397,6 +402,75 @@ class TestTables {
             assert false;
         } catch(java.lang.RuntimeException exc) {}
         System.out.println(table);
+        // Test pack-ing of columns of DataTable.
+        table = new TimeSeriesTable();
+        labels = new StdVectorString();
+        labels.add("col0_x"); labels.add("col0_y"); labels.add("col0_z");
+        labels.add("col1_x"); labels.add("col1_y"); labels.add("col1_z");
+        labels.add("col2_x"); labels.add("col2_y"); labels.add("col2_z");
+        labels.add("col3_x"); labels.add("col3_y"); labels.add("col3_z");
+        table.setColumnLabels(labels);
+        row = new RowVector(12, 1);
+        table.appendRow(1, row);
+        row = new RowVector(12, 2);
+        table.appendRow(2, row);
+        row = new RowVector(12, 3);
+        table.appendRow(3, row);
+        assert table.getColumnLabels().size() == 12;
+        assert table.getNumRows()             == 3;
+        assert table.getNumColumns()          == 12;
+        System.out.println(table);
+        StdVectorString suffixes = new StdVectorString();
+        suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
+        TimeSeriesTableVec3 tableVec3 = table.packVec3(suffixes);
+        assert tableVec3.getColumnLabel(0).equals("col0");
+        assert tableVec3.getColumnLabel(1).equals("col1");
+        assert tableVec3.getColumnLabel(2).equals("col2");
+        assert tableVec3.getColumnLabel(3).equals("col3");
+        assert tableVec3.getNumRows()    == 3;
+        assert tableVec3.getNumColumns() == 4;
+        System.out.println(tableVec3);
+        tableVec3 = table.packVec3();
+        assert tableVec3.getColumnLabel(0).equals("col0");
+        assert tableVec3.getColumnLabel(1).equals("col1");
+        assert tableVec3.getColumnLabel(2).equals("col2");
+        assert tableVec3.getColumnLabel(3).equals("col3");
+        assert tableVec3.getNumRows()    == 3;
+        assert tableVec3.getNumColumns() == 4;
+        System.out.println(tableVec3);
+        TimeSeriesTableUnitVec3 tableUnitVec3 = table.packUnitVec3();
+        assert tableUnitVec3.getColumnLabel(0).equals("col0");
+        assert tableUnitVec3.getColumnLabel(1).equals("col1");
+        assert tableUnitVec3.getColumnLabel(2).equals("col2");
+        assert tableUnitVec3.getColumnLabel(3).equals("col3");
+        assert tableUnitVec3.getNumRows()    == 3;
+        assert tableUnitVec3.getNumColumns() == 4;
+        System.out.println(tableUnitVec3);
+        labels = new StdVectorString();
+        labels.add("col0.0"); labels.add("col0.1"); labels.add("col0.2");
+        labels.add("col0.3"); labels.add("col1.0"); labels.add("col1.1");
+        labels.add("col1.2"); labels.add("col1.3"); labels.add("col2.0");
+        labels.add("col2.1"); labels.add("col2.2"); labels.add("col2.3");
+        table.setColumnLabels(labels);
+        TimeSeriesTableQuaternion tableQuat = table.packQuaternion();
+        assert tableQuat.getColumnLabel(0).equals("col0");
+        assert tableQuat.getColumnLabel(1).equals("col1");
+        assert tableQuat.getColumnLabel(2).equals("col2");
+        assert tableQuat.getNumRows()    == 3;
+        assert tableQuat.getNumColumns() == 3;
+        System.out.println(tableQuat);
+        labels = new StdVectorString();
+        labels.add("col0.0"); labels.add("col0.1"); labels.add("col0.2");
+        labels.add("col0.3"); labels.add("col0.4"); labels.add("col0.5");
+        labels.add("col1.0"); labels.add("col1.1"); labels.add("col1.2");
+        labels.add("col1.3"); labels.add("col1.4"); labels.add("col1.5");
+        table.setColumnLabels(labels);
+        TimeSeriesTableSpatialVec tableSVec = table.packSpatialVec();
+        assert tableSVec.getColumnLabel(0).equals("col0");
+        assert tableSVec.getColumnLabel(1).equals("col1");
+        assert tableSVec.getNumRows()    == 3;
+        assert tableSVec.getNumColumns() == 2;
+        System.out.println(tableSVec);
     }
 
     public static void test_TimeSeriesTableVec3() {

@@ -176,6 +176,40 @@ namespace OpenSim {
 }
 
 %ignore OpenSim::TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
+%extend OpenSim::TimeSeriesTable_<double> {
+    TimeSeriesTable_<SimTK::Vec3>
+    packVec3() {
+        return $self->pack<SimTK::Vec3>();
+    }
+    TimeSeriesTable_<SimTK::Vec3>
+    packVec3(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Vec3>();
+    }
+    TimeSeriesTable_<SimTK::UnitVec3>
+    packUnitVec3() {
+        return $self->pack<SimTK::UnitVec3>();
+    }
+    TimeSeriesTable_<SimTK::UnitVec3>
+    packUnitVec3(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::UnitVec3>();
+    }
+    TimeSeriesTable_<SimTK::Quaternion>
+    packQuaternion() {
+        return $self->pack<SimTK::Quaternion>();
+    }
+    TimeSeriesTable_<SimTK::Quaternion>
+    packQuaternion(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Quaternion>();
+    }
+    TimeSeriesTable_<SimTK::SpatialVec>
+    packSpatialVec() {
+        return $self->pack<SimTK::SpatialVec>();
+    }
+    TimeSeriesTable_<SimTK::SpatialVec>
+    packSpatialVec(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::SpatialVec>();
+    }
+}
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {
     TimeSeriesTable_<double> flatten() {
         return $self->flatten();
