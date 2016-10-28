@@ -147,6 +147,54 @@ class TestDataTable(unittest.TestCase):
             assert false
         except RuntimeError:
             pass
+        # Test pack-ing of columns of DataTable.
+        table = osim.DataTable()
+        table.setColumnLabels(('col0_x', 'col0_y', 'col0_z',
+                               'col1_x', 'col1_y', 'col1_z',
+                               'col2_x', 'col2_y', 'col2_z',
+                               'col3_x', 'col3_y', 'col3_z'))
+        row = osim.RowVector([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        table.appendRow(1, row)
+        row = osim.RowVector([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        table.appendRow(2, row)
+        row = osim.RowVector([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        table.appendRow(3, row)
+        assert len(table.getColumnLabels()) == 12
+        assert table.getNumRows()           == 3
+        assert table.getNumColumns()        == 12
+        print table
+        tableVec3 = table.packVec3(('_x', '_y', '_z'))
+        tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableVec3.getNumRows()    == 3
+        tableVec3.getNumColumns() == 4
+        print tableVec3
+        tableVec3 = table.packVec3()
+        tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableVec3.getNumRows()    == 3
+        tableVec3.getNumColumns() == 4
+        print tableVec3
+        tableUnitVec3 = table.packUnitVec3()
+        tableUnitVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableUnitVec3.getNumRows()    == 3
+        tableUnitVec3.getNumColumns() == 4
+        print tableUnitVec3
+        table.setColumnLabels(('col0.0', 'col0.1', 'col0.2', 'col0.3',
+                               'col1.0', 'col1.1', 'col1.2', 'col1.3',
+                               'col2.0', 'col2.1', 'col2.2', 'col2.3'))
+        tableQuat = table.packQuaternion()
+        tableQuat.getColumnLabels() == ('col0', 'col1', 'col2')
+        tableQuat.getNumRows()    == 3
+        tableQuat.getNumColumns() == 3
+        print tableQuat
+        table.setColumnLabels(('col0_0', 'col0_1', 'col0_2',
+                               'col0_3', 'col0_4', 'col0_5',
+                               'col1_0', 'col1_1', 'col1_2',
+                               'col1_3', 'col1_4', 'col1_5'))
+        tableSVec = table.packSpatialVec()
+        tableSVec.getColumnLabels() == ('col0', 'col1')
+        tableSVec.getNumRows()    == 3
+        tableSVec.getNumColumns() == 2
+        print tableSVec
 
     def test_TimeSeriesTable(self):
         print
@@ -183,6 +231,54 @@ class TestDataTable(unittest.TestCase):
             assert False
         except RuntimeError:
             pass
+        # Test pack-ing of columns of TimeSeriesTable.
+        table = osim.TimeSeriesTable()
+        table.setColumnLabels(('col0_x', 'col0_y', 'col0_z',
+                               'col1_x', 'col1_y', 'col1_z',
+                               'col2_x', 'col2_y', 'col2_z',
+                               'col3_x', 'col3_y', 'col3_z'))
+        row = osim.RowVector([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        table.appendRow(1, row)
+        row = osim.RowVector([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        table.appendRow(2, row)
+        row = osim.RowVector([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        table.appendRow(3, row)
+        assert len(table.getColumnLabels()) == 12
+        assert table.getNumRows()           == 3
+        assert table.getNumColumns()        == 12
+        print table
+        tableVec3 = table.packVec3(('_x', '_y', '_z'))
+        tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableVec3.getNumRows()    == 3
+        tableVec3.getNumColumns() == 4
+        print tableVec3
+        tableVec3 = table.packVec3()
+        tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableVec3.getNumRows()    == 3
+        tableVec3.getNumColumns() == 4
+        print tableVec3
+        tableUnitVec3 = table.packUnitVec3()
+        tableUnitVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
+        tableUnitVec3.getNumRows()    == 3
+        tableUnitVec3.getNumColumns() == 4
+        print tableUnitVec3
+        table.setColumnLabels(('col0.0', 'col0.1', 'col0.2', 'col0.3',
+                               'col1.0', 'col1.1', 'col1.2', 'col1.3',
+                               'col2.0', 'col2.1', 'col2.2', 'col2.3'))
+        tableQuat = table.packQuaternion()
+        tableQuat.getColumnLabels() == ('col0', 'col1', 'col2')
+        tableQuat.getNumRows()    == 3
+        tableQuat.getNumColumns() == 3
+        print tableQuat
+        table.setColumnLabels(('col0_0', 'col0_1', 'col0_2',
+                               'col0_3', 'col0_4', 'col0_5',
+                               'col1_0', 'col1_1', 'col1_2',
+                               'col1_3', 'col1_4', 'col1_5'))
+        tableSVec = table.packSpatialVec()
+        tableSVec.getColumnLabels() == ('col0', 'col1')
+        tableSVec.getNumRows()    == 3
+        tableSVec.getNumColumns() == 2
+        print tableSVec
 
     def test_DataTableVec3(self):
         table = osim.DataTableVec3()
