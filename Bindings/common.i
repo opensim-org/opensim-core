@@ -218,6 +218,38 @@ namespace OpenSim {
         return $self->flatten(suffixes);
     }
 }
+%extend OpenSim::TimeSeriesTable_<SimTK::UnitVec3> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::Quaternion> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::Vec6> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::SpatialVec> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
 
 %include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>

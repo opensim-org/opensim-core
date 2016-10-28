@@ -168,16 +168,37 @@ class TestDataTable(unittest.TestCase):
         tableVec3.getNumRows()    == 3
         tableVec3.getNumColumns() == 4
         print tableVec3
+        tableFlat = tableVec3.flatten()
+        assert len(tableFlat.getColumnLabels()) == 12
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(11) == 'col3_3'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 12
+        print tableFlat
         tableVec3 = table.packVec3()
         tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
         tableVec3.getNumRows()    == 3
         tableVec3.getNumColumns() == 4
         print tableVec3
+        tableFlat = tableVec3.flatten()
+        assert len(tableFlat.getColumnLabels()) == 12
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(11) == 'col3_3'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 12
+        print tableFlat
         tableUnitVec3 = table.packUnitVec3()
         tableUnitVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
         tableUnitVec3.getNumRows()    == 3
         tableUnitVec3.getNumColumns() == 4
         print tableUnitVec3
+        tableFlat = tableUnitVec3.flatten()
+        assert len(tableFlat.getColumnLabels()) == 12
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(11) == 'col3_3'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 12
+        print tableFlat
         table.setColumnLabels(('col0.0', 'col0.1', 'col0.2', 'col0.3',
                                'col1.0', 'col1.1', 'col1.2', 'col1.3',
                                'col2.0', 'col2.1', 'col2.2', 'col2.3'))
@@ -186,6 +207,13 @@ class TestDataTable(unittest.TestCase):
         tableQuat.getNumRows()    == 3
         tableQuat.getNumColumns() == 3
         print tableQuat
+        tableFlat = tableQuat.flatten()
+        assert len(tableFlat.getColumnLabels()) == 12
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(11) == 'col2_4'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 12
+        print tableFlat
         table.setColumnLabels(('col0_0', 'col0_1', 'col0_2',
                                'col0_3', 'col0_4', 'col0_5',
                                'col1_0', 'col1_1', 'col1_2',
@@ -195,6 +223,13 @@ class TestDataTable(unittest.TestCase):
         tableSVec.getNumRows()    == 3
         tableSVec.getNumColumns() == 2
         print tableSVec
+        tableFlat = tableSVec.flatten()
+        assert len(tableFlat.getColumnLabels()) == 12
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(11) == 'col1_6'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 12
+        print tableFlat
 
     def test_TimeSeriesTable(self):
         print
