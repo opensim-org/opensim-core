@@ -336,6 +336,7 @@ public:
         // Form column labels for this table from that table.
         std::vector<std::string> thisLabels{};
         for(unsigned c = 0; c < thatLabels.size(); ) {
+            std::string thisLabel{};
             for(unsigned i = 0; i < numComponentsPerElement(); ++i, ++c) {
                 const auto& thatLabel = thatLabels[c];
                 OPENSIM_THROW_IF(thatLabel.compare(thatLabel.length() -
@@ -348,10 +349,19 @@ public:
                                  suffs[i] + "'.");
 
                 if(i == 0) {
-                    auto thisLabel = thatLabel.substr(0,
-                                                      thatLabel.length() -
-                                                      suffs[i].length());
+                    thisLabel = thatLabel.substr(0,
+                                                 thatLabel.length() -
+                                                 suffs[i].length());
                     thisLabels.push_back(thisLabel);
+                } else {
+                    OPENSIM_THROW_IF(thisLabel !=
+                                     thatLabel.substr(0,
+                                                      thatLabel.length() -
+                                                      suffs[i].length()),
+                                     InvalidArgument,
+                                     "Unexpected column-label '" + thatLabel +
+                                     "'. Expected: '" + thisLabel + suffs[i] +
+                                     "'.");
                 }
             }
         }
