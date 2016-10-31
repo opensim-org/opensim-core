@@ -37,6 +37,16 @@
 #include "Coordinate.h"
 
 //=============================================================================
+// STATICS
+//=============================================================================
+using namespace std;
+using namespace OpenSim;
+using namespace SimTK;
+
+static std::string SimbodyGroundName = "ground";
+
+
+//=============================================================================
 // EXCEPTIONS
 //=============================================================================
 class CannotUsePhysicalOffsetFrame : public Exception {
@@ -51,16 +61,6 @@ public:
         addMessage(msg);
     }
 };
-
-//=============================================================================
-// STATICS
-//=============================================================================
-using namespace std;
-using namespace OpenSim;
-using namespace SimTK;
-
-static std::string SimbodyGroundName = "ground";
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR

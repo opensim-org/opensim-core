@@ -167,9 +167,10 @@ public:
     //-------------------------------------------------------------------------
     /** @name Deprecated */
     // @{
-    /** <b>(Deprecated)</b> Use Frame::getPositionInGround() instead. */
-    DEPRECATED_14("use Frame::getPositionInGround() instead")
-        void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
+    /** <b>(Deprecated)</b> Use Station::getLocationInGround() instead. */
+    DEPRECATED_14("use Station::getLocationInGround() instead")
+    void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
+
     void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
     void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
