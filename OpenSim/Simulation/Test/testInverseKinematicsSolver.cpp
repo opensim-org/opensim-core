@@ -228,7 +228,7 @@ void testUpdateGoalWeights()
 
     // increasing the marker weight (marker[1] = "mR") should cause that marker
     // error to decrease
-    SimTK_ASSERT_ALWAYS(rightMarkerWeightedErrors[1] <= nominalMarkerErrors[1],
+    SimTK_ASSERT_ALWAYS(rightMarkerWeightedErrors[1] < nominalMarkerErrors[1],
         "InverseKinematicsSolver failed to lower 'right' marker error when "
         "marker weight was increased.");
 
@@ -255,7 +255,7 @@ void testUpdateGoalWeights()
     // increasing the marker weight (marker[2] = "mL") should cause that marker
     // error to decrease
     SimTK_ASSERT_ALWAYS(
-        leftMarkerWeightedErrors[2] <= rightMarkerWeightedErrors[2],
+        leftMarkerWeightedErrors[2] < rightMarkerWeightedErrors[2],
         "InverseKinematicsSolver failed to lower 'left' marker error when "
         "marker weight was increased.");
 
