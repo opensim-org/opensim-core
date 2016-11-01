@@ -22,9 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 //=============================================================================
-// testInverseKinematicsSolver verifies the interface to assemble and track
-// coordinate and marker goals and that the weightings are correctly updated.
-//
+// testInverseKinematicsSolver verifies that changes to the accuracy and marker
+// weights have expected effects on the inverse kinematics results/errors
 //=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
@@ -40,31 +39,44 @@ using namespace std;
 
 Model* constructPendulumWithMarkers();
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double offset=0);
+    const StatesTrajectory& states, double noiseRadius=0, bool fixed=false);
 
 void testAccuracy();
-void testUpdateGoalWeights();
-//void testTrackWithUpdateGoalWeights();
+void testUpdateMarkerWeights();
+void testTrackWithUpdateMarkerWeights();
 
 double calcLigamentLengthError(const SimTK::State &s, const Model &model);
 
 int main()
 {
-    try {
-        testAccuracy();
-        testUpdateGoalWeights();
-    }
+    SimTK::Array_<std::string> failures;
+
+    try { testAccuracy(); }
     catch (const std::exception& e) {
-        cout << "\ntestInverseKinematicsSolver FAILED " << e.what() <<endl;
+        cout << e.what() << endl; failures.push_back("testAccuracy");
+    }
+    try { testUpdateMarkerWeights(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testUpdateGoalWeights");
+    }
+    try { testTrackWithUpdateMarkerWeights(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testAccuracy");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "\ntestInverseKinematicsSolver PASSED" << endl;
+
+    cout << "Done. All cases passed." << endl;
+
     return 0;
 }
 
-//==========================================================================================================
+//=============================================================================
 // Test Cases
-//==========================================================================================================
+//=============================================================================
 
 void testAccuracy()
 {
@@ -132,7 +144,7 @@ void testAccuracy()
     ikSolver.assemble(state);
 
     coordValue = coord.getValue(state);
-    cout << "Assembled " << coord.getName() << " value = " << coordValue << endl;
+    cout << "Assembled " << coord.getName() <<" value = "<< coordValue << endl;
 
     accuracy = abs(coord.getValue(state) - refVal);
 
@@ -160,9 +172,9 @@ void testAccuracy()
     delete pendulum;
 }
 
-void testUpdateGoalWeights()
+void testUpdateMarkerWeights()
 {
-    cout << "\ntestInverseKinematicsSolver::testUpdateGoalWeights()" << endl;
+    cout << "\ntestInverseKinematicsSolver::testUpdateMarkerWeights()" << endl;
     Model* pendulum = constructPendulumWithMarkers();
     Coordinate& coord = pendulum->getCoordinateSet()[0];
 
@@ -203,7 +215,7 @@ void testUpdateGoalWeights()
 
     for (unsigned int i = 0; i < markerNames.size(); ++i) {
         cout << markerNames[i] << "(weight = " << markerWeights[i]
-            << ") squared error = " << nominalMarkerErrors[i] << endl;
+            << ") error = " << nominalMarkerErrors[i] << endl;
     }
 
     // Increase the weight of the right marker 
@@ -223,7 +235,7 @@ void testUpdateGoalWeights()
 
     for (unsigned int i = 0; i < markerNames.size(); ++i) {
         cout << markerNames[i] << "(weight = " << markerWeights[i]
-            << ") squared error = " << rightMarkerWeightedErrors[i] << endl;
+            << ") error = " << rightMarkerWeightedErrors[i] << endl;
     }
 
     // increasing the marker weight (marker[1] = "mR") should cause that marker
@@ -249,7 +261,7 @@ void testUpdateGoalWeights()
 
     for (unsigned int i = 0; i < markerNames.size(); ++i) {
         cout << markerNames[i] << "(weight = " << markerWeights[i]
-            << ") squared error = " << leftMarkerWeightedErrors[i] << endl;
+            << ") error = " << leftMarkerWeightedErrors[i] << endl;
     }
 
     // increasing the marker weight (marker[2] = "mL") should cause that marker
@@ -258,9 +270,82 @@ void testUpdateGoalWeights()
         leftMarkerWeightedErrors[2] < rightMarkerWeightedErrors[2],
         "InverseKinematicsSolver failed to lower 'left' marker error when "
         "marker weight was increased.");
-
 }
 
+void testTrackWithUpdateMarkerWeights()
+{
+    cout << 
+        "\ntestInverseKinematicsSolver::testTrackWithUpdateMarkerWeights()" 
+        << endl;
+    Model* pendulum = constructPendulumWithMarkers();
+    Coordinate& coord = pendulum->getCoordinateSet()[0];
+
+    SimTK::State state = pendulum->initSystem();
+
+    StatesTrajectory states;
+
+    // sample time
+    double dt = 0.01;
+
+    for (int i = 0; i < 101; ++i) {
+        state.updTime()=i*dt;
+        coord.setValue(state, /*i*dt*/ SimTK::Pi / 3);
+        states.append(state);
+    } 
+
+    MarkerData* markerData =
+        generateMarkerDataFromModelAndStates(*pendulum, states, 0.02, true);
+    MarkersReference markersRef(markerData);
+    auto& markerNames = markersRef.getNames();
+
+    for (const auto& name : markerNames) {
+        markersRef.updMarkerWeightSet().adoptAndAppend(
+            new MarkerWeight(name, 1.0));
+    }
+
+    SimTK::Array_<CoordinateReference> coordRefs;
+    // Reset the initial coordinate value
+    coord.setValue(state, 0.0);
+    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    ikSolver.setAccuracy(1e-6);
+    ikSolver.assemble(state);
+
+    int nt = markerData->getNumFrames();
+
+    SimTK::Array_<double> markerWeights;
+    markersRef.getWeights(state, markerWeights);
+
+    SimTK::Array_<double> leftMarkerWeightedErrors;
+
+    double previousErr = 0.1;
+
+    for (int i = 0; i < nt; ++i) {
+        state.updTime() = i*dt;
+        // increment the weight of the left marker each time  
+        markerWeights[2] = 0.1*i+1;
+        ikSolver.updateMarkerWeights(markerWeights);
+        ikSolver.track(state);
+
+        if (i>0 && (i % 10 == 0)) {
+            //get the marker errors
+            ikSolver.computeCurrentMarkerErrors(leftMarkerWeightedErrors);
+
+            cout << "time: " << state.getTime() << " | " << markerNames[2] 
+                << "(weight = " << markerWeights[2] << ") error = " 
+                << leftMarkerWeightedErrors[2] << endl;
+
+            // increasing the marker weight (marker[2] = "mL") should cause
+            //  that marker error to decrease
+            SimTK_ASSERT_ALWAYS(
+                leftMarkerWeightedErrors[2] < previousErr,
+                "InverseKinematicsSolver track failed to lower 'left' "
+                "marker error when marker weight was increased.");
+
+            previousErr = leftMarkerWeightedErrors[2];
+        }
+
+    }
+}
 
 Model* constructPendulumWithMarkers()
 {
@@ -304,7 +389,7 @@ Model* constructPendulumWithMarkers()
 }
 
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double noiseRadius)
+    const StatesTrajectory& states, double noiseRadius, bool fixed)
 {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
@@ -335,14 +420,21 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
     // make a copy of the reported table
     auto results = markerReporter->getTable();
 
+    SimTK::Vec3 offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
+        double(noise(gen)),
+        double(noise(gen)));
+
     if (noiseRadius >= SimTK::Eps) {
         for (size_t i = 0; i < results.getNumRows(); ++i) {
             auto& row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
+                if (!fixed) {
+                    offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
+                        double(noise(gen)),
+                        double(noise(gen)));
+                }
                 // add noise to each marker
-                row[j] += noiseRadius*SimTK::Vec3(double(noise(gen)),
-                    double(noise(gen)),
-                    double(noise(gen)));
+                row[j] += offset;
             }
         }
     }
