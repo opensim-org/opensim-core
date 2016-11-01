@@ -342,7 +342,11 @@ bool InverseKinematicsTool::run()
             }
         }
 
-        //Set the weights for markers
+        // Set the default weight for markers
+        markersReference.setDefaultWeight(1.0);
+        // Set the weights for markers (markers in the model and the marker file
+        // but not assigned a weight in the markerWeightSet will use the default
+        // weight
         markersReference.setMarkerWeightSet(markerWeights);
         //Load the makers
         markersReference.loadMarkersFile(_markerFileName);
