@@ -81,7 +81,8 @@ int main()
 void testAccuracy()
 {
     cout << "\ntestInverseKinematicsSolver::testAccuracy()" << endl;
-    Model* pendulum = constructPendulumWithMarkers();
+
+    std::unique_ptr<Model> pendulum{ constructPendulumWithMarkers() };
     Coordinate& coord = pendulum->getCoordinateSet()[0];
 
     double refVal = 0.123456789;
@@ -168,14 +169,13 @@ void testAccuracy()
     SimTK_ASSERT_ALWAYS(tightSumSqError <= looseSumSqError,
         "InverseKinematicsSolver failed to maintain or lower marker errors "
         "when accuracy was tightened.");
-
-    delete pendulum;
 }
 
 void testUpdateMarkerWeights()
 {
     cout << "\ntestInverseKinematicsSolver::testUpdateMarkerWeights()" << endl;
-    Model* pendulum = constructPendulumWithMarkers();
+
+    std::unique_ptr<Model> pendulum{ constructPendulumWithMarkers() };
     Coordinate& coord = pendulum->getCoordinateSet()[0];
 
     double refVal = 0.123456789;
@@ -277,7 +277,7 @@ void testTrackWithUpdateMarkerWeights()
     cout << 
         "\ntestInverseKinematicsSolver::testTrackWithUpdateMarkerWeights()" 
         << endl;
-    Model* pendulum = constructPendulumWithMarkers();
+    std::unique_ptr<Model> pendulum{ constructPendulumWithMarkers() };
     Coordinate& coord = pendulum->getCoordinateSet()[0];
 
     SimTK::State state = pendulum->initSystem();
@@ -289,7 +289,7 @@ void testTrackWithUpdateMarkerWeights()
 
     for (int i = 0; i < 101; ++i) {
         state.updTime()=i*dt;
-        coord.setValue(state, /*i*dt*/ SimTK::Pi / 3);
+        coord.setValue(state, SimTK::Pi / 3);
         states.append(state);
     } 
 
@@ -343,7 +343,6 @@ void testTrackWithUpdateMarkerWeights()
 
             previousErr = leftMarkerWeightedErrors[2];
         }
-
     }
 }
 
@@ -395,7 +394,7 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
     std::mt19937 gen(0);
     std::normal_distribution<double> noise(0.0, 1);
 
-    Model* m = model.clone();
+    unique_ptr<Model> m{ model.clone() };
     m->finalizeFromProperties();
     
     auto* markerReporter = new TableReporterVec3();
@@ -444,8 +443,6 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
         "tmp_markers.sto");
 
     auto* md = new MarkerData("tmp_markers.sto");
-
-    delete m;
 
     return md;
 }
