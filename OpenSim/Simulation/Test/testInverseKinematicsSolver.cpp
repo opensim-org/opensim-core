@@ -143,7 +143,7 @@ void testAccuracy()
         looseSumSqError += err;
     }
     
-    cout << "For accuracy: " << looseAccuracy << "; Sum-squred Error: " 
+    cout << "For accuracy: " << looseAccuracy << "; Sum-squared Error: " 
         << looseSumSqError << endl;
 
     // Reset the initial coordinate value
@@ -169,7 +169,7 @@ void testAccuracy()
         tightSumSqError += err;
     }
 
-    cout << "For accuracy: " << tightAccuracy << "; Sum-squred Error: "
+    cout << "For accuracy: " << tightAccuracy << "; Sum-squared Error: "
         << tightSumSqError << endl;
 
     // refining the accuracy should not increase tracking errors
