@@ -31,18 +31,20 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <random>
+
 
 
 using namespace OpenSim;
 using namespace std;
 
 Model* constructPendulumWithMarkers();
-
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states);
+    const StatesTrajectory& states, double offset=0);
 
 void testAccuracy();
-
+void testUpdateGoalWeights();
+//void testTrackWithUpdateGoalWeights();
 
 double calcLigamentLengthError(const SimTK::State &s, const Model &model);
 
@@ -50,6 +52,7 @@ int main()
 {
     try {
         testAccuracy();
+        testUpdateGoalWeights();
     }
     catch (const std::exception& e) {
         cout << "\ntestInverseKinematicsSolver FAILED " << e.what() <<endl;
@@ -157,6 +160,79 @@ void testAccuracy()
     delete pendulum;
 }
 
+void testUpdateGoalWeights()
+{
+    cout << "\ntestInverseKinematicsSolver::testUpdateGoalWeights()" << endl;
+    Model* pendulum = constructPendulumWithMarkers();
+    Coordinate& coord = pendulum->getCoordinateSet()[0];
+
+    double refVal = 0.123456789;
+
+    SimTK::State state = pendulum->initSystem();
+    coord.setValue(state, refVal);
+
+    StatesTrajectory states;
+    states.append(state);
+
+    MarkerData* markerData =
+        generateMarkerDataFromModelAndStates(*pendulum, states, 0.02);
+    MarkersReference markersRef(markerData);
+    auto& markerNames = markersRef.getNames();
+
+    for (const auto& name : markerNames) {
+        markersRef.updMarkerWeightSet().adoptAndAppend(
+            new MarkerWeight(name, 1.0));
+    }
+
+    SimTK::Array_<CoordinateReference> coordRefs;
+    // Reset the initial coordinate value
+    coord.setValue(state, 0.0);
+    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    ikSolver.setAccuracy(1.0e-8);
+    ikSolver.assemble(state);
+
+    double coordValue = coord.getValue(state);
+    cout << "Assembled " << coord.getName() << " value = "
+        << coordValue << endl;
+
+    SimTK::Array_<double> nominalMarkerErrors;
+    ikSolver.computeCurrentMarkerErrors(nominalMarkerErrors);
+
+    SimTK::Array_<double> markerWeights;
+    markersRef.getWeights(state, markerWeights);
+
+    for (unsigned int i = 0; i < markerNames.size(); ++i) {
+        cout << markerNames[i] << "(weight = " << markerWeights[i]
+            << ") squared error = " << nominalMarkerErrors[i] << endl;
+    }
+
+    // Increase the weight of the right marker 
+    markerWeights[1] *= 10.0;
+    ikSolver.updateMarkerWeights(markerWeights);
+
+    // Reset the initial coordinate value
+    coord.setValue(state, 0.0);
+    ikSolver.assemble(state);
+
+    coordValue = coord.getValue(state);
+    cout << "Assembled " << coord.getName() << " value = "
+        << coordValue << endl;
+
+    SimTK::Array_<double> rightMarkerWeightedErrors;
+    ikSolver.computeCurrentMarkerErrors(rightMarkerWeightedErrors);
+
+    for (unsigned int i = 0; i < markerNames.size(); ++i) {
+        cout << markerNames[i] << "(weight = " << markerWeights[i]
+            << ") squared error = " << rightMarkerWeightedErrors[i] << endl;
+    }
+
+    // increasing the marker weight (marker[1] = "mR") should cause that marker
+    // error to decrease
+    SimTK_ASSERT_ALWAYS(rightMarkerWeightedErrors[1] <= nominalMarkerErrors[1],
+        "InverseKinematicsSolver failed to lower marker error when marker "
+        "weight was increased.");
+}
+
 
 Model* constructPendulumWithMarkers()
 {
@@ -200,8 +276,12 @@ Model* constructPendulumWithMarkers()
 }
 
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states)
+    const StatesTrajectory& states, double noiseRadius)
 {
+    // use a fixed seed so that we can reproduce and debug failures.
+    std::mt19937 gen(0);
+    std::normal_distribution<double> noise(0.0, 1);
+
     Model* m = model.clone();
     m->finalizeFromProperties();
     
@@ -222,9 +302,22 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
         m->realizeReport(state);
     }
 
-    // make a copy of the reported table so we can modify if we choose
+    auto maxval = noise.max();
+
+    // make a copy of the reported table
     auto results = markerReporter->getTable();
 
+    if (noiseRadius >= SimTK::Eps) {
+        for (size_t i = 0; i < results.getNumRows(); ++i) {
+            auto& row = results.updRowAtIndex(i);
+            for (int j = 0; j < row.size(); ++j) {
+                // add noise to each marker
+                row[j] += noiseRadius*SimTK::Vec3(double(noise(gen)),
+                    double(noise(gen)),
+                    double(noise(gen)));
+            }
+        }
+    }
 
     std::vector<std::string> suffixes{ ".x", ".y", ".z" };
     STOFileAdapter_<double>::write(results.flatten(suffixes),
