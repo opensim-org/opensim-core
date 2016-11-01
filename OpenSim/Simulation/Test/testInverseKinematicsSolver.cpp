@@ -32,20 +32,27 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <random>
 
-
-
 using namespace OpenSim;
 using namespace std;
 
+// Utility function to build a simple pendulum with markers attached
 Model* constructPendulumWithMarkers();
+// Using a model with markers and trajectory of states, create synthetic
+// marker data. If noiseRadius is provided use it to scale the noise
+// that perturbs the marker data. Optional fixed parameter to use the same
+// noise for each time frame or to compute noise to be added at each frame.
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
     const StatesTrajectory& states, double noiseRadius=0, bool fixed=false);
 
+// Verify that accuracy improves the number of decimals points to which
+// the solver solution (coordinates) can be trusted as it is tightened.
 void testAccuracy();
+// Verify that the marker weights impact the solver and has the expected
+// effect of reducing the error for the marker weight that is increased. 
 void testUpdateMarkerWeights();
+// Verify that the track() solution is also effected by updating marker
+// weights and marker error is being reduced as its weighting increases.
 void testTrackWithUpdateMarkerWeights();
-
-double calcLigamentLengthError(const SimTK::State &s, const Model &model);
 
 int main()
 {
