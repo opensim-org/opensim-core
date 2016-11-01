@@ -229,8 +229,36 @@ void testUpdateGoalWeights()
     // increasing the marker weight (marker[1] = "mR") should cause that marker
     // error to decrease
     SimTK_ASSERT_ALWAYS(rightMarkerWeightedErrors[1] <= nominalMarkerErrors[1],
-        "InverseKinematicsSolver failed to lower marker error when marker "
-        "weight was increased.");
+        "InverseKinematicsSolver failed to lower 'right' marker error when "
+        "marker weight was increased.");
+
+    // update the marker weights and repeat for the left hand marker "mL"
+    markerWeights[2] *= 20.0; // "mL"
+    ikSolver.updateMarkerWeights(markerWeights);
+
+    // Reset the initial coordinate value and reassemble
+    coord.setValue(state, 0.0);
+    ikSolver.assemble(state);
+
+    coordValue = coord.getValue(state);
+    cout << "Assembled " << coord.getName() << " value = "
+        << coordValue << endl;
+
+    SimTK::Array_<double> leftMarkerWeightedErrors;
+    ikSolver.computeCurrentMarkerErrors(leftMarkerWeightedErrors);
+
+    for (unsigned int i = 0; i < markerNames.size(); ++i) {
+        cout << markerNames[i] << "(weight = " << markerWeights[i]
+            << ") squared error = " << leftMarkerWeightedErrors[i] << endl;
+    }
+
+    // increasing the marker weight (marker[2] = "mL") should cause that marker
+    // error to decrease
+    SimTK_ASSERT_ALWAYS(
+        leftMarkerWeightedErrors[2] <= rightMarkerWeightedErrors[2],
+        "InverseKinematicsSolver failed to lower 'left' marker error when "
+        "marker weight was increased.");
+
 }
 
 
