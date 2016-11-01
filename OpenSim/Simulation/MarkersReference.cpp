@@ -51,7 +51,7 @@ MarkersReference::MarkersReference(MarkerData *markerData,
     populateFromMarkerData(*markerData);
 }
 
-/** load the marker data for this MarkersReference from markerFile  */
+/* load the marker data for this MarkersReference from markerFile  */
 void MarkersReference::loadMarkersFile(const std::string markerFile, Units modelUnits)
 {
     upd_marker_file() = markerFile;
@@ -64,7 +64,7 @@ void MarkersReference::loadMarkersFile(const std::string markerFile, Units model
 }
 
 
-/** A convenience method yo populate MarkersReference from MarkerData **/
+/* A convenience method to populate MarkersReference from MarkerData **/
 void MarkersReference::populateFromMarkerData(const MarkerData& aMarkerData)
 {
     const Array<std::string> &tempNames = aMarkerData.getMarkerNames();
@@ -77,19 +77,13 @@ void MarkersReference::populateFromMarkerData(const MarkerData& aMarkerData)
     _markerNames.assign(nm, "");
     _weights.assign(nm, get_default_weight());
 
-    int index = 0;
-    // Build flat lists (arrays) of marker names and weights in the same order as the marker data
-    for(int i=0; i<tempNames.getSize(); i++){
+    for (int i = 0; i < tempNames.getSize(); i++) {
         const std::string &name = tempNames[i];
         _markerNames[i] = name;
-        index = get_marker_weights().getIndex(name, index);
-        //Assign user weighting for markers that are user listed in the input set
-        if(index >= 0)
-            _weights[i] = get_marker_weights()[index].getWeight();
     }
 
-    if(_markerNames.size() != _weights.size())
-        throw Exception("MarkersReference: Mismatch between the number of marker names and weights. Verify that marker names are unique.");
+    // Names must be assigned before weights can be updated
+    updateInternalWeights();
 }
 
 SimTK::Vec2 MarkersReference::getValidTimeRange() const
@@ -104,7 +98,7 @@ void MarkersReference::constructProperties()
     constructProperty_marker_file("");
     Set<MarkerWeight> markerWeights;
     constructProperty_marker_weights(markerWeights);
-    constructProperty_default_weight(1.0);
+    constructProperty_default_weight(SimTK::NaN);
 }
 
 /** get the names of the markers serving as references */
@@ -145,6 +139,7 @@ void MarkersReference::getAccelerationValues(const SimTK::State &s, SimTK::Array
 /** get the weights of the Markers */
 void  MarkersReference::getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const
 {
+    updateInternalWeights();
     weights = _weights;
 }
 
@@ -152,5 +147,38 @@ void MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights
 {
     upd_marker_weights() = markerWeights;
 }
+
+void MarkersReference::setDefaultWeight(double weight)
+{
+    set_default_weight(weight); 
+}
+
+void MarkersReference::updateInternalWeights() const
+{
+    // if weights are not being changed, do not rebuild list of weights.
+    if (isObjectUpToDateWithProperties())
+        return;
+
+    //start by assigning default value to each
+    _weights.assign(getNumRefs(), get_default_weight());
+
+    // if the set of marker weights has not been changed, nothing
+    // else to be done.
+    if (get_marker_weights().isObjectUpToDateWithProperties())
+        return;
+
+    int wix = -1;
+    int ix = 0;
+    // Build flat lists of marker weights in the same order as the marker names
+    for (const std::string &name : _markerNames) {
+        wix = get_marker_weights().getIndex(name, wix);
+        //Assign user weighting for markers that are user listed in the input set
+        if (wix >= 0)
+            _weights[ix++] = get_marker_weights()[wix].getWeight();
+    }
+}
+
+
+
 
 } // end of namespace OpenSim
