@@ -23,7 +23,7 @@
 
 //=============================================================================
 // testAssemblySolver loads models with constraints to verify that constraints
-// are adequately satified or that an appropriate exception is thrown.
+// are adequately satisfied or that an appropriate exception is thrown.
 //
 //=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
