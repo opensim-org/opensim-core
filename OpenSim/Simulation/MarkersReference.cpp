@@ -98,7 +98,7 @@ void MarkersReference::constructProperties()
     constructProperty_marker_file("");
     Set<MarkerWeight> markerWeights;
     constructProperty_marker_weights(markerWeights);
-    constructProperty_default_weight(SimTK::NaN);
+    constructProperty_default_weight(1.0);
 }
 
 /** get the names of the markers serving as references */
