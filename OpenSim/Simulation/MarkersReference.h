@@ -25,9 +25,24 @@
 
 #include "Reference.h"
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/MarkerData.h>
+#include "OpenSim/Common/Units.h"
+#include "OpenSim/Common/TimeSeriesTable.h"
 
 namespace OpenSim {
+
+class UnsupportedFileType : public Exception {
+public:
+    UnsupportedFileType(const std::string& file,
+                        size_t line,
+                        const std::string& func,
+                        const std::string& filename,
+                        const std::string& msg) :
+        Exception{file, line, func} {
+        std::string message = msg + "\nFilename : '" + filename + "'";
+
+        addMessage(message);
+    }
+};
 
 class Units;
 
@@ -92,25 +107,25 @@ public:
 
     /** Convenience load markers from a file */
     MarkersReference(const std::string& markerFileName,
-                     Units modelUnits=Units(Units::Meters));
+                     Units modelUnits = Units(Units::Meters));
     /** Form a Reference from MarkerData and corresponding marker weights. Note
         The MarkersReference take ownership of the pointer to the MarkerData. 
         The marker weights are used to initialize the weightings of the markers
         provided by the Reference. Marker weights are associated to markers by
         name.*/
-    MarkersReference(MarkerData* markerData,
-        const Set<MarkerWeight>* markerWeightSet=nullptr);
+    MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerData,
+                     const Set<MarkerWeight>* markerWeightSet = nullptr);
 
     virtual ~MarkersReference() {}
 
     /** load the marker data for this MarkersReference from markerFile  */
     void loadMarkersFile(const std::string markerFile,
-        Units modelUnits=Units(Units::Meters));
+                         Units modelUnits = Units(Units::Meters));
 
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    int getNumRefs() const override {return _markerData->getNumMarkers(); }
+    int getNumRefs() const override;
     /** get the time range for which the MarkersReference values are valid,
         based on the loaded marker data.*/
     SimTK::Vec2 getValidTimeRange() const override;
@@ -133,7 +148,7 @@ public:
     //--------------------------------------------------------------------------
     // Convenience Access
     //--------------------------------------------------------------------------
-    double getSamplingFrequency() {return _markerData->getDataRate(); }
+    double getSamplingFrequency() const;
     Set<MarkerWeight> &updMarkerWeightSet() {return upd_marker_weights(); }
     /** %Set the marker weights from a set of MarkerWeights. As of OpenSim 4.0
         the input set is const and a copy of the Set is used internally. 
@@ -144,16 +159,16 @@ public:
 
 private:
     void constructProperties();
-    void populateFromMarkerData(const MarkerData& markerData);
+    void
+    populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerData);
 
-private:
-    // Use a specialized data structure for holding the marker data
-    SimTK::ResetOnCopy< std::unique_ptr<MarkerData> > _markerData;
+    TimeSeriesTable_<SimTK::Vec3> _markerTable;
+    Units                         _units;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
-    // corresponding list of weights guaranteed to be in the same order as names above
+    //    TimeSeriesTable_<SimTK::Vec3> _markerTable;
+    // List of weights guaranteed to be in the same order as marker names.
     SimTK::Array_<double> _weights;
-
 //=============================================================================
 };  // END of class MarkersReference
 //=============================================================================

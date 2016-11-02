@@ -24,133 +24,168 @@
 #include "MarkersReference.h"
 #include <OpenSim/Common/Units.h>
 #include <SimTKcommon/internal/State.h>
+#include <cmath>
 
 using namespace std;
 using namespace SimTK;
 
 namespace OpenSim {
 
-MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>()
-{
+MarkersReference::MarkersReference() :
+    Reference_<SimTK::Vec3>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }
 
 MarkersReference::MarkersReference(const std::string& markerFile,
-    Units modelUnits) : MarkersReference()
-{
+                                   Units modelUnits) :
+    MarkersReference() {
     loadMarkersFile(markerFile, modelUnits);
 }
 
-
-MarkersReference::MarkersReference(MarkerData *markerData,
-    const Set<MarkerWeight>* markerWeightSet) : MarkersReference()
-{
-    _markerData.reset(markerData);
-    if (markerWeightSet!=nullptr) upd_marker_weights()= *markerWeightSet;
-    populateFromMarkerData(*markerData);
+MarkersReference::
+MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
+                 const Set<MarkerWeight>* markerWeightSet) :
+    MarkersReference() {
+    _markerTable = markerTable;
+    if(markerWeightSet != nullptr)
+        upd_marker_weights() = *markerWeightSet;
+    populateFromMarkerData(markerTable);
 }
 
-/** load the marker data for this MarkersReference from markerFile  */
-void MarkersReference::loadMarkersFile(const std::string markerFile, Units modelUnits)
-{
+void MarkersReference::loadMarkersFile(const std::string markerFile,
+                                       Units modelUnits) {
+    auto fileExt = FileAdapter::findExtension(markerFile);
+    OPENSIM_THROW_IF(!(fileExt == "sto" || fileExt == "trc"),
+                     UnsupportedFileType,
+                     markerFile,
+                     "Supported file types are -- STO, TRC.");
+
+    if(fileExt == "trc") {
+        _markerTable = TimeSeriesTableVec3{markerFile};
+    } else {
+        try {
+            _markerTable = (TimeSeriesTable{markerFile}).pack<SimTK::Vec3>();
+        } catch(const IncorrectTableType&) {
+            _markerTable = TimeSeriesTable_<SimTK::Vec3>{markerFile};
+        }
+    }
+    if(_markerTable.hasTableMetaDataKey("Units"))
+        _units = Units{_markerTable.getTableMetaData<std::string>("Units")};
+    else
+        _units = Units{Units::Meters};
+
+    double scaleFactor = _units.convertTo(modelUnits);
+
+    OPENSIM_THROW_IF(SimTK::isNaN(scaleFactor),
+                     Exception,
+                     "Model has unspecified units.");
+
+    if(std::fabs(scaleFactor - 1) >= SimTK::Eps) {
+        for(unsigned r = 0; r < _markerTable.getNumRows(); ++r)
+            _markerTable.updRowAtIndex(r) *= scaleFactor;
+
+        _units = modelUnits;
+        _markerTable.removeTableMetaDataKey("Units");
+        _markerTable.addTableMetaData("Units", _units.getAbbreviation());
+    }
+
     upd_marker_file() = markerFile;
-    _markerData.reset(new MarkerData(get_marker_file()));
 
-    // Convert the marker data into the model's units
-    _markerData->convertToUnits(modelUnits);
-
-    populateFromMarkerData(*_markerData);
+    populateFromMarkerData(_markerTable);
 }
 
-
-/** A convenience method yo populate MarkersReference from MarkerData **/
-void MarkersReference::populateFromMarkerData(const MarkerData& aMarkerData)
-{
-    const Array<std::string> &tempNames = aMarkerData.getMarkerNames();
-    int nm = tempNames.getSize();
-
-    // empty any lingering names and weights
+void
+MarkersReference::
+populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable) {
+    const auto& markerNames = markerTable.getColumnLabels();
     _markerNames.clear();
     _weights.clear();
-    // pre-allocate arrays to the number of markers in the file with default weightings
-    _markerNames.assign(nm, "");
-    _weights.assign(nm, get_default_weight());
+    _markerNames.assign(markerNames.size(), "");
+    _weights.assign(markerNames.size(), get_default_weight());
 
     int index = 0;
-    // Build flat lists (arrays) of marker names and weights in the same order as the marker data
-    for(int i=0; i<tempNames.getSize(); i++){
-        const std::string &name = tempNames[i];
-        _markerNames[i] = name;
-        index = get_marker_weights().getIndex(name, index);
-        //Assign user weighting for markers that are user listed in the input set
+    // Build flat lists (arrays) of marker names and weights in the same order
+    // as the marker data
+    for(unsigned i = 0; i < markerNames.size(); ++i) {
+        _markerNames[i] = markerNames[i];
+        index = get_marker_weights().getIndex(markerNames[i], index);
+
+        // Assign user weighting for markers that are user listed in the input
+        // set
         if(index >= 0)
             _weights[i] = get_marker_weights()[index].getWeight();
     }
 
     if(_markerNames.size() != _weights.size())
-        throw Exception("MarkersReference: Mismatch between the number of marker names and weights. Verify that marker names are unique.");
+        throw Exception("MarkersReference: Mismatch between the number of "
+                        "marker names and weights. Verify that marker names "
+                        "are unique.");
 }
 
-SimTK::Vec2 MarkersReference::getValidTimeRange() const
-{
-    return Vec2(_markerData->getStartFrameTime(), _markerData->getLastFrameTime());
+SimTK::Vec2 MarkersReference::getValidTimeRange() const {
+    OPENSIM_THROW_IF(_markerTable.getNumRows() == 0,
+                     Exception,
+                     "Marker-table is empty.");
+
+    return {_markerTable.getIndependentColumn().front(),
+            _markerTable.getIndependentColumn().back()};
 }
 
-// utility to define object properties including their tags, comments and 
-// default values.
-void MarkersReference::constructProperties()
-{
+void MarkersReference::constructProperties() {
     constructProperty_marker_file("");
     Set<MarkerWeight> markerWeights;
     constructProperty_marker_weights(markerWeights);
     constructProperty_default_weight(1.0);
 }
 
-/** get the names of the markers serving as references */
-const SimTK::Array_<std::string>& MarkersReference::getNames() const
-{
+const SimTK::Array_<std::string>& MarkersReference::getNames() const {
     return _markerNames;
 }
 
-/** get the values of the MarkersReference */
-void  MarkersReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &values) const
-{
-    double time =  s.getTime();
-
-    int before=0, after=0;
-    // get index for time 
-    _markerData->findFrameRange(time, time, before, after);
-    if(before > after || after < 0)
-        throw Exception("MarkersReference: No index corresponding to time of frame.");
-    else if(after-before > 0){
-        before = abs(_markerData->getFrame(before).getFrameTime()-time) < abs(_markerData->getFrame(after).getFrameTime()-time) ? before : after;
-    }
-
-    values = _markerData->getFrame(before).getMarkers();
+void  MarkersReference::getValues(const SimTK::State& s,
+                                  SimTK::Array_<Vec3>& values) const {
+    double time = s.getTime();
+    auto rowView = _markerTable.getRowNear(time);
+    values.clear();
+    for(unsigned i = 0; i < rowView.ncol(); ++i)
+        values.push_back(rowView[i]);
 }
 
-/** get the speed value of the MarkersReference */
-void MarkersReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
-{
+void
+MarkersReference::getSpeedValues(const SimTK::State &s,
+                                 SimTK::Array_<Vec3> &speedValues) const {
     throw Exception("MarkersReference: getSpeedValues not implemented.");
 }
 
-/** get the acceleration value of the MarkersReference */
-void MarkersReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
-{
+void
+MarkersReference::getAccelerationValues(const SimTK::State &s,
+                                        SimTK::Array_<Vec3> &accValues) const {
     throw Exception("MarkersReference: getAccelerationValues not implemented.");
 }
 
-/** get the weights of the Markers */
-void  MarkersReference::getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const
-{
+void  MarkersReference::getWeights(const SimTK::State &s,
+                                   SimTK::Array_<double> &weights) const {
     weights = _weights;
 }
 
-void MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights)
-{
+void
+MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights) {
     upd_marker_weights() = markerWeights;
+}
+
+int
+MarkersReference::getNumRefs() const {
+    return static_cast<int>(_markerTable.getNumColumns());
+}
+
+double
+MarkersReference::getSamplingFrequency() const {
+    if(_markerTable.hasTableMetaDataKey("DataRate")) {
+        auto datarate = _markerTable.getTableMetaData<std::string>("DataRate");
+        return std::stod(datarate);
+    } else
+        return 250;
 }
 
 } // end of namespace OpenSim
