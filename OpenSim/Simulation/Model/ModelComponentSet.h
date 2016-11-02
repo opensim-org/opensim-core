@@ -93,14 +93,14 @@ public:
 
 #ifndef SWIG
     /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return _model.get(); }
+    bool hasModel() const { return !_model.empty(); }
     /**
      * Get this Model this set is part of.
      */
     const Model& getModel() const
     {
         if (_model){
-            return *this->_model;
+            return _model.getRef();
         }
         else{
             std::string msg = getClassName();
