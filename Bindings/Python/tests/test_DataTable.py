@@ -282,6 +282,14 @@ class TestDataTable(unittest.TestCase):
         assert table.getNumRows()           == 3
         assert table.getNumColumns()        == 12
         print table
+        avgRow = table.averageRow(1, 3)
+        assert avgRow.ncol() == 12
+        assert abs(avgRow[ 0] - 2) < 1e-8#epsilon
+        assert abs(avgRow[11] - 2) < 1e-8#epsilon
+        nearRow = table.getRowNear(1.1)
+        assert nearRow.ncol() == 12
+        assert nearRow[ 0] == 1
+        assert nearRow[11] == 1
         tableVec3 = table.packVec3(('_x', '_y', '_z'))
         tableVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
         tableVec3.getNumRows()    == 3
@@ -292,6 +300,14 @@ class TestDataTable(unittest.TestCase):
         tableVec3.getNumRows()    == 3
         tableVec3.getNumColumns() == 4
         print tableVec3
+        avgRow = tableVec3.averageRow(1, 2)
+        assert avgRow.ncol() == 4
+        assert abs(avgRow[0][0] - 1.5) < 1e-8#epsilon
+        assert abs(avgRow[3][2] - 1.5) < 1e-8#epsilon
+        nearRow = tableVec3.getRowNear(1.1)
+        assert nearRow.ncol() == 4
+        assert nearRow[0][0] == 1
+        assert nearRow[3][2] == 1
         tableUnitVec3 = table.packUnitVec3()
         tableUnitVec3.getColumnLabels() == ('col0', 'col1', 'col2', 'col3')
         tableUnitVec3.getNumRows()    == 3

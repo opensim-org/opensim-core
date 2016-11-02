@@ -448,6 +448,16 @@ class TestTables {
         assert table.getNumRows()             == 3;
         assert table.getNumColumns()          == 12;
         System.out.println(table);
+        RowVector avgRow = table.averageRow(1, 3);
+        assert avgRow.ncol() == 12;
+        assert Math.abs(avgRow.get( 0) - 2) < 1e-8/*epsilon*/;
+        assert Math.abs(avgRow.get( 5) - 2) < 1e-8/*epsilon*/;
+        assert Math.abs(avgRow.get(11) - 2) < 1e-8/*epsilon*/;
+        RowVectorView nearRow = table.getRowNear(1.1);
+        assert nearRow.ncol()  == 12;
+        assert nearRow.get( 0) == 1;
+        assert nearRow.get( 5) == 1;
+        assert nearRow.get(11) == 1;
         StdVectorString suffixes = new StdVectorString();
         suffixes.add("_x"); suffixes.add("_y"); suffixes.add("_z");
         TimeSeriesTableVec3 tableVec3 = table.packVec3(suffixes);
@@ -480,6 +490,14 @@ class TestTables {
         assert tableFlat.getNumRows()             == 3;
         assert tableFlat.getNumColumns()          == 12;
         System.out.println(tableFlat);
+        RowVectorOfVec3 avgRowVec3 = tableVec3.averageRow(1, 2);
+        assert avgRowVec3.ncol() == 4;
+        assert Math.abs(avgRowVec3.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
+        assert Math.abs(avgRowVec3.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
+        RowVectorViewVec3 nearRowVec3 = tableVec3.getRowNear(1.1);
+        assert nearRowVec3.ncol() == 4;
+        assert nearRowVec3.get(0).get(0) == 1;
+        assert nearRowVec3.get(3).get(2) == 1;
         TimeSeriesTableUnitVec3 tableUnitVec3 = table.packUnitVec3();
         assert tableUnitVec3.getColumnLabel(0).equals("col0");
         assert tableUnitVec3.getColumnLabel(1).equals("col1");
@@ -579,6 +597,16 @@ class TestTables {
             assert false;
         } catch(java.lang.RuntimeException exc) {}
         System.out.println(table);
+        // Average row.
+        RowVectorOfVec3 avgRow = table.averageRow(0.1, 0.2);
+        assert avgRow.ncol() == 4;
+        assert Math.abs(avgRow.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
+        assert Math.abs(avgRow.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
+        // Nearest row.
+        RowVectorViewVec3 nearRow = table.getRowNear(0.13);
+        assert nearRow.ncol() == 4;
+        assert nearRow.get(0).get(0) == 1;
+        assert nearRow.get(3).get(2) == 1;
         // Flatten table into table of doubles.
         TimeSeriesTable tableDouble = table.flatten();
         assert tableDouble.getNumRows() == 2;
