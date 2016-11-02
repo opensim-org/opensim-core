@@ -74,7 +74,8 @@ public:
     * @param ReferenceFunction that specifies the value of the coordinate
     *        to be matched at a given time
     */
-    CoordinateReference(const std::string name, Function &ReferenceFunction);
+    CoordinateReference(const std::string name, 
+                        const Function &ReferenceFunction);
 
     CoordinateReference(const CoordinateReference& source);
     CoordinateReference& operator=(const CoordinateReference& source);
