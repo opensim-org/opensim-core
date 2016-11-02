@@ -93,12 +93,45 @@ public:
     }
 };
 
+class TimeOutOfRange : public Exception {
+public:
+    TimeOutOfRange(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const double time,
+                   const double min,
+                   const double max) :
+        Exception(file, line, func) {
+        std::string msg = "min = " + std::to_string(min);
+        msg += " max = " + std::to_string(max);
+        msg += " time = " + std::to_string(time);
+
+        addMessage(msg);
+    }
+};
+
+class InvalidTimeRange : public Exception {
+public:
+    InvalidTimeRange(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     const double begTime,
+                     const double endTime) :
+        Exception(file, line, func) {
+        std::string msg = "Begin-Time = " + std::to_string(begTime);
+        msg += " End-Time = " + std::to_string(endTime);
+
+        addMessage(msg);
+    }
+};
+
 /** TimeSeriesTable_ is a DataTable_ where the independent column is time of 
 type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
 class TimeSeriesTable_ : public DataTable_<double, ETY> {
 public:
-    typedef SimTK::RowVector_<ETY> RowVector;
+    typedef SimTK::RowVector_<ETY>     RowVector;
+    typedef SimTK::RowVectorView_<ETY> RowVectorView;
 
     TimeSeriesTable_()                                   = default;
     TimeSeriesTable_(const TimeSeriesTable_&)            = default;
@@ -186,11 +219,88 @@ public:
         *this = std::move(*table);
     }
 
+    /** Get row whose time column is nearest/closest to the given value. 
+
+    \param time Value to search for. 
+    \param restrictToTimeRange When true -- Exception is thrown if the given 
+                               value is out-of-range of the time column. 
+                               When false -- If the given value is less than or 
+                               equal to the first value in the time column, the
+                               row returned is the first row. If the given value
+                               is greater than or equal to the last value in the
+                               time column, the row returned is the last row. 
+                               This operation only returns existing rows and 
+                               does not perform any interpolation. Defaults to
+                               'true'.
+
+    \throws TimeOutOfRange If the given value is out-of-range of time column.
+    \throws EmptyTable If the table is empty.                                 */
+    RowVectorView
+    getRowNear(const double& time,
+               const bool restrictToTimeRange = true) const {
+        using DT = DataTable_<double, ETY>;
+        const auto& timeCol = DT::getIndependentColumn();
+        OPENSIM_THROW_IF(timeCol.size() == 0,
+                         EmptyTable);
+        OPENSIM_THROW_IF(restrictToTimeRange &&
+                         time < timeCol.front() || time > timeCol.back(),
+                         TimeOutOfRange,
+                         time, timeCol.front(), timeCol.back());
+
+        auto iter = std::lower_bound(timeCol.begin(), timeCol.end(), time);
+        if(iter == timeCol.end())
+            return DT::getRowAtIndex(timeCol.size() - 1);
+        if(iter == timeCol.begin())
+            return DT::getRowAtIndex(0);
+        if((*iter - time) <= (time - *std::prev(iter)))
+            return DT::getRowAtIndex(std::distance(timeCol.begin(), iter));
+        else
+            return DT::getRowAtIndex(std::distance(timeCol.begin(),
+                                                   std::prev(iter)));
+    }
+
+    /** Compute the average row in the time range (inclusive) given. This
+    operation does not modify the table. It just computes and returns an average
+    row. 
+
+    \throws InvalidTimeRange If beginTime is greater than or equal to endTime.
+    \trhows TimeOutOfRange If beginTime or endTime is out of range of time 
+                           column.                                            */
+    RowVector averageRow(const double& beginTime, const double& endTime) const {
+        using DT = DataTable_<double, ETY>;
+        OPENSIM_THROW_IF(endTime <= beginTime,
+                         InvalidTimeRange,
+                         beginTime, endTime);
+        const auto& timeCol = DT::getIndependentColumn();
+        OPENSIM_THROW_IF(beginTime < timeCol.front() ||
+                         beginTime > timeCol.back(),
+                         TimeOutOfRange,
+                         timeCol.front(), timeCol.back(), beginTime);
+        OPENSIM_THROW_IF(endTime < timeCol.front() ||
+                         endTime > timeCol.back(),
+                         TimeOutOfRange,
+                         timeCol.front(), timeCol.back(), endTime);
+
+        std::vector<double> comps(DT::numComponentsPerElement(), 0);
+        RowVector row{static_cast<int>(DT::getNumColumns()),
+                      DT::makeElement(comps.begin(), comps.end())};
+        unsigned numRowsInRange{};
+        for(unsigned r = 0; r < DT::getNumRows(); ++r) {
+            if(timeCol[r] >= beginTime && timeCol[r] <= endTime) {
+                row += DT::getRowAtIndex(r);
+                ++numRowsInRange;
+            }
+        }
+        row /= numRowsInRange;
+
+        return row;
+    }
+
 protected:
     /** Validate the given row. 
 
     \throws InvalidRow If the timestamp for the row breaks strictly increasing
-                       property of the independent column.                     */
+                       property of the independent column.                    */
     void validateRow(size_t rowIndex,
                      const double& time, 
                      const RowVector& row) const override {
