@@ -432,7 +432,7 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
 
     if (noiseRadius >= SimTK::Eps) {
         for (size_t i = 0; i < results.getNumRows(); ++i) {
-            auto& row = results.updRowAtIndex(i);
+            auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
                 if (!fixed) {
                     offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
