@@ -97,7 +97,8 @@ void testAccuracy()
     double tightAccuracy = 1.0e-9;
 
     SimTK::Array_<CoordinateReference> coordRefs;
-    CoordinateReference coordRef(coord.getName(), Constant(refVal));
+    Constant coordRefFunc(refVal);
+    CoordinateReference coordRef(coord.getName(), coordRefFunc);
     coordRef.setWeight(1.0);
     coordRefs.push_back(coordRef);
 
