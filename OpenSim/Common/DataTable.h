@@ -117,7 +117,7 @@ public:
         }
         auto table = dynamic_cast<DataTable_*>(absTable);
         OPENSIM_THROW_IF(table == nullptr,
-                         InvalidArgument,
+                         IncorrectTableType,
                          "DataTable cannot be created from file '" + filename +
                          "'. Type mismatch.");
 
@@ -700,6 +700,35 @@ public:
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
+    /** Remove row at index.
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void removeRowAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
+        if(index < getNumRows() - 1)
+            for(size_t r = index; r < getNumRows() - 1; ++r)
+                _depData.updRow((int)index) = _depData.row((int)(index + 1));
+        
+        _depData.resizeKeep(_depData.nrow() - 1, _depData.ncol());
+        _indData.erase(_indData.begin() + index);
+    }
+
+    /** Remove row corresponding to the given entry in the independent column.
+
+    \throws KeyNotFound If the independent column has no entry with the given
+                        value.                                                */
+    void removeRow(const ETX& ind) {
+        auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
+
+        OPENSIM_THROW_IF(iter == _indData.cend(),
+                         KeyNotFound, std::to_string(ind));
+
+        return removeRowAtIndex((int)std::distance(_indData.cbegin(), iter));
+    }
+
     /// @} End of Row accessors/mutators.
 
     /// @name Dependent and Independent column accessors/mutators.
@@ -1112,6 +1141,16 @@ protected:
         return {elt};
     }
 
+    template<typename Iter>
+    static
+    void makeElement_helper(double& elem,
+                            Iter begin, Iter end) {
+        OPENSIM_THROW_IF(begin == end,
+                         InvalidArgument,
+                         "Iterators do not produce enough elements."
+                         "Expected: 1 Received: 0");
+        elem = *begin;
+    }
     template<int N, typename Iter>
     static
     void makeElement_helper(SimTK::Vec<N>& elem,
