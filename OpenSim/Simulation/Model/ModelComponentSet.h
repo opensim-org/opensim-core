@@ -91,7 +91,6 @@ public:
     {
     }
 
-#ifndef SWIG
     /** Does this Set have a Model associated with it? */
     bool hasModel() const { return !_model.empty(); }
     /**
@@ -118,7 +117,6 @@ public:
 
     void setModel(Model& model) { _model = &model; }
 
-#endif
 
     /**
      * Adding an object to the set causes its Model field to be set.
