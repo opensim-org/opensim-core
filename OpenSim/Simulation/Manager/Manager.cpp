@@ -67,7 +67,8 @@ Manager::Manager(Model& model, bool dummyVar) :
        _model(&model),
        _performAnalyses(true),
        _writeToStorage(true),
-       _controllerSet(&model.updControllerSet())
+       _controllerSet(&model.updControllerSet()),
+       _timeStepperInitialized(false)
 {
     setNull();
 
@@ -733,10 +734,10 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // not the model's system.
     const SimTK::System& sys = _system ? *_system 
                                        : _model->getMultibodySystem();
-    SimTK::TimeStepper ts(sys, *_integ);
 
-    ts.initialize(s);
-    ts.setReportAllSignificantStates(true);
+    // Only initialize a TimeStepper if it hasn't been done yet
+    if (!_timeStepperInitialized) initializeTimeStepper(sys, s);
+
     SimTK::Integrator::SuccessfulStepStatus status;
 
     if( fixedStep ) {
@@ -785,7 +786,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         // is returned once as an ordinary return; by the time we get
         // EndOfSimulation status we have already seen the state and don't
         // need to record it again.
-        status = ts.stepTo(stepToTime);
+        status = _timeStepper->stepTo(stepToTime);
 
         if( status != SimTK::Integrator::EndOfSimulation ) {
             const SimTK::State& s =  _integ->getState();
@@ -868,6 +869,19 @@ void Manager::initialize(SimTK::State& s, double dt )
 
     return;
 }
+//_____________________________________________________________________________
+/**
+* set and initialize a SimTK::TimeStepper
+*/
+void Manager::initializeTimeStepper(
+    const SimTK::System& sys, const SimTK::State& state)
+{
+    _timeStepper.reset(new SimTK::TimeStepper(sys, *_integ));
+    _timeStepper->initialize(state);
+    _timeStepper->setReportAllSignificantStates(true);
+    _timeStepperInitialized = true;
+}
+
 //_____________________________________________________________________________
 /**
  * finalize storages and analyses

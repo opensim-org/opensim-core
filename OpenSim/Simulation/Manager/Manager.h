@@ -38,6 +38,7 @@ namespace SimTK {
 class Integrator;
 class State;
 class System;
+class TimeStepper;
 }
 
 namespace OpenSim { 
@@ -72,6 +73,9 @@ private:
     // The integrator that is used when using the model-only constructor.
     // This is allocated only if necessary.
     std::unique_ptr<SimTK::Integrator> _defaultInteg;
+
+    /** TimeStepper */
+    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
     /** Initial time of the simulation. */
     double _ti;
@@ -124,6 +128,11 @@ private:
 
     /** system of equations to be integrated */
     const SimTK::System* _system;
+
+    /** flag to indicate if TimeStepper has been initialized. Once this has 
+        been done it should not be performed again (see documentation for
+        SimTK::TimeStepper) */
+    bool _timeStepperInitialized;
 
 
 //=============================================================================
@@ -234,8 +243,9 @@ public:
 
 private:
 
-   // Handles common tasks of some of the other constructors.
+    // Handles common tasks of some of the other constructors.
     Manager(Model& aModel, bool dummyVar);
+    void initializeTimeStepper(const SimTK::System& sys, const SimTK::State& state);
 
 //=============================================================================
 };  // END of class Manager
