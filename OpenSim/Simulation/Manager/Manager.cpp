@@ -536,6 +536,11 @@ void Manager::
 setIntegrator(SimTK::Integrator& integrator) 
 {   
     if (_integ.get() == &integrator) return;
+    if (_timeStepperInitialized) {
+        std::string msg = "Cannot set a new integrator on this Manager";
+        msg += "after Manager::integrate() has been called at least once.";
+        Exception(msg);
+    }
 
     _integ = &integrator;
     // If we had been using the _defaultInteg, we no longer need it.
