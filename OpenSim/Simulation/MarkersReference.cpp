@@ -184,7 +184,7 @@ MarkersReference::getSamplingFrequency() const {
         auto datarate = _markerTable.getTableMetaData<std::string>("DataRate");
         return std::stod(datarate);
     } else
-        return 250;
+        return SimTK::NaN;
 }
 
 } // end of namespace OpenSim
