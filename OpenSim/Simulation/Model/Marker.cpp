@@ -203,7 +203,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     //const Vec3& p_BM = bTrans*get_location();
     appendToThis.push_back(
         SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
-        .setColor(color).setOpacity(1.0)
+        .setColor(color).setOpacity(1.0).setScale(hints.get_display_scale_factor())
         .setTransform(get_location()));
     
 }
