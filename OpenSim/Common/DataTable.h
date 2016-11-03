@@ -241,7 +241,9 @@ public:
     stripped out. This constructor will try to guess the suffixes used. If 
     unable to do so, it will throw an exception. Suffixes used can also be 
     specified as arguments. 
-    This constructor only makes sense for DataTable_<double, "not double">.
+    This constructor only makes sense for DataTable_<double, SimTKType> where
+    SimTKType is not 'double'. SimTKType can be for example, SimTK::Vec3, 
+    SimTK::Vec6, SimTK::Quaternion, SimTK::SpatialVec etc.
 
     \param that DataTable to copy-construct this DataTable from.
     \param suffixes Suffixes used in the input DataTable to distinguish 
