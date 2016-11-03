@@ -100,13 +100,13 @@ int main() {
         table.appendRow(0.5, row);
     } catch (OpenSim::Exception&) {}
 
-    auto avgRow = table.averageRow(0.2, 0.8);
+    const auto& avgRow = table.averageRow(0.2, 0.8);
     for(size_t i = 0; i < avgRow.ncol(); ++i)
         OPENSIM_THROW_IF(std::abs(avgRow[i] - 2) > 1e-8/*epsilon*/,
                          Exception,
                          "Test failed: averageRow() failed.");
 
-    auto nearRow = table.getRowNear(0.55);
+    const auto& nearRow = table.getRowNear(0.55);
     for(size_t i = 0; i < nearRow.ncol(); ++i)
         OPENSIM_THROW_IF(nearRow[i] != 2,
                          Exception,
@@ -332,13 +332,13 @@ int main() {
         tableVec3.appendRow(0.2, {{3, 3, 3}, {1, 1, 1}, {2, 2, 2}});
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
 
-        auto avgRowVec3 = tableVec3.averageRow(0.1, 0.2);
+        const auto& avgRowVec3 = tableVec3.averageRow(0.1, 0.2);
         for(size_t i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(std::abs(avgRowVec3[0][i] - 2) > 1e-8/*epsilon*/,
                              Exception,
                              "Test failed: averageRow() failed.");
 
-        auto nearRowVec3 = tableVec3.getRowNear(0.29);
+        const auto& nearRowVec3 = tableVec3.getRowNear(0.29);
         for(size_t i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(nearRowVec3[0][i] != 2,
                              Exception,
@@ -397,14 +397,14 @@ int main() {
         tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
         tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
 
-        auto avgRowQuat = tableQuat.averageRow(0.1, 0.2);
+        const auto& avgRowQuat = tableQuat.averageRow(0.1, 0.2);
         for(size_t i = 0; i < 4; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowQuat[0][i] - 0.5) > 1e-8/*epsilon*/,
                              Exception,
                              "Test failed: averageRow() failed.");
         }
 
-        auto nearRowQuat = tableQuat.getRowNear(0.29);
+        const auto& nearRowQuat = tableQuat.getRowNear(0.29);
         for(size_t i = 0; i < 4; ++i)
             OPENSIM_THROW_IF(std::abs(nearRowQuat[0][i] - 0.5) > 1e-8/*eps*/,
                              Exception,
@@ -450,14 +450,14 @@ int main() {
                                         {{3, 3, 3}, {3, 3, 3}},
                                         {{1, 1, 1}, {1, 1, 1}}});
 
-        auto avgRowSVec = tableSpatialVec.averageRow(0.1, 0.2);
+        const auto& avgRowSVec = tableSpatialVec.averageRow(0.1, 0.2);
         for(size_t i = 0; i < 3; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowSVec[0][0][i] - 2) > 1e-8/*eps*/,
                              Exception,
                              "Test failed: averageRow() failed.");
         }
 
-        auto nearRowSVec = tableSpatialVec.getRowNear(0.29);
+        const auto& nearRowSVec = tableSpatialVec.getRowNear(0.29);
         for(size_t i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(nearRowSVec[0][0][i] != 2,
                              Exception,

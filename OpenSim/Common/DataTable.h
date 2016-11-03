@@ -370,7 +370,7 @@ public:
         // Form rows for this table from that table.
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatInd = that.getIndependentColumn().at(r);
-            auto thatRow = that.getRowAtIndex(r);
+            auto thatRow = that.getRowAtIndex(r).getAsRowVector();
             std::vector<ETY> thisRow{};
             for(unsigned c = 0;
                 c < that.getNumColumns();
@@ -1161,7 +1161,7 @@ protected:
                              "Iterators do not produce enough elements."
                              "Expected: " + std::to_string(N) + " Received: " +
                              std::to_string(i));
-                
+
             elem[i] = *begin++;
         }
     }
