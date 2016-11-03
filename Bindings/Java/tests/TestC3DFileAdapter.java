@@ -1,7 +1,7 @@
 import java.io.File;
 import org.opensim.modeling.*;
 
-class TestDataAdapter {
+class TestC3DFileAdapter {
     public static void test_C3DFileAdapter() {
         C3DFileAdapter c3dAdapter = new C3DFileAdapter();
         StdMapStringTimeSeriesTableVec3 tables =

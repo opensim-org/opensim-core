@@ -132,7 +132,9 @@ OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
 OpenSimAddJavaTest(TestTables)
 OpenSimAddJavaTest(TestModelBuilding)
-OpenSimAddJavaTest(TestDataAdapter)
+if(WITH_BTK)
+    OpenSimAddJavaTest(TestC3DFileAdapter)
+endif()
 OpenSimAddJavaTest(TestReporter)
 
 
