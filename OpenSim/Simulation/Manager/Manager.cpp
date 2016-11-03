@@ -539,7 +539,7 @@ setIntegrator(SimTK::Integrator& integrator)
     if (_timeStepperInitialized) {
         std::string msg = "Cannot set a new integrator on this Manager";
         msg += "after Manager::integrate() has been called at least once.";
-        Exception(msg);
+        OPENSIM_THROW(Exception, msg);
     }
 
     _integ = &integrator;
