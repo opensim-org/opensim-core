@@ -52,15 +52,15 @@ int main() {
         ASSERT(!table.hasColumnLabels());
         table.setColumnLabels({"0", "1", "2", "3"});
         ASSERT(table.hasColumnLabels());
-        assert(table.hasColumn("1"));
-        assert(table.hasColumn("2"));
-        assert(!table.hasColumn("column-does-not-exist"));
+        ASSERT(table.hasColumn("1"));
+        ASSERT(table.hasColumn("2"));
+        ASSERT(!table.hasColumn("column-does-not-exist"));
 
         table.setColumnLabel(0, "zero");
         table.setColumnLabel(2, "two");
         
-        assert(table.getColumnLabel(0) == "zero");
-        assert(table.getColumnLabel(2) == "two");
+        ASSERT(table.getColumnLabel(0) == "zero");
+        ASSERT(table.getColumnLabel(2) == "two");
 
         table.setColumnLabel(0, "0");
         table.setColumnLabel(2, "2");
@@ -119,9 +119,9 @@ int main() {
     table.updTableMetaData().setValueForKey("Filename", 
                                             std::string{"/path/to/file"});
 
-    assert(table.hasColumn(0));
-    assert(table.hasColumn(2));
-    assert(!table.hasColumn(100));
+    ASSERT(table.hasColumn(0));
+    ASSERT(table.hasColumn(2));
+    ASSERT(!table.hasColumn(100));
 
     // Print out the DataTable to console.
     std::cout << table << std::endl;
