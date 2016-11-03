@@ -146,7 +146,7 @@ const SimTK::Array_<std::string>& MarkersReference::getNames() const {
 void  MarkersReference::getValues(const SimTK::State& s,
                                   SimTK::Array_<Vec3>& values) const {
     double time = s.getTime();
-    auto rowView = _markerTable.getRowNear(time);
+    const auto rowView = _markerTable.getRowNear(time);
     values.clear();
     for(unsigned i = 0; i < rowView.ncol(); ++i)
         values.push_back(rowView[i]);

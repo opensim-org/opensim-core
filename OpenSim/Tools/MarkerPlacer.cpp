@@ -251,7 +251,8 @@ bool MarkerPlacer::processModel(Model* aModel,
                                             return val >= _timeRange[0] &&
                                                    val <= _timeRange[1];
                                         });
-    auto avgRow = staticPoseTable.averageRow(_timeRange[0], _timeRange[1]);
+    const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
+                                                   _timeRange[1]);
     for(int r = staticPoseTable.getNumRows() - 1; r >= 0; --r) {
         if(staticPoseTable.getIndependentColumn()[r] >= _timeRange[0] &&
            staticPoseTable.getIndependentColumn()[r] <= _timeRange[1]) {
