@@ -206,6 +206,8 @@ public:
         }
 
         std::vector<std::string> thisLabels{};
+        thisLabels.reserve(that.getNumColumns() *
+                           that.numComponentsPerElement());
         for(const auto& label : that.getColumnLabels()) {
             if(suffixes.empty()) {
                 for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
@@ -337,6 +339,7 @@ public:
 
         // Form column labels for this table from that table.
         std::vector<std::string> thisLabels{};
+        thisLabels.reserve(that.getNumColumns() / numComponentsPerElement());
         for(unsigned c = 0; c < thatLabels.size(); ) {
             std::string thisLabel{};
             for(unsigned i = 0; i < numComponentsPerElement(); ++i, ++c) {
