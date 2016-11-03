@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "MarkersReference.h"
-#include <OpenSim/Common/Units.h>
 #include <SimTKcommon/internal/State.h>
 #include <cmath>
 
@@ -70,12 +69,13 @@ void MarkersReference::loadMarkersFile(const std::string markerFile,
             _markerTable = TimeSeriesTable_<SimTK::Vec3>{markerFile};
         }
     }
+    Units units{};
     if(_markerTable.hasTableMetaDataKey("Units"))
-        _units = Units{_markerTable.getTableMetaData<std::string>("Units")};
+        units = Units{_markerTable.getTableMetaData<std::string>("Units")};
     else
-        _units = Units{Units::Meters};
+        units = Units{Units::Meters};
 
-    double scaleFactor = _units.convertTo(modelUnits);
+    double scaleFactor = units.convertTo(modelUnits);
 
     OPENSIM_THROW_IF(SimTK::isNaN(scaleFactor),
                      Exception,
@@ -85,9 +85,8 @@ void MarkersReference::loadMarkersFile(const std::string markerFile,
         for(unsigned r = 0; r < _markerTable.getNumRows(); ++r)
             _markerTable.updRowAtIndex(r) *= scaleFactor;
 
-        _units = modelUnits;
         _markerTable.removeTableMetaDataKey("Units");
-        _markerTable.addTableMetaData("Units", _units.getAbbreviation());
+        _markerTable.addTableMetaData("Units", units.getAbbreviation());
     }
 
     upd_marker_file() = markerFile;

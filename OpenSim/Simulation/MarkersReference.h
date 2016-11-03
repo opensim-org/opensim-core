@@ -163,7 +163,6 @@ private:
     populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerData);
 
     TimeSeriesTable_<SimTK::Vec3> _markerTable;
-    Units                         _units;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
     //    TimeSeriesTable_<SimTK::Vec3> _markerTable;
