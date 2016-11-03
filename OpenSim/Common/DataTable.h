@@ -463,7 +463,7 @@ public:
     of the resulting table. The column-labels of the resulting table will be
     formed by stripping the suffixes in the column-labels of this table.
     This function will attempt to guess the suffixes of column-labels. See
-    documenation for constructor DataTable_::DataTable_().                    */
+    documentation for constructor DataTable_::DataTable_().                   */
     template<typename ThatETY>
     DataTable_<double, ThatETY> pack() const {
         return DataTable_<double, ThatETY>{*this};
@@ -477,7 +477,7 @@ public:
     , every group of 4 consecutive columns of this table will form one column 
     of the resulting table. The column-labels of the resulting table will be
     formed by stripping the suffixes in the column-labels of this table. See
-    documenation for constructor DataTable_::DataTable_().                    */
+    documentation for constructor DataTable_::DataTable_().                   */
     template<typename ThatETY>
     DataTable_<double, ThatETY>
     pack(const std::vector<std::string>& suffixes) const {
