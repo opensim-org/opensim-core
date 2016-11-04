@@ -1568,10 +1568,10 @@ add(int aN, double aValue)
  * @see StateVector::add(int,double[])
  */
 void Storage::
-add(int aN,double aY[])
+add(const std::vector<double>& values)
 {
     for(int i = 0; i < _storage.getSize(); ++i) {
-        _storage[i].add({aY, aY + aN});
+        _storage[i].add(values);
     }
 }
 //_____________________________________________________________________________
@@ -1653,10 +1653,10 @@ subtract(double aValue)
  * @see StateVector::subtract(int,double[])
  */
 void Storage::
-subtract(int aN,double aY[])
+subtract(const std::vector<double>& values)
 {
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].subtract({aY, aY + aN});
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].subtract(values);
     }
 }
 //_____________________________________________________________________________
@@ -1738,10 +1738,10 @@ multiply(double aValue)
  * @see StateVector::multiply(int,double[])
  */
 void Storage::
-multiply(int aN,double aY[])
+multiply(const std::vector<double>& values)
 {
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].multiply({aY, aY + aN});
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].multiply(values);
     }
 }
 
@@ -1839,10 +1839,10 @@ divide(double aValue)
  * @param aY Array of values the states are to be divided by.
  */
 void Storage::
-divide(int aN,double aY[])
+divide(const std::vector<double>& values)
 {
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].divide({aY, aY + aN});
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].divide(values);
     }
 }
 //_____________________________________________________________________________
