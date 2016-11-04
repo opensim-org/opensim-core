@@ -53,33 +53,16 @@ StateVector::~StateVector()
 /**
  * Default constructor.
  */
-StateVector::StateVector(double aT,int aN,const double aData[]) :
+StateVector::StateVector(double aT, const std::vector<double>& data) :
     _data(0.0)
 {
     // INITIAL VALUES
     setNull();
 
     // SET THE DATA
-    setStates(aT,aN,aData);
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- */
-StateVector::StateVector(const StateVector &aVector) :
-    _data(0.0)
-{
-    // INITIAL VALUES
-    setNull();
-
-    // SET STATES
-    setStates(aVector.getTime(),aVector.getSize(),&aVector.getData()[0]);
+    setStates(aT, data);
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the null or default values of the states.
@@ -178,13 +161,13 @@ getTime() const
  * Set the state values of this vector.
  */
 void StateVector::
-setStates(double aT,int aN,const double *aData)
+setStates(double aT, const std::vector<double>& data)
 {
     _t = aT;
-    _data.setSize(aN);
+    _data.setSize(data.size());
     int size = _data.getSize();
     for(int i=0;i<size;i++) {
-        _data[i] = aData[i];
+        _data[i] = data[i];
     }
 }
 //_____________________________________________________________________________
@@ -302,12 +285,15 @@ add(double aValue)
  * @param aY Array of values to add to the states.
  */
 void StateVector::
-add(int aN,double aY[])
+add(const std::vector<double>& values)
 {
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] += aY[i];
+    if(values.empty())
+        return;
+    int i, n = values.size();
+    if( n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] += values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -374,12 +360,15 @@ subtract(double aValue)
  * @param aY Array of values to subtracted from the states.
  */
 void StateVector::
-subtract(int aN,double aY[])
+subtract(const std::vector<double>& values)
 {
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] -= aY[i];
+    if(values.empty())
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] -= values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -429,12 +418,15 @@ multiply(double aValue)
  * @param aY Array of values the states are multiplied by.
  */
 void StateVector::
-multiply(int aN,double aY[])
+multiply(const std::vector<double>& values)
 {
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] *= aY[i];
+    if(values.empty())
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] *= values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -491,16 +483,19 @@ divide(double aValue)
  * @param aY Array of values the states are divided by.
  */
 void StateVector::
-divide(int aN,double aY[])
+divide(const std::vector<double>& values)
 {
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++) {  
-        if(aY[i]==0.0)  _data[i] = SimTK::NaN;
-        else    _data[i] /= aY[i];
+    if(values.empty())
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i) {  
+        if(values[i] == 0.0)
+            _data[i] = SimTK::NaN;
+        else
+            _data[i] /= values[i];
     }
-        
 }
 //_____________________________________________________________________________
 /**

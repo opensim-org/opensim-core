@@ -31,6 +31,7 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 
+#include <vector>
 
 //template class OSIMCOMMON_API Array<double>;
 
@@ -70,13 +71,12 @@ private:
 // METHODS
 //=============================================================================
 public:
-    StateVector(double aT=0.0,int aN=0,const double *aData=NULL);
-    StateVector(const StateVector &aVector);
+    StateVector()                   = default;
+    StateVector(const StateVector&) = default;
     virtual ~StateVector();
+    
+    StateVector(double aT, const std::vector<double>& data);
 
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 private:
     void setNull();
 
@@ -98,7 +98,7 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
-    void setStates(double aT,int aN,const double aY[]);
+    void setStates(double aT, const std::vector<double>& data);
     int getSize() const;
     void setTime(double aT);
     double  getTime() const;
@@ -114,17 +114,17 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(int aN,double aY[]);
+    void add(const std::vector<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void subtract(double aValue);
-    void subtract(int aN,double aY[]);
+    void subtract(const std::vector<double>& values);
     void subtract(StateVector *aStateVector);
     void multiply(double aValue);
-    void multiply(int aN,double aY[]);
+    void multiply(const std::vector<double>& values);
     void multiply(StateVector *aStateVector);
     void divide(double aValue);
-    void divide(int aN,double aY[]);
+    void divide(const std::vector<double>& values);
     void divide(StateVector *aStateVector);
 
     //--------------------------------------------------------------------------
