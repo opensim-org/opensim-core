@@ -1963,7 +1963,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector stateVec{originalVec->getTime()};
+        StateVector stateVec{originalVec->getTime(), {}};
         stateVec.getData().setSize(numStates);  // default value 0f 0.
         for(int column=0; column< numStates; column++){
             double valueInOriginalStorage=0.0;
@@ -2006,7 +2006,8 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
     // Now cycle through and shuffle each
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector* stateVec = new StateVector(originalVec->getTime());
+        StateVector* stateVec = new StateVector(originalVec->getTime(),
+                                                {});
         stateVec->getData().setSize(nq);  // default value 0f 0.
         for(int column=0; column< nq; column++){
             double valueInOriginalStorage=0.0;

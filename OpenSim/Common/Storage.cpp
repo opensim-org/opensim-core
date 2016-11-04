@@ -1428,7 +1428,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
     if(aN<0) return(_storage.getSize());
 
     // APPEND
-    StateVector vec(aT,aN,aY);
+    StateVector vec(aT, std::vector<double>{aY, aY + aN});
     append(vec,aCheckForDuplicateTime);
     // TODO: use some tolerance when checking for duplicate time?
     /*
@@ -1570,8 +1570,8 @@ add(int aN, double aValue)
 void Storage::
 add(int aN,double aY[])
 {
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].add(aN,aY);
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].add({aY, aY + aN});
     }
 }
 //_____________________________________________________________________________
@@ -1618,7 +1618,7 @@ add(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // ADD
-        _storage[i].add(nN,Y);
+        _storage[i].add({Y, Y + nN});
     }
 
     // CLEANUP
@@ -1656,7 +1656,7 @@ void Storage::
 subtract(int aN,double aY[])
 {
     for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].subtract(aN,aY);
+        _storage[i].subtract({aY, aY + aN});
     }
 }
 //_____________________________________________________________________________
@@ -1703,7 +1703,7 @@ subtract(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // SUBTRACT
-        _storage[i].subtract(nN,Y);
+        _storage[i].subtract({Y, Y + nN});
     }
 
     // CLEANUP
@@ -1741,7 +1741,7 @@ void Storage::
 multiply(int aN,double aY[])
 {
     for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].multiply(aN,aY);
+        _storage[i].multiply({aY, aY + aN});
     }
 }
 
@@ -1789,7 +1789,7 @@ multiply(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // MULTIPLY
-        _storage[i].multiply(nN,Y);
+        _storage[i].multiply({Y, Y + nN});
     }
 
     // CLEANUP
@@ -1842,7 +1842,7 @@ void Storage::
 divide(int aN,double aY[])
 {
     for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].divide(aN,aY);
+        _storage[i].divide({aY, aY + aN});
     }
 }
 //_____________________________________________________________________________
@@ -1889,7 +1889,7 @@ divide(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // DIVIDE
-        _storage[i].divide(nN,Y);
+        _storage[i].divide({Y, Y + nN});
     }
 
     // CLEANUP
@@ -2623,7 +2623,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
         StateVector vec;
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, std::vector<double>{y, y + ny});
 
         _storage.insert(tIndex+1, vec);
     }
@@ -2804,7 +2804,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, std::vector<double>{y, y + ny});
 
         // PRINT
         n = vec.print(fp);

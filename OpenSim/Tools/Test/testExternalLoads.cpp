@@ -68,7 +68,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
             data[i] = torque[i-6];
     }
 
-    dataRow.setStates(0, 9, data);
+    dataRow.setStates(0, {data, data + 9});
 
     Storage *forces = NULL;
     Storage tempStore;

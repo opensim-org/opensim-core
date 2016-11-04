@@ -763,7 +763,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if( _writeToStorage ) {
             SimTK::Vector stateValues = _model->getStateVariableValues(s);
             StateVector vec;
-            vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+            vec.setStates(tReal, {stateValues.begin(), stateValues.end()});
             getStateStorage().append(vec);
             if(_model->isControlled())
                 _controllerSet->storeControls(s,step);
@@ -794,7 +794,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if( _writeToStorage) {
                 SimTK::Vector stateValues = _model->getStateVariableValues(s);
                 StateVector vec;
-                vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+                vec.setStates(tReal, {stateValues.begin(), stateValues.end()});
                 getStateStorage().append(vec);
                 if(_model->isControlled())
                     _controllerSet->storeControls(s, step);

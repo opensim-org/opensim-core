@@ -505,7 +505,7 @@ void testFromStatesStorageAllRowsHaveSameLength() {
     Storage sto(statesStoFname);
     // Append a too-short state vector.
     std::vector<double> v(model.getNumStateVariables() - 10, 1.0);
-    StateVector sv(25.0, model.getNumStateVariables() - 10, v.data());
+    StateVector sv{25.0, v};
     sto.append(sv);
 
     SimTK_TEST_MUST_THROW_EXC(
