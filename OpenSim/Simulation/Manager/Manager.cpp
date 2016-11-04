@@ -313,19 +313,19 @@ getDTArray()
  * @see getUseSpecifiedDT()
  */
 void Manager::
-setDTArray(int aN,const double aDT[],double aTI)
+setDTArray(const std::vector<double>& aDT,double aTI)
 {
-    if(aN<=0) return;
-    if(aDT==NULL) return;
+    if(aDT.empty())
+        return;
 
     _dtArray.setSize(0);
-    _dtArray.ensureCapacity(aN);
+    _dtArray.ensureCapacity(aDT.size());
     _tArray.setSize(0);
-    _tArray.ensureCapacity(aN+1);
+    _tArray.ensureCapacity(aDT.size() + 1);
     int i;
-    for(_tArray.append(aTI),i=0;i<aN;i++) {
+    for(_tArray.append(aTI), i = 0; i < aDT.size(); ++i) {
         _dtArray.append(aDT[i]);
-        _tArray.append(_tArray.getLast()+aDT[i]);
+        _tArray.append(_tArray.getLast() + aDT[i]);
     }
 }
 //_____________________________________________________________________________
