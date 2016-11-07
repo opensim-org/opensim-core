@@ -32,19 +32,22 @@ in-memory container for data access and manipulation.                         */
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 
+#include <iomanip>
+#include <numeric>
+
 namespace OpenSim {
 
-/** DataTable_ is a in-memory storage container for data with support for 
+/** DataTable_ is an in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
 independent column and a set of dependent columns. The type of the independent 
 column can be configured using ETX (template param). The type of the dependent 
 columns, which together form a matrix, can be configured using ETY (template 
-param). Independent and Dependent columns can contain metadata. DataTable_ as a 
-whole can contain metadata.                                                   
+param). Independent and dependent columns can contain metadata. DataTable_ as a 
+whole can contain metadata.
 
-\tparam ETX Type of each element of the underlying matrix holding dependent 
-            data.
-\tparam ETY Type of each element of the column holding independent data.      */
+\tparam ETX Type of each element of the column holding independent data.
+\tparam ETY Type of each element of the underlying matrix holding dependent 
+            data.                                                             */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
     static_assert(!std::is_reference<ETY>::value,
@@ -670,7 +673,220 @@ public:
 
     /// @}
 
+    /** Get a string representation of the table, including the key-value pairs
+    in the table metadata. Table metadat will be of the form:
+    \code
+    key => value-converted-to-string
+    \endcode
+    For example:
+    \code
+    DataRate => 2000.00000
+    Units => mm
+    \endcode
+    For values in the table metadata that do not support the operation of stream
+    insertion (operator<<), the value for metadata will be:
+    \code
+    key => <cannot-convert-to-string>
+    \endcode
+    Some examples to call this function:
+    \code
+    // All rows, all columns.
+    auto tableAsString = table.toString();
+    // First 5 rows, all columns.
+    auto tableAsString = table.toString({0, 1, 2, 3, 4});
+    // All rows, 3 columns with specified labels.
+    auto tableAsString = table.toString({}, {"col12", "col35", "col4"});
+    // Rows 5th, 3rd, 1st (in that order) and columns with specified lables (in 
+    // that order).
+    auto tableAsString = table.toString({4, 2, 0}, {"col10", "col5", "col2"});
+    // Lets say the table has 10 rows. Following will get last 3 rows in the 
+    // order specified. All columns.
+    auto tableAsString = table.toString({-1, -2, -3})
+    \endcode
+
+    \param rows **[Default = all rows]** Sequence of indices of rows to be 
+                printed. Rows will be printed exactly in the order specified in 
+                the sequence. Index begins at 0, ie. first row is 0. Negative
+                indices refer to rows starting from last row. Index -1 refers to
+                last row, -2 refers to row previous to last row and so on.
+                Default behavior is to print all rows. 
+    \param columnLabels **[Default = all rows]** Sequence of labels of columns 
+                        to be printed. Columns will be printed exactly in the 
+                        order specified in the sequence. Default behavior is to 
+                        print all columns.
+    \param withMetaData **[Default = true]** Whether or not table metadata 
+                        should be printed. Default behavior is to print table 
+                        metadata.
+    \param splitSize **[Default = 25]** Number of rows to print at a time. 
+                     Default behavior is to print 25 rows at a time. 
+    \param maxWidth **[Default = 80]** Maximum number of characters to print per
+                    line. The columns are split accordingly to make the table 
+                    readable. This is useful in terminals/consoles with narrow 
+                    width. Default behavior is to limit number characters per 
+                    line to 80.
+    \param precision **[Default = 4]** Precision of the floating-point numbers 
+                     printed. Default behavior is to print floating-point 
+                     numbers with 4 places to the right of decimal point.     */
+    std::string toString(std::vector<int>         rows         = {},
+                         std::vector<std::string> columnLabels = {},
+                         const bool               withMetaData = true,
+                         unsigned                 splitSize    = 25,
+                         unsigned                 maxWidth     = 80,
+                         unsigned                 precision    = 4) const {
+        std::vector<int> cols{};
+        for(const auto& label : columnLabels)
+            cols.push_back(static_cast<int>(getColumnIndex(label)));
+        return toString_impl(rows, cols, withMetaData,
+                             splitSize, maxWidth, precision);
+    }
+
 protected:
+    // Implement toString.
+    std::string toString_impl(std::vector<int> rows         = {},
+                              std::vector<int> cols         = {},
+                              const bool       withMetaData = true,
+                              unsigned         splitSize    = 25,
+                              unsigned         maxWidth     = 80,
+                              unsigned         precision    = 4) const {
+        static_assert(std::is_same<ETX, double>::value,
+                      "This function can only be called for a table with "
+                      "independent column of type 'double'.");
+        OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
+                         EmptyTable);
+
+        // Defaults.
+        const unsigned    defSplitSize{25};
+        const unsigned    defMaxWidth{80};
+        const unsigned    defPrecision{4};
+        const unsigned    columnSpacing{1};
+        const float       excessAllocation{1.25};
+        const char        rowNumSepChar{':'};
+        const char        fillChar{' '};
+        const char        newlineChar{'\n'};
+        const std::string indColLabel{"time"};
+        const std::string suffixChar{"_"};
+        const std::string metaDataSep{" => "};
+
+        // Set all the un-specified parameters to defaults.
+        if(splitSize   == 0)
+            splitSize  = defSplitSize;
+        if(defMaxWidth == 0)
+            maxWidth   = defMaxWidth;
+        if(precision   == 0)
+            precision  = defPrecision;
+        if(rows.empty())
+            for(int i = 0; i < getNumRows()   ; ++i)
+                rows.push_back(i);
+        if(cols.empty())
+            for(int i = 0; i < getNumColumns(); ++i)
+                cols.push_back(i);
+
+        auto toStr = [&] (const double val) {
+            std::ostringstream stream{};
+            stream << std::fixed << std::setprecision(precision) << val;
+            return stream.str();
+        };
+
+        std::vector<std::vector<std::string>> table{};
+
+        // Fill up column labels, including row-number label (empty string),
+        // time column label and all the column labels from table.
+        table.push_back({std::string{}, indColLabel});
+        for(int col : cols) {
+            if(col < 0)
+                col += getNumColumns();
+            if(numComponentsPerElement() == 1)
+                table.front().push_back(getColumnLabel(col));
+            else
+                for(unsigned c = 0; c < numComponentsPerElement(); ++c)
+                    table.front().push_back(getColumnLabel(col) +
+                                            suffixChar +
+                                            std::to_string(c + 1));
+        }
+
+        // Fill up the rows, including row-number, time column, row data.
+        for(int row : rows) {
+            if(row < 0)
+                row += getNumRows();
+            std::vector<std::string> rowData{};
+            rowData.push_back(std::to_string(row) + rowNumSepChar);
+            rowData.push_back(toStr(getIndependentColumn()[row]));
+            for(const auto& col : cols)
+                for(const auto& comp :
+                        splitElement(getMatrix().getElt(row, col)))
+                        rowData.push_back(toStr(comp));
+            table.push_back(std::move(rowData));
+        }
+
+        // Compute width of each column.
+        std::vector<size_t> columnWidths(table.front().size(), 0);
+        for(const auto& row : table) {
+            for(unsigned col = 0; col < row.size(); ++col)
+                columnWidths.at(col) =
+                    std::max(columnWidths.at(col),
+                             row[col].length() + columnSpacing);
+        }
+        columnWidths.front() -= 1;
+
+        std::string result{};
+
+        // Fill up metadata.
+        if(withMetaData) {
+            for(const auto& key : getTableMetaDataKeys()) {
+                result.append(key);
+                result.append(metaDataSep);
+                result.append(getTableMetaDataAsString(key));
+                result.push_back(newlineChar);
+            }
+        }
+        
+        const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
+                                                columnWidths.cend(),
+                                                static_cast<size_t>(0))};
+        result.reserve((totalWidth * table.size() * excessAllocation) +
+                       result.capacity());
+
+        // Fill up the result string.
+        size_t beginRow{1};
+        size_t endRow{std::min(beginRow + splitSize, table.size())};
+        while(beginRow < endRow) {
+            size_t beginCol{1};
+            size_t endCol{columnWidths.size()};
+            while(beginCol < endCol) {
+                size_t width = std::accumulate(columnWidths.cbegin() + beginCol,
+                                               columnWidths.cbegin() + endCol,
+                                               static_cast<size_t>(0));
+                while(width > maxWidth) {
+                    --endCol;
+                    width -= columnWidths[endCol];
+                }
+                result.append(columnWidths[0], fillChar);
+                for(unsigned col = beginCol; col < endCol; ++col) {
+                    result.append(columnWidths[col] - table[0][col].length(),
+                                  fillChar);
+                    result.append(table[0][col]);
+                }
+                result.push_back(newlineChar);
+                for(unsigned row = beginRow; row < endRow; ++row) {
+                    result.append(columnWidths[0] - table[row][0].length(),
+                                  fillChar);
+                    result.append(table[row][0]);
+                    for(unsigned col = beginCol; col < endCol; ++col) {
+                        result.append(columnWidths[col] -
+                                      table[row][col].length(), fillChar);
+                        result.append(table[row][col]);
+                    }
+                    result.push_back(newlineChar);
+                }
+                beginCol = endCol;
+                endCol = columnWidths.size();
+            }
+            beginRow = endRow;
+            endRow = std::min(beginRow + splitSize, table.size());
+        }
+        return result;
+    }
+
     // Split element into constituent components and append the components to
     // the given vector. For example Vec3 has 3 components.
     template<int N>
@@ -698,6 +914,17 @@ protected:
                       "This constructor cannot be used to construct from "
                       "DataTable<double, ThatETY> where ThatETY is an "
                       "unsupported type.");
+    }
+    template<typename ELT>
+    static
+    std::vector<double> splitElement(const ELT& elt) {
+        std::vector<double> result{};
+        splitElementAndPushBack(result, elt);
+        return result;
+    }
+    static
+    std::vector<double> splitElement(const double& elt) {
+        return {elt};
     }
     
     /** Check if row index is out of range.                                   */
@@ -798,31 +1025,11 @@ protected:
 };  // DataTable_
 
 
-/** Print DataTable out to a stream. Metadata is not printed to the stream as it
-is currently allowed to contain objects that do not support this operation.   
-Meant to be used for Debugging only.                                          */
+/** Print DataTable out to a stream.                                          */
 template<typename ETX, typename ETY>
 std::ostream& operator<<(std::ostream& outStream,
                          const DataTable_<ETX, ETY>& table) {
-    outStream << "----------------------------------------------------------\n";
-    outStream << "NumRows: " << table.getNumRows()    << std::endl;
-    outStream << "NumCols: " << table.getNumColumns() << std::endl;
-    outStream << "Column-Labels: ";
-    const auto& labels = table.getColumnLabels();
-    if(!labels.empty()) {
-        outStream << "['" << labels[0] << "'";
-        if(labels.size() > 1)
-            for(size_t l = 1; l < labels.size(); ++l)
-                outStream << " '" << labels[l] << "'";
-        outStream << "]" << std::endl;
-    }
-    for(size_t r = 0; r < table.getNumRows(); ++r) {
-        outStream << table.getIndependentColumn().at(r) << " ";
-        outStream << table.getRowAtIndex(r) << std::endl;
-    }
-
-    outStream << "----------------------------------------------------------\n";
-    return outStream;
+    return (outStream << table.toString());
 }
 
 /** See DataTable_ for details on the interface.                              */

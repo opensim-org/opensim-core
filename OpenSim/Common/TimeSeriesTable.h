@@ -52,7 +52,9 @@ public:
 
 class InvalidTimestamp : public InvalidRow {
 public:
+#ifndef SWIG
     using InvalidRow::InvalidRow;
+#endif
 };
 
 class TimestampLessThanEqualToPrevious : public InvalidTimestamp {
@@ -106,13 +108,13 @@ public:
     TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
     ~TimeSeriesTable_()                                  = default;
-
+#ifndef SWIG
     using DataTable_<double, ETY>::DataTable_;
     using DataTable_<double, ETY>::operator=;
     /** Flatten the columns of this table to create a TimeSeriesTable_<double>.
     See documentation of DataTable_::flatten() for details.                   */
     using DataTable_<double, ETY>::flatten;
-    
+#endif    
     /** Construct a TimeSeriesTable_ from a DataTable_.                       
 
     \throws InvalidTable If the input table's independent column is not strictly

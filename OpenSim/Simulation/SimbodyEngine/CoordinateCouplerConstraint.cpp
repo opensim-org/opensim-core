@@ -36,7 +36,7 @@
 class CompoundFunction : public SimTK::Function {
 // returns f1(x[0]) - x[1];
 private:
-    const SimTK::Function *f1;
+    std::unique_ptr<const SimTK::Function> f1;
     const double scale;
 
 public:
@@ -82,7 +82,7 @@ public:
     }
 
     void setFunction(const SimTK::Function *cf) {
-        f1 = cf;
+        f1.reset(cf);
     }
 };
 

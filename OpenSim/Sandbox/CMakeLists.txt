@@ -11,6 +11,7 @@ include_directories(${OpenSim_SOURCE_DIR}
 set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"
     "futureOrientationInverseKinematics.trc"
+    "futureMarkerPreviewData.trc"
 )
 
 foreach(dataFile ${SANDBOX_FILES})

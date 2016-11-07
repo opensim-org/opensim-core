@@ -769,11 +769,37 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Now include all remaining Components beginning with PhysicalFrames
+    // Now include all remaining Components beginning with PhysicalOffsetFrames
     // since Constraints, Forces and other components can only be applied to
-    // PhyicalFrames.
-    auto poFrames = getComponentList<PhysicalOffsetFrame>();
-    for (const auto& pof : poFrames) {
+    // PhyicalFrames, which include PhysicalOffsetFrames.
+    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
+    // be added to the System first. So for each PhysicalOffsetFrame locate its
+    // parent and verify its presence in the _orderedList otherwise add it first.
+    auto poFrames = updComponentList<PhysicalOffsetFrame>();
+    for (auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are included in the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and may be attached
+        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        // in the tree and add them first.
+        pof.connect(*this);
+        const PhysicalOffsetFrame* parentPof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
+        std::vector<const PhysicalOffsetFrame*> parentPofs;
+        while (parentPof) {
+            const auto found =
+                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
+                PhysicalOffsetFramesFormLoop, (*found)->getName());
+            parentPofs.push_back(parentPof);
+            // Given a chain of offsets, the most proximal must have Ground or 
+            // Body as its parent. When that happens we can stop.
+            parentPof =
+                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+        }
+        while (parentPofs.size()) {
+            setNextSubcomponentInSystem(*parentPofs.back());
+            parentPofs.pop_back();
+        }
         setNextSubcomponentInSystem(pof);
     }
 
@@ -1937,17 +1963,17 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector* stateVec = new StateVector(originalVec->getTime());
-        stateVec->getData().setSize(numStates);  // default value 0f 0.
+        StateVector stateVec{originalVec->getTime()};
+        stateVec.getData().setSize(numStates);  // default value 0f 0.
         for(int column=0; column< numStates; column++){
             double valueInOriginalStorage=0.0;
             if (mapColumns[column]!=-1)
                 originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
 
-            stateVec->setDataValue(column, valueInOriginalStorage);
+            stateVec.setDataValue(column, valueInOriginalStorage);
 
         }
-        statesStorage.append(*stateVec);
+        statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
