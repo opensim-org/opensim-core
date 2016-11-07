@@ -367,15 +367,18 @@ bool InverseDynamicsTool::run()
         SpatialVec equivalentBodyForceAtJoint;
 
         for(int i=0; i<nt; i++){
-            StateVector genForceVec{times[i], {&((genForceTraj[i])[0]),
-                                               &((genForceTraj[i])[0]) + nq}};
+            StateVector
+                genForceVec(times[i],
+                            SimTK::Vector_<double>(nq,
+                                                   &((genForceTraj[i])[0])));
             genForceResults.append(genForceVec);
 
             // if there are joints requested for equivalent body forces then calculate them
             if(nj>0){
                 Vector forces(6*nj, 0.0);
-                StateVector bodyForcesVec{times[i], {&forces[0],
-                                                     &forces[0] + 6*nj}};
+                StateVector bodyForcesVec(times[i],
+                                          SimTK::Vector_<double>(6*nj,
+                                                                 &forces[0]));
 
                 s.updTime() = times[i];
                 Vector &q = s.updQ();

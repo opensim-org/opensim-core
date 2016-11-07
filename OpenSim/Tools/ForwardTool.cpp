@@ -421,8 +421,8 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
         aYStore->getTimeColumn(tArray);
         for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
         aManager.setUseSpecifiedDT(true);
-        aManager.setDTArray({&dtArray[0],
-                             &dtArray[0] + aYStore->getSize() - 1},
+        aManager.setDTArray(SimTK::Vector_<double>(aYStore->getSize() - 1,
+                                                   &dtArray[0]),
                             tArray[0]);
         //std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
 

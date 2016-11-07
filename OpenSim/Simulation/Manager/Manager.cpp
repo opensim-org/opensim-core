@@ -312,10 +312,8 @@ getDTArray()
  * @param aTI Initial time.  If not specified, 0.0 is assumed.
  * @see getUseSpecifiedDT()
  */
-void Manager::
-setDTArray(const std::vector<double>& aDT,double aTI)
-{
-    if(aDT.empty())
+void Manager::setDTArray(const SimTK::Vector_<double>& aDT,double aTI) {
+    if(aDT.size() == 0)
         return;
 
     _dtArray.setSize(0);
@@ -763,7 +761,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if( _writeToStorage ) {
             SimTK::Vector stateValues = _model->getStateVariableValues(s);
             StateVector vec;
-            vec.setStates(tReal, {stateValues.begin(), stateValues.end()});
+            vec.setStates(tReal, stateValues);
             getStateStorage().append(vec);
             if(_model->isControlled())
                 _controllerSet->storeControls(s,step);
@@ -794,7 +792,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if( _writeToStorage) {
                 SimTK::Vector stateValues = _model->getStateVariableValues(s);
                 StateVector vec;
-                vec.setStates(tReal, {stateValues.begin(), stateValues.end()});
+                vec.setStates(tReal, stateValues);
                 getStateStorage().append(vec);
                 if(_model->isControlled())
                     _controllerSet->storeControls(s, step);

@@ -29,14 +29,9 @@
 // INCLUDES
 #include "IO.h"
 #include "StateVector.h"
-#include "SimTKcommon.h"
-
-
 
 using namespace OpenSim;
 using namespace std;
-
-
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -53,7 +48,12 @@ StateVector::~StateVector()
 /**
  * Default constructor.
  */
-StateVector::StateVector(double aT, const std::vector<double>& data) :
+StateVector::StateVector(double aT) :
+    StateVector(aT, SimTK::Vector_<double>()) {
+    // No operation.
+}
+
+StateVector::StateVector(double aT, const SimTK::Vector_<double>& data) :
     _data(0.0)
 {
     // INITIAL VALUES
@@ -161,12 +161,11 @@ getTime() const
  * Set the state values of this vector.
  */
 void StateVector::
-setStates(double aT, const std::vector<double>& data)
-{
+setStates(double aT, const SimTK::Vector_<double>& data) {
     _t = aT;
     _data.setSize(data.size());
     int size = _data.getSize();
-    for(int i=0;i<size;i++) {
+    for(int i = 0; i < size; ++i) {
         _data[i] = data[i];
     }
 }
@@ -285,9 +284,8 @@ add(double aValue)
  * @param aY Array of values to add to the states.
  */
 void StateVector::
-add(const std::vector<double>& values)
-{
-    if(values.empty())
+add(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
         return;
     int i, n = values.size();
     if( n > _data.getSize())
@@ -359,10 +357,8 @@ subtract(double aValue)
  * @param aN Length of aY.
  * @param aY Array of values to subtracted from the states.
  */
-void StateVector::
-subtract(const std::vector<double>& values)
-{
-    if(values.empty())
+void StateVector::subtract(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
         return;
     int i, n = values.size();
     if(n > _data.getSize())
@@ -417,10 +413,8 @@ multiply(double aValue)
  * @param aN Length of aY.
  * @param aY Array of values the states are multiplied by.
  */
-void StateVector::
-multiply(const std::vector<double>& values)
-{
-    if(values.empty())
+void StateVector::multiply(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
         return;
     int i, n = values.size();
     if(n > _data.getSize())
@@ -482,10 +476,8 @@ divide(double aValue)
  * @param aN Length of aY.
  * @param aY Array of values the states are divided by.
  */
-void StateVector::
-divide(const std::vector<double>& values)
-{
-    if(values.empty())
+void StateVector::divide(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
         return;
     int i, n = values.size();
     if(n > _data.getSize())

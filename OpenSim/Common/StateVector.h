@@ -31,10 +31,8 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 
+#include "SimTKcommon.h"
 #include <vector>
-
-//template class OSIMCOMMON_API Array<double>;
-
 
 
 namespace OpenSim { 
@@ -74,8 +72,9 @@ public:
     StateVector()                   = default;
     StateVector(const StateVector&) = default;
     virtual ~StateVector();
-    
-    StateVector(double aT, const std::vector<double>& data);
+
+    StateVector(double aT);
+    StateVector(double aT, const SimTK::Vector_<double>& data);
 
 private:
     void setNull();
@@ -98,7 +97,7 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
-    void setStates(double aT, const std::vector<double>& data);
+    void setStates(double aT, const SimTK::Vector_<double>& data);
     int getSize() const;
     void setTime(double aT);
     double  getTime() const;
@@ -114,17 +113,17 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(const std::vector<double>& values);
+    void add(const SimTK::Vector_<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void subtract(double aValue);
-    void subtract(const std::vector<double>& values);
+    void subtract(const SimTK::Vector_<double>& values);
     void subtract(StateVector *aStateVector);
     void multiply(double aValue);
-    void multiply(const std::vector<double>& values);
+    void multiply(const SimTK::Vector_<double>& values);
     void multiply(StateVector *aStateVector);
     void divide(double aValue);
-    void divide(const std::vector<double>& values);
+    void divide(const SimTK::Vector_<double>& values);
     void divide(StateVector *aStateVector);
 
     //--------------------------------------------------------------------------
