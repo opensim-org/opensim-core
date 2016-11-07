@@ -6,78 +6,78 @@
 			<!--List of components that this component owns and serializes.-->
 			<components>
 				<Brick name="brick_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Scale factors in X, Y, Z directions respectively.-->
 					<scale_factors>1 1 1</scale_factors>
 					<!--Half lengths in X, Y, Z respectively.-->
 					<half_lengths>0.5 0.01 0.5</half_lengths>
 				</Brick>
 				<Brick name="brick_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../../LeftAnchor</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Scale factors in X, Y, Z directions respectively.-->
 					<scale_factors>5 1 1</scale_factors>
 					<!--Half lengths in X, Y, Z respectively.-->
 					<half_lengths>0.050000000000000003 0.050000000000000003 0.050000000000000003</half_lengths>
 				</Brick>
 				<Brick name="brick_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../../RightAnchor</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Scale factors in X, Y, Z directions respectively.-->
 					<scale_factors>5 1 1</scale_factors>
 					<!--Half lengths in X, Y, Z respectively.-->
 					<half_lengths>0.050000000000000003 0.050000000000000003 0.050000000000000003</half_lengths>
 				</Brick>
 				<Cylinder name="cylinder_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../../CylAnchor</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Radius of cylinder.-->
 					<radius>0.20000000000000001</radius>
 					<!--Half-Height of cylinder.-->
 					<half_height>0.29999999999999999</half_height>
 				</Cylinder>
 				<Ellipsoid name="ellipsoid_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../../EllipsoidAnchor</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Radii of Ellipsoid.-->
 					<radii>0.20000000000000001 0.69999999999999996 0.5</radii>
 				</Ellipsoid>
 			</components>
 			<!--The geometry used to display the axes of this Frame.-->
 			<FrameGeometry name="frame_geometry">
-				<!--List of connectors (structural dependencies) that this component has.-->
-				<connectors>
-					<Connector_Frame_ name="frame">
-						<!--Name of the component this Connector should be connected to.-->
+				<!--List of sockets (structural dependencies) that this component has.-->
+				<sockets>
+					<Socket_Frame_ name="frame">
+						<!--Name of the component this Socket should be connected to.-->
 						<connectee_name>../</connectee_name>
-					</Connector_Frame_>
-				</connectors>
+					</Socket_Frame_>
+				</sockets>
 				<!--Scale factors in X, Y, Z directions respectively.-->
 				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 			</FrameGeometry>
@@ -89,26 +89,26 @@
 					<!--List of components that this component owns and serializes.-->
 					<components>
 						<Sphere name="sphere_">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>../</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Radius of sphere, defaults to 1.0-->
 							<radius>0.10000000000000001</radius>
 						</Sphere>
 					</components>
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
-						<!--List of connectors (structural dependencies) that this component has.-->
-						<connectors>
-							<Connector_Frame_ name="frame">
-								<!--Name of the component this Connector should be connected to.-->
+						<!--List of sockets (structural dependencies) that this component has.-->
+						<sockets>
+							<Socket_Frame_ name="frame">
+								<!--Name of the component this Socket should be connected to.-->
 								<connectee_name>../</connectee_name>
-							</Connector_Frame_>
-						</connectors>
+							</Socket_Frame_>
+						</sockets>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -126,22 +126,22 @@
 		<FrameSet>
 			<objects>
 				<PhysicalOffsetFrame name="LeftAnchor">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
-						<!--List of connectors (structural dependencies) that this component has.-->
-						<connectors>
-							<Connector_Frame_ name="frame">
-								<!--Name of the component this Connector should be connected to.-->
+						<!--List of sockets (structural dependencies) that this component has.-->
+						<sockets>
+							<Socket_Frame_ name="frame">
+								<!--Name of the component this Socket should be connected to.-->
 								<connectee_name>../</connectee_name>
-							</Connector_Frame_>
-						</connectors>
+							</Socket_Frame_>
+						</sockets>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -151,22 +151,22 @@
 					<orientation>-0 0 -0</orientation>
 				</PhysicalOffsetFrame>
 				<PhysicalOffsetFrame name="RightAnchor">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
-						<!--List of connectors (structural dependencies) that this component has.-->
-						<connectors>
-							<Connector_Frame_ name="frame">
-								<!--Name of the component this Connector should be connected to.-->
+						<!--List of sockets (structural dependencies) that this component has.-->
+						<sockets>
+							<Socket_Frame_ name="frame">
+								<!--Name of the component this Socket should be connected to.-->
 								<connectee_name>../</connectee_name>
-							</Connector_Frame_>
-						</connectors>
+							</Socket_Frame_>
+						</sockets>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -176,22 +176,22 @@
 					<orientation>-0 0 -0</orientation>
 				</PhysicalOffsetFrame>
 				<PhysicalOffsetFrame name="CylAnchor">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
-						<!--List of connectors (structural dependencies) that this component has.-->
-						<connectors>
-							<Connector_Frame_ name="frame">
-								<!--Name of the component this Connector should be connected to.-->
+						<!--List of sockets (structural dependencies) that this component has.-->
+						<sockets>
+							<Socket_Frame_ name="frame">
+								<!--Name of the component this Socket should be connected to.-->
 								<connectee_name>../</connectee_name>
-							</Connector_Frame_>
-						</connectors>
+							</Socket_Frame_>
+						</sockets>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -201,22 +201,22 @@
 					<orientation>-0 0 -0</orientation>
 				</PhysicalOffsetFrame>
 				<PhysicalOffsetFrame name="EllipsoidAnchor">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
-						<!--List of connectors (structural dependencies) that this component has.-->
-						<connectors>
-							<Connector_Frame_ name="frame">
-								<!--Name of the component this Connector should be connected to.-->
+						<!--List of sockets (structural dependencies) that this component has.-->
+						<sockets>
+							<Socket_Frame_ name="frame">
+								<!--Name of the component this Socket should be connected to.-->
 								<connectee_name>../</connectee_name>
-							</Connector_Frame_>
-						</connectors>
+							</Socket_Frame_>
+						</sockets>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -232,17 +232,17 @@
 		<JointSet>
 			<objects>
 				<FreeJoint name="blockToGround">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>./ground_offset</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_frame">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../block</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Set holding the generalized coordinates (q's) that parameterize this joint.-->
 					<CoordinateSet>
 						<objects>
@@ -294,22 +294,22 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_PhysicalFrame_ name="parent">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>../../ground</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
+								</Socket_PhysicalFrame_>
+							</sockets>
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
-								<!--List of connectors (structural dependencies) that this component has.-->
-								<connectors>
-									<Connector_Frame_ name="frame">
-										<!--Name of the component this Connector should be connected to.-->
+								<!--List of sockets (structural dependencies) that this component has.-->
+								<sockets>
+									<Socket_Frame_ name="frame">
+										<!--Name of the component this Socket should be connected to.-->
 										<connectee_name>../</connectee_name>
-									</Connector_Frame_>
-								</connectors>
+									</Socket_Frame_>
+								</sockets>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
@@ -349,17 +349,17 @@
 		<ConstraintSet>
 			<objects>
 				<ConstantDistanceConstraint name="constantdistanceconstraint_">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="body_1">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="body_1">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="body_2">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="body_2">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../block</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the point in first body specified in body1 reference frame.-->
 					<location_body_1>0 0.050000000000000003 0</location_body_1>
 					<!--Location of the point in second body specified in body2 reference frame.-->
@@ -384,24 +384,24 @@
 						<PathPointSet>
 							<objects>
 								<PathPoint name="muscle1-point1">
-									<!--List of connectors (structural dependencies) that this component has.-->
-									<connectors>
-										<Connector_PhysicalFrame_ name="parent_frame">
-											<!--Name of the component this Connector should be connected to.-->
+									<!--List of sockets (structural dependencies) that this component has.-->
+									<sockets>
+										<Socket_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Socket should be connected to.-->
 											<connectee_name>../../../ground</connectee_name>
-										</Connector_PhysicalFrame_>
-									</connectors>
+										</Socket_PhysicalFrame_>
+									</sockets>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0 0.050000000000000003 -0.34999999999999998</location>
 								</PathPoint>
 								<PathPoint name="muscle1-point2">
-									<!--List of connectors (structural dependencies) that this component has.-->
-									<connectors>
-										<Connector_PhysicalFrame_ name="parent_frame">
-											<!--Name of the component this Connector should be connected to.-->
+									<!--List of sockets (structural dependencies) that this component has.-->
+									<sockets>
+										<Socket_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Socket should be connected to.-->
 											<connectee_name>../../../block</connectee_name>
-										</Connector_PhysicalFrame_>
-									</connectors>
+										</Socket_PhysicalFrame_>
+									</sockets>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0 0 -0.050000000000000003</location>
 								</PathPoint>
@@ -433,24 +433,24 @@
 						<PathPointSet>
 							<objects>
 								<PathPoint name="muscle2-point1">
-									<!--List of connectors (structural dependencies) that this component has.-->
-									<connectors>
-										<Connector_PhysicalFrame_ name="parent_frame">
-											<!--Name of the component this Connector should be connected to.-->
+									<!--List of sockets (structural dependencies) that this component has.-->
+									<sockets>
+										<Socket_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Socket should be connected to.-->
 											<connectee_name>../../../ground</connectee_name>
-										</Connector_PhysicalFrame_>
-									</connectors>
+										</Socket_PhysicalFrame_>
+									</sockets>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0 0.050000000000000003 0.34999999999999998</location>
 								</PathPoint>
 								<PathPoint name="muscle2-point2">
-									<!--List of connectors (structural dependencies) that this component has.-->
-									<connectors>
-										<Connector_PhysicalFrame_ name="parent_frame">
-											<!--Name of the component this Connector should be connected to.-->
+									<!--List of sockets (structural dependencies) that this component has.-->
+									<sockets>
+										<Socket_PhysicalFrame_ name="parent_frame">
+											<!--Name of the component this Socket should be connected to.-->
 											<connectee_name>../../../block</connectee_name>
-										</Connector_PhysicalFrame_>
-									</connectors>
+										</Socket_PhysicalFrame_>
+									</sockets>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0 0 0.050000000000000003</location>
 								</PathPoint>
@@ -472,13 +472,13 @@
 					<default_fiber_length>0.25</default_fiber_length>
 				</Thelen2003Muscle>
 				<PrescribedForce name="prescribedForce">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>../block</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Three functions describing the force to be applied.-->
 					<FunctionSet name="forceFunctions">
 						<objects>
