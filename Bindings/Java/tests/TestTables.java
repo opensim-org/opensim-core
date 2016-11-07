@@ -98,6 +98,12 @@ class TestTables {
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
         System.out.println(table);
+        // Add table metadata.
+        table.addTableMetaDataString("subject-name", "Java");
+        table.addTableMetaDataString("subject-yob" , "1995");
+        assert table.getTableMetaDataString("subject-name").equals("Java");
+        assert table.getTableMetaDataString("subject-yob" ).equals("1995");
+        System.out.println(table);
         // Access element with index out of bounds. Exception expected.
         try {
             double shouldThrow = row0.get(4);
