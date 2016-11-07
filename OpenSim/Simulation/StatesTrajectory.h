@@ -74,7 +74,7 @@ class Model;
  * ### Using with a %Model 
  * A StatesTrajectory is not very useful on its own, since neither the
  * trajectory nor the contained states know of the names that the Component%s
- * given to the state variables. You probably want to use the trajectory with an
+ * gave to the state variables. You probably want to use the trajectory with an
  * OpenSim::Model, through which the state variables have a meaning (e.g.,
  * `model.getStateVariableValue(states[0], "soleus_r/activation")`).
  *
