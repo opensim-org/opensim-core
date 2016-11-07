@@ -54,17 +54,17 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /// Frames added to satisfy the connectors of this TwoFrameLinker Component
+    /// Frames added to satisfy the sockets of this TwoFrameLinker Component
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
 
-    OpenSim_DECLARE_CONNECTOR(frame1, F,
+    OpenSim_DECLARE_SOCKET(frame1, F,
             "The first frame participating in this linker.");
-    OpenSim_DECLARE_CONNECTOR(frame2, F,
+    OpenSim_DECLARE_SOCKET(frame2, F,
             "The second frame participating in this linker.");
 
 //=============================================================================
@@ -268,8 +268,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updConnector<F>("frame1").setConnecteeName(frame1Name);
-    this->template updConnector<F>("frame2").setConnecteeName(frame2Name);
+    this->template updSocket<F>("frame1").setConnecteeName(frame1Name);
+    this->template updSocket<F>("frame2").setConnecteeName(frame2Name);
 }
 
 template <class C, class F>
@@ -291,8 +291,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->template updSocket<F>("frame1").connect(get_frames(ix1));
+    this->template updSocket<F>("frame2").connect(get_frames(ix2));
 
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
@@ -318,8 +318,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->template updSocket<F>("frame1").connect(get_frames(ix1));
+    this->template updSocket<F>("frame2").connect(get_frames(ix2));
 }
 
 template <class C, class F>
@@ -351,7 +351,7 @@ template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
+        _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
 }
@@ -360,7 +360,7 @@ template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame2() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+        _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
 }
@@ -414,8 +414,8 @@ void TwoFrameLinker<C, F>::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model); //connect to frames 
     // now keep a reference to the frames
-    _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
-    _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+    _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
+    _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
 }
 
 
@@ -618,10 +618,10 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 body2Element->getValueAs<std::string>(frame2Name);
             }
 
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame1", frame1Name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame2", frame2Name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "frame1", frame1Name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "frame2", frame2Name);
 
             Vec3 locationInFrame1(0);
             Vec3 orientationInFrame1(0);

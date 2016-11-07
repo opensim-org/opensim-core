@@ -60,13 +60,13 @@ void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {
         if (documentVersion < 30505) {
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
             std::string bodyName("");
             if (bodyElement != aNode.element_end()) {
                 bodyElement->getValueAs<std::string>(bodyName);
-                XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                    "parent_frame", bodyName);
+                XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                       "parent_frame", bodyName);
             }
         }
     }

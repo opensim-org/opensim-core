@@ -62,7 +62,9 @@ int main()
     return 0;
 }
 
-void compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
+void compareModel(const Model& resultModel,
+                  const std::string& stdFileName,
+                  double tol)
 {
     // Load std model and realize it to Velocity just in case
     Model* refModel = new Model(stdFileName);
@@ -90,15 +92,18 @@ void scaleGait2354()
     std::string setupFilePath;
 
     // Remove old results if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
+    FILE* file2Remove = IO::OpenFile(setupFilePath +
+                                     "subject01_scaleSet_applied.xml", "w");
     fclose(file2Remove);
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_simbody.osim", "w");
+    file2Remove = IO::OpenFile(setupFilePath + "subject01_simbody.osim", "w");
     fclose(file2Remove);
 
     // Construct model and read parameters file
-    std::unique_ptr<ScaleTool> subject(new ScaleTool("subject01_Setup_Scale.xml"));
+    std::unique_ptr<ScaleTool>
+        subject(new ScaleTool("subject01_Setup_Scale.xml"));
 
-    // Keep track of the folder containing setup file, will be used to locate results to compare against
+    // Keep track of the folder containing setup file, will be used to locate
+    // results to compare against
     setupFilePath=subject->getPathToSubject();
 
     subject->run();
@@ -113,7 +118,8 @@ void scaleGait2354()
     }
 
     // See if we have any issues when calling run() twice.
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
+    file2Remove = IO::OpenFile(setupFilePath +
+                               "subject01_scaleSet_applied.xml", "w");
     fclose(file2Remove);
 
     subject->run();
@@ -134,38 +140,52 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     std::string setupFilePath=subject->getPathToSubject();
 
     // Remove old results if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml", "w");
+    FILE* file2Remove = IO::OpenFile(setupFilePath +
+                                     "subject01_scaleSet_applied_GUI.xml", "w");
     fclose(file2Remove);
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaledOnly_GUI.osim", "w");
+    file2Remove = IO::OpenFile(setupFilePath +
+                               "subject01_scaledOnly_GUI.osim", "w");
     fclose(file2Remove);
 
     Model guiModel("gait2354_simbody.osim");
     
-    // Keep track of the folder containing setup file, will be used to locate results to compare against
+    // Keep track of the folder containing setup file, will be used to locate
+    // results to compare against
     guiModel.initSystem();
-    MarkerSet *markerSet = new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
+    MarkerSet *markerSet = new MarkerSet(guiModel,
+                                         setupFilePath +
+                                         subject->
+                                         getGenericModelMaker().
+                                         getMarkerSetFileName());
     guiModel.updateMarkerSet(*markerSet);
 
-    // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
+    // processedModelContext.processModelScale(scaleTool.getModelScaler(),
+    //                                         processedModel, "",
+    //                                         scaleTool.getSubjectMass())
     guiModel.getMultibodySystem().realizeTopology();
     SimTK::State* configState=&guiModel.updWorkingState();
-    subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
+    subject->getModelScaler().processModel(&guiModel, setupFilePath,
+                                           subject->getSubjectMass());
     // Model has changed need to recreate a valid state 
     guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
     guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
 
 
-    if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
+    if (!subject->isDefaultMarkerPlacer() &&
+        subject->getMarkerPlacer().getApply()) {
         const MarkerPlacer& placer = subject->getMarkerPlacer();
-        if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
+        if( false ==
+            placer.processModel(&guiModel, subject->getPathToSubject())) 
             throw Exception("testScale failed to place markers");
     }
 
     // Compare ScaleSet
-    ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
+    ScaleSet stdScaleSet = ScaleSet(setupFilePath +
+                                    "std_subject01_scaleSet_applied.xml");
 
-    const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
+    const ScaleSet& computedScaleSet =
+        ScaleSet(setupFilePath + "subject01_scaleSet_applied_GUI.xml");
 
     ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
@@ -180,14 +200,16 @@ void scaleModelWithLigament()
     std::string setupFilePath("");
 
     // Remove old model if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath + "toyLigamentModelScaled.osim", "w");
+    FILE* file2Remove = IO::OpenFile(setupFilePath +
+                                     "toyLigamentModelScaled.osim", "w");
     fclose(file2Remove);
 
     // Construct model and read parameters file
     std::unique_ptr<ScaleTool> scaleTool(
             new ScaleTool("toyLigamentModel_Setup_Scale.xml"));
 
-    // Keep track of the folder containing setup file, will be used to locate results to compare against
+    // Keep track of the folder containing setup file, will be used to locate
+    // results to compare against
     setupFilePath = scaleTool->getPathToSubject();
     const ModelScaler& scaler = scaleTool->getModelScaler();
     const std::string& scaledModelFile = scaler.getOutputModelFileName();
@@ -199,10 +221,11 @@ void scaleModelWithLigament()
     Model comp(scaledModelFile);
     Model std(std_scaledModelFile);
 
-    // the latest model will not match the standard because the naming convention has
-    // been updated to store path names and connecting a model results in connectors
-    // storing relative paths so that collections of components are more portable.
-    // The models must be equivalent after being connected.
+    // the latest model will not match the standard because the naming
+    // convention has been updated to store path names and connecting a model
+    // results in sockets storing relative paths so that collections of
+    // components are more portable. The models must be equivalent after being
+    // connected.
     comp.setup();
     std.setup();
 

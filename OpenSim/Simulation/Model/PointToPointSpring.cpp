@@ -91,12 +91,12 @@ void PointToPointSpring::constructProperties()
 
 void PointToPointSpring::setBody1(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body1").connect(body);
+    updSocket<PhysicalFrame>("body1").connect(body);
 }
 
 void PointToPointSpring::setBody2(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body2").connect(body);
+    updSocket<PhysicalFrame>("body2").connect(body);
 }
 
 const PhysicalFrame& PointToPointSpring::getBody1() const

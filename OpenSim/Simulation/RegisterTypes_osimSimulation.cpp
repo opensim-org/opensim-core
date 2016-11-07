@@ -261,11 +261,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( StatesTrajectoryReporter() );
 
-    // Register commonly used Connectors for de/serialization
-    Object::registerType(Connector<Frame>());
-    Object::registerType(Connector<PhysicalFrame>());
-    Object::registerType(Connector<Body>());
-    Object::registerType(Connector<Coordinate>());
+    // Register commonly used Sockets for de/serialization
+    Object::registerType(Socket<Frame>());
+    Object::registerType(Socket<PhysicalFrame>());
+    Object::registerType(Socket<Body>());
+    Object::registerType(Socket<Coordinate>());
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

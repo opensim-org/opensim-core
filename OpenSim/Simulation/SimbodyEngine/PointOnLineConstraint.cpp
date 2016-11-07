@@ -108,15 +108,16 @@ void PointOnLineConstraint::constructProperties()
     constructProperty_point_on_follower(origin);
 }
 
-void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
+void
+PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& fl =
-        getConnector<PhysicalFrame>("line_body").getConnectee();
+        getSocket<PhysicalFrame>("line_body").getConnectee();
     const PhysicalFrame& ff =
-        getConnector<PhysicalFrame>("follower_body").getConnectee();
+        getSocket<PhysicalFrame>("follower_body").getConnectee();
 
     SimTK::MobilizedBody bl = fl.getMobilizedBody();
     SimTK::MobilizedBody bf = ff.getMobilizedBody();
@@ -128,7 +129,8 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
     SimTK::Constraint::PointOnLine simtkPointOnLine(bl, normLineDirection,
         get_point_on_line(), bf, get_point_on_follower());
     
-    // Beyond the const Component get the index so we can access the SimTK::Constraint later
+    // Beyond the const Component get the index so we can access the
+    // SimTK::Constraint later
     assignConstraintIndex(simtkPointOnLine.getConstraintIndex());
 }
 
@@ -140,12 +142,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
 
 }
 
@@ -168,23 +170,29 @@ void PointOnLineConstraint::setPointOnFollower(Vec3 point)
     set_point_on_follower(point);
 }
 
-void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode,
+                                              int versionNumber)
 {
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
-            SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
-            SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
+            // replace old properties with latest use of Sockets
+            SimTK::Xml::element_iterator body1Element =
+                aNode.element_begin("line_body");
+            SimTK::Xml::element_iterator body2Element =
+                aNode.element_begin("follower_body");
             std::string body1_name(""), body2_name("");
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
             if (body1Element != aNode.element_end())
                 body1Element->getValueAs<std::string>(body1_name);
             if (body2Element != aNode.element_end())
                 body2Element->getValueAs<std::string>(body2_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "line_body", body1_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "follower_body", body2_name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "line_body", body1_name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "follower_body", body2_name);
         }
     }
 

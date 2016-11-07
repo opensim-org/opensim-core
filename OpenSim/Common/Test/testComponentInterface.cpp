@@ -105,7 +105,8 @@ protected:
             delete old_forces;
             forces = new GeneralForceSubsystem(system);
 
-            SimTK::Force::UniformGravity gravity(*forces, *matter, Vec3(0, -9.816, 0));
+            SimTK::Force::UniformGravity gravity(*forces, *matter,
+                                                 Vec3(0, -9.816, 0));
             fix = gravity.getForceIndex();
 
             system.updMatterSubsystem().setShowDefaultGeometry(true);
@@ -120,7 +121,7 @@ private:
     // keep track of the force added by the component
     mutable ForceIndex fix;
 
-    MemberSubcomponentIndex intSubix{ constructSubcomponent<Sub>("internalSub") };
+    MemberSubcomponentIndex intSubix{constructSubcomponent<Sub>("internalSub")};
 
 }; // end of TheWorld
 
@@ -139,7 +140,8 @@ public:
     OpenSim_DECLARE_OUTPUT(Output2, SimTK::Vec3, calcSomething,
             SimTK::Stage::Time);
 
-    OpenSim_DECLARE_OUTPUT(Output3, double, getSomethingElse, SimTK::Stage::Time);
+    OpenSim_DECLARE_OUTPUT(Output3, double, getSomethingElse,
+                           SimTK::Stage::Time);
 
     OpenSim_DECLARE_OUTPUT(Qs, Vector, getQ, SimTK::Stage::Position);
 
@@ -217,7 +219,8 @@ protected:
             MassProperties(1, Vec3(0), Inertia::brick(0.5, 1, 0.5)));
 
         // Thigh connected by hip
-        MobilizedBody::Pin b1ToGround(matter.updGround(), SimTK::Transform(mInP),
+        MobilizedBody::Pin b1ToGround(matter.updGround(),
+                                      SimTK::Transform(mInP),
             bone, SimTK::Transform(mInB));
 
         //Pin knee connects shank
@@ -249,8 +252,8 @@ class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
     
-    OpenSim_DECLARE_CONNECTOR(parentFoo, Foo, "");
-    OpenSim_DECLARE_CONNECTOR(childFoo, Foo, "");
+    OpenSim_DECLARE_SOCKET(parentFoo, Foo, "");
+    OpenSim_DECLARE_SOCKET(childFoo, Foo, "");
 
     // This is used to test output copying and returns the address of the 
     // component.
@@ -290,8 +293,8 @@ protected:
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
         // perform custom checking
-        if (&updConnector<Foo>("parentFoo").getConnectee()
-                == &updConnector<Foo>("childFoo").getConnectee()){
+        if (&updSocket<Foo>("parentFoo").getConnectee()
+                == &updSocket<Foo>("childFoo").getConnectee()){
             string msg = "ERROR - Bar::extendConnect()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
             throw OpenSim::Exception(msg);
@@ -308,8 +311,10 @@ protected:
 
         int nb = matter.getNumBodies();
         if (nb > 2) {
-            const MobilizedBody& b1 = matter.getMobilizedBody(MobilizedBodyIndex(1));
-            const MobilizedBody& b2 = matter.getMobilizedBody(MobilizedBodyIndex(2));
+            const MobilizedBody& b1 =
+                matter.getMobilizedBody(MobilizedBodyIndex(1));
+            const MobilizedBody& b2 =
+                matter.getMobilizedBody(MobilizedBodyIndex(2));
 
             Force::TwoPointLinearSpring 
                 spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
@@ -327,9 +332,11 @@ protected:
         addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
     }
 
-    void computeStateVariableDerivatives(const SimTK::State& state) const override {
+    void
+    computeStateVariableDerivatives(const SimTK::State& state) const override {
         setStateVariableDerivativeValue(state, "fiberLength", 2.0);
-        setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
+        setStateVariableDerivativeValue(state, "activation",
+                                        3.0 * state.getTime());
         setStateVariableDerivativeValue(state, "hiddenStateVar", 
                                           exp(-0.5 * state.getTime()));
     }
@@ -347,9 +354,9 @@ private:
 class CompoundFoo : public Foo {
     OpenSim_DECLARE_CONCRETE_OBJECT(CompoundFoo, Foo);
 public:
-    //=============================================================================
-    // PROPERTIES
-    //=============================================================================
+//=============================================================================
+// PROPERTIES
+//=============================================================================
     OpenSim_DECLARE_PROPERTY(Foo1, Foo, "1st Foo of CompoundFoo");
     OpenSim_DECLARE_PROPERTY(Foo2, Foo, "2nd Foo of CompoundFoo");
     OpenSim_DECLARE_PROPERTY(scale1, double, "Scale factor for 1st Foo");
@@ -371,7 +378,8 @@ protected:
 
         // update CompoundFoo's properties based on it sub Foos
         double orig_mass = get_mass();
-        upd_mass() = get_scale1()*foo1.get_mass() + get_scale2()*foo2.get_mass();
+        upd_mass() =
+            get_scale1()*foo1.get_mass() + get_scale2()*foo2.get_mass();
 
         double inertiaScale = (get_mass() / orig_mass);
 
@@ -476,10 +484,10 @@ void testMisc() {
     Bar barEqual(bar);
     ASSERT(barEqual == bar);
 
-    //Configure the connector to look for its dependency by this name
+    //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
-    bar.updConnector<Foo>("childFoo").connect(foo);
+    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
+    bar.updSocket<Foo>("childFoo").connect(foo);
         
     // add a subcomponent
     // connect internals
@@ -488,22 +496,26 @@ void testMisc() {
 
 
     auto worldTreeAsList = theWorld.getComponentList();
-    std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
+    std::cout << "list begin: " << worldTreeAsList.begin()->getName()
+              << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathName()
+                  << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName()
+                  << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName()
+                  << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -514,7 +526,8 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathName()
+                  << std::endl;
     }
 
     // Query existing components.
@@ -526,8 +539,8 @@ void testMisc() {
     SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
 
 
-    bar.updConnector<Foo>("childFoo").connect(foo2);
-    string connectorName = bar.updConnector<Foo>("childFoo").getConcreteClassName();
+    bar.updSocket<Foo>("childFoo").connect(foo2);
+    string socketName = bar.updSocket<Foo>("childFoo").getConcreteClassName();
 
     // Bar should connect now
     theWorld.connect();
@@ -564,7 +577,8 @@ void testMisc() {
     // accidentally.
     SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != 0);
     // Make sure bar's outputs don't point to bar0.
-    SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") != size_t(bar0.get()));
+    SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") !=
+               size_t(bar0.get()));
     // Make sure bar's outputs are using bar underneath.
     SimTK_TEST(bar.getOutputValue<size_t>(s, "copytesting") == size_t(&bar));
     SimTK_TEST(bar0->getOutputValue<double>(s, "copytestingMemVar") == 5);
@@ -587,19 +601,26 @@ void testMisc() {
         const AbstractOutput& out4 = foo.getOutput("BodyAcc");
         const AbstractOutput& out5 = bar.getOutput("PotentialEnergy");
 
-        cout << "=========================[Time " << s.getTime() << "s]======================="<<endl;
-        cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
-        cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
-        cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
+        cout << "=========================[Time " << s.getTime()
+             << "s]======================="<<endl;
+        cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"
+             << out1.getValueAsString(s) << endl;
+        cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"
+             << out2.getValueAsString(s) << endl;
+        cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"
+             << out3.getValueAsString(s) << endl;
             
         system.realize(s, Stage::Acceleration);
-        cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
-        cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;
+        cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"
+             << out4.getValueAsString(s) << endl;
+        cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"
+             << out5.getValueAsString(s) << endl;
 
         //viz.report(s);
         system.realize(s, Stage::Report);
 
-        cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1") << endl;
+        cout << "foo.input1 = " << foo.getInputValue<double>(s, "input1")
+             << endl;
     }
 
     // Test the output that returns by const T&.
@@ -608,7 +629,7 @@ void testMisc() {
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
         
-    world2->updComponent("Bar").getConnector<Foo>("childFoo");
+    world2->updComponent("Bar").getSocket<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
     SimTK_TEST_MUST_THROW_EXC(
             world2->updComponent("Bar").getConnectee<Foo>("childFoo"),
@@ -621,9 +642,10 @@ void testMisc() {
     world2->setName("InternalWorld");
     world2->connect();
 
-    world2->updComponent("Bar").getConnector<Foo>("childFoo");
+    world2->updComponent("Bar").getSocket<Foo>("childFoo");
     ASSERT("Foo2" ==
-            world2->updComponent("Bar").getConnectee<Foo>("childFoo").getName());
+           world2->updComponent("Bar").
+           getConnectee<Foo>("childFoo").getName());
 
     world2->buildUpSystem(system2);
     s = system2.realizeTopology();
@@ -642,7 +664,7 @@ void testMisc() {
     ASSERT(world3 == *world2, __FILE__, __LINE__,
         "Model copy assignment FAILED: Property values are not identical.");
 
-    world3.getComponent("Bar").getConnector<Foo>("parentFoo");
+    world3.getComponent("Bar").getSocket<Foo>("parentFoo");
 
     auto& barInWorld3 = world3.getComponent<Bar>("Bar");
     auto& barInWorld2 = world2->getComponent<Bar>("Bar");
@@ -669,12 +691,12 @@ void testMisc() {
     world3.add(&compFoo);
     world3.add(&bar2);
 
-    //Configure the connector to look for its dependency by this name
+    //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar2.updConnector<Foo>("parentFoo")
+    bar2.updSocket<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
     
-    bar2.updConnector<Foo>("childFoo").connect(foo);
+    bar2.updSocket<Foo>("childFoo").connect(foo);
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
@@ -734,15 +756,19 @@ void testMisc() {
     // Get the results of integrating the system forward
     const TimeSeriesTable_<Real>& results = reporter->getTable();
     ASSERT(results.getNumRows() == 11, __FILE__, __LINE__,
-        "Number of rows in Reporter results not equal to number of time intervals.");
-    cout << "************** Contents of Table of Results ****************" << endl;
+           "Number of rows in Reporter results not equal to number of time"
+           " intervals.");
+    cout << "************** Contents of Table of Results ****************"
+         << endl;
     cout << results << endl;
-    cout << "***************** Qs Output at Final state *****************" << endl;
+    cout << "***************** Qs Output at Final state *****************"
+         << endl;
     auto& finalVal = foo.getOutputValue<Vector>(s, "Qs");
     (~finalVal).dump();
     size_t ncols = results.getNumColumns();
     ASSERT(ncols == static_cast<size_t>(finalVal.size()), __FILE__, __LINE__,
-        "Number of cols in Reporter results not equal to size of Output'Qs' size.");
+           "Number of cols in Reporter results not equal to size of "
+           "Output'Qs' size.");
 
     // Check the result of the integration on our state variables.
     ASSERT_EQUAL(3.5, bar.getOutputValue<double>(s, "fiberLength"), 1e-10);
@@ -756,7 +782,8 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathName()
+                  << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -765,15 +792,18 @@ void testMisc() {
 
     // With path to the component it should work
     auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
-    // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
+    // const Sub& topSub =
+    //     theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName()
+         << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName()
+         << endl;
 
     theWorld.print("Nested_" + modelFile);
 }
@@ -799,8 +829,8 @@ void testListInputs() {
     bar.setName("Bar");
     theWorld.add(&bar);
 
-    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
-    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
+    bar.updSocket<Foo>("parentFoo").setConnecteeName("Foo");
+    bar.updSocket<Foo>("childFoo").setConnecteeName("Foo2");
     
     auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
@@ -843,7 +873,7 @@ void testListInputs() {
 }
 
 
-void testListConnectors() {
+void testListSockets() {
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("world");
@@ -857,15 +887,15 @@ void testListConnectors() {
     Bar& bar = *new Bar(); bar.setName("bar");
     theWorld.add(&bar);
     
-    // Non-list connectors.
-    bar.updConnector<Foo>("parentFoo").setConnecteeName("foo");
-    bar.updConnector<Foo>("childFoo").setConnecteeName("foo2");
+    // Non-list sockets.
+    bar.updSocket<Foo>("parentFoo").setConnecteeName("foo");
+    bar.updSocket<Foo>("childFoo").setConnecteeName("foo2");
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
-    bar.updConnector<Foo>("parentFoo").connect(foo);
+    bar.updSocket<Foo>("parentFoo").connect(foo);
     // TODO The "Already connected to 'foo'" is caught by `connect()`.
-    SimTK_TEST(bar.getConnector<Foo>("parentFoo").getNumConnectees() == 1);
+    SimTK_TEST(bar.getSocket<Foo>("parentFoo").getNumConnectees() == 1);
     
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -1000,8 +1030,8 @@ void testComponentPathNames()
     ASSERT(&foo1inA == foo1);
 
     // This bar2 that belongs to A and connects the two foo2s
-    bar2->updConnector<Foo>("parentFoo").connect(*foo2);
-    bar2->updConnector<Foo>("childFoo")
+    bar2->updSocket<Foo>("parentFoo").connect(*foo2);
+    bar2->updSocket<Foo>("childFoo")
         .connect(F->getComponent<Foo>("Foo2"));
 
     // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
@@ -1011,8 +1041,8 @@ void testComponentPathNames()
     auto& fbar2 = F->updComponent<Bar>("Bar2");
     ASSERT(&fbar2 != bar2);
 
-    fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
-    fbar2.updConnector<Foo>("childFoo")
+    fbar2.updSocket<Foo>("parentFoo").connect(*foo1);
+    fbar2.updSocket<Foo>("childFoo")
         .setConnecteeName("../Foo1");
 
     top.dumpSubcomponents();
@@ -1029,8 +1059,8 @@ void testInputOutputConnections()
     foo1->setName("foo1");
     foo2->setName("foo2");
     bar->setName("bar");
-    bar->updConnector<Foo>("parentFoo").connect(*foo1);
-    bar->updConnector<Foo>("childFoo").connect(*foo2);
+    bar->updSocket<Foo>("parentFoo").connect(*foo1);
+    bar->updSocket<Foo>("childFoo").connect(*foo2);
     
     world.add(foo1);
     world.add(foo2);
@@ -1045,16 +1075,17 @@ void testInputOutputConnections()
     // do any other input/output connections
     foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
 
-    // Test various exceptions for inputs, outputs, connectors
+    // Test various exceptions for inputs, outputs, sockets
     ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
-    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+    ASSERT_THROW(SocketNotFound, bar->updSocket<Foo>("parentFoo0"));
     ASSERT_THROW(OutputNotFound, 
         world.getComponent("./internalSub").getOutput("subState0"));
     // Ensure that getOutput does not perform a "find"
     ASSERT_THROW(OutputNotFound,
         world.getOutput("./internalSub/subState"));
 
-    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
+    foo2->updInput("input1").
+        connect(world.getComponent("./internalSub").getOutput("subState"));
 
     foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
     foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
@@ -1280,14 +1311,14 @@ int main() {
     Object::registerType(Foo());
     Object::registerType(Bar());
     Object::registerType(TheWorld());
-    // Register connector objects that are in use
-    Object::registerType(Connector<Foo>());
-    Object::registerType(Connector<Bar>());
+    // Register socket objects that are in use
+    Object::registerType(Socket<Foo>());
+    Object::registerType(Socket<Bar>());
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
         SimTK_SUBTEST(testListInputs);
-        SimTK_SUBTEST(testListConnectors);
+        SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);

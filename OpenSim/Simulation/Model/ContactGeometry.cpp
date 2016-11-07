@@ -96,12 +96,12 @@ SimTK::Transform ContactGeometry::getTransform() const
 
 const PhysicalFrame& ContactGeometry::getFrame() const
 {
-    return getConnector<PhysicalFrame>("frame").getConnectee();
+    return getSocket<PhysicalFrame>("frame").getConnectee();
 }
 
 void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    updSocket<PhysicalFrame>("frame").connect(frame);
 }
 
 const PhysicalFrame& ContactGeometry::getBody() const
@@ -126,8 +126,8 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
             if (bodyElement != node.element_end()) {
                 bodyElement->getValueAs<std::string>(body_name);
             }
-            XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
-                    "frame", body_name);
+            XMLDocument::addSocket(node, "Socket_PhysicalFrame_",
+                                   "frame", body_name);
         }
     }
     Super::updateFromXMLNode(node, versionNumber);

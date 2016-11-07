@@ -55,9 +55,9 @@ public:
         "to be rigidly maintained between the two points "
         "fixed on each body.");
 
-    OpenSim_DECLARE_CONNECTOR(body_1, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_1, PhysicalFrame,
         "The first body participating in this constraint.");
-    OpenSim_DECLARE_CONNECTOR(body_2, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_2, PhysicalFrame,
         "The second body participating in this constraint.");
 
 

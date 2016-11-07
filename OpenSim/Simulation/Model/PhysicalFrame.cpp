@@ -194,7 +194,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
                         meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
                         meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-                        XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
+                        XMLDocument::addSocket(meshNode, "Socket_Frame_", "frame", bodyName);
                         geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
                     }
                 }
@@ -286,7 +286,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 // Create Frame from composed transform
                 createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
 
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
+                XMLDocument::addSocket(meshNode, "Socket_Frame_", "frame", frameName);
                 SimTK::Xml::element_iterator parentFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
                 while (parentFrame->getRequiredAttributeValue("name") != frameName)
                     parentFrame++;
@@ -302,7 +302,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
 
             }
             else
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
+                XMLDocument::addSocket(meshNode, "Socket_Frame_", "frame", bodyName);
             // scale_factor
             SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
@@ -362,5 +362,5 @@ void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& fram
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
+    XMLDocument::addSocket(frameNode, "Socket_PhysicalFrame_", "parent", bodyName);
 }

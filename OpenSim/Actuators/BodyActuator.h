@@ -9,7 +9,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                     *
+* Copyright (c) 2005-2016 Stanford University and the Authors                *
 * Author(s): Soha Pouya, Michael Sherman                                     *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -38,12 +38,12 @@ class Model;
  * Apply a spatial force (that is, [torque, force]) on a given point of the 
  * given body. That is, the force is applied at the given point; torques don't
  * have associated points. This actuator has no states; the control signal  
- * should provide a 6D vector including [torque(3D), force(3D)] that is supposed 
- * to be applied to the body.
- * The associated controller can generate the spatial force [torque, force] both
- * in the body and global (ground) frame. The default is assumed to be global 
- * frame. The point of application can be specified both in the body and global 
- * (ground) frame. The default is assumed to be the body frame.
+ * should provide a 6D vector including [torque(3D), force(3D)] that is 
+ * supposed to be applied to the body. The associated controller can generate 
+ * the spatial force [torque, force] both in the body and global (ground) frame
+ * The default is assumed to be global frame. The point of application can be 
+ * specified both in the body and global (ground) frame. The default is assumed 
+ * to be the body frame.
  *
  * @author Soha Pouya, Michael Sherman
  */
@@ -64,9 +64,9 @@ public:
         "Interpret axis in Ground frame if true; otherwise, body's frame.");
     
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(body, Body,
+    OpenSim_DECLARE_SOCKET(body, Body,
         "The body on which to apply the spatial force.");
 
 //==============================================================================
@@ -83,8 +83,10 @@ public:
 
     @param[in] body                 the body that the actuator applies torque to
     @param[in] point                the point that the force is applied to
-    @param[in] pointIsGlobal        a flag to set if the point is in global frame
-    @param[in] spatialForceIsGlobal a flag to set if the force is in global frame
+    @param[in] pointIsGlobal        a flag to set if the point is in global 
+                                    frame
+    @param[in] spatialForceIsGlobal a flag to set if the force is in global 
+                                    frame
     */
 
     explicit BodyActuator(const Body& body,
@@ -103,8 +105,8 @@ public:
     {return get_point();}
 
 
-    /** %Set the 'point_is_global' property that determines whether the point is  
-    specified in inertial coordinates or in the body's local coordinates. **/
+    /** %Set the 'point_is_global' property that determines whether the point 
+    is specified in inertial coordinates or in the body's local coordinates. **/
     void setPointForceIsGlobal(bool isGlobal)
     {set_point_is_global(isGlobal); }
     /** Return the current value of the 'point_is_global' property. **/

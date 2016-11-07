@@ -113,7 +113,7 @@ void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
     Super::extendConnectToModel(model); // Let base class connect first.
 
     // Look up the two bodies being connected by bushing by name in the
-    // model. TODO: use Connectors
+    // model. TODO: use Sockets
     const string& body1Name = getBody1Name();
     const string& body2Name = getBody2Name();
 

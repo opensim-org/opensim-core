@@ -47,11 +47,12 @@ PrescribedForce::PrescribedForce()
 /**
  * Convenience constructor.
  */
-PrescribedForce::PrescribedForce(const std::string& name, const PhysicalFrame& frame):
+PrescribedForce::PrescribedForce(const std::string& name,
+                                 const PhysicalFrame& frame):
     PrescribedForce()
 {
     setName(name);
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    updSocket<PhysicalFrame>("frame").connect(frame);
 }
 
 //_____________________________________________________________________________
@@ -72,16 +73,19 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) :
 /**
  * Update this object based on its XML node.
  */
-void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode,
+                                        int versionNumber)
 {
     // Base class
     if (versionNumber < 30506) {
-        // Convert body property into a connector to PhysicalFrame with name "frame"
+        // Convert body property into a socket to PhysicalFrame with name
+        // "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
         if (bodyElement != aNode.element_end()) {
             bodyElement->getValueAs<std::string>(frame_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "frame", frame_name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_", "frame",
+                                   frame_name);
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -93,17 +97,20 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
     //Specify all or none of the components
     if(forceFunctions.getSize() != 3 && forceFunctions.getSize() != 0)
     {
-        throw Exception("PrescribedForce:: three components of the force must be specified.");
+        throw Exception("PrescribedForce:: three components of the force must"
+                        " be specified.");
     }
 
     if(pointFunctions.getSize() != 3 && pointFunctions.getSize() != 0)
     {
-        throw Exception("PrescribedForce:: three components of the point must be specified.");
+        throw Exception("PrescribedForce:: three components of the point must"
+                        " be specified.");
     }
 
     if(torqueFunctions.getSize() != 3 && torqueFunctions.getSize() != 0)
     {
-        throw Exception("PrescribedForce:: three components of the torque must be specified.");
+        throw Exception("PrescribedForce:: three components of the torque must"
+                        " be specified.");
     }
 }   
 
@@ -121,13 +128,15 @@ void PrescribedForce::constructProperties()
 }
 
 void PrescribedForce::setFrameName(const std::string& frameName) {
-    updConnector<PhysicalFrame>("frame").setConnecteeName(frameName);
+    updSocket<PhysicalFrame>("frame").setConnecteeName(frameName);
 }
 const std::string& PrescribedForce::getFrameName() const {
-    return getConnector<PhysicalFrame>("frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("frame").getConnecteeName();
 }
 
-void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
+void PrescribedForce::setForceFunctions(Function* forceX,
+                                        Function* forceY,
+                                        Function* forceZ)
 {
     FunctionSet& forceFunctions = updForceFunctions();
 
@@ -138,7 +147,9 @@ void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Func
 }
 
 
-void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Function* pointZ)
+void PrescribedForce::setPointFunctions(Function* pointX,
+                                        Function* pointY,
+                                        Function* pointZ)
 {
     FunctionSet& pointFunctions = updPointFunctions();
 
@@ -148,7 +159,9 @@ void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Func
     pointFunctions.cloneAndAppend(*pointZ);
 }
 
-void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ)
+void PrescribedForce::setTorqueFunctions(Function* torqueX,
+                                         Function* torqueY,
+                                         Function* torqueZ)
 {
     FunctionSet& torqueFunctions = updTorqueFunctions();
 
@@ -175,7 +188,8 @@ void PrescribedForce::setTorqueFunctionNames
     for(int i=0;i<aFunctionNames.getSize();i++)
     {
         kineticsStore.getDataColumn(aFunctionNames[i], column);
-        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
+        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column,
+                                   aFunctionNames[i]);
     }
     setTorqueFunctions(tSpline[0], tSpline[1], tSpline[2]);
     for (int i=0; i<aFunctionNames.getSize();i++)
@@ -197,7 +211,8 @@ void PrescribedForce::setForceFunctionNames
     for(int i=0;i<aFunctionNames.getSize();i++)
     {
         kineticsStore.getDataColumn(aFunctionNames[i], column);
-        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
+        tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column,
+                                   aFunctionNames[i]);
     }
     setForceFunctions(tSpline[0], tSpline[1], tSpline[2]);
     for (int i=0; i<aFunctionNames.getSize();i++)
@@ -251,7 +266,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const bool hasTorqueFunctions = torqueFunctions.getSize()==3;
 
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (hasForceFunctions) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
@@ -346,7 +361,7 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     std::string BodyToReport = (forceIsGlobal?"ground": frame.getName());
     if (appliesForce) {
         labels.append(BodyToReport+"_"+getName()+"_fx");
@@ -366,10 +381,12 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
     return labels;
 }
 /**
- * Given SimTK::State object extract all the values necessary to report forces, application location
- * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+ * Given SimTK::State object extract all the values necessary to report forces, 
+ * application location frame, etc. used in conjunction with getRecordLabels 
+ * and should return same size Array
  */
-OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& state) const {
+OpenSim::Array<double>
+PrescribedForce::getRecordValues(const SimTK::State& state) const {
     OpenSim::Array<double>  values(SimTK::NaN);
 
     const bool pointIsGlobal = get_pointIsGlobal();
@@ -383,11 +400,12 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
 
-    // This is bad as it duplicates the code in computeForce we'll cleanup after it works!
+    // This is bad as it duplicates the code in computeForce we'll cleanup
+    // after it works!
     const double time = state.getTime();
     const SimTK::Vector timeAsVector(1, time);
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (appliesForce) {
         Vec3 force = getForceApplied(state);

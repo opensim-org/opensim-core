@@ -48,10 +48,10 @@ public:
     OpenSim_DECLARE_PROPERTY(point_on_follower, SimTK::Vec3,
         "The point on (and specified in) the follower body constrained to the line.");
 
-    OpenSim_DECLARE_CONNECTOR(line_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(line_body, PhysicalFrame,
         "A frame fixed to the body that contains the line along which the "
         "point on the follower body can move.");
-    OpenSim_DECLARE_CONNECTOR(follower_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(follower_body, PhysicalFrame,
         "A frame fixed to the body that contains the point that is constrained "
         "to move along a line.");
 

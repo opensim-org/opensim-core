@@ -109,20 +109,20 @@ private:
 //==============================================================================
 Component::Component() : Object()
 {
-    constructProperty_connectors();
+    constructProperty_sockets();
     constructProperty_components();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
-    constructProperty_connectors();
+    constructProperty_sockets();
     constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
-    constructProperty_connectors();
+    constructProperty_sockets();
     constructProperty_components();
 }
 
@@ -219,26 +219,26 @@ void Component::connect(Component &root)
 
     reset();
 
-    // rebuilding the connectors table, which was emptied by clearStateAllocations
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        AbstractConnector& connector = upd_connectors(ix);
-        connector.disconnect();
+    // rebuilding the sockets table, which was emptied by clearStateAllocations
+    for (int ix = 0; ix < getProperty_sockets().size(); ++ix){
+        AbstractSocket& socket = upd_sockets(ix);
+        socket.disconnect();
         try {
-            connector.findAndConnect(root);
+            socket.findAndConnect(root);
         }
         catch (const std::exception& x) {
             throw Exception(getConcreteClassName() + "'" + getName() +"'"
-                "::connect() \nFailed to connect Connector<" +
-                connector.getConnecteeTypeName() + "> '" + connector.getName() +
-                "' within " + root.getConcreteClassName() + " '" + root.getName() +
-                "' (details: " + x.what() + ").");
+                "::connect() \nFailed to connect Socket<" +
+                socket.getConnecteeTypeName() + "> '" + socket.getName() +
+                "' within " + root.getConcreteClassName() + " '" +
+                root.getName() + "' (details: " + x.what() + ").");
         }
     }
 
     for (auto& inputPair : _inputsTable) {
         AbstractInput& input = inputPair.second.updRef();
 
-        if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+        if (!input.isListSocket() && input.getConnecteeName(0).empty()) {
             // TODO When we support verbose/debug logging we should include
             // message about unspecified Outputs but generally this OK
             // if the Input's value is not required.
@@ -272,7 +272,7 @@ void Component::connect(Component &root)
     // Allow subcomponents to form their connections
     componentsConnect(root);
 
-    // Forming connections changes the Connector which is a property
+    // Forming connections changes the Socket which is a property
     // Remark as upToDate.
     setObjectIsUpToDateWithProperties();
 }
@@ -305,10 +305,10 @@ void Component::disconnect()
         _adoptedSubcomponents[i]->disconnect();
     }
 
-    //Now cycle through and disconnect all connectors for this component
+    //Now cycle through and disconnect all sockets for this component
     std::map<std::string, int>::const_iterator it;
-    for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-        upd_connectors(it->second).disconnect();
+    for (it = _socketsTable.begin(); it != _socketsTable.end(); ++it){
+        upd_sockets(it->second).disconnect();
     }
     
     // Must also clear the input's connections.
@@ -341,8 +341,10 @@ void Component::addToSystem(SimTK::MultibodySystem& system) const
 void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 {
     if (!isObjectUpToDateWithProperties()) {
-        std::string msg = "Component " + getConcreteClassName() + "::" + getName();
-        msg += " cannot extendAddToSystem until it is up-to-date with its properties.";
+        std::string msg = "Component " + getConcreteClassName() +
+                          "::" + getName();
+        msg += " cannot extendAddToSystem until it is up-to-date with"
+               " its properties.";
 
         throw Exception(msg);
     }
@@ -377,9 +379,9 @@ void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
     }
     else {
         OPENSIM_THROW_FRMOBJ(Exception, 
-            "_orderedSubcomponents specified, but its size does not reflect the "
-            "the number of immediate subcomponents. Verify that you have included "
-            "all immediate subcomponents in the ordered list."
+            "_orderedSubcomponents specified, but its size does not reflect"
+            " the number of immediate subcomponents. Verify that you have "
+            "included all immediate subcomponents in the ordered list."
         )
     }
 }
@@ -471,7 +473,8 @@ void Component::addStateVariable(const std::string&  stateVariableName,
     }
     // Allocate space for a new state variable
     AddedStateVariable* asv =
-        new AddedStateVariable(stateVariableName, *this, invalidatesStage, isHidden);
+        new AddedStateVariable(stateVariableName, *this,
+                               invalidatesStage, isHidden);
     // Add it to the Component and let it take ownership
     addStateVariable(asv);
 }
@@ -578,7 +581,8 @@ setModelingOption(SimTK::State& s, const std::string& name, int flag) const
 unsigned Component::printComponentsMatching(const std::string& substring) const
 {
     auto components = getComponentList();
-    components.setFilter(ComponentFilterAbsolutePathNameContainsString(substring));
+    auto filter = ComponentFilterAbsolutePathNameContainsString(substring);
+    components.setFilter(filter);
     unsigned count = 0;
     for (const auto& comp : components) {
         std::cout << comp.getAbsolutePathName() << std::endl;
@@ -739,7 +743,8 @@ Array<std::string> Component::getStateVariableNames() const
 
     // Include the states of its subcomponents
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames =
+            _memberSubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName = _memberSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
@@ -752,11 +757,13 @@ Array<std::string> Component::getStateVariableNames() const
         }
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); i++){
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames =
+            _propertySubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName =  _propertySubcomponents[i]->getName();
-        // TODO: We should implement checks that names do not have whitespace at the time 
-        // they are assigned and not here where it is a waste of time - aseth
+        // TODO: We should implement checks that names do not have whitespace
+        // at the time they are assigned and not here where it is a waste of
+        // time - aseth
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
@@ -768,7 +775,8 @@ Array<std::string> Component::getStateVariableNames() const
     }
 
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        Array<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
+        Array<std::string> subnames =
+            _adoptedSubcomponents[i]->getStateVariableNames();
         int nsubs = subnames.getSize();
         const std::string& subCompName = _adoptedSubcomponents[i]->getName();
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
@@ -799,7 +807,8 @@ double Component::
     
     std::stringstream msg;
     msg << "Component::getStateVariable: ERR- state named '" << name 
-        << "' not found in " << getName() << " of type " << getConcreteClassName();
+        << "' not found in " << getName() << " of type "
+        << getConcreteClassName();
     throw Exception(msg.str(),__FILE__,__LINE__);
 
     return SimTK::NaN;
@@ -830,10 +839,10 @@ double Component::
     }
 
     std::stringstream msg;
-    msg << "Component::getStateVariableDerivative: ERR- variable name '" << name 
-        << "' not found.\n " 
-        << getName() << " of type " << getConcreteClassName() 
-        << " has " << getNumStateVariables() << " states.";
+    msg << "Component::getStateVariableDerivative: ERR- variable name '"
+        << name << "' not found.\n " << getName() << " of type "
+        << getConcreteClassName() << " has " << getNumStateVariables()
+        << " states.";
     throw Exception(msg.str(),__FILE__,__LINE__);
     return SimTK::NaN;
 }
@@ -871,12 +880,12 @@ bool Component::isAllStatesVariablesListValid() const
     // 4. The System associated with the StateVariables is the current System
     // TODO: Enable the isObjectUpToDateWithProperties() check when computing
     // the path of the GeomtryPath does not involve updating its PathPointSet.
-    // This change dirties the GeometryPath which is a property of a Muscle which
-    // is property of the Model. Therefore, during integration the Model is not 
-    // up-to-date and this causes a rebuilding of the cached StateVariables list.
-    // See GeometryPath::computePath() for the corresponding TODO that must be
-    // addressed before we can re-enable the isObjectUpToDateWithProperties
-    // check.
+    // This change dirties the GeometryPath which is a property of a Muscle
+    // which is property of the Model. Therefore, during integration the Model
+    // is not up-to-date and this causes a rebuilding of the cached
+    // StateVariables list. See GeometryPath::computePath() for the
+    // corresponding TODO that must be addressed before we can re-enable the
+    // isObjectUpToDateWithProperties check.
     // It has been verified that the adding Components will invalidate the state
     // variables associated with the Model and force the list to be rebuilt.
     bool valid = //isObjectUpToDateWithProperties() &&                  // 1.
@@ -993,7 +1002,9 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 
 // Set the value of a discrete variable allocated by this Component by name.
 void Component::
-setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value) const
+setDiscreteVariableValue(SimTK::State& s,
+                         const std::string& name,
+                         double value) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1004,7 +1015,7 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     if(it != _namedDiscreteVariableInfo.end()) {
         SimTK::DiscreteVariableIndex dvIndex = it->second.index;
         SimTK::Value<double>::downcast(
-            getDefaultSubsystem().updDiscreteVariable(s, dvIndex)).upd() = value;
+           getDefaultSubsystem().updDiscreteVariable(s, dvIndex)).upd() = value;
     } else {
         std::stringstream msg;
         msg << "Component::setDiscreteVariable: ERR- name '" << name 
@@ -1452,19 +1463,19 @@ void Component::dumpSubcomponents(int depth) const
 }
 
 void Component::dumpConnections() const {
-    std::cout << "Connectors for " << getConcreteClassName() << " '"
+    std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
-    if (getNumConnectors() == 0) std::cout << " none";
+    if (getNumSockets() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        const auto& connector = get_connectors(ix);
-        std::cout << "  " << connector.getConnecteeTypeName() << " '"
-                  << connector.getName() << "': ";
-        if (connector.getNumConnectees() == 0) {
+    for (int ix = 0; ix < getProperty_sockets().size(); ++ix){
+        const auto& socket = get_sockets(ix);
+        std::cout << "  " << socket.getConnecteeTypeName() << " '"
+                  << socket.getName() << "': ";
+        if (socket.getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (unsigned i = 0; i < connector.getNumConnectees(); ++i) {
-                std::cout << connector.getConnecteeName(i) << " ";
+            for (unsigned i = 0; i < socket.getNumConnectees(); ++i) {
+                std::cout << socket.getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
         }

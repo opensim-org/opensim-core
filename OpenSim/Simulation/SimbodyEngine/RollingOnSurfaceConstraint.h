@@ -66,9 +66,9 @@ public:
     OpenSim_DECLARE_PROPERTY(contact_radius, double,
         "A guess at the area of contact approximated by a circle of radius.");
 
-    OpenSim_DECLARE_CONNECTOR(rolling_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(rolling_body, PhysicalFrame,
         "A frame fixed to the rolling body.");
-    OpenSim_DECLARE_CONNECTOR(surface_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(surface_body, PhysicalFrame,
         "A frame fixed to the surface body.");
 
 //=============================================================================
