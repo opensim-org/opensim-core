@@ -260,7 +260,7 @@ int ForceReporter::record(const SimTK::State& s)
     // MAKE SURE ALL ForceReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
 
-    StateVector nextRow{s.getTime()};
+    StateVector nextRow(s.getTime());
 
     // Model Forces
     auto forces = _model->getComponentList<Force>();
