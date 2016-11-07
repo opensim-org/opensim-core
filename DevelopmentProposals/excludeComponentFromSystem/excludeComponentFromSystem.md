@@ -1,4 +1,5 @@
 ## Proposal: Add a Feature to Exclude Components from the underlying Computational System
+
 ***OpenSim Development Proposal***
 
 ### The Need:
