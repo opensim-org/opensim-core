@@ -93,9 +93,9 @@ public:
     SimTK::Xml::Element getRootDataElement();
     bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
         bool compareDefaults=false, bool compareVersionNumbers=false);
-    static void addConnector(SimTK::Xml::Element& element,
-        const std::string& connectorTag, const std::string& connectorName, 
-        const std::string& connectorValue);
+    static void addSocket(SimTK::Xml::Element& element,
+        const std::string& socketTag, const std::string& socketName, 
+        const std::string& socketValue);
     static void addPhysicalOffsetFrame(SimTK::Xml::Element& element, const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
