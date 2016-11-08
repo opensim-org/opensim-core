@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -232,8 +232,8 @@ public:
     /** Clear all the states in the trajectory. */
     void clear();
     /** Append a SimTK::State to this trajectory.
-     * This function ensures that the time in the new SimTK::State is
-     * greater than the time in the last SimTK::State in the trajectory.
+     * This function ensures that the time in the new SimTK::State is greater
+     * than or equal to the time in the last SimTK::State in the trajectory.
      *
      * The state that ends up in the trajectory is a deep copy of the one
      * passed in.
