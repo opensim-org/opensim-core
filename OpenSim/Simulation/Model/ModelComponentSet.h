@@ -98,7 +98,7 @@ public:
      */
     const Model& getModel() const
     {
-        if (_model){
+        if (hasModel()){
             return _model.getRef();
         }
         else{
