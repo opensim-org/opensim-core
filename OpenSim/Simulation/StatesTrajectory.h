@@ -56,9 +56,9 @@ class Model;
  *
  * This class was introduced in OpenSim version 4.0, and enables scripting
  * (Python/MATLAB) and C++ users to postprocess their results with greater ease
- * and more flexibly than with an Analysis.
+ * and flexibly than with an Analysis.
  *
- * @note In a future release, we hope to support an OSTATES file format that
+ * @note In a future release, we plan to support an OSTATES file format that
  * allows one to write the trajectory to a file with full numerical precision.
  *
  * ### Guarantees
