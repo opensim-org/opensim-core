@@ -73,8 +73,8 @@ class Model;
  *
  * ### Using with a %Model 
  * A StatesTrajectory is not very useful on its own, since neither the
- * trajectory nor the contained states know of the names that the Component%s
- * give to the state variables. You probably want to use the trajectory with an
+ * trajectory nor the contained states know how the Component%s name the state
+ * variables they create. You probably want to use the trajectory with an
  * OpenSim::Model, through which the state variables have a meaning (e.g.,
  * `model.getStateVariableValue(states[0], "soleus_r/activation")`).
  *
@@ -95,7 +95,7 @@ class Model;
  * StatesTrajectory files use the file extension `.ostates`, with the XML
  * format. Therefore, you could theoretically edit a StatesTrajectory file in
  * a typical text editing program, or in Python/MATLAB using XML libraries
- * (such a process is is likely to be painful; consider using the
+ * (such a process is likely to be painful; consider using the
  * createFromStatesStorage() utility instead).
  *
  * A SimTK::State object contains many different types of data, but only some
