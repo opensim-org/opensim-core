@@ -170,8 +170,8 @@ void MarkersReference::updateInternalWeights() const
     // Build flat lists of marker weights in the same order as the marker names
     for (const std::string &name : _markerNames) {
         wix = get_marker_weights().getIndex(name, wix);
-        // Order user weights (as specified in the input weights) to the
-        // corresponding by marker order 
+        // Associate user weights (as specified in the marker_weights property)
+        // with the corresponding marker by order of marker names
         if (wix >= 0)
             _weights[ix++] = get_marker_weights()[wix].getWeight();
     }
