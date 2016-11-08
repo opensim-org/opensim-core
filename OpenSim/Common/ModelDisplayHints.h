@@ -43,16 +43,16 @@ If you are writing a ModelComponent that generates some of its own geometry,
 and you would like people to consider it well-behaved, you should check whether
 any of the flags here might reasonably be expected to affect the geometry that
 your component produces. The currently-supported flags are:
-  - show wrap geometry
-  - show contact geometry
-  - show muscle paths (should apply to other path objects too)
-  - show path points
-  - show markers
-  - show forces
-  - show frames
-  - show labels
-  - show debug geometry
-  - display_scale_factor
+  - show_wrap_geometry
+  - show_contact_geometry
+  - show_muscle_paths (should apply to other path objects too)
+  - show_path_points
+  - show_markers
+  - show_forces
+  - show_frames
+  - show_labels
+  - show_debug_geometry
+  - decorations_scale_factor
 
 This class is intended to provide some minimal user control over generated
 geometry in a form that is easy for a ModelComponent author to deal with, since
@@ -102,8 +102,8 @@ public:
     OpenSim_DECLARE_PROPERTY(show_debug_geometry, bool,
         "Flag to indicate whether or not to show debug geometry, default to false.");
 
-    OpenSim_DECLARE_PROPERTY(display_scale_factor, double,
-        "Scale factor to apply to decorations (that have no inherent size) but are model size dependent (e.g. Marker, halfplane size defaults to 1.");
+    OpenSim_DECLARE_PROPERTY(decorations_scale_factor, double,
+        "Scale factor to apply to decorations that have no inherent size but should scale with the overall size of the model (e.g. Marker, ContactHalfSpace); defaults to 1.");
 
     /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
@@ -123,7 +123,7 @@ private:
         constructProperty_show_labels(false);
         constructProperty_show_forces(true);
         constructProperty_show_debug_geometry(false);
-        constructProperty_display_scale_factor(1.0);
+        constructProperty_decorations_scale_factor(1.0);
     }
 };
 
