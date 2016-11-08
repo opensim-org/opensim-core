@@ -33,8 +33,8 @@ These are the main changes:
 
 1. add an `excluded` flag (bool) as a property to `Component` with a default value of `false`
 2. the inclusion of a Component property as a subcomponent becomes contingent on the flag being `false` and if true it is not included as a subcomponent and it can no longer receive delegated Component interface calls to `connect()`, `addToSystem()`, `realize*()`, etc...  
-3. modify Component::getComponentList<C> to ensure it is devoid of excluded components and their subcomponents. This is necessary so that users and Component aggregators (e.g. Controller, Model) do not accidentally access excluded Components. 
-4. add Component::get/updExcludedComponentList<C> get access to excluded components. This is necessary so one can access and the re-include excluded Components.
+3. modify `Component::getComponentList<C>()` to ensure it is devoid of excluded components and their subcomponents. This is necessary so that users and Component aggregators (e.g. Controller, Model) do not accidentally access excluded Components. 
+4. add `Component::get/updExcludedComponentList<C>()` get access to excluded components. This is necessary to access and update its flag to re-include excluded Components.
 
 ### Interfaces
 No significant implications to the Component interface other than additional accessors to the `excluded` property and to access the list of excluded subcomponents. 
