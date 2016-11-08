@@ -39,10 +39,12 @@ using namespace std;
 Model* constructPendulumWithMarkers();
 // Using a model with markers and trajectory of states, create synthetic
 // marker data. If noiseRadius is provided use it to scale the noise
-// that perturbs the marker data. Optional fixed parameter to use the same
-// noise for each time frame or to compute noise to be added at each frame.
+// that perturbs the marker data. Optionally, use the constantOffset
+// parameter true to use the same noise for each time frame, otherwise
+// randomly select the noise to be added at each frame.
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double noiseRadius=0, bool fixed=false);
+    const StatesTrajectory& states, double noiseRadius=0, 
+    bool constantOffset =false);
 
 // Verify that accuracy improves the number of decimals points to which
 // the solver solution (coordinates) can be trusted as it is tightened.
@@ -64,11 +66,13 @@ int main()
     }
     try { testUpdateMarkerWeights(); }
     catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testUpdateGoalWeights");
+        cout << e.what() << endl;
+        failures.push_back("testUpdateMarkerWeights");
     }
     try { testTrackWithUpdateMarkerWeights(); }
     catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testAccuracy");
+        cout << e.what() << endl;
+        failures.push_back("testTrackWithUpdateMarkerWeights");
     }
 
     if (!failures.empty()) {
@@ -104,11 +108,10 @@ void testAccuracy()
 
     SimTK::State state = pendulum->initSystem();
     double coordValue = coord.getValue(state);
-    double refVal0 = coordRefs[0].getValue(state);
 
     cout.precision(10);
     cout << "Initial " << coord.getName() << " value = " << coordValue <<
-        " referenceValue = " << refVal0 << endl;
+        " referenceValue = " << coordRefs[0].getValue(state) << endl;
 
     coord.setValue(state, refVal);
     StatesTrajectory states;
@@ -396,7 +399,7 @@ Model* constructPendulumWithMarkers()
 }
 
 MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double noiseRadius, bool fixed)
+    const StatesTrajectory& states, double noiseRadius, bool constantOffset)
 {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
@@ -422,8 +425,6 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
         m->realizeReport(state);
     }
 
-    auto maxval = noise.max();
-
     // make a copy of the reported table
     auto results = markerReporter->getTable();
 
@@ -435,7 +436,7 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
         for (size_t i = 0; i < results.getNumRows(); ++i) {
             auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
-                if (!fixed) {
+                if (!constantOffset) {
                     offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
                         double(noise(gen)),
                         double(noise(gen)));
