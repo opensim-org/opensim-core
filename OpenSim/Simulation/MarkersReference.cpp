@@ -77,7 +77,7 @@ void MarkersReference::populateFromMarkerData(const MarkerData& aMarkerData)
     _markerNames.assign(nm, "");
     _weights.assign(nm, get_default_weight());
 
-    for (int i = 0; i < tempNames.getSize(); i++) {
+    for (int i = 0; i < nm; i++) {
         const std::string &name = tempNames[i];
         _markerNames[i] = name;
     }
@@ -159,26 +159,22 @@ void MarkersReference::updateInternalWeights() const
     if (isObjectUpToDateWithProperties())
         return;
 
-    //start by assigning default value to each
+    // Begin by assigning default weight to each. Markers that do not have a
+    // weight specified in the marker_weights property use the default weight.
     _weights.assign(getNumRefs(), get_default_weight());
 
-    // if the set of marker weights has not been changed, nothing
-    // else to be done.
-    if (get_marker_weights().isObjectUpToDateWithProperties())
-        return;
-
+    // Next fill in the marker weights that were specified in the 
+    // marker_weights property 
     int wix = -1;
     int ix = 0;
     // Build flat lists of marker weights in the same order as the marker names
     for (const std::string &name : _markerNames) {
         wix = get_marker_weights().getIndex(name, wix);
-        //Assign user weighting for markers that are user listed in the input set
+        // Order user weights (as specified in the input weights) to the
+        // corresponding by marker order 
         if (wix >= 0)
             _weights[ix++] = get_marker_weights()[wix].getWeight();
     }
 }
-
-
-
 
 } // end of namespace OpenSim
