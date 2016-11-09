@@ -136,10 +136,18 @@ void testAccuracy()
     cout << "Specified accuracy: " << looseAccuracy << "; achieved: "
         << accuracy << endl;
 
-    // test should fail if we did not meet the target accuracy
+    // verify that the target accuracy was met after assemble()
     SimTK_ASSERT_ALWAYS(accuracy <= looseAccuracy,
-        "InverseKinematicsSolver failed to meet specified accuracy");
-    
+        "InverseKinematicsSolver assemble() failed to meet specified accuracy");
+
+    ikSolver.track(state);
+    coordValue = coord.getValue(state);
+    cout << "Tracked " << coord.getName() << " value = " << coordValue << endl;
+    accuracy = abs(coordValue - refVal);
+    // verify that the target accuracy was met after track()
+    SimTK_ASSERT_ALWAYS(accuracy <= looseAccuracy,
+        "InverseKinematicsSolver track() failed to meet specified accuracy");
+
     SimTK::Array_<double> sqMarkerErrors;
     double looseSumSqError = 0;
     ikSolver.computeCurrentSquaredMarkerErrors(sqMarkerErrors);
@@ -153,6 +161,11 @@ void testAccuracy()
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
     ikSolver.setAccuracy(tightAccuracy);
+
+    // verify that track() throws after changing the accuracy of the Solver
+    SimTK_TEST_MUST_THROW_EXC(ikSolver.track(state), Exception);
+
+    ikSolver.setAccuracy(tightAccuracy);
     ikSolver.assemble(state);
 
     coordValue = coord.getValue(state);
@@ -163,9 +176,17 @@ void testAccuracy()
     cout << "Specified accuracy: " << tightAccuracy << "; achieved: "
         << accuracy << endl;
 
-    // test should fail if we did not meet the new tighter target accuracy
+    // verify that the target accuracy was met after tightening the accuracy
     SimTK_ASSERT_ALWAYS(accuracy <= tightAccuracy,
-        "InverseKinematicsSolver failed to meet specified accuracy");
+        "InverseKinematicsSolver assemble() failed to meet tightened accuracy");
+
+    // perturb the solution to verify that track() achieves the accuracy
+    coord.setValue(state, refVal-looseAccuracy);
+    ikSolver.track(state);
+    accuracy = abs(coord.getValue(state) - refVal);
+    // verify that track() achieves the tightened accuracy
+    SimTK_ASSERT_ALWAYS(accuracy <= tightAccuracy,
+        "InverseKinematicsSolver track() failed to meet tightened accuracy");
 
     double tightSumSqError = 0;
     ikSolver.computeCurrentSquaredMarkerErrors(sqMarkerErrors);
