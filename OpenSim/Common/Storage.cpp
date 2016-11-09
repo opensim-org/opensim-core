@@ -1563,8 +1563,7 @@ add(int aN, double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to add to the state vectors.
+ * @param values Array of values to add to the state vectors.
  * @see StateVector::add(int,double[])
  */
 void Storage::add(const SimTK::Vector_<double>& values) {
@@ -1646,8 +1645,7 @@ subtract(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to subtract from the state vectors.
+ * @param values Array of values to subtract from the state vectors.
  * @see StateVector::subtract(int,double[])
  */
 void Storage::subtract(const SimTK::Vector_<double>& values) {
@@ -1729,8 +1727,7 @@ multiply(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be multiplied by.
+ * @param values Array of values the states are to be multiplied by.
  * @see StateVector::multiply(int,double[])
  */
 void Storage::multiply(const SimTK::Vector_<double>& values) {
@@ -1829,8 +1826,7 @@ divide(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be divided by.
+ * @param values Array of values the states are to be divided by.
  */
 void Storage::divide(const SimTK::Vector_<double>& values) {
     for(int i = 0; i < _storage.getSize(); ++i) {

@@ -53,6 +53,13 @@ StateVector::StateVector(double aT) :
     // No operation.
 }
 
+//_____________________________________________________________________________
+/**
+ * Create a StateVector with a time-stamp and an array of values.
+ *
+ * @param aT Time-stamp of the state-vector.
+ * @param data Array of values to set the state-vector to.
+ */
 StateVector::StateVector(double aT, const SimTK::Vector_<double>& data) :
     _data(0.0)
 {
@@ -159,6 +166,9 @@ getTime() const
 //_____________________________________________________________________________
 /**
  * Set the state values of this vector.
+ * 
+ * @param aT Time-stamp of the state vector.
+ * @param data Array of values to set the state to.
  */
 void StateVector::
 setStates(double aT, const SimTK::Vector_<double>& data) {
@@ -280,8 +290,7 @@ add(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values to add to the states.
+ * @param values Array of values to add to this state-vector.
  */
 void StateVector::
 add(const SimTK::Vector_<double>& values) {
@@ -354,8 +363,7 @@ subtract(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values to subtracted from the states.
+ * @param values Array of values to subtract from this state-vector.
  */
 void StateVector::subtract(const SimTK::Vector_<double>& values) {
     if(values.size() == 0)
@@ -410,8 +418,7 @@ multiply(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values the states are multiplied by.
+ * @param values Array of values to multiply this state-vector with.
  */
 void StateVector::multiply(const SimTK::Vector_<double>& values) {
     if(values.size() == 0)
@@ -473,8 +480,7 @@ divide(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values the states are divided by.
+ * @param values Array of values the states are divided by.
  */
 void StateVector::divide(const SimTK::Vector_<double>& values) {
     if(values.size() == 0)
