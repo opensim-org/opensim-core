@@ -453,7 +453,7 @@ class TestTables {
         assert Math.abs(avgRow.get( 0) - 2) < 1e-8/*epsilon*/;
         assert Math.abs(avgRow.get( 5) - 2) < 1e-8/*epsilon*/;
         assert Math.abs(avgRow.get(11) - 2) < 1e-8/*epsilon*/;
-        RowVectorView nearRow = table.getRowNear(1.1);
+        RowVectorView nearRow = table.getNearestRow(1.1);
         assert nearRow.ncol()  == 12;
         assert nearRow.get( 0) == 1;
         assert nearRow.get( 5) == 1;
@@ -494,7 +494,7 @@ class TestTables {
         assert avgRowVec3.ncol() == 4;
         assert Math.abs(avgRowVec3.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
         assert Math.abs(avgRowVec3.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
-        RowVectorViewVec3 nearRowVec3 = tableVec3.getRowNear(1.1);
+        RowVectorViewVec3 nearRowVec3 = tableVec3.getNearestRow(1.1);
         assert nearRowVec3.ncol() == 4;
         assert nearRowVec3.get(0).get(0) == 1;
         assert nearRowVec3.get(3).get(2) == 1;
@@ -603,7 +603,7 @@ class TestTables {
         assert Math.abs(avgRow.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
         assert Math.abs(avgRow.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
         // Nearest row.
-        RowVectorViewVec3 nearRow = table.getRowNear(0.13);
+        RowVectorViewVec3 nearRow = table.getNearestRow(0.13);
         assert nearRow.ncol() == 4;
         assert nearRow.get(0).get(0) == 1;
         assert nearRow.get(3).get(2) == 1;

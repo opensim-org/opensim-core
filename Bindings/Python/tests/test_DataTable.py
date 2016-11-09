@@ -286,7 +286,7 @@ class TestDataTable(unittest.TestCase):
         assert avgRow.ncol() == 12
         assert abs(avgRow[ 0] - 2) < 1e-8#epsilon
         assert abs(avgRow[11] - 2) < 1e-8#epsilon
-        nearRow = table.getRowNear(1.1)
+        nearRow = table.getNearestRow(1.1)
         assert nearRow.ncol() == 12
         assert nearRow[ 0] == 1
         assert nearRow[11] == 1
@@ -304,7 +304,7 @@ class TestDataTable(unittest.TestCase):
         assert avgRow.ncol() == 4
         assert abs(avgRow[0][0] - 1.5) < 1e-8#epsilon
         assert abs(avgRow[3][2] - 1.5) < 1e-8#epsilon
-        nearRow = tableVec3.getRowNear(1.1)
+        nearRow = tableVec3.getNearestRow(1.1)
         assert nearRow.ncol() == 4
         assert nearRow[0][0] == 1
         assert nearRow[3][2] == 1

@@ -106,11 +106,11 @@ int main() {
                          Exception,
                          "Test failed: averageRow() failed.");
 
-    const auto& nearRow = table.getRowNear(0.55);
+    const auto& nearRow = table.getNearestRow(0.55);
     for(size_t i = 0; i < nearRow.ncol(); ++i)
         OPENSIM_THROW_IF(nearRow[i] != 2,
                          Exception,
-                         "Test failed: getRowNear() failed.");
+                         "Test failed: getNearestRow() failed.");
 
     table.updMatrix() += 2;
     table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
@@ -338,11 +338,11 @@ int main() {
                              Exception,
                              "Test failed: averageRow() failed.");
 
-        const auto& nearRowVec3 = tableVec3.getRowNear(0.29);
+        const auto& nearRowVec3 = tableVec3.getNearestRow(0.29);
         for(size_t i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(nearRowVec3[0][i] != 2,
                              Exception,
-                             "Test failed: getRowNear() failed.");
+                             "Test failed: getNearestRow() failed.");
 
         std::cout << tableVec3 << std::endl;
         
@@ -404,11 +404,11 @@ int main() {
                              "Test failed: averageRow() failed.");
         }
 
-        const auto& nearRowQuat = tableQuat.getRowNear(0.29);
+        const auto& nearRowQuat = tableQuat.getNearestRow(0.29);
         for(size_t i = 0; i < 4; ++i)
             OPENSIM_THROW_IF(std::abs(nearRowQuat[0][i] - 0.5) > 1e-8/*eps*/,
                              Exception,
-                             "Test failed: getRowNear() failed.");
+                             "Test failed: getNearestRow() failed.");
 
         std::cout << tableQuat << std::endl;
 
@@ -457,11 +457,11 @@ int main() {
                              "Test failed: averageRow() failed.");
         }
 
-        const auto& nearRowSVec = tableSpatialVec.getRowNear(0.29);
+        const auto& nearRowSVec = tableSpatialVec.getNearestRow(0.29);
         for(size_t i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(nearRowSVec[0][0][i] != 2,
                              Exception,
-                             "Test failed: getRowNear() failed.");
+                             "Test failed: getNearestRow() failed.");
 
         std::cout << tableSpatialVec << std::endl;
 
