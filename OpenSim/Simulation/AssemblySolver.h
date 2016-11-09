@@ -79,8 +79,10 @@ public:
 
     virtual ~AssemblySolver() {}
 
-    /** %Set the unitless accuracy of the assembly solution, which is dictates to how
-        many significant digits the solution should be resolved to.*/
+    /** %Set the unitless accuracy of the assembly solution, which dictates the
+        number of significant digits to which the solution should be resolved.
+        Takes effect when setupGoals() is called (which is called by assemble()
+        but not track()). */
     void setAccuracy(double accuracy) {_accuracy = accuracy; }
 
     /** %Set the relative weighting for constraints. Use Infinity to identify the 
