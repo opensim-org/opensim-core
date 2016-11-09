@@ -49,7 +49,7 @@ MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
     _markerTable = markerTable;
     if(markerWeightSet != nullptr)
         upd_marker_weights() = *markerWeightSet;
-    populateFromMarkerData(markerTable);
+    populateFromMarkerData(markerTable, "m");
 }
 
 void MarkersReference::loadMarkersFile(const std::string markerFile,
@@ -69,13 +69,23 @@ void MarkersReference::loadMarkersFile(const std::string markerFile,
             _markerTable = TimeSeriesTable_<SimTK::Vec3>{markerFile};
         }
     }
-    Units units{};
-    if(_markerTable.hasTableMetaDataKey("Units"))
-        units = Units{_markerTable.getTableMetaData<std::string>("Units")};
-    else
-        units = Units{Units::Meters};
 
-    double scaleFactor = units.convertTo(modelUnits);
+    upd_marker_file() = markerFile;
+
+    populateFromMarkerData(_markerTable, modelUnits.getAbbreviation());
+}
+
+void
+MarkersReference::
+populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
+                       const std::string& units) {
+    Units thisUnits{};
+    if(_markerTable.hasTableMetaDataKey("Units"))
+        thisUnits = Units{_markerTable.getTableMetaData<std::string>("Units")};
+    else
+        thisUnits = Units{Units::Meters};
+
+    double scaleFactor = thisUnits.convertTo(Units{units});
 
     OPENSIM_THROW_IF(SimTK::isNaN(scaleFactor),
                      Exception,
@@ -86,17 +96,9 @@ void MarkersReference::loadMarkersFile(const std::string markerFile,
             _markerTable.updRowAtIndex(r) *= scaleFactor;
 
         _markerTable.removeTableMetaDataKey("Units");
-        _markerTable.addTableMetaData("Units", units.getAbbreviation());
+        _markerTable.addTableMetaData("Units", units);
     }
-
-    upd_marker_file() = markerFile;
-
-    populateFromMarkerData(_markerTable);
-}
-
-void
-MarkersReference::
-populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable) {
+    
     const auto& markerNames = markerTable.getColumnLabels();
     _markerNames.clear();
     _weights.clear();
@@ -145,7 +147,7 @@ const SimTK::Array_<std::string>& MarkersReference::getNames() const {
 void  MarkersReference::getValues(const SimTK::State& s,
                                   SimTK::Array_<Vec3>& values) const {
     double time = s.getTime();
-    const auto rowView = _markerTable.getRowNear(time);
+    const auto rowView = _markerTable.getNearestRow(time);
     values.clear();
     for(unsigned i = 0; i < rowView.ncol(); ++i)
         values.push_back(rowView[i]);
