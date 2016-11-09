@@ -44,12 +44,13 @@ MarkersReference::MarkersReference(const std::string& markerFile,
 
 MarkersReference::
 MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
-                 const Set<MarkerWeight>* markerWeightSet) :
+                 const Set<MarkerWeight>* markerWeightSet,
+                 Units units) :
     MarkersReference() {
     _markerTable = markerTable;
     if(markerWeightSet != nullptr)
         upd_marker_weights() = *markerWeightSet;
-    populateFromMarkerData(markerTable, "m");
+    populateFromMarkerData(markerTable, units.getAbbreviation());
 }
 
 void MarkersReference::loadMarkersFile(const std::string markerFile,

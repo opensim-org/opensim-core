@@ -115,7 +115,8 @@ public:
     units of the columns, as table metadata. In absence of 'Units' metadata,
     columns are assumed to be of units 'meters'.                              */
     MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerData,
-                     const Set<MarkerWeight>* markerWeightSet = nullptr);
+                     const Set<MarkerWeight>* markerWeightSet = nullptr,
+                     Units units = Units(Units::Meters));
 
     virtual ~MarkersReference() {}
 
