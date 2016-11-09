@@ -63,7 +63,7 @@ function tsc = table2tsc(generictable)
         % get the data column name
         col_label  = char(generictable.getColumnLabels.get(iCol));
 
-        if strcmp( char(generictable.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
+        if strcmp( char(generictable.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3');
 
             for iRow = 0 : nRow - 1
                 rowdata(iRow+1,1) = generictable.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(0);
@@ -71,7 +71,7 @@ function tsc = table2tsc(generictable)
                 rowdata(iRow+1,3) = generictable.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(2);       
             end
 
-        else strcmp( char(generictable.getClass), 'class org.opensim.modeling.TimeSeriesTable')
+        else strcmp( char(generictable.getClass), 'class org.opensim.modeling.TimeSeriesTable');
 
             for iRow = 0 : nRow - 1
                 rowdata(iRow+1,1) = generictable.getDependentColumnAtIndex(iCol).getElt(iRow,0);
@@ -134,28 +134,32 @@ function timeseriestable = tsc2table(tsc)
         
             table.appendRow(iRow-1, row);
             % set the time value    
-            timeColumn.set(iRow-1, double(tsc.Time(iRow)) )   
+            timeColumn.set(iRow-1, double(tsc.Time(iRow)) );
         end
         
     elseif nCol == 3
         % if the data is in triples, then build a table of Vec3's
+        
+        
         for iRow = 1 : nRow
     
+            elems = StdVectorVec3();
+            
             % create and fill a row of data at a time
             for iCol = 1 : nlabels
 
                 rowdata = tsc.(labelnames{iCol}).Data(iRow,:);
 
-                 elem = Vec3(rowdata(1), rowdata(2), rowdata(3));
+                elem = Vec3(rowdata(1), rowdata(2), rowdata(3));
 
                 elems.add(elem); 
             end
         
-        row = RowVectorOfVec3(elems);
-           
-        table.appendRow(iRow-1, row);
-        % set the time value    
-        timeColumn.set(iRow-1, double(tsc.Time(iRow)) )   
+            row = RowVectorOfVec3(elems);
+
+            table.appendRow(iRow-1, row);
+            % set the time value    
+            timeColumn.set(iRow-1, double(tsc.Time(iRow)) )   
         end
     end
     
