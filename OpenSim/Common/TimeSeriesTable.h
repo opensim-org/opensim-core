@@ -239,8 +239,8 @@ public:
     \throws TimeOutOfRange If the given value is out-of-range of time column.
     \throws EmptyTable If the table is empty.                                 */
     RowVectorView
-    getRowNear(const double& time,
-               const bool restrictToTimeRange = true) const {
+    getNearestRow(const double& time,
+                  const bool restrictToTimeRange = true) const {
         using DT = DataTable_<double, ETY>;
         const auto& timeCol = DT::getIndependentColumn();
         OPENSIM_THROW_IF(timeCol.size() == 0,
