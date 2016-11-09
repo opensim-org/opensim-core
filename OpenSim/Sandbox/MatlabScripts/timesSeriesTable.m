@@ -1,5 +1,14 @@
 function output_table = timesSeriesTable(generictable)
-%% // Utility Scipt to convert between OpenSim and Matlab Timeseries 
+%% // Convert between OpenSim and Matlab Timeseries 
+%  
+%   Inputs can be either an OpenSim TimeSeriesTable, TimesSeriesTableVec3,
+%   or a Matlab times series collection. 
+%
+%   Outputs from OpenSim TimesSeriesTable's will be a Matlab times series
+%   collection. 
+%
+%   Function does not maintain meta data between types. 
+%
 
 % Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
 % Ajay Seth, Ayman Habib, Jen Hicks. 
@@ -43,9 +52,7 @@ function tsc = table2tsc(generictable)
         error('unkown class type: must either be a TimeSeriesTable or TimeSeriesTableVec3')
     end
 
-    %%
-
-
+    % get the time column. 
     for iRow = 0 : nRow - 1
         time(iRow+1,1) = generictable.getIndependentColumn.get(iRow);
     end 
@@ -89,14 +96,21 @@ function timeseriestable = tsc2table(tsc)
 
     %% data size
     dataSize = tsc.size();
-    nRow = dataSize(1); nCol = dataSize(2);
-
+    nRow = dataSize(1); nlabels = dataSize(2);
+    [m, nCol] = size(tsc.(labelnames{1}).Data);
+    
     %% empty opensim table
-    table = DataTableVec3();
+    if nCol == 1
+        table = DataTable();
+    elseif nCol == 3
+        table = DataTableVec3();
+    else 
+        error('data must have either one or three columns')
+    end
 
     %% set the table column names
     labels =  StdVectorString();
-    for i = 1 : nCol
+    for i = 1 : nlabels
         labels.add( labelnames{i} );    
     end
     table.setColumnLabels(labels);
@@ -104,30 +118,53 @@ function timeseriestable = tsc2table(tsc)
     %% get a pointer to the time column
     timeColumn = table.getIndependentColumn();
 
-    %% file the empty opensim table
-    for iRow = 1 : nRow
+    if nCol == 1
+        % If the data is in doubles, then build a table of doubles. 
+        row = RowVector(nlabels, 1);
+        
+        for iRow = 1 : nRow
 
-        % empty vec3 element
-        elems = StdVectorVec3();
+            % create and fill a row of data at a time
+            for iCol = 1 : nlabels
 
-        % create and fill a row of data at a time
-        for iCol = 1 : nCol
+                rowdata = tsc.(labelnames{iCol}).Data(iRow,:);
 
-            rowdata = tsc.(labelnames{iCol}).Data(iRow,:);
-
-            elem = Vec3(rowdata(1), rowdata(2), rowdata(3));
-
-            elems.add(elem); 
-        end
-            row = RowVectorOfVec3(elems);
+                row.set(iCol-1, rowdata);
+            end
+        
             table.appendRow(iRow-1, row);
+            % set the time value    
+            timeColumn.set(iRow-1, double(tsc.Time(iRow)) )   
+        end
+        
+    elseif nCol == 3
+        % if the data is in triples, then build a table of Vec3's
+        for iRow = 1 : nRow
+    
+            % create and fill a row of data at a time
+            for iCol = 1 : nlabels
 
+                rowdata = tsc.(labelnames{iCol}).Data(iRow,:);
+
+                 elem = Vec3(rowdata(1), rowdata(2), rowdata(3));
+
+                elems.add(elem); 
+            end
+        
+        row = RowVectorOfVec3(elems);
+           
+        table.appendRow(iRow-1, row);
         % set the time value    
         timeColumn.set(iRow-1, double(tsc.Time(iRow)) )   
+        end
     end
-
-    %% convert the data table to a timesseriestable
-    timeseriestable = TimeSeriesTableVec3(table);
+    
+   % convert the data table to a timesseriestable
+    if nCol == 1
+        timeseriestable = TimeSeriesTable(table);
+    elseif nCol == 3
+        timeseriestable = TimeSeriesTableVec3(table);
+    end
 
 end
 
