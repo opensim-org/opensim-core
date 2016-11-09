@@ -129,11 +129,6 @@ private:
     /** system of equations to be integrated */
     const SimTK::System* _system;
 
-    /** flag to indicate if TimeStepper has been initialized. Once this has 
-        been done it should not be performed again (see documentation for
-        SimTK::TimeStepper) */
-    bool _timeStepperInitialized;
-
 
 //=============================================================================
 // METHODS

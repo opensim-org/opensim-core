@@ -67,8 +67,7 @@ Manager::Manager(Model& model, bool dummyVar) :
        _model(&model),
        _performAnalyses(true),
        _writeToStorage(true),
-       _controllerSet(&model.updControllerSet()),
-       _timeStepperInitialized(false)
+       _controllerSet(&model.updControllerSet())
 {
     setNull();
 
@@ -505,6 +504,13 @@ setModel(Model& aModel)
     if(_model!=NULL){
         // May need to issue a warning here that model was already set to avoid a leak.
     }
+
+    if (_timeStepper) {
+        std::string msg = "Cannot set a new integrator on this Manager";
+        msg += "after Manager::integrate() has been called at least once.";
+        OPENSIM_THROW(Exception, msg);
+    }
+
     _model = &aModel;
     
     // STATES
@@ -536,7 +542,7 @@ void Manager::
 setIntegrator(SimTK::Integrator& integrator) 
 {   
     if (_integ.get() == &integrator) return;
-    if (_timeStepperInitialized) {
+    if (_timeStepper) {
         std::string msg = "Cannot set a new integrator on this Manager";
         msg += "after Manager::integrate() has been called at least once.";
         OPENSIM_THROW(Exception, msg);
@@ -741,7 +747,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
                                        : _model->getMultibodySystem();
 
     // Only initialize a TimeStepper if it hasn't been done yet
-    if (!_timeStepperInitialized) initializeTimeStepper(sys, s);
+    if (_timeStepper == NULL) initializeTimeStepper(sys, s);
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
@@ -884,7 +890,6 @@ void Manager::initializeTimeStepper(
     _timeStepper.reset(new SimTK::TimeStepper(sys, *_integ));
     _timeStepper->initialize(state);
     _timeStepper->setReportAllSignificantStates(true);
-    _timeStepperInitialized = true;
 }
 
 //_____________________________________________________________________________
