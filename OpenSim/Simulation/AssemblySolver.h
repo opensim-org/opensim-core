@@ -79,9 +79,11 @@ public:
 
     virtual ~AssemblySolver() {}
 
-    /** %Set the unitless accuracy of the assembly solution, which is dictates to how
-        many significant digits the solution should be resolved to.*/
-    void setAccuracy(double accuracy) {_accuracy = accuracy; }
+    /** %Set the unitless accuracy of the assembly solution, which is dictates
+        the number of significant digits the solution should be resolved to.
+        Note, setting the accuracy will invalidate the AssemblySolver and one
+        must call assemble() before being able to track().*/
+    void setAccuracy(double accuracy);
 
     /** %Set the relative weighting for constraints. Use Infinity to identify the 
         strict enforcement of constraints, otherwise any positive weighting will
@@ -98,17 +100,19 @@ public:
     void updateCoordinateReference(const std::string &coordName, double value, 
                                    double weight=1.0);
 
-    /** Assemble a model configuration that meets the assembly conditions  
-        (desired values and constraints) starting from an initial state that  
-        does not have to satisfy the constraints. */
+    /** Assemble a model configuration that meets the assembly conditions 
+        (desired values and constraints) and accuracy, starting from an initial
+        state that does not have to satisfy the constraints. */
     virtual void assemble(SimTK::State &s);
 
-    /** Obtain a model configuration that meets the assembly conditions  
+    /** Obtain a model configuration that meets the assembly conditions 
         (desired values and constraints) given a state that satisfies or
         is close to satisfying the constraints. Note there can be no change
         in the number of constraints or desired coordinates. Desired
         coordinate values can and should be updated between repeated calls
-        to track a desired trajectory of coordinate values. */
+        to track a desired trajectory of coordinate values. Use assemble()
+        first to obtain the first solution and use track() to efficiently
+        find a nearby solution due to a small change in the desired value.*/
     virtual void track(SimTK::State &s);
 
     /** Read access to the underlying SimTK::Assembler. */
