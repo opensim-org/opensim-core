@@ -1428,7 +1428,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
     if(aN<0) return(_storage.getSize());
 
     // APPEND
-    StateVector vec(aT,aN,aY);
+    StateVector vec(aT, SimTK::Vector_<double>(aN, aY));
     append(vec,aCheckForDuplicateTime);
     // TODO: use some tolerance when checking for duplicate time?
     /*
@@ -1563,15 +1563,12 @@ add(int aN, double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to add to the state vectors.
+ * @param values Array of values to add to the state vectors.
  * @see StateVector::add(int,double[])
  */
-void Storage::
-add(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].add(aN,aY);
+void Storage::add(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].add(values);
     }
 }
 //_____________________________________________________________________________
@@ -1618,7 +1615,7 @@ add(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // ADD
-        _storage[i].add(nN,Y);
+        _storage[i].add(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1648,15 +1645,12 @@ subtract(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to subtract from the state vectors.
+ * @param values Array of values to subtract from the state vectors.
  * @see StateVector::subtract(int,double[])
  */
-void Storage::
-subtract(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].subtract(aN,aY);
+void Storage::subtract(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].subtract(values);
     }
 }
 //_____________________________________________________________________________
@@ -1703,7 +1697,7 @@ subtract(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // SUBTRACT
-        _storage[i].subtract(nN,Y);
+        _storage[i].subtract(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1733,15 +1727,12 @@ multiply(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be multiplied by.
+ * @param values Array of values the states are to be multiplied by.
  * @see StateVector::multiply(int,double[])
  */
-void Storage::
-multiply(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].multiply(aN,aY);
+void Storage::multiply(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].multiply(values);
     }
 }
 
@@ -1789,7 +1780,7 @@ multiply(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // MULTIPLY
-        _storage[i].multiply(nN,Y);
+        _storage[i].multiply(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1835,14 +1826,11 @@ divide(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be divided by.
+ * @param values Array of values the states are to be divided by.
  */
-void Storage::
-divide(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].divide(aN,aY);
+void Storage::divide(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].divide(values);
     }
 }
 //_____________________________________________________________________________
@@ -1889,7 +1877,7 @@ divide(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // DIVIDE
-        _storage[i].divide(nN,Y);
+        _storage[i].divide(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -2623,7 +2611,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
         StateVector vec;
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         _storage.insert(tIndex+1, vec);
     }
@@ -2804,7 +2792,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         // PRINT
         n = vec.print(fp);

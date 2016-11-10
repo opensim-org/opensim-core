@@ -184,7 +184,7 @@ void testAssembleModelWithConstraints(string modelFile)
 
     //==========================================================================================================
     // Integrate forward and init the state and update defaults to make sure
-    // assembler is not effecting anything more than the pose.
+    // assembler is not affecting anything more than the pose.
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(accuracy);
     Manager manager(model, integrator);
