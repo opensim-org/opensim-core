@@ -128,6 +128,26 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
 EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
 EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
+%extend OpenSim::PhysicalOffsetFrame {
+    PhysicalOffsetFrame() {
+        return new PhysicalOffsetFrame();
+    }
+	PhysicalOffsetFrame(const PhysicalFrame& parent, 
+                        const SimTK::Transform& offset) {
+		return new PhysicalOffsetFrame(parent, offset);
+	}
+	PhysicalOffsetFrame(const std::string& name, 
+                const PhysicalFrame& parent,
+                const SimTK::Transform& offset) {
+		return new PhysicalOffsetFrame(name, parent, offset);
+	}
+    	
+	PhysicalOffsetFrame(const std::string& name,
+                const std::string& parentName,
+                const SimTK::Transform& offset) {
+		return new PhysicalOffsetFrame(name, parentName, offset);
+	}
+};
 // Typemaps
 // ========
 // None.
