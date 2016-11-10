@@ -46,7 +46,7 @@ using namespace std;
 // 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
 // 20303
 // 30000 for OpenSim 3.0 release
-// 30500 for OpenSim 4.0 development and Connectors
+// 30500 for OpenSim 4.0 development and Sockets
 // 30501 for changing serialization of Marker
 // 30502 for changing serialization of Geometry
 // 30503 for changing serialization of Ground
@@ -401,30 +401,30 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 }
 
 /*
- * Helper function to add connector to the xmlElement passed in
+ * Helper function to add socket to the xmlElement passed in
  */
-void XMLDocument::addConnector(SimTK::Xml::Element& element,
-    const std::string& connectorTag, const std::string& connectorName, 
-    const std::string& connectorValue)
+void XMLDocument::addSocket(SimTK::Xml::Element& element,
+    const std::string& socketTag, const std::string& socketName, 
+    const std::string& socketValue)
 {
-    SimTK::Xml::element_iterator  connectors_node =  element.element_begin("connectors");
+    SimTK::Xml::element_iterator  sockets_node =  element.element_begin("sockets");
     //SimTK::String debug; //Only used for debugging
-    if (connectors_node == element.element_end()){
-        SimTK::Xml::Element connectorsElement("connectors");
-        element.insertNodeBefore(element.element_begin(), connectorsElement);
-        connectors_node =  element.element_begin("connectors");
+    if (sockets_node == element.element_end()){
+        SimTK::Xml::Element socketsElement("sockets");
+        element.insertNodeBefore(element.element_begin(), socketsElement);
+        sockets_node =  element.element_begin("sockets");
     }
-    // Here we're guaranteed connectors node exists, add individual connector
-    SimTK::Xml::Element newConnectorElement(connectorTag);
-    newConnectorElement.setAttributeValue("name", connectorName);
-    //newConnectorElement.writeToString(debug);
+    // Here we're guaranteed sockets node exists, add individual socket
+    SimTK::Xml::Element newSocketElement(socketTag);
+    newSocketElement.setAttributeValue("name", socketName);
+    //newSocketElement.writeToString(debug);
 
     SimTK::Xml::Element connecteeElement("connectee_name");
-    connecteeElement.insertNodeAfter(connecteeElement.element_end(), SimTK::Xml::Text(connectorValue));
-    // Insert text under newConnectorElement
-    newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
-    connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
-    //connectors_node->writeToString(debug);
+    connecteeElement.insertNodeAfter(connecteeElement.element_end(), SimTK::Xml::Text(socketValue));
+    // Insert text under newSocketElement
+    newSocketElement.insertNodeAfter(newSocketElement.element_end(), connecteeElement);
+    sockets_node->insertNodeAfter(sockets_node->element_end(), newSocketElement);
+    //sockets_node->writeToString(debug);
 }
 
 void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
@@ -445,7 +445,7 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     newFrameElement.setAttributeValue("name", frameName);
     //newFrameElement.writeToString(debug);
 
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+    XMLDocument::addSocket(newFrameElement, "Socket_PhysicalFrame_", "parent", parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];

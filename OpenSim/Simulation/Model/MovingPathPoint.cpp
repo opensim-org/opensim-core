@@ -70,15 +70,15 @@ void MovingPathPoint::constructProperties()
 
 bool MovingPathPoint::hasXCoordinate() const
 {
-    return getConnector<Coordinate>("x_coordinate").isConnected();
+    return getSocket<Coordinate>("x_coordinate").isConnected();
 }
 bool MovingPathPoint::hasYCoordinate() const
 {
-    return getConnector<Coordinate>("y_coordinate").isConnected();
+    return getSocket<Coordinate>("y_coordinate").isConnected();
 }
 bool MovingPathPoint::hasZCoordinate() const
 {
-    return getConnector<Coordinate>("z_coordinate").isConnected();
+    return getSocket<Coordinate>("z_coordinate").isConnected();
 }
 
 const Coordinate& MovingPathPoint::getXCoordinate() const
@@ -98,29 +98,29 @@ const Coordinate& MovingPathPoint::getZCoordinate() const
 
 void MovingPathPoint::setXCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("x_coordinate").connect(coordinate);
+    updSocket<Coordinate>("x_coordinate").connect(coordinate);
 }
 void MovingPathPoint::setYCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("y_coordinate").connect(coordinate);
+    updSocket<Coordinate>("y_coordinate").connect(coordinate);
 }
 void MovingPathPoint::setZCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("z_coordinate").connect(coordinate);
+    updSocket<Coordinate>("z_coordinate").connect(coordinate);
 }
 
 void MovingPathPoint::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
     // Hang on to references to the Coordinates instead of
-    // finding the connector each time we need a Coordinate value
-    if (getConnector<Coordinate>("x_coordinate").isConnected()) {
+    // finding the socket each time we need a Coordinate value
+    if (getSocket<Coordinate>("x_coordinate").isConnected()) {
         _xCoordinate.reset(&getConnectee<Coordinate>("x_coordinate"));
     }
-    if (getConnector<Coordinate>("y_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("y_coordinate").isConnected()) {
         _yCoordinate.reset(&getConnectee<Coordinate>("y_coordinate"));
     }
-    if (getConnector<Coordinate>("z_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("z_coordinate").isConnected()) {
         _zCoordinate.reset(&getConnectee<Coordinate>("z_coordinate"));
     }
 
@@ -162,7 +162,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         XMLDocument::renameChildNode(aNode,"ZAttachment", "z_location");
     }
     if (documentVersion < 30505) {
-        // replace old properties with latest use of Connectors
+        // replace old properties with latest use of Sockets
         SimTK::Xml::element_iterator xCoord = aNode.element_begin("x_coordinate");
         SimTK::Xml::element_iterator yCoord = aNode.element_begin("y_coordinate");
         SimTK::Xml::element_iterator zCoord = aNode.element_begin("z_coordinate");
@@ -176,12 +176,12 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             yCoord->getValueAs<std::string>(yCoord_name);
         if (zCoord != aNode.element_end())
             zCoord->getValueAs<std::string>(zCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "x_coordinate", xCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "y_coordinate", yCoord_name);
-        XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "z_coordinate", zCoord_name);
+        XMLDocument::addSocket(aNode, "Socket_Coordinate_", 
+                               "x_coordinate", xCoord_name);
+        XMLDocument::addSocket(aNode, "Socket_Coordinate_", 
+                               "y_coordinate", yCoord_name);
+        XMLDocument::addSocket(aNode, "Socket_Coordinate_", 
+                               "z_coordinate", zCoord_name);
     }
 
     // Call base class now assuming _node has been corrected for current version

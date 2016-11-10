@@ -60,7 +60,8 @@ PointConstraint::PointConstraint() :
 PointConstraint::PointConstraint(const PhysicalFrame& body1, 
                                  const SimTK::Vec3& locationBody1,
                                  const PhysicalFrame& body2, 
-                                 const SimTK::Vec3& locationBody2) : Constraint()
+                                 const SimTK::Vec3& locationBody2) :
+    Constraint()
 {
     setNull();
     constructProperties();
@@ -107,17 +108,19 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& f1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
+        getSocket<PhysicalFrame>("body_1").getConnectee();
     const PhysicalFrame& f2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+        getSocket<PhysicalFrame>("body_2").getConnectee();
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
 
     // Now create a Simbody Constraint::Point
-    SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(), b2, get_location_body_2());
+    SimTK::Constraint::Ball simtkPoint(b1, get_location_body_1(),
+                                       b2, get_location_body_2());
     
-    // Beyond the const Component get the index so we can access the SimTK::Constraint later
+    // Beyond the const Component get the index so we can access the
+    // SimTK::Constraint later
     assignConstraintIndex(simtkPoint.getConstraintIndex());
 }
 
@@ -129,12 +132,12 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
  * Following methods set attributes of the frames of constraint */
 void PointConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
 }
 
 void PointConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -150,18 +153,20 @@ void PointConstraint::setBody2PointLocation(Vec3 location)
 }
 
 /** Set the point locations */
-void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
+void
+PointConstraint::setContactPointForInducedAccelerations(const SimTK::State &s,
+                                                        Vec3 point)
 {
     // make sure we are at the position stage
     getSystem().realize(s, SimTK::Stage::Position);
 
     const PhysicalFrame& body1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
+        getSocket<PhysicalFrame>("body_1").getConnectee();
     const PhysicalFrame& body2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+        getSocket<PhysicalFrame>("body_2").getConnectee();
 
-    // For external forces we assume point position vector is defined wrt foot (i.e., _body2)
-    // because we are passing it in from a prescribed force.
+    // For external forces we assume point position vector is defined wrt foot
+    // (i.e., _body2) because we are passing it in from a prescribed force.
     // We must also get that point position vector wrt ground (i.e., _body1)
     Vec3 spoint = body2.findLocationInAnotherFrame(s, point, body1);
 
@@ -169,23 +174,29 @@ void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State 
     setBody2PointLocation(point);
 }
 
-void PointConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void PointConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode,
+                                        int versionNumber)
 {
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
-            SimTK::Xml::element_iterator body1Element = aNode.element_begin("body_1");
-            SimTK::Xml::element_iterator body2Element = aNode.element_begin("body_2");
+            // replace old properties with latest use of Sockets
+            SimTK::Xml::element_iterator
+                body1Element = aNode.element_begin("body_1");
+            SimTK::Xml::element_iterator
+                body2Element = aNode.element_begin("body_2");
             std::string body1_name(""), body2_name("");
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
             if (body1Element != aNode.element_end())
                 body1Element->getValueAs<std::string>(body1_name);
             if (body2Element != aNode.element_end())
                 body2Element->getValueAs<std::string>(body2_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_1", body1_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_2", body2_name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "body_1", body1_name);
+            XMLDocument::addSocket(aNode, "Socket_PhysicalFrame_",
+                                   "body_2", body2_name);
         }
     }
 

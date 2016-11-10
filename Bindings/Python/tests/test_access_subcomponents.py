@@ -1,5 +1,5 @@
 """
-Test that connectors, inputs, and outputs are functional in python.
+Test that sockets, inputs, and outputs are functional in python.
 """
 import os, unittest
 import opensim as osim

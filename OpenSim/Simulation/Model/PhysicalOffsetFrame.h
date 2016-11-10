@@ -45,8 +45,10 @@ namespace OpenSim {
 *
 * @author Ajay Seth
 */
-class OSIMSIMULATION_API PhysicalOffsetFrame : public OffsetFrame<PhysicalFrame> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalOffsetFrame, OffsetFrame<PhysicalFrame>);
+class OSIMSIMULATION_API PhysicalOffsetFrame :
+        public OffsetFrame<PhysicalFrame> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PhysicalOffsetFrame,
+                                    OffsetFrame<PhysicalFrame>);
 
 //=============================================================================
 // PUBLIC METHODS

@@ -69,15 +69,15 @@ public:
         "in the Frame of the Point.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(x_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(x_coordinate, Coordinate,
         "The x_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(y_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(y_coordinate, Coordinate,
         "The y_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(z_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(z_coordinate, Coordinate,
         "The z_location function is a function of this coordinate's value.");
 
 //=============================================================================

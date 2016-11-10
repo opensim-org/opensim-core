@@ -81,11 +81,11 @@ void testPendulumModelWithNestedJoints()
     // Create WeldJoints to anchor cuff Bodies to the pendulum.
     auto* anchorA = new WeldJoint();
     anchorA->setName("anchorA");
-    anchorA->updConnector("child_frame").connect(*cuffA);
+    anchorA->updSocket("child_frame").connect(*cuffA);
 
     auto* anchorB = new WeldJoint();
     anchorB->setName("anchorB");
-    anchorB->updConnector("child_frame").connect(*cuffB);
+    anchorB->updSocket("child_frame").connect(*cuffB);
 
     // add anchors to the Device
     device->addComponent(anchorA);
@@ -97,8 +97,8 @@ void testPendulumModelWithNestedJoints()
     // Connect the device to bodies of the pendulum
     const auto& rod1 = pendulum->getComponent<OpenSim::Body>("rod1");
     const auto& rod2 = pendulum->getComponent<OpenSim::Body>("rod2");
-    anchorA->updConnector("parent_frame").connect(rod1);
-    anchorB->updConnector("parent_frame").connect(rod2);
+    anchorA->updSocket("parent_frame").connect(rod1);
+    anchorB->updSocket("parent_frame").connect(rod2);
 
     State& s = pendulum->initSystem();
 }

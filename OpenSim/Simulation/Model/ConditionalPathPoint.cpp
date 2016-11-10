@@ -65,12 +65,13 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
         XMLDocument::renameChildNode(node, "coordinates", "coordinate");
     }
     if (versionNumber < 30505) {
-        // replace old properties with latest use of Connectors
+        // replace old properties with latest use of Sockets
         SimTK::Xml::element_iterator coord = node.element_begin("coordinate");
         std::string coord_name("");
         if (coord != node.element_end())
             coord->getValueAs<std::string>(coord_name);
-        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate", coord_name);
+        XMLDocument::addSocket(node, "Socket_Coordinate_", "coordinate",
+                               coord_name);
     }
 
     // Call base class now assuming _node has been corrected for current version
@@ -94,12 +95,12 @@ void ConditionalPathPoint::constructProperties()
  */
 void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("coordinate").connect(coordinate);
+    updSocket<Coordinate>("coordinate").connect(coordinate);
 }
 
 bool ConditionalPathPoint::hasCoordinate() const
 {
-    return getConnector<Coordinate>("coordinate").isConnected();
+    return getSocket<Coordinate>("coordinate").isConnected();
 }
 
 const Coordinate& ConditionalPathPoint::getCoordinate() const
@@ -133,7 +134,7 @@ void ConditionalPathPoint::setRangeMax(double maxVal)
  */
 bool ConditionalPathPoint::isActive(const SimTK::State& s) const
 {
-    if (getConnector<Coordinate>("coordinate").isConnected()) {
+    if (getSocket<Coordinate>("coordinate").isConnected()) {
         double value = getConnectee<Coordinate>("coordinate").getValue(s);
         if (value >= get_range(0) - 1e-5 &&
              value <= get_range(1) + 1e-5)

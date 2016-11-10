@@ -6,13 +6,13 @@
 			<!--List of Geometry that is attached to this Model Component.-->
 			<geometry>
 				<FrameGeometry name="frame_geometry">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_Frame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_Frame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>ground</connectee_name>
-						</Connector_Frame_>
-					</connectors>
+						</Socket_Frame_>
+					</sockets>
 					<!--Scale factors in X, Y, Z directions respectively.-->
 					<scale_factors>0.2 0.2 0.2</scale_factors>
 					<!--Default appearance for this Geometry-->
@@ -47,13 +47,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="pelvis_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>pelvis</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -69,13 +69,13 @@
 							<mesh_file>sacrum.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="pelvis_geom_2">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>pelvis</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -91,13 +91,13 @@
 							<mesh_file>pelvis.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="pelvis_geom_3">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>pelvis</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -113,13 +113,13 @@
 							<mesh_file>l_pelvis.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="pelvis_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>pelvis</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -143,13 +143,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="femur_r_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>femur_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.14724 1.14724 1.14724</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -165,13 +165,13 @@
 							<mesh_file>femur.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="femur_r_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>femur_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -195,13 +195,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="tibia_r_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.988523 0.988523 0.988523</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -217,13 +217,13 @@
 							<mesh_file>tibia.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_r_geom_2">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.988523 0.988523 0.988523</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -239,13 +239,13 @@
 							<mesh_file>fibula.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="tibia_r_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -269,13 +269,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="talus_r_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>talus_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.11398 1.11398 1.11398</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -291,13 +291,13 @@
 							<mesh_file>talus.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="talus_r_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>talus_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -321,13 +321,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="calcn_r_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>calcn_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -343,13 +343,13 @@
 							<mesh_file>foot.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="calcn_r_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>calcn_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -373,13 +373,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="toes_r_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>toes_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -395,13 +395,13 @@
 							<mesh_file>bofoot.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="toes_r_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>toes_r</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -425,13 +425,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="femur_l_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>femur_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.14724 1.14724 1.14724</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -447,13 +447,13 @@
 							<mesh_file>l_femur.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="femur_l_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>femur_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -477,13 +477,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="tibia_l_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.988523 0.988523 0.988523</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -499,13 +499,13 @@
 							<mesh_file>l_tibia.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_l_geom_2">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.988523 0.988523 0.988523</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -521,13 +521,13 @@
 							<mesh_file>l_fibula.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="tibia_l_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>tibia_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -551,13 +551,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="talus_l_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>talus_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.11398 1.11398 1.11398</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -573,13 +573,13 @@
 							<mesh_file>l_talus.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="talus_l_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>talus_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -603,13 +603,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="calcn_l_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>calcn_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -625,13 +625,13 @@
 							<mesh_file>l_foot.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="calcn_l_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>calcn_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -655,13 +655,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="toes_l_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>toes_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -677,13 +677,13 @@
 							<mesh_file>l_bofoot.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="toes_l_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>toes_l</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -707,13 +707,13 @@
 					<!--List of Geometry that is attached to this Model Component.-->
 					<geometry>
 						<Mesh name="torso_geom_1">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>torso</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -729,13 +729,13 @@
 							<mesh_file>hat_spine.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="torso_geom_2">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>torso</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -751,13 +751,13 @@
 							<mesh_file>hat_jaw.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="torso_geom_3">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>torso</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -773,13 +773,13 @@
 							<mesh_file>hat_skull.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="torso_geom_4">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>torso</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance for this Geometry-->
@@ -795,13 +795,13 @@
 							<mesh_file>hat_ribs.vtp</mesh_file>
 						</Mesh>
 						<FrameGeometry name="torso_body_frame">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_Frame_ name="frame">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_Frame_ name="frame">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>torso</connectee_name>
-								</Connector_Frame_>
-							</connectors>
+								</Socket_Frame_>
+							</sockets>
 							<!--Default appearance for this Geometry-->
 							<Appearance>
 								<!--The representation (0:Hidden, 1:Points, 2:Wire 3:Shaded) used to display the object. -->
@@ -833,17 +833,17 @@
 		<JointSet>
 			<objects>
 				<CustomJoint name="ground_pelvis">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>ground</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 0 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -986,17 +986,17 @@
 					</SpatialTransform>
 				</CustomJoint>
 				<PinJoint name="hip_r">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>-0.072437806 -0.067724738 0.08555243</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1033,17 +1033,17 @@
 					<reverse>false</reverse>
 				</PinJoint>
 				<CustomJoint name="knee_r">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 0 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1162,17 +1162,17 @@
 					</SpatialTransform>
 				</CustomJoint>
 				<PinJoint name="ankle_r">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>talus_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 -0.42506489 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1209,17 +1209,17 @@
 					<reverse>false</reverse>
 				</PinJoint>
 				<WeldJoint name="subtalar_r">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>talus_r</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>-0.0543288046 -0.046731461 0.0088227216</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1237,17 +1237,17 @@
 					<reverse>false</reverse>
 				</WeldJoint>
 				<WeldJoint name="mtp_r">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>toes_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0.183641904 -0.00205416 0.0011092464</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1265,17 +1265,17 @@
 					<reverse>false</reverse>
 				</WeldJoint>
 				<PinJoint name="hip_l">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>-0.072437806 -0.067724738 -0.08555243</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1312,17 +1312,17 @@
 					<reverse>false</reverse>
 				</PinJoint>
 				<CustomJoint name="knee_l">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 0 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1441,17 +1441,17 @@
 					</SpatialTransform>
 				</CustomJoint>
 				<PinJoint name="ankle_l">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>talus_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0 -0.42506489 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1488,17 +1488,17 @@
 					<reverse>false</reverse>
 				</PinJoint>
 				<WeldJoint name="subtalar_l">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>talus_l</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>-0.0543288046 -0.046731461 -0.0088227216</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1516,17 +1516,17 @@
 					<reverse>false</reverse>
 				</WeldJoint>
 				<WeldJoint name="mtp_l">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>toes_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>0.183641904 -0.00205416 -0.0011092464</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -1544,17 +1544,17 @@
 					<reverse>false</reverse>
 				</WeldJoint>
 				<PinJoint name="back">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_body">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_body">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>torso</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 					<location_in_parent>-0.103175206 0.08350327 0</location_in_parent>
 					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
@@ -3394,432 +3394,432 @@
 		<MarkerSet>
 			<objects>
 				<Marker name="Sternum">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>torso</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.103606 0.312439 1.04318e-06</location>
 				</Marker>
 				<Marker name="R.Acromium">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>torso</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0248718 0.426445 0.168585</location>
 				</Marker>
 				<Marker name="L.Acromium">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>torso</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0220089 0.440789 -0.171971</location>
 				</Marker>
 				<Marker name="Top.Head">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>torso</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0595133 0.699598 0.0105017</location>
 				</Marker>
 				<Marker name="R.ASIS">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0228989 0.0358624 0.130116</location>
 				</Marker>
 				<Marker name="L.ASIS">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0291329 0.0276591 -0.131894</location>
 				</Marker>
 				<Marker name="V.Sacral">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>pelvis</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.172091 0.0400029 0.00619843</location>
 				</Marker>
 				<Marker name="R.Thigh.Upper">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0507116 -0.220081 0.0883855</location>
 				</Marker>
 				<Marker name="R.Thigh.Front">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.107902 -0.281747 -0.00690114</location>
 				</Marker>
 				<Marker name="R.Thigh.Rear">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0395109 -0.340915 0.0789543</location>
 				</Marker>
 				<Marker name="R.Knee.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.000586415 -0.426232 0.0605411</location>
 				</Marker>
 				<Marker name="R.Knee.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.00243031 -0.442908 -0.0607482</location>
 				</Marker>
 				<Marker name="R.Shank.Upper">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0233139 -0.0603613 0.070733</location>
 				</Marker>
 				<Marker name="R.Shank.Front">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0516752 -0.0954298 0.0163046</location>
 				</Marker>
 				<Marker name="R.Shank.Rear">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.00738164 -0.145526 0.0800029</location>
 				</Marker>
 				<Marker name="R.Ankle.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.00490543 -0.430843 0.0549207</location>
 				</Marker>
 				<Marker name="R.Ankle.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.00286259 -0.416327 -0.034325</location>
 				</Marker>
 				<Marker name="R.Heel">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0204819 0.0172884 -0.00503735</location>
 				</Marker>
 				<Marker name="R.Midfoot.Sup">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.122708 0.0309658 -0.0403332</location>
 				</Marker>
 				<Marker name="R.Midfoot.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.117766 0.011129 0.0669726</location>
 				</Marker>
 				<Marker name="R.Toe.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.207693 -0.0114107 0.0760669</location>
 				</Marker>
 				<Marker name="R.Toe.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.209814 0.00169807 -0.0323684</location>
 				</Marker>
 				<Marker name="R.Toe.Tip">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_r</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.270734 0.00315005 -0.000612297</location>
 				</Marker>
 				<Marker name="L.Thigh.Upper">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0358442 -0.20749 -0.0932573</location>
 				</Marker>
 				<Marker name="L.Thigh.Front">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.114084 -0.249177 -0.0175704</location>
 				</Marker>
 				<Marker name="L.Thigh.Rear">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.025891 -0.316213 -0.0778532</location>
 				</Marker>
 				<Marker name="L.Knee.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.000753513 -0.446142 -0.062296</location>
 				</Marker>
 				<Marker name="L.Knee.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>femur_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.000472512 -0.445432 0.0539506</location>
 				</Marker>
 				<Marker name="L.Shank.Upper">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.00398588 -0.071611 -0.0777086</location>
 				</Marker>
 				<Marker name="L.Shank.Front">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0481427 -0.121536 -0.0223037</location>
 				</Marker>
 				<Marker name="L.Shank.Rear">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0132436 -0.114739 -0.0885072</location>
 				</Marker>
 				<Marker name="L.Ankle.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.00383431 -0.428451 -0.0544338</location>
 				</Marker>
 				<Marker name="L.Ankle.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>tibia_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.0078901 -0.405161 0.0369253</location>
 				</Marker>
 				<Marker name="L.Heel">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>-0.0226192 0.0268643 0.00786188</location>
 				</Marker>
 				<Marker name="L.Midfoot.Sup">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.149706 0.0307045 0.0342606</location>
 				</Marker>
 				<Marker name="L.Midfoot.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.131321 0.0305726 -0.064363</location>
 				</Marker>
 				<Marker name="L.Toe.Lat">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.194745 0.00778416 -0.0748386</location>
 				</Marker>
 				<Marker name="L.Toe.Med">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.211787 0.00788619 0.0273165</location>
 				</Marker>
 				<Marker name="L.Toe.Tip">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="reference_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="reference_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>calcn_l</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Connector.-->
+						</Socket_PhysicalFrame_>
+					</sockets>
+					<!--The location (Vec3) of the station in a reference frame. Frame is specified as Socket.-->
 					<location>0.260978 0.00906907 0.00201318</location>
 				</Marker>
 			</objects>

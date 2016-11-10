@@ -173,14 +173,14 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::element_iterator bIter = aNode.element_begin("body");
             SimTK::String bName = bIter->getValue();
             // Create nodes for new layout
-            SimTK::Xml::Element connectorsElement("connectors");
-            SimTK::Xml::Element frameElement("Connector_PhysicalFrame_");
-            connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
+            SimTK::Xml::Element socketsElement("sockets");
+            SimTK::Xml::Element frameElement("Socket_PhysicalFrame_");
+            socketsElement.insertNodeAfter(socketsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
-            aNode.insertNodeAfter(bIter, connectorsElement);
+            aNode.insertNodeAfter(bIter, socketsElement);
             aNode.eraseNode(bIter);
         }
     }

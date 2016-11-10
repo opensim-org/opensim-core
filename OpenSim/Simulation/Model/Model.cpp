@@ -198,8 +198,8 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
                     //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_frame", parent_name);
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_frame", body_name);
+                    XMLDocument::addSocket(*concreteJointNode, "Socket_PhysicalFrame_", "parent_frame", parent_name);
+                    XMLDocument::addSocket(*concreteJointNode, "Socket_PhysicalFrame_", "child_frame", body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
                     detach_joint_node.clearOrphan();
@@ -607,7 +607,7 @@ void Model::createMultibodyTree()
 
         // hack to make sure underlying Frame is also connected so it can 
         // traverse to the base frame and get its name. This allows the
-        // (offset) frames to satisfy the connectors of Joint to be added
+        // (offset) frames to satisfy the sockets of Joint to be added
         // to a Body, for example, and not just joint itself.
         // TODO: try to create the multibody tree later when components
         // can already be expected to be connected then traverse those

@@ -25,17 +25,17 @@
 		<JointSet>
 			<objects>
 				<FreeJoint name="free">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>ground_offset</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_frame">
-							<!--Name of the component this Connector should be connected to.-->
+						</Socket_PhysicalFrame_>
+						<Socket_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>ball_offset</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="free_coord_0">
@@ -62,26 +62,26 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_PhysicalFrame_ name="parent">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>../../model_/ground</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
+								</Socket_PhysicalFrame_>
+							</sockets>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="ball_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
+							<!--List of sockets (structural dependencies) that this component has.-->
+							<sockets>
+								<Socket_PhysicalFrame_ name="parent">
+									<!--Name of the component this Socket should be connected to.-->
 									<connectee_name>ball</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
+								</Socket_PhysicalFrame_>
+							</sockets>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -136,13 +136,13 @@
 		<ContactGeometrySet>
 			<objects>
 				<ContactMesh name="ball1">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>model_/ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>1 2 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -151,13 +151,13 @@
 					<filename>sphere.vtp</filename>
 				</ContactMesh>
 				<ContactMesh name="ball2">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
+					<!--List of sockets (structural dependencies) that this component has.-->
+					<sockets>
+						<Socket_PhysicalFrame_ name="frame">
+							<!--Name of the component this Socket should be connected to.-->
 							<connectee_name>model_/ball</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+						</Socket_PhysicalFrame_>
+					</sockets>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>1 1 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -166,13 +166,13 @@
 					<filename>sphere.vtp</filename>
 				</ContactMesh>
         <ContactSphere name="ball3">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_PhysicalFrame_ name="frame">
-              <!--Name of the component this Connector should be connected to.-->
+          <!--List of sockets (structural dependencies) that this component has.-->
+          <sockets>
+            <Socket_PhysicalFrame_ name="frame">
+              <!--Name of the component this Socket should be connected to.-->
               <connectee_name>model_/ball</connectee_name>
-            </Connector_PhysicalFrame_>
-          </connectors>
+            </Socket_PhysicalFrame_>
+          </sockets>
           <!--Location of geometry center in the PhysicalFrame.-->
           <location>0 1 0</location>
           <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -181,13 +181,13 @@
           <radius>0.250000000000000001</radius>
         </ContactSphere>
         <ContactHalfSpace name="plane">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_PhysicalFrame_ name="frame">
-              <!--Name of the component this Connector should be connected to.-->
+          <!--List of sockets (structural dependencies) that this component has.-->
+          <sockets>
+            <Socket_PhysicalFrame_ name="frame">
+              <!--Name of the component this Socket should be connected to.-->
               <connectee_name>model_/ground</connectee_name>
-            </Connector_PhysicalFrame_>
-          </connectors>
+            </Socket_PhysicalFrame_>
+          </sockets>
           <!--List of components that this component owns and serializes.-->
           <components />
           <!--Location of geometry center in the PhysicalFrame.-->
