@@ -135,6 +135,11 @@ int main()
         Model modelWithContacts("visualize_contacts.osim");
         populate_contactModelPrimitives(standard);
         testVisModelAgainstStandard(modelWithContacts, standard);
+        // Model with WrapObjects
+        Model modelWithWrap("test_wrapAllVis.osim");
+        modelWithWrap.updDisplayHints().set_show_frames(false);
+        //populate_wrapModelPrimitives(standard);
+        testVisModelAgainstStandard(modelWithWrap, standard);
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -225,13 +230,21 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
     SimTK::State& si = model.initSystem();
     if (visualDebug)
         model.getVisualizer().show(si);
-    ModelDisplayHints mdh;
+    const ModelDisplayHints& mdh = model.getDisplayHints();
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     model.generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
-
+    /*
+    DecorativeGeometryImplementationText textFromModel;
+    for (const SimTK::DecorativeGeometry* nextGeom = geometryToDisplay.begin();
+    nextGeom != geometryToDisplay.end();
+        ++nextGeom) {
+        nextGeom->implementGeometry(textFromModel);
+    }
+    std::cout << textFromModel.getAsString() << std::endl;
+    */
     int i = 0;
     for (const SimTK::DecorativeGeometry* nextGeom = stdPrimitives.begin();
         nextGeom != stdPrimitives.end();
