@@ -1103,8 +1103,8 @@ void testInputConnecteeNames() {
 
 template<typename RowVec>
 void assertEqual(const RowVec& a, const RowVec& b) {
-    assert(a.nrow() == b.nrow());
-    assert(a.ncol() == b.ncol());
+    ASSERT(a.nrow() == b.nrow());
+    ASSERT(a.ncol() == b.ncol());
     for(int i = 0; i < a.ncol(); ++i)
         ASSERT_EQUAL(a[i], b[i], 1e-10);
 }

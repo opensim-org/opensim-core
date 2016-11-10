@@ -863,7 +863,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 
     // Compute generalized speeds
     GCVSplineSet tempQset(5,qStore);
-    Storage *uStore = tempQset.constructStorage(1);
+    std::unique_ptr<Storage> uStore{tempQset.constructStorage(1)};
 
     // Compute constraints
     Array<double> qu(0.0,nq+nu);

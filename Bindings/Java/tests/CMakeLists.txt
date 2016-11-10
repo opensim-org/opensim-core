@@ -59,6 +59,10 @@ macro(OpenSimAddJavaTest TESTNAME)
 
     # Copy all necessary test files.
     string(CONCAT FILETOCOPY
+          "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestC3DFileAdapter")
+    string(CONCAT FILETOCOPY
            "${CMAKE_SOURCE_DIR}/Bindings/Java/Matlab/examples/testData/"
            "Subject01/IKSetup/subject01_Setup_IK_generic.xml")
     file(COPY ${FILETOCOPY}
@@ -128,7 +132,9 @@ OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
 OpenSimAddJavaTest(TestTables)
 OpenSimAddJavaTest(TestModelBuilding)
-OpenSimAddJavaTest(TestDataAdapter)
+if(WITH_BTK)
+    OpenSimAddJavaTest(TestC3DFileAdapter)
+endif()
 OpenSimAddJavaTest(TestReporter)
 
 
