@@ -152,9 +152,8 @@ AddDependency(NAME       simbody
                          -DBUILD_TESTING:BOOL=OFF)
 
 AddDependency(NAME       docopt
-              URL        https://github.com/chrisdembia/docopt.cpp.git
-              TAG        windows-support-static-lib)
-              #URL        https://github.com/docopt/docopt.cpp.git
+              URL        https://github.com/docopt/docopt.cpp.git
+              TAG        af03fa044ee1eff20819549b534ea86829a24a54
  
 #######################
 
