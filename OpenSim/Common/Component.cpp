@@ -175,12 +175,12 @@ void Component::finalizeFromProperties()
     for (auto& it : _connectorsTable) {
         it.second->setOwner(*this);
         // Let the Connector handle any errors in the connectee_name property.
-        it.second->finalizeFromProperties();
+        it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
         // Let the Connector handle any errors in the connectee_name property.
-        it.second->finalizeFromProperties();
+        it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);

@@ -1439,7 +1439,6 @@ void testSingleValueInputConnecteeSerialization() {
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
         // connectee names for a single-value input.
-        // TODO remove this line: auto& input1 = foo->updInput("input1");
         auto& connectee_name = Property<std::string>::updAs(
                         foo->updPropertyByName("input_input1_connectee_name"));
         connectee_name.setAllowableListSize(0, 10);
@@ -1460,6 +1459,32 @@ void testSingleValueInputConnecteeSerialization() {
         //     TheWorld world(modelFileNameMultipleValues),
         //     OpenSim::Exception);
         TheWorld world(modelFileNameMultipleValues);
+    }
+    
+    // Test error case: connectee_name has invalid characters.
+    // -------------------------------------------------------
+    // This test is structured similarly to the one above.
+    std::string modelFileNameInvalidChar = "testComponentInterface_"
+        "testSingleValueInputConnecteeSerializationInvalidChar_world.xml";
+    {
+        TheWorld world;
+        auto* foo = new Foo();
+        world.add(foo);
+        auto& input1 = foo->updInput("input1");
+        input1.setConnecteeName("abc+def"); // '+' is invalid for ComponentPath.
+        // The check for invalid names occurs in
+        // AbstractConnector::checkConnecteeNameProperty(), which is invoked
+        // by the following function:
+        SimTK_TEST_MUST_THROW_EXC(foo->finalizeFromProperties(),
+                                  OpenSim::Exception);
+        world.print(modelFileNameInvalidChar);
+    }
+    // Deserialize.
+    {
+        // Make sure that deserializing a Component with an invalid
+        // connectee_name throws an exception.
+        SimTK_TEST_MUST_THROW_EXC(TheWorld world(modelFileNameInvalidChar),
+                                  OpenSim::Exception);
     }
 }
 

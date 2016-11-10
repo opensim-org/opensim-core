@@ -40,6 +40,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 
+#include "ComponentPath.h"
 #include "ComponentOutput.h"
 #include "ComponentList.h"
 #include "Object.h"
@@ -227,13 +228,14 @@ protected:
     /** This will be false immediately after copy construction or assignment.*/
     bool hasOwner() const { return !_owner.empty(); }
     
-    /** Check if entries of the connectee_name property contain spaces; if so,
-    print out a warning. */
-    void finalizeFromProperties() {
-        // TODO This check may go elsewhere once the connectee_name
+    /** Check if entries of the connectee_name property's value is valid (if 
+    it contains spaces, etc.); if so, print out a warning. */
+    void checkConnecteeNameProperty() {
+        // TODO Move this check elsewhere once the connectee_name
         // property is a ComponentPath (or a ChannelPath?).
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
+            
             if (connecteeName.find(" ") != std::string::npos) {
                 std::string msg = "In Connector '" + getName() +
                         "', connectee name '" + connecteeName +
@@ -248,6 +250,15 @@ protected:
                 // OPENSIM_THROW(Exception, msg);
                 std::cout << "Warning: " << msg << std::endl;
             }
+            
+            // Use ComponentPath constructor to validate the connectee_name.
+            // We still need the check above for spaces, as ComponentPath
+            // currently treats spaces as valid.
+            ComponentPath compPath(connecteeName);
+            // Use the cleaned-up connectee_name created by ComponentPath.
+            setConnecteeName(compPath.toString(), iname);
+            // TODO update the above for Inputs when ChannelPath exists.
+            
             // TODO There might be a bug with empty connectee_name being
             // interpreted as "this component."
         }
