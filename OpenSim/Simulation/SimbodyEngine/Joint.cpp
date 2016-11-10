@@ -421,7 +421,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
     the mobilities of the joint (for example to satisfy prescribed motion). In 
     which case the joint power is the constraint forces projected onto the mobilities
     multiplied by the mobilities (internal coordinate velocities). Only constraints
-    internal to the joint are accounted for, not external constraints that effect
+    internal to the joint are accounted for, not external constraints that affect
     joint motion. */
 double Joint::calcPower(const SimTK::State &s) const
 {
