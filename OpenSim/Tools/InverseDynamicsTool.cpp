@@ -368,9 +368,7 @@ bool InverseDynamicsTool::run()
 
         for(int i=0; i<nt; i++){
             StateVector
-                genForceVec(times[i],
-                            SimTK::Vector_<double>(nq,
-                                                   &((genForceTraj[i])[0])));
+                genForceVec(times[i], genForceTraj[i]);
             genForceResults.append(genForceVec);
 
             // if there are joints requested for equivalent body forces then calculate them
