@@ -668,7 +668,10 @@ public:
         return _depData.row(static_cast<int>(index));
     }
 
-    /** Get row corresponding to the given entry in the independent column.   
+    /** Get row corresponding to the given entry in the independent column. This
+    function searches the independent column for exact equality, which may not
+    be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::getNearestRow().
 
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
@@ -693,6 +696,9 @@ public:
     }
 
     /** Update row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
 
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
