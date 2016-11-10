@@ -112,10 +112,10 @@ public:
                        <connectee_name>...</connectee_name>
                    </Connector_PhysicalFrame_>
                </connectors>
-    New:       <connector_parent_frame_connectees TODO>...
-                   </connector_parent_frame_connectees>
-               <connector_child_frame_connectees>...
-                   </connector_child_frame_connectees>
+    New:       <connector_parent_frame_connectee_name>...
+                   </connector_parent_frame_connectee_name>
+               <connector_child_frame_connectee_name>...
+                   </connector_child_frame_connectee_name>
     
     If there is no <connectors> element, then this function does not edit
     componentElt. */
