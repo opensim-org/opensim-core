@@ -796,33 +796,6 @@ private:
     SimTK::ResetOnCopy<AliasList> _aliases;
 }; // END class Input<Y>
 
-
-// =============================================================================
-// Macros for declaring Connectors and Inputs.
-// =============================================================================
-// Connectors and Inputs have an associated connectee_name property in the
-// Component that contains the Connector/Input. These macros are used to create
-// that property.
-// TODO property type should be ComponentPath/OutputPath/ChannelPath.
-#ifndef SWIG
-// The initial/default value is an empty string.
-#define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)             \
-    /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_##pname =                                   \
-            this->template addProperty<std::string>(#pname,comment,"");     \
-    /** @endcond                                                         */
-#define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)       \
-    /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_##pname =                                   \
-            this->template addListProperty<std::string>                     \
-                (#pname, comment, 0, std::numeric_limits<int>::max());      \
-    /** @endcond                                                         */
-#else
-// No need to wrap internal PropertyIndex.
-#define OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(pname, comment)
-#define OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(pname, comment)
-#endif
-
         
 /// @name Creating Connectors to other objects for your Component
 /// Use these macros at the top of your component class declaration,
@@ -856,14 +829,7 @@ private:
  *
  * @see Component::constructConnector()
  * @relates OpenSim::Connector */
-// The DECLARE_PROPERTY macro must come first, as the Connector constructor
-// requires the PropertyIndex (and Property) created by the DECLARE_PROPERTY
-// macro.
 #define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
-            connector_##cname##_connectee_name,                             \
-            "Path to a Component to satisfy the Connector '"                \
-            #cname "' of type " #T " (description: " comment ").");         \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -874,9 +840,10 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _connector_##cname {                                               \
+    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
         this->template constructConnector<T>(#cname,                        \
-                PropertyIndex_connector_##cname##_connectee_name)           \
+                "Path to a Component to satisfy the Connector '"            \
+                #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
     /** @endcond                                                         */
 
@@ -930,10 +897,6 @@ private:
  * @see Component::constructConnector()
  * @relates OpenSim::Connector */
 #define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(                                \
-            connector_##cname##_connectee_name,                             \
-            "Path to a Component to satisfy the Connector '"                \
-            #cname "' of type " #T " (description: " comment ").");         \
     /** @name Connectors                                                 */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -942,12 +905,12 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _connector_##cname {                                               \
+    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
         constructConnector_##cname()                                        \
     };                                                                      \
     /* Declare the method used in the in-class member initializer.       */ \
     /* This method will be defined by OpenSim_DEFINE_CONNECTOR_FD.       */ \
-    bool constructConnector_##cname();                                      \
+    PropertyIndex constructConnector_##cname();                             \
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
     typedef T _connector_##cname##_type;                                    \
     /** @endcond                                                         */
@@ -971,10 +934,12 @@ private:
 // than `MyComponent` but that include MyComponent.h). OpenSim::Geometry is an
 // example of this scenario.
 #define OpenSim_DEFINE_CONNECTOR_FD(cname, Class)                           \
-bool Class::constructConnector_##cname() {                                  \
+PropertyIndex Class::constructConnector_##cname() {                         \
     using T = _connector_##cname##_type;                                    \
+    std::string typeStr = T::getClassName();                                \
     return this->template constructConnector<T>(#cname,                     \
-                PropertyIndex_connector_##cname##_connectee_name);          \
+        "Path to a Component to satisfy the Connector '"                    \
+        #cname "' of type " + typeStr + ".");                               \
 }
 /// @}
 
@@ -1006,12 +971,7 @@ bool Class::constructConnector_##cname() {                                  \
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
-// The DECLARE_PROPERTY macro must come first, as the Input constructor requires
-// the PropertyIndex (and Property) created by the DECLARE_PROPERTY macro.
 #define OpenSim_DECLARE_INPUT(iname, T, istage, comment)                    \
-    OpenSim_DECLARE_PROPERTY_CONNECTEE_NAME(input_##iname##_connectee_name, \
-            "Path to an output (channel) to satisfy the one-value Input '"  \
-            #iname "' of type " #T " (description: " comment ").");         \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -1026,9 +986,10 @@ bool Class::constructConnector_##cname() {                                  \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_input_##iname {                                               \
-        this->template constructInput<T>(#iname,                            \
-                PropertyIndex_input_##iname##_connectee_name, istage)       \
+    PropertyIndex PropertyIndex_input_##iname##_connectee_name {            \
+        this->template constructInput<T>(#iname, false,                     \
+            "Path to an output (channel) to satisfy the one-value Input '"  \
+            #iname "' of type " #T " (description: " comment ").",  istage) \
     };                                                                      \
     /** @endcond                                                         */
 
@@ -1050,11 +1011,6 @@ bool Class::constructConnector_##cname() {                                  \
  * @see Component::constructInput()
  * @relates OpenSim::Input */
 #define OpenSim_DECLARE_LIST_INPUT(iname, T, istage, comment)               \
-    OpenSim_DECLARE_LIST_PROPERTY_CONNECTEE_NAMES(                          \
-            input_##iname##_connectee_names,                                \
-            "Paths to outputs (channels) to satisfy the list Input '"       \
-            #iname "' of type " #T " (description: " comment "). "          \
-            "To specify multiple paths, put spaces between them.");         \
     /** @name Inputs (list)                                              */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
@@ -1070,9 +1026,11 @@ bool Class::constructConnector_##cname() {                                  \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_input_##iname {                                               \
-        this->template constructInput<T>(#iname,                            \
-                PropertyIndex_input_##iname##_connectee_names, istage)      \
+    PropertyIndex PropertyIndex_input_##iname##_connectee_names {           \
+        this->template constructInput<T>(#iname, true,                      \
+            "Paths to outputs (channels) to satisfy the list Input '"       \
+            #iname "' of type " #T " (description: " comment "). "          \
+            "To specify multiple paths, put spaces between them.", istage)  \
     };                                                                      \
     /** @endcond                                                         */
 /// @}

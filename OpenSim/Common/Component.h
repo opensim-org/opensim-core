@@ -2184,18 +2184,24 @@ protected:
     * another Component. It serves as a placeholder for the Component and its
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
-    * incompatible or non-existant. The connecteeNameIndex is provided to this 
-    * function via the OpenSim_DECLARE_CONNECTOR macro, and identifies the
-    * property in this Component that holds the connectee names for this
-    * connector.
-    */
+    * incompatible or non-existant. This function also creates a Property in
+    * this component to store the connectee name for this connector; the
+    * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    bool constructConnector(const std::string& name,
-                            const PropertyIndex& connecteeNameIndex) {
+    PropertyIndex constructConnector(const std::string& name,
+                                     const std::string& propertyComment) {
+        // This property is accessed / edited by the Connector class. It is
+        // not easily accessible to users.
+        // TODO does putting the addProperty here break the ability to
+        // create a custom-copy-ctor version of all of this?
+        // TODO property type should be ComponentPath or something like that.
+        PropertyIndex propIndex = this->template addProperty<std::string>(
+                "connector_" + name + "_connectee_name", propertyComment, "");
+        // We must create the Property first: the Connector needs the property's
+        // index in order to access the property later on.
         _connectorsTable[name].reset(
-                new Connector<T>(name, connecteeNameIndex,
-                                 SimTK::Stage::Topology, *this));
-        return true;
+            new Connector<T>(name, propIndex, SimTK::Stage::Topology, *this));
+        return propIndex;
     }
     
 #ifndef SWIG // SWIG can't parse the const at the end of the second argument.
@@ -2306,18 +2312,30 @@ protected:
      * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
-     * The connecteeNameIndex is provided to this 
-     * function via the OpenSim_DECLARE_[LIST_]INPUT macro, and identifies the
-     * property in this Component that holds the connectee names for this
-     * input. Whether this is a one-value or list input is determined by the 
-     * associated connectee_name property. */
+     * This function also creates a Property in this component to store the
+     * connectee names for this input; the
+     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    bool constructInput(const std::string& name,
-            const PropertyIndex& connecteeNameIndex,
+    PropertyIndex constructInput(const std::string& name, bool isList,
+            const std::string& propertyComment,
             const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
+        PropertyIndex propIndex;
+        // This property is accessed / edited by the AbstractConnector class.
+        // It is not easily accessible to users.
+        // TODO property type should be OutputPath or ChannelPath.
+        if (isList) {
+            propIndex = this->template addListProperty<std::string>(
+                    "input_" + name + "_connectee_names", propertyComment,
+                    0, std::numeric_limits<int>::max());
+        } else {
+            propIndex = this->template addProperty<std::string>(
+                    "input_" + name + "_connectee_name", propertyComment, "");
+        }
+        // We must create the Property first: the Input needs the property's
+        // index in order to access the property later on.
         _inputsTable[name].reset(
-                new Input<T>(name, connecteeNameIndex, requiredAtStage, *this));
-        return true;
+                new Input<T>(name, propIndex, requiredAtStage, *this));
+        return propIndex;
     }
     /// @}
 
