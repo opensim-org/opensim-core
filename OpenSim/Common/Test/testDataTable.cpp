@@ -108,9 +108,12 @@ int main() {
 
     const auto& nearRow = table.getNearestRow(0.55);
     for(size_t i = 0; i < nearRow.ncol(); ++i)
-        OPENSIM_THROW_IF(nearRow[i] != 2,
-                         Exception,
-                         "Test failed: getNearestRow() failed.");
+        ASSERT(nearRow[i] == 2);
+
+    table.updNearestRow(0.55) += 2;
+    table.updNearestRow(0.55) -= 2;
+    for(size_t i = 0; i < nearRow.ncol(); ++i)
+        ASSERT(nearRow[i] == 2);
 
     table.updMatrix() += 2;
     table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
@@ -340,9 +343,11 @@ int main() {
 
         const auto& nearRowVec3 = tableVec3.getNearestRow(0.29);
         for(size_t i = 0; i < 3; ++i)
-            OPENSIM_THROW_IF(nearRowVec3[0][i] != 2,
-                             Exception,
-                             "Test failed: getNearestRow() failed.");
+            ASSERT(nearRowVec3[0][i] == 2);
+        tableVec3.updNearestRow(0.29) += SimTK::Vec3{2};
+        tableVec3.updNearestRow(0.29) -= SimTK::Vec3{2};
+        for(size_t i = 0; i < 3; ++i)
+            ASSERT(nearRowVec3[0][i] == 2);
 
         std::cout << tableVec3 << std::endl;
         
@@ -406,9 +411,7 @@ int main() {
 
         const auto& nearRowQuat = tableQuat.getNearestRow(0.29);
         for(size_t i = 0; i < 4; ++i)
-            OPENSIM_THROW_IF(std::abs(nearRowQuat[0][i] - 0.5) > 1e-8/*eps*/,
-                             Exception,
-                             "Test failed: getNearestRow() failed.");
+            ASSERT(std::abs(nearRowQuat[0][i] - 0.5) < 1e-8/*eps*/);
 
         std::cout << tableQuat << std::endl;
 
@@ -459,9 +462,14 @@ int main() {
 
         const auto& nearRowSVec = tableSpatialVec.getNearestRow(0.29);
         for(size_t i = 0; i < 3; ++i)
-            OPENSIM_THROW_IF(nearRowSVec[0][0][i] != 2,
-                             Exception,
-                             "Test failed: getNearestRow() failed.");
+            ASSERT(nearRowSVec[0][0][i] == 2);
+
+        tableSpatialVec.updNearestRow(0.29) += SimTK::SpatialVec{{2, 2, 2},
+                                                                 {2, 2, 2}};
+        tableSpatialVec.updNearestRow(0.29) -= SimTK::SpatialVec{{2, 2, 2},
+                                                                 {2, 2, 2}};
+        for(size_t i = 0; i < 3; ++i)
+            ASSERT(nearRowSVec[0][0][i] == 2);
 
         std::cout << tableSpatialVec << std::endl;
 
