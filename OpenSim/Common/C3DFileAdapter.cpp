@@ -173,8 +173,6 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
     }
 
-    //shrik<btk::ForcePlatform::Origin> foo;
-
     if(fp_force_pts->GetItemNumber() != 0) {
         force_table.
             updTableMetaData().

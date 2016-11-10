@@ -18,6 +18,9 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+// Ignore method that is not callable from Python (uses double[] arg)
+%ignore OpenSim::Coordinate::setRange;
+
 
 %include "python_preliminaries.i"
 
@@ -232,3 +235,4 @@ SET_ADOPT_HELPER(Analysis);
         return $self->get(i);
     }
 };
+

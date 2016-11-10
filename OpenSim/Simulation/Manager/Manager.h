@@ -190,7 +190,7 @@ public:
    bool getUseConstantDT() const;
    // DT VECTOR
    const Array<double>& getDTArray();
-   void setDTArray(int aN,const double aDT[],double aTI=0.0);
+   void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
    double getDTArrayDT(int aStep);
    void printDTArray(const char *aFileName=NULL);
    // TIME VECTOR

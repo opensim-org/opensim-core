@@ -112,6 +112,12 @@ class TestDataTable(unittest.TestCase):
                 col3[1] == 40 and
                 col3[2] == 40)
         print table
+        # Add table metadata.
+        table.addTableMetaDataString('subject-name', 'Python')
+        table.addTableMetaDataString('subject-yob' , '1991')
+        assert table.getTableMetaDataString('subject-name') == 'Python'
+        assert table.getTableMetaDataString('subject-yob' ) == '1991'
+        print table
         # Access eleemnt with index out of bounds. Exception expected.
         try:
             shouldThrow = row0[5]
