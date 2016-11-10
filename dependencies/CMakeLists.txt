@@ -91,6 +91,32 @@ function(AddDependency)
         endif()
         list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
+        # Forward cmake arguments to dependencies.
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_MINSIZEREL:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_MINSIZEREL:STRING=${CMAKE_C_FLAGS_MINSIZEREL})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+
         ExternalProject_Add(${DEP_NAME}
             TMP_DIR          ${BINARY_DIR}/tmp
             STAMP_DIR        ${BINARY_DIR}/stamp
@@ -121,7 +147,7 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              TAG        76ca55bcfc169a1ddf3b13903d3cd1aa15d6e957
+              TAG        ea7d94640b084d9feaa55e140c76e696f242a06a 
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
 

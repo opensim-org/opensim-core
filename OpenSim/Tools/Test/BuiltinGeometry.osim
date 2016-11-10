@@ -519,55 +519,5 @@
 			<objects />
 			<groups />
 		</MarkerSet>
-		<!--Geometry to be used in contact forces.-->
-		<ContactGeometrySet>
-			<objects>
-				<ContactHalfSpace name="floor">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>../ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
-					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0 0 0</location>
-					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-					<orientation>0 0 -1.5707963267949001</orientation>
-				</ContactHalfSpace>
-        <ContactMesh name="blockMesh">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_PhysicalFrame_ name="frame">
-              <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>block</connectee_name>
-            </Connector_PhysicalFrame_>
-          </connectors>
-          <!--List of components that this component owns and serializes.-->
-          <components />
-          <!--Location of geometry center in the PhysicalFrame.-->
-          <location>0 0 0</location>
-          <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-          <orientation>0 0 0</orientation>
-          <!--Default appearance for this Geometry-->
-          <Appearance>
-            <!--Flag indicating whether the associated Geometry is visible or hidden.-->
-            <visible>true</visible>
-            <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
-            <opacity>1</opacity>
-            <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-            <color>0 1 1</color>
-            <!--Visuals applied to surfaces associated with this Appearance.-->
-            <SurfaceProperties>
-              <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
-              <representation>2</representation>
-            </SurfaceProperties>
-          </Appearance>
-          <!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
-          <filename>blockMesh.obj</filename>
-        </ContactMesh>
-      </objects>
-			<groups />
-		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>

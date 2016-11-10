@@ -35,6 +35,10 @@ using namespace SimTK;
 
 void testVisModel(Model& model, const std::string filename_for_standard);
 Model createModel4AppearanceTest();
+void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
+void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
+void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
+bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -72,7 +76,13 @@ class DecorativeGeometryImplementationText : public SimTK::DecorativeGeometryImp
         printout << "DecorativeMesh:" << dp.getMesh().getNumFaces() << " " << dp.getMesh().getNumVertices() << printCommonProps(dp) << std::endl;
     };
     void implementMeshFileGeometry(const DecorativeMeshFile& dp) override{
-        printout << "DecorativeMeshFile:" << dp.getMeshFile() << " " << printCommonProps(dp) << std::endl;
+        std::string filename = dp.getMeshFile();
+        std::size_t found = filename.find_last_of("/\\");
+        if (found == string::npos)
+            printout << "DecorativeMeshFile:" << filename << " " << printCommonProps(dp) << std::endl;
+        else
+            printout << "DecorativeMeshFile:" << filename.substr(found+1) << " " << printCommonProps(dp) << std::endl;
+
     };
     void implementArrowGeometry(const DecorativeArrow& dp) override{
         printout << "DecorativeArrow:" << dp.getStartPoint() << dp.getEndPoint() << dp.getTipLength() << printCommonProps(dp) << std::endl;
@@ -105,8 +115,26 @@ int main()
         LoadOpenSimLibrary("osimActuators");
         Model testModel("BuiltinGeometry.osim");
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
+        std::cout << "BuiltinGeometry Passed" << std::endl;
         Model testModel2 = createModel4AppearanceTest();
         testVisModel(testModel2, "vis_AppearanceTest.txt");
+        std::cout << "Appearance test Passed" << std::endl;
+        // Load Model in 3.3 format that had transforms attached to Geometry
+        Model testModel3("double_pendulum33.osim");
+        SimTK::Array_<DecorativeGeometry> standard;
+        populate_doublePendulumPrimitives(standard);
+        testVisModelAgainstStandard(testModel3, standard);
+        std::cout << "double_pendulum33 test Passed" << std::endl;
+
+        // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
+        // have a non-trivial transform.
+        Model composedTransformsModel("doubletransform33.osim");
+        populate_composedTransformPrimitives(standard);
+        testVisModelAgainstStandard(composedTransformsModel, standard);
+        // Model with contacts
+        Model modelWithContacts("visualize_contacts.osim");
+        populate_contactModelPrimitives(standard);
+        testVisModelAgainstStandard(modelWithContacts, standard);
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -144,10 +172,16 @@ void testVisModel(Model& model, const std::string standard_filename)
     cout << fromModel << endl;
     cout << "From File " << endl << "=====" << endl;
     cout << fromFile << endl;
+    cout << "Length:" << fromModel.length() << "vs." << fromFile.length() << std::endl;
     int same = fromFile.compare(fromModel);
     ASSERT(same == 0, __FILE__, __LINE__, 
         "Visualization primitives from model do not match standard from file `"
         + standard_filename + "'.");
+    if (visualDebug) {
+        char c;
+        std::cout << "press Enter (or Return) to continue" << std::endl;
+        std::cin >> c;
+    }
 }
 
 Model createModel4AppearanceTest()
@@ -181,4 +215,187 @@ Model createModel4AppearanceTest()
     oooffsetSphere->upd_Appearance().set_representation(DecorativeGeometry::DrawWireframe);
     oooframe->attachGeometry(oooffsetSphere);
     return modelWithGroundOnly; // Return a copy
+}
+// Eventually all tests will go thru this function instead of comparing files then reference
+// can be passed in.
+bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    bool visualDebug = false; // Turn on only if you want to see API visualizer live
+    if (visualDebug)
+        model.setUseVisualizer(true);
+    SimTK::State& si = model.initSystem();
+    if (visualDebug)
+        model.getVisualizer().show(si);
+    ModelDisplayHints mdh;
+    SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
+    model.generateDecorations(true, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
+    model.generateDecorations(false, mdh, si, geometryToDisplay);
+    cout << geometryToDisplay.size() << endl;
+
+    int i = 0;
+    for (const SimTK::DecorativeGeometry* nextGeom = stdPrimitives.begin();
+        nextGeom != stdPrimitives.end();
+        ++nextGeom) {
+            DecorativeGeometryImplementationText dgiTextFromStandard;
+            nextGeom->implementGeometry(dgiTextFromStandard);
+            DecorativeGeometryImplementationText dgiTextFromModel;
+            geometryToDisplay[i].implementGeometry(dgiTextFromModel);
+            if (!(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString()))
+                throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
+            ++i;
+    }
+    if (visualDebug) {
+        char c;
+        std::cout << "press Enter (or Return) to continue" << std::endl;
+        std::cin >> c;
+    }
+    return true;
+}
+
+void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    stdPrimitives.clear();
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame rod 1
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Block rod 1
+    stdPrimitives.push_back(
+        DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(1).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame body 2
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Block rod 2
+    stdPrimitives.push_back(
+        DecorativeMeshFile("block.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 1.5, 2 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Offset frame rod1
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White).setIndexOnBody(0).setScale(0.2)
+        .setOpacity(1).setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Cylinder rod1
+    stdPrimitives.push_back(
+        DecorativeMeshFile("cylinder.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Offset frame rod2
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Cylinder rod2
+    stdPrimitives.push_back(
+        DecorativeMeshFile("cylinder.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Two more offset frames
+    stdPrimitives.push_back(
+        DecorativeFrame(1).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
+    stdPrimitives.push_back(
+        DecorativeFrame(1).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
+}
+
+void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    stdPrimitives.clear();
+    // In addition to Ground Frame, those frames for Joint
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // This the frame of the composed transform and attached geometry
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0.3, 0.3, 0.3 })));
+    stdPrimitives.push_back(
+        DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 2, 3 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0.3, 0.3, 0.3 })));
+
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., 0.05, 0. })));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., 0.5, 0. })));
+}
+
+void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    stdPrimitives.clear();
+    // Frame for Ground
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame for Ball Body
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frames for the Joint
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+     // 2 Contact Surfaces as Meshes (from sphere.vtp)
+    SimTK::PolygonalMesh mesh;
+    mesh.loadFile("sphere.vtp");
+    stdPrimitives.push_back(
+        DecorativeMesh(mesh).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setOpacity(1).setScale(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
+        .setTransform(SimTK::Transform(Vec3{ 1, 2, 0. })));
+    stdPrimitives.push_back(
+        DecorativeMesh(mesh).setBodyId(1).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setOpacity(1).setScale(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
+        .setTransform(SimTK::Transform(Vec3{ 1, 1, 0. })));
+    // ContactSphere
+    stdPrimitives.push_back(
+        DecorativeSphere(0.25).setBodyId(1).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setOpacity(1).setScale(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
+        .setTransform(SimTK::Transform(Vec3{ 0, 1, 0. })));
+    // ContactHalfSpace as thin block
+    SimTK::Transform transform;
+    transform.updR().setRotationFromAngleAboutZ(.5);
+    stdPrimitives.push_back(
+        DecorativeBrick({ 0.005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setOpacity(0.7).setScale(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(transform));
+
 }

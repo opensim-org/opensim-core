@@ -96,15 +96,7 @@ public:
 
     void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
     SimTK::Vec3& getScaleFactors() { return _scaleFactors; }
-    void getScaleFactors(double rScaleFactors[]){   // A variant that uses basic types for use by GUI
-        getScaleFactors(SimTK::Vec3::updAs(rScaleFactors));
-    }
-
     void setScaleFactors(const SimTK::Vec3& aScaleFactors);
-    void setScaleFactors(const double aScaleFactors[]){ // A variant that uses basic types for use by GUI
-        setScaleFactors(SimTK::Vec3::getAs(aScaleFactors));
-    }
-
     bool getApply(void) const { return _apply; }
     void setApply(bool state) { _apply = state; }
 };

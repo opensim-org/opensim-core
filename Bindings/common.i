@@ -135,9 +135,43 @@ namespace OpenSim {
 %ignore OpenSim::AbstractDataTable::setDependentsMetaData;
 %ignore OpenSim::AbstractDataTable::setColumnLabels(
                                      const std::initializer_list<std::string>&);
+%template(StdVectorMatrix) std::vector<SimTK::Matrix_<double>>;
 %extend OpenSim::AbstractDataTable {
     void setColumnLabels(const std::vector<std::string>& columnLabels) {
         $self->setColumnLabels(columnLabels);
+    }
+
+    void addTableMetaDataString(const std::string& key,
+                                const std::string& value) {
+        $self->addTableMetaData<std::string>(key, value);
+    }
+    
+    std::vector<SimTK::Matrix_<double>>
+    getTableMetaDataVectorMatrix(const std::string& key) const {
+        return
+            $self->getTableMetaData<std::vector<SimTK::Matrix_<double>>>(key);
+    }
+    
+    std::vector<unsigned>
+    getTableMetaDataVectorUnsigned(const std::string& key) const {
+        return $self->getTableMetaData<std::vector<unsigned>>(key);
+    }
+    
+    std::string
+    getTableMetaDataString(const std::string& key) const {
+        return $self->getTableMetaData<std::string>(key);
+    }
+    
+    std::vector<std::string>
+    getDependentsMetaDataString(const std::string& key) const {
+        const auto& depMetaData = $self->getDependentsMetaData();
+        const auto& absValArray = depMetaData.getValueArrayForKey(key);
+        const auto& values =
+            (dynamic_cast<const ValueArray<std::string>&>(absValArray)).get();
+        std::vector<std::string> metadata{};
+        for(const auto& val : values)
+            metadata.push_back(val.get());
+        return metadata;
     }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {

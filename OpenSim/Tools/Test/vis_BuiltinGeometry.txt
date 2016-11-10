@@ -118,9 +118,3 @@ DecorativeLine:~[0,0.05,0.35]~[0.19999,0.0480388,0.05] bodyId:0 color:~[0.05,0,0
 [0,0,1,0]
 [0,0,0,1]
 
-DecorativeMeshFile:blockMesh.obj  bodyId:1 color:~[0,1,1] indexOnBody:-1 Opacity:1 Rep:2 Scale:~[-1,-1,-1] Transform:
-[1,0,0,0]
-[0,1,0,0]
-[0,0,1,0]
-[0,0,0,1]
-

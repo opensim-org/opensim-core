@@ -97,12 +97,16 @@ public:
     void getControlList(const char *aType,Array<int> &rList,
         bool aForModelControls=true) const;
     // CONTROL VALUES
+#ifndef SWIG
     void getControlValues(double aT,double rX[],
             bool aForModelControls=true) const;
+#endif
     void getControlValues(double aT,Array<double> &rX,
             bool aForModelControls=true) const;
+#ifndef SWIG
     void setControlValues(double aT,const double aX[],
             bool aForModelControls=true);
+#endif
     void setControlValues(double aT,const Array<double> &aX,
             bool aForModelControls=true);
     // PARAMETERS
@@ -117,12 +121,16 @@ public:
             const Array<int> *aList=NULL) const;
     void getParameterMaxs(Array<double> &rMaxs,
             const Array<int> *aList=NULL) const;
+#ifndef SWIG
     void getParameterValues(double rP[],
             const Array<int> *aList=NULL) const;
+#endif
     void getParameterValues(Array<double> &rP,
             const Array<int> *aList=NULL) const;
+#ifndef SWIG
     void setParameterValues(const double aP[],
             const Array<int> *aList=NULL);
+#endif
     void setParameterValues(const Array<double> &aP,
             const Array<int> *aList=NULL);
 
