@@ -113,6 +113,9 @@ public:
 
     /** Output's owning Component */
     const Component& getOwner() const { return _owner.getRef(); }
+    
+    /** This returns <absolute-path-to-component>/<output-name>. */
+    std::string getPathName() const;
 
     /** Output Interface */
     

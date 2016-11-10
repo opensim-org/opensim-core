@@ -86,7 +86,9 @@ public:
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
-        msg += "' of type " + toFindClassName + ".";
+        msg += "' of type " + toFindClassName + ". ";
+        msg += "Make sure a component exists at this path and that it is of ";
+        msg += "the correct type.";
         addMessage(msg);
     }
 };
@@ -2796,16 +2798,17 @@ void Input<T>::connect(const AbstractOutput& output,
     const auto* outT = dynamic_cast<const Output<T>*>(&output);
     if (!outT) {
         std::stringstream msg;
-        msg << "Cannot connect '" << output.getName()
-            << "' of type Output<" << output.getTypeName()
-            << ">. Input requires "
-            << getConnecteeTypeName() << ".";
+        msg << "Type mismatch between Input and Output: Input '" << getName()
+            << "' of type " << getConnecteeTypeName()
+            << " cannot connect to Output '" << output.getPathName()
+            << "' of type " << output.getTypeName() << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
     
     if (!isListConnector() && outT->isListOutput()) {
         OPENSIM_THROW(Exception,
-                      "Non-list input cannot connect to list output");
+            "Non-list input '" + getName() +
+            "' cannot connect to list output '" + output.getPathName() + ".");
     }
 
     // For a non-list connector, there will only be one channel.
@@ -2848,10 +2851,10 @@ void Input<T>::connect(const AbstractChannel& channel,
     const auto* chanT = dynamic_cast<const Channel*>(&channel);
     if (!chanT) {
         std::stringstream msg;
-        msg << "Cannot connect '" << channel.getPathName()
-            << "' of type Output<" << channel.getTypeName()
-            << ">::Channel. Input requires "
-            << getConnecteeTypeName() << ".";
+        msg << "Type mismatch between Input and Output: Input '" << getName()
+            << "' of type " << getConnecteeTypeName()
+            << " cannot connect to Output (channel) '" << channel.getPathName()
+            << "' of type " << channel.getTypeName() << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
     
@@ -2897,41 +2900,28 @@ void Input<T>::findAndConnect(const Component& root) {
         ComponentPath outputPath(outputPathStr);
         std::string componentPathStr = outputPath.getParentPathString();
         std::string outputName = outputPath.getComponentName();
-        try {
-            const AbstractOutput* output = nullptr;
+        const AbstractOutput* output = nullptr;
 
-            if (outputPath.isAbsolute()) { //absolute path string
-                if (componentPathStr.empty()) {
-                    output = &root.getOutput(outputPath.toString());
-                }
-                else {
-                    output = &root.getComponent(componentPathStr).getOutput(outputName);
-                }
+        if (outputPath.isAbsolute()) { //absolute path string
+            if (componentPathStr.empty()) {
+                output = &root.getOutput(outputPath.toString());
             }
+            else {
+                output = &root.getComponent(componentPathStr).getOutput(outputName);
+            }
+        }
 
-            else { // relative path string
-                if (componentPathStr.empty()) {
-                    output = &getOwner().getOutput(outputPath.toString());
-                }
-                else {
-                    output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
-                }
-                
+        else { // relative path string
+            if (componentPathStr.empty()) {
+                output = &getOwner().getOutput(outputPath.toString());
             }
-            const auto& channel = output->getChannel(channelName);
-            connect(channel, alias);
-        }
-        catch (const Exception& ex) {
-            std::stringstream msg;
-            msg << "Input<" << getConnecteeTypeName() << "> '";
-            msg << getName() << "' ERROR: Could not connect to Output '";
-            msg << outputPathStr << "'";
-            if (!channelName.empty()) {
-                msg << " and channel '" << channelName << "'";
+            else {
+                output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
             }
-            msg << " (details: " << ex.getMessage() << ").";
-            OPENSIM_THROW(Exception, msg.str());
+            
         }
+        const auto& channel = output->getChannel(channelName);
+        connect(channel, alias);
     }
 }
 

@@ -226,11 +226,10 @@ void Component::connect(Component &root)
             connector->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() + "'" + getName() +"'"
-                "::connect() \nFailed to connect Connector<" +
-                connector->getConnecteeTypeName() + "> '" + connector->getName() +
-                "' within " + root.getConcreteClassName() + " '" + root.getName() +
-                "' (details: " + x.what() + ").");
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Connector '" +
+                connector->getName() + "' of type " +
+                connector->getConnecteeTypeName() +
+                " (details: " + x.what() + ").");
         }
     }
 
@@ -255,11 +254,9 @@ void Component::connect(Component &root)
             input->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() + "'" + getName() + "'"
-                "::connect() \nFailed to connect Input<" +
-                input->getConnecteeTypeName() + "> '" + input->getName() +
-                "' within " + root.getConcreteClassName() + " '" +
-                root.getName() + "' (details: " + x.what() + ").");
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Input '" +
+                input->getName() + "' of type " + input->getConnecteeTypeName()
+                + " (details: " + x.what() + ").");
         }
     }
 

@@ -1101,6 +1101,133 @@ void testInputConnecteeNames() {
     // TODO test invalid names as well.
 }
 
+
+void testExceptionsForConnecteeTypeMismatch() {
+    // Create Component classes for use in the following tests.
+    // --------------------------------------------------------
+    // This class has Outputs.
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        OpenSim_DECLARE_OUTPUT(out1, double, calcOut1, SimTK::Stage::Time);
+        OpenSim_DECLARE_LIST_OUTPUT(outL, double, calcOutL, SimTK::Stage::Time);
+        double calcOut1(const SimTK::State& state) const { return 0; }
+        double calcOutL(const SimTK::State& state,
+                        const std::string& channel) const { return 0; }
+    private:
+        void extendFinalizeFromProperties() override {
+            // Register Channels for list output 'outL'.
+            auto& outL = updOutput("outL");
+            outL.addChannel("0"); outL.addChannel("1"); outL.addChannel("2");
+        }
+    };
+    // This class has Inputs.
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        OpenSim_DECLARE_INPUT(in1, Vec3, SimTK::Stage::Model, "");
+        OpenSim_DECLARE_LIST_INPUT(inL, Vec3, SimTK::Stage::Model, "");
+    };
+    // This class has a connector.
+    class C : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(C, Component);
+    public:
+        OpenSim_DECLARE_CONNECTOR(conn1, A, "");
+    };
+    
+    // Test various type mismatches.
+    // -----------------------------
+    // First, check for exceptions when directly connecting inputs to outputs
+    // (or connectors to connectees).
+    { // Connector.
+        TheWorld model;
+        B* b = new B(); b->setName("b");
+        C* c = new C(); c->setName("c");
+        model.add(b); model.add(c);
+        SimTK_TEST_MUST_THROW_EXC(c->updConnector("conn1").connect(*b),
+                                  OpenSim::Exception);
+    }
+    { // single-value output -> single-value input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        SimTK_TEST_MUST_THROW_EXC(b->updInput("in1").connect(a->getOutput("out1")),
+                                  OpenSim::Exception);
+    }
+    { // single-value output -> list input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        SimTK_TEST_MUST_THROW_EXC(b->updInput("inL").connect(a->getOutput("out1")),
+                                  OpenSim::Exception);
+    }
+    { // list output -> single-value input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        SimTK_TEST_MUST_THROW_EXC(
+            b->updInput("in1").connect(a->getOutput("outL").getChannel("0")),
+            OpenSim::Exception);
+    }
+    { // list output -> list input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        SimTK_TEST_MUST_THROW_EXC(
+            b->updInput("inL").connect(a->getOutput("outL").getChannel("1")),
+            OpenSim::Exception);
+    }
+
+    // Now check for exceptions when setting the connectee_name property, then
+    // connecting on the model (similar to deserializing an XML model file).
+    { // Connector.
+        TheWorld model;
+        B* b = new B(); b->setName("b");
+        C* c = new C(); c->setName("c");
+        model.add(b); model.add(c);
+        c->updConnector("conn1").setConnecteeName("../b");
+        SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
+    }
+    { // single-value output -> single-value input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        b->updInput("in1").setConnecteeName("../a/out1");
+        model.connect();
+        SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
+    }
+    { // single-value output -> list input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        b->updInput("inL").appendConnecteeName("../a/out1");
+        SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
+    }
+    { // list output -> single-value input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        b->updInput("in1").setConnecteeName("../a/outL:2");
+        SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
+    }
+    { // list output -> list input.
+        TheWorld model;
+        A* a = new A(); a->setName("a");
+        B* b = new B(); b->setName("b");
+        model.add(a); model.add(b);
+        b->updInput("inL").appendConnecteeName("../a/outL:0");
+        SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
+    }
+}
+
+
 template<typename RowVec>
 void assertEqual(const RowVec& a, const RowVec& b) {
     ASSERT(a.nrow() == b.nrow());
@@ -1571,6 +1698,7 @@ int main() {
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
+        SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
         SimTK_SUBTEST(testTableSource);
         SimTK_SUBTEST(testAliasesAndLabels);
     

@@ -333,38 +333,38 @@ public:
     /** Connect this Connector to the provided connectee object */
     void connect(const Object& object) override {
         const T* objT = dynamic_cast<const T*>(&object);
-        if (objT) {
-            connectee = *objT;
-
-            std::string objPathName = objT->getAbsolutePathName();
-            std::string ownerPathName = getOwner().getAbsolutePathName();
-
-            // check if the absolute pathname is just /name
-            if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
-                // in which case we likely are connecting to an orphan
-                // (yet to adopted component) which the API permits when passing
-                // in the dependency directly.
-                // better off stripping off the / to identify it as a "floating"
-                // Component and we will need to find its absolute path next 
-                // time we try to connect
-                setConnecteeName(objT->getName());
-            }
-            // This can happen when top level components like a Joint and Body
-            // have the same name like a pelvis Body and pelvis Joint that
-            // connects that connects to a Body of the same name.
-            else if(objPathName == ownerPathName)
-                setConnecteeName(objPathName);
-            else { // otherwise store the relative path name to the object
-                std::string relPathName = objT->getRelativePathName(getOwner());
-                setConnecteeName(relPathName);
-            }
-        }
-        else {
+        if (!objT) {
             std::stringstream msg;
-            msg << "Connector::connect(): ERR- Cannot connect '" << object.getName()
-                << "' of type " << object.getConcreteClassName() << ". Connector requires "
-                << getConnecteeTypeName() << ".";
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            msg << "Type mismatch: Connector '" << getName() << "' of type "
+                << getConnecteeTypeName() << " cannot connect to '"
+                << object.getName() << "' of type "
+                << object.getConcreteClassName() << ".";
+            OPENSIM_THROW(Exception, msg.str());
+        }
+        
+        connectee = *objT;
+
+        std::string objPathName = objT->getAbsolutePathName();
+        std::string ownerPathName = getOwner().getAbsolutePathName();
+
+        // check if the absolute pathname is just /name
+        if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
+            // in which case we likely are connecting to an orphan
+            // (yet to adopted component) which the API permits when passing
+            // in the dependency directly.
+            // better off stripping off the / to identify it as a "floating"
+            // Component and we will need to find its absolute path next 
+            // time we try to connect
+            setConnecteeName(objT->getName());
+        }
+        // This can happen when top level components like a Joint and Body
+        // have the same name like a pelvis Body and pelvis Joint that
+        // connects that connects to a Body of the same name.
+        else if(objPathName == ownerPathName)
+            setConnecteeName(objPathName);
+        else { // otherwise store the relative path name to the object
+            std::string relPathName = objT->getRelativePathName(getOwner());
+            setConnecteeName(relPathName);
         }
     }
 
