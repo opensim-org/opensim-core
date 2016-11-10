@@ -775,10 +775,10 @@ protected:
         if(precision   == 0)
             precision  = defPrecision;
         if(rows.empty())
-            for(int i = 0; i < getNumRows()   ; ++i)
+            for(size_t i = 0u; i < getNumRows()   ; ++i)
                 rows.push_back(i);
         if(cols.empty())
-            for(int i = 0; i < getNumColumns(); ++i)
+            for(size_t i = 0u; i < getNumColumns(); ++i)
                 cols.push_back(i);
 
         auto toStr = [&] (const double val) {
@@ -843,8 +843,9 @@ protected:
         const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
                                                 columnWidths.cend(),
                                                 static_cast<size_t>(0))};
-        result.reserve((totalWidth * table.size() * excessAllocation) +
-                       result.capacity());
+        result.reserve(result.capacity() +
+            static_cast<unsigned>(std::roundf(
+                totalWidth * table.size() * excessAllocation)));
 
         // Fill up the result string.
         size_t beginRow{1};
