@@ -414,6 +414,16 @@ private:
     };                                                                      \
     /** @endcond                                                         */
     
+#define OpenSim_DECLARE_OUTPUT_CUSTOMCOPY(oname, T, func, ostage)           \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    bool _has_output_##oname { false };                                     \
+    void constructOutput_##oname() {                                        \
+        this->_has_output_##oname = this->template constructOutput<T>(      \
+                #oname, &Self::func, ostage);                               \
+    }                                                                       \
+    void copyOutput_##oname(const Self& source)                             \
+    { _has_output_##oname = source._has_output_##oname; }
+
 /**
  * Create a list output for a member function of this component. A list output
  * can have multiple values, or channels. The component must publish what channels
@@ -455,6 +465,17 @@ private:
     };                                                                      \
     /** @endcond                                                         */
 
+
+#define OpenSim_DECLARE_LIST_OUTPUT_CUSTOMCOPY(oname, T, func, ostage)      \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
+    bool _has_output_##oname { false };                                     \
+    void constructOutput_##oname() {                                        \
+        this->_has_output_##oname = this->template constructListOutput<T>(  \
+                #oname, &Self::func, ostage);                               \
+    }                                                                       \
+    void copyOutput_##oname(const Self& source)                             \
+    { _has_output_##oname = source._has_output_##oname; }
+
 // Note: we could omit the T argument from the above macro by using the
 // following code to deduce T from the provided func
 //      std::result_of<decltype(&Self::func)(Self, const SimTK::State&)>::type
@@ -492,6 +513,9 @@ private:
     /** @cond                                                            */ \
     bool _has_output_##oname { constructOutputForStateVariable(#oname) };   \
     /** @endcond                                                         */
+
+// TODO make customcopy variant of above macro.
+
 /// @}
 //=============================================================================
 //=============================================================================

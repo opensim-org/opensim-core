@@ -858,6 +858,21 @@ private:
     };                                                                      \
     /** @endcond                                                         */
 
+// TODO document
+#define OpenSim_DECLARE_CONNECTOR_CUSTOMCOPY(cname, T, comment)             \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    PropertyIndex PropertyIndex_connector_##cname##_connectee_name;         \
+    void constructConnector_##cname() {                                     \
+        PropertyIndex_connector_##cname##_connectee_name =                  \
+            this->template constructConnector<T>(#cname,                    \
+                "Path to a Component to satisfy the Connector '"            \
+                #cname "' of type " #T " (description: " comment ").");     \
+    }                                                                       \
+    void copyConnector_##cname(const Self& source) {                        \
+        PropertyIndex_connector_##cname##_connectee_name =                  \
+            source.PropertyIndex_connector_##cname##_connectee_name;        \
+    }
+
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
  * when are you unable to include the header that defines type `T`. This might
@@ -1003,6 +1018,21 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             #iname "' of type " #T " (description: " comment ").",  istage) \
     };                                                                      \
     /** @endcond                                                         */
+
+// TODO document
+#define OpenSim_DECLARE_INPUT_CUSTOMCOPY(iname, T, istage, comment)         \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
+    PropertyIndex PropertyIndex_input_##iname##_connectee_name;             \
+    void constructInput_##iname() {                                         \
+        PropertyIndex_input_##iname##_connectee_name =                      \
+          this->template constructInput<T>(#iname, false,                   \
+            "Path to an output (channel) to satisfy the one-value Input '"  \
+            #iname "' of type " #T " (description: " comment ").",  istage);\
+    }                                                                      \
+    void copyInput_##iname(const Self& source) {                            \
+        PropertyIndex_input_##iname##_connectee_name =                      \
+            source.PropertyIndex_input_##iname##_connectee_name;            \
+    }
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called first

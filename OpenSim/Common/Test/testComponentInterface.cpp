@@ -1683,6 +1683,204 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
+void testConnectorsWithCustomCopyConstructor() {
+
+    // First, test copying with default copy constructors.
+    // ---------------------------------------------------
+    // Copying should just work with the normal CONNECTOR macro.
+    // The class we will try to connect to.
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        int calcSomething() const { return 5; }
+    };
+    
+    {
+        // The class with the Connector and default copy constructor.
+        class B : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+        public:
+            OpenSim_DECLARE_CONNECTOR(conn, A, "");
+        };
+    
+        TheWorld model;
+        B* b = new B(); b->setName("b");
+        { // Set up the original model that we will subsequently copy.
+            A* a = new A(); a->setName("a");
+            model.add(a); model.add(b);
+            b->updConnector("conn").connect(*a);
+            MultibodySystem system;
+            model.buildUpSystem(system);
+        }
+        { // Make sure the connector works.
+            SimTK_TEST(b->getConnectee<A>("conn").calcSomething() == 5);
+        }
+        { // Make sure the connector works after copying.
+            std::unique_ptr<TheWorld> modelCopy(model.clone());
+            MultibodySystem system; modelCopy->buildUpSystem(system);
+            const auto& bCopy = modelCopy->getComponent("b");
+            SimTK_TEST(bCopy.getConnectee<A>("conn").calcSomething() == 5);
+        }
+        { // Test copy assignment as well.
+            TheWorld modelCopy; modelCopy.operator=(model); // Copy assignment.
+            SimTK_TEST(&modelCopy != &model);
+            MultibodySystem system; modelCopy.buildUpSystem(system);
+            const auto& bCopy = modelCopy.getComponent("b");
+            SimTK_TEST(bCopy.getConnectee<A>("conn").calcSomething() == 5);
+        }
+    }
+    
+    // TODO check exception messages if using alternative macros but
+    // forgot to call the appropriate constructConnector and copyConnector
+    // functions.
+    // TODO check exception messages is using custom copy constructor but using
+    // the typical macro (not the CUSTOMCOPY variant).
+    
+    // Custom copy constructor works if using alternative CONNECTOR macro.
+    // -------------------------------------------------------------------
+    {
+        // The class with the Connector and custom copy constructor.
+        class C : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(C, Component);
+        public:
+            OpenSim_DECLARE_CONNECTOR_CUSTOMCOPY(conn, A, "");
+            C() { constructConnector_conn(); }
+            C(const C& other) : Component(other) // Custom copy constructor.
+            {   copyConnector_conn(other); }
+        };
+    
+        TheWorld model;
+        C* c = new C(); c->setName("c");
+        { // Set up the original model that we will subsequently copy.
+            A* a = new A(); a->setName("a");
+            model.add(a); model.add(c);
+            c->updConnector("conn").setConnecteeName("../a");
+            MultibodySystem system;
+            model.buildUpSystem(system);
+        }
+        { // Make sure the connector works before the copy.
+            SimTK_TEST(c->getConnectee<A>("conn").calcSomething() == 5);
+        }
+        { // Make sure the connector works after copying.
+            std::unique_ptr<TheWorld> modelCopy(model.clone());
+            MultibodySystem system; modelCopy->buildUpSystem(system);
+            const auto& cCopy = modelCopy->getComponent("c");
+            SimTK_TEST(cCopy.getConnectee<A>("conn").calcSomething() == 5);
+        }
+        { // Test copy assignment as well.
+            TheWorld modelCopy; modelCopy.operator=(model); // Copy assignment.
+            SimTK_TEST(&modelCopy != &model);
+            MultibodySystem system; modelCopy.buildUpSystem(system);
+            const auto& cCopy = modelCopy.getComponent("c");
+            SimTK_TEST(cCopy.getConnectee<A>("conn").calcSomething() == 5);
+        }
+    }
+}
+
+void testInputsOutputsWithCustomCopyConstructor() {
+    
+    // TODO inputs...document this test
+    // TODO default copy constructor.
+    // TODO create an equivalent test for list inputs and list outputs.
+    {
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_OUTPUT(out1, int, calcOut1, SimTK::Stage::Time);
+            int calcOut1(const SimTK::State& state) const { return 7; }
+        };
+        // The class with the Connector and custom copy constructor.
+        class B : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+        public:
+            OpenSim_DECLARE_INPUT(in1, int, SimTK::Stage::Model, "");
+        };
+        TheWorld model;
+        State state;
+        { // Set up the original model that we will subsequently copy.
+            A* a = new A(); a->setName("a");
+            B* b = new B(); b->setName("b");
+            model.add(a); model.add(b);
+            b->updInput("in1").connect(a->getOutput("out1"));
+            MultibodySystem system;
+            model.buildUpSystem(system);
+            state = system.realizeTopology();
+            system.realizeModel(state);
+        }
+        { // Make sure the input/output connection works.
+            SimTK_TEST(model.getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+        { // Make sure the input and output work after copying.
+            std::unique_ptr<TheWorld> modelCopy(model.clone());
+            MultibodySystem system; modelCopy->buildUpSystem(system);
+            State state = system.realizeTopology(); system.realizeModel(state);
+            SimTK_TEST(modelCopy->getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+        { // Test copy assignment as well.
+            TheWorld modelCopy; modelCopy.operator=(model); // Copy assignment.
+            SimTK_TEST(&modelCopy != &model);
+            MultibodySystem system; modelCopy.buildUpSystem(system);
+            State state = system.realizeTopology(); system.realizeModel(state);
+            SimTK_TEST(modelCopy.getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+    }
+    
+    // TODO now test custom copy constructors.
+    {
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_OUTPUT_CUSTOMCOPY(out1, int, calcOut1, SimTK::Stage::Time);
+            int calcOut1(const SimTK::State& state) const { return 7; }
+            A() { constructOutput_out1(); }
+            A(const A& other) : Component(other)  // Custom copy constructor.
+            {   copyOutput_out1(other); }
+        };
+        class B : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+        public:
+            OpenSim_DECLARE_INPUT_CUSTOMCOPY(in1, int, SimTK::Stage::Model, "");
+            B() { constructInput_in1(); }
+            B(const B& other) : Component(other)  // Custom copy constructor.
+            {   copyInput_in1(other); }
+        };
+        TheWorld model;
+        State state;
+        { // Set up the original model that we will subsequently copy.
+            A* a = new A(); a->setName("a");
+            B* b = new B(); b->setName("b");
+            model.add(a); model.add(b);
+            b->updInput("in1").setConnecteeName("../a/out1");
+            MultibodySystem system;
+            model.buildUpSystem(system);
+            state = system.realizeTopology();
+            system.realizeModel(state);
+        }
+        { // Make sure the input/output connection works.
+            SimTK_TEST(model.getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+        { // Make sure the input and output work after copying.
+            std::unique_ptr<TheWorld> modelCopy(model.clone());
+            MultibodySystem system; modelCopy->buildUpSystem(system);
+            State state = system.realizeTopology(); system.realizeModel(state);
+            SimTK_TEST(modelCopy->getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+        { // Test copy assignment as well.
+            TheWorld modelCopy; modelCopy.operator=(model); // Copy assignment.
+            SimTK_TEST(&modelCopy != &model);
+            MultibodySystem system; modelCopy.buildUpSystem(system);
+            State state = system.realizeTopology(); system.realizeModel(state);
+            SimTK_TEST(modelCopy.getComponent("b").getInputValue<int>(state, "in1")
+                       == 7);
+        }
+    }
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1704,5 +1902,9 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+    
+        SimTK_SUBTEST(testConnectorsWithCustomCopyConstructor);
+        SimTK_SUBTEST(testInputsOutputsWithCustomCopyConstructor);
+    
     SimTK_END_TEST();
 }
