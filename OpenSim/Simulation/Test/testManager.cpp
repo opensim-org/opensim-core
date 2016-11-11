@@ -121,12 +121,8 @@ void testStationCalcWithManager()
         pendulum.realizeAcceleration(state);
 
         // Use Simbody to get the location, velocity & acceleration in ground.
-        // Need to map the point into the base frame to use MobilizedBody's
-        // station methods otherwise we exclude the effect of the offset frame
-        SimTK::Vec3 pointInBase = frame.findTransformInBaseFrame()*point;
         mb.findStationLocationVelocityAndAccelerationInGround(state,
-            pointInBase, l, v, a);
-
+            point, l, v, a);
         lo = myStation->getLocationInGround(state);
         vo = myStation->getVelocityInGround(state);
         ao = myStation->getAccelerationInGround(state);
