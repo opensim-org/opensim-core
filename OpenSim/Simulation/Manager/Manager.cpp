@@ -506,7 +506,7 @@ setModel(Model& aModel)
     }
 
     if (_timeStepper) {
-        std::string msg = "Cannot set a new integrator on this Manager";
+        std::string msg = "Cannot set a new Model on this Manager";
         msg += "after Manager::integrate() has been called at least once.";
         OPENSIM_THROW(Exception, msg);
     }
