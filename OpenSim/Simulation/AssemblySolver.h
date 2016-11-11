@@ -79,7 +79,7 @@ public:
 
     virtual ~AssemblySolver() {}
 
-    /** %Set the unitless accuracy of the assembly solution, which is dictates
+    /** %Set the unitless accuracy of the assembly solution, which dictates
         the number of significant digits the solution should be resolved to.
         Note, setting the accuracy will invalidate the AssemblySolver and one
         must call assemble() before being able to track().*/
