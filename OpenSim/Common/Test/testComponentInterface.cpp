@@ -1198,7 +1198,6 @@ void testExceptionsForConnecteeTypeMismatch() {
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
         b->updInput("in1").setConnecteeName("../a/out1");
-        model.connect();
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> list input.
