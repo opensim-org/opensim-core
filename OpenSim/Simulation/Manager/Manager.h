@@ -56,8 +56,10 @@ class ControllerSet;
  * using setIntegrator().
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
- * the Manager will throw an exception if setModel() or setIntegrator() is
- * called after integrate(state) has been called at least once.
+ * we only create a TimeStepper once, specifically at the first call to
+ * integrate(state). To ensure this, the Manager will throw an exception if 
+ * setModel() or setIntegrator() is called after integrate(state) has been 
+ * called at least once.
  *
  * Since the call to integrate(state) takes the state as an argument, it is
  * up to the caller to ensure that the state is a legal state if the same
