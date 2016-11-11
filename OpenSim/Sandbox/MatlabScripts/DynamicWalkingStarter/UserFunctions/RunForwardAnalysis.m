@@ -1,3 +1,40 @@
+import org.opensim.modeling.*
+
+% Open Model
+model= Model('../Model/WalkerModel.osim');
+
+% Add Analyses to the Model
+forceReporter = ForceReporter();
+model.addAnalysis(forceReporter);
+
+% Initialize the underlying computational system
+state = model.initSystem();
+
+% Run a fwd simulation using the manager
+state = model.initSystem();
+manager = Manager(model);
+manager.setInitialTime(0);
+manager.setFinalTime(2);
+manager.integrate(state);
+
+% Get the states table from the manager and pring the results. 
+sTable = manager.getStatesTable();
+stofiles = STOFileAdapter();
+stofiles.write(sTable, '../Results/fwd/simulation_states.sto')
+
+% Print the force reporter results to file (_ForceReporter_Forces.sto)
+forceReporter.printResults('','../Results/fwd',-1, '.sto')
+
+% Cleanup
+% clearvars walkerModel forceReporter tool state statusVal
+display('Forward Tool Finished.');
+display('The following files were written to the /Results/FWD directory:')
+display('DW2013_WalkerModelTerrain_states.sto')
+display('DW2013_WalkerModelTerrain_controls.sto');
+display('DW2013_WalkerModelTerrain_states_degrees.mot');
+display('DW2013_WalkerModelTerrain_ForceReporter_forces.sto');
+
+
 % ----------------------------------------------------------------------- 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           
 % simulation. See http://opensim.stanford.edu and the NOTICE file         
@@ -6,7 +43,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.             
 %                                                                         
 % Copyright (c) 2005-2013 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
+% Author(s): Daniel A. Jacobs, James Dunne                                             
 %                                                                         
 % Licensed under the Apache License, Version 2.0 (the "License");         
 % you may not use this file except in compliance with the License.        
@@ -21,45 +58,3 @@
 % ----------------------------------------------------------------------- 
 % This script demonstrates calls the Forward Tool from the OpenSim library from Matlab.
 % ----------------------------------------------------------------------- 
-import org.opensim.modeling.*
-
-% Open Model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
-
-% Add Analyses to the Model
-forceReporter = ForceReporter();
-walkerModel.addAnalysis(forceReporter);
-
-% Initialize the underlying computational system
-state = walkerModel.initSystem();
-
-% Create the Forward Tool
-tool = ForwardTool();
-
-% Set the model for the forward tool
-tool.setModel(walkerModel);
-
-% Define the start and finish times 
-tool.setStartTime(0);
-tool.setFinalTime(2);
-
-% Define the prefix for the result files
-tool.setName('WalkerModelTerrain');
-
-% Set Input States File
-tool.setStatesFileName('../Model/WalkerModel_Initial_states.sto');
-
-% Set Results Directory (will create without prompt)
-tool.setResultsDir('../Results/FWD');
-
-% Run the simulation
-statusVal = tool.run();
-
-% Cleanup
-% clearvars walkerModel forceReporter tool state statusVal
-display('Forward Tool Finished.');
-display('The following files were written to the /Results/FWD directory:')
-display('DW2013_WalkerModelTerrain_states.sto')
-display('DW2013_WalkerModelTerrain_controls.sto');
-display('DW2013_WalkerModelTerrain_states_degrees.mot');
-display('DW2013_WalkerModelTerrain_ForceReporter_forces.sto');

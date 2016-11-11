@@ -1,47 +1,14 @@
-% ----------------------------------------------------------------------- %
-% The OpenSim API is a toolkit for musculoskeletal modeling and           %
-% simulation. See http://opensim.stanford.edu and the NOTICE file         %
-% for more information. OpenSim is developed at Stanford University       %
-% and supported by the US National Institutes of Health (U54 GM072970,    %
-% R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %
-% Copyright (c) 2005-2013 Stanford University and the Authors             %
-% Author(s): Daniel A. Jacobs                                             %
-%                                                                         %
-% Licensed under the Apache License, Version 2.0 (the "License");         %
-% you may not use this file except in compliance with the License.        %
-% You may obtain a copy of the License at                                 %
-% http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         %
-% Unless required by applicable law or agreed to in writing, software     %
-% distributed under the License is distributed on an "AS IS" BASIS,       %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
-% implied. See the License for the specific language governing            %
-% permissions and limitations under the License.                          %
-% ----------------------------------------------------------------------- %
-% This script uses a ExpressionBasedPointToPointForce to realize a magnet 
-% force model.  The ExpressionPointToPointForce calculates the relative 
-% translation and relative velocity between two points in the global frame 
-% and allows the user to specify a force based on a string of the symbols 
-% d and ddot. 
 
-%----------------------------------------------------------------
-% User Inputs 
-%Model File
-modelDirectory = '../Model/';
-modelFile = 'WalkerModel.osim';
-resultsDirectory = '../Model/';
-%----------------------------------------------------------------
-% Import Java Library 
 import org.opensim.modeling.*
 
-% Open the model
-walkerModel = Model([modelDirectory, modelFile]);
+% Open Model
+walkerModel = Model('../Model/WalkerModel.osim');
+
+% make a copy
+new_model = walkerModel;
 
 % Change the name
-modelPrefix = walkerModel.getName();
-modelName = [modelPrefix.toCharArray()','AddMagnet'];
-walkerModel.setName(modelName);
+new_model.setName('WalkerModel_magnet']);
 
 % Define the body and points location in each body's coordinate frame
 locBody1 = Vec3(0.05,-0.2, 0);
@@ -70,9 +37,38 @@ leftKneeMagnet.setExpression('0.01/d^2');
 rightKneeMagnet.setExpression('0.01/d^2');
 
 % Add the force to the model
-walkerModel.addForce(leftKneeMagnet);
-walkerModel.addForce(rightKneeMagnet);
+new_model
+
+new_model.addForce(leftKneeMagnet);
+new_model.addForce(rightKneeMagnet);
 
 % Print a new model file
-walkerModel.print([resultsDirectory,modelName,'.osim']);
-status = 0;
+new_model.print(['../Model/',char(new_model.getName()),'.osim']);
+
+
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %
+% Copyright (c) 2005-2013 Stanford University and the Authors             %
+% Author(s): Daniel A. Jacobs, James Dunne
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
+% This script uses a ExpressionBasedPointToPointForce to realize a magnet 
+% force model.  The ExpressionPointToPointForce calculates the relative 
+% translation and relative velocity between two points in the global frame 
+% and allows the user to specify a force based on a string of the symbols 
+% d and ddot. 
