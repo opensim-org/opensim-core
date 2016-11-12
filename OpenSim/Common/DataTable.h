@@ -843,9 +843,8 @@ protected:
         const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
                                                 columnWidths.cend(),
                                                 static_cast<size_t>(0))};
-        result.reserve(result.capacity() +
-            static_cast<unsigned>(std::roundf(
-                totalWidth * table.size() * excessAllocation)));
+        result.reserve(result.capacity() + static_cast<unsigned>(
+                       totalWidth * table.size() * excessAllocation));
 
         // Fill up the result string.
         size_t beginRow{1};
