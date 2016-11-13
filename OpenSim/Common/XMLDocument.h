@@ -104,20 +104,21 @@ public:
         const std::string& connectorTag, const std::string& connectorName, 
         const std::string& connectorValue);
     /** In version 30508, the XML syntax for Connectors changed:
-    Previous:  <connectors>
-                   <Connector_PhysicalFrame_ name="parent_frame">
-                       <connectee_name>...</connectee_name>
-                   </Connector_PhysicalFrame_>
-                   <Connector_PhysicalFrame_ name="child_frame">
-                       <connectee_name>...</connectee_name>
-                   </Connector_PhysicalFrame_>
-               </connectors>
-    New:       <connector_parent_frame_connectee_name>...
-                   </connector_parent_frame_connectee_name>
-               <connector_child_frame_connectee_name>...
-                   </connector_child_frame_connectee_name>
-    
-    If there is no <connectors> element, then this function does not edit
+    @code
+    Previous: <connectors>
+                  <Connector_PhysicalFrame_ name="parent_frame">
+                      <connectee_name>...</connectee_name>
+                  </Connector_PhysicalFrame_>
+                  <Connector_PhysicalFrame_ name="child_frame">
+                      <connectee_name>...</connectee_name>
+                  </Connector_PhysicalFrame_>
+              </connectors>
+    New:      <connectors>
+                  <parent_frame_connectee_name>...</parent_frame_connectee_name>
+                  <child_frame_connectee_name>...</child_frame_connectee_name>
+              </connectors>
+    @endcode
+    If there is no `<connectors>` element, then this function does not edit
     componentElt. */
     static void updateConnectors30508(SimTK::Xml::Element& componentElt);
     static void addPhysicalOffsetFrame(SimTK::Xml::Element& element,

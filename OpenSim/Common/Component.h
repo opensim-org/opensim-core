@@ -2198,7 +2198,8 @@ protected:
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
         PropertyIndex propIndex = this->template addProperty<std::string>(
-                "connector_" + name + "_connectee_name", propertyComment, "");
+                name + "_connectee_name", propertyComment, "",
+                AbstractProperty::Connector);
         // We must create the Property first: the Connector needs the property's
         // index in order to access the property later on.
         _connectorsTable[name].reset(
@@ -2327,11 +2328,13 @@ protected:
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
             propIndex = this->template addListProperty<std::string>(
-                    "input_" + name + "_connectee_names", propertyComment,
-                    0, std::numeric_limits<int>::max());
+                    name + "_connectee_names", propertyComment,
+                    0, std::numeric_limits<int>::max(),
+                    AbstractProperty::Input);
         } else {
             propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+                    name + "_connectee_name", propertyComment, "",
+                    AbstractProperty::Input);
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.

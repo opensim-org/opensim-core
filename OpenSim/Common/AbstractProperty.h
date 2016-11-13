@@ -54,6 +54,13 @@ where the type is known.
 **/
 class OSIMCOMMON_API AbstractProperty {
 public:
+
+    enum Category {
+        General,
+        Connector,
+        Input
+    };
+    
     // Constructors are protected.
 
     /** Require that the number of values n in the value list of this property
@@ -227,6 +234,9 @@ public:
     taken from a default object and thus should not be written out when
     serializing. **/
     void setValueIsDefault(bool isDefault) { _valueIsDefault = isDefault; }
+    
+    /** TODO **/
+    void setCategory(Category category) { _category = category; }
 
     /** Get the property name. **/
     const std::string& getName() const { return _name; }
@@ -236,6 +246,8 @@ public:
     value for this property (in which case it doesn't need to be written
     out). **/
     bool getValueIsDefault() const { return _valueIsDefault; }
+    /** TODO **/
+    Category getCategory() const { return _category; }
 
     /** Get the minimum number of values allowed in this property's value
     list. Will be zero for optional properties, zero for list properties 
@@ -357,6 +369,7 @@ private:
     std::string _name;
     std::string _comment;
     bool        _valueIsDefault;    // current value is just the default
+    Category    _category = General;
 
     int         _minListSize;       // minimum # values for property
     int         _maxListSize;       // maximum # value for property

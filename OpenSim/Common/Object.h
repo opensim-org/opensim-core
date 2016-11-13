@@ -693,9 +693,10 @@ protected:
              property table. 
     @see addOptionalProperty(), addListProperty() **/
     template <class T> PropertyIndex 
-    addProperty(const std::string& name, 
-                const std::string& comment, 
-                const T&           value);
+    addProperty(const std::string&         name,
+                const std::string&         comment,
+                const T&                   value,
+                AbstractProperty::Category cat = AbstractProperty::General);
 
     /** Add an optional property, meaning it can contain either no value or
     a single value. Here no initial value is provided. The
@@ -731,7 +732,8 @@ protected:
     template <class T> PropertyIndex
     addListProperty(const std::string& name, 
                     const std::string& comment,
-                    int minSize, int maxSize);
+                    int minSize, int maxSize,
+                    AbstractProperty::Category cat = AbstractProperty::General);
 
     /** Define a new list-valued property as above, but assigning an initial
     value via some templatized container class that supports size() and 
@@ -893,9 +895,10 @@ updProperty(const PropertyIndex& index) {
 }
 
 template <class T> PropertyIndex Object::
-addProperty(const std::string& name, 
-            const std::string& comment,
-            const T&           value)
+addProperty(const std::string&         name,
+            const std::string&         comment,
+            const T&                   value,
+            AbstractProperty::Category category)
 {
     // Restrict to exactly one value. If there is no name, this will throw
     // an exception if T is a simple (non-object) type.
@@ -904,6 +907,7 @@ addProperty(const std::string& name,
     p->setComment(comment);
     p->appendValue(value);
     p->setValueIsDefault(true);
+    p->setCategory(category);
 
     // Note that an unnamed, one-object property will use the object class name
     // as a name for lookup purposes.
@@ -949,7 +953,8 @@ addOptionalProperty(const std::string& name,
 template <class T> PropertyIndex Object::
 addListProperty(const std::string& name, 
                 const std::string& comment,
-                int minSize, int maxSize)
+                int minSize, int maxSize,
+                AbstractProperty::Category category)
 {
     if (name.empty())
         throw OpenSim::Exception(
@@ -968,7 +973,8 @@ addListProperty(const std::string& name,
     p->setAllowableListSize(minSize, maxSize);
     p->setComment(comment);
     p->setValueIsDefault(true);
-
+    p->setCategory(category);
+    
     return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 

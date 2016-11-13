@@ -775,7 +775,26 @@ try {
     // LOOP THROUGH PROPERTIES
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
-        prop.readFromXMLParentElement(aNode, versionNumber);
+        // TODO move the following code inside the function below:
+        if (prop.getCategory() == AbstractProperty::Connector) {
+            SimTK::Xml::element_iterator connectors =
+                    aNode.element_begin("connectors");
+            if (connectors == aNode.element_end()) {
+                prop.setValueIsDefault(true);
+                continue;
+            }
+            prop.readFromXMLParentElement(*connectors, versionNumber);
+        } else if (prop.getCategory() == AbstractProperty::Input) {
+            SimTK::Xml::element_iterator inputs =
+                    aNode.element_begin("inputs");
+            if (inputs == aNode.element_end()) {
+                prop.setValueIsDefault(true);
+                continue;
+            }
+            prop.readFromXMLParentElement(*inputs, versionNumber);
+        } else {
+            prop.readFromXMLParentElement(aNode, versionNumber);
+        }
     }
 
     // LOOP THROUGH DEPRECATED PROPERTIES
@@ -1064,14 +1083,38 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 
     // LOOP THROUGH PROPERTIES
     bool wroteAnyProperties = false;
+    bool wroteAnyConnectorProperties = false;
+    bool wroteAnyInputProperties = false;
+    SimTK::Xml::Element connectors("connectors");
+    SimTK::Xml::Element inputs("inputs"); // Serializing AbstractInputs.
+    // TODO move all of this to inside of writeToXMLParentElement.
+    // TODO same for Inputs.
+    // TODO make general across categories?
+    
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         const AbstractProperty& prop = _propertyTable.getAbstractPropertyByIndex(i);
         
         // Don't write out if this is just a default value.
         if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
-            prop.writeToXMLParentElement(myObjectElement);
+            if (prop.getCategory() == AbstractProperty::Connector) {
+                prop.writeToXMLParentElement(connectors);
+                wroteAnyConnectorProperties = true;
+            } else if (prop.getCategory() == AbstractProperty::Input) {
+                prop.writeToXMLParentElement(inputs);
+                wroteAnyInputProperties = true;
+            } else {
+                prop.writeToXMLParentElement(myObjectElement);
+            }
             wroteAnyProperties = true;
         }
+    }
+    // Connectors come before inputs.
+    if (wroteAnyInputProperties) {
+        myObjectElement.insertNodeBefore(myObjectElement.node_begin(), inputs);
+    }
+    if (wroteAnyConnectorProperties) {
+        myObjectElement.insertNodeBefore(myObjectElement.node_begin(),
+                                         connectors);
     }
 
     // LOOP THROUGH DEPRECATED PROPERTIES

@@ -268,9 +268,9 @@ private:
     
     /// Const access to the connectee_name property from the Component in which
     /// this Connector resides. The name of that property is something like
-    /// 'connector_<name>_connectee_name'. This is a special type of property
+    /// '<name>_connectee_name'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
-    /// `get_connector_<name>_connectee_name()` function).
+    /// `get_<name>_connectee_name()` function).
     const Property<std::string>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
     /// which this Connector resides. Calling this will mark the Component as
@@ -420,14 +420,16 @@ can connect to multiple (Output) Channels.
 #### XML Syntax of a connectee name
 
 For every %Input that a component has, the XML representation of the component
-contains an element named `input_<input_name>_connectee_name` (or
-`input_<input_name>_connectee_names` for list inputs). For example, a component
+contains an element named `<input_name>_connectee_name` (or
+`<input_name>_connectee_names` for list inputs). For example, a component
 that has an Input named `desired_angle` might look like the following in XML:
 @code
     <MyComponent name="my_comp">
-        <input_desired_angle_connectee_name>
-            ../foo/angle
-        </input_desired_angle_connectee_name>
+        <inputs>
+            <desired_angle_connectee_name>
+                ../foo/angle
+            </desired_angle_connectee_name>
+        </inputs>
         ...
     </MyComponent>
 @endcode
@@ -461,9 +463,9 @@ Here are some examples:
 List inputs can contain multiple entries in its connectee name, with the
 entries separated by a space. For example:
 @code
-<input_experimental_markers_connectee_names>
+<experimental_markers_connectee_names>
     ../marker_data/column:left_ankle ../marker_data/column:right_ankle ../averager/output(knee_joint_center)
-</input_experimental_markers_connectee_names>
+</experimental_markers_connectee_names>
 @endcode
 */
 class OSIMCOMMON_API AbstractInput : public AbstractConnector {
@@ -845,13 +847,13 @@ private:
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** In an XML file, you can set this Connector's connectee name      */ \
-    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
+    /** via the <b>\<##cname##_connectee_name\></b> element.             */ \
     /** This connector was generated with the                            */ \
     /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
+    PropertyIndex PropertyIndex_##cname##_connectee_name {                  \
         this->template constructConnector<T>(#cname,                        \
                 "Path to a Component to satisfy the Connector '"            \
                 #cname "' of type " #T " (description: " comment ").")      \
@@ -912,11 +914,11 @@ private:
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** In an XML file, you can set this Connector's connectee name      */ \
-    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
+    /** via the <b>\<##cname##_connectee_name\></b> element.             */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
+    PropertyIndex PropertyIndex_##cname##_connectee_name {                  \
         constructConnector_##cname()                                        \
     };                                                                      \
     /* Declare the method used in the in-class member initializer.       */ \
@@ -988,7 +990,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** comment                                                          */ \
     /** This input is needed at stage istage.                            */ \
     /** In an XML file, you can set this Input's connectee name          */ \
-    /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
+    /** via the <b>\<##iname##_connectee_name\></b> element.             */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
     /** See AbstractInput for more information.                          */ \
@@ -997,7 +999,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname##_connectee_name {            \
+    PropertyIndex PropertyIndex_##iname##_connectee_name {            \
         this->template constructInput<T>(#iname, false,                     \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
@@ -1028,7 +1030,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** This input can connect to multiple outputs, all of which are     */ \
     /** needed at stage istage.                                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
-    /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
+    /** via the <b>\<##iname##_connectee_names\></b> element.            */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
     /** See AbstractInput for more information.                          */ \
@@ -1037,7 +1039,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname##_connectee_names {           \
+    PropertyIndex PropertyIndex_##iname##_connectee_names {                 \
         this->template constructInput<T>(#iname, true,                      \
             "Paths to outputs (channels) to satisfy the list Input '"       \
             #iname "' of type " #T " (description: " comment "). "          \

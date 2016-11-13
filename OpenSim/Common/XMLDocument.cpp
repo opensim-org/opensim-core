@@ -433,12 +433,13 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
     using ElementItr = SimTK::Xml::element_iterator;
     
     std::string typeName = "PhysicalFrame";
-    ElementItr connectors_node = componentElt.element_begin("connectors");
+    ElementItr oldConnectorsNode = componentElt.element_begin("connectors");
+    SimTK::Xml::Element newConnectorsNode("connectors");
     
     // See if there's a <connectors> element.
-    if (connectors_node == componentElt.element_end()) return;
+    if (oldConnectorsNode == componentElt.element_end()) return;
     
-    for (ElementItr connectorElt = connectors_node->element_begin();
+    for (ElementItr connectorElt = oldConnectorsNode->element_begin();
             connectorElt != componentElt.element_end();
             ++connectorElt) {
         // Grab name of Connector.
@@ -452,13 +453,17 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
         
         // Create new element for this connector's connectee name.
         SimTK::Xml::Element newConnecteeNameElt(
-                "connector_" + connectorName + "_connectee_name");
+                connectorName + "_connectee_name");
         newConnecteeNameElt.setValue(connecteeName);
-        componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
+        newConnectorsNode.insertNodeAfter(newConnectorsNode.element_end(),
+                                          newConnecteeNameElt);
     }
     
     // No longer want the old syntax for connectors.
-    componentElt.eraseNode(connectors_node);
+    componentElt.eraseNode(oldConnectorsNode);
+    // Add the new <connectors> ... </connectors> node.
+    componentElt.insertNodeBefore(componentElt.element_begin(),
+                                  newConnectorsNode);
 }
 
 void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
