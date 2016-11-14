@@ -823,6 +823,7 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
             SimTK::DecorativeCylinder(get_radius(),
                 get_length() / 2)
             .setTransform(X_GW).setResolution(2.0)
-            .setColor(color).setOpacity(0.5));
+            .setColor(color).setOpacity(0.5)
+            .setScale(1).setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     }
 }
