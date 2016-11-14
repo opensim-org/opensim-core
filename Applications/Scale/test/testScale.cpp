@@ -54,8 +54,8 @@ int main()
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cerr << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

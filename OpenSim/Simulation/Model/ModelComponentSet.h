@@ -92,14 +92,14 @@ public:
     }
 
     /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return _model.get()!=nullptr; }
+    bool hasModel() const { return !_model.empty(); }
     /**
      * Get this Model this set is part of.
      */
     const Model& getModel() const
     {
-        if (_model){
-            return *this->_model;
+        if (hasModel()){
+            return _model.getRef();
         }
         else{
             std::string msg = getClassName();

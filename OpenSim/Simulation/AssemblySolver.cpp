@@ -35,11 +35,6 @@ class Coordinate;
 class CoordinateSet;
 
 //______________________________________________________________________________
-/**
- * An implementation of the AssemblySolver 
- *
- * @param model to assemble
- */
 AssemblySolver::AssemblySolver
    (const Model &model, const SimTK::Array_<CoordinateReference> &coordinateReferences,
     double constraintWeight) : Solver(model),
@@ -74,6 +69,13 @@ AssemblySolver::AssemblySolver
             }
         }
     }
+}
+
+void AssemblySolver::setAccuracy(double accuracy)
+{
+    _accuracy = accuracy;
+    // Changing the accuracy invalidates the existing SimTK::Assembler
+    _assembler.reset();
 }
 
 /* Internal method to convert the CoordinateReferences into goals of the 
