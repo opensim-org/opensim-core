@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Path.h"
+#include "Exception.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -222,7 +223,9 @@ bool Path::isLegalPathElement(const std::string& pathElement) const
 void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
+        OPENSIM_THROW(Exception,
+            "Invalid character (one of '" + _invalidChars +
+            "') used in path element '" + pathElement + "'.");
     }
 
     if (pathElement.empty()) {

@@ -26,6 +26,7 @@
 // INCLUDES
 #include "AbstractProperty.h"
 #include "Exception.h"
+#include "ComponentPath.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
@@ -677,6 +678,17 @@ template<> struct Property<SimTK::Transform>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
                                        const SimTK::Transform& b);
 };
+
+/** TypeHelper specialization for SimTK::Transform; see double specialization
+for information on floating point comparison. **/
+template<> struct Property<ComponentPath>::TypeHelper  {
+    static const bool IsObjectType = false;
+    static SimpleProperty<ComponentPath>*
+        create(const std::string& name, bool isOne);
+    static std::string getTypeName() {return "ComponentPath";}
+    static bool isEqual(const ComponentPath& a, const ComponentPath& b)
+    {   return a==b; }
+};
 #endif
 
 //==============================================================================
@@ -913,17 +925,37 @@ writeSimplePropertyToStream(std::ostream& o) const
 template<> inline bool SimpleProperty<std::string>::
 readSimplePropertyFromStream(std::istream& in)
 {
-    if(this->getMaxListSize()==1)
+    if (this->getMaxListSize()==1)
     {
         std::istringstream& instream = (std::istringstream&)(in);
         values.clear();
         values.push_back(instream.str());
         return true;
-   }
-   else
+    }
+    else
        return SimTK::readUnformatted(in, values);
 }
 
+// TODO comment.
+
+template <> inline bool SimpleProperty<ComponentPath>::
+readSimplePropertyFromStream(std::istream& in)
+{
+    if(this->getMaxListSize()==1) {
+        // TODO do not allow spaces, return false.
+        // TODO make sure returning false causes an error message
+        std::istringstream& instream = (std::istringstream&)(in);
+        values.clear();
+        values.push_back(ComponentPath(instream.str())); // TODO emplace_back?
+        // TODO disallow this? parse spaces as separate paths?
+        // TODO wait if we know that the max list size is 1, we know that there
+        // should be no spaces, and we can set the failbit, etc.
+        return true;
+    } else {
+        return SimTK::readUnformatted(in, values);
+        // TODO stream extraction operator for ComponentPath.
+    }
+}
 
 //==============================================================================
 //                             OBJECT PROPERTY
@@ -1090,6 +1122,10 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<SimTK::Transform>* Property<SimTK::Transform>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Transform>(name, isOne); }
+
+inline SimpleProperty<ComponentPath>* Property<ComponentPath>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<ComponentPath>(name, isOne); }
 
 // Create a self-initializing integer index for fast access to properties
 // within an Object's property table.

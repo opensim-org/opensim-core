@@ -167,12 +167,13 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractConnector::setConnecteeName()");
-        updConnecteeNameProp().setValue(ix, name);
+        // TODO should this take a string or a ComponentPath?
+        updConnecteeNameProp().setValue(ix, ComponentPath(name));
     }
 
     /** Get connectee name. This function can only be used if this connector is
     not a list connector.                                                     */
-    const std::string& getConnecteeName() const {
+    std::string /*const std::string& */getConnecteeName() const {
         OPENSIM_THROW_IF(_isList,
                          Exception,
                          "An index must be provided for a list Connector.");
@@ -180,17 +181,19 @@ public:
     }
 
     /** Get connectee name of a connectee among a list of connectees.         */
-    const std::string& getConnecteeName(unsigned ix) const {
+    std::string /*const std::string& */getConnecteeName(unsigned ix) const {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractConnector::getConnecteeName()");
-        return getConnecteeNameProp().getValue(ix);
+        // TODO should this return a string or a ComponentPath?
+        return getConnecteeNameProp().getValue(ix).toString();
     }
 
     void appendConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Connector.");
-        updConnecteeNameProp().appendValue(name);
+        // TODO take ComponentPath or a string?
+        updConnecteeNameProp().appendValue(ComponentPath(name));
     }
 
 protected:
@@ -271,12 +274,12 @@ private:
     /// 'connector_<name>_connectee_name'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
     /// `get_connector_<name>_connectee_name()` function).
-    const Property<std::string>& getConnecteeNameProp() const;
+    const Property<ComponentPath>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
     /// which this Connector resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
-    Property<std::string>& updConnecteeNameProp();
+    Property<ComponentPath>& updConnecteeNameProp();
     
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;

@@ -95,12 +95,24 @@ public:
     /// Return a string of the name of the Component related to a 
     /// ComponentPath. This is just the last level of a ComponentPath.
     std::string getComponentName() const;
-
+    
 private:
     static const char separator;
     static const std::string invalidChars;
 };
 
+inline std::istream& operator>>(std::istream& in, ComponentPath& out) {
+    std::string path;
+    in >> path;
+    out = ComponentPath(path);
+    // TODO handle exceptions from ComponentPath; set failbit, etc.
+    return in;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const ComponentPath& path) {
+    out << path.toString();
+    return out;
+}
 
 } // end of namespace OpenSim
 #endif // OPENSIM_COMPONENT_PATH_H_

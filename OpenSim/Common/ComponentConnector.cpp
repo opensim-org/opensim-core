@@ -26,13 +26,13 @@
 
 using namespace OpenSim;
 
-const Property<std::string>&
+const Property<ComponentPath>&
 AbstractConnector::getConnecteeNameProp() const {
-    return _owner->getProperty<std::string>(_connecteeNameIndex);
+    return _owner->getProperty<ComponentPath>(_connecteeNameIndex);
 }
 
-Property<std::string>&
+Property<ComponentPath>&
 AbstractConnector::updConnecteeNameProp() {
-    return const_cast<Component*>(_owner.get())->updProperty<std::string>(
+    return const_cast<Component*>(_owner.get())->updProperty<ComponentPath>(
                 _connecteeNameIndex);
 }

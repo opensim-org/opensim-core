@@ -2197,8 +2197,9 @@ protected:
         // TODO does putting the addProperty here break the ability to
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
-        PropertyIndex propIndex = this->template addProperty<std::string>(
-                "connector_" + name + "_connectee_name", propertyComment, "");
+        PropertyIndex propIndex = this->template addProperty<ComponentPath>(
+                "connector_" + name + "_connectee_name", propertyComment,
+                ComponentPath());
         // We must create the Property first: the Connector needs the property's
         // index in order to access the property later on.
         _connectorsTable[name].reset(
@@ -2326,12 +2327,13 @@ protected:
         // It is not easily accessible to users.
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
-            propIndex = this->template addListProperty<std::string>(
+            propIndex = this->template addListProperty<ComponentPath>(
                     "input_" + name + "_connectee_names", propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
-            propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+            propIndex = this->template addProperty<ComponentPath>(
+                    "input_" + name + "_connectee_name", propertyComment,
+                    ComponentPath());
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.
