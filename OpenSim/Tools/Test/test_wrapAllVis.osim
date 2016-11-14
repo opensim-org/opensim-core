@@ -58,7 +58,7 @@
 							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 							<location_in_parent>0 0 0</location_in_parent>
 							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 1.57</orientation_in_parent>
+							<orientation_in_parent>0 0 1.57079633</orientation_in_parent>
 							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
 							<location>0 0 0</location>
 							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
@@ -550,7 +550,7 @@
 								<!--Display Color-->
 								<color>0 0.200000002980232 0.800000011920929</color>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
-								<translation> 0.00989646 -0.378819 0.00891879</translation>
+								<translation> 0.01 -0.4 0.01</translation>
 								<active>true</active>
 								<quadrant>all</quadrant>
 								<VisibleObject>
@@ -561,7 +561,7 @@
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="KnExt_at_fem_r_py">
-								<xyz_body_rotation> 0 0 1.57</xyz_body_rotation>
+								<xyz_body_rotation> 0 0 1.57079633</xyz_body_rotation>
 								<translation> 0.025 -0.25 0</translation>
 								<active>false</active>
 								<quadrant>+y</quadrant>
@@ -573,7 +573,7 @@
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="KnExt_at_fem_r_ny">
-								<xyz_body_rotation> 0 0 1.57</xyz_body_rotation>
+								<xyz_body_rotation> 0 0 1.57079633</xyz_body_rotation>
 								<translation> 0.05 -0.25 0</translation>
 								<active>true</active>
 								<quadrant>-y</quadrant>
@@ -588,7 +588,7 @@
 								<!--Display Color-->
 								<color>0 0.200000002980232 0.800000011920929</color>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
-								<translation> 0.00989646 -0.32819 0.00891879</translation>
+								<translation> 0.01 -0.3 0.01</translation>
 								<active>true</active>
 								<quadrant>+x</quadrant>
 								<VisibleObject>
@@ -601,7 +601,7 @@
                 <!--Display Color-->
                 <color>0 0.200000002980232 0.800000011920929</color>
                 <xyz_body_rotation> 0 0 0</xyz_body_rotation>
-                <translation> -.01 -0.5 0.00891879</translation>
+                <translation> -.01 -0.5 0.0</translation>
                 <active>true</active>
                 <quadrant>all</quadrant>
                 <VisibleObject>
@@ -613,8 +613,8 @@
               <WrapTorus name="KnExt_at_fem_torus_r">
                 <!--Display Color-->
                 <color>0 0.200000002980232 0.800000011920929</color>
-                <xyz_body_rotation> 1.57 0 0</xyz_body_rotation>
-                <translation> -.02 -0.6 0.00891879</translation>
+                <xyz_body_rotation> 1.57079633 0 0</xyz_body_rotation>
+                <translation> -.02 -0.6 0.01</translation>
                 <active>true</active>
                 <quadrant>all</quadrant>
                 <inner_radius> 0.035 </inner_radius>
