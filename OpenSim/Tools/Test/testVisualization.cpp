@@ -38,6 +38,7 @@ Model createModel4AppearanceTest();
 void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
 void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
 void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
 bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
@@ -138,7 +139,7 @@ int main()
         // Model with WrapObjects
         Model modelWithWrap("test_wrapAllVis.osim");
         modelWithWrap.updDisplayHints().set_show_frames(false);
-        //populate_wrapModelPrimitives(standard);
+        populate_wrapModelPrimitives(standard);
         testVisModelAgainstStandard(modelWithWrap, standard);
     }
     catch (const OpenSim::Exception& e) {
@@ -411,4 +412,38 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(transform));
 
+}
+
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    stdPrimitives.clear();
+    // Frame for Ground & Bodies
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(4).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(3).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frames for the Joint
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
 }
