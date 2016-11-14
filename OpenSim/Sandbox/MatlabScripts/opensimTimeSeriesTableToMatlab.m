@@ -1,4 +1,4 @@
-function data = opensimTimeSeriesTableToMatlab(table)
+function data = osimTableToStruct(table)
 
 
 %%

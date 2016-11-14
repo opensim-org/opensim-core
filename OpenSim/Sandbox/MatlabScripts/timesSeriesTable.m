@@ -1,17 +1,7 @@
 function output_table = timesSeriesTable(generictable)
-%% // Convert between OpenSim and Matlab Timeseries 
-%  
-%   Inputs can be either an OpenSim TimeSeriesTable, TimesSeriesTableVec3,
-%   or a Matlab times series collection. 
-%
-%   Outputs from OpenSim TimesSeriesTable's will be a Matlab times series
-%   collection. 
-%
-%   Function does not maintain meta data between types. 
-%
+%% Draft script to use Matlab times series objects. 
+% DO NOT INCLUDE IN OPENSIM BUILD. 
 
-% Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
-% Ajay Seth, Ayman Habib, Jen Hicks. 
 
 import org.opensim.modeling.*
 
