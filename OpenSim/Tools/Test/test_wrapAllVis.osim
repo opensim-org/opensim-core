@@ -21,7 +21,86 @@
 					<inertia_yz>0</inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint />
-				</Body>
+          <WrapObjectSet>
+            <objects>
+              <WrapCylinder name="KnExt_at_fem_r">
+                <!--Display Color-->
+                <color>0 0.200000002980232 0.800000011920929</color>
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> 0.01 -0.4 0.01</translation>
+                <active>false</active>
+                <quadrant>all</quadrant>
+                <VisibleObject>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                </VisibleObject>
+                <radius>0.025</radius>
+                <length>0.1</length>
+              </WrapCylinder>
+              <WrapCylinder name="KnExt_at_fem_r_py">
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> 0.025 -0.25 0</translation>
+                <active>false</active>
+                <quadrant>+y</quadrant>
+                <VisibleObject>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                </VisibleObject>
+                <radius>0.03</radius>
+                <length>0.1</length>
+              </WrapCylinder>
+              <WrapCylinder name="KnExt_at_fem_r_ny">
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> 0.05 -0.25 0</translation>
+                <active>false</active>
+                <quadrant>-y</quadrant>
+                <VisibleObject>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                </VisibleObject>
+                <radius>0.03</radius>
+                <length>0.1</length>
+              </WrapCylinder>
+              <WrapSphere name="KnExt_at_fem_sphere_r">
+                <!--Display Color-->
+                <color>0 0.200000002980232 0.800000011920929</color>
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> 0.01 -0.3 0.01</translation>
+                <active>false</active>
+                <quadrant>+x</quadrant>
+                <VisibleObject>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                </VisibleObject>
+                <radius>0.055</radius>
+              </WrapSphere>
+              <WrapEllipsoid name="KnExt_at_fem_ellpsoid_r">
+                <!--Display Color-->
+                <color>0 0.200000002980232 0.800000011920929</color>
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> -.01 -0.5 0.0</translation>
+                <active>false</active>
+                <quadrant>all</quadrant>
+                <VisibleObject>
+                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                  <scale_factors> 1 1 1</scale_factors>
+                </VisibleObject>
+                <dimensions> 0.10000000 0.0500000 0.15000000 </dimensions>
+              </WrapEllipsoid>
+              <WrapTorus name="KnExt_at_fem_torus_r">
+                <!--Display Color-->
+                <color>0 0.200000002980232 0.800000011920929</color>
+                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
+                <translation> -.02 -0.6 0.01</translation>
+                <active>false</active>
+                <quadrant>all</quadrant>
+                <inner_radius> 0.035 </inner_radius>
+                <outer_radius> 0.08 </outer_radius>
+              </WrapTorus>
+            </objects>
+            <groups />
+          </WrapObjectSet>
+        </Body>
 				<Body name="femur_r">
 					<mass>9.3014</mass>
 					<mass_center> 0 -0.17 0</mass_center>
@@ -39,7 +118,7 @@
 							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
 							<location_in_parent>0 0 0</location_in_parent>
 							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 1.57079633</orientation_in_parent>
+							<orientation_in_parent>0 0 0</orientation_in_parent>
 							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
 							<location>0 0 0</location>
 							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
@@ -83,7 +162,7 @@
 										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
 										<motion_type>rotational</motion_type>
 										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>-2.0943951</default_value>
+										<default_value>0</default_value>
 										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 										<default_speed_value>0</default_speed_value>
 										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
@@ -401,85 +480,6 @@
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors> 1.03707 1.03707 1.03707</scale_factors>
 					</VisibleObject>
-					<WrapObjectSet>
-						<objects>
-							<WrapCylinder name="KnExt_at_fem_r">
-								<!--Display Color-->
-								<color>0 0.200000002980232 0.800000011920929</color>
-								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
-								<translation> 0.01 -0.4 0.01</translation>
-								<active>false</active>
-								<quadrant>all</quadrant>
-								<VisibleObject>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-								</VisibleObject>
-								<radius>0.025</radius>
-								<length>0.1</length>
-							</WrapCylinder>
-							<WrapCylinder name="KnExt_at_fem_r_py">
-								<xyz_body_rotation> 0 0 1.57079633</xyz_body_rotation>
-								<translation> 0.025 -0.25 0</translation>
-								<active>false</active>
-								<quadrant>+y</quadrant>
-								<VisibleObject>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-								</VisibleObject>
-								<radius>0.03</radius>
-								<length>0.1</length>
-							</WrapCylinder>
-							<WrapCylinder name="KnExt_at_fem_r_ny">
-								<xyz_body_rotation> 0 0 1.57079633</xyz_body_rotation>
-								<translation> 0.05 -0.25 0</translation>
-								<active>false</active>
-								<quadrant>-y</quadrant>
-								<VisibleObject>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-								</VisibleObject>
-								<radius>0.03</radius>
-								<length>0.1</length>
-							</WrapCylinder>
-							<WrapSphere name="KnExt_at_fem_sphere_r">
-								<!--Display Color-->
-								<color>0 0.200000002980232 0.800000011920929</color>
-								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
-								<translation> 0.01 -0.3 0.01</translation>
-								<active>false</active>
-								<quadrant>+x</quadrant>
-								<VisibleObject>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-								</VisibleObject>
-								<radius>0.055</radius>
-							</WrapSphere>
-              <WrapEllipsoid name="KnExt_at_fem_ellpsoid_r">
-                <!--Display Color-->
-                <color>0 0.200000002980232 0.800000011920929</color>
-                <xyz_body_rotation> 0 0 0</xyz_body_rotation>
-                <translation> -.01 -0.5 0.0</translation>
-                <active>false</active>
-                <quadrant>all</quadrant>
-                <VisibleObject>
-                  <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-                  <scale_factors> 1 1 1</scale_factors>
-                </VisibleObject>
-                <dimensions> 0.10000000 0.0500000 0.15000000 </dimensions>
-              </WrapEllipsoid>
-              <WrapTorus name="KnExt_at_fem_torus_r">
-                <!--Display Color-->
-                <color>0 0.200000002980232 0.800000011920929</color>
-                <xyz_body_rotation> 1.57079633 0 0</xyz_body_rotation>
-                <translation> -.02 -0.6 0.01</translation>
-                <active>false</active>
-                <quadrant>all</quadrant>
-                <inner_radius> 0.035 </inner_radius>
-                <outer_radius> 0.08 </outer_radius>
-              </WrapTorus>
-            </objects>
-						<groups />
-					</WrapObjectSet>
 				</Body>
 			</objects>
 			<groups />
