@@ -66,7 +66,7 @@ void testStationCalcWithManager()
 {
     using SimTK::Vec3;
 
-    cout << "Running testStationOnOffsetFrame" << endl;
+    cout << "Running testStationCalcWithManager" << endl;
 
     Model pendulum;
     pendulum.setName("pendulum");
@@ -75,7 +75,8 @@ void testStationCalcWithManager()
         SimTK::Inertia::cylinderAlongY(0.025, 0.55));
     pendulum.addBody(rod);
 
-    auto pin = new PinJoint("pin", pendulum.getGround(), Vec3(0), Vec3(0), *rod, Vec3(0), Vec3(0));
+    auto pin = new PinJoint("pin", pendulum.getGround(), Vec3(0), Vec3(0), 
+        *rod, Vec3(0), Vec3(0));
     pendulum.addJoint(pin);
 
     // Create station in the extra frame
