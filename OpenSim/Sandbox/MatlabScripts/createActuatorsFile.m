@@ -1,7 +1,7 @@
 function createActuatorsFile(varargin)
 %createActuatorsFile   Build and Print an OpenSim Actuator File from a Model
 %
-%  createActuatorsFile attempts to build a template actuators file that can
+%  createActuatorsFile attempts to make a template actuators file that can
 %  be used in Static Optimization, RRA and CMC. This tries to identify the
 %  coordinates  that are connected to ground and place point or torque
 %  actuators on translational or rotational coordinates, respectively. All
@@ -51,20 +51,20 @@ for i = 1 : nargin
             if ischar(varargin{i}{iCell})
                 if strcmpi(varargin{i}{iCell},'residual')
                         if isnumeric(varargin{i}{iCell+1})
-                            residualOptimalForce = varargin{i}{iCell+1};
+                            optimalForce = varargin{i}{iCell+1};
                         else
                             error(['value after ' varargin{i}{iCell} ' must be a Optimal Force (number)'])
                         end
                 elseif strcmpi(varargin{i}{iCell},'reserve')
                         if isnumeric(varargin{i}{iCell+1})
-                            reserveOptimalForce = varargin{i}{iCell+1};
+                            optimalForce = varargin{i}{iCell+1};
                         else
                             error(['value after ' varargin{i}{iCell} 'must be a Optimal Force (number)'])
                         end
                 elseif strcmpi(varargin{i}{iCell},'all')
                         if isnumeric(varargin{i}{iCell+1})
-                            residualOptimalForce = varargin{i}{iCell+1};
-                            reserveOptimalForce = varargin{i}{iCell+1};
+                            optimalForce = varargin{i}{iCell+1};
+                            optimalForce = varargin{i}{iCell+1};
                         else
                             error(['value after ' varargin{i}{iCell} ' must be a Optimal Force (number)'])
                         end
@@ -80,7 +80,7 @@ if ~exist('filename', 'var')
     [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
 end
 
-if ~exist('residualOptimalForce', 'var') | ~exist('reserveOptimalForce', 'var')
+if ~exist('optimalForce', 'var') | ~exist('optimalForce', 'var')
     % Prompt the user to input the Optimal Force.
     prompt = {'Optimal forces for any Residuals:','Optimal forces for all Reserves'};
     dlg_title = 'Input';
@@ -88,8 +88,8 @@ if ~exist('residualOptimalForce', 'var') | ~exist('reserveOptimalForce', 'var')
     def = {'2','1'};
     answer = inputdlg(prompt,dlg_title,num_lines,def);
     % allocate these into some variables.
-    residualOptimalForce = str2num(answer{1});
-    reserveOptimalForce  = str2num(answer{2});
+    optimalForce = str2num(answer{1});
+    optimalForce  = str2num(answer{2});
 end
 
 
@@ -97,15 +97,15 @@ end
 modelFilePath = fullfile(pathname,filename);
 
 % Generate an instance of the model
-myModel = Model(modelFilePath);
+model = Model(modelFilePath);
 
 % Get the number of coordinates  and a handle to the coordainte set
-nCoord = myModel.getCoordinateSet.getSize;
-coordSet = myModel.getCoordinateSet;
+nCoord = model.getCoordinateSet.getSize();
+coordSet = model.getCoordinateSet();
 
 % Evaluate the ground body and get the mass center
-groundBodyName = myModel.getGroundBody.getName;
-groundJoint = myModel.getJointSet.get(0);
+groundBodyName = model.getGround().getName();
+groundJoint = model.getJointSet.get(0);
 
 % Create some empty vec3's for later.
 massCenter = Vec3();
@@ -114,7 +114,7 @@ axisValues = Vec3();
 % Create an empty Force set
 forceSet = ForceSet();
 % get the state
-state = myModel.initSystem();
+state = model.initSystem();
 
 
 
@@ -122,37 +122,39 @@ state = myModel.initSystem();
 for iCoord = 0 : nCoord - 1
 
     % get a reference to the current coordinate
-    myCoord = coordSet.get(iCoord);
+    coordinate = coordSet.get(iCoord);
     % If the coordinate is locked don't add an actuator.
-    if myCoord.getLocked(state)
+    if coordinate.getLocked(state)
         continue
     end
     % If the coordinate is prescribed, don't add an actuator.
-    if myCoord.isPrescribed(state)
+    if coordinate.isPrescribed(state)
         continue
     end
     % If the coodinate is constrained, don't add an actuator
-    if myCoord.isConstrained(state)
+    if coordinate.isConstrained(state)
         continue
     end
 
-    joint = myCoord.getJoint;
-    joint.getBody.getMassCenter(massCenter)
+    % get the joint, parent and child names for the coordiante
+    joint = coordinate.getJoint;
+    parentName = joint.getParentFrame().getName(); 
+    childName = joint.getChildFrame().getName();
 
     % If the coordinates parent body is connected to ground, we need to
     % add residual actuators (torque or point).
-    if strmatch(joint.getParentName, myModel.getGroundBody.getName )
+    if strmatch(parentName, model.getGround.getName() )
 
-           % if the joint type is custom or free
-        if strcmp(joint.getConcreteClassName, 'CustomJoint') | strcmp(joint.getConcreteClassName, 'FreeJoint')
+        % if the joint type is custom or free
+        if strcmp(joint.getConcreteClassName(), 'CustomJoint') | strcmp(joint.getConcreteClassName(), 'FreeJoint')
                % get the coordainte motion type
-               motion = char(myCoord.getMotionType);
+               motion = char(coordinate.getMotionType);
                % to get the axis value for the coordiante, we need to drill
                % down into the coordinate transform axis
-               eval(['concreteJoint = ' char(joint.getConcreteClassName) '.safeDownCast(joint);'])
+               eval(['concreteJoint = ' char(joint.getConcreteClassName()) '.safeDownCast(joint);'])
                sptr = concreteJoint.getSpatialTransform;
                for ip = 0 : 5
-                  if strcmp(char(sptr.getCoordinateNames().get(ip)), char(myCoord.getName))
+                  if strcmp(char(sptr.getCoordinateNames().get(ip)), char(coordinate.getName))
                         sptr.getTransformAxis(ip).getAxis(axisValues);
                         break
                   end
@@ -161,18 +163,15 @@ for iCoord = 0 : nCoord - 1
 
                % Build a torque actuator for a rotational coordinate
                if strcmp(motion, 'Rotational')
-                   newActuator = TorqueActuator(joint.getBody,...
-                                         joint.getParentBody,...
+                   newActuator = TorqueActuator(joint.getParentFrame(),...
+                                         joint.getParentFrame(),...
                                          axisValues,...
                                          1);
-                   newActuator.setName(char(myCoord.getName))
-
+    
                % Build a point actuator for a translational coordainte.
                elseif strcmp(motion, 'Translational')
-                    % build a new Point actuator
+                    % make a new Point actuator
                     newActuator = PointActuator();
-                    % Set the actuator Name
-                    newActuator.setName(char(myCoord.getName))
                     % set the body
                     newActuator.set_body(char(concreteJoint.getBody))
                     % set <point>      -0.07243760       0.00000000       0.00000000 </point>
@@ -185,33 +184,24 @@ for iCoord = 0 : nCoord - 1
                     newActuator.set_force_is_global(1)
                end
         else % if the joint type is not free or custom, just add coordinate actuators
-                % build a new coordinate actuator for that coordinate
-                newActuator = CoordinateActuator( char(myCoord.getName) );
-                % set the actuator name
-                newActuator.setName( char(myCoord.getName) )
-                % set the optimal force for that coordinate
-                newActuator.setOptimalForce(reserveOptimalForce);
-                % set min and max controls
-                newActuator.setMaxControl(Inf)
-                newActuator.setMinControl(-Inf)
+                % make a new coordinate actuator for that coordinate
+                newActuator = CoordinateActuator();
         end
+        
+    else % the coordinate is not connected to ground, and can just be a
+         % coordinate actuator.
+         newActuator = CoordinateActuator( char(coordinate.getName) );
+    end
+
     % set the optimal force for that coordinate
-    newActuator.setOptimalForce(residualOptimalForce);
+    newActuator.setOptimalForce(optimalForce);        
+    % set the actuator name
+    newActuator.setName( coordinate.getName() );
+    % set the optimal force for that coordinate
+    newActuator.setOptimalForce(optimalForce);
     % set min and max controls
     newActuator.setMaxControl(Inf)
     newActuator.setMinControl(-Inf)
-
-    else
-            % build a new coordinate actuator for that coordinate
-            newActuator = CoordinateActuator( char(myCoord.getName) );
-            % set the actuator name
-            newActuator.setName( char(myCoord.getName) )
-            % set the optimal force for that coordinate
-            newActuator.setOptimalForce(reserveOptimalForce);
-            % set min and max controls
-            newActuator.setMaxControl(Inf)
-            newActuator.setMinControl(-Inf)
-    end
 
     % append the new acuator onto the empty force set
     forceSet.cloneAndAppend(newActuator);
