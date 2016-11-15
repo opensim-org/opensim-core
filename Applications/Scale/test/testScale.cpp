@@ -51,8 +51,8 @@ int main()
 {
     try {
         scaleGait2354();
-        //scaleGait2354_GUI(false);
-        //scaleModelWithLigament();
+        scaleGait2354_GUI(false);
+        scaleModelWithLigament();
     }
     catch (const std::exception& e) {
         cerr << e.what() << endl;
