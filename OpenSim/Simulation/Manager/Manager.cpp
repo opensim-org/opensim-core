@@ -312,20 +312,18 @@ getDTArray()
  * @param aTI Initial time.  If not specified, 0.0 is assumed.
  * @see getUseSpecifiedDT()
  */
-void Manager::
-setDTArray(int aN,const double aDT[],double aTI)
-{
-    if(aN<=0) return;
-    if(aDT==NULL) return;
+void Manager::setDTArray(const SimTK::Vector_<double>& aDT,double aTI) {
+    if(aDT.size() == 0)
+        return;
 
     _dtArray.setSize(0);
-    _dtArray.ensureCapacity(aN);
+    _dtArray.ensureCapacity(aDT.size());
     _tArray.setSize(0);
-    _tArray.ensureCapacity(aN+1);
+    _tArray.ensureCapacity(aDT.size() + 1);
     int i;
-    for(_tArray.append(aTI),i=0;i<aN;i++) {
+    for(_tArray.append(aTI), i = 0; i < aDT.size(); ++i) {
         _dtArray.append(aDT[i]);
-        _tArray.append(_tArray.getLast()+aDT[i]);
+        _tArray.append(_tArray.getLast() + aDT[i]);
     }
 }
 //_____________________________________________________________________________
@@ -763,7 +761,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if( _writeToStorage ) {
             SimTK::Vector stateValues = _model->getStateVariableValues(s);
             StateVector vec;
-            vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+            vec.setStates(tReal, stateValues);
             getStateStorage().append(vec);
             if(_model->isControlled())
                 _controllerSet->storeControls(s,step);
@@ -794,7 +792,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if( _writeToStorage) {
                 SimTK::Vector stateValues = _model->getStateVariableValues(s);
                 StateVector vec;
-                vec.setStates(tReal, stateValues.size(), &stateValues[0]);
+                vec.setStates(tReal, stateValues);
                 getStateStorage().append(vec);
                 if(_model->isControlled())
                     _controllerSet->storeControls(s, step);
