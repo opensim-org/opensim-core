@@ -41,6 +41,15 @@ int main(int argc,char **argv)
     //----------------------
     try {
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    DEPRECATED:    versionUpdate inputFileName outputFileName
+    REPLACED WITH: opensim-cmd update-file inputFileName outputFileName
+    )";
+    std::cout << deprecationNotice << std::endl;
+
     // PARSE COMMAND LINE
     string option = "";
     string inputFileName = "";
