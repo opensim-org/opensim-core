@@ -64,6 +64,7 @@ void WrapObject::constructProperties()
     constructProperty_quadrant("Unassigned");
     Appearance defaultAppearance;
     defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_opacity(0.5);
     defaultAppearance.set_representation(VisualRepresentation::DrawSurface);
     constructProperty_Appearance(defaultAppearance);
 }
