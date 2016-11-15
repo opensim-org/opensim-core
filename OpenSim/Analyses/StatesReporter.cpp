@@ -204,7 +204,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
     SimTK::Vector stateValues = _model->getStateVariableValues(s);
-    StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
+    StateVector nextRow(s.getTime(), stateValues);
     _statesStore.append(nextRow);
 
     return(0);

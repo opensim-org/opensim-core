@@ -49,6 +49,17 @@ int main(int argc,char **argv)
     //----------------------
     try {
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      analyze -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      analyze -PS              -> opensim-cmd print-xml analyze
+    )";
+    std::cout << deprecationNotice << std::endl;
+
     // PARSE COMMAND LINE
     int i;
     string option = "";

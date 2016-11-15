@@ -157,20 +157,22 @@ public:
         Therefore, subsequent changes to the Set of MarkerWeights will have
         no effect on the marker weights associated with this Reference. */
     void setMarkerWeightSet(const Set<MarkerWeight>& markerWeights);
-    void setDefaultWeight(double weight) { set_default_weight(weight); }
+    void setDefaultWeight(double weight);
+    size_t getNumFrames() const;
 
 private:
     void constructProperties();
     void
     populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerData,
                            const std::string& units);
+    void updateInternalWeights() const;
 
     TimeSeriesTable_<SimTK::Vec3> _markerTable;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
     //    TimeSeriesTable_<SimTK::Vec3> _markerTable;
     // List of weights guaranteed to be in the same order as marker names.
-    SimTK::Array_<double> _weights;
+    mutable SimTK::Array_<double> _weights;
 //=============================================================================
 };  // END of class MarkersReference
 //=============================================================================

@@ -182,6 +182,16 @@ public:
 
     /** Add key-value pair to the table metadata.
 
+    If using this function from Python/Java/Matlab, use:
+    ```
+    addTableMetaDataString(key, value)
+    ```
+    where both 'key' and 'value' are strings. The above call translates to C++
+    as:
+    ```
+    addTableMetaData<std::string>(key, value)
+    ```
+
     \tparam Value Type of the value. This need not be specified explicitly in
                   most cases. It will be deduced automatically.
 
@@ -199,6 +209,35 @@ public:
     }
 
     /** Get table metadata for a given key.
+
+    If using this funciton from Python/Java/Matlab, use the following table:
+    <table>
+    <tr>
+      <th>C++</th>
+      <th>Python / Java / Matab</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>%getTableMetaData<std::string></td>
+      <td>getTableMetaDataString</td>
+      <td>%Marker table read from a C3D file could contain quantities 
+          <b>DataRate</b> and <b>%Units</b> that can be retrieved with this 
+          method.</td>
+    </tr>
+    <tr>
+      <td>getTableMetaData<std::vector<SimTK::Matrix_<double>>></td>
+      <td>getTableMetaDataVectorMatrix</td>
+      <td>Forces table read from a C3D file could contain quantities 
+          <b>Calibration Matrices</b>, <b>%Force Plate Corners</b> and <b>%Force
+          Plate Origins</b> that can be retrieved with this method.</td>
+    </tr>
+    <tr>
+      <td>getTableMetaData<std::vector<unsigned>></td>
+      <td>getTableMetaDataVectorUnsigned</td>
+      <td>Forces table read from a C3D file could contain quantity <b>%Force 
+          Plate Types</b> that can be retrieved with this method</td>
+    </tr>
+    </table>
 
     \tparam Value Type of the value to be retrieved. For example if the metadata
                   contains key-value pair ("sample-rate", 200), this could be

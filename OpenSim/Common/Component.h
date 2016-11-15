@@ -2662,7 +2662,7 @@ private:
     // their index in the computational system. The earliest time we have a valid 
     // index is when we ask the system to allocate the resources and that only
     // happens in extendAddToSystem. Furthermore, extendAddToSystem may not
-    // alter the Component in any way that would effect its behavior- that is
+    // alter the Component in any way that would affect its behavior- that is
     // why it is const!
     // The setting of the variable indices is not in the public interface and is 
     // not polymorphic.

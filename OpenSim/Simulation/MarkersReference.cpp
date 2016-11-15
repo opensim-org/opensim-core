@@ -106,23 +106,12 @@ populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
     _markerNames.assign(markerNames.size(), "");
     _weights.assign(markerNames.size(), get_default_weight());
 
-    int index = 0;
-    // Build flat lists (arrays) of marker names and weights in the same order
-    // as the marker data
     for(unsigned i = 0; i < markerNames.size(); ++i) {
         _markerNames[i] = markerNames[i];
-        index = get_marker_weights().getIndex(markerNames[i], index);
-
-        // Assign user weighting for markers that are user listed in the input
-        // set
-        if(index >= 0)
-            _weights[i] = get_marker_weights()[index].getWeight();
     }
 
-    if(_markerNames.size() != _weights.size())
-        throw Exception("MarkersReference: Mismatch between the number of "
-                        "marker names and weights. Verify that marker names "
-                        "are unique.");
+    // Names must be assigned before weights can be updated
+    updateInternalWeights();
 }
 
 SimTK::Vec2 MarkersReference::getValidTimeRange() const {
@@ -166,14 +155,44 @@ MarkersReference::getAccelerationValues(const SimTK::State &s,
     throw Exception("MarkersReference: getAccelerationValues not implemented.");
 }
 
-void  MarkersReference::getWeights(const SimTK::State &s,
-                                   SimTK::Array_<double> &weights) const {
+void MarkersReference::getWeights(const SimTK::State &s,
+                                  SimTK::Array_<double> &weights) const {
+    updateInternalWeights();
     weights = _weights;
 }
 
 void
 MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights) {
     upd_marker_weights() = markerWeights;
+}
+
+void
+MarkersReference::setDefaultWeight(double weight) {
+    set_default_weight(weight);
+}
+
+void
+MarkersReference::updateInternalWeights() const {
+    // if weights are not being changed, do not rebuild list of weights.
+    if (isObjectUpToDateWithProperties())
+        return;
+
+    // Begin by assigning default weight to each. Markers that do not have a
+    // weight specified in the marker_weights property use the default weight.
+    _weights.assign(getNumRefs(), get_default_weight());
+
+    // Next fill in the marker weights that were specified in the
+    // marker_weights property
+    int wix = -1;
+    int ix = 0;
+    // Build flat lists of marker weights in the same order as the marker names
+    for (const std::string &name : _markerNames) {
+        wix = get_marker_weights().getIndex(name, wix);
+        // Associate user weights (as specified in the marker_weights property)
+        // with the corresponding marker by order of marker names
+        if (wix >= 0)
+            _weights[ix++] = get_marker_weights()[wix].getWeight();
+    }
 }
 
 int
@@ -188,6 +207,11 @@ MarkersReference::getSamplingFrequency() const {
         return std::stod(datarate);
     } else
         return SimTK::NaN;
+}
+
+size_t
+MarkersReference::getNumFrames() const {
+    return _markerTable.getNumRows();
 }
 
 } // end of namespace OpenSim
