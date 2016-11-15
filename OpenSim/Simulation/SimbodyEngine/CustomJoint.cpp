@@ -206,7 +206,7 @@ void CustomJoint::constructCoordinates()
                             mt = Coordinate::MotionType::Translational;
                     }
                     else { // scaled (slope !=1) or nonlinear relationship means
-                           // not a pure rotational or translational for this axis
+                           // not a pure rotational or translational for this axis.
                            // designate as Coupled unless already defined as
                            // pure Rotational or Translational about another axis
                         mt = (mt == Coordinate::MotionType::Undefined ?
