@@ -811,7 +811,10 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
     if (fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
         SimTK::Transform ztoy;
         // Make transform that takes z axis to y axis due to different
         // assumptions between DecorativeCylinder aligned with y  and
@@ -823,7 +826,7 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
             SimTK::DecorativeCylinder(get_radius(),
                 get_length() / 2)
             .setTransform(X_GW).setResolution(2.0)
-            .setColor(color).setOpacity(0.5)
-            .setScale(1).setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation()));
     }
 }
