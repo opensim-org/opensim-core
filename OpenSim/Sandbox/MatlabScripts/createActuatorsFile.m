@@ -1,4 +1,4 @@
-function createActuatorsFile(varargin)
+function createActuatorsFile
 %createActuatorsFile   Build and Print an OpenSim Actuator File from a Model
 %
 %  createActuatorsFile attempts to make a template actuators file that can
@@ -8,92 +8,17 @@ function createActuatorsFile(varargin)
 %  other coordiantes will get coordinate actuators. Any locked, prescribed
 %  or constrained coordinates will be ignored.
 %
-%  createActuatorsFile(path2file) where path2file is the full path to a
-%  model file (string). A display prompt will be generated to input optimal
-%  force values.
-%
-%  createActuatorsFile(path2file, {'residual' x 'reserve' y}) where x and y
-%  are optima force integers, any residual actuators will be set to x,
-%  reserve actuatorsto y. Use 'all' to set all actuators to the same value
-%  ie {'all' x}
 
 %   Author: James Dunne
-%   Tested on; Windows 7, Matlab 2014 (64bit), OpenSim 3.2 (64bit), 3.2
-%   (32 bit)
-%   Models; gait2392 (with locked joints), gait2354, gait2354 w/Patella,
-%   Double Pendulum.
+
 
 % Import OpenSim Libraries
 import org.opensim.modeling.*
 
-% if NO inputs are given, open dialog boxes to select the model and input
-% the optimal force values.
-for i = 1 : nargin
-    % if a string, determine if its a valid file path. If not, bring up a
-    % dialog box.
-    if ischar(varargin{i})
-        if exist(varargin{i},'file') == 0
-            warning(['File ' varargin{i} ' is not a valid model'])
-            [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
-        else
-            [pathname,filename,ext] = fileparts(varargin{i});
-            filename = [filename ext];
-        end
-    end
-    % if input string a numeric, next value will be a rotation cell array
-    if iscell(varargin{i})
+% open dialog boxes to select the model
+[filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
 
-        if  mod(length(varargin{i}),2)
-           error('input incorrect. Must be in the form of a string AND a number')
-        end
-
-        for iCell = 1 : length(varargin{i})
-            if ischar(varargin{i}{iCell})
-                if strcmpi(varargin{i}{iCell},'residual')
-                        if isnumeric(varargin{i}{iCell+1})
-                            optimalForce = varargin{i}{iCell+1};
-                        else
-                            error(['value after ' varargin{i}{iCell} ' must be a Optimal Force (number)'])
-                        end
-                elseif strcmpi(varargin{i}{iCell},'reserve')
-                        if isnumeric(varargin{i}{iCell+1})
-                            optimalForce = varargin{i}{iCell+1};
-                        else
-                            error(['value after ' varargin{i}{iCell} 'must be a Optimal Force (number)'])
-                        end
-                elseif strcmpi(varargin{i}{iCell},'all')
-                        if isnumeric(varargin{i}{iCell+1})
-                            optimalForce = varargin{i}{iCell+1};
-                            optimalForce = varargin{i}{iCell+1};
-                        else
-                            error(['value after ' varargin{i}{iCell} ' must be a Optimal Force (number)'])
-                        end
-                else
-                     error([varargin{i}{iCell} ' is not a valid input argument. either residual, reserve or all'])
-                end
-            end
-        end
-    end
-end
-
-if ~exist('filename', 'var')
-    [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
-end
-
-if ~exist('optimalForce', 'var') | ~exist('optimalForce', 'var')
-    % Prompt the user to input the Optimal Force.
-    prompt = {'Optimal forces for any Residuals:','Optimal forces for all Reserves'};
-    dlg_title = 'Input';
-    num_lines = 1;
-    def = {'2','1'};
-    answer = inputdlg(prompt,dlg_title,num_lines,def);
-    % allocate these into some variables.
-    optimalForce = str2num(answer{1});
-    optimalForce  = str2num(answer{2});
-end
-
-
-% Prompt the user to select a model
+% get the model path
 modelFilePath = fullfile(pathname,filename);
 
 % Generate an instance of the model
@@ -116,7 +41,7 @@ forceSet = ForceSet();
 % get the state
 state = model.initSystem();
 
-
+optimalForce = 1;
 
 %% Start going through the coordinates, creating an actuator for each
 for iCoord = 0 : nCoord - 1
@@ -169,11 +94,11 @@ for iCoord = 0 : nCoord - 1
                                          1);
     
                % Build a point actuator for a translational coordainte.
-               elseif strcmp(motion, 'Translational')
+               else 
                     % make a new Point actuator
                     newActuator = PointActuator();
                     % set the body
-                    newActuator.set_body(char(concreteJoint.getBody))
+                    newActuator.set_body(char(joint.getChildFrame().getName()))
                     % set <point>      -0.07243760       0.00000000       0.00000000 </point>
                     newActuator.set_point(massCenter)
                     % set <point_is_global> false </point_is_global>

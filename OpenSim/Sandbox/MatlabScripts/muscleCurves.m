@@ -1,4 +1,4 @@
-function [fl_active,fl_passive] = muscleCurves(modelName)
+function [fl_active,fl_passive] = muscleCurves(modelpath)
 
 
 % Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.   
@@ -13,7 +13,7 @@ if nargin < 1
     [filein, pathname] = uigetfile({'*.osim','osim'}, 'OSIM model file...');
     model = Model(fullfile(pathname,filein));
 elseif nargin == 1
-    model = Model(modelName);
+    model = Model(modelpath);
 end
 
 s =  model.initSystem();
@@ -80,18 +80,19 @@ while isempty(stoploop)
     fig = figure(1);
 
     clf(fig)
-
+    
     hold
 
+    % Make scatter plots fot eh active and passive components
     scatter(fl_active(:,1),fl_active(:,2))
     scatter(fl_passive(:,1),fl_passive(:,2))
-
+    % Limit the X axis from 0.4 ? 1.6    
     xlim([0.4 1.6]);
 
     hold off
 
-
-     name =[];
+    % clear the muscle name. 
+    name =[];
 end
 
 
