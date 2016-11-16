@@ -2687,8 +2687,10 @@ void testNonzeroInterceptCustomJointVsPin()
 
     cout << "Pin final angle = " << pin_q << " vs. CustomJoint angle = "
         << cj_q << endl;
+    cout << "Pin angle - CustomJoint angle = " << pin_q-cj_q << 
+        " vs. offset = "<< offset << endl;
 
-    ASSERT_EQUAL<double>( pin_q-offset, cj_q, integ_accuracy,
+    ASSERT_EQUAL<double>( pin_q-cj_q, offset, integ_accuracy,
         __FILE__, __LINE__,
         "CustomJoint's linear function intercept failed to behave as an offset "
         "of the coordinate value.");
