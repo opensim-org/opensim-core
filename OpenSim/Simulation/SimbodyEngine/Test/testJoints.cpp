@@ -2657,13 +2657,13 @@ void testNonzeroInterceptCustomJointVsPin()
     // add CustomJoint "pin" to the model
     cjModel.addJoint(hip2);
 
-    pinModel.setUseVisualizer(true);
-    cjModel.setUseVisualizer(true);
+    //pinModel.setUseVisualizer(true);
+    //cjModel.setUseVisualizer(true);
 
     State s1 = pinModel.initSystem();
     State s2 = cjModel.initSystem();
 
-    // Verify the MotionType for both Joints are the same
+    // Verify the MotionType for both Joints are the same (Rotational)
     auto mt1 = hip1->getCoordinate().getMotionType();
     auto mt2 = hip2->getCoordinate().getMotionType();
     ASSERT(mt1 == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
@@ -2671,24 +2671,11 @@ void testNonzeroInterceptCustomJointVsPin()
     ASSERT(mt2 == mt1, __FILE__, __LINE__,
         "CustomJoint's Coordinate MotionType failed to match PinJoint's");
 
-    pinModel.getVisualizer().show(s1);
-    cjModel.getVisualizer().show(s2);
-
-    char c;
-    std::cout << "press any key to visualize starting pose " << std::endl;
-    std::cin >> c;
-
     // Set initial conditions of both pendulum models
     hip1->getCoordinate().setValue(s1, Pi/3);
     // Subtract the expected offset of the cjModel since we expect the
     // CustomJoint's transformAxis' function to effectively offset the value
     hip2->getCoordinate().setValue(s2, Pi / 3 - offset);
-
-    pinModel.getVisualizer().show(s1);
-    cjModel.getVisualizer().show(s2);
-
-    std::cout << "press any key to simulate " << std::endl;
-    std::cin >> c;
 
     // integrate both Models over a standard duration
     integrateOpenSimModel(&pinModel, s1);
