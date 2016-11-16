@@ -1024,7 +1024,7 @@ void Millard2012EquilibriumMuscle::
     if(!get_ignore_activation_dynamics()) {
         double adot = 0;
         // if not disabled or overridden then compute its derivative
-        if (!isDisabled(s) && !isActuationOverridden(s)) {
+        if (appliesForce(s) && !isActuationOverridden(s)) {
             adot =getActivationDerivative(s);
         }
         setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
@@ -1034,7 +1034,7 @@ void Millard2012EquilibriumMuscle::
     if(!get_ignore_tendon_compliance()) {
         double ldot = 0;
         // if not disabled or overridden then compute its derivative
-        if (!isDisabled(s) && !isActuationOverridden(s)) {
+        if (appliesForce(s) && !isActuationOverridden(s)) {
             ldot = getFiberVelocity(s);
         }
         setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);

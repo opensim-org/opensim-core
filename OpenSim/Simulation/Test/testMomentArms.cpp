@@ -289,13 +289,13 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
     // Disable all forces
     for(int i=0; i<osimModel.updForceSet().getSize(); i++){
-        osimModel.updForceSet()[i].setDisabled(s, true);
+        osimModel.updForceSet()[i].setAppliesForce(s, false);
     }
     // Also disable gravity
     osimModel.getGravityForce().disable(s);
 
     // Enable just muscle we are interested in.
-    muscle.setDisabled(s, false);
+    muscle.setAppliesForce(s, true);
 
     coord.setClamped(s, false);
     coord.setLocked(s, false);

@@ -1103,7 +1103,7 @@ Set<Actuator> CMCTool::
 {   
     Set<Actuator> actuatorsForCMC = _model->getActuators();
     for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if (actuatorsForCMC.get(i).get_isDisabled())
+        if(!actuatorsForCMC.get(i).get_appliesForce())
             actuatorsForCMC.remove(i);
     }
     Array<string> groupNames;

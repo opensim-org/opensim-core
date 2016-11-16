@@ -1056,7 +1056,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     auto muscles = getComponentList<Muscle>();
 
     for (auto& muscle : muscles) {
-        if (!muscle.isDisabled(state)){
+        if (muscle.appliesForce(state)){
             try{
                 muscle.equilibrate(state);
             }
