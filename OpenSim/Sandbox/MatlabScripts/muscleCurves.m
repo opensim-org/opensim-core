@@ -1,8 +1,8 @@
-function [fl_active,fl_passive] = modelValidator(modelName)
+function [fl_active,fl_passive] = muscleCurves(modelName)
 
 
-% Author: James Dunne, Ajay Seth, Chris Dembia, Tom Uchida.  
-% Started: July 2014   
+% Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.   
+   
 
 %% 
 
@@ -19,24 +19,93 @@ end
 s =  model.initSystem();
 
 
-muscleNames = 'rect_fem_r'
-%% Muscle Coordinate finder
-%   Find the coordinate's that each muscle crosses. This is done by
-%   examining the moment arm contribution of the muscle across all
-%   coordinates. A muscle will contribute to any coodinate when the moment
-%   arm is non-zero.
-muscle = getCoord4Musc( model , s, muscleNames);
+%% select a muscle
+musclelist = {};
+name = [];
+stoploop = [];
 
-%% get the force length curves of 
+for i = 0 : model.getMuscles.getSize() - 1
+    musclelist = [ musclelist ; {char(model.getMuscles.get(i).getName)} ];
+    display( char(model.getMuscles.get(i).getName ) ) 
+end
+ display('(type exit to stop).');
 
-% Get the force length curves of the muscles
-[fl_active,fl_passive] = getForceLength(model, s, muscle);
+
+
+while isempty(stoploop)
+
+    %%%
+    while isempty(name)
+        
+       
+        string = input('feed me a muscle name!?', 's');
+        
+        % get a valid name or 'exit' 
+        nameIndex = find( cellfun(@(s) ~isempty(strmatch(string, s)), musclelist) == 1);
+        
+        if strmatch(string, 'exit');
+            stoploop = 1;
+            break
+        elseif isempty(nameIndex);
+            display('Muscle name not found.');
+        else  
+            name = 1;
+            musclename = char( musclelist(nameIndex) );
+        end
+    end   
+    %%%     
+        
+    if ~isempty(stoploop)
+        display('thanks for ending this program. See you Laterz!')
+        close all
+        clc
+        return
+    end
+        
+    %% Muscle Coordinate finder
+    %   Find the coordinate's that each muscle crosses. This is done by
+    %   examining the moment arm contribution of the muscle across all
+    %   coordinates. A muscle will contribute to any coodinate when the moment
+    %   arm is non-zero.
+    muscle = musclecoordinates( model , s, musclename);
+
+    %% get the force length curves of 
+
+    % Get the force length curves of the muscles
+
+    [fl_active,fl_passive] = getForceLength(model, s, muscle);
+
+        %% plot the results
+
+    fig = figure(1);
+
+    clf(fig)
+
+    hold
+
+    scatter(fl_active(:,1),fl_active(:,2))
+    scatter(fl_passive(:,1),fl_passive(:,2))
+
+    xlim([0.4 1.6]);
+
+    hold off
+
+
+     name =[];
+end
+
+
 
 
 end
 
 
-function muscleCoordinates = musclecoordinates(model,state,muscleName)
+
+
+
+
+
+function muscle = musclecoordinates(model,state,muscleName)
 % Muscle Coordinate finder
 %   Find the coordinate's that each muscle crosses. This is done by
 %   examining the moment arm contribution of the muscle across all
@@ -72,6 +141,7 @@ x = round((momentArm_aCoord*1000))/1000;
 % Find the coordinate index's that are non-zero
 muscCoord = find(x ~= 0)-1;
 
+muscle = struct();
 % Cycle through each available coordinate and save its range values.
 % These will get used later to run calculate muscle force on each
 % coordinate value. 
@@ -81,9 +151,11 @@ for u = 1 : length(muscCoord)
     % Create an arrary of radian value's for the range
     coordRange = (aCoord.getRangeMin:0.01:aCoord.getRangeMax)';
     % add the coordinate's and their range values to the structure
-    eval(['muscleCoordinates.' muscleName '.coordinates.' char(model.getCoordinateSet.get(muscCoord(u))) '.coordValue = [coordRange];' ])
-end
+    eval(['muscle.coordinates.' char(model.getCoordinateSet.get(muscCoord(u))) ' = [coordRange];' ])
     
+end
+muscle.name = muscleName;
+
 end
 
 
@@ -102,7 +174,7 @@ muscleType = char(force.getConcreteClassName);
 % Get a reference to the concrete muscle class in the model
 eval(['myMuscle =' muscleType '.safeDownCast(force);'])
 % Display the muscle name
-display(char(myMuscle))
+%display(char(myMuscle))
 
 % matrix for storing the total complete fl curve 
 flMatrix = zeros(2,3);   
@@ -153,5 +225,32 @@ end
 
 fl_active = flMatrix(:,1:2);
 fl_passive = flMatrix(:,[1 3]);
+
+fl_active(find(fl_active(:,1) == 0 ),: ) = [];
+fl_passive(find(fl_passive(:,1) == 0 ),: ) = [];
+
 end
+
+
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %   
+% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Author(s): James Dunne                                                  %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         % 
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
 
