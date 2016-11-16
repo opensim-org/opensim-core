@@ -4,7 +4,7 @@
 		<defaults/>
 		<objects>
 			<ExternalForce name="ExternalForce_1">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Name of the body the force is applied to.-->
 				<applied_to_body> calcn_r </applied_to_body>
 				<!--Name of the body the force is expressed in (default is ground).-->
@@ -24,7 +24,7 @@
 				<data_source_name> Unassigned </data_source_name>
 			</ExternalForce>
 			<ExternalForce name="ExternalForce_2">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Name of the body the force is applied to.-->
 				<applied_to_body> calcn_l </applied_to_body>
 				<!--Name of the body the force is expressed in (default is ground).-->

@@ -16,7 +16,7 @@
 				<kv>      20.00000000 </kv>
 			</ControlLinear>
 			<CoordinateActuator name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -27,7 +27,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 			</CoordinateActuator>
 			<PointActuator name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -42,7 +42,7 @@
 				<optimal_force>    1000.00000000 </optimal_force>
 			</PointActuator>
 			<TorqueActuator name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -56,7 +56,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</TorqueActuator>
 			<Thelen2003Muscle name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.01000000 </min_control>
@@ -125,7 +125,7 @@
 				<Flen>       1.80000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.01000000 </min_control>
@@ -203,7 +203,7 @@
 				</passive_force_length_curve>
 			</Schutte1993Muscle>
 			<Delp1990Muscle name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.01000000 </min_control>

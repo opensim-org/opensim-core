@@ -7,7 +7,7 @@
 		<ForceSet name="">
       <objects>
         <CoordinateActuator name="Torq1">
-          <isDisabled> false </isDisabled>
+          <appliesForce>true</appliesForce>
           <!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
           <min_control> -infinity </min_control>
@@ -18,7 +18,7 @@
           <optimal_force>       1.00000000 </optimal_force>
         </CoordinateActuator>
         <CoordinateActuator name="Torq2">
-          <isDisabled> false </isDisabled>
+          <appliesForce>true</appliesForce>
           <!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
           <min_control> -infinity </min_control>

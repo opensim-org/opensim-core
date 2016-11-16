@@ -3,7 +3,7 @@
 	<Model name="Both Legs with Muscles">
 		<defaults>
 			<Thelen2003Muscle name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.01000000000000000000 </min_control>
@@ -72,7 +72,7 @@
 				<Flen>       1.80000000000000000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<isDisabled> false </isDisabled>
+				<appliesForce>true</appliesForce>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.01000000000000000000 </min_control>
@@ -155,7 +155,7 @@
 		<ForceSet name="">
 			<objects>
 				<Schutte1993Muscle name="GMED1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -278,7 +278,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMED2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -401,7 +401,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMED3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -524,7 +524,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMIN1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -647,7 +647,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMIN2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -770,7 +770,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMIN3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -893,7 +893,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="SEMIMEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1016,7 +1016,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="SEMITEN">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1183,7 +1183,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="BIFEMLH">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1306,7 +1306,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="HAMSTRINGS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1429,7 +1429,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="BIFEMSH">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1552,7 +1552,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="SAR">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1741,7 +1741,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="RF">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -1888,7 +1888,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="ADDLONG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2011,7 +2011,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="ADDBREV">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2134,7 +2134,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="AMAG1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2257,7 +2257,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="AMAG2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2380,7 +2380,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="AMAG3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2503,7 +2503,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="TFL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2670,7 +2670,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PECT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2793,7 +2793,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GRA">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -2938,7 +2938,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMAX1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3105,7 +3105,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMAX2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3272,7 +3272,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GMAX3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3439,7 +3439,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="ILIACUS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3606,7 +3606,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PSOAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3773,7 +3773,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="QUADFEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -3896,7 +3896,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="GLEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4019,7 +4019,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PERI">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4164,7 +4164,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="VASMED">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4357,7 +4357,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="VASINT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4526,7 +4526,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="VASLAT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4719,7 +4719,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="MEDGAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -4888,7 +4888,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LATGAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5057,7 +5057,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="SOL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5180,7 +5180,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="SOLSTIF">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5303,7 +5303,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="TIBPOST">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5470,7 +5470,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="FLEXDIG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5725,7 +5725,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="FLEXHAL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -5958,7 +5958,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="TIBANT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -6103,7 +6103,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PERBREV">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -6292,7 +6292,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PERLONG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -6525,7 +6525,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="PERTERT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -6670,7 +6670,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="EXTDIG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -6881,7 +6881,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="EXTHAL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7114,7 +7114,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LIGPAT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7237,7 +7237,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="TPOST2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7426,7 +7426,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMED1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7549,7 +7549,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMED2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7672,7 +7672,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMED3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7795,7 +7795,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMIN1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -7918,7 +7918,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMIN2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8041,7 +8041,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMIN3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8164,7 +8164,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LSEMIMEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8287,7 +8287,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LSEMITEN">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8454,7 +8454,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LBIFEMLH">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8577,7 +8577,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LBIFEMSH">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8700,7 +8700,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LSAR">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -8889,7 +8889,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LRF">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9036,7 +9036,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LADDLONG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9159,7 +9159,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LADDBREV">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9282,7 +9282,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LAMAG1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9405,7 +9405,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LAMAG2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9528,7 +9528,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LAMAG3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9651,7 +9651,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LTFL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9818,7 +9818,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPECT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -9941,7 +9941,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGRA">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10086,7 +10086,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMAX1">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10253,7 +10253,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMAX2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10420,7 +10420,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGMAX3">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10587,7 +10587,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LILIACUS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10754,7 +10754,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPSOAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -10921,7 +10921,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LQUADFEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11044,7 +11044,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LGLEM">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11167,7 +11167,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPERI">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11312,7 +11312,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="lVASMED">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11505,7 +11505,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LVASINT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11674,7 +11674,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LVASLAT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -11867,7 +11867,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LMEDGAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12036,7 +12036,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LLATGAS">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12205,7 +12205,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LSOL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12328,7 +12328,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LSOLSTIF">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12451,7 +12451,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LTIBPOST">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12618,7 +12618,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LFLEXDIG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -12873,7 +12873,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LFLEXHAL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -13106,7 +13106,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LTIBANT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -13251,7 +13251,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPERBREV">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -13440,7 +13440,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPERLONG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -13673,7 +13673,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LPERTERT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -13818,7 +13818,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LEXTDIG">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -14029,7 +14029,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LEXTHAL">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -14262,7 +14262,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LLIGPAT">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>
@@ -14385,7 +14385,7 @@
 					</passive_force_length_curve>
 				</Schutte1993Muscle>
 				<Schutte1993Muscle name="LTPOST2">
-					<isDisabled> true </isDisabled>
+					<appliesForce>false</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000000000000000 </min_control>

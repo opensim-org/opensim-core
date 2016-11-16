@@ -15,7 +15,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="glut_med1_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -133,7 +133,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med2_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -251,7 +251,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med3_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -369,7 +369,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min1_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -487,7 +487,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min2_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -605,7 +605,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min3_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -723,7 +723,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="semimem_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -865,7 +865,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="semiten_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1051,7 +1051,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemlh_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1191,7 +1191,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemsh_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1331,7 +1331,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="sar_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1515,7 +1515,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_long_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1633,7 +1633,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_brev_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1751,7 +1751,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag1_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1869,7 +1869,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag2_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -1987,7 +1987,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag3_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2105,7 +2105,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tfl_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2267,7 +2267,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="pect_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2385,7 +2385,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="grac_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2549,7 +2549,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max1_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2711,7 +2711,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max2_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -2873,7 +2873,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max3_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3035,7 +3035,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="iliacus_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3221,7 +3221,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="psoas_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3407,7 +3407,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="quad_fem_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3525,7 +3525,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="gem_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3643,7 +3643,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="peri_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3783,7 +3783,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="rect_fem_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -3946,7 +3946,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_med_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4155,7 +4155,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_int_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4340,7 +4340,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_lat_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4549,7 +4549,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="med_gas_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4691,7 +4691,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="lat_gas_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4833,7 +4833,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="soleus_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -4951,7 +4951,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_post_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -5113,7 +5113,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="flex_dig_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -5363,7 +5363,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="flex_hal_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -5591,7 +5591,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_ant_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -5731,7 +5731,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_brev_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -5915,7 +5915,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_long_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6143,7 +6143,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_tert_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6283,7 +6283,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ext_dig_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6489,7 +6489,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ext_hal_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6717,7 +6717,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med1_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6835,7 +6835,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med2_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -6953,7 +6953,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med3_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7071,7 +7071,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min1_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7189,7 +7189,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min2_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7307,7 +7307,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_min3_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7425,7 +7425,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="semimem_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7567,7 +7567,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="semiten_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7753,7 +7753,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemlh_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -7893,7 +7893,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemsh_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8033,7 +8033,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="sar_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8217,7 +8217,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_long_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8335,7 +8335,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_brev_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8453,7 +8453,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag1_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8571,7 +8571,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag2_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8689,7 +8689,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag3_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8807,7 +8807,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tfl_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -8969,7 +8969,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="pect_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9087,7 +9087,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="grac_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9251,7 +9251,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max1_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9413,7 +9413,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max2_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9575,7 +9575,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max3_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9737,7 +9737,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="iliacus_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -9923,7 +9923,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="psoas_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10109,7 +10109,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="quad_fem_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10227,7 +10227,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="gem_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10345,7 +10345,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="peri_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10485,7 +10485,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="rect_fem_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10648,7 +10648,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_med_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -10857,7 +10857,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_int_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11042,7 +11042,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_lat_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11251,7 +11251,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="med_gas_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11393,7 +11393,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="lat_gas_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11535,7 +11535,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="soleus_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11653,7 +11653,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_post_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -11815,7 +11815,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="flex_dig_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12065,7 +12065,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="flex_hal_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12293,7 +12293,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_ant_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12433,7 +12433,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_brev_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12617,7 +12617,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_long_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12845,7 +12845,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="per_tert_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -12985,7 +12985,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ext_dig_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13191,7 +13191,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ext_hal_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13419,7 +13419,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ercspn_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13537,7 +13537,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ercspn_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13655,7 +13655,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="intobl_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13773,7 +13773,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="intobl_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -13891,7 +13891,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="extobl_r">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -14009,7 +14009,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="extobl_l">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>

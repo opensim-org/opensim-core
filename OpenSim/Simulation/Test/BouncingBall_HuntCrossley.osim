@@ -6,7 +6,7 @@
 		<ForceSet name="">
 			<objects>
 				<HuntCrossleyForce name="contact">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<HuntCrossleyForce::ContactParametersSet name="">
 						<objects>
 							<HuntCrossleyForce::ContactParameters name="">

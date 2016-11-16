@@ -895,7 +895,7 @@
 			<objects>
 				<Thelen2003Muscle name="rect_fem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -972,7 +972,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_med_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1059,7 +1059,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_int_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1140,7 +1140,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_lat_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<isDisabled>false</isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>

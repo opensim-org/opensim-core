@@ -7,7 +7,7 @@
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="TRIlong">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -99,7 +99,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlat">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -181,7 +181,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRImed">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -263,7 +263,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BIClong">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -361,7 +361,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BICshort">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
@@ -441,7 +441,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BRA">
-					<isDisabled> false </isDisabled>
+					<appliesForce>true</appliesForce>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.00000000 </min_control>
