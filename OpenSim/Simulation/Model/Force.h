@@ -48,13 +48,14 @@ public:
 // PROPERTIES
 //==============================================================================
     /** A Force element is active (enabled) by default. **/
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
-        "Flag indicating whether the force is disabled or not. Disabled means"
+    OpenSim_DECLARE_PROPERTY(appliesForce, bool,
+        "Flag indicating whether the force is applied or not. Value of false means"
         " that the force is not active in subsequent dynamics realizations.");
     //=============================================================================
     // OUTPUTS
     //=============================================================================
-    OpenSim_DECLARE_OUTPUT(potential_energy, double, computePotentialEnergy, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(potential_energy, double,
+                           computePotentialEnergy, SimTK::Stage::Velocity);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -73,10 +74,10 @@ public:
         return false;
     }
 
-    /** Return if the Force is disabled or not. */
-    bool isDisabled(const SimTK::State& s) const;
-    /** %Set the Force as disabled (true) or not (false). */
-    void setDisabled(SimTK::State& s, bool disabled) const;
+    /** Return if the Force is applied (or enabled) or not.                   */
+    bool appliesForce(const SimTK::State& s) const;
+    /** %Set whether or not the Force is applied.                             */
+    void setAppliesForce(SimTK::State& s, bool applyForce) const;
 
     /**
      * Methods to query a Force for the value actually applied during 
