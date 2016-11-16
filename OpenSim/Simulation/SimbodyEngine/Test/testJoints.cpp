@@ -2663,6 +2663,14 @@ void testNonzeroInterceptCustomJointVsPin()
     State s1 = pinModel.initSystem();
     State s2 = cjModel.initSystem();
 
+    // Verify the MotionType for both Joints are the same
+    auto mt1 = hip1->getCoordinate().getMotionType();
+    auto mt2 = hip2->getCoordinate().getMotionType();
+    ASSERT(mt1 == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
+        "PinJoint's Coordinate failed to have MotionType::Rotational");
+    ASSERT(mt2 == mt1, __FILE__, __LINE__,
+        "CustomJoint's Coordinate MotionType failed to match PinJoint's");
+
     pinModel.getVisualizer().show(s1);
     cjModel.getVisualizer().show(s2);
 
@@ -2697,4 +2705,5 @@ void testNonzeroInterceptCustomJointVsPin()
         __FILE__, __LINE__,
         "CustomJoint's linear function intercept failed to behave as an offset "
         "of the coordinate value.");
+
 }
