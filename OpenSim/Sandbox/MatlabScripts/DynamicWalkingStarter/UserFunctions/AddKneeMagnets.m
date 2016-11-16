@@ -1,4 +1,4 @@
-
+% Import Java Library 
 import org.opensim.modeling.*
 
 % Open Model
@@ -8,7 +8,7 @@ walkerModel = Model('../Model/WalkerModel.osim');
 new_model = walkerModel;
 
 % Change the name
-new_model.setName('WalkerModel_magnet']);
+new_model.setName('WalkerModel_magnet');
 
 % Define the body and points location in each body's coordinate frame
 locBody1 = Vec3(0.05,-0.2, 0);
@@ -37,13 +37,11 @@ leftKneeMagnet.setExpression('0.01/d^2');
 rightKneeMagnet.setExpression('0.01/d^2');
 
 % Add the force to the model
-new_model
-
-new_model.addForce(leftKneeMagnet);
-new_model.addForce(rightKneeMagnet);
+new_model.addComponent(leftKneeMagnet);
+new_model.addComponent(rightKneeMagnet);
 
 % Print a new model file
-new_model.print(['../Model/',char(new_model.getName()),'.osim']);
+new_model.print(['../Model/WalkerModel_KneeMagnet.osim']);
 
 
 % ----------------------------------------------------------------------- %

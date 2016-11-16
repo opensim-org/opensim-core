@@ -24,7 +24,7 @@ rightSpring.updGeometryPath().appendNewPathPoint('right_shank',rightShankBody,Ve
 rightSpring.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Vec3(0,0,0));
 
 % Add the force to the model
-walkerModel.addForce(rightSpring);
+walkerModel.addComponent(rightSpring);
 
 % Create a Path Spring on the left leg
 restLength = 1.0;

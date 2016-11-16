@@ -1,3 +1,46 @@
+% Import Java Library 
+import org.opensim.modeling.*
+
+% NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
+% your desired result!
+
+% Open the model
+walkerModel = Model('../Model/WalkerModel.osim');
+
+% Change the name
+walkerModel.setName('WalkerModelTerrainAddMillardMuscle');
+
+% Create a muscle on the right leg
+maxIsometricForce = 500;
+optimalFiberLength = 0.15;
+tendonSlackLength = 0.1;
+pennationAngle = 0.3;
+rightMuscle = Millard2012EquilibriumMuscle('muscle_r',maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+
+% Define the geometry path
+rightShankBody = walkerModel.getBodySet().get('RightShank');
+rightThighBody = walkerModel.getBodySet().get('RightThigh');
+rightMuscle.updGeometryPath().appendNewPathPoint('right_shank',rightShankBody,Vec3(0,0,0));
+rightMuscle.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Vec3(0,0,0));
+
+% Add the force to the model
+walkerModel.addComponent(rightMuscle);
+
+% Create a muscle on the left leg using the same params
+leftMuscle = Millard2012EquilibriumMuscle('muscle_l',maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+
+% Define the geometry path
+leftShankBody = walkerModel.getBodySet().get('LeftShank');
+leftThighBody = walkerModel.getBodySet().get('LeftThigh');
+leftMuscle.updGeometryPath().appendNewPathPoint('left_shank',leftShankBody,Vec3(0,0,0));
+leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(0,0,0));
+
+% Add the force to the model
+walkerModel.addComponent(leftMuscle);
+
+% Print a new model file
+walkerModel.print('../Model/WalkerModel_AddMillardMuscle.osim');
+
 % ----------------------------------------------------------------------- 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           
 % simulation. See http://opensim.stanford.edu and the NOTICE file         
@@ -19,45 +62,3 @@
 % implied. See the License for the specific language governing            
 % permissions and limitations under the License.                          
 % -----------------------------------------------------------------------
-% Import Java Library 
-import org.opensim.modeling.*
-
-% NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
-% your desired result!
-
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
-
-% Change the name
-walkerModel.setName('WalkerModelTerrainAddMillardMuscle');
-
-% Create a muscle on the right leg
-maxIsometricForce = 500;
-optimalFiberLength = 0.15;
-tendonSlackLength = 0.1;
-pennationAngle = 0.3;
-rightMuscle = Millard2012EquilibriumMuscle('muscle_r',maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-
-% Define the geometry path
-rightShankBody = walkerModel.getBodySet().get('RightShank');
-rightThighBody = walkerModel.getBodySet().get('RightThigh');
-rightMuscle.updGeometryPath().appendNewPathPoint('right_shank',rightShankBody,Vec3(0,0,0));
-rightMuscle.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Vec3(0,0,0));
-
-% Add the force to the model
-walkerModel.addForce(rightMuscle);
-
-% Create a muscle on the left leg using the same params
-leftMuscle = Millard2012EquilibriumMuscle('muscle_l',maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-
-% Define the geometry path
-leftShankBody = walkerModel.getBodySet().get('LeftShank');
-leftThighBody = walkerModel.getBodySet().get('LeftThigh');
-leftMuscle.updGeometryPath().appendNewPathPoint('left_shank',leftShankBody,Vec3(0,0,0));
-leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(0,0,0));
-
-% Add the force to the model
-walkerModel.addForce(leftMuscle);
-
-% Print a new model file
-walkerModel.print('../Model/WalkerModelTerrainAddMillardMuscle.osim');
