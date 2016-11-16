@@ -90,7 +90,7 @@ populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
 
     OPENSIM_THROW_IF(SimTK::isNaN(scaleFactor),
                      Exception,
-                     "Model has unspecified units.");
+                     "TimeSeriesTable has unspecified units.");
 
     if(std::fabs(scaleFactor - 1) >= SimTK::Eps) {
         for(unsigned r = 0; r < _markerTable.getNumRows(); ++r)
