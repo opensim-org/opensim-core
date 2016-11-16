@@ -264,7 +264,6 @@ int main()
     //Register new Joint types for testing 
     Object::registerType(CompoundJoint());
 
-/*
     // model connect should create a FreeJoint for bodies that are not
     // connected by a Joint.
     try { ++itc; testAddedFreeJointForBodyWithoutJoint(); }
@@ -362,7 +361,7 @@ int main()
         cout << e.what() <<endl;
         failures.push_back("testEquivalentBodyForceFromGeneralizedForce");
     }
-*/
+
     // Test that MotionTypes for Joint Coordinates are correctly defined
     try { ++itc; testMotionTypesForCustomJointCoordinates(); }
     catch (const std::exception& e) {
@@ -2610,6 +2609,12 @@ void testMotionTypesForCustomJointCoordinates()
 void testNonzeroInterceptCustomJointVsPin()
 {
     using namespace SimTK;
+
+    cout << endl;
+    cout << "===========================================================" << endl;
+    cout << " Test Nonzero Intercept of CustomJoint vs a PinJoint       " << endl;
+    cout << "===========================================================" << endl;
+
     //=========================================================================
     // Setup OpenSim models
     Model pinModel;
