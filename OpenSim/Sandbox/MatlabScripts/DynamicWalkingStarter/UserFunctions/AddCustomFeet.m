@@ -1,20 +1,20 @@
 % Import Java Library 
 import org.opensim.modeling.*
 
-% Model File
+% model file
 modelDirectory = '../Model/WalkerModel.osim';
 
-% Open the model
+% open the model
 model = Model(modelDirectory);
 
-% Change the name
+% change the name
 model.setName( [model.getName().toCharArray()' '_CustomFeet']);
 
-% Remove the current foot forces
+% remove the current foot forces
 model.updForceSet().remove( model.getForceSet.get('LFootForce') );
 model.updForceSet().remove( model.getForceSet.get('RFootForce') );
 
-% Remove the current foot contact geo
+% remove the current foot contact geo
 model.updContactGeometrySet().remove( model.getContactGeometrySet().get('LFootContact') );
 model.updContactGeometrySet().remove( model.getContactGeometrySet().get('RFootContact') );
 
@@ -22,80 +22,74 @@ model.updContactGeometrySet().remove( model.getContactGeometrySet().get('RFootCo
 leftFoot = Body('LeftFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 rightFoot = Body('RightFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 
-
-% Get a reference to each shank
+% get a reference to each shank
 leftShank= model.updBodySet().get('LeftShank');
 rightShank = model.updBodySet().get('RightShank');
 
 % make weld joints
-ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), ...
-                    Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
-ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0), ...
-                    Vec3(0,0,0), rightFoot, Vec3(0,0,0), Vec3(0,0,0));
+ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
+ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0),Vec3(0,0,0), rightFoot, Vec3(0,0,0), Vec3(0,0,0));
 
-% Add the Visual Object
-leftFoot.addDisplayGeometry('ThinHalfCylinder100mmby50mm.obj');
-rightFoot.addDisplayGeometry('ThinHalfCylinder100mmby50mm.obj');
+% add the visual object
+leftFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
+rightFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
 
-% Add the body to the Model
-model.addComponent(leftFoot);
-model.addComponent(rightFoot);
-% ----------------------------------------------------------------------- 
-% make a ContactMesh for each foot
-footMeshLocation    = Vec3(0,0,0);
-footMeshOrientation = Vec3(0,0,0);
-leftFootContact = ContactMesh('ThinHalfCylinder100mmby50mm.obj', ...
-    footMeshLocation, footMeshOrientation, leftFoot, 'LFootContact');
-rightFootContact = ContactMesh('ThinHalfCylinder100mmby50mm.obj', ...
-    footMeshLocation, footMeshOrientation, rightFoot, 'RFootContact');
+% add the body to the model
+model.addBody(leftFoot);
+model.addBody(rightFoot);
 
-% Add ContactGeometry
-model.addContactGeometry(leftFootContact);
-model.addContactGeometry(rightFootContact);
-% ----------------------------------------------------------------------- 
+% make a contact mesh for each foot
+contact_l = ContactMesh('ThinHalfCylinder100mmby50mm.obj',Vec3(0,0,0), Vec3(0,0,0), leftFoot, 'LFootContact');
+contact_r = ContactMesh('ThinHalfCylinder100mmby50mm.obj',Vec3(0,0,0), Vec3(0,0,0), rightFoot, 'RFootContact');
+
+% add contact geometry
+model.addComponent(contact_l);
+model.addComponent(contact_r);
+
 % make an elastic foundation force for both feet
-leftElasticFootForce = ElasticFoundationForce();
-rightElasticFootForce = ElasticFoundationForce();
+elasticforce_l = ElasticFoundationForce();
+elasticforce_r = ElasticFoundationForce();
 
-% Set Names
-leftElasticFootForce.setName('LFootForce');
-rightElasticFootForce.setName('RFootForce');
+% set names
+elasticforce_l.setName('LFootForce');
+elasticforce_r.setName('RFootForce');
 
-% Set transition velocity
-leftElasticFootForce.setTransitionVelocity(0.1);
-rightElasticFootForce.setTransitionVelocity(0.1);
+% set transition velocity
+elasticforce_l.setTransitionVelocity(0.1);
+elasticforce_r.setTransitionVelocity(0.1);
 
-% Define Contact Parameters
+% define contact parameters
 stiffness           = 1.0E6;
 dissipation         = 2.0;
 staticFriction      = 0.8;
 dynamicFriction     = 0.4;
 viscousFriction     = 0.4;
 
-% Set the Contact parameters for the forces 
-leftElasticFootForce.addGeometry('LFootContact');
-leftElasticFootForce.addGeometry('PlatformContact');
-leftElasticFootForce.setStiffness(stiffness);
-leftElasticFootForce.setDissipation(dissipation);
-leftElasticFootForce.setStaticFriction(staticFriction);
-leftElasticFootForce.setDynamicFriction(dynamicFriction);
-leftElasticFootForce.setViscousFriction(viscousFriction);
+% set the contact parameters 
+elasticforce_l.addGeometry('LFootContact');
+elasticforce_l.addGeometry('PlatformContact');
+elasticforce_l.setStiffness(stiffness);
+elasticforce_l.setDissipation(dissipation);
+elasticforce_l.setStaticFriction(staticFriction);
+elasticforce_l.setDynamicFriction(dynamicFriction);
+elasticforce_l.setViscousFriction(viscousFriction);
 
-rightElasticFootForce.addGeometry('RFootContact');
-rightElasticFootForce.addGeometry('PlatformContact');
-rightElasticFootForce.setStiffness(stiffness);
-rightElasticFootForce.setDissipation(dissipation);
-rightElasticFootForce.setStaticFriction(staticFriction);
-rightElasticFootForce.setDynamicFriction(dynamicFriction);
-rightElasticFootForce.setViscousFriction(viscousFriction);
+elasticforce_r.addGeometry('RFootContact');
+elasticforce_r.addGeometry('PlatformContact');
+elasticforce_r.setStiffness(stiffness);
+elasticforce_r.setDissipation(dissipation);
+elasticforce_r.setStaticFriction(staticFriction);
+elasticforce_r.setDynamicFriction(dynamicFriction);
+elasticforce_r.setViscousFriction(viscousFriction);
 
-% Add Forces
-model.addForce(leftElasticFootForce);
-model.addForce(rightElasticFootForce);
-% ----------------------------------------------------------------------- 
-% Save the new model
-model.print([resultsDirectory,modelName,'.osim']);
-status = 0;     
+% add forces.
+model.addForce(elasticforce_l);
+model.addForce(elasticforce_r);
+
+
+% print new model to file. 
+model.print('../Model/WalkerModel_customFeet.osim');
+  
 
 % ----------------------------------------------------------------------- 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           
