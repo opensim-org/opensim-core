@@ -166,8 +166,6 @@ MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights) {
     upd_marker_weights() = markerWeights;
 }
 
-<<<<<<< HEAD
-=======
 void
 MarkersReference::setDefaultWeight(double weight) {
     set_default_weight(weight);
@@ -216,5 +214,4 @@ MarkersReference::getNumFrames() const {
     return _markerTable.getNumRows();
 }
 
->>>>>>> 9f7344cd2574d079ab537fb0aac4476e0ded4dcb
 } // end of namespace OpenSim
