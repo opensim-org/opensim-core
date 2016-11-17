@@ -2810,7 +2810,7 @@
 			<objects>
 				<Thelen2003Muscle name="glut_med1_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2881,7 +2881,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med2_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2952,7 +2952,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med3_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3023,7 +3023,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemlh_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3098,7 +3098,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemsh_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3173,7 +3173,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="sar_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3256,7 +3256,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag2_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3327,7 +3327,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tfl_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3406,7 +3406,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="pect_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3477,7 +3477,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="grac_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3558,7 +3558,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max1_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3637,7 +3637,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max2_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3716,7 +3716,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max3_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3795,7 +3795,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="iliacus_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3880,7 +3880,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="psoas_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3965,7 +3965,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="quad_fem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4036,7 +4036,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="gem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4107,7 +4107,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="peri_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4182,7 +4182,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="rect_fem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4259,7 +4259,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_int_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4340,7 +4340,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="med_gas_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4417,7 +4417,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="soleus_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4488,7 +4488,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_post_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4567,7 +4567,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_ant_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4642,7 +4642,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med1_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4713,7 +4713,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med2_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4784,7 +4784,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_med3_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4855,7 +4855,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemlh_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -4930,7 +4930,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="bifemsh_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5005,7 +5005,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="sar_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5088,7 +5088,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="add_mag2_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5159,7 +5159,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tfl_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5238,7 +5238,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="pect_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5309,7 +5309,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="grac_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5390,7 +5390,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max1_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5469,7 +5469,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max2_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5548,7 +5548,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="glut_max3_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5627,7 +5627,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="iliacus_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5712,7 +5712,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="psoas_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5797,7 +5797,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="quad_fem_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5868,7 +5868,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="gem_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -5939,7 +5939,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="peri_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6014,7 +6014,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="rect_fem_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6091,7 +6091,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="vas_int_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6172,7 +6172,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="med_gas_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6249,7 +6249,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="soleus_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6320,7 +6320,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_post_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6399,7 +6399,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="tib_ant_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6474,7 +6474,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ercspn_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6545,7 +6545,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="ercspn_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6616,7 +6616,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="intobl_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6687,7 +6687,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="intobl_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6758,7 +6758,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="extobl_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -6829,7 +6829,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="extobl_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

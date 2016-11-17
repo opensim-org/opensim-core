@@ -22,7 +22,7 @@
 			</ControlLinear>
 			<CoordinateActuator name="default">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -34,7 +34,7 @@
 			</CoordinateActuator>
 			<PointActuator name="default">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -54,7 +54,7 @@
 			</PointActuator>
 			<TorqueActuator name="default">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -72,7 +72,7 @@
 			</TorqueActuator>
 			<Thelen2003Muscle name="default">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>0.01</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -177,7 +177,7 @@
 		<objects>
 			<ExternalForce name="RightForce">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Name of the body the force is applied to.-->
 				<applied_to_body>calcn_r</applied_to_body>
 				<!--Name of the body the force is expressed in (default is ground).-->
@@ -195,7 +195,7 @@
 			</ExternalForce>
 			<ExternalForce name="LeftForce">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Name of the body the force is applied to.-->
 				<applied_to_body>calcn_l</applied_to_body>
 				<!--Name of the body the force is expressed in (default is ground).-->

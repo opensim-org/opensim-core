@@ -6,7 +6,7 @@
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="muscle1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<GeometryPath name="muscle1">
 						<PathPointSet name="">
 							<objects>

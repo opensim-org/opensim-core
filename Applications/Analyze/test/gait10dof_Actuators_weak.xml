@@ -7,7 +7,7 @@
              that do not balance with experimental ground reaction forces -->
 			<PointActuator name="FX">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -27,7 +27,7 @@
 			</PointActuator>
 			<PointActuator name="FY">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -47,7 +47,7 @@
 			</PointActuator>
 			<TorqueActuator name="MZ">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -69,7 +69,7 @@
            or when muscles are insufficient to track desired kinematics (CMC) -->
 			<CoordinateActuator name="hip_flexion_r_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -81,7 +81,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="knee_angle_r_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -93,7 +93,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="ankle_angle_r_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -105,7 +105,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_flexion_l_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -117,7 +117,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="knee_angle_l_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -129,7 +129,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="ankle_angle_l_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -141,7 +141,7 @@
 			</CoordinateActuator>
 			<CoordinateActuator name="lumbar_extension_reserve">
 				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-				<appliesForce>true</appliesForce>
+				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-Inf</min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

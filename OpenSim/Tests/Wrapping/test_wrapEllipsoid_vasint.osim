@@ -7,7 +7,7 @@
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="vas_int_r">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>

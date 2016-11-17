@@ -261,7 +261,7 @@
 			<objects>
 				<CoordinateActuator name="Torq1">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -273,7 +273,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="Torq2">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

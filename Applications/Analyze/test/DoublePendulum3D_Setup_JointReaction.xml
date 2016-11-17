@@ -16,12 +16,12 @@
 				<kv>      20.00000000000000000000 </kv>
 			</ControlLinear>
 			<CoordinateActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<coordinate> Unassigned </coordinate>
 				<optimal_force>     300.00000000000000000000 </optimal_force>
 			</CoordinateActuator>
 			<PointActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<body>  </body>
 				<point>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </point>
 				<point_is_global> false </point_is_global>
@@ -30,7 +30,7 @@
 				<optimal_force>    1000.00000000000000000000 </optimal_force>
 			</PointActuator>
 			<TorqueActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<bodyA>  </bodyA>
 				<bodyB>  </bodyB>
 				<torque_is_global> true </torque_is_global>
@@ -38,7 +38,7 @@
 				<optimal_force>       1.00000000000000000000 </optimal_force>
 			</TorqueActuator>
 			<Thelen2003Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -101,7 +101,7 @@
 				<Flen>       1.80000000000000000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -173,7 +173,7 @@
 				</passive_force_length_curve>
 			</Schutte1993Muscle>
 			<Delp1990Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>

@@ -16,7 +16,7 @@
 				<kv>      20.00000000000000000000 </kv>
 			</ControlLinear>
 			<Thelen2003Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -79,7 +79,7 @@
 				<Flen>       1.80000000000000000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -151,7 +151,7 @@
 				</passive_force_length_curve>
 			</Schutte1993Muscle>
 			<Delp1990Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>

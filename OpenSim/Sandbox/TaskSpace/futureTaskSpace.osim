@@ -2860,7 +2860,7 @@
 			<objects>
 				<Schutte1993Muscle_Deprecated name="BIClong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.02</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2957,7 +2957,7 @@
 				</Schutte1993Muscle_Deprecated>
 				<Schutte1993Muscle_Deprecated name="TRIlong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.02</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

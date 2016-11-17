@@ -2819,7 +2819,7 @@
 			<objects>
 				<Thelen2003Muscle name="BIClong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2932,7 +2932,7 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

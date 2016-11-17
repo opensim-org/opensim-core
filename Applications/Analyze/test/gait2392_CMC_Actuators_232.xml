@@ -4,7 +4,7 @@
 		<defaults/>
 		<objects>
 			<PointActuator name="FX">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -19,7 +19,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 			</PointActuator>
 			<PointActuator name="FY">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -34,7 +34,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</PointActuator>
 			<PointActuator name="FZ">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -49,7 +49,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 			</PointActuator>
 			<TorqueActuator name="MX">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -63,7 +63,7 @@
 				<optimal_force>      80.00000000 </optimal_force>
 			</TorqueActuator>
 			<TorqueActuator name="MY">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -77,7 +77,7 @@
 				<optimal_force>      80.00000000 </optimal_force>
 			</TorqueActuator>
 			<TorqueActuator name="MZ">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -91,7 +91,7 @@
 				<optimal_force>      80.00000000 </optimal_force>
 			</TorqueActuator>
 			<CoordinateActuator name="hip_flexion_r_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -102,7 +102,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_adduction_r_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -113,7 +113,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_rotation_r_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -124,7 +124,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="knee_angle_r_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -135,7 +135,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="ankle_angle_r_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -146,7 +146,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_flexion_l_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -157,7 +157,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_adduction_l_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -168,7 +168,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="hip_rotation_l_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -179,7 +179,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="knee_angle_l_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -190,7 +190,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="ankle_angle_l_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -201,7 +201,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="lumbar_extension_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -212,7 +212,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="lumbar_bending_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -223,7 +223,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="lumbar_rotation_reserve">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -234,7 +234,7 @@
 				<optimal_force>       1.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_flex_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -245,7 +245,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_add_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -256,7 +256,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_rot_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -267,7 +267,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="elbow_flex_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -278,7 +278,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="pro_sup_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -289,7 +289,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_flex_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -300,7 +300,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_add_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -311,7 +311,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="arm_rot_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -322,7 +322,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="elbow_flex_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -333,7 +333,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 			</CoordinateActuator>
 			<CoordinateActuator name="pro_sup_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>

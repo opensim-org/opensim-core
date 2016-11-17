@@ -16,7 +16,7 @@
 				<kv>      20.00000000 </kv>
 			</ControlLinear>
 		<CoordinateActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -27,7 +27,7 @@
 			<optimal_force> 300.00000000 </optimal_force>
 		</CoordinateActuator>
 			<PointActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -42,7 +42,7 @@
 				<optimal_force>    1000.00000000 </optimal_force>
 			</PointActuator>
 			<TorqueActuator name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -56,7 +56,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 			</TorqueActuator>
 			<Thelen2003Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.00000000 </min_control>
@@ -129,7 +129,7 @@
 				<Flen>       1.80000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control>       0.00000000 </min_control>
@@ -210,7 +210,7 @@
 	</defaults>
 	<objects>
        <PointActuator name="FX">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -225,7 +225,7 @@
 				<optimal_force>       4.00000000 </optimal_force>
         </PointActuator>
     <PointActuator name="FY">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -240,7 +240,7 @@
 				<optimal_force>       8.00000000 </optimal_force>
     </PointActuator>
       <PointActuator name="FZ">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -255,7 +255,7 @@
 				<optimal_force>       4.00000000 </optimal_force>
         </PointActuator>
 		<TorqueActuator name="MX">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -269,7 +269,7 @@
 				<optimal_force>       2.00000000 </optimal_force>
 		</TorqueActuator>
 		<TorqueActuator name="MY">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -283,7 +283,7 @@
 				<optimal_force>       2.00000000 </optimal_force>
 		</TorqueActuator>
 		<TorqueActuator name="MZ">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -297,7 +297,7 @@
 				<optimal_force>       2.00000000 </optimal_force>
 		</TorqueActuator>
 		<CoordinateActuator name="hip_flexion_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -308,7 +308,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="hip_adduction_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -319,7 +319,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="hip_rotation_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -330,7 +330,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="knee_angle_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -341,7 +341,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="ankle_angle_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -352,7 +352,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="subtalar_angle_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -363,7 +363,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="mtp_angle_r">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -374,7 +374,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="hip_flexion_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -385,7 +385,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="hip_adduction_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -396,7 +396,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="hip_rotation_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -407,7 +407,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="knee_angle_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -418,7 +418,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="ankle_angle_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -429,7 +429,7 @@
 				<optimal_force>     300.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="subtalar_angle_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -440,7 +440,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="mtp_angle_l">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -451,7 +451,7 @@
 				<optimal_force>     100.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="lumbar_extension">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -462,7 +462,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="lumbar_bending">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>
@@ -473,7 +473,7 @@
 				<optimal_force>     200.00000000 </optimal_force>
 		</CoordinateActuator>
 		<CoordinateActuator name="lumbar_rotation">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving
 				    for control values-->
 				<min_control> -infinity </min_control>

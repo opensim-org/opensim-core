@@ -4,7 +4,7 @@
 		<defaults/>
 		<objects>
 			<ExternalForce name="gravity">
-				<appliesForce>true</appliesForce>
+				<isDisabled> false </isDisabled>
 				<!--Name of the body the force is applied to.-->
 				<applied_to_body> pendulum </applied_to_body>
 				<!--Name of the body the force is expressed in (default is ground).-->

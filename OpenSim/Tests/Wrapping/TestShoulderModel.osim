@@ -7,7 +7,7 @@
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="TrapeziusScapula1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -131,7 +131,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -255,7 +255,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -379,7 +379,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -503,7 +503,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -627,7 +627,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -751,7 +751,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula7">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -875,7 +875,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula8">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -999,7 +999,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula9">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1123,7 +1123,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula10">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1247,7 +1247,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusScapula11">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1371,7 +1371,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusClavicle1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1495,7 +1495,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TrapeziusClavicle2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1619,7 +1619,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1743,7 +1743,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1867,7 +1867,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -1991,7 +1991,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2115,7 +2115,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2239,7 +2239,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2363,7 +2363,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior7">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2487,7 +2487,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior8">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2611,7 +2611,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior9">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2735,7 +2735,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior10">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2859,7 +2859,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior11">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -2983,7 +2983,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="SerratusAnterior12">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3107,7 +3107,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Rhomboideus1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3231,7 +3231,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Rhomboideus2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3355,7 +3355,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Rhomboideus3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3479,7 +3479,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Rhomboideus4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3603,7 +3603,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Rhomboideus5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3727,7 +3727,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LevatorScapulae1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3851,7 +3851,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LevatorScapulae2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -3975,7 +3975,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Coracobrachialis1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4093,7 +4093,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Coracobrachialis2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4211,7 +4211,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Coracobrachialis3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4329,7 +4329,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusClavicle1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4475,7 +4475,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusClavicle2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4621,7 +4621,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusClavicle3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4767,7 +4767,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusClavicle4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -4913,7 +4913,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaPost1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5059,7 +5059,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaPost2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5205,7 +5205,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaPost3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5351,7 +5351,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5497,7 +5497,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5643,7 +5643,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5789,7 +5789,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat7">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -5935,7 +5935,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat8">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6081,7 +6081,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat9">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6227,7 +6227,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat10">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6373,7 +6373,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="DeltoideusScapulaLat11">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6519,7 +6519,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6756,7 +6756,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -6993,7 +6993,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -7230,7 +7230,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -7424,7 +7424,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -7618,7 +7618,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="LatissimusDorsi6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -7812,7 +7812,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorClavicle1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -7941,7 +7941,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorClavicle2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8070,7 +8070,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8199,7 +8199,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8328,7 +8328,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8457,7 +8457,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8586,7 +8586,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8715,7 +8715,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMajorThorax6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8844,7 +8844,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMajor1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -8983,7 +8983,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMajor2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9122,7 +9122,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMajor3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9261,7 +9261,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMajor4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9400,7 +9400,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9529,7 +9529,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9658,7 +9658,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9787,7 +9787,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -9916,7 +9916,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10045,7 +10045,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Infraspinatus6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10174,7 +10174,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMinor1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10298,7 +10298,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMinor2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10422,7 +10422,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMinor3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10546,7 +10546,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="PectoralisMinor4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10670,7 +10670,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMinor1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10794,7 +10794,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMinor2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -10918,7 +10918,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TeresMinor3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11042,7 +11042,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11171,7 +11171,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11300,7 +11300,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11429,7 +11429,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11558,7 +11558,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis5">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11687,7 +11687,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis6">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11816,7 +11816,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis7">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -11945,7 +11945,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis8">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12074,7 +12074,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis9">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12203,7 +12203,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis10">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12332,7 +12332,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Subscapularis11">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12461,7 +12461,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Supraspinatus1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12585,7 +12585,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Supraspinatus2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12709,7 +12709,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Supraspinatus3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12833,7 +12833,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="Supraspinatus4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -12962,7 +12962,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlong1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13080,7 +13080,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlong2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13198,7 +13198,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlong3">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13316,7 +13316,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlong4">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13434,7 +13434,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BIC_long">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13580,7 +13580,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BIC_brevis1">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>
@@ -13698,7 +13698,7 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BIC_brevis2">
-					<appliesForce>true</appliesForce>
+					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<min_control>       0.01000000 </min_control>

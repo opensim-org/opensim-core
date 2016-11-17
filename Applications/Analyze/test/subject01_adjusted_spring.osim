@@ -1607,7 +1607,7 @@
 			<objects>
                 <Millard2012EquilibriumMuscle name="hamstrings_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1687,7 +1687,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="bifemsh_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1767,7 +1767,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1851,7 +1851,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="iliopsoas_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1941,7 +1941,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="rect_fem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2059,7 +2059,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="vasti_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2181,7 +2181,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="gastroc_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2263,7 +2263,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="soleus_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2339,7 +2339,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="tib_ant_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2419,7 +2419,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="hamstrings_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2499,7 +2499,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="bifemsh_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2579,7 +2579,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2663,7 +2663,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="iliopsoas_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2753,7 +2753,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="rect_fem_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2871,7 +2871,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="vasti_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2993,7 +2993,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="gastroc_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3075,7 +3075,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="soleus_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3151,7 +3151,7 @@
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="tib_ant_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3247,7 +3247,7 @@
 				</CoordinateLimitForce>
 				<PointActuator name="FX">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3267,7 +3267,7 @@
 				</PointActuator>
 				<PointActuator name="FY">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3287,7 +3287,7 @@
 				</PointActuator>
 				<TorqueActuator name="MZ">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3305,7 +3305,7 @@
 				</TorqueActuator>
 				<CoordinateActuator name="hip_flexion_r_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3317,7 +3317,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="knee_angle_r_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3329,7 +3329,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="ankle_angle_r_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3341,7 +3341,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="hip_flexion_l_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3353,7 +3353,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="knee_angle_l_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3365,7 +3365,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="ankle_angle_l_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -3377,7 +3377,7 @@
 				</CoordinateActuator>
 				<CoordinateActuator name="lumbar_extension_reserve">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
-					<appliesForce>true</appliesForce>
+					<isDisabled>false</isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
