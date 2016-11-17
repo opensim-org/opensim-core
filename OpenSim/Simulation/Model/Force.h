@@ -47,7 +47,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** A Force element is active (enabled) by default. **/
+    /** A Force element is active (enabled) by default.
+    NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
+          If **isDisabled** is **true**, **appliesForce** is **false**.
+          If **isDisabled** is **false**, **appliesForce** is **true**.          */
     OpenSim_DECLARE_PROPERTY(appliesForce, bool,
         "Flag indicating whether the force is applied or not. Value of false means"
         " that the force is not active in subsequent dynamics realizations.");
