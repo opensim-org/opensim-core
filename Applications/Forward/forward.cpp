@@ -56,6 +56,17 @@ int main(int argc,char **argv)
 
     //LoadOpenSimLibrary("osimSdfastEngine");
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      forward -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      forward -PS              -> opensim-cmd print-xml forward
+    )";
+    std::cout << deprecationNotice << std::endl;
+
 
     // PARSE COMMAND LINE
     int i;

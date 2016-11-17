@@ -561,7 +561,7 @@ begin(SimTK::State& s )
         // (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
         auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
-        for(int i=0; i<coordinates.size(); ++i) {
+        for(size_t i=0u; i<coordinates.size(); ++i) {
             const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 Array<int> inds = _statesStore->
