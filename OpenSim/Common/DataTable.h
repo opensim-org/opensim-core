@@ -634,6 +634,14 @@ public:
     \throws IncorrectNumColumns If the row added is invalid. Validity of the 
     row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
+        appendRow(indRow, depRow.getAsRowVectorView());
+    }
+
+    /** Append row to the DataTable_.                                         
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    void appendRow(const ETX& indRow, const RowVectorView& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
         _indData.push_back(indRow);
