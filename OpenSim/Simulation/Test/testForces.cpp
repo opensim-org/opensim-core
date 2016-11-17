@@ -64,6 +64,7 @@ void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -138,6 +139,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; 
         failures.push_back("testExpressionBasedCoordinateForce");
+    }
+
+    try { testSerializeDeserialize(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testSerializeDeserialize");
     }
 
     if (!failures.empty()) {
@@ -1669,4 +1676,21 @@ void testExternalForce()
         if(i !=3)
             ASSERT_EQUAL(def, val, 10*accuracy);
     }
+}
+
+void testSerializeDeserialize() {
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{"PushUpToesOnGroundWithMuscles.osim"};
+    
+    std::string testFile{"testForces_SerializeDeserialize.osim"};
+    oldModel.print(testFile);
+    Model newModel{testFile};
+
+    const auto& oldForceSet = oldModel.getForceSet();
+    const auto& newForceSet = newModel.getForceSet();
+
+    ASSERT(oldForceSet.getSize() == newForceSet.getSize());
+    for(int i = 0; i < oldForceSet.getSize(); ++i)
+        ASSERT(oldForceSet.get(i).get_appliesForce() ==
+               newForceSet.get(i).get_appliesForce());
 }
