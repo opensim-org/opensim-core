@@ -182,7 +182,7 @@ void CustomJoint::constructCoordinates()
         Coordinate& coord = upd_coordinates(coordIndex);
         coord.setName(coordName);
 
-        // Determine if the MotionType of the Coordinate based
+        // Determine the MotionType of the Coordinate based
         // on which TransformAxis it operates upon: 0-2 are Rotational
         // and 3-5 are Translational. Coordinates appearing
         // in both categories are Coupled
