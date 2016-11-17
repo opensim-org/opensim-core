@@ -204,6 +204,23 @@ int main() {
                 "(\"Filename\").getValue<std::string>() != std::string"
                 "{\"/path/to/file\"}"};
 
+    {
+    std::cout << "Test feeding rows of one table to another [double]."
+              << std::endl;
+    TimeSeriesTable tableCopy{};
+    tableCopy.setColumnLabels(table.getColumnLabels());
+    for(unsigned row = 0; row < table.getNumRows(); ++row)
+        tableCopy.appendRow(table.getIndependentColumn()[row],
+                            table.getRowAtIndex(row));
+
+    ASSERT(tableCopy.getNumColumns()     == table.getNumColumns());
+    ASSERT(tableCopy.getNumRows()        == table.getNumRows());
+    for(unsigned r = 0; r < table.getNumRows(); ++r)
+        for(unsigned c = 0; c < table.getNumColumns(); ++c)
+            ASSERT(tableCopy.getRowAtIndex(r)[c] ==
+                       table.getRowAtIndex(r)[c]);
+    }
+
     std::cout << "Test numComponentsPerElement()." << std::endl;
     ASSERT((static_cast<AbstractDataTable&&>
             (DataTable_<double, double    >{})).
@@ -251,6 +268,29 @@ int main() {
             ASSERT(row2[8] == 1);
         }
 
+        {
+        std::cout << "Test feeding rows of one table to another [Vec3]."
+                  << std::endl;
+        DataTableVec3 tableVec3Copy{};
+        tableVec3Copy.setColumnLabels(tableVec3.getColumnLabels());
+        for(unsigned row = 0; row < tableVec3.getNumRows(); ++row)
+            tableVec3Copy.appendRow(tableVec3.getIndependentColumn()[row],
+                                    tableVec3.getRowAtIndex(row));
+
+        ASSERT(tableVec3Copy.getNumColumns()     == tableVec3.getNumColumns());
+        ASSERT(tableVec3Copy.getNumRows()        == tableVec3.getNumRows());
+        for(unsigned r = 0; r < tableVec3.getNumRows(); ++r) {
+            for(unsigned c = 0; c < tableVec3.getNumColumns(); ++c) {
+                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][0] ==
+                       tableVec3.getRowAtIndex(r)[c][0]);
+                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][1] ==
+                       tableVec3.getRowAtIndex(r)[c][1]);
+                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][2] ==
+                       tableVec3.getRowAtIndex(r)[c][2]);
+            }
+        }
+        }
+        
         std::cout << "Test DataTable flatten() for Vec3." << std::endl;
         auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
         expLabels = {"col0_x", "col0_y", "col0_z",
