@@ -213,6 +213,9 @@ protected:
                                SimTK::Vector&       generalizedForces) const;
 
 protected:
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
+
     /** ID for the force in Simbody. */
     SimTK::ResetOnCopy<SimTK::ForceIndex> _index;
 

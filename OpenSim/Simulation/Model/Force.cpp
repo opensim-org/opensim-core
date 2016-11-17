@@ -59,6 +59,28 @@ void Force::constructProperties()
     constructProperty_appliesForce(true);
 }
 
+void
+Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30508) {
+            // Rename property 'isDisabled' to 'appliesForce' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"appliesForce"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                elem.setElementTag(newName);
+                if(elem.getValue().find("true") != std::string::npos)
+                    elem.setValue("false");
+                else
+                    elem.setValue("true");
+            }
+        }
+    }
+
+    ModelComponent::updateFromXMLNode(node, versionNumber);
+}
+
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
 // computational system.  Create a SimTK::Force::Custom by default.
 void Force::extendAddToSystem(SimTK::MultibodySystem& system) const
