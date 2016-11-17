@@ -213,12 +213,12 @@ int main() {
         tableCopy.appendRow(table.getIndependentColumn()[row],
                             table.getRowAtIndex(row));
 
-    ASSERT(tableCopy.getNumColumns()     == table.getNumColumns());
-    ASSERT(tableCopy.getNumRows()        == table.getNumRows());
+    ASSERT(tableCopy.getNumColumns() == table.getNumColumns());
+    ASSERT(tableCopy.getNumRows()    == table.getNumRows());
     for(unsigned r = 0; r < table.getNumRows(); ++r)
         for(unsigned c = 0; c < table.getNumColumns(); ++c)
-            ASSERT(tableCopy.getRowAtIndex(r)[c] ==
-                       table.getRowAtIndex(r)[c]);
+            ASSERT(tableCopy.getRowAtIndex(r).getElt(0, c) ==
+                       table.getRowAtIndex(r).getElt(0, c));
     }
 
     std::cout << "Test numComponentsPerElement()." << std::endl;
@@ -277,16 +277,16 @@ int main() {
             tableVec3Copy.appendRow(tableVec3.getIndependentColumn()[row],
                                     tableVec3.getRowAtIndex(row));
 
-        ASSERT(tableVec3Copy.getNumColumns()     == tableVec3.getNumColumns());
-        ASSERT(tableVec3Copy.getNumRows()        == tableVec3.getNumRows());
+        ASSERT(tableVec3Copy.getNumColumns() == tableVec3.getNumColumns());
+        ASSERT(tableVec3Copy.getNumRows()    == tableVec3.getNumRows());
         for(unsigned r = 0; r < tableVec3.getNumRows(); ++r) {
             for(unsigned c = 0; c < tableVec3.getNumColumns(); ++c) {
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][0] ==
-                       tableVec3.getRowAtIndex(r)[c][0]);
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][1] ==
-                       tableVec3.getRowAtIndex(r)[c][1]);
-                ASSERT(tableVec3Copy.getRowAtIndex(r)[c][2] ==
-                       tableVec3.getRowAtIndex(r)[c][2]);
+                ASSERT(tableVec3Copy.getRowAtIndex(r).getElt(0, c)[0] ==
+                           tableVec3.getRowAtIndex(r).getElt(0, c)[0]);
+                ASSERT(tableVec3Copy.getRowAtIndex(r).getElt(0, c)[1] ==
+                           tableVec3.getRowAtIndex(r).getElt(0, c)[1]);
+                ASSERT(tableVec3Copy.getRowAtIndex(r).getElt(0, c)[2] ==
+                           tableVec3.getRowAtIndex(r).getElt(0, c)[2]);
             }
         }
         }
