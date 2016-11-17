@@ -130,17 +130,17 @@ void  MarkersReference::getValues(const SimTK::State &s, SimTK::Array_<Vec3> &va
     values = _markerData->getFrame(before).getMarkers();
 }
 
-/** get the speed value of the MarkersReference */
-void MarkersReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
-{
-    throw Exception("MarkersReference: getSpeedValues not implemented.");
-}
+// /** get the speed value of the MarkersReference */
+// void MarkersReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
+// {
+//     throw Exception("MarkersReference: getSpeedValues not implemented.");
+// }
 
-/** get the acceleration value of the MarkersReference */
-void MarkersReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
-{
-    throw Exception("MarkersReference: getAccelerationValues not implemented.");
-}
+// /** get the acceleration value of the MarkersReference */
+// void MarkersReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
+// {
+//     throw Exception("MarkersReference: getAccelerationValues not implemented.");
+// }
 
 /** get the weights of the Markers */
 void  MarkersReference::getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const

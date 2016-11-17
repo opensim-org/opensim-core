@@ -119,12 +119,15 @@ public:
     /** get the value of the MarkersReference */
     void getValues(const SimTK::State &s,
         SimTK::Array_<SimTK::Vec3> &values) const override;
-    /** get the speed value of the MarkersReference */
-    virtual void getSpeedValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &speedValues) const;
-    /** get the acceleration value of the MarkersReference */
-    virtual void getAccelerationValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &accValues) const;
+    // The following two methods are commented out as they are not implemented
+    // and we don't want users to think it *is* implemented when viewing
+    // doxygen.
+    // /** get the speed value of the MarkersReference */
+    // virtual void getSpeedValues(const SimTK::State &s,
+    //     SimTK::Array_<SimTK::Vec3> &speedValues) const;
+    // /** get the acceleration value of the MarkersReference */
+    // virtual void getAccelerationValues(const SimTK::State &s,
+    //     SimTK::Array_<SimTK::Vec3> &accValues) const;
     /** get the weighting (importance) of meeting this MarkersReference in the
         same order as names*/
     void getWeights(const SimTK::State &s,
