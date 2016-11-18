@@ -71,7 +71,29 @@ void Constraint::setNull(void)
  */
 void Constraint::constructProperties(void)
 {
-    constructProperty_isDisabled(false);
+    constructProperty_isEnforced(true);
+}
+
+void Constraint::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'isEnforced' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"isEnforced"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                elem.setElementTag(newName);
+                if(elem.getValue().find("true") != std::string::npos)
+                    elem.setValue("false");
+                else
+                    elem.setValue("true");
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 //_____________________________________________________________________________
@@ -93,16 +115,16 @@ void Constraint::extendInitStateFromProperties(SimTK::State& s) const
         _model->updMatterSubsystem().updConstraint(_index);
 
     // Otherwise we have to change the status of the constraint
-    if(get_isDisabled())
-        simConstraint.disable(s);
-    else
+    if(get_isEnforced())
         simConstraint.enable(s);
+    else
+        simConstraint.disable(s);
 }
 
 void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
     Super::extendSetPropertiesFromState(state);
-    set_isDisabled(isDisabled(state));
+    set_isEnforced(isEnforced(state));
 }
 
 //=============================================================================
@@ -116,9 +138,10 @@ void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
  *
  * @param aConstraint Constraint to update from
  */
-void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstraint)
+void Constraint::updateFromConstraint(SimTK::State& s,
+                                      const Constraint &aConstraint)
 {
-    setDisabled(s, aConstraint.isDisabled(s));
+    setIsEnforced(s, aConstraint.isEnforced(s));
 }
 
 //=============================================================================
@@ -130,42 +153,43 @@ void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstr
 
 //_____________________________________________________________________________
 /**
- * Get whether or not this Constraint is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
+ * Get whether or not this Constraint is enforced.
+ * Simbody multibody system instance is realized every time the isEnforced
  * changes, BUT multiple sets to the same value have no cost.
- *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::isDisabled(const SimTK::State& s) const
+bool Constraint::isEnforced(const SimTK::State& s) const
 {
-    return _model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
+    return !_model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
 }
 
 //_____________________________________________________________________________
 /**
- * Set whether or not this Constraint is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
+ * Set whether or not this Constraint is enforced.
+ * Simbody multibody system instance is realized every time the isEnforced
  * changes, BUT multiple sets to the same value have no cost.
  *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
+ * @param isEnforced If true the constraint is enabled (active).
+ *                   If false the constraint is disabled (in-active).
  */
-bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
+bool Constraint::setIsEnforced(SimTK::State& s, bool isEnforced)
 {
-    SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
-    bool modelConstraintIsDisabled = simConstraint.isDisabled(s);
+    SimTK::Constraint& simConstraint =
+        _model->updMatterSubsystem().updConstraint(_index);
+    bool modelConstraintIsEnforced = !simConstraint.isDisabled(s);
 
-    // Check if we already have the correct enabling of the constraint then do nothing 
-    if(isDisabled == modelConstraintIsDisabled)
+    // Check if we already have the correct enabling of the constraint then
+    // do nothing 
+    if(isEnforced == modelConstraintIsEnforced)
         return true;
 
     // Otherwise we have to change the status of the constraint
-    if(isDisabled)
-        simConstraint.disable(s);
-    else
+    if(isEnforced)
         simConstraint.enable(s);
+    else
+        simConstraint.disable(s);
 
     _model->updateAssemblyConditions(s);
-    set_isDisabled(isDisabled);
+    set_isEnforced(isEnforced);
     
     return true;
 }
@@ -179,21 +203,26 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  * Ask the constraint for the forces it is imposing on the system
  * Simbody multibody system must be realized to at least position
  * Returns: the bodyForces on those bodies being constrained (constrainedBodies)
- *              a SpatialVec (6 components) describing resulting torque and force
+ *          a SpatialVec (6 components) describing resulting torque and force
  *          mobilityForces acting along constrained mobilities  
  *
  * @param state State of model
- * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
+ * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint 
+          forces
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilities associated with this constraint
  */
-void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
-                                      SimTK::Vector& mobilityForces) const
-{
-    SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+void Constraint::
+calcConstraintForces(const SimTK::State& s,
+                     SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+                     SimTK::Vector& mobilityForces) const {
+    SimTK::Constraint& simConstraint =
+        _model->updMatterSubsystem().updConstraint(_index);
     if(!simConstraint.isDisabled(s)){
         SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(s);
-        simConstraint.calcConstraintForcesFromMultipliers(s, multipliers, bodyForcesInAncestor, mobilityForces);
+        simConstraint.calcConstraintForcesFromMultipliers(s, multipliers,
+                                                          bodyForcesInAncestor,
+                                                          mobilityForces);
     }
 }
 
