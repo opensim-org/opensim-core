@@ -53,7 +53,8 @@ using namespace std;
 // 30505 for changing serialization of Joint to create offset frames
 // 30506 for testing 30505 conversion code
 // 30507 for changing serialization of Coordinates owned by Joint
-const int XMLDocument::LatestVersion = 30507;
+// 30510 for changing property Controller::isDisabled to Controller::enabled.
+const int XMLDocument::LatestVersion = 30510;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

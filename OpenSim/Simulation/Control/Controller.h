@@ -53,13 +53,18 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
-        "Flag (true or false) indicating whether or not the controller is disabled." );
+    /** Controller is enabled (active) by default.
+    NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
+          If **isDisabled** is **true**, **enabled** is **false**.
+          If **isDisabled** is **false**, **enabled** is **true**.            */
+    OpenSim_DECLARE_PROPERTY(enabled, bool, 
+        "Flag (true or false) indicating whether or not the controller is "
+        "enabled." );
 
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
         "The list of model actuators that this controller will control."
-        "The keyword ALL indicates the controller will control all the actuators in the model" );
+        "The keyword ALL indicates the controller will control all the "
+        "actuators in the model" );
 
 //=============================================================================
 // METHODS
@@ -78,15 +83,15 @@ public:
     //--------------------------------------------------------------------------
     // Controller Interface
     //--------------------------------------------------------------------------
-    /** Get whether or not this controller is disabled.
-     * @return true when controller is disabled.
+    /** Get whether or not this controller is enabled.
+     * @return true when controller is enabled.
      */
-    bool isDisabled() const;
+    bool isEnabled() const;
 
-    /** Disable this controller.
-     * @param disableFlag Disable if true.
+    /** Enable this controller.
+     * @param enableFlag Enable the controller if true.
      */
-    void setDisabled(bool disableFlag);
+    void setEnabled(bool enableFlag);
 
     /** replace the current set of actuators with the provided set */
     void setActuators(const Set<Actuator>& actuators );
@@ -122,6 +127,9 @@ protected:
 
     /** Only a Controller can set its number of controls based on its actuators */
     void setNumControls(int numControls) {_numControls = numControls; }
+
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
 
 private:
     // number of controls this controller computes 
