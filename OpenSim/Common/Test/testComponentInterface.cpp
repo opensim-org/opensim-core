@@ -1226,6 +1226,187 @@ void testExceptionsForConnecteeTypeMismatch() {
     }
 }
 
+void testExceptionsConnectorNameExistsAlready() {
+    // Make sure that it is not possible for a class to have more than one
+    // connector with a given name, even if the connectee types are different.
+
+    // We will use Z and Y as the connectee types.
+    class Z : public Component
+    {   OpenSim_DECLARE_CONCRETE_OBJECT(Z, Component); };
+    class Y : public Component
+    {   OpenSim_DECLARE_CONCRETE_OBJECT(Y, Component); };
+
+    // A is the base class that has a connector named 'conn1', of type Z.
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        OpenSim_DECLARE_CONNECTOR(conn1, Z, "");
+    };
+
+    // BSame tries to reuse the name 'conn1', and also connect to type Z.
+    class BSame : public A {
+        OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
+    public:
+        OpenSim_DECLARE_CONNECTOR(conn1, Z, "");
+    };
+
+    // BDifferent uses the same name 'conn1' but connects to a different type.
+    class BDifferent : public A {
+        OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
+    public:
+        OpenSim_DECLARE_CONNECTOR(conn1, Y, "");
+    };
+
+    ASSERT_THROW_MSG(OpenSim::Exception,
+            "BSame already has a connector named 'conn1'",
+            BSame b;);
+    ASSERT_THROW_MSG(OpenSim::Exception,
+            "BDifferent already has a connector named 'conn1'",
+            BDifferent b;);
+
+    // The API user may try to create two connectors with the
+    // same name in the same exact class (that is, not separated across the
+    // inheritance hierarchy). We do not need to test this case, because it
+    // leads to a compiling error (duplicate member variable).
+}
+
+void testExceptionsInputNameExistsAlready() {
+    // Make sure that it is not possible for a class to have more than one
+    // input with a given name, even if the connectee types are different.
+
+    { // Single-value input.
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_INPUT(in1, Vec3, SimTK::Stage::Model, "");
+        };
+
+        // BSame tries to reuse the name 'in1', and also connect to Vec3.
+        class BSame : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
+        public:
+            OpenSim_DECLARE_INPUT(in1, Vec3, SimTK::Stage::Model, "");
+        };
+
+        // BDifferent uses the same name 'in1' but connects to a different type.
+        class BDifferent : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
+        public:
+            OpenSim_DECLARE_INPUT(in1, double, SimTK::Stage::Model, "");
+        };
+
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BSame already has an input named 'in1'",
+                BSame b;);
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BDifferent already has an input named 'in1'",
+                BDifferent b;);
+    }
+
+    { // List input.
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_LIST_INPUT(in1, Vec3, SimTK::Stage::Model, "");
+        };
+
+        // BSame tries to reuse the name 'in1', and also connect to Vec3.
+        class BSame : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
+        public:
+            OpenSim_DECLARE_LIST_INPUT(in1, Vec3, SimTK::Stage::Model, "");
+        };
+
+        // BDifferent uses the same name 'in1' but connects to a different type.
+        class BDifferent : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
+        public:
+            OpenSim_DECLARE_LIST_INPUT(in1, double, SimTK::Stage::Model, "");
+        };
+
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BSame already has an input named 'in1'",
+                BSame b;);
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BDifferent already has an input named 'in1'",
+                BDifferent b;);
+    }
+}
+
+void testExceptionsOutputNameExistsAlready() {
+    // Make sure that it is not possible for a class to have more than one
+    // output with a given name, even if the types are different.
+
+    { // Single-value output.
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_OUTPUT(out1, double, calcOut1, SimTK::Stage::Time);
+            double calcOut1(const SimTK::State& state) const { return 0; }
+        };
+
+        // BSame tries to reuse the name 'out1', and also uses type double.
+        class BSame : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
+        public:
+            OpenSim_DECLARE_OUTPUT(out1, double, calcOut1, SimTK::Stage::Time);
+            double calcOut1(const SimTK::State& state) const { return 0; }
+        };
+
+        // BDifferent uses the same name 'out1' but uses a different type.
+        class BDifferent : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
+        public:
+            OpenSim_DECLARE_OUTPUT(out1, Vec3, calcOut1, SimTK::Stage::Time);
+            Vec3 calcOut1(const SimTK::State& state) const { return Vec3(0); }
+        };
+
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BSame already has an output named 'out1'",
+                BSame b;);
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BDifferent already has an output named 'out1'",
+                BDifferent b;);
+    }
+
+    { // List output.
+        class A : public Component {
+            OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+        public:
+            OpenSim_DECLARE_LIST_OUTPUT(out1, double, calcOut1,
+                                        SimTK::Stage::Time);
+            double calcOut1(const SimTK::State& state,
+                            const std::string&) const { return 0; }
+        };
+
+        // BSame tries to reuse the name 'out1', and also uses type double.
+        class BSame : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
+        public:
+            OpenSim_DECLARE_LIST_OUTPUT(out1, double, calcOut1,
+                                        SimTK::Stage::Time);
+            double calcOut1(const SimTK::State& state,
+                            const std::string&) const { return 0; }
+        };
+
+        // BDifferent uses the same name 'out1' but uses a different type.
+        class BDifferent : public A {
+            OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
+        public:
+            OpenSim_DECLARE_LIST_OUTPUT(out1, Vec3, calcOut1,
+                                        SimTK::Stage::Time);
+            Vec3 calcOut1(const SimTK::State& state,
+                          const std::string&) const { return Vec3(0); }
+        };
+
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BSame already has an output named 'out1'",
+                BSame b;);
+        ASSERT_THROW_MSG(OpenSim::Exception,
+                "BDifferent already has an output named 'out1'",
+                BDifferent b;);
+    }
+}
 
 template<typename RowVec>
 void assertEqual(const RowVec& a, const RowVec& b) {
@@ -1698,6 +1879,9 @@ int main() {
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
+        SimTK_SUBTEST(testExceptionsConnectorNameExistsAlready);
+        SimTK_SUBTEST(testExceptionsInputNameExistsAlready);
+        SimTK_SUBTEST(testExceptionsOutputNameExistsAlready);
         SimTK_SUBTEST(testTableSource);
         SimTK_SUBTEST(testAliasesAndLabels);
     

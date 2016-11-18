@@ -2192,6 +2192,10 @@ protected:
     template <typename T>
     PropertyIndex constructConnector(const std::string& name,
                                      const std::string& propertyComment) {
+        OPENSIM_THROW_IF(_connectorsTable.count(name), Exception,
+            getConcreteClassName() + " already has a connector named '"
+            + name + "'.");
+
         // This property is accessed / edited by the Connector class. It is
         // not easily accessible to users.
         // TODO does putting the addProperty here break the ability to
@@ -2321,6 +2325,11 @@ protected:
     PropertyIndex constructInput(const std::string& name, bool isList,
             const std::string& propertyComment,
             const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
+
+        OPENSIM_THROW_IF(_inputsTable.count(name), Exception,
+            getConcreteClassName() + " already has an input named '"
+            + name + "'.");
+
         PropertyIndex propIndex;
         // This property is accessed / edited by the AbstractConnector class.
         // It is not easily accessible to users.
@@ -2385,9 +2394,11 @@ private:
                                       const std::string& channel, T&)> outputFunction,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
             bool isList = false) {
-        if (_outputsTable.count(name) == 1) {
-            throw Exception("Output with name '" + name + "' already exists.");
-        }
+
+        OPENSIM_THROW_IF(_outputsTable.count(name), Exception,
+            getConcreteClassName() + " already has an output named '"
+            + name + "'.");
+
         _outputsTable[name].reset(
                 new Output<T>(name, outputFunction, dependsOn, isList));
         return true;
