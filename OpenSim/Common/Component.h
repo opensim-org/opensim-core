@@ -804,6 +804,10 @@ public:
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
      *
+     * @internal If you have not yet called finalizeFromProperties() on this
+     * component, this function will update the Connector (to tell it which
+     * component it's in) before providing it to you.
+     *
      * <b>C++ example</b>
      * @code{.cpp}
      * model.getComponent("/path/to/component").getConnector("connectorName");
@@ -838,6 +842,10 @@ public:
      * @code
      * joint.updConnector("parent_frame").connect(model.getGround());
      * @endcode
+     *
+     * @internal If you have not yet called finalizeFromProperties() on this
+     * component, this function will update the Connector (to tell it which
+     * component it's in) before providing it to you.
      */
     AbstractConnector& updConnector(const std::string& name) {
         return const_cast<AbstractConnector&>(getConnector(name));
@@ -846,6 +854,10 @@ public:
     /**
     * Get a const reference to the concrete Connector provided by this
     * Component by name.
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Connector (to tell it which
+    * component it's in) before providing it to you.
     *
     * @param name       the name of the Connector
     * @return const reference to the (Abstract)Connector
@@ -858,6 +870,10 @@ public:
     /**
     * Get a writable reference to the concrete Connector provided by this
     * Component by name.
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Connector (to tell it which
+    * component it's in) before providing it to you.
     *
     * @param name       the name of the Connector
     * @return const reference to the (Abstract)Connector
@@ -910,6 +926,10 @@ public:
     * model.getComponent("/path/to/component").getInput("inputName");
     * @endcode
     *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
+    *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
@@ -945,6 +965,10 @@ public:
     * @code{.cpp}
     * model.updComponent("/path/to/component").updInput("inputName");
     * @endcode
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
 
     * @param name   the name of the Input
     * @return       reference to the AbstractInput
@@ -957,6 +981,11 @@ public:
 
     /**
     * Get a concrete Input that you can directly ask for its values.
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
+    *
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
