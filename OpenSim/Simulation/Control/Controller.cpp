@@ -106,7 +106,7 @@ bool Controller::isEnabled() const
     if( getModel().getAllControllersEnabled() ) {
        return( get_enabled() );
     } else {
-       return( true );
+       return( false );
     }
 }
 //_____________________________________________________________________________
