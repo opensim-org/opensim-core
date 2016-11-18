@@ -72,7 +72,7 @@ Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
                 elem.setElementTag(newName);
                 if(elem.getValue().find("true") != std::string::npos)
                     elem.setValue("false");
-                else
+                else if(elem.getValue().find("false") != std::string::npos)
                     elem.setValue("true");
             }
         }
