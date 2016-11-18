@@ -78,7 +78,7 @@ Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
         }
     }
 
-    ModelComponent::updateFromXMLNode(node, versionNumber);
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
