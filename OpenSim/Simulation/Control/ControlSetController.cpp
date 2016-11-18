@@ -221,8 +221,9 @@ void ControlSetController::extendFinalizeFromProperties()
         std::cout << "ControlSetController::extendFinalizeFromProperties '";
         std::cout << _controlsFileNameProp.getName() << "' unassigned.\n";
         std::cout << "No ControlSet loaded or set. Use ControSetController::";
-        std::cout << "setControlSetFileName() to\n specify file and try again." << std::endl;
-        setDisabled(true);
+        std::cout << "setControlSetFileName() to\n specify file and try again."
+                  << std::endl;
+        setEnabled(false);
         return;
     }
 
@@ -259,7 +260,7 @@ void ControlSetController::extendFinalizeFromProperties()
     if (loadedControlSet) {
         // Now set the current control set from what was loaded
         _controlSet = loadedControlSet;
-        setDisabled(false);
+        setEnabled(true);
     }
 
     std::string ext = ".excitation";

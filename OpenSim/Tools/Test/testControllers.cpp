@@ -212,7 +212,7 @@ void testPrescribedControllerOnBlock(bool disabled)
     actuatorController.setName("testPrescribedController");
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
-    actuatorController.setDisabled(disabled);
+    actuatorController.setEnabled(!disabled);
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
