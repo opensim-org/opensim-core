@@ -347,19 +347,18 @@ public:
         std::string objPathName = objT->getAbsolutePathName();
         std::string ownerPathName = getOwner().getAbsolutePathName();
 
-        // check if the absolute pathname is just /name
-        if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
-            // in which case we likely are connecting to an orphan
-            // (yet to adopted component) which the API permits when passing
-            // in the dependency directly.
-            // better off stripping off the / to identify it as a "floating"
-            // Component and we will need to find its absolute path next 
-            // time we try to connect
+        // Check if the connectee is an orphan (yet to be adopted component)
+        if (!objT->hasParent()) {
+            // The API permits connecting to oprhans when passing in the
+            // dependency directly.
+            // Workaround: Identify it as a "floating"
+            // Component and we will find its absolute path next time we try to
+            // connect
             setConnecteeName(objT->getName());
         }
         // This can happen when top level components like a Joint and Body
         // have the same name like a pelvis Body and pelvis Joint that
-        // connects that connects to a Body of the same name.
+        // connects to a Body of the same name.
         else if(objPathName == ownerPathName)
             setConnecteeName(objPathName);
         else { // otherwise store the relative path name to the object
