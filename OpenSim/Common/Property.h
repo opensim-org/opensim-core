@@ -1207,7 +1207,7 @@ A data member is also created but is intended for internal use only:
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
@@ -1244,7 +1244,7 @@ initialized with an object of type T.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, T)                                        \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> %##T </b> property.                     */ \
     const T& get_##T() const                                                \
@@ -1285,7 +1285,7 @@ value of type T.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
@@ -1321,7 +1321,7 @@ supports a %size() method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                          0, std::numeric_limits<int>::max())\
@@ -1353,7 +1353,7 @@ method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                          (listSize), (listSize))            \
@@ -1381,7 +1381,7 @@ selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                 (minSize), std::numeric_limits<int>::max()) \
@@ -1409,7 +1409,7 @@ method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment, 0, (maxSize))   \
     /** @cond **/                                                           \
@@ -1443,7 +1443,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                         (minSize), (maxSize))               \
