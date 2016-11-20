@@ -51,8 +51,8 @@ namespace OpenSim {
 class OSIMCOMMON_API Path {
 
 public:
-    /// Default constructor
-    Path() = default;
+    /// Create an empty path.
+    Path(const char separator, const std::string invalidChars);
 
     /// Construct Path from a string, given separator character and a string
     /// of invalidChars. Will also clean up the path by removing "." and
@@ -74,7 +74,7 @@ public:
     Path& operator=(const Path&) = default;
 
     /// Destructor.
-    ~Path() = default;
+    virtual ~Path() = default;
 
     /// Write out the path to a string with each element separated by the
     /// specified separator.
