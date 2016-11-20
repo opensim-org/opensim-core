@@ -49,6 +49,7 @@
 #include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
 #include "ComponentPath.h"
+#include "ChannelPath.h"
 #include <functional>
 
 #include "simbody/internal/MultibodySystem.h"
@@ -2327,18 +2328,18 @@ protected:
         // It is not easily accessible to users.
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
-            propIndex = this->template addListProperty<ComponentPath>(
+            propIndex = this->template addListProperty<ChannelPath>(
                     "input_" + name + "_connectee_names", propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
-            propIndex = this->template addProperty<ComponentPath>(
+            propIndex = this->template addProperty<ChannelPath>(
                     "input_" + name + "_connectee_name", propertyComment,
-                    ComponentPath());
+                    ChannelPath());
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.
         _inputsTable[name].reset(
-                new Input<T>(name, propIndex, requiredAtStage, *this));
+                new Input<T>(name, propIndex, requiredAtStage, *this, isList));
         return propIndex;
     }
     /// @}
@@ -2823,24 +2824,16 @@ void Input<T>::connect(const AbstractOutput& output,
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
-        // Update the connectee name as
-        // <RelOwnerPath>/<Output><:Channel><(annotation)>
-        ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
-        std::string outputName = chan.second.getName();
+        // Update the connectee name by creating a ChannelPath.
+        ChannelPath path(chan.second.getRelativePath(getOwner()));
+        path.setAlias(alias);
 
-        // Append the alias, if one has been provided.
-        if (!alias.empty())
-            outputName += "(" + alias + ")";
-
-        path.pushBack(outputName);
-
-        // set the connectee name so that the connection can be
-        // serialized
+        // Set the connectee name so that the connection can be serialized.
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
             setConnecteeName(path.toString(), idxThisConnectee);
         else
-            appendConnecteeName(path.toString());
+            appendConnecteeName(path.toString()); // TODO change param to ChannelPath
 
         // Use the provided alias for all channels.
         _aliases.push_back(alias);
@@ -2871,16 +2864,10 @@ void Input<T>::connect(const AbstractChannel& channel,
     const int idxThisConnectee = numPreexistingSatisfiedConnections;
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
-    // Update the connectee name as
-    // <RelOwnerPath>/<Output><:Channel><(annotation)>
-    ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
-    std::string channelName = chanT->getName();
-
-    // Append the alias, if one has been provided.
-    if (!alias.empty())
-        channelName += "(" + alias + ")";
-
-    path.pushBack(channelName);
+    // Update the connectee name by creating a ChannelPath.
+    // TODO pathname vs path for name of method.
+    ChannelPath path(channel.getRelativePath(getOwner()));
+    path.setAlias(alias);
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
@@ -2890,40 +2877,29 @@ void Input<T>::connect(const AbstractChannel& channel,
         appendConnecteeName(path.toString());
     
     // Store the provided alias.
+    // TODO no longer need to store aliases, since we *have* the ChannelPath!
     _aliases.push_back(alias);
 }
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPathStr, channelName, alias;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
-                           alias);
-        ComponentPath outputPath(outputPathStr);
-        std::string componentPathStr = outputPath.getParentPathString();
-        std::string outputName = outputPath.getComponentName();
+        // TODO get ChannelPath directly.
+        ChannelPath path(getConnecteeName(ix));
+        const std::string componentPathStr = path.getComponentPath().toString();
+        const std::string& outputName = path.getOutputName();
         const AbstractOutput* output = nullptr;
 
-        if (outputPath.isAbsolute()) { //absolute path string
-            if (componentPathStr.empty()) {
-                output = &root.getOutput(outputPath.toString());
-            }
-            else {
-                output = &root.getComponent(componentPathStr).getOutput(outputName);
-            }
+        if (path.getComponentPath().getNumPathLevels() == 0) {
+            // TODO ComponentPath should have an empty() function.
+            output = &getOwner().getOutput(outputName);
+        } else if (path.getComponentPath().isAbsolute()) { //absolute path string
+            output = &root.getComponent(componentPathStr).getOutput(outputName);
+        } else { // relative path string
+            output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
         }
-
-        else { // relative path string
-            if (componentPathStr.empty()) {
-                output = &getOwner().getOutput(outputPath.toString());
-            }
-            else {
-                output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
-            }
-            
-        }
-        const auto& channel = output->getChannel(channelName);
-        connect(channel, alias);
+        const auto& channel = output->getChannel(path.getChannelName());
+        connect(channel, path.getAlias());
     }
 }
 

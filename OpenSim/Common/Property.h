@@ -27,6 +27,7 @@
 #include "AbstractProperty.h"
 #include "Exception.h"
 #include "ComponentPath.h"
+#include "ChannelPath.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
@@ -679,14 +680,23 @@ template<> struct Property<SimTK::Transform>::TypeHelper  {
                                        const SimTK::Transform& b);
 };
 
-/** TypeHelper specialization for SimTK::Transform; see double specialization
-for information on floating point comparison. **/
+/** TODO **/
 template<> struct Property<ComponentPath>::TypeHelper  {
     static const bool IsObjectType = false;
     static SimpleProperty<ComponentPath>*
         create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "ComponentPath";}
     static bool isEqual(const ComponentPath& a, const ComponentPath& b)
+    {   return a==b; }
+};
+
+/** TODO **/
+template<> struct Property<ChannelPath>::TypeHelper  {
+    static const bool IsObjectType = false;
+    static SimpleProperty<ChannelPath>*
+        create(const std::string& name, bool isOne);
+    static std::string getTypeName() {return "ChannelPath";}
+    static bool isEqual(const ChannelPath& a, const ChannelPath& b)
     {   return a==b; }
 };
 #endif
@@ -1126,6 +1136,10 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<ComponentPath>* Property<ComponentPath>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<ComponentPath>(name, isOne); }
+
+inline SimpleProperty<ChannelPath>* Property<ChannelPath>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<ChannelPath>(name, isOne); }
 
 // Create a self-initializing integer index for fast access to properties
 // within an Object's property table.

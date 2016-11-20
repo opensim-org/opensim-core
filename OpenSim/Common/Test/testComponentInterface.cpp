@@ -482,8 +482,8 @@ void testMisc() {
     bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
-    // add a subcomponent
     // connect internals
+    // parentFoo and childFoo are not allowed to be the same component.
     ASSERT_THROW( OpenSim::Exception,
                   theWorld.connect() );
 
@@ -1072,6 +1072,28 @@ void testInputOutputConnections()
 }
 
 void testInputConnecteeNames() {
+    auto testPath = [](const std::string& path,
+                       const std::string& compPath,
+                       const std::string& outputName,
+                       const std::string& channelName,
+                       const std::string& alias) {
+        ChannelPath p(path);
+        SimTK_TEST(p.toString() == path); // roundtrip.
+        SimTK_TEST(p.getComponentPath().toString() == compPath);
+        SimTK_TEST(p.getOutputName() == outputName);
+        SimTK_TEST(p.getChannelName() == channelName);
+        SimTK_TEST(p.getAlias() == alias);
+    };
+    testPath("/foo/bar/output", "/foo/bar", "output", "", "");
+    testPath("/foo/bar/output:channel", "/foo/bar", "output", "channel", "");
+    testPath("/foo/bar/output(baz)", "/foo/bar", "output", "", "baz");
+    testPath("/foo/bar/output:channel(baz)",
+             "/foo/bar", "output", "channel", "baz");
+    
+    // TODO test relative paths.
+    // TODO move to same test file as tests for ComponentPath.
+    
+    // TODO remove parseConnecteeName().
     std::string outputPath, channelName, alias;
     
     AbstractInput::parseConnecteeName("/foo/bar/output",
@@ -1098,6 +1120,7 @@ void testInputConnecteeNames() {
     SimTK_TEST(channelName == "channel");
     SimTK_TEST(alias == "baz");
     
+    // TODO test just an output name, or just a channel name, with no Component path.
     // TODO test invalid names as well.
 }
 
@@ -1565,12 +1588,12 @@ void testSingleValueInputConnecteeSerialization() {
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
         // connectee names for a single-value input.
-        auto& connectee_name = Property<ComponentPath>::updAs(
+        auto& connectee_name = Property<ChannelPath>::updAs(
                         foo->updPropertyByName("input_input1_connectee_name"));
         connectee_name.setAllowableListSize(0, 10);
-        connectee_name.appendValue(ComponentPath("apple"));
-        connectee_name.appendValue(ComponentPath("banana"));
-        connectee_name.appendValue(ComponentPath("lemon"));
+        connectee_name.appendValue(ChannelPath("apple"));
+        connectee_name.appendValue(ChannelPath("banana"));
+        connectee_name.appendValue(ChannelPath("lemon"));
         
         world.print(modelFileNameMultipleValues);
     }

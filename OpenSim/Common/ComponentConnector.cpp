@@ -36,3 +36,14 @@ AbstractConnector::updConnecteeNameProp() {
     return const_cast<Component*>(_owner.get())->updProperty<ComponentPath>(
                 _connecteeNameIndex);
 }
+
+const Property<ChannelPath>&
+AbstractInput::getConnecteeNameProp() const {
+    return getOwner().getProperty<ChannelPath>(getConnecteeNameIndex());
+}
+
+Property<ChannelPath>&
+AbstractInput::updConnecteeNameProp() {
+    return const_cast<Component&>(getOwner()).updProperty<ChannelPath>(
+                getConnecteeNameIndex());
+}
