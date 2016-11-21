@@ -668,7 +668,7 @@ public:
     /** Get row at index.                                                     
 
     \throws RowIndexOutOfRange If index is out of range.                      */
-    RowVectorView getRowAtIndex(size_t index) const {
+    const RowVectorView getRowAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -683,7 +683,7 @@ public:
 
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
-    RowVectorView getRow(const ETX& ind) const {
+    const RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         OPENSIM_THROW_IF(iter == _indData.cend(),
