@@ -287,6 +287,19 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
     }
 }
 
+%extend OpenSim::Path {
+    std::string __str__() const {
+        return $self->toString();
+    }
+}
+
+// ChannelPath does not inherit from Path.
+%extend OpenSim::ChannelPath {
+    std::string __str__() const {
+        return $self->toString();
+    }
+}
+
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>

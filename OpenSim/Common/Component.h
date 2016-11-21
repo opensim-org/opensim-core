@@ -565,13 +565,15 @@ public:
      * ancestral Component, which is the root of the tree to which this 
      * Component belongs.
      * For example: a Coordinate Component would have an absolute path name 
-     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. */
-    std::string getAbsolutePathName() const;
+     * like `/arm26/elbow_r/flexion`. Accessing a Component by its
+     * absolutePathName from root is guaranteed to be unique. If you need the
+     * path as a string, use ComponentPath::toString(). */
+    ComponentPath getAbsolutePathName() const;
 
 
-    /** Get the relative pathname of this Component with respect to another one */
-    std::string getRelativePathName(const Component& wrt) const;
+    /** Get the relative pathname of this Component with respect to another one.
+     * If you need the path as a string, use ComponentPath::toString(). */
+    ComponentPath getRelativePathName(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
      * path name. For example,
@@ -580,10 +582,13 @@ public:
      * @endcode
      * checks if `model` has a subcomponent "right_elbow," which has a
      * subcomponent "elbow_flexion." */
-    bool hasComponent(const std::string& pathname) const {
+     // TODO take ComponentPath as arg.
+    bool hasComponent(const ComponentPath& pathname) const {
         return hasComponent<Component>(pathname);
     }
-
+    bool hasComponent(const std::string& pathname) const
+    {   return hasComponent(ComponentPath(pathname)); }
+    
     /** Query if there is a component of a given type at the specified
      * path name. For example,
      * @code 
@@ -593,13 +598,18 @@ public:
      * subcomponent "elbow_flexion," and that "elbow_flexion" is of type
      * Coordinate. This method cannot be used from scripting; see the
      * non-templatized hasComponent(). */
+     // TODO take ComponentPath as arg.
     template <class C = Component>
-    bool hasComponent(const std::string& pathname) const {
+    bool hasComponent(const ComponentPath& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'C' must be derived from Component.");
         const C* comp = this->template traversePathToComponent<C>(pathname);
         return comp != nullptr;
     }
+    template <class C = Component>
+    bool hasComponent(const std::string& pathname) const
+    {   return hasComponent<C>(ComponentPath(pathname)); }
+    
 
     /**
      * Get a unique subcomponent of this Component by its path name and type 'C'. 
@@ -622,7 +632,7 @@ public:
      * @throws ComponentNotFoundOnSpecifiedPath if no component exists
      */
     template <class C = Component>
-    const C& getComponent(const std::string& pathname) const {
+    const C& getComponent(const ComponentPath& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'CompType' must be derived from Component.");
 
@@ -632,10 +642,12 @@ public:
         }
 
         // Only error cases remain
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname,
-                                                       C::getClassName(),
-                                                       getName());
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
+            pathname.toString(), C::getClassName(), getName());
     }
+    template <class C = Component>
+    const C& getComponent(const std::string& pathname) const
+    {   return getComponent<C>(ComponentPath(pathname)); }
 
     /** Similar to the templatized getComponent(), except this returns the
      * component as the generic Component type. This can be used in
@@ -653,9 +665,12 @@ public:
      * coord.getDefaultClamped() # works; no downcasting necessary. 
      * @endcode
      */
-    const Component& getComponent(const std::string& pathname) const {
+    const Component& getComponent(const ComponentPath& pathname) const {
         return getComponent<Component>(pathname);
     }
+    const Component& getComponent(const std::string& pathname) const
+    {   return getComponent(ComponentPath(pathname)); }
+    // TODO doxygen group for accessing subcomponents.
 
     /** Get a writable reference to a subcomponent.
     * @param name       the pathname of the Component of interest
@@ -664,9 +679,12 @@ public:
     * @see getComponent()
     */
     template <class C = Component>
-    C& updComponent(const std::string& name) {
+    C& updComponent(const ComponentPath& name) {
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
+    template <class C = Component>
+    C& updComponent(const std::string& name)
+    {   return updComponent<C>(ComponentPath(name)); }
 
     /** Similar to the templatized updComponent(), except this returns the
      * component as the generic Component type. As with the non-templatized
@@ -674,9 +692,11 @@ public:
      * most cases.
      * @see getComponent()
      */
-    Component& updComponent(const std::string& pathname) {
+    Component& updComponent(const ComponentPath& pathname) {
         return updComponent<Component>(pathname);
     }
+    Component& updComponent(const std::string& pathname)
+    {   return updComponent(ComponentPath(pathname)); }
 
 
     /** Print a list to the console of all components whose absolute path name
@@ -2101,10 +2121,9 @@ protected:
     void setParent(const Component& parent);
 
     template<class C>
-    const C* traversePathToComponent(const std::string& path) const
+    const C* traversePathToComponent(const ComponentPath& pathToFind) const
     {
         const Component* current = this;
-        ComponentPath pathToFind(path);
         std::string pathNameToFind = pathToFind.getComponentName();
         size_t numPathLevels = pathToFind.getNumPathLevels();
         size_t ind = 0;

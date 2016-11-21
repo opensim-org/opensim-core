@@ -355,7 +355,8 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathName() + "/" + getName();
+        // TODO this function should be unnecessary now; remove.
+        return getOutput().getOwner().getAbsolutePathName().toString() + "/" + getName();
     }
     
     ChannelPath getAbsolutePath() const override {

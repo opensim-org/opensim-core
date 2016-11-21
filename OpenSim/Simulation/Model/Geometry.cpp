@@ -44,7 +44,7 @@ Geometry::Geometry() {
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this).toString() /*TODO*/);
 }
 
 const OpenSim::Frame& Geometry::getFrame() const

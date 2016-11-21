@@ -140,7 +140,8 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
 
     // Do not display header for Components with no outputs.
     if (comp.getNumOutputs() > 0) {
-        const std::string msg = "Outputs from " + comp.getAbsolutePathName();
+        const std::string msg = "Outputs from "
+                                + comp.getAbsolutePathName().toString();
         cout << msg << endl;
         for (unsigned i=0u; i<msg.size(); ++i) { cout << "="; }
         cout << endl;

@@ -688,7 +688,7 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
-                std::string pathName = outb->getAbsolutePathName();
+                // TODO unused: std::string pathName = outb->getAbsolutePathName().toString();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 

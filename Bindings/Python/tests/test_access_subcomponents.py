@@ -20,6 +20,17 @@ class TestAccessSubcomponents(unittest.TestCase):
         muscle = model.updComponent('BICshort');
         muscle.set_max_isometric_force(100);
 
+    def test_ComponentPath(self):
+        # Ensure that Component functions support both strings and
+        # ComponentPath objects.
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        muscle = model.getComponent(osim.ComponentPath('BICshort'))
+        assert muscle.getName() == 'BICshort'
+        assert (muscle.getAbsolutePathName() == 
+                osim.ComponentPath('/arm26/BICshort'))
+        assert muscle.getAbsolutePathName().__str__() == '/arm26/BICshort'
+
+
     def test_component_list(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
 

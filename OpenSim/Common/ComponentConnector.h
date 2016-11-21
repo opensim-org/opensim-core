@@ -362,8 +362,8 @@ public:
         
         connectee = *objT;
 
-        std::string objPathName = objT->getAbsolutePathName();
-        std::string ownerPathName = getOwner().getAbsolutePathName();
+        std::string objPathName = objT->getAbsolutePathName().toString() /*TODO*/;
+        std::string ownerPathName = getOwner().getAbsolutePathName().toString() /*TODO*/;
 
         // check if the absolute pathname is just /name
         if (objPathName.compare("/" + objT->getName()) == 0) { //exact match
@@ -381,7 +381,7 @@ public:
         else if(objPathName == ownerPathName)
             setConnecteeName(objPathName);
         else { // otherwise store the relative path name to the object
-            std::string relPathName = objT->getRelativePathName(getOwner());
+            std::string relPathName = objT->getRelativePathName(getOwner()).toString() /*TODO*/;
             setConnecteeName(relPathName);
         }
     }
