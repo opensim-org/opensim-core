@@ -102,7 +102,7 @@ public:
     void setPrintTransforms(bool toPrint) { printTransform = toPrint;}
 private:
     std::stringstream printout;
-    bool printTransform; // Flag to indicate whether or not to output transform as String
+    bool printTransform = false; // Flag to indicate whether or not to output transform as String
     std::string printCommonProps(const DecorativeGeometry& dg){
         std::stringstream oneDGStream;
         oneDGStream << " bodyId:" << dg.getBodyId() << " color:" << dg.getColor() << " indexOnBody:"
@@ -262,19 +262,16 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
         nextGeom != stdPrimitives.end();
         ++nextGeom) {
             DecorativeGeometryImplementationText dgiTextFromStandard;
-            dgiTextFromStandard.setPrintTransforms(false);
             nextGeom->implementGeometry(dgiTextFromStandard);
             DecorativeGeometryImplementationText dgiTextFromModel;
-            dgiTextFromModel.setPrintTransforms(false);
             geometryToDisplay[i].implementGeometry(dgiTextFromModel);
             if (!(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString()))
                 throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
             // Compare transforms, this has to be more lenient than String comparison due to roundoff
             SimTK::Mat44 diffTransform = nextGeom->getTransform().toMat44() - geometryToDisplay[i].getTransform().toMat44();
             double norm = diffTransform.norm();
-            if (norm > SimTK::Eps) 
-                throw  OpenSim::Exception("Difference in transforms of DecoratibeGeometry:" + std::to_string(norm));
-            ++i;
+            SimTK_TEST_EQ(norm, 0.)
+             ++i;
     }
     if (visualDebug) {
         char c;
@@ -462,6 +459,8 @@ void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitiv
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({-.01, -.03, .03})));
     Transform cylTransform;
+    // This transform parallels the code in generateDecorations to reflect
+    // that DecorativeCylinder is Y aligned while WrapCylinder is Z aligned
     cylTransform.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
     stdPrimitives.push_back(
         DecorativeCylinder(.025, .05).setBodyId(0).setColor(SimTK::Cyan)
