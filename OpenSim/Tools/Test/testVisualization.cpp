@@ -37,7 +37,7 @@ void testVisModel(Model& model, const std::string filename_for_standard);
 Model createModel4AppearanceTest();
 void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
 void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
-void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
+void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&, double scaleFactor);
 bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
@@ -133,7 +133,12 @@ int main()
         testVisModelAgainstStandard(composedTransformsModel, standard);
         // Model with contacts
         Model modelWithContacts("visualize_contacts.osim");
-        populate_contactModelPrimitives(standard);
+        populate_contactModelPrimitives(standard, 
+            modelWithContacts.getDisplayHints().get_decorations_scale_factor());
+        testVisModelAgainstStandard(modelWithContacts, standard);
+        modelWithContacts.updDisplayHints().set_decorations_scale_factor(10);
+        populate_contactModelPrimitives(standard,
+            modelWithContacts.getDisplayHints().get_decorations_scale_factor());
         testVisModelAgainstStandard(modelWithContacts, standard);
     }
     catch (const OpenSim::Exception& e) {
@@ -225,7 +230,7 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
     SimTK::State& si = model.initSystem();
     if (visualDebug)
         model.getVisualizer().show(si);
-    ModelDisplayHints mdh;
+    ModelDisplayHints mdh = model.getDisplayHints();
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
@@ -349,7 +354,8 @@ void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& std
         .setTransform(SimTK::Transform(Vec3{ 0., 0.5, 0. })));
 }
 
-void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives, 
+                    double decorationsScaleFactor ) {
     stdPrimitives.clear();
     // Frame for Ground
     stdPrimitives.push_back(
@@ -394,7 +400,7 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
     transform.updR().setRotationFromAngleAboutZ(.5);
     stdPrimitives.push_back(
         DecorativeBrick({ 0.005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
-        .setIndexOnBody(-1).setOpacity(0.7).setScale(1)
+        .setIndexOnBody(-1).setOpacity(0.7).setScale(decorationsScaleFactor)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(transform));
 
