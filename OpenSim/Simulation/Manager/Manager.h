@@ -140,9 +140,6 @@ private:
     /** controllerSet used for the integration */
     ControllerSet* _controllerSet;
 
-    /** system of equations to be integrated */
-    const SimTK::System* _system;
-
 
 //=============================================================================
 // METHODS
@@ -221,10 +218,6 @@ public:
    double getNextTimeArrayTime(double aTime);
 
 
-    // SYSTEM
-    // only called when need to integrate a different set of equations 
-    // then what is defined by the model 
-    void setSystem(SimTK::System* system) { _system = system; }
 
     //--------------------------------------------------------------------------
     // EXECUTION
@@ -254,7 +247,7 @@ private:
 
     // Handles common tasks of some of the other constructors.
     Manager(Model& aModel, bool dummyVar);
-    void initializeTimeStepper(const SimTK::System& sys, const SimTK::State& state);
+    void initializeTimeStepper(const SimTK::State& state);
 
 //=============================================================================
 };  // END of class Manager

@@ -112,7 +112,6 @@ setNull()
     _performAnalyses=true;
     _writeToStorage=true;
     _tArray.setSize(0);
-    _system = 0;
     _dtArray.setSize(0);
 }
 //_____________________________________________________________________________
@@ -739,13 +738,8 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     double fixedStepSize;
     if( _constantDT || _specifiedDT) fixedStep = true;
 
-    // If _system is has been set we should be integrating a CMC system
-    // not the model's system.
-    const SimTK::System& sys = _system ? *_system 
-                                       : _model->getMultibodySystem();
-
     // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(sys, s);
+    if (_timeStepper == NULL) initializeTimeStepper(s);
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
@@ -756,17 +750,13 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     }
 
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
-   
-    // We need to be at a valid stage to initialize the controls, but only when 
-    // we are integrating the complete model system, not the CMC system. This 
-    // is very ugly and a cleaner solution is required- aseth
-    if(_system == NULL)
-        sys.realize(s, SimTK::Stage::Velocity); // this is multibody system 
-    initialize(s, dt);  
+
+    _model->realizeVelocity(s);
+    initialize(s, dt); 
 
     if( fixedStep){
         s.updTime() = time;
-        sys.realize(s, SimTK::Stage::Acceleration);
+        _model->realizeAcceleration(s);
 
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
@@ -851,7 +841,6 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  */
 void Manager::initialize(SimTK::State& s, double dt )
 {
-    // skip initializations for CMC's actuator system
     if( _writeToStorage && _performAnalyses ) { 
 
         double tReal = s.getTime();
@@ -882,10 +871,10 @@ void Manager::initialize(SimTK::State& s, double dt )
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initializeTimeStepper(
-    const SimTK::System& sys, const SimTK::State& state)
+void Manager::initializeTimeStepper(const SimTK::State& state)
 {
-    _timeStepper.reset(new SimTK::TimeStepper(sys, *_integ));
+    _timeStepper.reset(
+        new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
     _timeStepper->initialize(state);
     _timeStepper->setReportAllSignificantStates(true);
 }
