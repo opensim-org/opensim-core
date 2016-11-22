@@ -27,18 +27,21 @@
 
 import opensim as osim
 
+
+model_filename = 'wiring_inputs_and_outputs_with_TableReporter.osim'
+
 # This function creates and prints the model to a .osim file. We invoke
 # this function below.
 def print_model():
     model = osim.Model()
     model.setName('model')
     
-    # Create a body with name 'body', mass of 1 kg, center of mass at the origin of
-    # the body, and unit inertia (Ixx = Iyy = Izz = 1 kg-m^2).
+    # Create a body with name 'body', mass of 1 kg, center of mass at the
+    # origin of the body, and unit inertia (Ixx = Iyy = Izz = 1 kg-m^2).
     body = osim.Body('body', 1.0, osim.Vec3(0), osim.Inertia(1))
     
-    # Create a free joint (all 6 degrees of freedom) with Ground as the parent body
-    # and 'body' as the child body.
+    # Create a free joint (all 6 degrees of freedom) with Ground as the parent
+    # body and 'body' as the child body.
     joint = osim.FreeJoint('joint', model.getGround(), body)
     
     # Add the body and joint to the model.
@@ -51,35 +54,41 @@ def print_model():
     reporter.set_report_time_interval(0.1)
     # Report the position of the origin of the body.
     reporter.updInput().connect(body.getOutput('position'))
-    # For comparison, we will also get the center of mass position from the Model,
-    # and we can check that the two outputs are the same for our one-body system.
-    # The (optional) second argument is an alias for the name of the output;
-    # it is used as the column label in the table.
+    # For comparison, we will also get the center of mass position from the
+    # Model, and we can check that the two outputs are the same for our
+    # one-body system. The (optional) second argument is an alias for the name
+    # of the output; it is used as the column label in the table.
     reporter.updInput().connect(model.getOutput('com_position'), 'com_pos')
-    # TODO alias.
     # Display what input-output connections look like in XML (in .osim files).
     print("Reporter input-output connections in XML:\n" + reporter.dump())
     
     model.addComponent(reporter)
 
-    model.printToXML('wiring_inputs_and_outputs_with_TableReporter.osim')
+    model.printToXML(model_filename)
 
 
 # Create and print the model file.
 print_model()
 # Load the model file.
-model = osim.Model('wiring_inputs_and_outputs_with_TableReporter.osim')
+deserialized_model = osim.Model(model_filename)
+deserialized_model.initSystem()
+
+# We can fetch the TableReporter from within the deserialized model.
+reporter = osim.TableReporterVec3.safeDownCast(
+        deserialized_model.getComponent('reporter'))
+# We can access the names of the outputs that the reporter is connected to.
+print('Outputs connected to the reporter:')
+for i in range(reporter.getInput('inputs').getNumConnectees()):
+    print(reporter.getInput('inputs').getConnecteeName(i))
 
 # Simulate the model.
-state = model.initSystem()
-manager = osim.Manager(model)
+manager = osim.Manager(deserialized_model)
 manager.setInitialTime(0)
 manager.setFinalTime(1.0)
 manager.integrate(state)
 
 # Now that the simulation is done, get the table from the TableReporter and
 # write it to a file.
-reporter = osim.TableReporterVec3.safeDownCast(model.getComponent('reporter'))
 # This returns the TimeSeriesTableVec3 that holds the history of positions.
 table = reporter.getTable()
 # Create a FileAdapter, which handles writing to (and reading from) .sto files.
