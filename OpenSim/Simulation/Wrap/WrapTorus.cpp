@@ -27,9 +27,11 @@
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
 #include "WrapResult.h"
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
 #include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 //=============================================================================
 // STATICS
@@ -517,7 +519,22 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
 
+
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (fixed) return;
-    //OPENSIM_THROW(NotImplementedYet, "WrapTorus::generateDecorations not implemented yet");
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
+        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
+        SimTK::Transform X_GW = X_GB*getTransform();
+        appendToThis.push_back(
+            SimTK::DecorativeTorus(getOuterRadius(),
+                getInnerRadius())
+            .setTransform(X_GW).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation()));
+    }
 }
