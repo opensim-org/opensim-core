@@ -158,7 +158,6 @@ public:
 
 private:
     void setNull();
-    bool constructStates();
     bool constructStorage();
     //--------------------------------------------------------------------------
     // GET AND SET

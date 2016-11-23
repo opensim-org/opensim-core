@@ -71,9 +71,6 @@ Manager::Manager(Model& model, bool dummyVar) :
 {
     setNull();
 
-    // STATES
-    constructStates();
-
     // STORAGE
     constructStorage();
 
@@ -108,15 +105,6 @@ setNull()
     _writeToStorage=true;
     _tArray.setSize(0);
     _dtArray.setSize(0);
-}
-//_____________________________________________________________________________
-/**
- * Construct the states.
- */
-bool Manager::
-constructStates()
-{
-    return(true);
 }
 
 //_____________________________________________________________________________
@@ -504,9 +492,6 @@ setModel(Model& aModel)
     }
 
     _model = &aModel;
-    
-    // STATES
-    constructStates();
 
     // STORAGE
     constructStorage();
