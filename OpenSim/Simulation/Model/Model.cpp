@@ -581,7 +581,7 @@ void Model::createMultibodyTree()
 
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody("/" + getName() + "/" + ground.getName(),
+    _multibodyTree.addBody(ground.getAbsolutePathName(),
                            0, false, &ground);
 
     auto bodies = getComponentList<Body>();
