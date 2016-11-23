@@ -99,7 +99,6 @@ setNull()
     _sessionName = "";
     _ti = 0.0;
     _tf = 1.0;
-    _firstDT = 1.0e-8;
     _steps = 0;
     _trys = 0;
     _maxSteps = 10000;
@@ -596,33 +595,6 @@ double Manager::
 getFinalTime() const
 {
     return(_tf);
-}
-
-//-----------------------------------------------------------------------------
-// FIRST DT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the first time step taken in an integration.
- *
- * @param aDT First integration time step.
- */
-void Manager::
-setFirstDT(double aDT)
-{
-    _firstDT = aDT;
-    if(_firstDT<1.0e-8) _firstDT = 1.0e-8;
-}
-//_____________________________________________________________________________
-/**
- * Get the first time step taken in an integration.
- *
- * @return First integration time step.
- */
-double Manager::
-getFirstDT() const
-{
-    return(_firstDT);
 }
 
 

@@ -95,38 +95,36 @@ private:
     double _ti;
     /** Final time of the simulation. */
     double _tf;
-    /** First dt in an integration. */
-    double _firstDT;
     
     /** Storage for the states. */
     std::unique_ptr<Storage> _stateStore;
 
-   int _steps;
-   /** Number of integration step tries. */
-   int _trys;
-   /** Maximum number of steps in an integration. */
-   int _maxSteps;
-   /** Flag for signaling a desired halt. */
-   bool _halt;
-   /** Minimum step size. */
-   double _dtMin;
-   /** Maximum step size. */
-   double _dtMax;
-   /** Flag to indicate whether or not specified integration time steps
-   should be used.  The specified integration time steps are held in _tVec.
-   If _tVec does not contain time steps appropriate for the integration,
-   an exception is thrown. */
-   bool _specifiedDT;
-   /** Flag to indicate whether or not constant (fixed) integration time
-   steps should be used.  The constant integration time step is set using
-   setDT(). */
-   bool _constantDT;
-   /** Constant integration time step. */
-   double _dt;
-   /** Vector of integration time steps. */
-   Array<double> _tArray;
-   /** Vector of integration time step deltas. */
-   Array<double> _dtArray;
+    int _steps;
+    /** Number of integration step tries. */
+    int _trys;
+    /** Maximum number of steps in an integration. */
+    int _maxSteps;
+    /** Flag for signaling a desired halt. */
+    bool _halt;
+    /** Minimum step size. */
+    double _dtMin;
+    /** Maximum step size. */
+    double _dtMax;
+    /** Flag to indicate whether or not specified integration time steps
+    should be used.  The specified integration time steps are held in _tVec.
+    If _tVec does not contain time steps appropriate for the integration,
+    an exception is thrown. */
+    bool _specifiedDT;
+    /** Flag to indicate whether or not constant (fixed) integration time
+    steps should be used.  The constant integration time step is set using
+    setDT(). */
+    bool _constantDT;
+    /** Constant integration time step. */
+    double _dt;
+    /** Vector of integration time steps. */
+    Array<double> _tArray;
+    /** Vector of integration time step deltas. */
+    Array<double> _dtArray;
 
     /** Name to be shown by the UI */
     static std::string _displayName;
@@ -195,27 +193,25 @@ public:
     double getInitialTime() const;
     void setFinalTime(double aTF);
     double getFinalTime() const;
-    void setFirstDT(double aDT);
-    double getFirstDT() const;
-       // SPECIFIED TIME STEP
-   void setUseSpecifiedDT(bool aTrueFalse);
-   bool getUseSpecifiedDT() const;
-   // CONSTANT TIME STEP
-   void setUseConstantDT(bool aTrueFalse);
-   bool getUseConstantDT() const;
-   // DT VECTOR
-   const Array<double>& getDTArray();
-   void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
-   double getDTArrayDT(int aStep);
-   void printDTArray(const char *aFileName=NULL);
-   // TIME VECTOR
-   const Array<double>& getTimeArray();
-   double getTimeArrayTime(int aStep);
-   int getTimeArrayStep(double aTime);
-   void printTimeArray(const char *aFileName=NULL);
-   void resetTimeAndDTArrays(double aTime);
+    // SPECIFIED TIME STEP
+    void setUseSpecifiedDT(bool aTrueFalse);
+    bool getUseSpecifiedDT() const;
+    // CONSTANT TIME STEP
+    void setUseConstantDT(bool aTrueFalse);
+    bool getUseConstantDT() const;
+    // DT VECTOR
+    const Array<double>& getDTArray();
+    void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
+    double getDTArrayDT(int aStep);
+    void printDTArray(const char *aFileName=NULL);
+    // TIME VECTOR
+    const Array<double>& getTimeArray();
+    double getTimeArrayTime(int aStep);
+    int getTimeArrayStep(double aTime);
+    void printTimeArray(const char *aFileName=NULL);
+    void resetTimeAndDTArrays(double aTime);
 
-   double getNextTimeArrayTime(double aTime);
+    double getNextTimeArrayTime(double aTime);
 
 
 
