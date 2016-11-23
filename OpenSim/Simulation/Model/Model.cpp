@@ -617,7 +617,6 @@ void Model::createMultibodyTree()
         const_cast<PhysicalFrame&>(joint->getParentFrame()).connect(*this);
         const_cast<PhysicalFrame&>(joint->getChildFrame()).connect(*this);
 
-        std::cout << "Model::createMultibodyTree() 1" << std::endl;
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
             joint->getConcreteClassName(),
