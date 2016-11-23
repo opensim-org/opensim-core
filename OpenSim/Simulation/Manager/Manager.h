@@ -99,15 +99,8 @@ private:
     /** Storage for the states. */
     std::unique_ptr<Storage> _stateStore;
 
-    int _steps;
-    /** Number of integration step tries. */
-    int _trys;
-    /** Maximum number of steps in an integration. */
-    int _maxSteps;
     /** Flag for signaling a desired halt. */
     bool _halt;
-    /** Minimum step size. */
-    double _dtMin;
     /** Maximum step size. */
     double _dtMax;
     /** Flag to indicate whether or not specified integration time steps
@@ -210,7 +203,6 @@ public:
     int getTimeArrayStep(double aTime);
     void printTimeArray(const char *aFileName=NULL);
     void resetTimeAndDTArrays(double aTime);
-
     double getNextTimeArrayTime(double aTime);
 
 
@@ -220,7 +212,6 @@ public:
     //--------------------------------------------------------------------------
     bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
     bool doIntegration( SimTK::State& s, int step, double dtFirst );
-    void initialize(SimTK::State& s, double dt);
     void finalize( SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
@@ -243,7 +234,10 @@ private:
 
     // Handles common tasks of some of the other constructors.
     Manager(Model& aModel, bool dummyVar);
-    void initializeTimeStepper(const SimTK::State& state);
+
+    // Helper functions during initialization of integration
+    void initializeStorageAndAnalyses(SimTK::State& s);
+    void initializeTimeStepper(const SimTK::State& s);
 
 //=============================================================================
 };  // END of class Manager

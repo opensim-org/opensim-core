@@ -99,12 +99,8 @@ setNull()
     _sessionName = "";
     _ti = 0.0;
     _tf = 1.0;
-    _steps = 0;
-    _trys = 0;
-    _maxSteps = 10000;
     _halt = false;
     _dtMax = 1.0;
-    _dtMin = 1.0e-8;
     _specifiedDT = false;
     _constantDT = false;
     _dt = 1.0e-4;
@@ -724,7 +720,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
 
     _model->realizeVelocity(s);
-    initialize(s, dt); 
+    initializeStorageAndAnalyses(s);
 
     if( fixedStep){
         s.updTime() = time;
@@ -811,7 +807,7 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  * 
  * @param s system state before integration
  */
-void Manager::initialize(SimTK::State& s, double dt )
+void Manager::initializeStorageAndAnalyses(SimTK::State& s)
 {
     if( _writeToStorage && _performAnalyses ) { 
 
@@ -843,11 +839,11 @@ void Manager::initialize(SimTK::State& s, double dt )
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initializeTimeStepper(const SimTK::State& state)
+void Manager::initializeTimeStepper(const SimTK::State& s)
 {
     _timeStepper.reset(
         new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
-    _timeStepper->initialize(state);
+    _timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
 }
 
