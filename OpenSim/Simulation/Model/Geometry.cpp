@@ -77,8 +77,6 @@ void FrameGeometry::generateDecorations(bool fixed,
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    if (!fixed && !getInput("transform").isConnected())
-        return;
     if (!hints.get_show_frames())
         return;
     // Call base class
