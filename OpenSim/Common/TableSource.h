@@ -29,24 +29,6 @@
 
 namespace OpenSim {
 
-class TimeOutOfRange : public InvalidTimestamp {
-public:
-    TimeOutOfRange(const std::string& file,
-                   size_t line,
-                   const std::string& func,
-                   double timestamp,
-                   double minTimestamp,
-                   double maxTimestamp) :
-        InvalidTimestamp(file, line, func) {
-        std::string msg = "min = " + std::to_string(minTimestamp);
-        msg += " max = " + std::to_string(maxTimestamp);
-        msg += " timestamp = " + std::to_string(timestamp);
-
-        addMessage(msg);
-    }
-}; // class TimeOutOfRange
-
-
 /** Component representing a source of data from a TimeSeriesTable_.
 
 This Component has two outputs:

@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <random>
@@ -42,9 +43,11 @@ Model* constructPendulumWithMarkers();
 // that perturbs the marker data. Optionally, use the constantOffset
 // parameter true to use the same noise for each time frame, otherwise
 // randomly select the noise to be added at each frame.
-MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double noiseRadius=0, 
-    bool constantOffset =false);
+TimeSeriesTable_<SimTK::Vec3>
+generateMarkerDataFromModelAndStates(const Model& model,
+                                     const StatesTrajectory& states,
+                                     double noiseRadius = 0, 
+                                     bool constantOffset = false);
 
 // Verify that accuracy improves the number of decimals points to which
 // the solver solution (coordinates) can be trusted as it is tightened.
@@ -117,10 +120,8 @@ void testAccuracy()
     StatesTrajectory states;
     states.append(state);
 
-    MarkerData* markerData =
-        generateMarkerDataFromModelAndStates(*pendulum, states);
-    // MarkersReference takes ownership of the markerData
-    MarkersReference markersRef(markerData);
+    MarkersReference
+        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states));
     markersRef.setDefaultWeight(1.0);
 
     // Reset the initial coordinate value
@@ -218,9 +219,10 @@ void testUpdateMarkerWeights()
     StatesTrajectory states;
     states.append(state);
 
-    MarkerData* markerData =
-        generateMarkerDataFromModelAndStates(*pendulum, states, 0.02);
-    MarkersReference markersRef(markerData);
+    MarkersReference
+        markersRef(generateMarkerDataFromModelAndStates(*pendulum,
+                                                        states,
+                                                        0.02));
     auto& markerNames = markersRef.getNames();
 
     for (const auto& name : markerNames) {
@@ -325,9 +327,11 @@ void testTrackWithUpdateMarkerWeights()
         states.append(state);
     } 
 
-    MarkerData* markerData =
-        generateMarkerDataFromModelAndStates(*pendulum, states, 0.02, true);
-    MarkersReference markersRef(markerData);
+    MarkersReference
+        markersRef(generateMarkerDataFromModelAndStates(*pendulum,
+                                                        states,
+                                                        0.02,
+                                                        true));
     auto& markerNames = markersRef.getNames();
 
     for (const auto& name : markerNames) {
@@ -342,8 +346,6 @@ void testTrackWithUpdateMarkerWeights()
     ikSolver.setAccuracy(1e-6);
     ikSolver.assemble(state);
 
-    int nt = markerData->getNumFrames();
-
     SimTK::Array_<double> markerWeights;
     markersRef.getWeights(state, markerWeights);
 
@@ -351,7 +353,7 @@ void testTrackWithUpdateMarkerWeights()
 
     double previousErr = 0.1;
 
-    for (int i = 0; i < nt; ++i) {
+    for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
         state.updTime() = i*dt;
         // increment the weight of the left marker each time  
         markerWeights[2] = 0.1*i+1;
@@ -419,9 +421,11 @@ Model* constructPendulumWithMarkers()
     return pendulum;
 }
 
-MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
-    const StatesTrajectory& states, double noiseRadius, bool constantOffset)
-{
+TimeSeriesTable_<SimTK::Vec3>
+generateMarkerDataFromModelAndStates(const Model& model,
+                                     const StatesTrajectory& states,
+                                     double noiseRadius,
+                                     bool constantOffset) {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
     std::normal_distribution<double> noise(0.0, 1);
@@ -450,8 +454,8 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
     auto results = markerReporter->getTable();
 
     SimTK::Vec3 offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
-        double(noise(gen)),
-        double(noise(gen)));
+                                                 double(noise(gen)),
+                                                 double(noise(gen)));
 
     if (noiseRadius >= SimTK::Eps) {
         for (size_t i = 0; i < results.getNumRows(); ++i) {
@@ -459,8 +463,8 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
             for (int j = 0; j < row.size(); ++j) {
                 if (!constantOffset) {
                     offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
-                        double(noise(gen)),
-                        double(noise(gen)));
+                                                     double(noise(gen)),
+                                                     double(noise(gen)));
                 }
                 // add noise to each marker
                 row[j] += offset;
@@ -468,12 +472,6 @@ MarkerData* generateMarkerDataFromModelAndStates(const Model& model,
         }
     }
 
-    std::vector<std::string> suffixes{ ".x", ".y", ".z" };
-    STOFileAdapter_<double>::write(results.flatten(suffixes),
-        "tmp_markers.sto");
-
-    auto* md = new MarkerData("tmp_markers.sto");
-
-    return md;
+    return results;
 }
 
