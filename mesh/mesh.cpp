@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
+#include <adolc/adolc.h>
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Ipopt::Index;
@@ -33,6 +34,114 @@ class MyProb : public Problem {
     }
     int num_states() const override { return 2; }
     int num_controls() const override { return 1; }
+};
+
+class IpoptADOLC_OptimizationProblem : public Ipopt::TNLP {
+private:
+    int m_num_variables = -1;
+public:
+    IpoptADOLC_OptimizationProblem(int num_variables) :
+        m_num_variables(num_variables) {}
+
+    virtual void objective(const std::vector<adouble>& x,
+                           adouble& obj_value) const = 0;
+
+    bool get_nlp_info(Index& num_variables, Index& num_constraints,
+            Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
+            IndexStyleEnum& index_style) override {
+        num_variables = m_num_variables;
+        num_constraints = 0;
+        num_nonzeros_jacobian = 0;
+        num_nonzeros_hessian = 1;
+        index_style = TNLP::C_STYLE;
+
+        return true;
+    }
+    bool get_bounds_info(Index num_variables,   Number* x_lower, Number* x_upper,
+                         Index num_constraints, Number* g_lower, Number* g_upper) 
+            override {
+        x_lower[0] = -5;
+        x_upper[0] = 5;
+        return true;
+    }
+    // z: multipliers for bound constraints on x.
+    // warmstart will require giving initial values for the multipliers.
+    bool get_starting_point(Index num_variables, bool init_x, Number* x,
+                            bool init_z, Number* z_L, Number* z_U,
+                            Index num_constraints, bool init_lambda, Number* lambda) 
+            override {
+        // Must this method provide initial values for x, z, lambda?
+        assert(init_x == true);
+        assert(init_z == false);
+        assert(init_lambda == false);
+        x[0] = 1.0;
+        return true;
+    }
+    bool eval_f(Index num_variables, const Number* x, bool new_x,
+                Number& obj_value) override {
+        assert(num_variables == 1);
+        obj_value = (x[0] - 1.5) * (x[0] - 1.5);
+        return true;
+    }
+    bool eval_grad_f(Index num_variables, const Number* x, bool new_x,
+                     Number* grad_f) override {
+        assert(num_variables == 1);
+        grad_f[0] = 2 * (x[0] - 1.5);
+        return true;
+    }
+    bool eval_g(Index num_variables, const Number* x, bool new_x,
+                Index num_constraints, Number* g) override {
+        assert(num_variables == 1);
+        assert(num_constraints == 0);
+        return true;
+    }
+    // TODO can Ipopt do finite differencing for us?
+    bool eval_jac_g(Index num_variables, const Number* x, bool new_x,
+                    Index num_constraints, Index num_nonzeros_jacobian,
+                    Index* iRow, Index *jCol, Number* values) override {
+        return true;
+    }
+    bool eval_h(Index num_variables, const Number* x, bool new_x,
+                Number obj_factor, Index num_constraints, const Number* lambda,
+                bool new_lambda, Index num_nonzeros_hessian,
+                Index* iRow, Index *jCol, Number* values) override {
+        if (values == nullptr) {
+            iRow[0] = 0;
+            jCol[0] = 0;
+        } else {
+            values[0] = 2.0;
+        }
+        return true;
+    }
+    void finalize_solution(Ipopt::SolverReturn status, Index num_variables,
+            const Number* x, const Number* z_L, const Number* z_U,
+            Index num_constraints, const Number* g, const Number* lambda,
+            Number obj_value, const Ipopt::IpoptData* ip_data,
+            Ipopt::IpoptCalculatedQuantities* ip_cq) override {
+        printf("\nSolution of the primal variables, x\n");
+        for (Index i = 0; i < num_variables; ++i) {
+            printf("x[%d]: %e\n", i, x[i]);
+        }
+        printf("\nSolution of the bound multipliers, z_L and z_U\n");
+        for (Index i = 0; i < num_variables; ++i) {
+            printf("z_L[%d] = %e\n", i, z_L[i]);
+        }
+        for (Index i = 0; i < num_variables; ++i) {
+            printf("z_U[%d] = %e\n", i, z_U[i]);
+        }
+        printf("\nObjective value\n");
+        printf("f(x*) = %e\n", obj_value);
+    }
+
+};
+
+class ToyProblem : public IpoptADOLC_OptimizationProblem {
+public:
+    ToyProblem() : IpoptADOLC_OptimizationProblem(1) {}
+    void objective(const std::vector<adouble>& x,
+                   adouble& obj_value) const override {
+        obj_value = (x[0] - 1.5) * (x[0] - 1.5);
+    }
 };
 
 class IpoptOptimizationProblem : public Ipopt::TNLP {
@@ -105,7 +214,7 @@ public:
     bool eval_jac_g(Index num_variables, const Number* x, bool new_x,
                     Index num_constraints, Index num_nonzeros_jacobian,
                     Index* iRow, Index *jCol, Number* values) override {
-        if (values == NULL /*nullptr TODO */) {
+        if (values == nullptr) {
             // Return the structure of the Jacobian.
             iRow[0] = 0; jCol[0] = 0;
             iRow[1] = 0; jCol[1] = 1;
@@ -136,7 +245,7 @@ public:
         // TODO why Hessian of Lagrangian, instead of Hessian of f?
         // TODO Ah because it's a second order method...
         // TODO symmetric! Only need to provide lower left triangle.
-        if (values == NULL) {
+        if (values == nullptr) {
             Index idx = 0;
             for (Index row = 0; row < 4; ++row) {
                 for (Index col = 0; col <= row; ++col) {
@@ -213,22 +322,47 @@ public:
 };
 
 int main(int argc, char* argv[]) {
-    Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new IpoptOptimizationProblem();
-    Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
-    app->Options()->SetNumericValue("tol", 1e-9);
-    app->Options()->SetStringValue("mu_strategy", "adaptive");
-    app->Options()->SetStringValue("output_file", "ipopt.out");
     Ipopt::ApplicationReturnStatus status;
-    status = app->Initialize();
-    if (status != Ipopt::Solve_Succeeded) {
-        printf("\n\n*** Error during initialization!\n");
-        return (int) status;
-    }
-    status = app->OptimizeTNLP(mynlp);
-    if (status == Ipopt::Solve_Succeeded) {
-        printf("\n\n*** The problem solved!\n");
-    } else {
-        printf("\n\n*** The problem FAILED!\n");
+    /*{
+        Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new IpoptOptimizationProblem();
+        Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+        app->Options()->SetNumericValue("tol", 1e-9);
+        app->Options()->SetStringValue("mu_strategy", "adaptive");
+        app->Options()->SetStringValue("output_file", "ipopt.out");
+        status = app->Initialize();
+        if (status != Ipopt::Solve_Succeeded) {
+            printf("\n\n*** Error during initialization!\n");
+            return (int) status;
+        }
+        status = app->OptimizeTNLP(mynlp);
+        if (status == Ipopt::Solve_Succeeded) {
+            printf("\n\n*** The problem solved!\n");
+        } else {
+            printf("\n\n*** The problem FAILED!\n");
+        }
+    }*/
+    {
+        Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new ToyProblem();
+        Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+        app->Options()->SetNumericValue("tol", 1e-9);
+        app->Options()->SetStringValue("mu_strategy", "adaptive");
+        app->Options()->SetStringValue("output_file", "ipopt.out");
+        Ipopt::ApplicationReturnStatus status;
+        status = app->Initialize();
+        if (status != Ipopt::Solve_Succeeded) {
+            printf("\n\n*** Error during initialization!\n");
+            return (int) status;
+        }
+        status = app->OptimizeTNLP(mynlp);
+        if (status == Ipopt::Solve_Succeeded) {
+            printf("\n\n*** The problem solved!\n");
+        } else {
+            printf("\n\n*** The problem FAILED!\n");
+        }
+        ToyProblem toy;
+        adouble f;
+        toy.objective({1.5}, f);
+        std::cout << "DEBUG " << f << std::endl;
     }
     return (int) status;
 
