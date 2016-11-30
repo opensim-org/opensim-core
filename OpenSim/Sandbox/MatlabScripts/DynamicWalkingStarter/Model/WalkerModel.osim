@@ -1,568 +1,621 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30000">
+<OpenSimDocument Version="30507">
 	<Model name="WalkerModel">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+			<attached_geometry />
+			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+			<WrapObjectSet>
+				<objects />
+				<groups />
+			</WrapObjectSet>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8066499999999994 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
 		<credits>Daniel A. Jacobs, Ajay Seth</credits>
+		<!--Publications and references associated with the model.-->
 		<publications>Unassigned</publications>
+		<!--Units for all lengths.-->
 		<length_units>meters</length_units>
+		<!--Units for all forces.-->
 		<force_units>N</force_units>
-		<!--Acceleration due to gravity.-->
-		<gravity> 0 -9.80665 0</gravity>
-		<!--Bodies in the model.-->
+		<!--List of bodies that make up this model.-->
 		<BodySet>
 			<objects>
-				<Body name="ground">
-					<mass>0</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>1</inertia_xx>
-					<inertia_yy>1</inertia_yy>
-					<inertia_zz>1</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint />
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects />
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 1 1 1</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
-					<WrapObjectSet>
-						<objects />
-						<groups />
-					</WrapObjectSet>
-				</Body>
 				<Body name="Platform">
-					<mass>1</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>1</inertia_xx>
-					<inertia_yy>1</inertia_yy>
-					<inertia_zz>1</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<WeldJoint name="PlatformToGround">
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>ground</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 0 0</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 -0.174532925199433</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects />
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</WeldJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>box.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 10 0.05 1</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 4.5 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry />
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>1 1 1 0 0 0</inertia>
 				</Body>
 				<Body name="Pelvis">
-					<mass>0.5</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.00666666666666667</inertia_yy>
-					<inertia_zz>0.0001</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<PlanarJoint>
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>Platform</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 0.025 0</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 0</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects>
-									<Coordinate name="Pelvis_rot">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>rotational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
-										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
-										<default_speed_value>0</default_speed_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-10 10</range>
-										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
-										<clamped>true</clamped>
-										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>true</locked>
-										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
-										<prescribed_function />
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-										<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
-										<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
-									</Coordinate>
-									<Coordinate name="Pelvis_tx">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>translational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
-										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
-										<default_speed_value>0</default_speed_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>0 100</range>
-										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
-										<clamped>false</clamped>
-										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>false</locked>
-										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
-										<prescribed_function />
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-										<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
-										<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
-									</Coordinate>
-									<Coordinate name="Pelvis_ty">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>translational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1</default_value>
-										<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
-										<default_speed_value>0</default_speed_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>0 5</range>
-										<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
-										<clamped>false</clamped>
-										<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-										<locked>false</locked>
-										<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
-										<prescribed_function />
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-										<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
-										<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
-									</Coordinate>
-								</objects>
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</PlanarJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>sphere.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 0.08 0.08 0.4</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="Pelvis_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>Pelvis</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.080000000000000002 0.080000000000000002 0.40000000000000002</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>sphere.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.5</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0001 0.0066666700000000004 0.0001 0 0 0</inertia>
 				</Body>
 				<Body name="LeftThigh">
-					<mass>0.05</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
-					<inertia_zz>0.00104166666666667</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<PinJoint name="LThighToPelvis">
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>Pelvis</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 0 -0.2</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 0</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0.25 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects>
-									<Coordinate name="LHip_rz">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>rotational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>1.0471975511966</default_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.74532925199433 1.74532925199433</range>
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-									</Coordinate>
-								</objects>
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</PinJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>sphere.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 0.05 0.5 0.05</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="LeftThigh_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>LeftThigh</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.050000000000000003 0.5 0.050000000000000003</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>sphere.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.050000000000000003</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="RightThigh">
-					<mass>0.05</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
-					<inertia_zz>0.00104166666666667</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<PinJoint name="RThighToPelvis">
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>Pelvis</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 0 0.2</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 0</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0.25 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects>
-									<Coordinate name="RHip_rz">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>rotational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-1.74532925199433 1.74532925199433</range>
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-									</Coordinate>
-								</objects>
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</PinJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>sphere.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 0.05 0.5 0.05</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="RightThigh_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>RightThigh</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.050000000000000003 0.5 0.050000000000000003</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>sphere.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.050000000000000003</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="LeftShank">
-					<mass>0.05</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
-					<inertia_zz>0.00104166666666667</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<PinJoint name="LShankToLThigh">
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>LeftThigh</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 -0.25 0</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 0</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0.25 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects>
-									<Coordinate name="LKnee_rz">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>rotational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-2.44346095279206 0</range>
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-									</Coordinate>
-								</objects>
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</PinJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>sphere.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 0.05 0.5 0.05</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="LeftShank_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>LeftShank</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.050000000000000003 0.5 0.050000000000000003</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>sphere.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.050000000000000003</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="RightShank">
-					<mass>0.05</mass>
-					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
-					<inertia_zz>0.00104166666666667</inertia_zz>
-					<inertia_xy>0</inertia_xy>
-					<inertia_xz>0</inertia_xz>
-					<inertia_yz>0</inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<PinJoint name="RShankToRThigh">
-							<!--Name of the parent body to which this joint connects its owner body.-->
-							<parent_body>RightThigh</parent_body>
-							<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
-							<location_in_parent>0 -0.25 0</location_in_parent>
-							<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles are used to express the orientation. Default is (0,0,0).-->
-							<orientation_in_parent>0 0 0</orientation_in_parent>
-							<!--Location of the joint in the child body specified in the child reference frame. For SIMM models, this vector is always the zero vector (i.e., the body reference frame coincides with the joint). -->
-							<location>0 0.25 0</location>
-							<!--Orientation of the joint in the owing body specified in the owning body reference frame.  Euler XYZ body-fixed rotation angles are used to express the orientation. -->
-							<orientation>0 0 0</orientation>
-							<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
-							<CoordinateSet>
-								<objects>
-									<Coordinate name="RKnee_rz">
-										<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
-										<motion_type>rotational</motion_type>
-										<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-										<default_value>0</default_value>
-										<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-										<range>-2.44346095279206 0</range>
-										<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-										<prescribed>false</prescribed>
-									</Coordinate>
-								</objects>
-								<groups />
-							</CoordinateSet>
-							<!--Whether the joint transform defines parent->child or child->parent.-->
-							<reverse>false</reverse>
-						</PinJoint>
-					</Joint>
-					<VisibleObject>
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
-						<GeometrySet>
-							<objects>
-								<DisplayGeometry>
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>sphere.vtp</geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file />
-									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-									<transform> -0 0 -0 0 0 0</transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>1</opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors> 0.05 0.5 0.05</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
-						<transform> -0 0 -0 0 0 0</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>4</display_preference>
-					</VisibleObject>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="RightShank_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>RightShank</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>0.050000000000000003 0.5 0.050000000000000003</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>sphere.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
 					<WrapObjectSet>
 						<objects />
 						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.050000000000000003</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 			</objects>
 			<groups />
 		</BodySet>
+		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are built-in and not included in this list.-->
+		<FrameSet>
+			<objects>
+				<PhysicalOffsetFrame name="Platform_geom_frame_1">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Platform</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="Platform_geom_1">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_Frame_ name="frame">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>Platform_geom_frame_1</connectee_name>
+								</Connector_Frame_>
+							</connectors>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>10 0.050000000000000003 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>box.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>4.5 0 0</translation>
+				</PhysicalOffsetFrame>
+			</objects>
+		</FrameSet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<WeldJoint name="PlatformToGround">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>ground_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Platform</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>ground</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 -0.17453299999999999</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</WeldJoint>
+				<PlanarJoint name="planarjoint_">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Platform_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Pelvis</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="Pelvis_rot">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-10 10</range>
+							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+							<clamped>true</clamped>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>true</locked>
+							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+							<prescribed_function />
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+							<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+							<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
+						</Coordinate>
+						<Coordinate name="Pelvis_tx">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>0 100</range>
+							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+							<clamped>false</clamped>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>false</locked>
+							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+							<prescribed_function />
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+							<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+							<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
+						</Coordinate>
+						<Coordinate name="Pelvis_ty">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>1</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>0 5</range>
+							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+							<clamped>false</clamped>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>false</locked>
+							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+							<prescribed_function />
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+							<!--Flag identifies whether or not this coordinate can change freely when posing the model to satisfy kinematic constraints.  When true, the coordinate's initial or specified value is ignored when considering constraints. This allows values for important coordinates, which have this flag set to false, to dictate the value of unimportant coordinates if they are linked via constraints.-->
+							<is_free_to_satisfy_constraints>false</is_free_to_satisfy_constraints>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="Platform_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>Platform</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.025000000000000001 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PlanarJoint>
+				<PinJoint name="LThighToPelvis">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Pelvis_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>LeftThigh_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="LHip_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>1.0471975511966001</default_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.74532925199433 1.74532925199433</range>
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>Pelvis</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 -0.20000000000000001</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>LeftThigh</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="RThighToPelvis">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Pelvis_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>RightThigh_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="RHip_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.74532925199433 1.74532925199433</range>
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>Pelvis</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0.20000000000000001</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>RightThigh</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="LShankToLThigh">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>LeftThigh_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>LeftShank_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="LKnee_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-2.4434609527920599 0</range>
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>LeftThigh</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="LeftShank_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>LeftShank</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="RShankToRThigh">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>RightThigh_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+						<Connector_PhysicalFrame_ name="child_frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>RightShank_offset</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="RKnee_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-2.4434609527920599 0</range>
+							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+							<prescribed>false</prescribed>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>RightThigh</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="RightShank_offset">
+							<!--List of connectors (structural dependencies) that this component has.-->
+							<connectors>
+								<Connector_PhysicalFrame_ name="parent">
+									<!--Name of the component this Connector should be connected to.-->
+									<connectee_name>RightShank</connectee_name>
+								</Connector_PhysicalFrame_>
+							</connectors>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+			</objects>
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects />
+			<groups />
+		</ControllerSet>
 		<!--Constraints in the model.-->
 		<ConstraintSet>
 			<objects />
 			<groups />
 		</ConstraintSet>
-		<!--Forces in the model.-->
+		<!--Forces in the model (includes Actuators).-->
 		<ForceSet>
 			<objects>
 				<HuntCrossleyForce name="LFootForce">
@@ -574,15 +627,15 @@
 								<geometry>LFootContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<HuntCrossleyForce name="RFootForce">
 					<!--Material properties.-->
@@ -593,15 +646,15 @@
 								<geometry>RFootContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<HuntCrossleyForce name="LKneeForce">
 					<!--Material properties.-->
@@ -612,15 +665,15 @@
 								<geometry>LKneeContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<HuntCrossleyForce name="RKneeForce">
 					<!--Material properties.-->
@@ -631,15 +684,15 @@
 								<geometry>RKneeContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<HuntCrossleyForce name="LHipForce">
 					<!--Material properties.-->
@@ -650,15 +703,15 @@
 								<geometry>LHipContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<HuntCrossleyForce name="RHipForce">
 					<!--Material properties.-->
@@ -669,15 +722,15 @@
 								<geometry>RHipContact PlatformContact</geometry>
 								<stiffness>1000000</stiffness>
 								<dissipation>1</dissipation>
-								<static_friction>0.8</static_friction>
-								<dynamic_friction>0.4</dynamic_friction>
-								<viscous_friction>0.4</viscous_friction>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.2</transition_velocity>
+					<transition_velocity>0.20000000000000001</transition_velocity>
 				</HuntCrossleyForce>
 				<CoordinateLimitForce name="LKneeLimitTorque">
 					<!--Coordinate (name) to be limited.-->
@@ -691,7 +744,7 @@
 					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
 					<lower_limit>-140</lower_limit>
 					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
-					<damping>0.025</damping>
+					<damping>0.025000000000000001</damping>
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>5</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
@@ -709,7 +762,7 @@
 					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
 					<lower_limit>-140</lower_limit>
 					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
-					<damping>0.025</damping>
+					<damping>0.025000000000000001</damping>
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>5</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
@@ -727,7 +780,7 @@
 					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
 					<lower_limit>-100</lower_limit>
 					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
-					<damping>0.025</damping>
+					<damping>0.025000000000000001</damping>
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>5</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
@@ -745,7 +798,7 @@
 					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
 					<lower_limit>-100</lower_limit>
 					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
-					<damping>0.025</damping>
+					<damping>0.025000000000000001</damping>
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>5</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
@@ -759,95 +812,117 @@
 			<objects />
 			<groups />
 		</MarkerSet>
-		<!--ContactGeometries  in the model.-->
+		<!--Geometry to be used in contact forces.-->
 		<ContactGeometrySet>
 			<objects>
 				<ContactSphere name="LFootContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>LeftShank</body_name>
-					<!--Location of geometry center in the body frame-->
-					<location>0 -0.2 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>LeftShank</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 -0.20000000000000001 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactSphere name="RFootContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>RightShank</body_name>
-					<!--Location of geometry center in the body frame-->
-					<location>0 -0.2 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>RightShank</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 -0.20000000000000001 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactSphere name="LKneeContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>LeftShank</body_name>
-					<!--Location of geometry center in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>LeftShank</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.25 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactSphere name="RKneeContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>RightShank</body_name>
-					<!--Location of geometry center in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>RightShank</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.25 0</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactSphere name="LHipContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>Pelvis</body_name>
-					<!--Location of geometry center in the body frame-->
-					<location>0 0 -0.2</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Pelvis</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 -0.20000000000000001</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactSphere name="RHipContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>Pelvis</body_name>
-					<!--Location of geometry center in the body frame-->
-					<location>0 0 0.2</location>
-					<!--Orientation of geometry in the body frame-->
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Pelvis</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 0.20000000000000001</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
-					<radius>0.05</radius>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
 				</ContactSphere>
 				<ContactHalfSpace name="PlatformContact">
-					<!--Body name to connect the contact geometry to-->
-					<body_name>Platform</body_name>
-					<!--Location of geometry center in the body frame-->
-					<location>0 0.025 0</location>
-					<!--Orientation of geometry in the body frame-->
-					<orientation>0 0 -1.5707963267949</orientation>
-					<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-					<display_preference>4</display_preference>
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="frame">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>Platform</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0.025000000000000001 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 -1.5707963267949001</orientation>
 				</ContactHalfSpace>
 			</objects>
 			<groups />
 		</ContactGeometrySet>
-		<!--Controllers in the model.-->
-		<ControllerSet name="Controllers">
-			<objects />
-			<groups />
-		</ControllerSet>
 		<!--Additional components in the model.-->
-		<ComponentSet name="MiscComponents">
+		<ComponentSet>
 			<objects />
 			<groups />
 		</ComponentSet>
