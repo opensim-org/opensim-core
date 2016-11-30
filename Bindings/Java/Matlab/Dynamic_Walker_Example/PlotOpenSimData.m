@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    
 % R24 HD065690) and by DARPA through the Warrior Web program.             
 %                                                                         
-% Copyright (c) 2005-2016 Stanford University and the Authors             
+% Copyright (c) 2005-2013 Stanford University and the Authors             
 % Author(s): Daniel A. Jacobs                                             
 %                                                                         
 % Licensed under the Apache License, Version 2.0 (the "License");         
@@ -42,7 +42,7 @@
 %   PlotOpenSimData(outputData, 'time', {'Pelvis_tx'})
 %   PlotOpenSimData(outputData, 'time', {'Pelvis_tx', 'Pelvis_ty'})
 % ----------------------------------------------------------------------- 
-function [figHandle, axisHandle] = PlotOpenSimData(dataStructure, ... 
+function [figHandle, axisHandle] = PlotOpenSimData(figHandle, dataStructure, ... 
     xQuantity, yQuantities)
 % Set up plot parameters
 colorOpts = {'b', 'g', 'r', 'c', 'm'};
@@ -88,8 +88,11 @@ if(~isfield(dataStructure, 'data'))
 end
 
 % Create figure
-figHandle = figure;
+if(isempty(figHandle))
+    figHandle = figure;
+end
 axisHandle = gca();
+numCurrentLines = length(get(axisHandle, 'Children'));
 hold on
 
 % Add Data
@@ -103,11 +106,21 @@ for j = 1:1:length(yQuantities)
             '\tThe quantity %s is not in dataStructure.labels', ...
             yQuantities{j}]);
     end
-    plot(dataStructure.data(:,indx), dataStructure.data(:,indy), ...
-        [lineOpts{floor(1+j/length(colorOpts))}, ...
-        colorOpts{1+mod(j,length(colorOpts))}], 'linewidth', lineWidth);
-    xlabel(xQuantity, 'Interpreter', 'none');
+    iter = numCurrentLines + j;
+    plothandle = plot(dataStructure.data(:,indx), dataStructure.data(:,indy), ...
+        [lineOpts{floor(1+iter/length(colorOpts))}, ...
+        colorOpts{1+mod(iter,length(colorOpts))}], 'linewidth', lineWidth);
+    [LEGH,OBJH,OUTH,OUTM] = legend;
+    if(isempty(OUTH))
+        xlabel(xQuantity, 'Interpreter', 'none');
+        legend(yQuantities{j});
+    else
+         % Add object with new handle and new legend string to legend
+        legend([OUTH;plothandle],OUTM{:},yQuantities{j})
+    end
+    
 end
-legend(yQuantities, 'Interpreter', 'none')
+[LEGH,OBJH,OUTH,OUTM] = legend;
+set(LEGH, 'interpreter', 'none')
 hold off
 end

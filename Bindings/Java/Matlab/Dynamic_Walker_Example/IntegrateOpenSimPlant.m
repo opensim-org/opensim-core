@@ -5,8 +5,8 @@
 % and supported by the US National Institutes of Health (U54 GM072970,   
 % R24 HD065690) and by DARPA through the Warrior Web program.            
 %                                                                        
-% Copyright (c) 2005-2016 Stanford University and the Authors            
-% Author(s): Daniel A. Jacobs                                            
+% Copyright (c) 2005-2013 Stanford University and the Authors            
+% Author(s): Daniel A. Jacobs, Ajay Seth                                            
 %                                                                        
 % Licensed under the Apache License, Version 2.0 (the "License");        
 % you may not use this file except in compliance with the License.       
