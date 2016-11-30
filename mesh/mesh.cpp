@@ -3,6 +3,7 @@
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 #include <adolc/adolc.h>
+#include <adolc/sparse/sparsedrivers.h>
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Ipopt::Index;
@@ -38,7 +39,7 @@ class MyProb : public Problem {
 
 class IpoptADOLC_OptimizationProblem : public Ipopt::TNLP {
 private:
-    int m_num_variables = -1;
+    unsigned m_num_variables = -1;
 public:
     IpoptADOLC_OptimizationProblem(int num_variables) :
         m_num_variables(num_variables) {}
@@ -60,6 +61,7 @@ public:
     bool get_bounds_info(Index num_variables,   Number* x_lower, Number* x_upper,
                          Index num_constraints, Number* g_lower, Number* g_upper) 
             override {
+        // TODO pass onto subclass.
         x_lower[0] = -5;
         x_upper[0] = 5;
         return true;
@@ -80,13 +82,35 @@ public:
     bool eval_f(Index num_variables, const Number* x, bool new_x,
                 Number& obj_value) override {
         assert(num_variables == 1);
-        obj_value = (x[0] - 1.5) * (x[0] - 1.5);
+        std::vector<adouble> x_adouble(num_variables);
+        // TODO efficiently store this result so it can be used in grad_f, etc.
+        for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+        adouble f;
+        objective(x_adouble, f);
+        obj_value = f.value(); /*(x[0] - 1.5) * (x[0] - 1.5);*/
         return true;
     }
     bool eval_grad_f(Index num_variables, const Number* x, bool new_x,
                      Number* grad_f) override {
-        assert(num_variables == 1);
-        grad_f[0] = 2 * (x[0] - 1.5);
+        assert(num_variables == m_num_variables);
+        short int tag = 0;
+
+        // =====================================================================
+        // START ACTIVE
+        // ---------------------------------------------------------------------
+        trace_on(tag);
+        std::vector<adouble> x_adouble(num_variables);
+        adouble f_adouble;
+        double f;
+        for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+        objective(x_adouble, f_adouble);
+        f_adouble >>= f; 
+        trace_off();
+        // ---------------------------------------------------------------------
+        // END ACTIVE
+        // =====================================================================
+        int success = gradient(tag, num_variables, x, grad_f);
+
         return true;
     }
     bool eval_g(Index num_variables, const Number* x, bool new_x,
@@ -106,10 +130,45 @@ public:
                 bool new_lambda, Index num_nonzeros_hessian,
                 Index* iRow, Index *jCol, Number* values) override {
         if (values == nullptr) {
+            // TODO use ADOLC to determine sparsity pattern; hess_pat
             iRow[0] = 0;
             jCol[0] = 0;
         } else {
-            values[0] = 2.0;
+            // TODO remove from here and utilize new_x.
+            // TODO or can I reuse the tape?
+            short int tag = 0;
+            // -----------------------------------------------------------------
+            // START ACTIVE
+            trace_on(tag);
+            std::vector<adouble> x_adouble(num_variables);
+            adouble f_adouble;
+            double f;
+            for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+            objective(x_adouble, f_adouble);
+            f_adouble >>= f; 
+            trace_off();
+            // END ACTIVE
+            // -----------------------------------------------------------------
+            // TODO efficiently use the "repeat" argument.
+            int repeated_call = 0;
+            int options[2];
+            options[0] = 0; /* test the computational graph control flow? TODO*/
+            options[1] = 0; /* way of recovery TODO */
+            // TODO make general:
+            //std::vector<unsigned int> row_indices(1); row_indices[0] = 0;
+            //std::vector<unsigned int> col_indices(1); col_indices[0] = 0;
+            unsigned int* row_indices = new unsigned int[1];
+            unsigned int* col_indices = new unsigned int[1];
+            //unsigned int* row_indices = nullptr; // TODO what should this be?
+            //unsigned int* col_indices = nullptr; // TODO
+            // TODO hope that the row indices are the same between IpOopt and
+            // ADOL-C.
+            int success = sparse_hess(tag, num_variables, repeated_call,
+                                      x, &num_nonzeros_hessian, 
+                                      &row_indices, &col_indices, &values,
+                                      options);
+            delete [] row_indices;
+            delete [] col_indices;
         }
         return true;
     }
