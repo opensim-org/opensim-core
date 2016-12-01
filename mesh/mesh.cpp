@@ -24,6 +24,15 @@ public:
     virtual int num_controls() const = 0;
 };
 
+// TODO interface 0: (inheritance)
+// derive from Problem, implement virtual functions
+// interface 1: (composition)
+// composed of Variables, Controls, Goals, etc.
+    /*
+    std::unordered_map<std::string, Goal> m_goals;
+    std::unordered_map<std::string
+     * */
+
 double g = 9.81;
 
 class MyProb : public Problem {
@@ -40,12 +49,27 @@ class MyProb : public Problem {
 class IpoptADOLC_OptimizationProblem : public Ipopt::TNLP {
 private:
     unsigned m_num_variables = -1;
+    std::vector<double> m_lower_bounds;
+    std::vector<double> m_upper_bounds;
+    std::vector<double> m_initial_guess;
 public:
     IpoptADOLC_OptimizationProblem(int num_variables) :
         m_num_variables(num_variables) {}
 
     virtual void objective(const std::vector<adouble>& x,
                            adouble& obj_value) const = 0;
+
+    void set_bounds(const std::vector<double>& lower,
+                    const std::vector<double>& upper) {
+        m_lower_bounds = lower;
+        m_upper_bounds = upper;
+        // TODO check their sizes.
+    }
+
+    void set_initial_guess(const std::vector<double>& guess) {
+        m_initial_guess = guess;
+        // TODO check their sizes.
+    }
 
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
             Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
@@ -62,8 +86,13 @@ public:
                          Index num_constraints, Number* g_lower, Number* g_upper) 
             override {
         // TODO pass onto subclass.
-        x_lower[0] = -5;
-        x_upper[0] = 5;
+        // TODO efficient copying.
+
+        // TODO make sure bounds have been set.
+        for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
+            x_lower[ivar] = m_lower_bounds[ivar];
+            x_upper[ivar] = m_upper_bounds[ivar];
+        }
         return true;
     }
     // z: multipliers for bound constraints on x.
@@ -76,18 +105,22 @@ public:
         assert(init_x == true);
         assert(init_z == false);
         assert(init_lambda == false);
-        x[0] = 1.0;
+        // TODO change this interface so that the user specifies the initial
+        // guess at the time they request the optimization?
+        for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
+            x[ivar] = m_initial_guess[ivar];
+        }
         return true;
     }
     bool eval_f(Index num_variables, const Number* x, bool new_x,
                 Number& obj_value) override {
-        assert(num_variables == 1);
+        assert(num_variables == m_num_variables);
         std::vector<adouble> x_adouble(num_variables);
         // TODO efficiently store this result so it can be used in grad_f, etc.
         for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
         adouble f;
         objective(x_adouble, f);
-        obj_value = f.value(); /*(x[0] - 1.5) * (x[0] - 1.5);*/
+        obj_value = f.value();
         return true;
     }
     bool eval_grad_f(Index num_variables, const Number* x, bool new_x,
@@ -115,7 +148,7 @@ public:
     }
     bool eval_g(Index num_variables, const Number* x, bool new_x,
                 Index num_constraints, Number* g) override {
-        assert(num_variables == 1);
+        assert(num_variables == m_num_variables);
         assert(num_constraints == 0);
         return true;
     }
@@ -131,8 +164,8 @@ public:
                 Index* iRow, Index *jCol, Number* values) override {
         if (values == nullptr) {
             // TODO use ADOLC to determine sparsity pattern; hess_pat
-            iRow[0] = 0;
-            jCol[0] = 0;
+            iRow[0] = 0; jCol[0] = 0;
+            iRow[1] = 1; jCol[1] = 1;
         } else {
             // TODO remove from here and utilize new_x.
             // TODO or can I reuse the tape?
@@ -155,8 +188,8 @@ public:
             options[0] = 0; /* test the computational graph control flow? TODO*/
             options[1] = 0; /* way of recovery TODO */
             // TODO make general:
-            std::unique_ptr<unsigned int[]> row_indices(new unsigned int[1]);
-            std::unique_ptr<unsigned int[]> col_indices(new unsigned int[1]);
+            std::unique_ptr<unsigned int[]> row_indices(new unsigned int[2]);
+            std::unique_ptr<unsigned int[]> col_indices(new unsigned int[2]);
             unsigned int* row_indices2 = row_indices.get();
             unsigned int* col_indices2 = col_indices.get();
 //            unsigned int* row_indices = new unsigned int[1];
@@ -194,11 +227,15 @@ public:
 
 class ToyProblem : public IpoptADOLC_OptimizationProblem {
 public:
-    ToyProblem() : IpoptADOLC_OptimizationProblem(1) {}
+    ToyProblem() : IpoptADOLC_OptimizationProblem(2) {}
     void objective(const std::vector<adouble>& x,
                    adouble& obj_value) const override {
-        obj_value = (x[0] - 1.5) * (x[0] - 1.5);
+        obj_value = (x[0] - 1.5) * (x[0] - 1.5)
+                  + (x[1] + 2.0) * (x[1] + 2.0);
     }
+// TODO     void constraints(const std::vector<adouble>& x,
+// TODO                      std::vector<adouble>& constraints) override {
+// TODO     }
 };
 
 class IpoptOptimizationProblem : public Ipopt::TNLP {
@@ -399,7 +436,9 @@ int main(int argc, char* argv[]) {
         }
     }*/
     {
-        Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new ToyProblem();
+        Ipopt::SmartPtr<ToyProblem> mynlp = new ToyProblem();
+        mynlp->set_bounds({-5, -5}, {5, 5});
+        mynlp->set_initial_guess({0, 0});
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
         app->Options()->SetNumericValue("tol", 1e-9);
         app->Options()->SetStringValue("mu_strategy", "adaptive");
@@ -418,7 +457,7 @@ int main(int argc, char* argv[]) {
         }
         ToyProblem toy;
         adouble f;
-        toy.objective({1.5}, f);
+        toy.objective({1.5, -2.0}, f);
         std::cout << "DEBUG " << f << std::endl;
     }
     return (int) status;
