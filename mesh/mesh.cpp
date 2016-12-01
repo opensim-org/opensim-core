@@ -155,20 +155,18 @@ public:
             options[0] = 0; /* test the computational graph control flow? TODO*/
             options[1] = 0; /* way of recovery TODO */
             // TODO make general:
-            //std::vector<unsigned int> row_indices(1); row_indices[0] = 0;
-            //std::vector<unsigned int> col_indices(1); col_indices[0] = 0;
-            unsigned int* row_indices = new unsigned int[1];
-            unsigned int* col_indices = new unsigned int[1];
-            //unsigned int* row_indices = nullptr; // TODO what should this be?
-            //unsigned int* col_indices = nullptr; // TODO
+            std::unique_ptr<unsigned int[]> row_indices(new unsigned int[1]);
+            std::unique_ptr<unsigned int[]> col_indices(new unsigned int[1]);
+            unsigned int* row_indices2 = row_indices.get();
+            unsigned int* col_indices2 = col_indices.get();
+//            unsigned int* row_indices = new unsigned int[1];
+//            unsigned int* col_indices = new unsigned int[1];
             // TODO hope that the row indices are the same between IpOopt and
             // ADOL-C.
             int success = sparse_hess(tag, num_variables, repeated_call,
                                       x, &num_nonzeros_hessian, 
-                                      &row_indices, &col_indices, &values,
+                                      &row_indices2, &col_indices2, &values,
                                       options);
-            delete [] row_indices;
-            delete [] col_indices;
         }
         return true;
     }
