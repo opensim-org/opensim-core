@@ -77,7 +77,7 @@ public:
         num_variables = m_num_variables;
         num_constraints = 0;
         num_nonzeros_jacobian = 0;
-        num_nonzeros_hessian = 1;
+        num_nonzeros_hessian = 2;
         index_style = TNLP::C_STYLE;
 
         return true;
