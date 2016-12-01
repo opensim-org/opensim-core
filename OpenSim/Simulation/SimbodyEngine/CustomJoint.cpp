@@ -195,7 +195,7 @@ void CustomJoint::constructCoordinates()
                 if (spatialTransform[j].hasFunction()) {
                     lf = dynamic_cast<const LinearFunction*>(
                             &spatialTransform[j].get_function() );
-                    // if displacement on axis is directly proportional to 
+                    // if displacement on axis is linear (w/ slope of 1) w.r.t.
                     // the coordinate value, we have a pure rotation/translation
                     if (lf && lf->getSlope() == 1.0) {
                         // coordinate is pure axis displacement
