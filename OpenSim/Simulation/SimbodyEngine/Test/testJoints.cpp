@@ -2584,15 +2584,15 @@ void testMotionTypesForCustomJointCoordinates()
     ASSERT( mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
         "Coordinate `" + coordName + "' failed to register as MotionType::Rotational");
 
-    // hip_qx is the second coordinate coupled to Z rotation but is pure
+    // hip_qx is the second coordinate that influences Z rotation but is pure
     // translational along X
     coordName = hip->getCoordinate(1).getName();
      mt = hip->getCoordinate(1).getMotionType();
     ASSERT( mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
         "Coordinate `" + coordName + "' failed to register as MotionType::Translational");
 
-    // hip_qy is the third coordinate also coupled to Z rotation but is scaled
-    // (coupled) to translation along Y (!= pure translational coordinate)
+    // hip_qy is the third coordinate that also influences Z rotation but is scaled
+    // to translate along Y and therefore NOT a pure translational coordinate either
     coordName = hip->getCoordinate(2).getName();
     mt = hip->getCoordinate(2).getMotionType();
     ASSERT( mt == Coordinate::MotionType::Coupled, __FILE__, __LINE__,
