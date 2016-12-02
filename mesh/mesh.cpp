@@ -225,10 +225,47 @@ public:
             // TODO document: provide sparsity pattern.
             iRow[0] = 0; jCol[0] = 0;
             iRow[1] = 0; jCol[1] = 1;
-        } else {
-            values[0] = 1; // TODO use ADOL-C.
-            values[1] = 1;
+            return true;
         }
+
+        short int tag = 0;
+        // =====================================================================
+        // START ACTIVE
+        // ---------------------------------------------------------------------
+        trace_on(tag);
+        std::vector<adouble> x_adouble(num_variables);
+        for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+        std::vector<adouble> g_adouble(num_constraints);
+        constraints(x_adouble, g_adouble);
+        std::vector<double> g(num_constraints);
+        for (unsigned i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
+        trace_off();
+        // ---------------------------------------------------------------------
+        // END ACTIVE
+        // =====================================================================
+
+        int repeated_call = 0;
+        int num_nonzeros = -1; /*TODO*/
+        unsigned int* row_indices = NULL; // Allocated by ADOL-C.
+        unsigned int* col_indices = NULL; // Allocated by ADOL-C.
+        double* jacobian = NULL;          // Allocated by ADOL-C.
+        int options[4];
+        options[0] = 0; /*TODO*/
+        options[1] = 0; /*TODO*/
+        options[2] = 0; /*TODO*/
+        options[3] = 0; /*TODO*/
+        int success = sparse_jac(tag, num_constraints, num_variables,
+                                 repeated_call, x,
+                                 &num_nonzeros, &row_indices, &col_indices,
+                                 &jacobian, options);
+        for (unsigned inz = 0; inz < num_nonzeros; ++inz) {
+            values[inz] = jacobian[inz];
+        }
+
+        delete [] row_indices;
+        delete [] col_indices;
+        delete [] jacobian;
+
         return true;
     }
     bool eval_h(Index num_variables, const Number* x, bool new_x,
