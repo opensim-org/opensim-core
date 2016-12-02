@@ -70,7 +70,7 @@ model.print(modelFilename);
 %% Load the model file and simulate.
 % ----------------------------------
 deserializedModel = Model(modelFilename);
-deserializedModel.initSystem();
+state = deserializedModel.initSystem();
 
 % We can fetch the TableReporter from within the deserialized model.
 reporter = TableReporterVec3.safeDownCast(...

@@ -391,7 +391,7 @@ public:
 protected:
     /** Create a Connector that can only connect to Object of type T with 
     specified name and stage at which it should be connected. Only Component
-    should ever construct this class.
+    can ever construct this class.
     @param name               name of the connector used to describe its dependency.
     @param connecteeNameIndex Index of the property in the containing Component
                               that holds this Connector's connectee_name(s).

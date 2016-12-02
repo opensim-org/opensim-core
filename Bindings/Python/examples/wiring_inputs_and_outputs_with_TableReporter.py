@@ -71,7 +71,7 @@ def print_model():
 print_model()
 # Load the model file.
 deserialized_model = osim.Model(model_filename)
-deserialized_model.initSystem()
+state = deserialized_model.initSystem()
 
 # We can fetch the TableReporter from within the deserialized model.
 reporter = osim.TableReporterVec3.safeDownCast(

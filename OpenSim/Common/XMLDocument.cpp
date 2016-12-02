@@ -432,7 +432,6 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
 {
     using ElementItr = SimTK::Xml::element_iterator;
     
-    std::string typeName = "PhysicalFrame";
     ElementItr connectors_node = componentElt.element_begin("connectors");
     
     // See if there's a <connectors> element.
