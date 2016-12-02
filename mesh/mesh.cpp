@@ -52,6 +52,9 @@ private:
     std::vector<double> m_lower_bounds;
     std::vector<double> m_upper_bounds;
     std::vector<double> m_initial_guess;
+    unsigned m_hessian_num_nonzeros = -1;
+    std::vector<unsigned int> m_hessian_row_indices;
+    std::vector<unsigned int> m_hessian_col_indices;
 public:
     IpoptADOLC_OptimizationProblem(int num_variables) :
         m_num_variables(num_variables) {}
@@ -67,8 +70,55 @@ public:
     }
 
     void set_initial_guess(const std::vector<double>& guess) {
+        // TODO be smart about the need to copy "guess" (could be long)?
         m_initial_guess = guess;
         // TODO check their sizes.
+        assert(guess.size() == m_num_variables);
+
+        // Determine sparsity patterns.
+        // ----------------------------
+        // TODO remove from here and utilize new_x.
+        // TODO or can I reuse the tape?
+        short int tag = 0;
+        // -----------------------------------------------------------------
+        // START ACTIVE
+        trace_on(tag);
+        std::vector<adouble> x_adouble(m_num_variables);
+        adouble f_adouble;
+        double f;
+        for (unsigned i = 0; i < m_num_variables; ++i) {
+            x_adouble[i] <<= guess[i];
+        }
+        objective(x_adouble, f_adouble);
+        f_adouble >>= f; 
+        trace_off();
+        // END ACTIVE
+        // -----------------------------------------------------------------
+        // TODO efficiently use the "repeat" argument.
+        int repeated_call = 0;
+        int options[2];
+        options[0] = 0; /* test the computational graph control flow? TODO*/
+        options[1] = 0; /* way of recovery TODO */
+        unsigned int* row_indices = NULL;
+        unsigned int* col_indices = NULL;
+        double* hessian = NULL; // We don't actually need the hessian...
+        // TODO use hess_pat instead!!!
+        int num_nonzeros;
+        int success = sparse_hess(tag, m_num_variables, repeated_call,
+                                  &guess[0], &num_nonzeros, 
+                                  &row_indices, &col_indices, &hessian,
+                                  options);
+        m_hessian_num_nonzeros = num_nonzeros;
+        m_hessian_row_indices.reserve(num_nonzeros);
+        m_hessian_col_indices.reserve(num_nonzeros);
+        for (int i = 0; i < num_nonzeros; ++i) {
+            m_hessian_row_indices[i] = row_indices[i];
+            m_hessian_col_indices[i] = col_indices[i];
+        }
+        // TODO try to use modern memory management.
+        delete [] row_indices;
+        delete [] col_indices;
+        delete [] hessian;
     }
 
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
@@ -77,7 +127,7 @@ public:
         num_variables = m_num_variables;
         num_constraints = 0;
         num_nonzeros_jacobian = 0;
-        num_nonzeros_hessian = 2;
+        num_nonzeros_hessian = m_hessian_num_nonzeros;
         index_style = TNLP::C_STYLE;
 
         return true;
@@ -165,9 +215,15 @@ public:
         if (values == nullptr) {
             // TODO use ADOLC to determine sparsity pattern; hess_pat
             // TODO
-            iRow[0] = 0; jCol[0] = 0;
-            iRow[1] = 1; jCol[1] = 1;
+            assert(num_nonzeros_hessian == m_hessian_num_nonzeros);
+            for (unsigned inz = 0; inz < num_nonzeros_hessian; ++inz) {
+                iRow[inz] = m_hessian_row_indices[inz];
+                jCol[inz] = m_hessian_col_indices[inz];
+            }
         } else {
+            // TODO this hessian must include the constraint portion!!!
+            // TODO if not new_x, then do NOT re-eval objective()!!!
+
             // TODO remove from here and utilize new_x.
             // TODO or can I reuse the tape?
             short int tag = 0;
@@ -195,19 +251,23 @@ public:
             // ADOL-C.
             double* vals = NULL;
             int num_nonzeros;
+            // TODO compute sparse hessian for each element of the constraint
+            // vector....TODO trace with respect to both x and lambda..
+            // http://list.coin-or.org/pipermail/adol-c/2013-April/000900.html
+            // TODO "since lambda changes, the Lagrangian function has to be
+            // repated every time ...cannot set repeat = 1"
             int success = sparse_hess(tag, num_variables, repeated_call,
                                       x, &num_nonzeros, 
                                       &row_indices, &col_indices, &vals,
                                       options);
+            for (int i = 0; i < num_nonzeros; ++i) {
+                values[i] = vals[i];
+            }
             // TODO try to use modern memory management.
             delete [] row_indices;
             delete [] col_indices;
             // TODO avoid reallocating vals each time!!!
             delete [] vals;
-            for (int i = 0; i < num_nonzeros; ++i) {
-                values[i] = vals[i];
-            }
-
         }
         return true;
     }
