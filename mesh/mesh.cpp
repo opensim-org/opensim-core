@@ -56,6 +56,9 @@ private:
     unsigned m_hessian_num_nonzeros = -1;
     std::vector<unsigned int> m_hessian_row_indices;
     std::vector<unsigned int> m_hessian_col_indices;
+    unsigned m_jacobian_num_nonzeros = -1;
+    std::vector<unsigned int> m_jacobian_row_indices;
+    std::vector<unsigned int> m_jacobian_col_indices;
 public:
     IpoptADOLC_OptimizationProblem(int num_variables, int num_constraints) :
         m_num_variables(num_variables), m_num_constraints(num_constraints) {}
@@ -81,9 +84,11 @@ public:
         // ----------------------------
         // TODO remove from here and utilize new_x.
         // TODO or can I reuse the tape?
+        {
         short int tag = 0;
-        // -----------------------------------------------------------------
+        // =====================================================================
         // START ACTIVE
+        // ---------------------------------------------------------------------
         trace_on(tag);
         std::vector<adouble> x_adouble(m_num_variables);
         adouble f_adouble;
@@ -91,11 +96,12 @@ public:
         for (unsigned i = 0; i < m_num_variables; ++i) {
             x_adouble[i] <<= guess[i];
         }
-        objective(x_adouble, f_adouble);
+        objective(x_adouble, f_adouble); // TODO lagrangian instead.
         f_adouble >>= f; 
         trace_off();
+        // ---------------------------------------------------------------------
         // END ACTIVE
-        // -----------------------------------------------------------------
+        // =====================================================================
         // TODO efficiently use the "repeat" argument.
         int repeated_call = 0;
         int options[2];
@@ -121,6 +127,50 @@ public:
         delete [] row_indices;
         delete [] col_indices;
         delete [] hessian;
+        }
+
+        {
+        short int tag = 0;
+        // =====================================================================
+        // START ACTIVE
+        // ---------------------------------------------------------------------
+        trace_on(tag);
+        std::vector<adouble> x_adouble(m_num_variables);
+        for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= guess[i];
+        std::vector<adouble> g_adouble(m_num_constraints);
+        constraints(x_adouble, g_adouble);
+        std::vector<double> g(m_num_constraints);
+        for (unsigned i = 0; i < m_num_constraints; ++i) g_adouble[i] >>= g[i];
+        trace_off();
+        // ---------------------------------------------------------------------
+        // END ACTIVE
+        // =====================================================================
+
+        int repeated_call = 0;
+        int num_nonzeros = -1; /*TODO*/
+        unsigned int* row_indices = NULL; // Allocated by ADOL-C.
+        unsigned int* col_indices = NULL; // Allocated by ADOL-C.
+        double* jacobian = NULL;          // Allocated by ADOL-C.
+        int options[4];
+        options[0] = 0; /*TODO*/
+        options[1] = 0; /*TODO*/
+        options[2] = 0; /*TODO*/
+        options[3] = 0; /*TODO*/
+        int success = sparse_jac(tag, m_num_constraints, m_num_variables,
+                                 repeated_call, &guess[0],
+                                 &num_nonzeros, &row_indices, &col_indices,
+                                 &jacobian, options);
+        m_jacobian_num_nonzeros = num_nonzeros;
+        m_jacobian_row_indices.reserve(num_nonzeros);
+        m_jacobian_col_indices.reserve(num_nonzeros);
+        for (int i = 0; i < num_nonzeros; ++i) {
+            m_jacobian_row_indices[i] = row_indices[i];
+            m_jacobian_col_indices[i] = col_indices[i];
+        }
+        delete [] row_indices;
+        delete [] col_indices;
+        delete [] jacobian;
+        }
     }
 
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
@@ -128,7 +178,7 @@ public:
             IndexStyleEnum& index_style) override {
         num_variables = m_num_variables;
         num_constraints = m_num_constraints;
-        num_nonzeros_jacobian = 2;
+        num_nonzeros_jacobian = m_jacobian_num_nonzeros;
         num_nonzeros_hessian = m_hessian_num_nonzeros;
         index_style = TNLP::C_STYLE;
 
@@ -223,8 +273,11 @@ public:
                     Index* iRow, Index *jCol, Number* values) override {
         if (values == nullptr) {
             // TODO document: provide sparsity pattern.
-            iRow[0] = 0; jCol[0] = 0;
-            iRow[1] = 0; jCol[1] = 1;
+            assert(num_nonzeros_jacobian == m_jacobian_num_nonzeros);
+            for (unsigned inz = 0; inz < num_nonzeros_jacobian; ++inz) {
+                iRow[inz] = m_jacobian_row_indices[inz];
+                jCol[inz] = m_jacobian_col_indices[inz];
+            }
             return true;
         }
 
