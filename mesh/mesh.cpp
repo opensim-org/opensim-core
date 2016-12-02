@@ -14,6 +14,13 @@ using Ipopt::Number;
 
 // TODO use faster linear solvers from Sherlock cluster.
 
+// TODO want to abstract optimization problem away from IPOPT.
+
+class OptimizationProblem {
+    virtual void objective() = 0;
+    virtual void constraints() = 0;
+};
+
 // TODO templatize Problem.
 class Problem {
 public:
@@ -67,6 +74,20 @@ public:
                            adouble& obj_value) const = 0;
     virtual void constraints(const std::vector<adouble>& x,
                              std::vector<adouble>& constraints) const = 0;
+    void lagrangian(const std::vector<adouble>& x,
+                    const std::vector<adouble>& lambda,
+                    adouble& result) const {
+        assert(x.size() == m_num_variables);
+        assert(lambda.size() == m_num_constraints);
+
+        result = 0;
+        objective(x, result);
+        std::vector<adouble> constr(m_num_constraints);
+        constraints(x, constr);
+        for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
+            result += lambda[icon] * constr[icon];
+        }
+    }
     void set_bounds(const std::vector<double>& lower,
                     const std::vector<double>& upper) {
         m_lower_bounds = lower;
@@ -84,51 +105,6 @@ public:
         // ----------------------------
         // TODO remove from here and utilize new_x.
         // TODO or can I reuse the tape?
-        {
-        short int tag = 0;
-        // =====================================================================
-        // START ACTIVE
-        // ---------------------------------------------------------------------
-        trace_on(tag);
-        std::vector<adouble> x_adouble(m_num_variables);
-        adouble f_adouble;
-        double f;
-        for (unsigned i = 0; i < m_num_variables; ++i) {
-            x_adouble[i] <<= guess[i];
-        }
-        objective(x_adouble, f_adouble); // TODO lagrangian instead.
-        f_adouble >>= f; 
-        trace_off();
-        // ---------------------------------------------------------------------
-        // END ACTIVE
-        // =====================================================================
-        // TODO efficiently use the "repeat" argument.
-        int repeated_call = 0;
-        int options[2];
-        options[0] = 0; /* test the computational graph control flow? TODO*/
-        options[1] = 0; /* way of recovery TODO */
-        unsigned int* row_indices = NULL;
-        unsigned int* col_indices = NULL;
-        double* hessian = NULL; // We don't actually need the hessian...
-        // TODO use hess_pat instead!!!
-        int num_nonzeros;
-        int success = sparse_hess(tag, m_num_variables, repeated_call,
-                                  &guess[0], &num_nonzeros, 
-                                  &row_indices, &col_indices, &hessian,
-                                  options);
-        m_hessian_num_nonzeros = num_nonzeros;
-        m_hessian_row_indices.reserve(num_nonzeros);
-        m_hessian_col_indices.reserve(num_nonzeros);
-        for (int i = 0; i < num_nonzeros; ++i) {
-            m_hessian_row_indices[i] = row_indices[i];
-            m_hessian_col_indices[i] = col_indices[i];
-        }
-        // TODO try to use modern memory management.
-        delete [] row_indices;
-        delete [] col_indices;
-        delete [] hessian;
-        }
-
         {
         short int tag = 0;
         // =====================================================================
@@ -171,6 +147,65 @@ public:
         delete [] col_indices;
         delete [] jacobian;
         }
+
+        {
+        short int tag = 0;
+        // =====================================================================
+        // START ACTIVE
+        // ---------------------------------------------------------------------
+        trace_on(tag);
+        std::vector<adouble> x_adouble(m_num_variables);
+        std::vector<adouble> lambda_adouble(m_num_constraints);
+        adouble lagrangian_adouble;
+        double lagr;
+        for (unsigned i = 0; i < m_num_variables; ++i) {
+            x_adouble[i] <<= guess[i];
+        }
+        //TODOfor (unsigned icon = 0; icon < m_num_constraints; ++icon) {
+        //TODO    lambda_adouble[icon] <<= 1; // TODO what's a good guess?
+        //TODO}
+        //TODOlagrangian(x_adouble, lambda_adouble, lagrangian_adouble);
+        objective(x_adouble, lagrangian_adouble);
+        lagrangian_adouble >>= lagr; 
+        trace_off();
+        // ---------------------------------------------------------------------
+        // END ACTIVE
+        // =====================================================================
+        // TODO efficiently use the "repeat" argument.
+        int repeated_call = 0;
+        int options[2];
+        options[0] = 0; /* test the computational graph control flow? TODO*/
+        options[1] = 0; /* way of recovery TODO */
+        unsigned int* row_indices = NULL;
+        unsigned int* col_indices = NULL;
+        double* hessian = NULL; // We don't actually need the hessian...
+        // TODO use hess_pat instead!!!
+        int num_nonzeros;
+        std::vector<double> x_and_lambda(m_num_variables + m_num_constraints);
+        for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
+            x_and_lambda[ivar] = guess[ivar];
+        }
+        for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
+            x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
+        }
+        int success = sparse_hess(tag, m_num_variables/* + m_num_constraints*/,
+                                  repeated_call,
+                                  /*&x_and_lambda[0]*/&guess[0], &num_nonzeros, 
+                                  &row_indices, &col_indices, &hessian,
+                                  options);
+        m_hessian_num_nonzeros = num_nonzeros;
+        m_hessian_row_indices.reserve(num_nonzeros);
+        m_hessian_col_indices.reserve(num_nonzeros);
+        for (int i = 0; i < num_nonzeros; ++i) {
+            m_hessian_row_indices[i] = row_indices[i];
+            m_hessian_col_indices[i] = col_indices[i];
+        }
+        std::cout << "DEBUGinit " << num_nonzeros << std::endl;
+        // TODO try to use modern memory management.
+        delete [] row_indices;
+        delete [] col_indices;
+        delete [] hessian;
+        }
     }
 
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
@@ -206,7 +241,8 @@ public:
     // warmstart will require giving initial values for the multipliers.
     bool get_starting_point(Index num_variables, bool init_x, Number* x,
                             bool init_z, Number* z_L, Number* z_U,
-                            Index num_constraints, bool init_lambda, Number* lambda) 
+                            Index num_constraints, bool init_lambda,
+                            Number* lambda) 
             override {
         // Must this method provide initial values for x, z, lambda?
         assert(init_x == true);
@@ -325,63 +361,112 @@ public:
                 Number obj_factor, Index num_constraints, const Number* lambda,
                 bool new_lambda, Index num_nonzeros_hessian,
                 Index* iRow, Index *jCol, Number* values) override {
+        assert(num_nonzeros_hessian == m_hessian_num_nonzeros);
         if (values == nullptr) {
             // TODO use ADOLC to determine sparsity pattern; hess_pat
             // TODO
-            assert(num_nonzeros_hessian == m_hessian_num_nonzeros);
             for (unsigned inz = 0; inz < num_nonzeros_hessian; ++inz) {
                 iRow[inz] = m_hessian_row_indices[inz];
                 jCol[inz] = m_hessian_col_indices[inz];
             }
-        } else {
-            // TODO this hessian must include the constraint portion!!!
-            // TODO if not new_x, then do NOT re-eval objective()!!!
-
-            // TODO remove from here and utilize new_x.
-            // TODO or can I reuse the tape?
-            short int tag = 0;
-            // -----------------------------------------------------------------
-            // START ACTIVE
-            trace_on(tag);
-            std::vector<adouble> x_adouble(num_variables);
-            adouble f_adouble;
-            double f;
-            for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-            objective(x_adouble, f_adouble);
-            f_adouble >>= f; 
-            trace_off();
-            // END ACTIVE
-            // -----------------------------------------------------------------
-            // TODO efficiently use the "repeat" argument.
-            int repeated_call = 0;
-            int options[2];
-            options[0] = 0; /* test the computational graph control flow? TODO*/
-            options[1] = 0; /* way of recovery TODO */
-            // TODO make general:
-            unsigned int* row_indices = NULL;
-            unsigned int* col_indices = NULL;
-            // TODO hope that the row indices are the same between IpOopt and
-            // ADOL-C.
-            double* vals = NULL;
-            int num_nonzeros;
-            // TODO compute sparse hessian for each element of the constraint
-            // vector....TODO trace with respect to both x and lambda..
-            // http://list.coin-or.org/pipermail/adol-c/2013-April/000900.html
-            // TODO "since lambda changes, the Lagrangian function has to be
-            // repated every time ...cannot set repeat = 1"
-            int success = sparse_hess(tag, num_variables, repeated_call,
-                                      x, &num_nonzeros, 
-                                      &row_indices, &col_indices, &vals,
-                                      options);
-            for (int i = 0; i < num_nonzeros; ++i) {
-                values[i] = vals[i];
-            }
-            // TODO try to use modern memory management.
-            delete [] row_indices;
-            delete [] col_indices;
-            // TODO avoid reallocating vals each time!!!
-            delete [] vals;
+            return true;
         }
+
+        std::cout << "DEBUG0" << std::endl;
+        for (int i = 0; i < num_variables; ++i) {
+            std::cout << x[i] << std::endl;
+        }
+        for (int i = 0; i < num_constraints; ++i) {
+            std::cout << lambda[i] << std::endl;
+        }
+        std::cout << "DEBUG1" << std::endl;
+
+        // TODO this hessian must include the constraint portion!!!
+        // TODO if not new_x, then do NOT re-eval objective()!!!
+
+        // TODO remove from here and utilize new_x.
+        // TODO or can I reuse the tape?
+        short int tag = 0;
+        // -----------------------------------------------------------------
+        // START ACTIVE
+        trace_on(tag);
+        std::vector<adouble> x_adouble(num_variables);
+        std::vector<adouble> lambda_adouble(num_constraints);
+        adouble lagrangian_adouble;
+        double lagr;
+        for (unsigned i = 0; i < num_variables; ++i) {
+            // TODO add this operator for std::vector.
+            x_adouble[i] <<= x[i];
+        }
+        //for (unsigned icon = 0; icon < num_constraints; ++icon) {
+        //    // TODO add this operator for std::vector.
+        //    lambda_adouble[icon] <<= lambda[icon];
+        //}
+        //lagrangian(x_adouble, lambda_adouble, lagrangian_adouble);
+        objective(x_adouble, lagrangian_adouble);
+        lagrangian_adouble >>= lagr; 
+        trace_off();
+        // END ACTIVE
+        // -----------------------------------------------------------------
+        // TODO efficiently use the "repeat" argument.
+        int repeated_call = 0;
+        int options[2];
+        options[0] = 0; /* test the computational graph control flow? TODO*/
+        options[1] = 0; /* way of recovery TODO */
+        // TODO make general:
+        unsigned int* row_indices = NULL;
+        unsigned int* col_indices = NULL;
+        // TODO hope that the row indices are the same between IpOopt and
+        // ADOL-C.
+        double* vals = NULL;
+        int num_nonzeros;
+        // TODO compute sparse hessian for each element of the constraint
+        // vector....TODO trace with respect to both x and lambda..
+        // http://list.coin-or.org/pipermail/adol-c/2013-April/000900.html
+        // TODO "since lambda changes, the Lagrangian function has to be
+        // repated every time ...cannot set repeat = 1"
+        // The following link suggests more efficient methods:
+        // http://list.coin-or.org/pipermail/adol-c/2013-April/000903.html
+        // Quote:
+        // We made the experience that it really depends on the application
+        // whether
+        //
+        // * tracing the Lagrangian once with x and lambda as inputs
+        //    and evaluating only a part of the Hessian reusing the trace
+        //       in all iterations
+        //
+        // or
+        //
+        // *  retracing the Lagrangian with x as adoubles and lambda as doubles
+        // in each iteration and computing then the whole Hessian
+        //
+        // performs better in terms of runtime. You could give both approaches
+        // a try and see what works better for you. Both approaches have their
+        // pros and cons with respect to efficiency.
+        //
+
+        std::vector<double> x_and_lambda(num_variables + num_constraints);
+        for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
+            x_and_lambda[ivar] = x[ivar];
+        }
+        for (unsigned icon = 0; icon < num_constraints; ++icon) {
+            x_and_lambda[icon + num_variables] = lambda[icon];
+        }
+        int success = sparse_hess(tag, num_variables/* + num_constraints*/,
+                                  repeated_call,
+                                  /*&x_and_lambda[0]*/x, &num_nonzeros, 
+                                  &row_indices, &col_indices, &vals,
+                                  options);
+        std::cout << "DEBUGh " << num_nonzeros << std::endl;
+        for (int i = 0; i < num_nonzeros; ++i) {
+            values[i] = vals[i];
+        }
+        // TODO try to use modern memory management.
+        delete [] row_indices;
+        delete [] col_indices;
+        // TODO avoid reallocating vals each time!!!
+        delete [] vals;
+
         return true;
     }
     void finalize_solution(Ipopt::SolverReturn status, Index num_variables,
@@ -625,6 +710,7 @@ int main(int argc, char* argv[]) {
         app->Options()->SetNumericValue("tol", 1e-9);
         app->Options()->SetStringValue("mu_strategy", "adaptive");
         app->Options()->SetStringValue("output_file", "ipopt.out");
+        app->Options()->SetStringValue("derivative_test", "second-order");
         Ipopt::ApplicationReturnStatus status;
         status = app->Initialize();
         if (status != Ipopt::Solve_Succeeded) {
