@@ -49,6 +49,7 @@ class MyProb : public Problem {
 class IpoptADOLC_OptimizationProblem : public Ipopt::TNLP {
 private:
     unsigned m_num_variables = -1;
+    unsigned m_num_constraints = -1;
     std::vector<double> m_lower_bounds;
     std::vector<double> m_upper_bounds;
     std::vector<double> m_initial_guess;
@@ -56,12 +57,13 @@ private:
     std::vector<unsigned int> m_hessian_row_indices;
     std::vector<unsigned int> m_hessian_col_indices;
 public:
-    IpoptADOLC_OptimizationProblem(int num_variables) :
-        m_num_variables(num_variables) {}
+    IpoptADOLC_OptimizationProblem(int num_variables, int num_constraints) :
+        m_num_variables(num_variables), m_num_constraints(num_constraints) {}
 
     virtual void objective(const std::vector<adouble>& x,
                            adouble& obj_value) const = 0;
-
+    virtual void constraints(const std::vector<adouble>& x,
+                             std::vector<adouble>& constraints) const = 0;
     void set_bounds(const std::vector<double>& lower,
                     const std::vector<double>& upper) {
         m_lower_bounds = lower;
@@ -125,8 +127,8 @@ public:
             Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
             IndexStyleEnum& index_style) override {
         num_variables = m_num_variables;
-        num_constraints = 0;
-        num_nonzeros_jacobian = 0;
+        num_constraints = m_num_constraints;
+        num_nonzeros_jacobian = 2;
         num_nonzeros_hessian = m_hessian_num_nonzeros;
         index_style = TNLP::C_STYLE;
 
@@ -142,6 +144,11 @@ public:
         for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
             x_lower[ivar] = m_lower_bounds[ivar];
             x_upper[ivar] = m_upper_bounds[ivar];
+        }
+        // TODO do not assume that there are no inequality constraints.
+        for (unsigned icon = 0; icon < num_variables; ++icon) {
+            g_lower[icon] = 0;
+            g_upper[icon] = 0;
         }
         return true;
     }
@@ -199,13 +206,21 @@ public:
     bool eval_g(Index num_variables, const Number* x, bool new_x,
                 Index num_constraints, Number* g) override {
         assert(num_variables == m_num_variables);
-        assert(num_constraints == 0);
+        assert(num_constraints == m_num_constraints);
         return true;
     }
     // TODO can Ipopt do finite differencing for us?
     bool eval_jac_g(Index num_variables, const Number* x, bool new_x,
                     Index num_constraints, Index num_nonzeros_jacobian,
                     Index* iRow, Index *jCol, Number* values) override {
+        if (values == nullptr) {
+            // TODO document: provide sparsity pattern.
+            iRow[0] = 0; jCol[0] = 0;
+            iRow[1] = 0; jCol[1] = 1;
+        } else {
+            values[0] = 1; // TODO use ADOL-C.
+            values[1] = 1;
+        }
         return true;
     }
     bool eval_h(Index num_variables, const Number* x, bool new_x,
@@ -295,15 +310,16 @@ public:
 
 class ToyProblem : public IpoptADOLC_OptimizationProblem {
 public:
-    ToyProblem() : IpoptADOLC_OptimizationProblem(2) {}
+    ToyProblem() : IpoptADOLC_OptimizationProblem(2, 1) {}
     void objective(const std::vector<adouble>& x,
                    adouble& obj_value) const override {
         obj_value = (x[0] - 1.5) * (x[0] - 1.5)
                   + (x[1] + 2.0) * (x[1] + 2.0);
     }
-// TODO     void constraints(const std::vector<adouble>& x,
-// TODO                      std::vector<adouble>& constraints) override {
-// TODO     }
+    void constraints(const std::vector<adouble>& x,
+                     std::vector<adouble>& constraints) const override {
+        constraints[0] = x[0] + x[1];
+    }
 };
 
 class IpoptOptimizationProblem : public Ipopt::TNLP {
