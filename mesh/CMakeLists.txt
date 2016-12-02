@@ -15,10 +15,14 @@ link_directories(${IPOPT_LIBRARY_DIRS})
 link_directories(${ADOLC_LIBRARY_DIRS})
 
 add_executable(mesh mesh.cpp)
-# TODO what does public mean?
-target_include_directories(mesh PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(mesh PUBLIC ${IPOPT_INCLUDE_DIRS})
-target_include_directories(mesh PUBLIC ${ADOLC_INCLUDE_DIRS})
+# PUBLIC means the headers are used in both of the following scenarios:
+#   a. when building the library ("PRIVATE"), and 
+#   b. when a client library links to this library ("INTERFACE").
+# SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
+# to avoid for our own code.
+target_include_directories(mesh        PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(mesh SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
+target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_link_libraries(mesh ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
 
 # TODO set(CMAKE_CXX_FLAGS -DEIGEN_MPL2_ONLY)
