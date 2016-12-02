@@ -176,6 +176,8 @@ public:
         // TODO efficiently store this result so it can be used in grad_f, etc.
         for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
         adouble f;
+        // TODO objective() could be templatized... so that we could use finite
+        // difference if necessary.
         objective(x_adouble, f);
         obj_value = f.value();
         return true;
@@ -207,6 +209,12 @@ public:
                 Index num_constraints, Number* g) override {
         assert(num_variables == m_num_variables);
         assert(num_constraints == m_num_constraints);
+        std::vector<adouble> x_adouble(num_variables);
+        // TODO efficiently store this result so it can be used in grad_f, etc.
+        for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+        std::vector<adouble> gradient(num_constraints);
+        constraints(x_adouble, gradient);
+        for (unsigned i = 0; i < num_constraints; ++i) gradient[i] >>= g[i];
         return true;
     }
     // TODO can Ipopt do finite differencing for us?
