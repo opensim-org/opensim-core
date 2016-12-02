@@ -164,6 +164,7 @@ public:
                 Index* iRow, Index *jCol, Number* values) override {
         if (values == nullptr) {
             // TODO use ADOLC to determine sparsity pattern; hess_pat
+            // TODO
             iRow[0] = 0; jCol[0] = 0;
             iRow[1] = 1; jCol[1] = 1;
         } else {
@@ -188,18 +189,25 @@ public:
             options[0] = 0; /* test the computational graph control flow? TODO*/
             options[1] = 0; /* way of recovery TODO */
             // TODO make general:
-            std::unique_ptr<unsigned int[]> row_indices(new unsigned int[2]);
-            std::unique_ptr<unsigned int[]> col_indices(new unsigned int[2]);
-            unsigned int* row_indices2 = row_indices.get();
-            unsigned int* col_indices2 = col_indices.get();
-//            unsigned int* row_indices = new unsigned int[1];
-//            unsigned int* col_indices = new unsigned int[1];
+            unsigned int* row_indices = NULL;
+            unsigned int* col_indices = NULL;
             // TODO hope that the row indices are the same between IpOopt and
             // ADOL-C.
+            double* vals = NULL;
+            int num_nonzeros;
             int success = sparse_hess(tag, num_variables, repeated_call,
-                                      x, &num_nonzeros_hessian, 
-                                      &row_indices2, &col_indices2, &values,
+                                      x, &num_nonzeros, 
+                                      &row_indices, &col_indices, &vals,
                                       options);
+            // TODO try to use modern memory management.
+            delete [] row_indices;
+            delete [] col_indices;
+            // TODO avoid reallocating vals each time!!!
+            delete [] vals;
+            for (int i = 0; i < num_nonzeros; ++i) {
+                values[i] = vals[i];
+            }
+
         }
         return true;
     }
