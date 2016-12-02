@@ -108,12 +108,13 @@ MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 /**
  * Get names of markers in the marker set
  */
-void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
+void MarkerSet::getMarkerNames(Array<string>& markerNamesArray) const
 {
+    markerNamesArray.setSize(0);
     for (int i = 0; i < getSize(); i++)
     {
         Marker& nextMarker = get(i);
-        aMarkerNamesArray.append(nextMarker.getName());
+        markerNamesArray.append(nextMarker.getName());
     }
 }
 

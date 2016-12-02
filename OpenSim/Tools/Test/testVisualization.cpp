@@ -38,6 +38,7 @@ Model createModel4AppearanceTest();
 void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
 void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
 void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
 bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
@@ -98,21 +99,27 @@ public:
     std::string getAsString() {
         return printout.str();
     }
+    void setPrintTransforms(bool toPrint) { printTransform = toPrint;}
 private:
     std::stringstream printout;
+    bool printTransform = false; // Flag to indicate whether or not to output transform as String
     std::string printCommonProps(const DecorativeGeometry& dg){
         std::stringstream oneDGStream;
         oneDGStream << " bodyId:" << dg.getBodyId() << " color:" << dg.getColor() << " indexOnBody:"
             << dg.getIndexOnBody() << " Opacity:" << dg.getOpacity() << " Rep:" << dg.getRepresentation() << " Scale:"
-            << dg.getScaleFactors() << " Transform:" << dg.getTransform();
+            << dg.getScaleFactors();
+        if (printTransform)
+            oneDGStream << " Transform:" << dg.getTransform();
         return oneDGStream.str();
     }
+
 };
 
 int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
+        
         Model testModel("BuiltinGeometry.osim");
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
         std::cout << "BuiltinGeometry Passed" << std::endl;
@@ -121,7 +128,9 @@ int main()
         std::cout << "Appearance test Passed" << std::endl;
         // Load Model in 3.3 format that had transforms attached to Geometry
         Model testModel3("double_pendulum33.osim");
+        
         SimTK::Array_<DecorativeGeometry> standard;
+        
         populate_doublePendulumPrimitives(standard);
         testVisModelAgainstStandard(testModel3, standard);
         std::cout << "double_pendulum33 test Passed" << std::endl;
@@ -135,6 +144,12 @@ int main()
         Model modelWithContacts("visualize_contacts.osim");
         populate_contactModelPrimitives(standard);
         testVisModelAgainstStandard(modelWithContacts, standard);
+        
+        // Model with WrapObjects
+        Model modelWithWrap("test_wrapAllVis.osim");
+        modelWithWrap.updDisplayHints().set_show_frames(false);
+        populate_wrapModelPrimitives(standard);
+        testVisModelAgainstStandard(modelWithWrap, standard);
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -159,6 +174,7 @@ void testVisModel(Model& model, const std::string standard_filename)
     model.generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     DecorativeGeometryImplementationText dgiText;
+    dgiText.setPrintTransforms(true); // In toy models Transforms can be printed and compared as strings
     for (unsigned i = 0; i < geometryToDisplay.size(); i++)
         geometryToDisplay[i].implementGeometry(dgiText);
 
@@ -225,13 +241,22 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
     SimTK::State& si = model.initSystem();
     if (visualDebug)
         model.getVisualizer().show(si);
-    ModelDisplayHints mdh;
+    const ModelDisplayHints& mdh = model.getDisplayHints();
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
     model.generateDecorations(false, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
-
+    /*
+    DecorativeGeometryImplementationText textFromModel;
+    textFromModel.setPrintTransforms(true); // Debugging
+    for (const SimTK::DecorativeGeometry* nextGeom = geometryToDisplay.begin();
+    nextGeom != geometryToDisplay.end();
+        ++nextGeom) {
+        nextGeom->implementGeometry(textFromModel);
+    }
+    std::cout << textFromModel.getAsString() << std::endl;
+    */
     int i = 0;
     for (const SimTK::DecorativeGeometry* nextGeom = stdPrimitives.begin();
         nextGeom != stdPrimitives.end();
@@ -242,7 +267,11 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
             geometryToDisplay[i].implementGeometry(dgiTextFromModel);
             if (!(dgiTextFromStandard.getAsString() == dgiTextFromModel.getAsString()))
                 throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
-            ++i;
+            // Compare transforms, this has to be more lenient than String comparison due to roundoff
+            SimTK::Mat44 diffTransform = nextGeom->getTransform().toMat44() - geometryToDisplay[i].getTransform().toMat44();
+            double norm = diffTransform.norm();
+            SimTK_TEST_EQ(norm, 0.)
+             ++i;
     }
     if (visualDebug) {
         char c;
@@ -397,5 +426,72 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
         .setIndexOnBody(-1).setOpacity(0.7).setScale(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(transform));
+
+}
+
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+    stdPrimitives.clear();
+    // Frame for Ground & Bodies
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(4).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(3).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frames for the Joint
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Vec3({-.01, -.03, .03})));
+    Transform cylTransform;
+    // This transform parallels the code in generateDecorations to reflect
+    // that DecorativeCylinder is Y aligned while WrapCylinder is Z aligned
+    cylTransform.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
+    stdPrimitives.push_back(
+        DecorativeCylinder(.025, .05).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Transform(cylTransform.R(), Vec3({ .01, -.4, .01 }))));
+    stdPrimitives.push_back(
+        DecorativeCylinder(.03, .05).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Transform(cylTransform.R(), Vec3({ .025, -.25, 0 }))));
+    stdPrimitives.push_back(
+        DecorativeCylinder(.03, .05).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Transform(cylTransform.R(), Vec3({ .05, -.25, 0 }))));
+    stdPrimitives.push_back(
+        DecorativeSphere(.055).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Vec3({ .01, -.3, .01 })));
+    stdPrimitives.push_back(
+        DecorativeEllipsoid(Vec3(.1, .05, .15)).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Vec3({ -.01, -.5, .0 })));
+    stdPrimitives.push_back(
+        DecorativeTorus(.08, .035).setBodyId(0).setColor(SimTK::Cyan)
+        .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(Vec3({ -.02, -.6, .01 })));
+
 
 }

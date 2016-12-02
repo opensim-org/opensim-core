@@ -58,7 +58,6 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            // Create the integrator for the simulation.
            p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
            p_integrator->setAccuracy(1.0e-7);
-           p_manager.reset(new Manager(osimModel, *p_integrator));
        }
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
@@ -70,12 +69,13 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         osimModel.updDefaultControls() = newControls;
                 
         // Integrate from initial time to final time
-        p_manager->setInitialTime(initialTime);
-        p_manager->setFinalTime(finalTime);
+        Manager manager(osimModel, *p_integrator);
+        manager.setInitialTime(initialTime);
+        manager.setFinalTime(finalTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        p_manager->integrate(s);
+        manager.integrate(s);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
@@ -107,7 +107,6 @@ private:
     int numControls;
     State& si;
     Model& osimModel;
-    std::unique_ptr<Manager> p_manager;
     SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
 
  };

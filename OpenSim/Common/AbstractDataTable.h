@@ -203,6 +203,11 @@ public:
                          key);
     }
 
+    /** Whether or not table metadata for the given key exists.               */
+    bool hasTableMetaDataKey(const std::string& key) const {
+        return _tableMetaData.hasKey(key);
+    }
+
     /** Get table metadata for a given key.
 
     If using this funciton from Python/Java/Matlab, use the following table:

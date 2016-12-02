@@ -635,8 +635,7 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
         for (int i=0; i<6; i++) {
             const TransformAxis* ta = &dofs[i];
             if (i >= 3) {
-                double axis[3];
-                ta->getAxis(axis);
+                const auto& axis = ta->getAxis();
                 for (int j=0; j<3; j++) {
                     if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
                         if (ta->getCoordinateNames().size() > 0) { // transform axis is unused if it has no coordinate names

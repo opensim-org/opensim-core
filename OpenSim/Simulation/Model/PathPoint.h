@@ -77,11 +77,12 @@ public:
         if (aCoordIndex >= 0 && aCoordIndex <= 2)
            upd_location()[aCoordIndex] = aLocation;
     }
-
+#ifndef SWIG
     // A variant that uses basic types for use by GUI
     void setLocation( const SimTK::State& s, double pt[]){ 
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
+#endif
     void setBody(const PhysicalFrame& body) {
         this->setParentFrame(body);
     }
