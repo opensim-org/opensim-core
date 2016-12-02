@@ -74,14 +74,20 @@ public:
                            adouble& obj_value) const = 0;
     virtual void constraints(const std::vector<adouble>& x,
                              std::vector<adouble>& constraints) const = 0;
-    void lagrangian(const std::vector<adouble>& x,
-                    const std::vector<adouble>& lambda,
+    void lagrangian(double obj_factor, const std::vector<adouble>& x,
+                    const std::vector<double>& lambda,
                     adouble& result) const {
         assert(x.size() == m_num_variables);
         assert(lambda.size() == m_num_constraints);
 
         result = 0;
-        objective(x, result);
+        //if (obj_factor != 0) {
+        //    objective(x, result);
+        //    result *= obj_factor;
+        //}
+        objective(x, result); // TODO should not compute obj if obj_factor = 0.
+                              // but that optimization makes ADOLC unhappy.
+        result *= obj_factor;
         std::vector<adouble> constr(m_num_constraints);
         constraints(x, constr);
         for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
@@ -155,17 +161,13 @@ public:
         // ---------------------------------------------------------------------
         trace_on(tag);
         std::vector<adouble> x_adouble(m_num_variables);
-        std::vector<adouble> lambda_adouble(m_num_constraints);
+        std::vector<double> lambda_vector(m_num_constraints, 1);
         adouble lagrangian_adouble;
         double lagr;
         for (unsigned i = 0; i < m_num_variables; ++i) {
             x_adouble[i] <<= guess[i];
         }
-        //TODOfor (unsigned icon = 0; icon < m_num_constraints; ++icon) {
-        //TODO    lambda_adouble[icon] <<= 1; // TODO what's a good guess?
-        //TODO}
-        //TODOlagrangian(x_adouble, lambda_adouble, lagrangian_adouble);
-        objective(x_adouble, lagrangian_adouble);
+        lagrangian(1.0, x_adouble, lambda_vector, lagrangian_adouble);
         lagrangian_adouble >>= lagr; 
         trace_off();
         // ---------------------------------------------------------------------
@@ -188,9 +190,8 @@ public:
         for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
             x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
         }
-        int success = sparse_hess(tag, m_num_variables/* + m_num_constraints*/,
-                                  repeated_call,
-                                  /*&x_and_lambda[0]*/&guess[0], &num_nonzeros, 
+        int success = sparse_hess(tag, m_num_variables, repeated_call,
+                                  &guess[0], &num_nonzeros, 
                                   &row_indices, &col_indices, &hessian,
                                   options);
         m_hessian_num_nonzeros = num_nonzeros;
@@ -200,7 +201,6 @@ public:
             m_hessian_row_indices[i] = row_indices[i];
             m_hessian_col_indices[i] = col_indices[i];
         }
-        std::cout << "DEBUGinit " << num_nonzeros << std::endl;
         // TODO try to use modern memory management.
         delete [] row_indices;
         delete [] col_indices;
@@ -372,15 +372,6 @@ public:
             return true;
         }
 
-        std::cout << "DEBUG0" << std::endl;
-        for (int i = 0; i < num_variables; ++i) {
-            std::cout << x[i] << std::endl;
-        }
-        for (int i = 0; i < num_constraints; ++i) {
-            std::cout << lambda[i] << std::endl;
-        }
-        std::cout << "DEBUG1" << std::endl;
-
         // TODO this hessian must include the constraint portion!!!
         // TODO if not new_x, then do NOT re-eval objective()!!!
 
@@ -391,19 +382,17 @@ public:
         // START ACTIVE
         trace_on(tag);
         std::vector<adouble> x_adouble(num_variables);
-        std::vector<adouble> lambda_adouble(num_constraints);
+        std::vector<double> lambda_vector(num_constraints);
         adouble lagrangian_adouble;
         double lagr;
-        for (unsigned i = 0; i < num_variables; ++i) {
+        for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
             // TODO add this operator for std::vector.
-            x_adouble[i] <<= x[i];
+            x_adouble[ivar] <<= x[ivar];
         }
-        //for (unsigned icon = 0; icon < num_constraints; ++icon) {
-        //    // TODO add this operator for std::vector.
-        //    lambda_adouble[icon] <<= lambda[icon];
-        //}
-        //lagrangian(x_adouble, lambda_adouble, lagrangian_adouble);
-        objective(x_adouble, lagrangian_adouble);
+        for (unsigned icon = 0; icon < num_constraints; ++icon) {
+            lambda_vector[icon] = lambda[icon];
+        }
+        lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
         lagrangian_adouble >>= lagr; 
         trace_off();
         // END ACTIVE
@@ -445,19 +434,16 @@ public:
         // pros and cons with respect to efficiency.
         //
 
-        std::vector<double> x_and_lambda(num_variables + num_constraints);
-        for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
-            x_and_lambda[ivar] = x[ivar];
-        }
-        for (unsigned icon = 0; icon < num_constraints; ++icon) {
-            x_and_lambda[icon + num_variables] = lambda[icon];
-        }
-        int success = sparse_hess(tag, num_variables/* + num_constraints*/,
-                                  repeated_call,
-                                  /*&x_and_lambda[0]*/x, &num_nonzeros, 
-                                  &row_indices, &col_indices, &vals,
-                                  options);
-        std::cout << "DEBUGh " << num_nonzeros << std::endl;
+        //std::vector<double> x_and_lambda(num_variables + num_constraints);
+        //for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
+        //    x_and_lambda[ivar] = x[ivar];
+        //}
+        //for (unsigned icon = 0; icon < num_constraints; ++icon) {
+        //    x_and_lambda[icon + num_variables] = lambda[icon];
+        //}
+        int success = sparse_hess(tag, num_variables, repeated_call,
+                                  x, &num_nonzeros, &row_indices, &col_indices,
+                                  &vals, options);
         for (int i = 0; i < num_nonzeros; ++i) {
             values[i] = vals[i];
         }
@@ -710,7 +696,7 @@ int main(int argc, char* argv[]) {
         app->Options()->SetNumericValue("tol", 1e-9);
         app->Options()->SetStringValue("mu_strategy", "adaptive");
         app->Options()->SetStringValue("output_file", "ipopt.out");
-        app->Options()->SetStringValue("derivative_test", "second-order");
+        app->Options()->SetStringValue("derivative_test", "second-order"); // TODO temporary 
         Ipopt::ApplicationReturnStatus status;
         status = app->Initialize();
         if (status != Ipopt::Solve_Succeeded) {
