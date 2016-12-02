@@ -879,7 +879,7 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
-##### Ubuntu 16.04 Xenial Xerus
+##### Ubuntu 16.04 Xenial Xerus AND Ubuntu 16.10 Yakkety Yak
 In **Terminal** --
 ```shell
 sudo apt-get update
@@ -908,7 +908,6 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
-
 
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-core

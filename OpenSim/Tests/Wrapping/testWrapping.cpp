@@ -144,7 +144,7 @@ public:
                       const CablePath& path,
                       Real stiffness, Real nominal, Real damping)
     :   forces(forces), path(path), k(stiffness), x0(nominal), c(damping)
-    {   assert(stiffness >= 0 && nominal >= 0 && damping >= 0); }
+    {   ASSERT(stiffness >= 0 && nominal >= 0 && damping >= 0); }
 
     const CablePath& getCablePath() const {return path;}
 

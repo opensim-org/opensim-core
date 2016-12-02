@@ -1,14 +1,14 @@
-subdirs(Analyze Forward Scale IK ID CMC RRA versionUpdate) 
-
-# Docopt *is* required, but we omit the "REQUIRED" flag for find_package()
-# since we want to give a custom error message. If docopt is not found, then
-# CMake will still produce a warning telling users to set CMAKE_PREFIX_PATH or
-# docopt_DIR.
-find_package(docopt 0.6.1
-             HINTS "${OPENSIM_DEPENDENCIES_DIR}/docopt/lib/cmake/docopt")
-
-if(NOT docopt_FOUND)
-    message(FATAL_ERROR "Dependency 'docopt' not found, but is needed for \
-            command-line argument parsing; see the related CMake Warning.\
-            Follow the Superbuild instructions in README.md to obtain docopt.")
+if(OPENSIM_BUILD_INDIVIDUAL_APPS)
+    # Basically, don't install the old applications on Linux or OSX, where
+    # they conflict with system executables like "id".
+    add_subdirectory(Analyze)
+    add_subdirectory(Forward)
+    add_subdirectory(Scale)
+    add_subdirectory(IK)
+    add_subdirectory(ID)
+    add_subdirectory(CMC)
+    add_subdirectory(RRA)
+    add_subdirectory(versionUpdate)
 endif()
+
+add_subdirectory(opensim-cmd)

@@ -161,7 +161,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
     ForceSet& as = aModel.updForceSet();
     as.setSize(0);
     auto coordinates = aModel.getCoordinatesInMultibodyTreeOrder();
-    for(int i=0; i < coordinates.size(); ++i) {
+    for(size_t i=0u; i < coordinates.size(); ++i) {
         const Coordinate& coord = *coordinates[i];
         if(!aIncludeLockedAndConstrainedCoordinates && (coord.isConstrained(s))) continue;
         CoordinateActuator *actuator = new CoordinateActuator();

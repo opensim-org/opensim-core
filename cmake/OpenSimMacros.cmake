@@ -223,20 +223,35 @@ endfunction()
 
 
 # Create an application/executable. To be used in the Appliations directory.
-# APPNAME: Name of the application. Must also be the name of the source file
-# containing main().
+# NAME: Name of the application. Must also be the name of the source file
+#   containing main() (without the .cpp extension).
+# SOURCES: Additional header/source files to compile into this target. 
 #
 # Here's an example:
-#   OpenSimAddApplication(forward)
-function(OpenSimAddApplication APPNAME)
+#   OpenSimAddApplication(NAME opensim-cmd SOURCES opensim-cmd_run-tool.h)
+function(OpenSimAddApplication)
 
+    # Parse arguments.
+    # ----------------
+    # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(
+        OSIMADDAPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    # Build.
     include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
-    add_executable(${APPNAME} ${APPNAME}.cpp)
-    target_link_libraries(${APPNAME} osimTools)
-    install(TARGETS ${APPNAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    set_target_properties(${APPNAME} PROPERTIES
+    add_executable(${OSIMADDAPP_NAME} ${OSIMADDAPP_NAME}.cpp
+                                      ${OSIMADDAPP_SOURCES})
+    target_link_libraries(${OSIMADDAPP_NAME} osimTools)
+    set_target_properties(${OSIMADDAPP_NAME} PROPERTIES
         FOLDER "Applications")
 
+    # Install.
+    install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    # RPATH (so that the executable finds libraries without using env. vars).
     if(${OPENSIM_USE_INSTALL_RPATH})
         # TODO @executable_path only makes sense on OSX, so if we use RPATH on
         # Linux we'll have to revisit.
@@ -247,7 +262,7 @@ function(OpenSimAddApplication APPNAME)
             "${CMAKE_INSTALL_PREFIX}")
         set(bin_dir_to_lib_dir
             "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
-        set_target_properties(${APPNAME} PROPERTIES
+        set_target_properties(${OSIMADDAPP_NAME} PROPERTIES
             INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
             )
     endif()
@@ -324,7 +339,4 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
     unset(_successfully_got_dependencies)
 
 endmacro()
-
-
-
 

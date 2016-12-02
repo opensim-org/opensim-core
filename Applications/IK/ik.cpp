@@ -57,6 +57,17 @@ int main(int argc,char **argv)
     try {
     //----------------------
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      ik -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      ik -PS              -> opensim-cmd print-xml ik
+    )";
+    std::cout << deprecationNotice << std::endl;
+
     // REGISTER TYPES
     InverseKinematicsTool::registerTypes();
 
