@@ -434,7 +434,7 @@ You use this field to specify the outputs/channels that should be connected to
 this input (that is, the connectees). The syntax for the connectee name
 property is as follows:
 @code
-<path/to/component/><output_name>[:<channel_name>][(<alias>)]
+<path/to/component>|<output_name>[:<channel_name>][(<alias>)]
 @endcode
 Angle brackets indicate fields that one would fill in, and square brackets
 indicate optional fields. The `<path/to/component>` can be relative or
@@ -448,20 +448,20 @@ All fields should contain only letters, numbers, and underscores (the path
 to the component can contain slashes and periods); fields must *not* contain
 spaces.
 Here are some examples:
- - `../marker_data/column:left_ankle`: The TableSourceVec3 component
+ - `../marker_data|column:left_ankle`: The TableSourceVec3 component
    `../marker_data` has a list output `column`, and we want to connect to its
    `left_ankle` channel.
- - `../averager/output(knee_joint_center)`: The component `../averager`
+ - `../averager|output(knee_joint_center)`: The component `../averager`
    (presumably a component that averages its inputs) has an output named
    `output`, and we are aliasing this output as `knee_joint_center`.
- - `/leg_model/soleus/activation`: This connectee name uses the absolute path
+ - `/leg_model/soleus|activation`: This connectee name uses the absolute path
    to component `soleus`, which has an output named `activation`.
 
 List inputs can contain multiple entries in its connectee name, with the
 entries separated by a space. For example:
 @code
 <input_experimental_markers_connectee_names>
-    ../marker_data/column:left_ankle ../marker_data/column:right_ankle ../averager/output(knee_joint_center)
+    ../marker_data|column:left_ankle ../marker_data|column:right_ankle ../averager|output(knee_joint_center)
 </input_experimental_markers_connectee_names>
 @endcode
 */
@@ -536,39 +536,40 @@ public:
 
      Examples:
      @verbatim
-     /foo/bar/output
+     /foo/bar|output
      outputPath is "/foo/bar/output"
      channelName is ""
      alias is ""
 
-     /foo/bar/output:channel
+     /foo/bar|output:channel
      outputPath is "/foo/bar/output"
      channelName is "channel"
      alias is ""
 
-     /foo/bar/output(baz)
+     /foo/bar|output(baz)
      outputPath is "/foo/bar/output"
      channelName is ""
      alias is "baz"
 
-     /foo/bar/output:channel(baz)
-     outputPath is "/foo/bar/output"
+     /foo/bar|output:channel(baz)
+     outputPath is "/foo/bar|output"
      channelName is "channel"
      alias is "baz"
      @endverbatim
      */
     static bool parseConnecteeName(const std::string& connecteeName,
-                                   std::string& outputPath,
+                                   std::string& componentPath,
+                                   std::string& outputName,
                                    std::string& channelName,
                                    std::string& alias) {
-        auto lastSlash = connecteeName.rfind("/");
+        auto bar = connecteeName.rfind("|");
         auto colon = connecteeName.rfind(":");
         auto leftParen = connecteeName.rfind("(");
         auto rightParen = connecteeName.rfind(")");
         
-        std::string outputName = connecteeName.substr(lastSlash + 1,
-                                    std::min(colon, leftParen) - lastSlash);
-        outputPath = connecteeName.substr(0, std::min(colon, leftParen));
+        componentPath = connecteeName.substr(0, bar);
+        outputName = connecteeName.substr(bar + 1,
+                                          std::min(colon, leftParen) - (bar + 1));
         
         // Channel name.
         if (colon != std::string::npos) {
@@ -989,7 +990,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
     /** The syntax for a connectee name is                               */ \
-    /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
+    /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro.                                    */ \
@@ -1029,7 +1030,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
     /** The syntax for a connectee name is                               */ \
-    /** `<path/to/component/><output_name>[:<channel_name>][(<alias>)]`. */ \
+    /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \

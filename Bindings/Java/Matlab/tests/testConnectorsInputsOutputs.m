@@ -80,7 +80,7 @@ concreteOutput.getValue(state);
 % --------
 % Access AbstractChannels.
 assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
-              '/leg/pin/pin_coord_0/speed'));
+              '/leg/pin/pin_coord_0|speed'));
 
 % Access the value of a concrete Channel.
 % TODO Concrete channels are not wrapped yet.

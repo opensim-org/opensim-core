@@ -1072,32 +1072,43 @@ void testInputOutputConnections()
 }
 
 void testInputConnecteeNames() {
-    std::string outputPath, channelName, alias;
-    
-    AbstractInput::parseConnecteeName("/foo/bar/output",
-                                      outputPath, channelName, alias);
-    SimTK_TEST(outputPath == "/foo/bar/output");
-    SimTK_TEST(channelName == "");
-    SimTK_TEST(alias == "");
-    
-    AbstractInput::parseConnecteeName("/foo/bar/output:channel",
-                                      outputPath, channelName, alias);
-    SimTK_TEST(outputPath == "/foo/bar/output");
-    SimTK_TEST(channelName == "channel");
-    SimTK_TEST(alias == "");
-    
-    AbstractInput::parseConnecteeName("/foo/bar/output(baz)",
-                                      outputPath, channelName, alias);
-    SimTK_TEST(outputPath == "/foo/bar/output");
-    SimTK_TEST(channelName == "");
-    SimTK_TEST(alias == "baz");
-    
-    AbstractInput::parseConnecteeName("/foo/bar/output:channel(baz)",
-                                      outputPath, channelName, alias);
-    SimTK_TEST(outputPath == "/foo/bar/output");
-    SimTK_TEST(channelName == "channel");
-    SimTK_TEST(alias == "baz");
-    
+    {
+        std::string componentPath, outputName, channelName, alias;
+        AbstractInput::parseConnecteeName("/foo/bar|output",
+                componentPath, outputName, channelName, alias);
+        SimTK_TEST(componentPath == "/foo/bar");
+        SimTK_TEST(outputName == "output");
+        SimTK_TEST(channelName == "");
+        SimTK_TEST(alias == "");
+    }
+    {
+        std::string componentPath, outputName, channelName, alias;
+        AbstractInput::parseConnecteeName("/foo/bar|output:channel",
+                componentPath, outputName, channelName, alias);
+        SimTK_TEST(componentPath == "/foo/bar");
+        SimTK_TEST(outputName == "output");
+        SimTK_TEST(channelName == "channel");
+        SimTK_TEST(alias == "");
+    }
+    {
+        std::string componentPath, outputName, channelName, alias;
+        AbstractInput::parseConnecteeName("/foo/bar|output(baz)",
+                componentPath, outputName, channelName, alias);
+        SimTK_TEST(componentPath == "/foo/bar");
+        SimTK_TEST(outputName == "output");
+        SimTK_TEST(channelName == "");
+        SimTK_TEST(alias == "baz");
+    }
+    {
+        std::string componentPath, outputName, channelName, alias;
+        AbstractInput::parseConnecteeName("/foo/bar|output:channel(baz)",
+                componentPath, outputName, channelName, alias);
+        SimTK_TEST(componentPath == "/foo/bar");
+        SimTK_TEST(outputName == "output");
+        SimTK_TEST(channelName == "channel");
+        SimTK_TEST(alias == "baz");
+    }
+
     // TODO test invalid names as well.
 }
 
@@ -1546,9 +1557,9 @@ void testListInputConnecteeSerialization() {
     std::string modelFileName = "testComponentInterface_"
                                 "testListInputConnecteeSerialization_world.xml";
     std::vector<std::string> expectedConnecteeNames{
-            "../producer/column:a",
-            "../producer/column:c",
-            "../producer/column:b(berry)"};
+            "../producer|column:a",
+            "../producer|column:c",
+            "../producer|column:b(berry)"};
     SimTK::Vector expectedInputValues;
     {
         // Create the "model," which just contains a reporter.
@@ -1696,9 +1707,9 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Check connectee names before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
+        SimTK_TEST(input1.getConnecteeName() == "../producer|column:b");
         SimTK_TEST(fiberLength.getConnecteeName() ==
-                   "../producer/column:d(desert)");
+                   "../producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
         SimTK_TEST(activation.getConnecteeName() == "non/existant");
         // Now we must clear this before trying to connect, since the connectee
@@ -1713,9 +1724,9 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(!fiberLength.isListConnector());
         SimTK_TEST(!activation.isListConnector());
         
-        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
+        SimTK_TEST(input1.getConnecteeName() == "../producer|column:b");
         SimTK_TEST(fiberLength.getConnecteeName() ==
-                   "../producer/column:d(desert)");
+                   "../producer|column:d(desert)");
         
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");
@@ -1815,7 +1826,7 @@ void testAliasesAndLabels() {
     // Non-list Input, no alias.
     foo->updInput("input1").connect( bar->getOutput("Output1") );
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
-    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar/Output1");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
 
     // Set alias.
     foo->updInput("input1").setAlias("waldo");
@@ -1846,10 +1857,10 @@ void testAliasesAndLabels() {
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar/Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar|Output1");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar/Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar|Output3");
 
     foo->updInput("listInput1").disconnect();
 

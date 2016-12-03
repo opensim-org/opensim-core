@@ -60,7 +60,7 @@ public:
     virtual std::string getName() const = 0;
     /** This returns the absolute path name of the component to which this channel
      * belongs prepended to the channel's name. For example, this 
-     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
 };
@@ -114,7 +114,7 @@ public:
     /** Output's owning Component */
     const Component& getOwner() const { return _owner.getRef(); }
     
-    /** This returns <absolute-path-to-component>/<output-name>. */
+    /** This returns <absolute-path-to-component>|<output-name>. */
     std::string getPathName() const;
 
     /** Output Interface */
@@ -348,7 +348,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathName() + "/" + getName();
+        return getOutput().getOwner().getAbsolutePathName() + "|" + getName();
     }
 private:
     mutable T _result;

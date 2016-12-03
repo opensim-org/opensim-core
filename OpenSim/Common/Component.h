@@ -2870,15 +2870,15 @@ void Input<T>::connect(const AbstractOutput& output,
         if (!alias.empty())
             outputName += "(" + alias + ")";
 
-        path.pushBack(outputName);
+        std::string pathStr = path.toString() + "|" + outputName;
 
         // set the connectee name so that the connection can be
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(path.toString(), idxThisConnectee);
+            setConnecteeName(pathStr, idxThisConnectee);
         else
-            appendConnecteeName(path.toString());
+            appendConnecteeName(pathStr);
 
         // Use the provided alias for all channels.
         _aliases.push_back(alias);
@@ -2918,14 +2918,14 @@ void Input<T>::connect(const AbstractChannel& channel,
     if (!alias.empty())
         channelName += "(" + alias + ")";
 
-    path.pushBack(channelName);
+    std::string pathStr = path.toString() + "|" + channelName;
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(path.toString(), idxThisConnectee);
+        setConnecteeName(pathStr, idxThisConnectee);
     else
-        appendConnecteeName(path.toString());
+        appendConnecteeName(pathStr);
     
     // Store the provided alias.
     _aliases.push_back(alias);
@@ -2933,30 +2933,28 @@ void Input<T>::connect(const AbstractChannel& channel,
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPathStr, channelName, alias;
+    std::string compPathStr, outputName, channelName, alias;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
-                           alias);
-        ComponentPath outputPath(outputPathStr);
-        std::string componentPathStr = outputPath.getParentPathString();
-        std::string outputName = outputPath.getComponentName();
+        parseConnecteeName(getConnecteeName(ix),
+                           compPathStr, outputName, channelName, alias);
+        ComponentPath compPath(compPathStr);
         const AbstractOutput* output = nullptr;
 
-        if (outputPath.isAbsolute()) { //absolute path string
-            if (componentPathStr.empty()) {
-                output = &root.getOutput(outputPath.toString());
+        if (compPath.isAbsolute()) { //absolute path string
+            if (compPathStr.empty()) {
+                output = &root.getOutput(outputName);
             }
             else {
-                output = &root.getComponent(componentPathStr).getOutput(outputName);
+                output = &root.getComponent(compPathStr).getOutput(outputName);
             }
         }
 
         else { // relative path string
-            if (componentPathStr.empty()) {
-                output = &getOwner().getOutput(outputPath.toString());
+            if (compPathStr.empty()) {
+                output = &getOwner().getOutput(outputName);
             }
             else {
-                output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
+                output = &getOwner().getComponent(compPathStr).getOutput(outputName);
             }
             
         }
