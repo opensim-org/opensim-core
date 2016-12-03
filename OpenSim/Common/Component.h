@@ -86,7 +86,9 @@ public:
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
-        msg += "' of type " + toFindClassName + ".";
+        msg += "' of type " + toFindClassName + ". ";
+        msg += "Make sure a component exists at this path and that it is of ";
+        msg += "the correct type.";
         addMessage(msg);
     }
 };
@@ -174,6 +176,8 @@ public:
  * handles all of the bookkeeping of system indices and provides convenience 
  * access to variable values (incl. derivatives) via their names as strings. 
  *
+ * ### System and State
+ *
  * The MultibodySystem and its State are defined by Simbody (ref ...). Briefly,
  * a System represents the mathematical equations that specify the behavior
  * of a computational model. The State is a collection of all the variables 
@@ -198,6 +202,8 @@ public:
  * the modeled dynamics of the component. Component provides services
  * that enable developers of components to define additional ModelingOptions.
  *
+ * ### Discrete variables
+ *
  * Often a component requires input from an outside source (precomputed data 
  * from a file, another program, or interaction from a user) in which case these
  * variables do not have dynamics (differential eqns.) known to the component, 
@@ -212,6 +218,8 @@ public:
  * provides services to enable developers of components to define and access its
  * DiscreteVariables.
  *
+ * ### Cache variables
+ *
  * Fast and efficient simulations also require computationally expensive 
  * calculations to be performed only when necessary. Often the result of an
  * expensive calculation can be reused many times over, while the variables it
@@ -222,6 +230,8 @@ public:
  * from the State. OpenSim uses the Simbody infrastructure to manage cache 
  * variables and their validity. Component provides a simplified interface to
  * define and access CacheVariables.
+ *
+ * ### Stages
  *
  * Many modeling and simulation codes put the onus on users and component 
  * creators to manage the validity of cache variables, which is likely to lead 
@@ -274,7 +284,9 @@ public:
  * Component provides methods to check if the cache is valid, update its value
  * and then to mark it as valid. 
  *
- * The primary responsibility of a Component is to add its computational 
+ * ### The interface of this class
+ *
+ * The primary responsibility of a Component is to add its computational
  * representation(s) to the underlying SimTK::System by implementing
  * extendAddToSystem().
  *
@@ -327,8 +339,6 @@ protected:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(connectors, AbstractConnector,
-        "List of connectors (structural dependencies) that this component has.");
 
     OpenSim_DECLARE_LIST_PROPERTY(components, Component,
         "List of components that this component owns and serializes.");
@@ -706,34 +716,24 @@ public:
 
 
     /** @name Component Connector Access methods
-        Access Connectors of this component in a generic way and also by name.
-    */
+        Access Connectors of this component by name. */
     //@{ 
-    
-    /** Get the number of Connectors and then access a Connector by index.
-        For example:
-        @code
-        for (int i = 0; i < myComp.getNumConnectors(); ++i){
-        const AbstractConnector& connector = myComp.getConnector(i);
-        // check status: e.g. is it connected?
-        ...
-        AbstractConnector& connector = myComp.updConnector(i);
-        // change the status: e.g. disconnect or change/define connectee;
-        }
-        @endcode
-        @see getNumConnectors()
-        @see getConnector(int i);
-     */
+    /** Get the number of Connectors in this Component. */
     int getNumConnectors() const {
-        return getProperty_connectors().size();
+        return int(_connectorsTable.size());
     }
 
-    /** Collect and return the names of the connectors in this
-     * component. The names are in the same order as the connectors. */
+    /** Collect and return the names of the connectors in this component. You
+     * can use this to iterate through the connectors:
+     * @code
+     * for (std::string name : comp.getConnectorNames()) {
+     *     const AbstractConnector& conn = getConnector(name);
+     * }
+     * @endcode */
     std::vector<std::string> getConnectorNames() {
-        std::vector<std::string> names(getNumConnectors());
-        for (int i = 0; i < getNumConnectors(); ++i) {
-            names[i] = get_connectors(i).getName(); 
+        std::vector<std::string> names;
+        for (const auto& it : _connectorsTable) {
+            names.push_back(it.first);
         }
         return names;
     }
@@ -804,6 +804,10 @@ public:
      * connected), but does not give you access to the connector's connectee.
      * For that, use getConnectee().
      *
+     * @internal If you have not yet called finalizeFromProperties() on this
+     * component, this function will update the Connector (to tell it which
+     * component it's in) before providing it to you.
+     *
      * <b>C++ example</b>
      * @code{.cpp}
      * model.getComponent("/path/to/component").getConnector("connectorName");
@@ -813,7 +817,19 @@ public:
         auto it = _connectorsTable.find(name);
 
         if (it != _connectorsTable.end()) {
-            return get_connectors(it->second);
+            // The following allows one to use a Connector immediately after
+            // copying the component;
+            // e.g., myComponent.clone().getConnector("a").getConnecteeName().
+            // Since we use the default copy constructor for Component,
+            // the copied AbstractConnector cannot know its new owner
+            // immediately after copying.
+            if (!it->second->hasOwner()) {
+                // The `this` pointer must be non-const because the Connector
+                // will want to be able to modify the connectee_name property.
+                const_cast<AbstractConnector*>(it->second.get())->setOwner(
+                        const_cast<Self&>(*this));
+            }
+            return it->second.getRef();
         }
 
         OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
@@ -826,6 +842,10 @@ public:
      * @code
      * joint.updConnector("parent_frame").connect(model.getGround());
      * @endcode
+     *
+     * @internal If you have not yet called finalizeFromProperties() on this
+     * component, this function will update the Connector (to tell it which
+     * component it's in) before providing it to you.
      */
     AbstractConnector& updConnector(const std::string& name) {
         return const_cast<AbstractConnector&>(getConnector(name));
@@ -834,6 +854,10 @@ public:
     /**
     * Get a const reference to the concrete Connector provided by this
     * Component by name.
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Connector (to tell it which
+    * component it's in) before providing it to you.
     *
     * @param name       the name of the Connector
     * @return const reference to the (Abstract)Connector
@@ -847,37 +871,22 @@ public:
     * Get a writable reference to the concrete Connector provided by this
     * Component by name.
     *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Connector (to tell it which
+    * component it's in) before providing it to you.
+    *
     * @param name       the name of the Connector
     * @return const reference to the (Abstract)Connector
     */
     template<typename T> Connector<T>& updConnector(const std::string& name) {
         return const_cast<Connector<T>&>(getConnector<T>(name));
     }
-
-    /** Access a read-only Connector by index. Make sure to provide a valid
-    index; this function does not check that the index is valid.
-    @see getNumConnectors()
-    @see getConnector(const std::string& name)
-     */
-    const AbstractConnector& getConnector(int i) const {
-        return get_connectors(i);
-    }
-
-    /** Access a writeable Connector by index. Make sure to provide a valid
-    index; this function does not check that the index is valid.
-    @see getNumConnectors()
-    @see updConnector(const std::string& name)
-    */
-    AbstractConnector& updConnector(int i) {
-        return upd_connectors(i);
-    }
-
     //@} end of Component Connector Access methods
 
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
     */
-    //@{ 
+    //@{
 
     /** Access the number of Inputs that this component has. */
     int getNumInputs() const {
@@ -917,6 +926,10 @@ public:
     * model.getComponent("/path/to/component").getInput("inputName");
     * @endcode
     *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
+    *
     * @param name   the name of the Input
     * @return       const reference to the AbstractInput
     */
@@ -925,7 +938,20 @@ public:
         auto it = _inputsTable.find(name);
 
         if (it != _inputsTable.end()) {
-            return it->second.getRef(); 
+            // The following allows one to use an Input immediately after
+            // copying the component;
+            // e.g., myComponent.clone().getInput("a").getConnecteeName().
+            // Since we use the default copy constructor for Component,
+            // the copied AbstractConnector (base class of AbstractInput)
+            // cannot know its new owner immediately after copying.
+            if (!it->second->hasOwner()) {
+            
+                // The `this` pointer must be non-const because the Connector
+                // will want to be able to modify the connectee_name property.
+                const_cast<AbstractInput*>(it->second.get())->setOwner(
+                        const_cast<Self&>(*this));
+            }
+            return it->second.getRef();
         }
 
         OPENSIM_THROW_FRMOBJ(InputNotFound, name);
@@ -939,6 +965,10 @@ public:
     * @code{.cpp}
     * model.updComponent("/path/to/component").updInput("inputName");
     * @endcode
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
 
     * @param name   the name of the Input
     * @return       reference to the AbstractInput
@@ -951,6 +981,11 @@ public:
 
     /**
     * Get a concrete Input that you can directly ask for its values.
+    *
+    * @internal If you have not yet called finalizeFromProperties() on this
+    * component, this function will update the Input (to tell it which
+    * component it's in) before providing it to you.
+    *
     * @param name   the name of the Input
     * @throws Exception if an Input with the given name does not exist.
     * @throws std::bad_cast if the provided type T is incorrect for the given name.
@@ -2180,18 +2215,31 @@ protected:
     * another Component. It serves as a placeholder for the Component and its
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
-    * incompatible or non-existant.
-    */
+    * incompatible or non-existant. This function also creates a Property in
+    * this component to store the connectee name for this connector; the
+    * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    int constructConnector(const std::string& name, bool isList = false) {
-        int ix = updProperty_connectors().adoptAndAppendValue(
-            new Connector<T>(name, SimTK::Stage::Topology, *this));
-        // Add pointer to connectorsTable so we can access connectors easily by
-        // name.
-        _connectorsTable[name] = ix;
-        return ix;
+    PropertyIndex constructConnector(const std::string& name,
+                                     const std::string& propertyComment) {
+        OPENSIM_THROW_IF(_connectorsTable.count(name), Exception,
+            getConcreteClassName() + " already has a connector named '"
+            + name + "'.");
+
+        // This property is accessed / edited by the Connector class. It is
+        // not easily accessible to users.
+        // TODO does putting the addProperty here break the ability to
+        // create a custom-copy-ctor version of all of this?
+        // TODO property type should be ComponentPath or something like that.
+        PropertyIndex propIndex = this->template addProperty<std::string>(
+                "connector_" + name + "_connectee_name", propertyComment, "");
+        // We must create the Property first: the Connector needs the property's
+        // index in order to access the property later on.
+        _connectorsTable[name].reset(
+            new Connector<T>(name, propIndex, SimTK::Stage::Topology, *this));
+        return propIndex;
     }
     
+#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     /** Construct an output for a member function of the same component.
         The following must be true about componentMemberFunction, the function
         that returns the output:
@@ -2209,8 +2257,6 @@ protected:
 
        @see constructOutputForStateVariable()
      */
-
-#ifndef SWIG // SWIG can't parse the const at the end of the second argument.
     template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
             T (CompType::*const memFunc)(const SimTK::State&) const,
@@ -2237,8 +2283,7 @@ protected:
      * output value by const reference (const T&). 
      * @warning ONLY use this with member functions that fetch quantities that
      * are stored within the passed-in SimTK::State. The function cannot return
-     * local variables.
-     */
+     * local variables. */
     template <typename T, typename CompType = Component>
     bool constructOutput(const std::string& name,
             const T& (CompType::*const memFunc)(const SimTK::State&) const,
@@ -2258,8 +2303,7 @@ protected:
     /** Construct an output that can have multiple channels. You add Channels
     to this Output in extendFinalizeFromProperties() using
     AbstractOutput::addChannel(). The member function
-    you provide must take the name of the channel whose value is requested.
-    */
+    you provide must take the name of the channel whose value is requested. */
     template <typename T, typename CompType>
     bool constructListOutput(const std::string& name,
              T (CompType::*const memFunc)(const SimTK::State&,
@@ -2299,19 +2343,40 @@ protected:
      * Output signal.  It is a placeholder for the Output and its type and
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
-     * non-existant. The also specifies at what stage the output must be valid
-     * for the component to consume it as an input.  if the Output's
+     * non-existant. This also specifies at what stage the output must be valid
+     * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
-     * thrown because the output cannot satisfy the Input's requirement. */
+     * thrown because the output cannot satisfy the Input's requirement. 
+     * This function also creates a Property in this component to store the
+     * connectee names for this input; the
+     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    bool constructInput(const std::string& name,
-        const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance,
-        const bool& isList = false) {
+    PropertyIndex constructInput(const std::string& name, bool isList,
+            const std::string& propertyComment,
+            const SimTK::Stage& requiredAtStage = SimTK::Stage::Instance) {
+
+        OPENSIM_THROW_IF(_inputsTable.count(name), Exception,
+            getConcreteClassName() + " already has an input named '"
+            + name + "'.");
+
+        PropertyIndex propIndex;
+        // This property is accessed / edited by the AbstractConnector class.
+        // It is not easily accessible to users.
+        // TODO property type should be OutputPath or ChannelPath.
+        if (isList) {
+            propIndex = this->template addListProperty<std::string>(
+                    "input_" + name + "_connectee_names", propertyComment,
+                    0, std::numeric_limits<int>::max());
+        } else {
+            propIndex = this->template addProperty<std::string>(
+                    "input_" + name + "_connectee_name", propertyComment, "");
+        }
+        // We must create the Property first: the Input needs the property's
+        // index in order to access the property later on.
         _inputsTable[name].reset(
-                new Input<T>(name, requiredAtStage, isList, *this));
-        return true;
+                new Input<T>(name, propIndex, requiredAtStage, *this));
+        return propIndex;
     }
-    
     /// @}
 
 private:
@@ -2358,9 +2423,11 @@ private:
                                       const std::string& channel, T&)> outputFunction,
             const SimTK::Stage& dependsOn = SimTK::Stage::Acceleration,
             bool isList = false) {
-        if (_outputsTable.count(name) == 1) {
-            throw Exception("Output with name '" + name + "' already exists.");
-        }
+
+        OPENSIM_THROW_IF(_outputsTable.count(name), Exception,
+            getConcreteClassName() + " already has an output named '"
+            + name + "'.");
+
         _outputsTable[name].reset(
                 new Output<T>(name, outputFunction, dependsOn, isList));
         return true;
@@ -2386,22 +2453,10 @@ private:
         _namedCacheVariableInfo.clear();    
     }
 
-    // Reset by clearing underlying system indices, disconnecting connectors and
-    // creating a fresh connectorsTable.
+    // Reset by clearing underlying system indices.
     void reset() {
         _simTKcomponentIndex.invalidate();
         clearStateAllocations();
-
-        _connectorsTable.clear();
-        for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-            AbstractConnector& connector = upd_connectors(ix);
-            connector.setOwner(*this);
-            _connectorsTable[connector.getName()] = ix;
-        }
-        
-        for (auto& it : _inputsTable) {
-            it.second->setOwner(*this);
-        }
 
         resetSubcomponentOrder();
     }
@@ -2505,6 +2560,9 @@ protected:
         _orderedSubcomponents.clear();
     }
 
+    /// Handle a change in XML syntax for Connectors.
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+            override;
 
 private:
     // Reference to the parent Component of this Component. It is not the previous
@@ -2520,12 +2578,10 @@ private:
     // propertiesTable maintained by Object
 
     // Table of Component's structural Connectors indexed by name.
-    // Index is the slot in the connectors property where the concrete
-    // Connector lives.
-    std::map<std::string, int> _connectorsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractConnector>> _connectorsTable;
 
     // Table of Component's Inputs indexed by name.
-    std::map<std::string, SimTK::ClonePtr<AbstractInput> > _inputsTable;
+    std::map<std::string, SimTK::ClonePtr<AbstractInput>> _inputsTable;
 
     // Table of Component's Outputs indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractOutput> > _outputsTable;
@@ -2780,49 +2836,52 @@ template<class T>
 void Input<T>::connect(const AbstractOutput& output,
                        const std::string& alias) {
     const auto* outT = dynamic_cast<const Output<T>*>(&output);
-    if (outT) {
-        if (!isListConnector()) {
-            if (outT->isListOutput()) {
-                throw Exception("Non-list input cannot connect to list output");
-            }
-        }
-
-        int ix = 0; 
-        // For a non-list connector, there will only be one channel.
-        for (const auto& chan : outT->getChannels()) {
-            ix = int(_connectees.size());
-            _connectees.push_back(
-                SimTK::ReferencePtr<const Channel>(&chan.second) );
-
-            // Update the connectee name as
-            // <RelOwnerPath>/<Output><(annotation)>
-            ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
-            std::string outputName = chan.second.getName();
-
-            // Append the alias, if one has been provided.
-            if (!alias.empty())
-                outputName += "(" + alias + ")";
-
-            path.pushBack(outputName);
-
-            // set the connectee name so that the connection can be
-            // serialized
-            int numPreexistingConnectees = getNumConnectees();
-            if (ix < numPreexistingConnectees)
-                setConnecteeName(path.toString(), ix);
-            else
-                appendConnecteeName(path.toString());
-
-            // Use the provided alias for all channels.
-            _aliases.push_back(alias);
-        }
-    }
-    else {
+    if (!outT) {
         std::stringstream msg;
-        msg << "Input::connect(): ERR- Cannot connect '" << output.getName()
-        << "' of type Output<" << output.getTypeName() << ">. Input requires "
-        << getConnecteeTypeName() << ".";
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        msg << "Type mismatch between Input and Output: Input '" << getName()
+            << "' of type " << getConnecteeTypeName()
+            << " cannot connect to Output '" << output.getPathName()
+            << "' of type " << output.getTypeName() << ".";
+        OPENSIM_THROW(Exception, msg.str());
+    }
+    
+    if (!isListConnector() && outT->isListOutput()) {
+        OPENSIM_THROW(Exception,
+            "Non-list input '" + getName() +
+            "' cannot connect to list output '" + output.getPathName() + ".");
+    }
+
+    // For a non-list connector, there will only be one channel.
+    for (const auto& chan : outT->getChannels()) {
+    
+        // Record the number of pre-existing satisfied connections...
+        const int numPreexistingSatisfiedConnections(_connectees.size());
+        // ...which happens to be the index of this new connectee.
+        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        _connectees.push_back(
+            SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+        // Update the connectee name as
+        // <RelOwnerPath>/<Output><:Channel><(annotation)>
+        ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
+        std::string outputName = chan.second.getName();
+
+        // Append the alias, if one has been provided.
+        if (!alias.empty())
+            outputName += "(" + alias + ")";
+
+        std::string pathStr = path.toString() + "|" + outputName;
+
+        // set the connectee name so that the connection can be
+        // serialized
+        int numDesiredConnections = getNumConnectees();
+        if (idxThisConnectee < numDesiredConnections)
+            setConnecteeName(pathStr, idxThisConnectee);
+        else
+            appendConnecteeName(pathStr);
+
+        // Use the provided alias for all channels.
+        _aliases.push_back(alias);
     }
 }
 
@@ -2830,90 +2889,77 @@ template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
                        const std::string& alias) {
     const auto* chanT = dynamic_cast<const Channel*>(&channel);
-    if (chanT) {
-        if (!isListConnector()) {
-            // Remove the existing connecteee (if it exists).
-            disconnect();
-        }
-        
-        // Record the number of existing satisfied connections.
-        int ix = int(_connectees.size());
-        _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-        
-        // Update the connectee name as
-        // <RelOwnerPath>/<Channel><(annotation)>
-        ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
-        std::string channelName = chanT->getName();
-
-        // Append the alias, if one has been provided.
-        if (!alias.empty())
-            channelName += "(" + alias + ")";
-
-        path.pushBack(channelName);
-
-        // Set the connectee name so the connection can be serialized.
-        int numPreexistingConnectees = getNumConnectees();
-        if (ix < numPreexistingConnectees)
-            setConnecteeName(path.toString(), ix);
-        else
-            appendConnecteeName(path.toString());
-        
-        // Store the provided alias.
-        _aliases.push_back(alias);
-    }
-    else {
+    if (!chanT) {
         std::stringstream msg;
-        msg << "Input::connect(): ERR- Cannot connect '" << chanT->getPathName()
-        << "' of type Output<" << chanT->getOutput().getTypeName() << ">::Channel. Input requires "
-        << getConnecteeTypeName() << ".";
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        msg << "Type mismatch between Input and Output: Input '" << getName()
+            << "' of type " << getConnecteeTypeName()
+            << " cannot connect to Output (channel) '" << channel.getPathName()
+            << "' of type " << channel.getTypeName() << ".";
+        OPENSIM_THROW(Exception, msg.str());
     }
+    
+    if (!isListConnector()) {
+        // Remove the existing connecteee (if it exists).
+        disconnect();
+    }
+    
+    // Record the number of pre-existing satisfied connections...
+    const int numPreexistingSatisfiedConnections(_connectees.size());
+    // ...which happens to be the index of this new connectee.
+    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
+    
+    // Update the connectee name as
+    // <RelOwnerPath>/<Output><:Channel><(annotation)>
+    ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
+    std::string channelName = chanT->getName();
+
+    // Append the alias, if one has been provided.
+    if (!alias.empty())
+        channelName += "(" + alias + ")";
+
+    std::string pathStr = path.toString() + "|" + channelName;
+    
+    // Set the connectee name so the connection can be serialized.
+    int numDesiredConnections = getNumConnectees();
+    if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
+        setConnecteeName(pathStr, idxThisConnectee);
+    else
+        appendConnecteeName(pathStr);
+    
+    // Store the provided alias.
+    _aliases.push_back(alias);
 }
 
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string outputPathStr, channelName, alias;
+    std::string compPathStr, outputName, channelName, alias;
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix), outputPathStr, channelName,
-                           alias);
-        ComponentPath outputPath(outputPathStr);
-        std::string componentPathStr = outputPath.getParentPathString();
-        std::string outputName = outputPath.getComponentName();
-        try {
-            const AbstractOutput* output = nullptr;
+        parseConnecteeName(getConnecteeName(ix),
+                           compPathStr, outputName, channelName, alias);
+        ComponentPath compPath(compPathStr);
+        const AbstractOutput* output = nullptr;
 
-            if (outputPath.isAbsolute()) { //absolute path string
-                if (componentPathStr.empty()) {
-                    output = &root.getOutput(outputPath.toString());
-                }
-                else {
-                    output = &root.getComponent(componentPathStr).getOutput(outputName);
-                }
+        if (compPath.isAbsolute()) { //absolute path string
+            if (compPathStr.empty()) {
+                output = &root.getOutput(outputName);
             }
+            else {
+                output = &root.getComponent(compPathStr).getOutput(outputName);
+            }
+        }
 
-            else { // relative path string
-                if (componentPathStr.empty()) {
-                    output = &getOwner().getOutput(outputPath.toString());
-                }
-                else {
-                    output = &getOwner().getComponent(componentPathStr).getOutput(outputName);
-                }
-                
+        else { // relative path string
+            if (compPathStr.empty()) {
+                output = &getOwner().getOutput(outputName);
             }
-            const auto& channel = output->getChannel(channelName);
-            connect(channel, alias);
-        }
-        catch (const Exception& ex) {
-            std::stringstream msg;
-            msg << getConcreteClassName() << " '" << getName();
-            msg << "' ::findAndConnect() ERROR- Could not connect to Output '";
-            msg << outputPathStr << "'";
-            if (!channelName.empty()) {
-                msg << " and channel '" << channelName << "'";
+            else {
+                output = &getOwner().getComponent(compPathStr).getOutput(outputName);
             }
-            msg << " (details: " << ex.getMessage() << ").";
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            
         }
+        const auto& channel = output->getChannel(channelName);
+        connect(channel, alias);
     }
 }
 

@@ -185,7 +185,7 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
         }
     }
     // Call base class now assuming _node has been corrected for current version
-    Object::updateFromXMLNode(aNode, versionNumber);
+    Super::updateFromXMLNode(aNode, versionNumber);
 }
 
 void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,

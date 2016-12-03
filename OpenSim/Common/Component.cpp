@@ -25,6 +25,7 @@
 // INCLUDES
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
+#include "XMLDocument.h"
 
 using namespace SimTK;
 
@@ -109,20 +110,17 @@ private:
 //==============================================================================
 Component::Component() : Object()
 {
-    constructProperty_connectors();
     constructProperty_components();
 }
 
 Component::Component(const std::string& fileName, bool updFromXMLNode)
 :   Object(fileName, updFromXMLNode)
 {
-    constructProperty_connectors();
     constructProperty_components();
 }
 
 Component::Component(SimTK::Xml::Element& element) : Object(element)
 {
-    constructProperty_connectors();
     constructProperty_components();
 }
 
@@ -171,14 +169,18 @@ void Component::finalizeFromProperties()
     for (auto& comp : _adoptedSubcomponents) {
         comp->setParent(*this);
     }
-
-    // Provide each Input and Output with a pointer to its component (this) so 
-    // that it can invoke its methods.
-    // TODO if we implement custom copy constructor and assignment methods,
-    // then this could be moved there (and then Output could take owner as an
-    // argument to its constructor).
+    
+    // Provide connectors, inputs, and outputs with a pointer to its component
+    // (this) so that they can invoke the component's methods.
+    for (auto& it : _connectorsTable) {
+        it.second->setOwner(*this);
+        // Let the Connector handle any errors in the connectee_name property.
+        it.second->checkConnecteeNameProperty();
+    }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
+        // Let the Connector handle any errors in the connectee_name property.
+        it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
@@ -217,28 +219,24 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    reset();
-
-    // rebuilding the connectors table, which was emptied by clearStateAllocations
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        AbstractConnector& connector = upd_connectors(ix);
-        connector.disconnect();
+    for (auto& it : _connectorsTable) {
+        auto& connector = it.second;
+        connector->disconnect();
         try {
-            connector.findAndConnect(root);
+            connector->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() + "'" + getName() +"'"
-                "::connect() \nFailed to connect Connector<" +
-                connector.getConnecteeTypeName() + "> '" + connector.getName() +
-                "' within " + root.getConcreteClassName() + " '" + root.getName() +
-                "' (details: " + x.what() + ").");
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Connector '" +
+                connector->getName() + "' of type " +
+                connector->getConnecteeTypeName() +
+                " (details: " + x.what() + ").");
         }
     }
 
-    for (auto& inputPair : _inputsTable) {
-        AbstractInput& input = inputPair.second.updRef();
+    for (auto& it : _inputsTable) {
+        auto& input = it.second;
 
-        if (!input.isListConnector() && input.getConnecteeName(0).empty()) {
+        if (!input->isListConnector() && input->getConnecteeName(0).empty()) {
             // TODO When we support verbose/debug logging we should include
             // message about unspecified Outputs but generally this OK
             // if the Input's value is not required.
@@ -251,16 +249,14 @@ void Component::connect(Component &root)
             continue;
         }
 
+        input->disconnect();
         try {
-            input.disconnect();
-            input.findAndConnect(root);
+            input->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            throw Exception(getConcreteClassName() + "'" + getName() + "'"
-                "::connect() \nFailed to connect Input<" +
-                input.getConnecteeTypeName() + "> '" + input.getName() +
-                "' within " + root.getConcreteClassName() + " '" +
-                root.getName() + "' (details: " + x.what() + ").");
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Input '" +
+                input->getName() + "' of type " + input->getConnecteeTypeName()
+                + " (details: " + x.what() + ").");
         }
     }
 
@@ -306,9 +302,8 @@ void Component::disconnect()
     }
 
     //Now cycle through and disconnect all connectors for this component
-    std::map<std::string, int>::const_iterator it;
-    for (it = _connectorsTable.begin(); it != _connectorsTable.end(); ++it){
-        upd_connectors(it->second).disconnect();
+    for (auto& it : _connectorsTable) {
+        it.second->disconnect();
     }
     
     // Must also clear the input's connections.
@@ -1036,6 +1031,25 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
     }
 }
 
+void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30508) {
+            // Here's an example of the change this function might make:
+            // Previous: <connectors>
+            //               <Connector_PhysicalFrame_ name="parent">
+            //                   <connectee_name>...</connectee_name>
+            //               </Connector_PhysicalFrame_>
+            //           </connectors>
+            // New:      <connector_parent_connectee_name>...
+            //               </connector_parent_connectee_name>
+            //
+            XMLDocument::updateConnectors30508(node);
+        }
+    }
+    Super::updateFromXMLNode(node, versionNumber);
+}
+
 // mark components owned as properties as subcomponents
 void Component::markPropertiesAsSubcomponents()
 {
@@ -1456,15 +1470,15 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumConnectors() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (int ix = 0; ix < getProperty_connectors().size(); ++ix){
-        const auto& connector = get_connectors(ix);
-        std::cout << "  " << connector.getConnecteeTypeName() << " '"
-                  << connector.getName() << "': ";
-        if (connector.getNumConnectees() == 0) {
+    for (const auto& it : _connectorsTable) {
+        const auto& connector = it.second;
+        std::cout << "  " << connector->getConnecteeTypeName() << " '"
+                  << connector->getName() << "': ";
+        if (connector->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (unsigned i = 0; i < connector.getNumConnectees(); ++i) {
-                std::cout << connector.getConnecteeName(i) << " ";
+            for (unsigned i = 0; i < connector->getNumConnectees(); ++i) {
+                std::cout << connector->getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
         }
@@ -1474,15 +1488,15 @@ void Component::dumpConnections() const {
               << getName() << "':";
     if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (const auto it : _inputsTable) {
-        const auto& input = it.second.getRef();
-        std::cout << "  " << input.getConnecteeTypeName() << " '"
-                  << input.getName() << "': ";
-        if (input.getNumConnectees() == 0) {
+    for (const auto& it : _inputsTable) {
+        const auto& input = it.second;
+        std::cout << "  " << input->getConnecteeTypeName() << " '"
+                  << input->getName() << "': ";
+        if (input->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (unsigned i = 0; i < input.getNumConnectees(); ++i) {
-                std::cout << input.getConnecteeName(i) << " ";
+            for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
+                std::cout << input->getConnecteeName(i) << " ";
                 // TODO as is, requires the input connections to be satisfied. 
                 // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }
