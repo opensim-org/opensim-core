@@ -1,3 +1,7 @@
 # Vim
 .*.swo
 .*.swp
+
+# CLion
+cmake-build-debug
+.idea

@@ -14,7 +14,7 @@ pkg_check_modules(ADOLC REQUIRED adolc)
 link_directories(${IPOPT_LIBRARY_DIRS})
 link_directories(${ADOLC_LIBRARY_DIRS})
 
-add_executable(mesh mesh.cpp)
+add_executable(mesh mesh.h mesh.cpp)
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and 
 #   b. when a client library links to this library ("INTERFACE").
