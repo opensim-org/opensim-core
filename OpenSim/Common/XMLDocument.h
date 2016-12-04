@@ -93,10 +93,43 @@ public:
     SimTK::Xml::Element getRootDataElement();
     bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
         bool compareDefaults=false, bool compareVersionNumbers=false);
+    /** This adds an XML element to `element` of the following form:
+    @code
+    <Connector_PhysicalFrame_ name="parent_frame">
+        <connectee_name>...</connectee_name>
+    </Connector_PhysicalFrame_>
+    @endcode
+    This syntax was revised in XML document version 30508; see
+    updateConnectors30508(). As such, this function should *not* be used for
+    updating versions 30508 or greater. */
     static void addConnector(SimTK::Xml::Element& element,
         const std::string& connectorTag, const std::string& connectorName, 
         const std::string& connectorValue);
-    static void addPhysicalOffsetFrame(SimTK::Xml::Element& element, const std::string& frameName,
+    /** In version 30508, the XML syntax for Connectors changed:
+    Previous:
+    @code
+    <connectors>
+        <Connector_PhysicalFrame_ name="parent_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+        <Connector_PhysicalFrame_ name="child_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+    </connectors>
+    @endcode
+    New:
+    @code
+    <connector_parent_frame_connectee_name>...
+        </connector_parent_frame_connectee_name>
+    <connector_child_frame_connectee_name>...
+        </connector_child_frame_connectee_name>
+    @endcode
+    
+    If there is no `<connectors>` element, then this function does not edit
+    componentElt. */
+    static void updateConnectors30508(SimTK::Xml::Element& componentElt);
+    static void addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+        const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
 

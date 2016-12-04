@@ -38,7 +38,7 @@ Model createModel4AppearanceTest();
 void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
 void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
 void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
-void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>&, bool includeFrames=true);
 bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
@@ -130,7 +130,7 @@ int main()
         Model testModel3("double_pendulum33.osim");
         
         SimTK::Array_<DecorativeGeometry> standard;
-        
+        testModel3.updDisplayHints().set_show_frames(true);
         populate_doublePendulumPrimitives(standard);
         testVisModelAgainstStandard(testModel3, standard);
         std::cout << "double_pendulum33 test Passed" << std::endl;
@@ -138,17 +138,21 @@ int main()
         // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
         // have a non-trivial transform.
         Model composedTransformsModel("doubletransform33.osim");
+        composedTransformsModel.updDisplayHints().set_show_frames(true);
         populate_composedTransformPrimitives(standard);
         testVisModelAgainstStandard(composedTransformsModel, standard);
         // Model with contacts
         Model modelWithContacts("visualize_contacts.osim");
+        modelWithContacts.updDisplayHints().set_show_frames(true);
         populate_contactModelPrimitives(standard);
         testVisModelAgainstStandard(modelWithContacts, standard);
         
         // Model with WrapObjects
         Model modelWithWrap("test_wrapAllVis.osim");
-        modelWithWrap.updDisplayHints().set_show_frames(false);
+        modelWithWrap.updDisplayHints().set_show_frames(true);
         populate_wrapModelPrimitives(standard);
+        modelWithWrap.updDisplayHints().set_show_frames(false);
+        populate_wrapModelPrimitives(standard, false);
         testVisModelAgainstStandard(modelWithWrap, standard);
     }
     catch (const OpenSim::Exception& e) {
@@ -168,6 +172,7 @@ void testVisModel(Model& model, const std::string standard_filename)
     if (visualDebug) 
         model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
+    mdh.upd_show_frames() = true;
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
     cout << geometryToDisplay.size() << endl;
@@ -429,35 +434,37 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
 
 }
 
-void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {
+void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives, bool includeFrames) {
     stdPrimitives.clear();
     // Frame for Ground & Bodies
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(4).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(3).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Frames for the Joint
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
-        .setTransform(Vec3({-.01, -.03, .03})));
+    if (includeFrames) {
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(4).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(3).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+        // Frames for the Joint
+        stdPrimitives.push_back(
+            DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+            .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+            .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+            .setTransform(Vec3({ -.01, -.03, .03 })));
+    }
     Transform cylTransform;
     // This transform parallels the code in generateDecorations to reflect
     // that DecorativeCylinder is Y aligned while WrapCylinder is Z aligned

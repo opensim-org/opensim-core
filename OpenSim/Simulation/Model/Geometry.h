@@ -144,7 +144,7 @@ public:
         (bool                                       fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 
 
 protected:
@@ -643,6 +643,12 @@ public:
     }
     /// destructor
     virtual ~FrameGeometry() {};
+
+    void generateDecorations
+        (bool                                       fixed,
+            const ModelDisplayHints&                    hints,
+            const SimTK::State&                         state,
+            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 protected:
     /// Method to map FrameGeometry to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(

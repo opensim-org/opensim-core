@@ -57,13 +57,7 @@ class TestConnectors(unittest.TestCase):
         # Connect up the model.
         model.initSystem()
 
-        # By index.
-        count_by_index = 0
-        names = ["parent_frame", "child_frame"]
-        for i in range(shoulder.getNumConnectors()):
-            count_by_index += 1
-            assert shoulder.getConnector(i).getName() == names[i]
-        assert count_by_index == 2
+        names = ["child_frame", "parent_frame"]
 
         # By name.
         count_by_name = 0
@@ -140,7 +134,7 @@ class TestInputsOutputs(unittest.TestCase):
         # AbstractChannel.
         coord = model.getCoordinateSet().get(0)
         self.assertEquals(coord.getOutput('speed').getChannel('').getPathName(),
-                '/arm26/r_shoulder/r_shoulder_elev/speed')
+                '/arm26/r_shoulder/r_shoulder_elev|speed')
 
         # Access the value of a concrete Channel.
         # TODO Concrete channels are not wrapped yet.
@@ -215,8 +209,8 @@ class TestInputsOutputs(unittest.TestCase):
         s = m.initSystem()
 
         # Access and iterate through AbstractInputs, using names.
-        expectedLabels = ['/model_/pin/pin_coord_0/value', 'spd',
-                          '/model_/source/column:col1', 'second_col']
+        expectedLabels = ['/model_/pin/pin_coord_0|value', 'spd',
+                          '/model_/source|column:col1', 'second_col']
         i = 0
         for name in rep.getInputNames():
             # Actually, there is only one input, which we connected to 4
