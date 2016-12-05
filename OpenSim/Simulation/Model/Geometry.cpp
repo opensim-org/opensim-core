@@ -72,6 +72,17 @@ void Geometry::extendConnect(Component& root)
     }
 }
 
+void FrameGeometry::generateDecorations(bool fixed,
+    const ModelDisplayHints& hints,
+    const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+{
+    if (!hints.get_show_frames())
+        return;
+    // Call base class
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+
+}
 void Geometry::generateDecorations(bool fixed, 
     const ModelDisplayHints& hints,
     const SimTK::State& state,

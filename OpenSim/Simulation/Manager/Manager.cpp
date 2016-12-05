@@ -502,6 +502,13 @@ setModel(Model& aModel)
     if(_model!=NULL){
         // May need to issue a warning here that model was already set to avoid a leak.
     }
+
+    if (_timeStepper) {
+        std::string msg = "Cannot set a new Model on this Manager";
+        msg += "after Manager::integrate() has been called at least once.";
+        OPENSIM_THROW(Exception, msg);
+    }
+
     _model = &aModel;
     
     // STATES
@@ -533,6 +540,11 @@ void Manager::
 setIntegrator(SimTK::Integrator& integrator) 
 {   
     if (_integ.get() == &integrator) return;
+    if (_timeStepper) {
+        std::string msg = "Cannot set a new integrator on this Manager";
+        msg += "after Manager::integrate() has been called at least once.";
+        OPENSIM_THROW(Exception, msg);
+    }
 
     _integ = &integrator;
     // If we had been using the _defaultInteg, we no longer need it.
@@ -731,10 +743,10 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // not the model's system.
     const SimTK::System& sys = _system ? *_system 
                                        : _model->getMultibodySystem();
-    SimTK::TimeStepper ts(sys, *_integ);
 
-    ts.initialize(s);
-    ts.setReportAllSignificantStates(true);
+    // Only initialize a TimeStepper if it hasn't been done yet
+    if (_timeStepper == NULL) initializeTimeStepper(sys, s);
+
     SimTK::Integrator::SuccessfulStepStatus status;
 
     if( fixedStep ) {
@@ -783,7 +795,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         // is returned once as an ordinary return; by the time we get
         // EndOfSimulation status we have already seen the state and don't
         // need to record it again.
-        status = ts.stepTo(stepToTime);
+        status = _timeStepper->stepTo(stepToTime);
 
         if( status != SimTK::Integrator::EndOfSimulation ) {
             const SimTK::State& s =  _integ->getState();
@@ -866,6 +878,18 @@ void Manager::initialize(SimTK::State& s, double dt )
 
     return;
 }
+//_____________________________________________________________________________
+/**
+* set and initialize a SimTK::TimeStepper
+*/
+void Manager::initializeTimeStepper(
+    const SimTK::System& sys, const SimTK::State& state)
+{
+    _timeStepper.reset(new SimTK::TimeStepper(sys, *_integ));
+    _timeStepper->initialize(state);
+    _timeStepper->setReportAllSignificantStates(true);
+}
+
 //_____________________________________________________________________________
 /**
  * finalize storages and analyses

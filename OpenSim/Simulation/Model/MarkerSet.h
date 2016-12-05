@@ -69,7 +69,7 @@ public:
     //--------------------------------------------------------------------------
     // UTILITIES
     //--------------------------------------------------------------------------
-    void getMarkerNames(Array<std::string>& aMarkerNamesArray);
+    void getMarkerNames(Array<std::string>& aMarkerNamesArray) const;
     void scale(const ScaleSet& aScaleSet);
     /** Add a prefix to marker names for all markers in the set**/
     void addNamePrefix(const std::string& prefix);

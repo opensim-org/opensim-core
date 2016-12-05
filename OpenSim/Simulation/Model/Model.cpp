@@ -581,11 +581,13 @@ void Model::createMultibodyTree()
 
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(ground.getName(), 0, false, &ground);
+    _multibodyTree.addBody(ground.getAbsolutePathName(),
+                           0, false, &ground);
 
     auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
-        _multibodyTree.addBody( body.getName(), body.getMass(), false,
+        _multibodyTree.addBody( body.getAbsolutePathName(),
+                                body.getMass(), false,
                                 const_cast<Body*>(&body) );
     }
 
@@ -597,7 +599,7 @@ void Model::createMultibodyTree()
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     for (auto& joint : joints) {
-        std::string name = joint->getName();
+        std::string name = joint->getAbsolutePathName();
         IO::TrimWhitespace(name);
 
         // Currently we need to take a first pass at connecting the joints
@@ -620,8 +622,8 @@ void Model::createMultibodyTree()
             joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getName(),
-            joint->getChildFrame().findBaseFrame().getName(),
+            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
+            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
             false,
             joint.get());
     }
