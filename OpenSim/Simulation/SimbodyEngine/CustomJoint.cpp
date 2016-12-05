@@ -171,7 +171,7 @@ void CustomJoint::constructCoordinates()
     // Check how many coordinates are required
     int ncoords = coordinateNames.getSize();
 
-    for (int i = 0; i < ncoords; i++){
+    for (int i = 0; i < ncoords; ++i){
         std::string coordName = spatialTransform.getCoordinateNames()[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = getProperty_coordinates().findIndexForName(coordName);
@@ -182,27 +182,35 @@ void CustomJoint::constructCoordinates()
         Coordinate& coord = upd_coordinates(coordIndex);
         coord.setName(coordName);
 
-
-        // Determine if the MotionType of the Coordinate based
-        // on which TransformAxis it is relate to 0-2 are Rotational
+        // Determine the MotionType of the Coordinate based
+        // on which TransformAxis it operates upon: 0-2 are Rotational
         // and 3-5 are Translational. Coordinates appearing
         // in both categories are Coupled
-        Coordinate::MotionType mt = Coordinate::MotionType::Coupled;
-        for (int j = 0; j < 3; ++j){
-            if (spatialTransform[j]
-                    .getCoordinateNamesInArray().findIndex(coordName) >= 0) {
+        Coordinate::MotionType mt = Coordinate::MotionType::Undefined;
+        for (int j = 0; j < 6; ++j){
+            auto coordNamesForAxis = spatialTransform[j]
+                .getCoordinateNamesInArray();
+            if (coordNamesForAxis.findIndex(coordName) >= 0) {
                 const LinearFunction* lf = nullptr;
                 if (spatialTransform[j].hasFunction()) {
-                    lf = dynamic_cast<const LinearFunction*>(&spatialTransform[j].get_function());
-                    // displacement on axis is directly proportional to the coordinate value
+                    lf = dynamic_cast<const LinearFunction*>(
+                            &spatialTransform[j].get_function() );
+                    // if displacement on axis is linear (w/ slope of 1) w.r.t.
+                    // the coordinate value, we have a pure rotation/translation
                     if (lf && lf->getSlope() == 1.0) {
-                        // coordinate is the axis displacement
-                        if (i < 3)
-                            // coordinate dof is about rotational axis 
+                        // coordinate is pure axis displacement
+                        if (j < 3)
+                            // coordinate about rotational axis 
                             mt = Coordinate::MotionType::Rotational;
-                        else // along translational axis
+                        else // otherwise translational axis 
                             mt = Coordinate::MotionType::Translational;
-                        break;
+                    }
+                    else { // scaled (slope !=1) or nonlinear relationship means
+                           // not a pure rotational or translational for this axis.
+                           // designate as Coupled unless already defined as
+                           // pure Rotational or Translational about another axis
+                        mt = (mt == Coordinate::MotionType::Undefined ?
+                            Coordinate::MotionType::Coupled : mt);
                     }
                 }
             }
