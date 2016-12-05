@@ -53,7 +53,8 @@ using namespace std;
 // 30505 for changing serialization of Joint to create offset frames
 // 30506 for testing 30505 conversion code
 // 30507 for changing serialization of Coordinates owned by Joint
-const int XMLDocument::LatestVersion = 30507;
+// 30508 for moving Connector's connectee_name to enclosing Component.
+const int XMLDocument::LatestVersion = 30508;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -425,6 +426,38 @@ void XMLDocument::addConnector(SimTK::Xml::Element& element,
     newConnectorElement.insertNodeAfter(newConnectorElement.element_end(), connecteeElement);
     connectors_node->insertNodeAfter(connectors_node->element_end(), newConnectorElement);
     //connectors_node->writeToString(debug);
+}
+
+void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
+{
+    using ElementItr = SimTK::Xml::element_iterator;
+    
+    ElementItr connectors_node = componentElt.element_begin("connectors");
+    
+    // See if there's a <connectors> element.
+    if (connectors_node == componentElt.element_end()) return;
+    
+    for (ElementItr connectorElt = connectors_node->element_begin();
+            connectorElt != componentElt.element_end();
+            ++connectorElt) {
+        // Grab name of Connector.
+        const auto& connectorName =
+                connectorElt->getRequiredAttributeValue("name");
+        // Grab value of connectee_name property.
+        ElementItr connecteeNameElt =
+                connectorElt->element_begin("connectee_name");
+        SimTK::String connecteeName;
+        connecteeNameElt->getValueAs<std::string>(connecteeName);
+        
+        // Create new element for this connector's connectee name.
+        SimTK::Xml::Element newConnecteeNameElt(
+                "connector_" + connectorName + "_connectee_name");
+        newConnecteeNameElt.setValue(connecteeName);
+        componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
+    }
+    
+    // No longer want the old syntax for connectors.
+    componentElt.eraseNode(connectors_node);
 }
 
 void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,

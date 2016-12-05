@@ -895,7 +895,11 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
             dFm_dlce = calcFiberStiffness(fiso, a,
                                           mvi.fiberForceVelocityMultiplier,
                                           mli.normFiberLength, optFiberLen);
-            dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFm_dlce,
+            const double dFmAT_dlce =
+                calc_DFiberForceAT_DFiberLength(fm, dFm_dlce, mli.fiberLength,
+                                                mli.sinPennationAngle,
+                                                mli.cosPennationAngle);
+            dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce,
                 mli.sinPennationAngle, mli.cosPennationAngle, mli.fiberLength);
 
             // Compute the stiffness of the tendon.

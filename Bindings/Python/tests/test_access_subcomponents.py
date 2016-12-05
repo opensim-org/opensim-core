@@ -13,12 +13,12 @@ osim.Model.setDebugLevel(0)
 class TestAccessSubcomponents(unittest.TestCase):
     def test_individual_components(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
-        muscle = model.getComponent('BICshort');
+        muscle = model.getComponent('BICshort')
         assert muscle.getName() == 'BICshort'
         # No downcasting necessary!
-        muscle.get_max_isometric_force(); # Method on Muscle.
-        muscle = model.updComponent('BICshort');
-        muscle.set_max_isometric_force(100);
+        muscle.get_max_isometric_force() # Method on Muscle.
+        muscle = model.updComponent('BICshort')
+        muscle.set_max_isometric_force(100)
 
     def test_component_list(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))

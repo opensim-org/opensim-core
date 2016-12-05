@@ -69,6 +69,11 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
     #define SWIG_DECLARE_EXCEPTION
 #endif
 
+// Forward-declare SimTK types.
+namespace SimTK {
+    // Needed for Object_GetClassName<SimTK::SpatialVec>, defined in this file.
+    typedef Vec<2, Vec3> SpatialVec;
+}
 
 namespace OpenSim { 
 
@@ -1089,9 +1094,13 @@ template <> struct Object_GetClassName<std::string>
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
-{   static const std::string name() { return "Vector"; } };
+{   static const std::string name() {return "Vector"; } };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
 {   static const std::string name() {return "Vector_<Vec3>";} };
+template <> struct Object_GetClassName<SimTK::SpatialVec>
+{   static const std::string name() {return "SpatialVec";} };
+template <> struct Object_GetClassName<SimTK::Transform>
+{   static const std::string name() {return "Transform";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
