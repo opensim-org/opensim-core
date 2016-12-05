@@ -119,9 +119,9 @@ arm.addController(brain)
 # We want to write our simulation results to the console.
 reporter = osim.ConsoleReporter()
 reporter.set_report_time_interval(1.0)
-reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
+reporter.updInput().connect(biceps.getOutput("fiber_force"))
 elbow_coord = elbow.getCoordinate().getOutput("value")
-reporter.updInput("inputs").connect(elbow_coord, "elbow_angle")
+reporter.updInput().connect(elbow_coord, "elbow_angle")
 arm.addComponent(reporter)
 
 # ---------------------------------------------------------------------------

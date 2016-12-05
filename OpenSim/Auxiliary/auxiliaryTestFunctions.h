@@ -127,6 +127,34 @@ do { \
     } \
 } while(false) 
 
+// MESSAGE is a std::string; the assert passes if the expected exception is
+// thrown and the exception's message contains MESSAGE.
+#define ASSERT_THROW_MSG(EXPECTED_EXCEPTION, MESSAGE, STATEMENT) \
+do { \
+    bool caughtExpectedException = false; \
+    try { \
+        STATEMENT; \
+    } \
+    catch (EXPECTED_EXCEPTION const& exc) { \
+        caughtExpectedException = true; \
+        std::string actualMessage = std::string(exc.what()); \
+        if (actualMessage.find(MESSAGE) == std::string::npos) { \
+            throw OpenSim::Exception("TESTING: Caught expected exception " \
+                    "type but message did not contain desired string.\n"  \
+                    "Actual message:\n" + actualMessage + "\n" \
+                    "Desired substring:\n" + MESSAGE); \
+        } \
+    } \
+    catch (...) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but caught different exception."); \
+    } \
+    if (!caughtExpectedException) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but no exception thrown."); \
+    } \
+} while(false) 
+
 OpenSim::Object* randomize(OpenSim::Object* obj)
 {
     using namespace OpenSim;
