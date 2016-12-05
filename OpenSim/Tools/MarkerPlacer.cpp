@@ -253,17 +253,10 @@ bool MarkerPlacer::processModel(Model* aModel,
                                         });
     const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
                                                    _timeRange[1]);
-    for(int r = staticPoseTable.getNumRows() - 1; r >= 0; --r) {
-        if(staticPoseTable.getIndependentColumn()[r] >= _timeRange[0] &&
-           staticPoseTable.getIndependentColumn()[r] <= _timeRange[1]) {
-            if(numRowsInRange > 1) {
-                staticPoseTable.removeRowAtIndex(r);
-                --numRowsInRange;
-            } else {
-                staticPoseTable.updRowAtIndex(r) = avgRow;
-            }
-        }
-    }
+    for(int r = staticPoseTable.getNumRows() - 1; r > 0; --r)
+        staticPoseTable.removeRowAtIndex(r);
+    staticPoseTable.updRowAtIndex(0) = avgRow;
+    
     OPENSIM_THROW_IF(!staticPoseTable.hasTableMetaDataKey("Units"),
                      Exception,
                      "MarkerPlacer::processModel -- Marker file does not have "
@@ -451,7 +444,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
                     Vec3 globalPt = globalMarker;
                     double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
                     pt = conversionFactor*globalPt;
-                    pt2 = modelMarker.getParentFrame().findLocationInAnotherFrame(s, pt, aModel.getGround());
+                    pt2 = aModel.getGround().findLocationInAnotherFrame(s, pt, modelMarker.getParentFrame());
                     modelMarker.set_location(pt2);
                 }
                 else
