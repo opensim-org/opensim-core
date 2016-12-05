@@ -185,7 +185,7 @@ append(Force *aForce)
 {
     bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
-    if((success)&&(&updModel()!=NULL)) {
+    if (success && hasModel()) {
         updateActuators();
         updateMuscles();
     }
@@ -209,7 +209,7 @@ append(Force &aForce)
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
-    if ((success) && (&getModel() != NULL)) {
+    if (success && hasModel()) {
         updateActuators();
         updateMuscles();
     }

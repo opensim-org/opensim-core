@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include "getRSS.h"
 
 #include <fstream>
@@ -97,7 +98,7 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
     ASSERT(ncolumns > 0, testFile, testFileLine, 
            errorMessage + "- no common columns to compare!");
 
-    for (int i = 0; i < ncolumns; ++i) {
+    for (size_t i = 0; i < ncolumns; ++i) {
         std::cout << "column:    " << columnsUsed[i] << std::endl;
         std::cout << "RMS error: " << comparisons[i] << std::endl;
         std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
@@ -115,6 +116,34 @@ do { \
     } \
     catch (EXPECTED_EXCEPTION const&) { \
         caughtExpectedException = true; \
+    } \
+    catch (...) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but caught different exception."); \
+    } \
+    if (!caughtExpectedException) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but no exception thrown."); \
+    } \
+} while(false) 
+
+// MESSAGE is a std::string; the assert passes if the expected exception is
+// thrown and the exception's message contains MESSAGE.
+#define ASSERT_THROW_MSG(EXPECTED_EXCEPTION, MESSAGE, STATEMENT) \
+do { \
+    bool caughtExpectedException = false; \
+    try { \
+        STATEMENT; \
+    } \
+    catch (EXPECTED_EXCEPTION const& exc) { \
+        caughtExpectedException = true; \
+        std::string actualMessage = std::string(exc.what()); \
+        if (actualMessage.find(MESSAGE) == std::string::npos) { \
+            throw OpenSim::Exception("TESTING: Caught expected exception " \
+                    "type but message did not contain desired string.\n"  \
+                    "Actual message:\n" + actualMessage + "\n" \
+                    "Desired substring:\n" + MESSAGE); \
+        } \
     } \
     catch (...) { \
         throw OpenSim::Exception("TESTING: Expected exception " \
@@ -206,17 +235,41 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 }
 
 // Change version number of the file to 1 so that Storage can read it.
-// Storage can only read files with version <= 1.
+// Storage can only read files with version <= 1. Returns 'true' if
+// version number was changed. Returns 'false' if no change.
 // This function can be removed when Storage class is removed.
-inline void revertToVersionNumber1(const std::string& filenameOld,
-    const std::string& filenameNew) {
-    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+inline bool revertToVersionNumber1(const std::string& filenameOld,
+                                   const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*2[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    bool changedVersion{false};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline)) {
+            fileNew << "version=1\n";
+            changedVersion = true;
+        } else
+            fileNew << line << "\n";
+    }
+    return changedVersion;
+}
+
+// Add number of rows (nRows) and number of columns (nColumns) to the header of
+// the STO file. Note that nColumns will include time, so it will be number of
+// columns in the matrix plus 1 (for time).
+inline void addNumRowsNumColumns(const std::string& filenameOld,
+                                 const std::string& filenameNew) {
+    auto table = OpenSim::STOFileAdapter_<double>::read(filenameOld);
+    std::regex endheader{ R"( *endheader *)" };
     std::ifstream fileOld{ filenameOld };
     std::ofstream fileNew{ filenameNew };
     std::string line{};
     while (std::getline(fileOld, line)) {
-        if (std::regex_match(line, versionline))
-            fileNew << "version=1\n";
+        if (std::regex_match(line, endheader))
+            fileNew << "nRows="    << table.getNumRows()        << "\n"
+                    << "nColumns=" << table.getNumColumns() + 1 << "\n"
+                    << "endheader\n";
         else
             fileNew << line << "\n";
     }

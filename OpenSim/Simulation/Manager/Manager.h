@@ -38,6 +38,7 @@ namespace SimTK {
 class Integrator;
 class State;
 class System;
+class TimeStepper;
 }
 
 namespace OpenSim { 
@@ -49,7 +50,21 @@ class ControllerSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class that manages the execution of a simulation.
+ * A class that manages the execution of a simulation. This class uses a
+ * SimTK::Integrator and SimTK::TimeStepper to perform the simulation. By
+ * default, a Runge-Kutta-Merson integrator is used, but can be changed by
+ * using setIntegrator().
+ * 
+ * In order to prevent an inconsistency between the Integrator and TimeStepper,
+ * we only create a TimeStepper once, specifically at the first call to
+ * integrate(state). To ensure this, the Manager will throw an exception if 
+ * setModel() or setIntegrator() is called after integrate(state) has been 
+ * called at least once.
+ *
+ * Since the call to integrate(state) takes the state as an argument, it is
+ * up to the caller to ensure that the state is a legal state if the same
+ * Manager is used to integrate again. Integrating a different state for some
+ * new arbitrary system has undefined behavior.
  */
 class OSIMSIMULATION_API Manager
 {
@@ -72,6 +87,9 @@ private:
     // The integrator that is used when using the model-only constructor.
     // This is allocated only if necessary.
     std::unique_ptr<SimTK::Integrator> _defaultInteg;
+
+    /** TimeStepper */
+    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
     /** Initial time of the simulation. */
     double _ti;
@@ -190,7 +208,7 @@ public:
    bool getUseConstantDT() const;
    // DT VECTOR
    const Array<double>& getDTArray();
-   void setDTArray(int aN,const double aDT[],double aTI=0.0);
+   void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
    double getDTArrayDT(int aStep);
    void printDTArray(const char *aFileName=NULL);
    // TIME VECTOR
@@ -234,8 +252,9 @@ public:
 
 private:
 
-   // Handles common tasks of some of the other constructors.
+    // Handles common tasks of some of the other constructors.
     Manager(Model& aModel, bool dummyVar);
+    void initializeTimeStepper(const SimTK::System& sys, const SimTK::State& state);
 
 //=============================================================================
 };  // END of class Manager

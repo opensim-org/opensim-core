@@ -151,9 +151,12 @@ class IncorrectTableType : public InvalidArgument {
 public:
     IncorrectTableType(const std::string& file,
                        size_t line,
-                       const std::string& func) :
+                       const std::string& func,
+                       const std::string& message = "") :
         InvalidArgument(file, line, func) {
         std::string msg = "Incorrect Table type.";
+        if(!message.empty())
+            msg += " " + message;
 
         addMessage(msg);
     }
@@ -194,12 +197,12 @@ public:
     static void writeFile(const InputTables& tables, 
                           const std::string& fileName);
 
-protected:    
-    /** Convenience function to find the extension from a filename.           */
+    /** Find the extension from a filename.                                   */
     static
     std::string findExtension(const std::string& filename);
 
-    /** Tokenize/split a given string using the given delimiters. The delimiters 
+protected:    
+    /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 
     specifies that either a space or a tab can act as the delimiter.          */

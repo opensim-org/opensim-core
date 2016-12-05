@@ -65,9 +65,10 @@ static void dumpObj(const Object& obj, int nSpaces) {
 
 int main()
 {
-    // Need to force Windows to load Actuators library if there are no
-    // explicit uses.
-    LoadOpenSimLibrary("osimActuators");
+    // Actuators library is not loaded automatically (unless using clang).
+    #if !defined(__clang__)
+        LoadOpenSimLibrary("osimActuators");
+    #endif
 
     try {
         Model testModel;

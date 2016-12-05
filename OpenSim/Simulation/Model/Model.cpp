@@ -307,7 +307,7 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (!_system) 
+    if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
@@ -489,6 +489,50 @@ void Model::createMultibodySystem()
     addToSystem(*_system);
 }
 
+
+std::vector<SimTK::ReferencePtr<const Coordinate>> 
+    Model::getCoordinatesInMultibodyTreeOrder() const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
+        "Cannot order Coordinates without a valid MultibodySystem.");
+
+    int nc = getNumCoordinates();
+    auto coordinates = getComponentList<Coordinate>();
+
+    std::vector<SimTK::ReferencePtr<const Coordinate>> 
+        coordinatesInTreeOrder(nc, 
+            SimTK::ReferencePtr<const Coordinate>(*coordinates.begin()));
+
+    // We have a valid MultibodySystem underlying the Coordinates
+    const SimTK::State& s = getWorkingState();
+    SimTK_ASSERT_ALWAYS(nc <= s.getNQ(),
+        "Number of Coordinates exceeds the number of generalized coordinates in "
+        "the underlying MultibodySystem.");
+
+    auto& matter = getSystem().getMatterSubsystem();
+
+    int cnt = 0;
+
+    for (auto& coord : coordinates) {
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
+
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+
+        SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
+            "in this Model.");
+
+        coordinatesInTreeOrder.at(cix).reset(&coord);
+        cnt++;
+    }
+
+    SimTK_ASSERT_ALWAYS(cnt == nc,
+        "The number of ordered Coordinates does not correspond to the number of "
+        "Coordinates in the Model's CoordinateSet.");
+
+    return coordinatesInTreeOrder;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -537,11 +581,13 @@ void Model::createMultibodyTree()
 
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(ground.getName(), 0, false, &ground);
+    _multibodyTree.addBody(ground.getAbsolutePathName(),
+                           0, false, &ground);
 
     auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
-        _multibodyTree.addBody( body.getName(), body.getMass(), false,
+        _multibodyTree.addBody( body.getAbsolutePathName(),
+                                body.getMass(), false,
                                 const_cast<Body*>(&body) );
     }
 
@@ -553,7 +599,7 @@ void Model::createMultibodyTree()
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     for (auto& joint : joints) {
-        std::string name = joint->getName();
+        std::string name = joint->getAbsolutePathName();
         IO::TrimWhitespace(name);
 
         // Currently we need to take a first pass at connecting the joints
@@ -576,8 +622,8 @@ void Model::createMultibodyTree()
             joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getName(),
-            joint->getChildFrame().findBaseFrame().getName(),
+            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
+            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
             false,
             joint.get());
     }
@@ -591,6 +637,10 @@ void Model::extendConnectToModel(Model &model)
         cout << "Model::" << getName() <<
             " is being connected to model " <<
             model.getName() << "." << endl;
+        // if part of another Model, that Model is in charge
+        // of creating a valid Multibody tree that includes
+        // Components of this Model. 
+        return;
     }
 
     // Create the Multibody tree according to the components that
@@ -681,19 +731,7 @@ void Model::extendConnectToModel(Model &model)
             Joint* joint = static_cast<Joint*>(mob.getJointRef());
             setNextSubcomponentInSystem(*joint);
 
-            int jx = joints.getIndex(joint, m);
-            //if in the set but not already in the right order
-            if ((jx >= 0) && (jx < joints.getSize()) && (jx != m)) {
-                // perform a move to put the joint in tree order
-                // this is necessary ONLY because some tools assume that the
-                // order of joints and specifically coordinates is the
-                // order of the mobility (generalized) forces.
-                // IDTool, StaticOptimization and RRA for example will fail.
-                // TODO: when the tools are fixed/removed remove this as well.
-                joint = &joints.get(jx);
-                joints.set(jx, &joints.get(m));
-                joints.set(m, joint);
-            }
+
         }
     }
     joints.setMemoryOwner(isMemoryOwner);
@@ -733,11 +771,37 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Now include all remaining Components beginning with PhysicalFrames
+    // Now include all remaining Components beginning with PhysicalOffsetFrames
     // since Constraints, Forces and other components can only be applied to
-    // PhyicalFrames.
-    auto poFrames = getComponentList<PhysicalOffsetFrame>();
-    for (const auto& pof : poFrames) {
+    // PhyicalFrames, which include PhysicalOffsetFrames.
+    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
+    // be added to the System first. So for each PhysicalOffsetFrame locate its
+    // parent and verify its presence in the _orderedList otherwise add it first.
+    auto poFrames = updComponentList<PhysicalOffsetFrame>();
+    for (auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are included in the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and may be attached
+        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        // in the tree and add them first.
+        pof.connect(*this);
+        const PhysicalOffsetFrame* parentPof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
+        std::vector<const PhysicalOffsetFrame*> parentPofs;
+        while (parentPof) {
+            const auto found =
+                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
+                PhysicalOffsetFramesFormLoop, (*found)->getName());
+            parentPofs.push_back(parentPof);
+            // Given a chain of offsets, the most proximal must have Ground or 
+            // Body as its parent. When that happens we can stop.
+            parentPof =
+                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+        }
+        while (parentPofs.size()) {
+            setNextSubcomponentInSystem(*parentPofs.back());
+            parentPofs.pop_back();
+        }
         setNextSubcomponentInSystem(pof);
     }
 
@@ -759,8 +823,8 @@ void Model::extendConnectToModel(Model &model)
 }
 
 
-// ModelComponent interface enables this model to be treated as a subcomponent of another model by 
-// creating components in its system.
+// ModelComponent interface enables this model to be a subcomponent of another
+// model. In that case, it adds itself to the parent model's system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
@@ -775,11 +839,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
-    // its "slots" and retain its index by accessing this cached Vector
-    // value depends on velocity and invalidates dynamics BUT should not trigger
+    // This must be created before Actuator.extendAddToSystem() since Actuator
+    // will append its "slots" and retain its index by accessing this cached Vector.
+    // Value depends on velocity and invalidates dynamics BUT should not trigger
     // re-computation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
+    Measure_<Vector>::Result modelControls(system.updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -957,7 +1021,8 @@ void Model::extendInitStateFromProperties(SimTK::State& state) const
     Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    Measure_<Vector>::Result controlsCache = 
+        Measure_<Vector>::Result::getAs(updSystem().updDefaultSubsystem().getMeasure(_modelControlsIndex));
     controlsCache.updValue(state).resize(_defaultControls.size());
     controlsCache.updValue(state) = _defaultControls;
 }
@@ -1900,17 +1965,17 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector* stateVec = new StateVector(originalVec->getTime());
-        stateVec->getData().setSize(numStates);  // default value 0f 0.
+        StateVector stateVec{originalVec->getTime()};
+        stateVec.getData().setSize(numStates);  // default value 0f 0.
         for(int column=0; column< numStates; column++){
             double valueInOriginalStorage=0.0;
             if (mapColumns[column]!=-1)
                 originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
 
-            stateVec->setDataValue(column, valueInOriginalStorage);
+            stateVec.setDataValue(column, valueInOriginalStorage);
 
         }
-        statesStorage.append(*stateVec);
+        statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);

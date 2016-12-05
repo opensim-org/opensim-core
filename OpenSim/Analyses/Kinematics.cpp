@@ -320,10 +320,6 @@ void Kinematics::setModel(Model& aModel)
 
     // Allocate storages to contain the results of the analysis
     allocateStorage();
-
-    // UPDATE LABELS
-    updateCoordinatesToRecord();
-    constructColumnLabels();
 }
 
 //-----------------------------------------------------------------------------
@@ -343,7 +339,6 @@ setStorageCapacityIncrements(int aIncrement)
     _vStore->setCapacityIncrement(aIncrement);
     _pStore->setCapacityIncrement(aIncrement);
 }
-
 
 
 //=============================================================================
@@ -411,6 +406,10 @@ begin( SimTK::State& s )
 
     double time = s.getTime();
     
+    // UPDATE LABELS
+    updateCoordinatesToRecord();
+    constructColumnLabels();
+
     // RESET STORAGE
     _pStore->reset(time);
     _vStore->reset(time);

@@ -32,19 +32,22 @@ in-memory container for data access and manipulation.                         */
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 
+#include <iomanip>
+#include <numeric>
+
 namespace OpenSim {
 
-/** DataTable_ is a in-memory storage container for data with support for 
+/** DataTable_ is an in-memory storage container for data with support for 
 holding metadata (using the base class AbstractDataTable). Data contains an 
 independent column and a set of dependent columns. The type of the independent 
 column can be configured using ETX (template param). The type of the dependent 
 columns, which together form a matrix, can be configured using ETY (template 
-param). Independent and Dependent columns can contain metadata. DataTable_ as a 
-whole can contain metadata.                                                   
+param). Independent and dependent columns can contain metadata. DataTable_ as a 
+whole can contain metadata.
 
-\tparam ETX Type of each element of the underlying matrix holding dependent 
-            data.
-\tparam ETY Type of each element of the column holding independent data.      */
+\tparam ETX Type of each element of the column holding independent data.
+\tparam ETY Type of each element of the underlying matrix holding dependent 
+            data.                                                             */
 template<typename ETX = double, typename ETY = SimTK::Real>
 class DataTable_ : public AbstractDataTable {
     static_assert(!std::is_reference<ETY>::value,
@@ -114,11 +117,386 @@ public:
         }
         auto table = dynamic_cast<DataTable_*>(absTable);
         OPENSIM_THROW_IF(table == nullptr,
-                         InvalidArgument,
+                         IncorrectTableType,
                          "DataTable cannot be created from file '" + filename +
                          "'. Type mismatch.");
 
         *this = std::move(*table);
+    }
+
+    /** Contruct DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes provided.
+    This constructor only makes sense for DataTable_<double, double>.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy-construct this table from. This table can be
+                of different SimTK::Vec<X> types, for example DataTable_<double,
+                Vec<3>>, DataTable_<double, Quaternion>, DataTable_<double, 
+                Vec6> etc.
+    \param suffixes Suffixes to be used for column-labels of individual 
+                    components/columns in this table when splitting columns of 
+                    'that' table. For example a column labeled 'marker' from 
+                    DataTable_<double, Vec3> will be split into 3 columns named
+                    \code
+                    std::string{'marker' + suffixes[0]},
+                    std::string{'marker' + suffixes[1]},
+                    std::string{'marker' + suffixes[2]}
+                    \endcode
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY>
+    DataTable_(const DataTable_<double, ThatETY>& that,
+               const std::vector<std::string>& suffixes) :
+    AbstractDataTable{that} {
+        static_assert(std::is_same<ETY, double>::value,
+                      "This constructor can only be used to construct "
+                      "DataTable_<double, double>.");
+        static_assert(!std::is_same<ThatETY, double>::value,
+                      "This constructor cannot be used to construct from "
+                      "DataTable_<double, double>. Use the copy constructor "
+                      "instead.");
+
+        std::vector<std::string> thatLabels{};
+        OPENSIM_THROW_IF(!that.hasColumnLabels(),
+                         InvalidArgument,
+                         "DataTable 'that' has no column labels.");
+        OPENSIM_THROW_IF(that.getNumRows() == 0 || that.getNumColumns() == 0,
+                         InvalidArgument,
+                         "DataTable 'that' has zero rows/columns.");
+        OPENSIM_THROW_IF(!suffixes.empty() &&
+                         suffixes.size() != that.numComponentsPerElement(),
+                         InvalidArgument,
+                         "'suffixes' must contain same number of elements as "
+                         "number of components per element of DataTable 'that'."
+                         "See documentation for numComponentsPerElement().");
+
+        // If the dependents metadata is of std::string type,
+        // replicate it to match the new number of columns. If not of
+        // std::string type, drop the metadata because type information is
+        // required to interpret them.
+        // Column-labels will be handled separtely as they need suffix-ing.
+        for(const auto& key : _dependentsMetaData.getKeys()) {
+            if(key == "labels")
+                continue;
+
+            auto absValueArray = &_dependentsMetaData.updValueArrayForKey(key);
+            ValueArray<std::string>* valueArray{};
+            try {
+                valueArray =
+                    dynamic_cast<ValueArray<std::string>*>(absValueArray);
+            } catch (const std::bad_cast&) {
+                _dependentsMetaData.removeValueArrayForKey(key);
+                continue;
+            }
+            auto& values = valueArray->upd();
+            std::vector<SimTK::Value<std::string>> newValues{};
+            for(const auto& value : values)
+                for(auto i = 0u; i < that.numComponentsPerElement(); ++i)
+                    newValues.push_back(value);
+            values = std::move(newValues);
+        }
+
+        std::vector<std::string> thisLabels{};
+        thisLabels.reserve(that.getNumColumns() *
+                           that.numComponentsPerElement());
+        for(const auto& label : that.getColumnLabels()) {
+            if(suffixes.empty()) {
+                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
+                    thisLabels.push_back(label + "_" + std::to_string(i));
+            } else {
+                for(const auto& suffix : suffixes)
+                    thisLabels.push_back(label + suffix);
+            }
+        }
+        // This calls validateDependentsMetadata, so no need for explicit call.
+        setColumnLabels(thisLabels);
+
+        for(unsigned r = 0; r < that.getNumRows(); ++r) {
+            const auto& thatInd = that.getIndependentColumn().at(r);
+            const auto& thatRow = that.getRowAtIndex(r);
+            std::vector<ETY> thisRow{};
+            for(unsigned c = 0; c < that.getNumColumns(); ++c)
+                splitElementAndPushBack(thisRow, thatRow[c]);
+            appendRow(thatInd, thisRow);
+        }
+    }
+
+    /** Construct this DataTable from a DataTable_<double, double>. This is the
+    opposite operation of flatten(). Multiple consecutive columns of the given
+    DataTable will be 'packed' together to form columns of this DataTable. For
+    example, if this DataTable is of type DataTable_<double, Vec3>, then every
+    3 consecutive columns of the given DataTable will form one column of this
+    DataTable. The column labels of this table will be formed by stripping out
+    the suffixes from the column labels of the given DataTable. For the same 
+    example above, if columns labels of the given DataTable are -- 
+    "col0.x", "col0.y", "col0.x", "col1.x", "col1.y", "col1.x" -- the column 
+    labels of this DataTable will be -- "col0", "col1" -- where suffixes are
+    stripped out. This constructor will try to guess the suffixes used. If 
+    unable to do so, it will throw an exception. Suffixes used can also be 
+    specified as arguments. 
+    This constructor only makes sense for DataTable_<double, SimTKType> where
+    SimTKType is not 'double'. SimTKType can be for example, SimTK::Vec3, 
+    SimTK::Vec6, SimTK::Quaternion, SimTK::SpatialVec etc.
+
+    \param that DataTable to copy-construct this DataTable from.
+    \param suffixes Suffixes used in the input DataTable to distinguish 
+                    individual components. For example, if column labels are -- 
+                    "force.x", "force.y", "force.z" -- suffixes will be -- ".x",
+                    ".y", ".z".
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has no rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of 
+                            elements as this->numComponentsPerElement().
+    \throws InvalidArgument If number of columns in 'that' DataTable is not a
+                            multiple of this->numComponentsPerElement().
+    \throws InvalidArgument If suffixes cannot be extracted from column-labels 
+                            of 'that' DataTable.                              */
+    explicit DataTable_(const DataTable_<double, double>& that,
+                        const std::vector<std::string>& suffixes) :
+        AbstractDataTable{that} {
+        static_assert(!std::is_same<ETY, double>::value,
+                      "This constructor cannot be used to construct "
+                      "DataTable_<double, double>. Maybe use the copy "
+                      "constructor instead.");
+
+        OPENSIM_THROW_IF(!that.hasColumnLabels(),
+                         InvalidArgument,
+                         "DataTable 'that' has no column labels.");
+        OPENSIM_THROW_IF(that.getNumRows() == 0 || that.getNumColumns() == 0,
+                         InvalidArgument,
+                         "DataTable 'that' has zero rows/columns.");
+        OPENSIM_THROW_IF(!suffixes.empty() &&
+                         suffixes.size() != numComponentsPerElement(),
+                         InvalidArgument,
+                         "'suffixes' must contain same number of elements as "
+                         "number of components per element of 'this' DataTable."
+                         " See documentation for numComponentsPerElement().");
+        OPENSIM_THROW_IF(std::lldiv(that.getNumColumns(),
+                                    numComponentsPerElement()).rem != 0,
+                         InvalidArgument,
+                         "Input DataTable must contain " +
+                         std::to_string(numComponentsPerElement()) + "x "
+                         "number of columns.");
+
+        const auto& thatLabels = that.getColumnLabels();
+        for(unsigned i = 0; i < thatLabels.size(); ++i)
+            OPENSIM_THROW_IF(thatLabels[i].length() < 2,
+                             InvalidArgument,
+                             "Column label at index " + std::to_string(i) +
+                             " is too short to have a suffix.");
+
+        // Guess suffixes from columns labels of that table.
+        std::vector<std::string> suffs{suffixes};
+        if(suffs.empty()) {
+            for(unsigned i = 0; i < numComponentsPerElement(); ++i) {
+                std::string suff{thatLabels[i][thatLabels[i].size() - 1]};
+                char nonSuffChar{thatLabels[i][thatLabels[i].size() - 2]};
+                bool foundNonSuffChar{false};
+                while(!foundNonSuffChar) {
+                    for(unsigned c = i;
+                        c < thatLabels.size();
+                        c += numComponentsPerElement()) {
+                        try {
+                            if(thatLabels[c].at(thatLabels[c].size() - 1 -
+                                                suff.length()) != nonSuffChar) {
+                                foundNonSuffChar = true;
+                                break;
+                            }
+                        } catch(const std::out_of_range&) {
+                            OPENSIM_THROW(InvalidArgument,
+                                          "Cannot guess the suffix from column"
+                                          " label at index " +
+                                          std::to_string(c));
+                        }
+                    }
+                    if(!foundNonSuffChar) {
+                        suff.insert(suff.begin(), nonSuffChar);
+                        try {
+                            nonSuffChar =
+                                thatLabels[i].at(thatLabels[i].size() - 1 -
+                                                 suff.length());
+                        } catch(const std::out_of_range&) {
+                            OPENSIM_THROW(InvalidArgument,
+                                          "Cannot guess the suffix from column"
+                                          " label at index " +
+                                          std::to_string(i));
+                        }
+                    }
+                }
+                suffs.push_back(suff);
+            }
+        }
+
+        // Form column labels for this table from that table.
+        std::vector<std::string> thisLabels{};
+        thisLabels.reserve(that.getNumColumns() / numComponentsPerElement());
+        for(unsigned c = 0; c < thatLabels.size(); ) {
+            std::string thisLabel{};
+            for(unsigned i = 0; i < numComponentsPerElement(); ++i, ++c) {
+                const auto& thatLabel = thatLabels[c];
+                OPENSIM_THROW_IF(thatLabel.compare(thatLabel.length() -
+                                                   suffs[i].length(),
+                                                   suffs[i].length(),
+                                                   suffs[i]) != 0,
+                                 InvalidArgument,
+                                 "Suffix not found in column label '" +
+                                 thatLabel + "'. Expected suffix '" +
+                                 suffs[i] + "'.");
+
+                if(i == 0) {
+                    thisLabel = thatLabel.substr(0,
+                                                 thatLabel.length() -
+                                                 suffs[i].length());
+                    thisLabels.push_back(thisLabel);
+                } else {
+                    OPENSIM_THROW_IF(thisLabel !=
+                                     thatLabel.substr(0,
+                                                      thatLabel.length() -
+                                                      suffs[i].length()),
+                                     InvalidArgument,
+                                     "Unexpected column-label '" + thatLabel +
+                                     "'. Expected: '" + thisLabel + suffs[i] +
+                                     "'.");
+                }
+            }
+        }
+        setColumnLabels(thisLabels);
+
+        // Form rows for this table from that table.
+        for(unsigned r = 0; r < that.getNumRows(); ++r) {
+            const auto& thatInd = that.getIndependentColumn().at(r);
+            auto thatRow = that.getRowAtIndex(r).getAsRowVector();
+            std::vector<ETY> thisRow{};
+            for(unsigned c = 0;
+                c < that.getNumColumns();
+                c += numComponentsPerElement()) {
+                thisRow.push_back(makeElement(thatRow.begin() + c,
+                                              thatRow.end()));
+            }
+            appendRow(thatInd, thisRow);
+        }
+    }
+
+    /** Contruct DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes of form "_1",
+    "_2", "_3" and so on.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy-construct this table from. This table can be
+                of for example DataTable_<double, Quaternion>, 
+                DataTable_<double, Vec6>.
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY>
+    explicit DataTable_(const DataTable_<double, ThatETY>& that) :
+    DataTable_(that, std::vector<std::string>{}) {
+        // No operation.
+    }
+
+    /** Copy assign a DataTable_<double, double> from 
+    DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
+    of the other table is split into multiple columns of this table. For example
+    , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
+    DataTable<double, double> of 9 columns and 4 rows where each component of
+    SimTK::Vec3 ends up in one column. Column labels of the resulting DataTable
+    will use column labels of source table appended with suffixes of form "_1",
+    "_2", "_3" and so on.
+
+    \tparam ThatETY Datatype of the matrix underlying the given DataTable.
+
+    \param that DataTable to copy assign from. This table can be
+                of for example DataTable_<double, Quaternion>, 
+                DataTable_<double, Vec6>.
+
+    \throws InvalidArgument If 'that' DataTable has no column-labels.
+    \throws InvalidArgument If 'that' DataTable has zero number of rows/columns.
+    \throws InvalidArgument If 'suffixes' does not contain same number of
+                            elements as that.numComponentsPerElement().       */
+    template<typename ThatETY>
+    DataTable_& operator=(const DataTable_<double, ThatETY>& that) {
+        return operator=(DataTable_{that});
+    }
+
+    /** Flatten the columns of this table to create a 
+    DataTable_<double, double>. Each column will be split into its 
+    constituent components. For example, each column of a 
+    DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
+    the resulting columns will be suffixed "_1", "_2", "_3" and so on. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    DataTable_<double, double> flatten() const {
+        return DataTable_<double, double>{*this};
+    }
+
+    /** Flatten the columns of this table to create a 
+    DataTable_<double, double>. Each column will be split into its 
+    constituent components. For example, each column of a 
+    DataTable_<double, Vec3> will be split into 3 columns. The column-labels of
+    the resulting columns will be appended with 'suffixes' provided. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    DataTable_<double, double>
+    flatten(const std::vector<std::string>& suffixes) const {
+        return DataTable_<double, double>{*this, suffixes};
+    }
+
+    /** Pack the columns of this table to create a DataTable_<double, ThatETY>,
+    where 'ThatETY' is the template parameter which can be SimTK::Vec3, 
+    SimTK::UnitVec3, SimTK::Quaternion, SimTK::SpatialVec and so on. Multiple
+    consecutive columns of this table will be packed into one column of the 
+    resulting table. For example while creating a DataTable_<double, Quaternion>
+    , every group of 4 consecutive columns of this table will form one column 
+    of the resulting table. The column-labels of the resulting table will be
+    formed by stripping the suffixes in the column-labels of this table.
+    This function will attempt to guess the suffixes of column-labels. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    template<typename ThatETY>
+    DataTable_<double, ThatETY> pack() const {
+        return DataTable_<double, ThatETY>{*this};
+    }
+
+    /** Pack the columns of this table to create a DataTable_<double, ThatETY>,
+    where 'ThatETY' is the template parameter which can be SimTK::Vec3, 
+    SimTK::UnitVec3, SimTK::Quaternion, SimTK::SpatialVec and so on. Multiple
+    consecutive columns of this table will be packed into one column of the 
+    resulting table. For example while creating a DataTable_<double, Quaternion>
+    , every group of 4 consecutive columns of this table will form one column 
+    of the resulting table. The column-labels of the resulting table will be
+    formed by stripping the suffixes in the column-labels of this table. See
+    documentation for constructor DataTable_::DataTable_().                   */
+    template<typename ThatETY>
+    DataTable_<double, ThatETY>
+    pack(const std::vector<std::string>& suffixes) const {
+        return DataTable_<double, ThatETY>{*this, suffixes};
+    }
+
+    /** Retrieve the number of components each element (of type ETY) of the 
+    table is made of. Some examples:
+
+    Table Type                    | Element Type | Num of Components
+    ------------------------------|--------------|------------------
+    DataTable<double, double>     | double       | 1
+    DataTable<double, Vec3>       | Vec3         | 3
+    DataTable<double, Quaternion> | Quaternion   | 4                          */
+    unsigned numComponentsPerElement() const override {
+        return numComponentsPerElement_impl(ETY{});
     }
 
     /// @name Row accessors/mutators.
@@ -256,6 +634,14 @@ public:
     \throws IncorrectNumColumns If the row added is invalid. Validity of the 
     row added is decided by the derived class.                                */
     void appendRow(const ETX& indRow, const RowVector& depRow) {
+        appendRow(indRow, depRow.getAsRowVectorView());
+    }
+
+    /** Append row to the DataTable_.                                         
+
+    \throws IncorrectNumColumns If the row added is invalid. Validity of the 
+    row added is decided by the derived class.                                */
+    void appendRow(const ETX& indRow, const RowVectorView& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
         _indData.push_back(indRow);
@@ -282,7 +668,7 @@ public:
     /** Get row at index.                                                     
 
     \throws RowIndexOutOfRange If index is out of range.                      */
-    RowVectorView getRowAtIndex(size_t index) const {
+    const RowVectorView getRowAtIndex(size_t index) const {
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -290,11 +676,14 @@ public:
         return _depData.row(static_cast<int>(index));
     }
 
-    /** Get row corresponding to the given entry in the independent column.   
+    /** Get row corresponding to the given entry in the independent column. This
+    function searches the independent column for exact equality, which may not
+    be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::getNearestRow().
 
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
-    RowVectorView getRow(const ETX& ind) const {
+    const RowVectorView getRow(const ETX& ind) const {
         auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
 
         OPENSIM_THROW_IF(iter == _indData.cend(),
@@ -315,6 +704,9 @@ public:
     }
 
     /** Update row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
 
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
@@ -325,6 +717,35 @@ public:
                          KeyNotFound, std::to_string(ind));
 
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
+    }
+
+    /** Remove row at index.
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void removeRowAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
+                         RowIndexOutOfRange, 
+                         index, 0, static_cast<unsigned>(_indData.size() - 1));
+
+        if(index < getNumRows() - 1)
+            for(size_t r = index; r < getNumRows() - 1; ++r)
+                _depData.updRow((int)index) = _depData.row((int)(index + 1));
+        
+        _depData.resizeKeep(_depData.nrow() - 1, _depData.ncol());
+        _indData.erase(_indData.begin() + index);
+    }
+
+    /** Remove row corresponding to the given entry in the independent column.
+
+    \throws KeyNotFound If the independent column has no entry with the given
+                        value.                                                */
+    void removeRow(const ETX& ind) {
+        auto iter = std::find(_indData.cbegin(), _indData.cend(), ind);
+
+        OPENSIM_THROW_IF(iter == _indData.cend(),
+                         KeyNotFound, std::to_string(ind));
+
+        return removeRowAtIndex((int)std::distance(_indData.cbegin(), iter));
     }
 
     /// @} End of Row accessors/mutators.
@@ -485,7 +906,309 @@ public:
 
     /// @}
 
+    /** Get a string representation of the table, including the key-value pairs
+    in the table metadata. Table metadat will be of the form:
+    \code
+    key => value-converted-to-string
+    \endcode
+    For example:
+    \code
+    DataRate => 2000.00000
+    Units => mm
+    \endcode
+    For values in the table metadata that do not support the operation of stream
+    insertion (operator<<), the value for metadata will be:
+    \code
+    key => <cannot-convert-to-string>
+    \endcode
+    Some examples to call this function:
+    \code
+    // All rows, all columns.
+    auto tableAsString = table.toString();
+    // First 5 rows, all columns.
+    auto tableAsString = table.toString({0, 1, 2, 3, 4});
+    // All rows, 3 columns with specified labels.
+    auto tableAsString = table.toString({}, {"col12", "col35", "col4"});
+    // Rows 5th, 3rd, 1st (in that order) and columns with specified lables (in 
+    // that order).
+    auto tableAsString = table.toString({4, 2, 0}, {"col10", "col5", "col2"});
+    // Lets say the table has 10 rows. Following will get last 3 rows in the 
+    // order specified. All columns.
+    auto tableAsString = table.toString({-1, -2, -3})
+    \endcode
+
+    \param rows **[Default = all rows]** Sequence of indices of rows to be 
+                printed. Rows will be printed exactly in the order specified in 
+                the sequence. Index begins at 0, ie. first row is 0. Negative
+                indices refer to rows starting from last row. Index -1 refers to
+                last row, -2 refers to row previous to last row and so on.
+                Default behavior is to print all rows. 
+    \param columnLabels **[Default = all rows]** Sequence of labels of columns 
+                        to be printed. Columns will be printed exactly in the 
+                        order specified in the sequence. Default behavior is to 
+                        print all columns.
+    \param withMetaData **[Default = true]** Whether or not table metadata 
+                        should be printed. Default behavior is to print table 
+                        metadata.
+    \param splitSize **[Default = 25]** Number of rows to print at a time. 
+                     Default behavior is to print 25 rows at a time. 
+    \param maxWidth **[Default = 80]** Maximum number of characters to print per
+                    line. The columns are split accordingly to make the table 
+                    readable. This is useful in terminals/consoles with narrow 
+                    width. Default behavior is to limit number characters per 
+                    line to 80.
+    \param precision **[Default = 4]** Precision of the floating-point numbers 
+                     printed. Default behavior is to print floating-point 
+                     numbers with 4 places to the right of decimal point.     */
+    std::string toString(std::vector<int>         rows         = {},
+                         std::vector<std::string> columnLabels = {},
+                         const bool               withMetaData = true,
+                         unsigned                 splitSize    = 25,
+                         unsigned                 maxWidth     = 80,
+                         unsigned                 precision    = 4) const {
+        std::vector<int> cols{};
+        for(const auto& label : columnLabels)
+            cols.push_back(static_cast<int>(getColumnIndex(label)));
+        return toString_impl(rows, cols, withMetaData,
+                             splitSize, maxWidth, precision);
+    }
+
 protected:
+    // Implement toString.
+    std::string toString_impl(std::vector<int> rows         = {},
+                              std::vector<int> cols         = {},
+                              const bool       withMetaData = true,
+                              unsigned         splitSize    = 25,
+                              unsigned         maxWidth     = 80,
+                              unsigned         precision    = 4) const {
+        static_assert(std::is_same<ETX, double>::value,
+                      "This function can only be called for a table with "
+                      "independent column of type 'double'.");
+        OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
+                         EmptyTable);
+
+        // Defaults.
+        const unsigned    defSplitSize{25};
+        const unsigned    defMaxWidth{80};
+        const unsigned    defPrecision{4};
+        const unsigned    columnSpacing{1};
+        const float       excessAllocation{1.25};
+        const char        rowNumSepChar{':'};
+        const char        fillChar{' '};
+        const char        newlineChar{'\n'};
+        const std::string indColLabel{"time"};
+        const std::string suffixChar{"_"};
+        const std::string metaDataSep{" => "};
+
+        // Set all the un-specified parameters to defaults.
+        if(splitSize   == 0)
+            splitSize  = defSplitSize;
+        if(defMaxWidth == 0)
+            maxWidth   = defMaxWidth;
+        if(precision   == 0)
+            precision  = defPrecision;
+        if(rows.empty())
+            for(size_t i = 0u; i < getNumRows()   ; ++i)
+                rows.push_back(i);
+        if(cols.empty())
+            for(size_t i = 0u; i < getNumColumns(); ++i)
+                cols.push_back(i);
+
+        auto toStr = [&] (const double val) {
+            std::ostringstream stream{};
+            stream << std::fixed << std::setprecision(precision) << val;
+            return stream.str();
+        };
+
+        std::vector<std::vector<std::string>> table{};
+
+        // Fill up column labels, including row-number label (empty string),
+        // time column label and all the column labels from table.
+        table.push_back({std::string{}, indColLabel});
+        for(int col : cols) {
+            if(col < 0)
+                col += getNumColumns();
+            if(numComponentsPerElement() == 1)
+                table.front().push_back(getColumnLabel(col));
+            else
+                for(unsigned c = 0; c < numComponentsPerElement(); ++c)
+                    table.front().push_back(getColumnLabel(col) +
+                                            suffixChar +
+                                            std::to_string(c + 1));
+        }
+
+        // Fill up the rows, including row-number, time column, row data.
+        for(int row : rows) {
+            if(row < 0)
+                row += getNumRows();
+            std::vector<std::string> rowData{};
+            rowData.push_back(std::to_string(row) + rowNumSepChar);
+            rowData.push_back(toStr(getIndependentColumn()[row]));
+            for(const auto& col : cols)
+                for(const auto& comp :
+                        splitElement(getMatrix().getElt(row, col)))
+                        rowData.push_back(toStr(comp));
+            table.push_back(std::move(rowData));
+        }
+
+        // Compute width of each column.
+        std::vector<size_t> columnWidths(table.front().size(), 0);
+        for(const auto& row : table) {
+            for(unsigned col = 0; col < row.size(); ++col)
+                columnWidths.at(col) =
+                    std::max(columnWidths.at(col),
+                             row[col].length() + columnSpacing);
+        }
+        columnWidths.front() -= 1;
+
+        std::string result{};
+
+        // Fill up metadata.
+        if(withMetaData) {
+            for(const auto& key : getTableMetaDataKeys()) {
+                result.append(key);
+                result.append(metaDataSep);
+                result.append(getTableMetaDataAsString(key));
+                result.push_back(newlineChar);
+            }
+        }
+        
+        const size_t totalWidth{std::accumulate(columnWidths.cbegin(),
+                                                columnWidths.cend(),
+                                                static_cast<size_t>(0))};
+        result.reserve(result.capacity() + static_cast<unsigned>(
+                       totalWidth * table.size() * excessAllocation));
+
+        // Fill up the result string.
+        size_t beginRow{1};
+        size_t endRow{std::min(beginRow + splitSize, table.size())};
+        while(beginRow < endRow) {
+            size_t beginCol{1};
+            size_t endCol{columnWidths.size()};
+            while(beginCol < endCol) {
+                size_t width = std::accumulate(columnWidths.cbegin() + beginCol,
+                                               columnWidths.cbegin() + endCol,
+                                               static_cast<size_t>(0));
+                while(width > maxWidth) {
+                    --endCol;
+                    width -= columnWidths[endCol];
+                }
+                result.append(columnWidths[0], fillChar);
+                for(unsigned col = beginCol; col < endCol; ++col) {
+                    result.append(columnWidths[col] - table[0][col].length(),
+                                  fillChar);
+                    result.append(table[0][col]);
+                }
+                result.push_back(newlineChar);
+                for(unsigned row = beginRow; row < endRow; ++row) {
+                    result.append(columnWidths[0] - table[row][0].length(),
+                                  fillChar);
+                    result.append(table[row][0]);
+                    for(unsigned col = beginCol; col < endCol; ++col) {
+                        result.append(columnWidths[col] -
+                                      table[row][col].length(), fillChar);
+                        result.append(table[row][col]);
+                    }
+                    result.push_back(newlineChar);
+                }
+                beginCol = endCol;
+                endCol = columnWidths.size();
+            }
+            beginRow = endRow;
+            endRow = std::min(beginRow + splitSize, table.size());
+        }
+        return result;
+    }
+
+    // Split element into constituent components and append the components to
+    // the given vector. For example Vec3 has 3 components.
+    template<int N>
+    static
+    void splitElementAndPushBack(std::vector<double>& row,
+                                 const SimTK::Vec<N>& elem) {
+        for(unsigned i = 0; i < N; ++i)
+            row.push_back(elem[i]);
+    }
+    // Split element into constituent components and append the components to 
+    // the given vector. . For example Vec<2, Vec3> has 6 components.
+    template<int M, int N>
+    static
+    void splitElementAndPushBack(std::vector<double>& row,
+                                 const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
+        for(unsigned i = 0; i < M; ++i)
+            for(unsigned j = 0; j < N; ++j)
+                row.push_back(elem[i][j]);
+    }
+    // Unsupported type.
+    static
+    void splitElementAndPushBack(std::vector<double>&,
+                                 ...) {
+        static_assert(!std::is_same<ETY, double>::value,
+                      "This constructor cannot be used to construct from "
+                      "DataTable<double, ThatETY> where ThatETY is an "
+                      "unsupported type.");
+    }
+    template<typename ELT>
+    static
+    std::vector<double> splitElement(const ELT& elt) {
+        std::vector<double> result{};
+        splitElementAndPushBack(result, elt);
+        return result;
+    }
+    static
+    std::vector<double> splitElement(const double& elt) {
+        return {elt};
+    }
+
+    template<typename Iter>
+    static
+    void makeElement_helper(double& elem,
+                            Iter begin, Iter end) {
+        OPENSIM_THROW_IF(begin == end,
+                         InvalidArgument,
+                         "Iterators do not produce enough elements."
+                         "Expected: 1 Received: 0");
+        elem = *begin;
+    }
+    template<int N, typename Iter>
+    static
+    void makeElement_helper(SimTK::Vec<N>& elem,
+                            Iter begin, Iter end) {
+        for(unsigned i = 0; i < N; ++i) {
+            OPENSIM_THROW_IF(begin == end,
+                             InvalidArgument,
+                             "Iterators do not produce enough elements."
+                             "Expected: " + std::to_string(N) + " Received: " +
+                             std::to_string(i));
+
+            elem[i] = *begin++;
+        }
+    }
+    template<int M, int N, typename Iter>
+    static
+    void makeElement_helper(SimTK::Vec<M, SimTK::Vec<N>>& elem,
+                            Iter begin, Iter end) {
+        for(unsigned i = 0; i < M; ++i) {
+            for(unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                                 InvalidArgument,
+                                 "Iterators do not produce enough elements."
+                                 "Expected: " + std::to_string(M * N) +
+                                 " Received: " + std::to_string((i + 1) * j));
+
+                elem[i][j] = *begin++;
+            }
+        }
+    }
+    template<typename Iter>
+    static
+    ETY makeElement(Iter begin, Iter end) {
+        ETY elem{};
+        makeElement_helper(elem, begin, end);
+        return elem;
+    }
+    
+    
     /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
@@ -564,35 +1287,31 @@ protected:
         // No operation.
     }
 
+    static constexpr
+    unsigned numComponentsPerElement_impl(double) {
+        return 1;
+    }
+    template<int M>
+    static constexpr
+    unsigned numComponentsPerElement_impl(SimTK::Vec<M>) {
+        return M;
+    }
+    template<int M, int N>
+    static constexpr
+    unsigned numComponentsPerElement_impl(SimTK::Vec<M, SimTK::Vec<N>>) {
+        return M * N;
+    }
+
     std::vector<ETX>    _indData;
     SimTK::Matrix_<ETY> _depData;
 };  // DataTable_
 
-/** Print DataTable out to a stream. Metadata is not printed to the stream as it
-is currently allowed to contain objects that do not support this operation.   
-Meant to be used for Debugging only.                                          */
+
+/** Print DataTable out to a stream.                                          */
 template<typename ETX, typename ETY>
 std::ostream& operator<<(std::ostream& outStream,
                          const DataTable_<ETX, ETY>& table) {
-    outStream << "----------------------------------------------------------\n";
-    outStream << "NumRows: " << table.getNumRows()    << std::endl;
-    outStream << "NumCols: " << table.getNumColumns() << std::endl;
-    outStream << "Column-Labels: ";
-    const auto& labels = table.getColumnLabels();
-    if(!labels.empty()) {
-        outStream << "['" << labels[0] << "'";
-        if(labels.size() > 1)
-            for(size_t l = 1; l < labels.size(); ++l)
-                outStream << " '" << labels[l] << "'";
-        outStream << "]" << std::endl;
-    }
-    for(size_t r = 0; r < table.getNumRows(); ++r) {
-        outStream << table.getIndependentColumn().at(r) << " ";
-        outStream << table.getRowAtIndex(r) << std::endl;
-    }
-
-    outStream << "----------------------------------------------------------\n";
-    return outStream;
+    return (outStream << table.toString());
 }
 
 /** See DataTable_ for details on the interface.                              */

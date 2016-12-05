@@ -163,6 +163,9 @@ void testComponentPath() {
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedAbsPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
+    // Test getComponentName()
+    ASSERT(numberedAbsPath.getComponentName() == levels[levels.size()-1]);
+    ASSERT(emptyPath.getComponentName() == ""); // empty ComponentPath should return empty string
 
     // Do the same as above but with a relative path instead
     ComponentPath numberedRelPath(levels, false);
