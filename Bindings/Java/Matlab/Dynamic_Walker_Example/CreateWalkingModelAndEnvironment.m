@@ -1,31 +1,32 @@
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2013 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
+% -----------------------------------------------------------------------
+% The OpenSim API is a toolkit for musculoskeletal modeling and
+% simulation. See http://opensim.stanford.edu and the NOTICE file
+% for more information. OpenSim is developed at Stanford University
+% and supported by the US National Institutes of Health (U54 GM072970,
+% R24 HD065690) and by DARPA through the Warrior Web program.
+%
+% Copyright (c) 2005-2016 Stanford University and the Authors
+% Author(s): Daniel A. Jacobs
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% http://www.apache.org/licenses/LICENSE-2.0.
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied. See the License for the specific language governing
+% permissions and limitations under the License.
+% -----------------------------------------------------------------------
 %CreateWalkingModelAndEnvironment
 %   This script creates a planar kneed walking model and randomly generates
 %   40 spheres for obstacles
-% -----------------------------------------------------------------------     
+% -----------------------------------------------------------------------
+
 % User Section - Adjust these parameters at will
 outputPath = '..\Model\';
-outputModelName = 'WalkerModel'; 
+outputModelName = 'WalkerModel';
 
 % Model Body Parameters
 PlatformLength  = 10;
@@ -51,7 +52,7 @@ DEG2RAD         = pi/180;
 RAD2DEG         = 1/DEG2RAD;
 
 % Add Obstacles
-addObstacles = 1;  % 1 for yes 0 for No
+addObstacles = true;  % 1 for yes 0 for No
 
 % Obstacle Contact Parameters
 numSpheres = 40;
@@ -67,7 +68,7 @@ import org.opensim.modeling.*
 % Open Model
 osimModel = Model();
 if(addObstacles)
-    outputModelName = [outputModelName, 'Terrain'];    
+    outputModelName = [outputModelName, 'Terrain'];
 end
 osimModel.setName(outputModelName);
 osimModel.setAuthors('Daniel A. Jacobs, Ajay Seth');
@@ -455,10 +456,10 @@ if(addObstacles)
        warning('CreateWalkingModelAndEnvironment:RNG', ...
                ['\tYou are using a version of Matlab before 2011a and do', ...
                'not have the rng function.  The location of your terrain', ...
-               'obstacles will be different than the base model.']); 
+               'obstacles will be different than the base model.']);
     end
-    % You can comment this line out if necessary. However, your obstacles will 
-    % be in a different place than the first model.  
+    % You can comment this line out if necessary. However, your obstacles will
+    % be in a different place than the first model.
     for i = 1:1:numSpheres
         radius = minObstacleRadius+(maxObstacleRadius - minObstacleRadius)*rand(1,1);
         locX = endingPoint-distance*abs(.30*randn(1,1))-PlatformOffset;
@@ -473,7 +474,7 @@ if(addObstacles)
 
     % Add Force to the Model
     osimModel.addForce(ObstacleForces);
-    
+
 end
 % -----------------------------------------------------------------------
 osimModel.print([outputPath, outputModelName, '.osim']);

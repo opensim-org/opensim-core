@@ -1,11 +1,43 @@
-% Import Java Library 
+% -----------------------------------------------------------------------
+% The OpenSim API is a toolkit for musculoskeletal modeling and
+% simulation. See http://opensim.stanford.edu and the NOTICE file
+% for more information. OpenSim is developed at Stanford University
+% and supported by the US National Institutes of Health (U54 GM072970,
+% R24 HD065690) and by DARPA through the Warrior Web program.
+%
+% Copyright (c) 2005-2016 Stanford University and the Authors
+% Author(s): Daniel A. Jacobs
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% http://www.apache.org/licenses/LICENSE-2.0.
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied. See the License for the specific language governing
+% permissions and limitations under the License.
+% -----------------------------------------------------------------------
+% This file demonstrates how to add feet to the model using a custom
+% object.
+%
+% The model will look for .object files in two locations
+% 1) The model's local directory
+% 2) The Models directory in the OpenSim Installation Directory
+% e.g. (<OpenSim_Home>\Models)
+%
+% The allowed object extensions are .vtp, .stl, .obj
+% -----------------------------------------------------------------------
+
+% Import Java Library
 import org.opensim.modeling.*
 
 % model file
-modelDirectory = '../Model/WalkerModel.osim';
+modelPath = '../Model/WalkerModel.osim';
 
 % open the model
-model = Model(modelDirectory);
+model = Model(modelPath);
 
 % change the name
 model.setName( [model.getName().toCharArray()' '_CustomFeet']);
@@ -14,17 +46,17 @@ model.setName( [model.getName().toCharArray()' '_CustomFeet']);
 model.updForceSet().remove( model.getForceSet.get('LFootForce') );
 model.updForceSet().remove( model.getForceSet.get('RFootForce') );
 
-% remove the current foot contact geo
+% remove the current foot contact geometry
 model.updContactGeometrySet().remove( model.getContactGeometrySet().get('LFootContact') );
 model.updContactGeometrySet().remove( model.getContactGeometrySet().get('RFootContact') );
 
-% make new the feet bodies
+% make rigid bodies for feet
 leftFoot = Body('LeftFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 rightFoot = Body('RightFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 
 % get a reference to each shank
-leftShank= model.updBodySet().get('LeftShank');
-rightShank = model.updBodySet().get('RightShank');
+leftShank= model.getBodySet().get('LeftShank');
+rightShank = model.getBodySet().get('RightShank');
 
 % make weld joints
 ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
@@ -34,9 +66,11 @@ ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0),Vec3(0,0,0), rightF
 leftFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
 rightFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
 
-% add the body to the model
+% add the bodies and joints to the model
 model.addBody(leftFoot);
 model.addBody(rightFoot);
+model.addJoint(ankle_l);
+model.addJoint(ankle_r);
 
 % make a contact mesh for each foot
 contact_l = ContactMesh('ThinHalfCylinder100mmby50mm.obj',Vec3(0,0,0), Vec3(0,0,0), leftFoot, 'LFootContact');
@@ -65,7 +99,7 @@ staticFriction      = 0.8;
 dynamicFriction     = 0.4;
 viscousFriction     = 0.4;
 
-% set the contact parameters 
+% set the contact parameters
 elasticforce_l.addGeometry('LFootContact');
 elasticforce_l.addGeometry('PlatformContact');
 elasticforce_l.setStiffness(stiffness);
@@ -86,39 +120,5 @@ elasticforce_r.setViscousFriction(viscousFriction);
 model.addForce(elasticforce_l);
 model.addForce(elasticforce_r);
 
-
-% print new model to file. 
+% print new model to file.
 model.print('../Model/WalkerModel_customFeet.osim');
-  
-
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2013 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
-% This file demonstrates how to add feet to the model using a custom
-% object.
-%
-% The model will look for .object files in two locations
-% 1) The model's local directory
-% 2) The Models directory in the OpenSim Installation Directory
-% e.g. (<OpenSim_Home>\Models)
-%
-% The allowed object extensions are .vtp, .stl, .obj
-% ----------------------------------------------------------------------- 
