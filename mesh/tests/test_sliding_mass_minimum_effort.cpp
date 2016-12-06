@@ -1,6 +1,9 @@
 
 #include <mesh.h>
 
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
+
 class SlidingMass : public OptimalControlProblem<adouble> {
     // TODO difficult... virtual void initial_guess()
     // TODO really want to declare each state variable individually, and give
@@ -57,7 +60,38 @@ class SlidingMass : public OptimalControlProblem<adouble> {
     }
 };
 
-double g = 9.81;
+TEST_CASE("minimize effort of sliding a mass") {
+
+    // TODO user interface should not involve directly using Ipopt.
+    Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
+            new DirectCollocationSolver();
+    std::shared_ptr<OptimalControlProblem<adouble>> problem(
+            new SlidingMass());
+    mynlp->set_problem(problem);
+    // TODO return 0;
+    Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+    app->Options()->SetNumericValue("tol", 1e-9);
+    app->Options()->SetStringValue("mu_strategy", "adaptive");
+    app->Options()->SetStringValue("output_file", "ipopt.out");
+    // TODO temporary:
+    app->Options()->SetStringValue("derivative_test", "second-order");
+    Ipopt::ApplicationReturnStatus status;
+    status = app->Initialize();
+    if (status != Ipopt::Solve_Succeeded) {
+        printf("\n\n*** Error during initialization!\n");
+
+    }
+    status = app->OptimizeTNLP(mynlp);
+    if (status == Ipopt::Solve_Succeeded) {
+        printf("\n\n*** The problem solved!\n");
+    } else {
+        printf("\n\n*** The problem FAILED!\n");
+    }
+
+    REQUIRE(1 == 0);
+}
+
+// double g = 9.81;
 
 //class MyProb : public Problem {
 //    void ode(const VectorXd& x, const VectorXd& u, VectorXd& xdot) const
@@ -70,76 +104,75 @@ double g = 9.81;
 //    int num_controls() const override { return 1; }
 //};
 
-int main() {
-    {
-        // Ipopt::SmartPtr<ToyProblem> mynlp = new ToyProblem();
-        // mynlp->set_variable_bounds({-5, -5}, {5, 5});
-        // mynlp->set_constraint_bounds({-0.1}, {0.1});
-        // mynlp->set_initial_guess({0, 0});
-        Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
-                new DirectCollocationSolver();
-        std::shared_ptr<OptimalControlProblem<adouble>> problem(
-                new SlidingMass());
-        mynlp->set_problem(problem);
-        // TODO return 0;
-        Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
-        app->Options()->SetNumericValue("tol", 1e-9);
-        app->Options()->SetStringValue("mu_strategy", "adaptive");
-        app->Options()->SetStringValue("output_file", "ipopt.out");
-        // TODO temporary:
-        app->Options()->SetStringValue("derivative_test", "second-order");
-        Ipopt::ApplicationReturnStatus status;
-        status = app->Initialize();
-        if (status != Ipopt::Solve_Succeeded) {
-            printf("\n\n*** Error during initialization!\n");
-            return (int) status;
-        }
-        status = app->OptimizeTNLP(mynlp);
-        if (status == Ipopt::Solve_Succeeded) {
-            printf("\n\n*** The problem solved!\n");
-        } else {
-            printf("\n\n*** The problem FAILED!\n");
-        }
-        //ToyProblem toy;
-        //adouble f;
-        //toy.objective({1.5, -2.0}, f);
-        //std::cout << "DEBUG " << f << std::endl;
-        return (int) status;
-    }
-
-    //int num_points = 100;
-    //std::unique_ptr<Problem> problem(new MyProb());
-    //const int num_states = problem->num_states();
-    //const int num_controls = problem->num_controls();
-    ////MatrixXd xdot(num_states, num_points);
-    ////MatrixXd x(num_states, num_points);
-    ////MatrixXd u(num_controls, num_points);
-
-    //// TODO forward integration.
-    //const double step_size = 0.001;
-    //const int num_steps = 10000;
-    //const double final_time = step_size * num_steps;
-
-    //VectorXd xdot(num_states);
-    //VectorXd u(num_controls);
-    //u[0] = 1.0;
-    //VectorXd initial_x(num_states);
-    //initial_x[0] = 0;
-    //initial_x[1] = 0;
-    //VectorXd current_x = initial_x;
-    //for (int itime = 0; itime < num_steps; ++itime) {
-    //    problem->ode(current_x, u/*.col(itime)*/, xdot);
-    //    current_x = current_x + step_size * xdot;
-    //    std::cout << current_x << std::endl << std::endl;
-    //}
-    //std::cout << "Final time: " << final_time << std::endl;
-
-    /*
-    for (int ipt = 0; ipt < num_points; ++ipt) {
-        VectorXd this_xdot = xdot.col(0); // TODO unnecessary copy?
-        problem->ode(x.col(ipt), u.col(ipt), this_xdot);
-        std::cout << this_xdot << std::endl;
+//int main() {
+//    {
+//        // Ipopt::SmartPtr<ToyProblem> mynlp = new ToyProblem();
+//        // mynlp->set_variable_bounds({-5, -5}, {5, 5});
+//        // mynlp->set_constraint_bounds({-0.1}, {0.1});
+//        // mynlp->set_initial_guess({0, 0});
+//        Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
+//                new DirectCollocationSolver();
+//        std::shared_ptr<OptimalControlProblem<adouble>> problem(
+//                new SlidingMass());
+//        mynlp->set_problem(problem);
+//        // TODO return 0;
+//        Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+//        app->Options()->SetNumericValue("tol", 1e-9);
+//        app->Options()->SetStringValue("mu_strategy", "adaptive");
+//        app->Options()->SetStringValue("output_file", "ipopt.out");
+//        // TODO temporary:
+//        app->Options()->SetStringValue("derivative_test", "second-order");
+//        Ipopt::ApplicationReturnStatus status;
+//        status = app->Initialize();
+//        if (status != Ipopt::Solve_Succeeded) {
+//            printf("\n\n*** Error during initialization!\n");
+//            FAIL("Error during initialization");
+//        }
+//        status = app->OptimizeTNLP(mynlp);
+//        if (status == Ipopt::Solve_Succeeded) {
+//            printf("\n\n*** The problem solved!\n");
+//        } else {
+//            printf("\n\n*** The problem FAILED!\n");
+//        }
+//        //ToyProblem toy;
+//        //adouble f;
+//        //toy.objective({1.5, -2.0}, f);
+//        //std::cout << "DEBUG " << f << std::endl;
+//    }
+//
+//    //int num_points = 100;
+//    //std::unique_ptr<Problem> problem(new MyProb());
+//    //const int num_states = problem->num_states();
+//    //const int num_controls = problem->num_controls();
+//    ////MatrixXd xdot(num_states, num_points);
+//    ////MatrixXd x(num_states, num_points);
+//    ////MatrixXd u(num_controls, num_points);
+//
+//    //// TODO forward integration.
+//    //const double step_size = 0.001;
+//    //const int num_steps = 10000;
+//    //const double final_time = step_size * num_steps;
+//
+//    //VectorXd xdot(num_states);
+//    //VectorXd u(num_controls);
+//    //u[0] = 1.0;
+//    //VectorXd initial_x(num_states);
+//    //initial_x[0] = 0;
+//    //initial_x[1] = 0;
+//    //VectorXd current_x = initial_x;
+//    //for (int itime = 0; itime < num_steps; ++itime) {
+//    //    problem->ode(current_x, u/*.col(itime)*/, xdot);
+//    //    current_x = current_x + step_size * xdot;
+//    //    std::cout << current_x << std::endl << std::endl;
+//    //}
+//    //std::cout << "Final time: " << final_time << std::endl;
+//
+//    /*
+//    for (int ipt = 0; ipt < num_points; ++ipt) {
+//        VectorXd this_xdot = xdot.col(0); // TODO unnecessary copy?
+//        problem->ode(x.col(ipt), u.col(ipt), this_xdot);
+//        std::cout << this_xdot << std::endl;
         //problem->ode(x[ipt], xdot[ipt]);
-    }
-    */
-}
+//    }
+//    */
+//}
