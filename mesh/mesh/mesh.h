@@ -547,16 +547,31 @@ class DirectCollocationSolver : public IpoptADOLC_OptimizationProblem {
 public:
     // TODO why shared_ptr???
     void set_problem(std::shared_ptr<Problem> problem);
-    int state_index(int i_mesh_point, int i_state) const;
-    int control_index(int i_mesh_point, int i_control) const;
-    int constraint_index(int i_mesh, int i_state) const;
+    int state_index(int i_mesh_point, int i_state) const {
+        return i_mesh_point * m_num_continuous_variables + i_state;
+    }
+    int control_index(int i_mesh_point, int i_control) const{
+        return i_mesh_point * m_num_continuous_variables
+               + i_control + m_num_states;
+    }
+    int constraint_index(int i_mesh, int i_state) const {
+        const int num_bound_constraints = 2 * m_num_continuous_variables;
+        return num_bound_constraints + (i_mesh - 1) * m_num_states + i_state;
+    }
     enum BoundsCategory {
         InitialStates   = 0,
         FinalStates     = 1,
         InitialControls = 2,
         FinalControls   = 3,
     };
-    int constraint_bound_index(BoundsCategory category, int index) const;
+    int constraint_bound_index(BoundsCategory category, int index) const {
+        if (category <= 1) {
+            assert(index < m_num_states);
+            return category * m_num_states + index;
+        }
+        assert(index < m_num_controls);
+        return 2 * m_num_states + (category - 2) * m_num_controls + index;
+    }
     void objective(const std::vector<adouble>& x,
                    adouble& obj_value) const override;
     void constraints(const std::vector<adouble>& x,

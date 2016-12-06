@@ -119,31 +119,6 @@ void DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem) {
     set_initial_guess(std::vector<double>(num_variables)); // TODO user input
 }
 
-// TODO make these inline.
-int DirectCollocationSolver::state_index(int i_mesh_point, int i_state) const {
-    return i_mesh_point * m_num_continuous_variables + i_state;
-}
-
-int DirectCollocationSolver::control_index(int i_mesh_point, int i_control) const {
-    return i_mesh_point * m_num_continuous_variables
-           + i_control + m_num_states;
-}
-
-int DirectCollocationSolver::constraint_index(int i_mesh, int i_state) const {
-    int num_bound_constraints = 2 * m_num_continuous_variables;
-    return num_bound_constraints + (i_mesh - 1) * m_num_states + i_state;
-}
-
-int DirectCollocationSolver::constraint_bound_index(BoundsCategory category,
-                                                    int index) const {
-    if (category <= 1) {
-        assert(index < m_num_states);
-        return category * m_num_states + index;
-    }
-    assert(index < m_num_controls);
-    return 2 * m_num_states + (category - 2) * m_num_controls + index;
-}
-
 void DirectCollocationSolver::objective(const std::vector<adouble>& x,
                                         adouble& obj_value) const {
     const double step_size = (m_final_time - m_initial_time) /
