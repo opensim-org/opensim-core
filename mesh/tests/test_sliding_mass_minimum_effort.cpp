@@ -87,8 +87,6 @@ TEST_CASE("minimize effort of sliding a mass") {
     } else {
         printf("\n\n*** The problem FAILED!\n");
     }
-
-    REQUIRE(1 == 0);
 }
 
 // double g = 9.81;
