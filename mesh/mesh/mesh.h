@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <Eigen/Dense>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -110,9 +111,9 @@ public:
         // TODO or can I reuse the tape?
         {
             short int tag = 0;
-            // =====================================================================
+            // =================================================================
             // START ACTIVE
-            // ---------------------------------------------------------------------
+            // -----------------------------------------------------------------
             trace_on(tag);
             std::vector<adouble> x_adouble(m_num_variables);
             for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= guess[i];
@@ -121,9 +122,9 @@ public:
             std::vector<double> g(m_num_constraints);
             for (unsigned i = 0; i < m_num_constraints; ++i) g_adouble[i] >>= g[i];
             trace_off();
-            // ---------------------------------------------------------------------
+            // -----------------------------------------------------------------
             // END ACTIVE
-            // =====================================================================
+            // =================================================================
 
             int repeated_call = 0;
             int num_nonzeros = -1; /*TODO*/
@@ -154,9 +155,9 @@ public:
 
         {
             short int tag = 0;
-            // =====================================================================
+            // =================================================================
             // START ACTIVE
-            // ---------------------------------------------------------------------
+            // -----------------------------------------------------------------
             trace_on(tag);
             std::vector<adouble> x_adouble(m_num_variables);
             std::vector<double> lambda_vector(m_num_constraints, 1);
@@ -168,9 +169,9 @@ public:
             lagrangian(1.0, x_adouble, lambda_vector, lagrangian_adouble);
             lagrangian_adouble >>= lagr;
             trace_off();
-            // ---------------------------------------------------------------------
+            // -----------------------------------------------------------------
             // END ACTIVE
-            // =====================================================================
+            // =================================================================
             // TODO efficiently use the "repeat" argument.
             int repeated_call = 0;
             int options[2];
@@ -494,4 +495,82 @@ public:
         printf("f(x*) = %e\n", obj_value);
     }
 
+};
+
+template <typename T>
+class OptimalControlProblem {
+public:
+    virtual ~OptimalControlProblem() = default;
+    // TODO this is definitely not the interface I want.
+    // TODO difficult... virtual void initial_guess()
+    // TODO really want to declare each state variable individually, and give
+    // each one a name.
+    virtual int num_states() const = 0;
+    virtual int num_controls() const = 0;
+    virtual void bounds(double& initial_time, double& final_time,
+                        std::vector<double>& states_lower,
+                        std::vector<double>& states_upper,
+                        std::vector<double>& initial_states_lower,
+                        std::vector<double>& initial_states_upper,
+                        std::vector<double>& final_states_upper,
+                        std::vector<double>& final_states_lower,
+                        std::vector<double>& controls_lower,
+                        std::vector<double>& controls_upper,
+                        std::vector<double>& initial_controls_lower,
+                        std::vector<double>& initial_controls_upper,
+                        std::vector<double>& final_controls_lower,
+                        std::vector<double>& final_controls_upper) const = 0;
+
+    // TODO use Eigen, not std::vector.
+    virtual void dynamics(const std::vector<T>& states,
+                          const std::vector<T>& controls,
+                          std::vector<T>& derivative) const = 0;
+    // TODO alternate form that takes a matrix; state at every time.
+    //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
+    //virtual void endpoint_cost(const T& final_time,
+    //                           const std::vector<T>& final_states) const = 0;
+    // TODO change time to T.
+    virtual void integral_cost(const double& time,
+                               const std::vector<T>& states,
+                               const std::vector<T>& controls,
+                               T& integrand) const = 0;
+};
+
+class DirectCollocationSolver : public IpoptADOLC_OptimizationProblem {
+    typedef OptimalControlProblem<adouble> Problem;
+    int m_num_mesh_points = 20;
+    int m_num_states = -1;
+    int m_num_controls = -1;
+    int m_num_continuous_variables = -1;
+    double m_initial_time = -1;
+    double m_final_time = -1;
+public:
+    // TODO why shared_ptr???
+    void set_problem(std::shared_ptr<Problem> problem);
+    int state_index(int i_mesh_point, int i_state) const;
+    int control_index(int i_mesh_point, int i_control) const;
+    int constraint_index(int i_mesh, int i_state) const;
+    enum BoundsCategory {
+        InitialStates   = 0,
+        FinalStates     = 1,
+        InitialControls = 2,
+        FinalControls   = 3,
+    };
+    int constraint_bound_index(BoundsCategory category, int index) const;
+    void objective(const std::vector<adouble>& x,
+                   adouble& obj_value) const override;
+    void constraints(const std::vector<adouble>& x,
+                     std::vector<adouble>& constraints) const override;
+    void finalize_solution(Ipopt::SolverReturn /*TODO status*/,
+                           Index /*num_variables*/,
+                           const Number* x,
+                           const Number* /*z_L*/, const Number* /*z_U*/,
+                           Index /*num_constraints*/,
+                           const Number* /*g*/, const Number* /*lambda*/,
+                           Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
+                           Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) override;
+private:
+    // TODO uh oh how to have generic interface?? the solver should also be
+    // templatized??
+    std::shared_ptr<Problem> m_problem;
 };
