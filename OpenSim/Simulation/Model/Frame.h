@@ -173,11 +173,23 @@ public:
     @param state       The state of the model.
     @param vec_F       The vector to be re-expressed.
     @param otherFrame  The frame in which the vector will be re-expressed
-    @return vec_A; the expression of the vector in otherFrame.
+    @return vec_A      The expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
                         const SimTK::Vec3& vec_F,
                         const Frame& otherFrame) const;
+
+    /**
+    Take a vector in this frame (F) and re-express the same vector
+    in Ground (G). This method is equivalent to `expressVectorInAnotherFrame()`
+    where `otherFrame` is always Ground.
+
+    @param state       The state of the model.
+    @param vec_F       The vector to be re-expressed.
+    @return vec_G      The expression of the vector in Ground.
+    */
+    SimTK::Vec3 expressVectorInGround(const SimTK::State& state,
+                        const SimTK::Vec3& vec_F) const;
 
     /**
     Take a point located and expressed in this frame (F) and determine
@@ -193,6 +205,18 @@ public:
     */
     SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
                     const SimTK::Vec3& point_F, const Frame& otherFrame) const;
+
+    /**
+    Take a point located and expressed in this frame (F) and determine
+    its location expressed in Ground (G). This method is equivalent to
+    `findLocationInAnotherFrame()` where `otherFrame` is always Ground.
+
+    @param state       The state of the model.
+    @param point_F     The point to be re-expressed.
+    @return point_G    The re-expression of the point in Ground.
+    */
+    SimTK::Vec3 findLocationInGround(const SimTK::State& state,
+                    const SimTK::Vec3& point_f) const;
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 

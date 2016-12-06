@@ -180,10 +180,22 @@ SimTK::Vec3 Frame::expressVectorInAnotherFrame(const SimTK::State& state,
     return findTransformBetween(state, frame).R()*vec;
 }
 
-SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state, const
-        SimTK::Vec3& point, const Frame& otherFrame) const
+SimTK::Vec3 Frame::expressVectorInGround(const SimTK::State& state,
+                                const SimTK::Vec3& vec_F) const
+{
+    return getTransformInGround(state).R()*vec_F;
+}
+
+SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state,
+        const SimTK::Vec3& point, const Frame& otherFrame) const
 {
     return findTransformBetween(state, otherFrame)*point;
+}
+
+SimTK::Vec3 Frame::findLocationInGround(const SimTK::State& state,
+        const SimTK::Vec3& point) const
+{
+    return getTransformInGround(state)*point;
 }
 
 const Frame& Frame::findBaseFrame() const
