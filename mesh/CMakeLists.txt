@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.2)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# Include CMake macros that we wrote to reduce duplication in this project.
+include(cmake/mesh_macros.cmake)
+
 # Organization of installation.
 # -----------------------------
 set(MESH_INSTALL_INCLUDEDIR include/mesh)
@@ -12,6 +15,9 @@ set(MESH_INSTALL_INCLUDEDIR include/mesh)
 # ------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Eigen3 REQUIRED)
+# Starting with version 3.3.1, Eigen provides a proper Config file.
+# TODO find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(IPOPT REQUIRED ipopt)
@@ -25,5 +31,4 @@ add_subdirectory(mesh)
 
 add_subdirectory(tests)
 
-# TODO set(CMAKE_CXX_FLAGS -DEIGEN_MPL2_ONLY)
 

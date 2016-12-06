@@ -14,21 +14,6 @@ using Ipopt::Index;
 using Ipopt::Number;
 
 
-// TODO move elsewhere.
-class ToyProblem : public IpoptADOLC_OptimizationProblem {
-public:
-    ToyProblem() : IpoptADOLC_OptimizationProblem(2, 1) {}
-    void objective(const std::vector<adouble>& x,
-                   adouble& obj_value) const override {
-        obj_value = (x[0] - 1.5) * (x[0] - 1.5)
-                  + (x[1] + 2.0) * (x[1] + 2.0);
-    }
-    void constraints(const std::vector<adouble>& x,
-                     std::vector<adouble>& constraints) const override {
-        constraints[0] = x[1] - x[0] * x[0]; //x[0] + x[1];
-    }
-};
-
 void IpoptADOLC_OptimizationProblem::
 set_initial_guess(const std::vector<double>& guess) {
     // TODO be smart about the need to copy "guess" (could be long)?

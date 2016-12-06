@@ -60,7 +60,7 @@ class SlidingMass : public OptimalControlProblem<adouble> {
     }
 };
 
-TEST_CASE("minimize effort of sliding a mass") {
+TEST_CASE("Minimize effort of sliding a mass.") {
 
     // TODO user interface should not involve directly using Ipopt.
     Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
