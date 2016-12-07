@@ -1175,6 +1175,8 @@ private:
   /** @name Auto-generated functions */ \
   /** @{ */ \
   /** For use in MATLAB and Python to access the concrete class. */ \
+  /** Example: `cObj = %##thisClass##.safeDownCast(obj)`. */ \
+  /** This is equivalent to `dynamic_cast<##thisClass##*>(obj)` in C++. */ \
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
