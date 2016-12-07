@@ -49,6 +49,7 @@ private:
     unsigned m_jacobian_num_nonzeros = -1;
     std::vector<unsigned int> m_jacobian_row_indices;
     std::vector<unsigned int> m_jacobian_col_indices;
+    std::vector<double> m_solution;
 public:
     IpoptADOLC_OptimizationProblem() = default;
     IpoptADOLC_OptimizationProblem(int num_variables, int num_constraints) :
@@ -101,6 +102,8 @@ public:
 
     void set_initial_guess(const std::vector<double>& guess);
 
+    std::vector<double> get_solution() const { return m_solution; }
+private:
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
                       Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
                       IndexStyleEnum& index_style) override {
@@ -120,36 +123,36 @@ public:
     // z: multipliers for bound constraints on x.
     // warmstart will require giving initial values for the multipliers.
     bool get_starting_point(Index num_variables, bool init_x, Number* x,
-                            bool init_z, Number* /*z_L*/, Number* /*z_U*/,
+                            bool init_z, Number* z_L, Number* z_U,
                             Index num_constraints, bool init_lambda,
-                            Number* /*lambda*/) override;
+                            Number* lambda) override;
 
-    bool eval_f(Index num_variables, const Number* x, bool /*new_x*/,
+    bool eval_f(Index num_variables, const Number* x, bool new_x,
                 Number& obj_value) override;
 
-    bool eval_grad_f(Index num_variables, const Number* x, bool /*new_x*/,
+    bool eval_grad_f(Index num_variables, const Number* x, bool new_x,
                      Number* grad_f) override;
 
-    bool eval_g(Index num_variables, const Number* x, bool /*new_x*/,
+    bool eval_g(Index num_variables, const Number* x, bool new_x,
                 Index num_constraints, Number* g) override;
 
     // TODO can Ipopt do finite differencing for us?
-    bool eval_jac_g(Index num_variables, const Number* x, bool /*new_x*/,
+    bool eval_jac_g(Index num_variables, const Number* x, bool new_x,
                     Index num_constraints, Index num_nonzeros_jacobian,
                     Index* iRow, Index *jCol, Number* values) override;
 
-    bool eval_h(Index num_variables, const Number* x, bool /*new_x*/,
+    bool eval_h(Index num_variables, const Number* x, bool new_x,
                 Number obj_factor, Index num_constraints, const Number* lambda,
-                bool /*new_lambda*/, Index num_nonzeros_hessian,
+                bool new_lambda, Index num_nonzeros_hessian,
                 Index* iRow, Index *jCol, Number* values) override;
 
-    void finalize_solution(Ipopt::SolverReturn /*TODO status*/,
+    void finalize_solution(Ipopt::SolverReturn status,
                            Index num_variables,
                            const Number* x, const Number* z_L, const Number* z_U,
-                           Index /*num_constraints*/,
-                           const Number* /*g*/, const Number* /*lambda*/,
-                           Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
-                           Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) override;
+                           Index num_constraints,
+                           const Number* g, const Number* lambda,
+                           Number obj_value, const Ipopt::IpoptData* ip_data,
+                           Ipopt::IpoptCalculatedQuantities* ip_cq) override;
 };
 
 template <typename T>

@@ -16,6 +16,8 @@ using Ipopt::Number;
 
 void IpoptADOLC_OptimizationProblem::
 set_initial_guess(const std::vector<double>& guess) {
+    // TODO should not be storing the solution at all.
+    m_solution.clear();
     // TODO be smart about the need to copy "guess" (could be long)?
     m_initial_guess = guess;
     // TODO check their sizes.
@@ -394,9 +396,11 @@ void IpoptADOLC_OptimizationProblem::finalize_solution(
         const Number* /*g*/, const Number* /*lambda*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
         Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) {
+    m_solution.resize(num_variables);
     printf("\nSolution of the primal variables, x\n");
     for (Index i = 0; i < num_variables; ++i) {
         printf("x[%d]: %e\n", i, x[i]);
+        m_solution[i] = x[i];
     }
     printf("\nSolution of the bound multipliers, z_L and z_U\n");
     for (Index i = 0; i < num_variables; ++i) {
