@@ -46,8 +46,8 @@ class OSIMCOMMON_API ComponentPath : public Path {
 
 public:
     // Constructors
-    /// Default Constructor
-    ComponentPath() = default;
+    /// The default-constructed path is empty (an empty string).
+    ComponentPath();
     
     /// Construct a ComponentPath from a string. This will clean up the
     /// path, removing and resolving "." and ".." when possible.

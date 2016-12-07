@@ -13,12 +13,12 @@ osim.Model.setDebugLevel(0)
 class TestAccessSubcomponents(unittest.TestCase):
     def test_individual_components(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
-        muscle = model.getComponent('BICshort');
+        muscle = model.getComponent('BICshort')
         assert muscle.getName() == 'BICshort'
         # No downcasting necessary!
-        muscle.get_max_isometric_force(); # Method on Muscle.
-        muscle = model.updComponent('BICshort');
-        muscle.set_max_isometric_force(100);
+        muscle.get_max_isometric_force() # Method on Muscle.
+        muscle = model.updComponent('BICshort')
+        muscle.set_max_isometric_force(100)
 
     def test_component_list(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
@@ -49,7 +49,32 @@ class TestAccessSubcomponents(unittest.TestCase):
                 print(body.getName())
                 body.getInertia()
         assert num_bodies == 2
-            
+
+        model = osim.Model()
+
+        thelenMuscle = osim.Thelen2003Muscle("Darryl", 1, 0.5, 0.5, 0)
+        millardMuscle = osim.Millard2012EquilibriumMuscle("Matt", 1, 0.5,
+                                                          0.5, 0)
+
+        model.addComponent(thelenMuscle)
+        model.addComponent(millardMuscle)
+
+        # Total number of muscles is 2.
+        assert len(set(model.getMuscleList())) == 2
+        for muscle in model.getMuscleList():
+            assert (isinstance(muscle, osim.Thelen2003Muscle) or
+                    isinstance(muscle, osim.Millard2012EquilibriumMuscle))
+
+        # There is exactly 1 Thelen2003Muscle.
+        assert len(set(model.getThelen2003MuscleList())) == 1
+        for muscle in model.getThelen2003MuscleList():
+            assert isinstance(muscle, osim.Thelen2003Muscle)
+
+        # There is exactly 1 Millard2012EquilibriumMuscle.
+        assert len(set(model.getMillard2012EquilibriumMuscleList())) == 1
+        for muscle in model.getMillard2012EquilibriumMuscleList():
+            assert isinstance(muscle, osim.Millard2012EquilibriumMuscle)
+
     def test_component_filter(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
 

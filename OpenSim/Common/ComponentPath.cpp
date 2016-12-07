@@ -30,6 +30,10 @@ using namespace std;
 const char ComponentPath::separator = '/';
 const std::string ComponentPath::invalidChars = "\\/*+";
 
+ComponentPath::ComponentPath() :
+    Path(getSeparator(), getInvalidChars())
+{}
+
 ComponentPath::ComponentPath(const string& path) :
     Path(path, getSeparator(), getInvalidChars())
 {}
@@ -69,5 +73,10 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const
 
 std::string ComponentPath::getComponentName() const
 {
+    if (getNumPathLevels() == 0) {
+        std::string emptyStr{};
+        return emptyStr;
+    }
+
     return getSubcomponentNameAtLevel(getNumPathLevels() - 1);
 }

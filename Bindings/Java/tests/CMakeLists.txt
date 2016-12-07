@@ -38,6 +38,7 @@ macro(OpenSimAddJavaTest TESTNAME)
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             add_test(NAME Java_${TESTNAME}_${cfg}
                 COMMAND ${Java_JAVA_EXECUTABLE}
+                        -enableassertions
                         -Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}
                         -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                         ${TESTNAME}
@@ -48,6 +49,7 @@ macro(OpenSimAddJavaTest TESTNAME)
     else()
         add_test(NAME Java_${TESTNAME}
             COMMAND ${Java_JAVA_EXECUTABLE}
+                    -enableassertions
                     -Djava.library.path=${CMAKE_BINARY_DIR}
                     -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                     ${TESTNAME}
@@ -55,9 +57,33 @@ macro(OpenSimAddJavaTest TESTNAME)
             )
     endif()
 
+    # Copy all necessary test files.
+    string(CONCAT FILETOCOPY
+          "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestC3DFileAdapter")
+    string(CONCAT FILETOCOPY
+           "${CMAKE_SOURCE_DIR}/Bindings/Java/Matlab/examples/testData/"
+           "Subject01/IKSetup/subject01_Setup_IK_generic.xml")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestTables")
+    string(CONCAT FILETOCOPY
+           "${CMAKE_SOURCE_DIR}/Bindings/Java/Matlab/examples/testData/"
+           "Subject01/MarkerData/walk_free_01.trc")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestTables")
+    string(CONCAT FILETOCOPY
+           "${CMAKE_SOURCE_DIR}/Bindings/Java/Matlab/examples/testData/"
+           "Subject01/subject01_gait2392_scaled.osim")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestTables")
+    string(CONCAT FILETOCOPY
+           "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/MatlabScripts/"
+           "double_pendulum_markers.osim")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestReporter")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestVisualization")
-
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditProperties")
     if(WIN32)
@@ -104,8 +130,12 @@ OpenSimAddJavaTest(TestBasics)
 OpenSimAddJavaTest(TestIterators)
 OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
-
-
+OpenSimAddJavaTest(TestTables)
+OpenSimAddJavaTest(TestModelBuilding)
+if(WITH_BTK)
+    OpenSimAddJavaTest(TestC3DFileAdapter)
+endif()
+OpenSimAddJavaTest(TestReporter)
 
 
 

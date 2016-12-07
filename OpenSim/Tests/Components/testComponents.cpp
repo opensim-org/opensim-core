@@ -39,8 +39,24 @@ void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
+// This component, used solely for testing, is used to satisfy the Inputs of
+// the components we test.
+class OutputGenerator : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(OutputGenerator, Component);
+public:
+    OpenSim_DECLARE_OUTPUT(outdouble, double, calcDouble, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outvec3, SimTK::Vec3, calcVec3, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outxform, SimTK::Transform, calcXform, SimTK::Stage::Model);
+    double calcDouble(const SimTK::State&) const {return 0.0;}
+    SimTK::Vec3 calcVec3(const SimTK::State&) const {return SimTK::Vec3(0);}
+    SimTK::Transform calcXform(const SimTK::State&) const
+    {return SimTK::Transform(SimTK::Vec3(0));}
+};
+
 int main()
 {
+    Object::registerType(OutputGenerator());
+
     SimTK::Array_<std::string> failures;
 
     // get all registered Components
@@ -177,15 +193,14 @@ void testComponent(const Component& instanceToTest)
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
+
     // First make sure Connectors are satisfied.
     Component* sub = instance;
-    auto comps = instance->getComponentList<Component>();
-    ComponentList<Component>::const_iterator it = comps.begin();
-
-    while(sub) {
-        int nc = sub->getNumConnectors();
-        for (int i = 0; i < nc; ++i){
-            AbstractConnector& connector = sub->updConnector(i);
+    auto comps = instance->updComponentList<Component>();
+    ComponentList<Component>::iterator itc = comps.begin();
+    while (sub) {
+        for (const auto& connectorName : sub->getConnectorNames()) {
+            AbstractConnector& connector = sub->updConnector(connectorName);
             string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
@@ -212,29 +227,66 @@ void testComponent(const Component& instanceToTest)
                 continue;
             }
 
-            Object* dependency =
-                Object::newInstanceOfType(dependencyTypeName);
-
+            std::unique_ptr<Object> dependency;
             if (dynamic_cast< Connector<Frame>*>(&connector) ||
                 dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
-                dependency = Object::newInstanceOfType("Body");
+                dependency.reset(Object::newInstanceOfType("Body"));
+            } else {
+                dependency.reset(Object::newInstanceOfType(dependencyTypeName));
             }
 
             if (dependency) {
                 //give it some random values including a name
-                randomize(dependency);
+                randomize(dependency.get());
                 connector.setConnecteeName(dependency->getName());
 
                 // add the dependency 
-                addObjectAsComponentToModel(dependency, model);
+                addObjectAsComponentToModel(dependency.release(), model);
             }
         }
-        const Component& next = *it;
+        
+        Component& next = *itc;
         //Now keep checking the subcomponents
-        sub = const_cast<Component *>(&next);
-        it++;
+        sub = &next;
+        itc++;
     }
-
+    
+    // Now make sure Inputs are satisfied.
+    // We'll use the custom OutputGenerator class to satisfy the inputs.
+    OutputGenerator* outputGen = new OutputGenerator();
+    outputGen->setName("output_gen");
+    model.addComponent(outputGen);
+    for (auto& sub : model.updComponentList()) {
+        for (const auto& inputName : sub.getInputNames()) {
+            AbstractInput& input = sub.updInput(inputName);
+            
+            // Special case: Geometry cannot have both its input and connector
+            // connected.
+            if (dynamic_cast<Geometry*>(&sub) && inputName == "transform") {
+                input.setConnecteeName("");
+                continue;
+            }
+            
+            string dependencyTypeName = input.getConnecteeTypeName();
+            cout << "Input '" << input.getName() << "' has dependency on: " <<
+                "Output<" << dependencyTypeName << ">" << endl;
+            
+            // Find an output of the correct type.
+            bool foundAnOutput = false;
+            for (const auto& ito : outputGen->getOutputs()) {
+                const AbstractOutput* output = ito.second.get();
+                if (dependencyTypeName == output->getTypeName()) {
+                    input.setConnecteeName(output->getChannel("").getPathName());
+                    foundAnOutput = true;
+                }
+            }
+            if (!foundAnOutput) {
+                throw Exception("OutputGenerator does not provide an output "
+                                "of type " + dependencyTypeName + ".");
+            }
+        }
+    }
+    
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
     try{

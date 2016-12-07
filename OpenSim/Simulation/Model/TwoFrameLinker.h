@@ -81,7 +81,7 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the TwoFrameLinker is not connected to any frames and its.*/
+    /** By default, the TwoFrameLinker is not connected to any frames. */
     TwoFrameLinker();
 
     /** Convenience Constructor.

@@ -53,6 +53,17 @@ int main(int argc,char **argv)
     //TODO: put these options on the command line
     //LoadOpenSimLibrary("osimSimbodyEngine");
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      scale -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      scale -PS              -> opensim-cmd print-xml scale
+    )";
+    std::cout << deprecationNotice << std::endl;
+
     // SET OUTPUT FORMATTING
     IO::SetDigitsPad(4);
 

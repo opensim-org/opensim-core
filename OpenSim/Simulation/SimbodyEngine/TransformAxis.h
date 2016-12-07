@@ -115,9 +115,6 @@ public:
 
     /** Alternate signature that writes the axis value to its argument. **/
     void getAxis(SimTK::Vec3& axis) const {axis = getAxis();}
-    /** Alternate signature that writes the axis value to its argument as
-    an ordinary C array. **/
-    void getAxis(double rAxis[]) const {SimTK::Vec3::updAs(rAxis)= getAxis();}
     /** Get one component (0,1, or 2) of the axis vector. **/
     double getAxis(int which) const 
     {   assert(0<=which && which<=2); return getAxis()[which]; }

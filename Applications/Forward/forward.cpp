@@ -56,6 +56,17 @@ int main(int argc,char **argv)
 
     //LoadOpenSimLibrary("osimSdfastEngine");
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      forward -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      forward -PS              -> opensim-cmd print-xml forward
+    )";
+    std::cout << deprecationNotice << std::endl;
+
 
     // PARSE COMMAND LINE
     int i;
@@ -79,10 +90,10 @@ int main(int argc,char **argv)
  
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
-            ForwardTool *tool = new ForwardTool();
-            tool->setName("default");
+            ForwardTool tool{};
+            tool.setName("default");
             Object::setSerializeAllDefaults(true);
-            tool->print("default_Setup_Forward.xml");
+            tool.print("default_Setup_Forward.xml");
             Object::setSerializeAllDefaults(false);
             cout << "Created file default_Setup_Forward.xml with default setup" << endl;
             return(0);

@@ -102,7 +102,11 @@ public:
             SimTK::Stage::Acceleration);
 
     /** Motion type that describes the motion dictated by the coordinate.
-        Types include: Rotational, Translational and Coupled (both) */
+        Specifically it describes how the coordinate can be interpreted.
+        A coordinate can be interpreted as Rotational or Translational if
+        the displacement about or along an axis is the coordinate value.
+        If the Coordinate cannot be interpreted as being either of these
+        it is flagged as Coupled. */
     enum MotionType
     {
         Undefined,

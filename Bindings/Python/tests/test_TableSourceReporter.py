@@ -47,6 +47,6 @@ class TestTableSourceReporter(unittest.TestCase):
 
         # Test.
         # This value is the average of col2 (2.0 and 3.0).
-        assert t_rep.getReport().getRowAtIndex(0)[0] == 2.5
+        assert t_rep.getTable().getRowAtIndex(0)[0] == 2.5
 
 

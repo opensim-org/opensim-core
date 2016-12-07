@@ -235,7 +235,7 @@ int ProbeReporter::record(const SimTK::State& s)
     // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
 
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow(s.getTime());
 
     // NUMBER OF Probes
     const ProbeSet& probes = _model->getProbeSet();

@@ -260,9 +260,9 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
             {
                 /* Load the static pose marker file, and convert units.
                 */
-                MarkerData *markerData = 0;
+                std::unique_ptr<MarkerData> markerData{};
                 if(!_markerFileName.empty() && _markerFileName!=PropertyStr::getDefaultStr()) {
-                    markerData = new MarkerData(aPathToSubject + _markerFileName);
+                    markerData.reset(new MarkerData(aPathToSubject + _markerFileName));
                     markerData->convertToUnits(aModel->getLengthUnits());
                 }
 

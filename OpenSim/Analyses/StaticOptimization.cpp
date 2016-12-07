@@ -448,10 +448,12 @@ record(const SimTK::State& s)
             string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
             SimTK::Vector constraints;
             target.constraintFunc(_parameters,true,constraints);
-            const CoordinateSet& coordSet = _modelWorkingCopy->getCoordinateSet();
+
+            auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+
             for(int acc=0;acc<nacc;acc++) {
                 if(fabs(constraints(acc)) > tolConstraints) {
-                    const Coordinate& coord = coordSet.get(_accelerationIndices[acc]);
+                    const Coordinate& coord = *coordinates[_accelerationIndices[acc]];
                     msgIncomplete += "   ";
                     msgIncomplete += coord.getName();
                     msgIncomplete += ": constraint violation = ";
@@ -558,9 +560,9 @@ begin(SimTK::State& s )
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom 
         // (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
-        const CoordinateSet& coordSet = _model->getCoordinateSet();
-        for(int i=0; i<coordSet.getSize(); i++) {
-            const Coordinate& coord = coordSet.get(i);
+        auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+        for(size_t i=0u; i<coordinates.size(); ++i) {
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 Array<int> inds = _statesStore->
                     getColumnIndicesForIdentifier(coord.getName()) ;

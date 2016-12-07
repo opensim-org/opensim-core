@@ -139,6 +139,7 @@ public:
 
 private:
     void setNull(){
+        _propertySet._array.setMemoryOwner(true);
     }
     void setupSerializedMembers(){
         // Bool

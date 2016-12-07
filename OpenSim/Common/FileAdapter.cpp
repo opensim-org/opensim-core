@@ -41,7 +41,9 @@ FileAdapter::findExtension(const std::string& filename) {
                      FileExtensionNotFound,
                      filename);
 
-    return filename.substr(found + 1);
+    auto ext = filename.substr(found + 1);
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    return ext;
 }
 
 std::vector<std::string> 

@@ -36,6 +36,11 @@ using namespace std;
 /**
  * Constructors
  */
+
+Path::Path(const char separator, const std::string invalidChars) :
+    _separator(separator), _invalidChars(invalidChars), _isAbsolute(false)
+{}
+
 Path::Path(const std::string path,
            const char separator,
            const std::string invalidChars) :

@@ -230,7 +230,7 @@ record(const SimTK::State& s)
         _variables.find(stateNames[i])->second = rStateValues[i];
     }
     double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow{s.getTime(), {}};
      nextRow.getData().append(value);
     _resultStore.append(nextRow);
 

@@ -166,11 +166,11 @@ constructColumnLabels()
               if( act )labels.append(act->getName());
            }
         } else {
-           const CoordinateSet& cs = _modelWorkingCopy->getCoordinateSet();
+           auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
            for (int i=0; i < _numCoordinateActuators; i++) {
               Force& force = _forceSet->get(i);
-              for(int i=0; i<cs.getSize(); i++) {
-                 Coordinate& coord = cs.get(i);
+              for(size_t i=0u; i<coordinates.size(); ++i) {
+                 const Coordinate& coord = *coordinates[i];
                  if(coord.getName()==force.getName()) {
                     if(coord.getMotionType() == Coordinate::Rotational) {
                         labels.append(force.getName()+"_moment");
@@ -185,7 +185,6 @@ constructColumnLabels()
         }
     }
     setColumnLabels(labels);
-
 }
 
 //_____________________________________________________________________________
@@ -338,8 +337,11 @@ record(const SimTK::State& s)
         for(int i=0; i<nacc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
         f[j] = 0;
     }
+
+    auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+
     for(int i=0; i<nacc; i++) {
-        Coordinate& coord = _modelWorkingCopy->getCoordinateSet().get(_accelerationIndices[i]);
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
             string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
@@ -452,9 +454,9 @@ begin(SimTK::State& s )
 
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
-        const CoordinateSet& coordSet = _model->getCoordinateSet();
-        for(int i=0; i<coordSet.getSize(); i++) {
-            const Coordinate& coord = coordSet.get(i);
+        auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+        for(size_t i=0u; i<coordinates.size(); ++i) {
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 _accelerationIndices.append(i);
             }

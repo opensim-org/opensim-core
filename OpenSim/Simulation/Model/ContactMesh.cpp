@@ -52,6 +52,7 @@ ContactMesh::ContactMesh(const std::string& filename,
         SimTK::PolygonalMesh mesh;
         mesh.loadFile(filename);
         _geometry.reset(new SimTK::ContactGeometry::TriangleMesh(mesh));
+        _decorativeGeometry.reset(new SimTK::DecorativeMesh(mesh));
     }
 }
 
@@ -77,6 +78,7 @@ void ContactMesh::constructProperties()
 
 void ContactMesh::extendFinalizeFromProperties() {
     _geometry.reset();
+    _decorativeGeometry.reset();
 }
 
 const std::string& ContactMesh::getFilename() const
@@ -88,6 +90,7 @@ void ContactMesh::setFilename(const std::string& filename)
 {
     set_filename(filename);
     _geometry.reset();
+    _decorativeGeometry.reset();
 }
 
 SimTK::ContactGeometry::TriangleMesh* ContactMesh::
@@ -115,7 +118,7 @@ SimTK::ContactGeometry::TriangleMesh* ContactMesh::
     file.close();
     mesh.loadFile(filename);
     if (restoreDirectory) IO::chDir(savedCwd);
-        
+    _decorativeGeometry.reset(new SimTK::DecorativeMesh(mesh));
     return new SimTK::ContactGeometry::TriangleMesh(mesh);
 }
 
@@ -137,21 +140,25 @@ void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
+    // Guard against the case where the Force was disabled or mesh failed to load.
+    if (_decorativeGeometry == nullptr) return;
+    if (!hints.get_show_contact_geometry()) return;
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation
     //    properties.
-    if (hints.get_show_contact_geometry()) {
-        const auto& X_BF = getFrame().findTransformInBaseFrame();
-        const auto& X_FP = getTransform();
-        const auto X_BP = X_BF * X_FP;
-        geometry.push_back(SimTK::DecorativeMeshFile(get_filename())
-            .setTransform(X_BP)
-            .setRepresentation(get_Appearance().get_representation())
-            .setBodyId(getFrame().getMobilizedBodyIndex())
-            .setColor(get_Appearance().get_color())
-            .setOpacity(get_Appearance().get_opacity()));
-    }
+
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    geometry.push_back(SimTK::DecorativeMesh(*_decorativeGeometry)
+        .setTransform(X_BP)
+        .setRepresentation(get_Appearance().get_representation())
+        .setBodyId(getFrame().getMobilizedBodyIndex())
+        .setColor(get_Appearance().get_color())
+        .setScale(1)
+        .setOpacity(get_Appearance().get_opacity()));
+    
 }
 
 } // end of namespace OpenSim
