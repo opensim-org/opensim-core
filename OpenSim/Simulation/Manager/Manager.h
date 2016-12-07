@@ -101,8 +101,7 @@ private:
 
     /** Flag for signaling a desired halt. */
     bool _halt;
-    /** Maximum step size. */
-    double _dtMax;
+
     /** Flag to indicate whether or not specified integration time steps
     should be used.  The specified integration time steps are held in _tVec.
     If _tVec does not contain time steps appropriate for the integration,

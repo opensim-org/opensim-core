@@ -97,7 +97,6 @@ setNull()
     _ti = 0.0;
     _tf = 1.0;
     _halt = false;
-    _dtMax = 1.0;
     _specifiedDT = false;
     _constantDT = false;
     _dt = 1.0e-4;
@@ -659,7 +658,6 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     double dt/*,dtPrev*/,tReal;
     double time =_ti;
     dt=dtFirst;
-    if(dt>_dtMax) dt = _dtMax;
     //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
