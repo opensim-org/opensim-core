@@ -7,7 +7,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -153,21 +153,21 @@ for k = 0 : nCoord -1
     p(1) = rMin + totalTange/2;
     p(2) = rMin + totalTange/3;
     p(3) = rMin + 2*(totalTange/3);
-    
+
     for i = 1 : 3
-    
+
         aCoord.setValue(state, p(i) );
-        
+
         % compute the moment arm of the muscle for that coordinate given
         % the state.
         momentArm = muscle.computeMomentArm(state,aCoord);
-        
+
         % round the numbers. This is needed because at some coordinates there
         % are moments generated at the e-18 level. This is most likely
         % numerical error. So to deal with this I round to 4 decimal points.
         x = round((momentArm*1000))/1000;
-        
-        if x ~= 0 
+
+        if x ~= 0
             muscCoord = [muscCoord; k];
             break
         end
