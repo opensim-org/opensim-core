@@ -18,12 +18,13 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 
-function J = DesignMainStarter_Manager(states)
+function J = DesignMainStarter_Manager(initial_states)
 % This script opens a Model, edits its initial state, runs a forward
 % simulation.
 
-% display the state values to console
-display(states)
+% display the input state values to console
+display(initial_states)
+
 % Set a list of ordered state names that match the state values
 coordinateNames = [{'LHIP'} {'RHIP'} {'LKnee'} {'Rknee'}];
 
@@ -34,15 +35,15 @@ import org.opensim.modeling.*
 model = Model('../Model/WalkerModel.osim');
 
 % Initialize the system and get the initial state
-s = model.initSystem();
+model_states = model.initSystem();
 
-% Set the coordinate values from the states
+% Set the coordinate values from the initial_states
 CoordSet = model.getCoordinateSet();
 
 for i = 1 : length(coodinateNames)
   for u = 0 : CoordSet().getSize() - 1
     if strmtch(coodinateNames{i}, char(CoordSet.get(u).getName()))
-          CoordSet.get(u).setValue(s, states(i)); % LHIP
+          CoordSet.get(u).setValue(model_states, initial_states(i)); % LHIP
     end
   end
 end
@@ -62,19 +63,17 @@ reporter.updInput('inputs').connect( model.getCoordinateSet().get(6).getOutput('
 model.addComponent(reporter)
 
 % make a new underlying computational system
-s = model.initSystem();
+model_states = model.initSystem();
 
 % Simulate.
 manager = Manager(model);
 manager.setInitialTime(0);
 manager.setFinalTime(3);
-manager.integrate(s);
+manager.integrate(model_states);
 
 % get the table last value of pelvis X (distance down the run way)
 table = reporter.getTable();
 nRows = table.getNumRows();
-
-%display(table.getDependentColumnAtIndex(0).getElt(nRows-1,0))
 
 % need to get close to 3 meters
 J = abs(3 - table.getDependentColumnAtIndex(0).getElt(nRows-1,0)) ;

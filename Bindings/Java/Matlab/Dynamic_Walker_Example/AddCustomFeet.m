@@ -43,12 +43,30 @@ model = Model(modelPath);
 model.setName( [model.getName().toCharArray()' '_CustomFeet']);
 
 % remove the current foot forces
-model.updForceSet().remove( model.getForceSet.get('LFootForce') );
-model.updForceSet().remove( model.getForceSet.get('RFootForce') );
+forceNames = [{'LFootForce'} {'RFootForce'}];
+for i = 1 : length(forceNames)
+    
+    for u = 0 : model.getForceSet().getSize() - 1
+
+        if strcmp(forceNames{i}, char(model.getForceSet().get(u).getName()));
+            model.updForceSet().remove( model.getForceSet.get(forceNames{i}) );
+            break
+        end
+    end
+end
 
 % remove the current foot contact geometry
-model.updContactGeometrySet().remove( model.getContactGeometrySet().get('LFootContact') );
-model.updContactGeometrySet().remove( model.getContactGeometrySet().get('RFootContact') );
+geometryNames = [{'LFootContact'} {'RFootContact'}];
+for i = 1 : length(geometryNames)
+    
+    for u = 0 : model.getContactGeometrySet.getSize() - 1
+
+        if strcmp(geometryNames{i}, char(model.getContactGeometrySet().get(u).getName()));
+            model.updContactGeometrySet().remove( model.getContactGeometrySet().get(geometryNames{i}) );
+            break
+        end
+    end
+end
 
 % make rigid bodies for feet
 leftFoot = Body('LeftFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
