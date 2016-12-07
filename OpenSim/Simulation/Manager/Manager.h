@@ -208,9 +208,9 @@ public:
     //--------------------------------------------------------------------------
     // EXECUTION
     //--------------------------------------------------------------------------
-    bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
-    bool doIntegration( SimTK::State& s, int step, double dtFirst );
-    void finalize( SimTK::State& s);
+    bool integrate(SimTK::State& s);
+    bool doIntegration(SimTK::State& s, int step);
+    void finalize(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
     // STATE STORAGE

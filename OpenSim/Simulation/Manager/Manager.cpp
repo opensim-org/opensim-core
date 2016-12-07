@@ -631,7 +631,7 @@ hasStateStorage() const
  * the model.
  */
 bool Manager::
-integrate( SimTK::State& s, double dtFirst )
+integrate(SimTK::State& s)
 {
     
     int step = 0;
@@ -639,11 +639,11 @@ integrate( SimTK::State& s, double dtFirst )
     s.setTime( _ti );
 
     // INTEGRATE
-    return(doIntegration(s, step, dtFirst));
+    return doIntegration(s, step);
 
 }
 
-bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
+bool Manager::doIntegration(SimTK::State& s, int step) {
 
     if(!_integ) {
         throw Exception("Manager::doIntegration(): "
