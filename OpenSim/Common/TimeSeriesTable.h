@@ -308,7 +308,7 @@ public:
     row. 
 
     \throws InvalidTimeRange If beginTime is greater than or equal to endTime.
-    \trhows TimeOutOfRange If beginTime or endTime is out of range of time 
+    \throws TimeOutOfRange If beginTime or endTime is out of range of time 
                            column.                                            */
     RowVector averageRow(const double& beginTime, const double& endTime) const {
         using DT = DataTable_<double, ETY>;

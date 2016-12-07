@@ -1554,7 +1554,15 @@ PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
 # Use the PREDEFINED tag if you want to use a different macro definition that
 # overrules the definition found in the source code.
 
-EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
+EXPAND_AS_DEFINED      = OpenSim_DECLARE_CONCRETE_OBJECT \
+                         OpenSim_DECLARE_ABSTRACT_OBJECT \
+                         OpenSim_DECLARE_CONCRETE_OBJECT_T \
+                         OpenSim_DECLARE_ABSTRACT_OBJECT_T \
+                         OpenSim_OBJECT_ANY_DEFS \
+                         OpenSim_OBJECT_NONTEMPLATE_DEFS \
+                         OpenSim_OBJECT_CONCRETE_DEFS \
+                         OpenSim_OBJECT_JAVA_DEFS \
+                         OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_UNNAMED_PROPERTY \
                          OpenSim_DECLARE_OPTIONAL_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_HELPER \
