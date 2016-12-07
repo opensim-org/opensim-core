@@ -77,6 +77,6 @@ nRows = table.getNumRows();
 %display(table.getDependentColumnAtIndex(0).getElt(nRows-1,0))
 
 % need to get close to 3 meters
-J = 3 - table.getDependentColumnAtIndex(0).getElt(nRows-1,0) ;
+J = abs(3 - table.getDependentColumnAtIndex(0).getElt(nRows-1,0)) ;
 
 end

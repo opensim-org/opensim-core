@@ -10,15 +10,15 @@
 % for more information. OpenSim is developed at Stanford University       %
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %   
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+%                                                                         %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
 % http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         % 
+%                                                                         %
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -27,7 +27,7 @@
 % ----------------------------------------------------------------------- %
 
 % Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
-% Ajay Seth, Ayman Habib, Jen Hicks. 
+% Ajay Seth, Ayman Habib, Jen Hicks.
 
 import org.opensim.modeling.*
 
@@ -38,26 +38,26 @@ tables = adapter.read('test_walking.c3d');
 
 %% get the marker data
 markers = tables.get('markers');
-% get the number of markers and rows
+% get the number of markers and frames
 nMarkers = markers.getNumColumns();
-markers_nRows = markers.getNumRows();
+nMarkerFrames = markers.getNumRows();
 % get the array of the metadata key names
-metadDataKeys_markers = markers.getTableMetaDataKeys();
-markerrate = str2num(markers.getTableMetaDataAsString(metadDataKeys_markers.get(0)));
+MarkerMetaDataKeys = markers.getTableMetaDataKeys();
+MarkerRate = str2num(markers.getTableMetaDataAsString(MarkerMetaDataKeys.get(0)));
 
 %% get the force data
 forces = tables.get('forces');
 % get the numner of forces and rows
 nForces = forces.getNumColumns();
-forces_nRows = forces.getNumRows();
+nForceFrames = forces.getNumRows();
 % get the array of the metadata key names
-metaDataKeys_forces = forces.getTableMetaDataKeys();
-forcerate = str2num(forces.getTableMetaDataAsString(metaDataKeys_forces.get(2)));
+ForceMetaDataKeys = forces.getTableMetaDataKeys();
+ForceRate = str2num(forces.getTableMetaDataAsString(ForceMetaDataKeys.get(2)));
 
 %% Define a rotation matix
-Rot = 90;          
+Rot = 90;
 rotationMatrix = [1,0,0;0,cos(Rot*pi/180),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cos(Rot*pi/180)];
-        
+
 %% Rotate marker data
 % make a clean copuy to alter
 markers_rotated = markers();
@@ -96,7 +96,7 @@ for iForce = 0 : nForces - 1
 
     % go through each element of the table column, rotate the Vec3, and write
     % back to the column.
-    for iRow = 0 : forces_nRows - 1
+    for iRow = 0 : nForceFrames - 1
         % get Matlab vector marker position
         vectorData = [force.getElt(0,iRow).get(0)...
                       force.getElt(0,iRow).get(1)...
@@ -114,10 +114,12 @@ for iForce = 0 : nForces - 1
 end
 %% Print the rotated markers to trc file
 
-% make trc adapter and write marker tables to file. 
-trcfileadapter = TRCFileAdapter();
-trcfileadapter.write(markers,'test_walking.trc');
-trcfileadapter.write(markers_rotated,'test_walking_rotated.trc');
+% make trc adapter and write marker tables to file.
+% trcfileadapter = TRCFileAdapter();
+% trcfileadapter.write(markers,'test_walking.trc');
+% trcfileadapter.write(markers_rotated,'test_walking_rotated.trc');
+TRCFileAdapter().write(markers,'test_walking.trc');
+TRCFileAdapter().write(markers_rotated,'test_walking_rotated.trc');
 
 %% Print the force data
 % make postfix string vector for naming colomns
@@ -131,11 +133,8 @@ forces_flattened = forces.flatten(postfix);
 forces_rot_flattened = forces_rotated.flatten(postfix);
 
 % make a sto adapter and write the forces table to file.
-stofileadapater = STOFileAdapter();
-stofileadapater.write(forces_flattened,'test_walking_grf.mot');
-stofileadapater.write(forces_rot_flattened,'test_walking_grf_rotated.mot');
-
-
-
-
-
+% stofileadapater = STOFileAdapter();
+% stofileadapater.write(forces_flattened,'test_walking_grf.mot');
+% stofileadapater.write(forces_rot_flattened,'test_walking_grf_rotated.mot');
+STOFileAdapter().write(forces_flattened,'test_walking_grf.mot');
+STOFileAdapter().write(forces_rot_flattened,'test_walking_grf_rotated.mot');

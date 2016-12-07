@@ -42,8 +42,6 @@ if nActuators == 0
         'run the script file "AddCoordinateActuator.m" first.');
 end
 
-
-
 % Use the visualizer (must be done before the call to init system)
 model.setUseVisualizer(true);
 
@@ -51,17 +49,17 @@ model.setUseVisualizer(true);
 osimState = model.initSystem();
 
 % Set the initial states of the model
-editableCoordSet = model.updCoordinateSet();
-editableCoordSet.get('Pelvis_ty').setValue(osimState, 1.5);
-editableCoordSet.get('Pelvis_ty').setLocked(osimState, true);
-editableCoordSet.get('Pelvis_tx').setValue(osimState, 0);
-editableCoordSet.get('Pelvis_tx').setLocked(osimState, true);
-editableCoordSet.get('RHip_rz').setValue(osimState, 0);
-editableCoordSet.get('RHip_rz').setLocked(osimState, true);
-editableCoordSet.get('RKnee_rz').setValue(osimState, 0);
-editableCoordSet.get('RKnee_rz').setLocked(osimState, true);
-editableCoordSet.get('LHip_rz').setValue(osimState, 60*pi/180);
-editableCoordSet.get('LHip_rz').setLocked(osimState, true);
+CoordSet = model.getCoordinateSet();
+CoordSet.get('Pelvis_ty').setValue(osimState, 1.5);
+CoordSet.get('Pelvis_ty').setLocked(osimState, true);
+CoordSet.get('Pelvis_tx').setValue(osimState, 0);
+CoordSet.get('Pelvis_tx').setLocked(osimState, true);
+CoordSet.get('RHip_rz').setValue(osimState, 0);
+CoordSet.get('RHip_rz').setLocked(osimState, true);
+CoordSet.get('RKnee_rz').setValue(osimState, 0);
+CoordSet.get('RKnee_rz').setLocked(osimState, true);
+CoordSet.get('LHip_rz').setValue(osimState, 60*pi/180);
+CoordSet.get('LHip_rz').setLocked(osimState, true);
 
 % Recalculate the derivatives after the coordinate changes
 stateDerivVector = model.computeStateVariableDerivatives(osimState);
@@ -85,4 +83,4 @@ PlotOpenSimData(fighandle, motionData, 'time', ...
     {'Pelvis_tx_u', 'LKnee_rz'});
 
 % Clean up
-clearvars stateDerivVector editableCoordSet
+clearvars stateDerivVector CoordSet
