@@ -655,10 +655,8 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt/*,dtPrev*/,tReal;
+    double tReal;
     double time =_ti;
-    dt=dtFirst;
-    //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     
@@ -694,13 +692,9 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
-    if( fixedStep ) {
-        dt = getFixedStepSize(getTimeArrayStep(_ti));
-    } else {
+    if( !fixedStep ) {
         _integ->setReturnEveryInternalStep(true); 
     }
-
-    if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
 
     _model->realizeVelocity(s);
     initializeStorageAndAnalyses(s);
