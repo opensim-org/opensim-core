@@ -1039,8 +1039,6 @@ void testInputOutputConnections()
 
     MultibodySystem mbs;
 
-    // Should yield warnings about unconnected Inputs
-    cout << "Unsatisfied Inputs during world.connect()" << endl;
     world.connect();
 
     // do any other input/output connections
@@ -1066,7 +1064,6 @@ void testInputOutputConnections()
     foo2->updInput("activation").connect(bar->getOutput("activation"));
     foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
 
-    cout << "Unsatisfied Inputs after wiring Outputs to Inputs." << endl;
     world.connect();
     world.buildUpSystem(mbs);
 }
