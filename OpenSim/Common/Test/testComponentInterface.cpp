@@ -1547,7 +1547,7 @@ void testListInputConnecteeSerialization() {
     auto getConnecteeNames = [](const AbstractInput& in) {
         const auto numConnectees = in.getNumConnectees();
         std::vector<std::string> connecteeNames(numConnectees);
-        for (int ic = 0; ic < numConnectees; ++ic) {
+        for (unsigned ic = 0u; ic < numConnectees; ++ic) {
             connecteeNames[ic] = in.getConnecteeName(ic);
         }
         return connecteeNames;

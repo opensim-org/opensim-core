@@ -139,7 +139,7 @@ void  MarkersReference::getValues(const SimTK::State& s,
     double time = s.getTime();
     const auto rowView = _markerTable.getNearestRow(time);
     values.clear();
-    for(unsigned i = 0; i < rowView.ncol(); ++i)
+    for(int i = 0; i < rowView.ncol(); ++i)
         values.push_back(rowView[i]);
 }
 
