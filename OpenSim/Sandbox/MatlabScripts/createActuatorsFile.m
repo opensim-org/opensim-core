@@ -1,5 +1,5 @@
 function createActuatorsFile
-%createActuatorsFile   Build and Print an OpenSim Actuator File from a Model
+%createActuatorsFile   make and Print an OpenSim Actuator File from a Model
 %
 %  createActuatorsFile attempts to make a template actuators file that can
 %  be used in Static Optimization, RRA and CMC. This tries to identify the
@@ -14,15 +14,15 @@ function createActuatorsFile
 % for more information. OpenSim is developed at Stanford University       %
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
-%                                                                         %   
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+%                                                                         %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
 % You may obtain a copy of the License at                                 %
 % http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         % 
+%                                                                         %
 % Unless required by applicable law or agreed to in writing, software     %
 % distributed under the License is distributed on an "AS IS" BASIS,       %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
@@ -49,17 +49,14 @@ model = Model(modelFilePath);
 nCoord = model.getCoordinateSet.getSize();
 coordSet = model.getCoordinateSet();
 
-% Evaluate the ground body and get the mass center
-groundBodyName = model.getGround().getName();
-groundJoint = model.getJointSet.get(0);
-
 % Create some empty vec3's for later.
 massCenter = Vec3();
 axisValues = Vec3();
 
 % Create an empty Force set
 forceSet = ForceSet();
-% get the state
+
+% Create the underlying computational System and return a handle to the State
 state = model.initSystem();
 
 optimalForce = 1;
@@ -69,22 +66,14 @@ for iCoord = 0 : nCoord - 1
 
     % get a reference to the current coordinate
     coordinate = coordSet.get(iCoord);
-    % If the coordinate is locked don't add an actuator.
-    if coordinate.getLocked(state)
-        continue
-    end
-    % If the coordinate is prescribed, don't add an actuator.
-    if coordinate.isPrescribed(state)
-        continue
-    end
     % If the coodinate is constrained, don't add an actuator
     if coordinate.isConstrained(state)
         continue
     end
 
     % get the joint, parent and child names for the coordiante
-    joint = coordinate.getJoint;
-    parentName = joint.getParentFrame().getName(); 
+    joint = coordinate.getJoint();
+    parentName = joint.getParentFrame().getName();
     childName = joint.getChildFrame().getName();
 
     % If the coordinates parent body is connected to ground, we need to
@@ -107,15 +96,15 @@ for iCoord = 0 : nCoord - 1
                end
 
 
-               % Build a torque actuator for a rotational coordinate
+               % make a torque actuator if a rotational coordinate
                if strcmp(motion, 'Rotational')
                    newActuator = TorqueActuator(joint.getParentFrame(),...
                                          joint.getParentFrame(),...
                                          axisValues,...
                                          1);
-    
-               % Build a point actuator for a translational coordainte.
-               else 
+
+               % make a point actuator if a translational coordainte.
+             elseif strcmp(motion, 'translational')
                     % make a new Point actuator
                     newActuator = PointActuator();
                     % set the body
@@ -128,19 +117,21 @@ for iCoord = 0 : nCoord - 1
                     newActuator.set_direction(axisValues)
                     % set <force_is_global> true </force_is_global>
                     newActuator.set_force_is_global(1)
-               end
+              else % something else that we don't support right now
+                    error(['Motion Type ' char(motion) 'not supported yet'])
+              end
         else % if the joint type is not free or custom, just add coordinate actuators
                 % make a new coordinate actuator for that coordinate
                 newActuator = CoordinateActuator();
         end
-        
+
     else % the coordinate is not connected to ground, and can just be a
          % coordinate actuator.
          newActuator = CoordinateActuator( char(coordinate.getName) );
     end
 
     % set the optimal force for that coordinate
-    newActuator.setOptimalForce(optimalForce);        
+    newActuator.setOptimalForce(optimalForce);
     % set the actuator name
     newActuator.setName( coordinate.getName() );
     % set the optimal force for that coordinate
