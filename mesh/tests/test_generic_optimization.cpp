@@ -8,6 +8,43 @@
 
 // TEST a problem without derivative information.
 
+TEST_CASE("Ipopt and ADOL-C, unconstrained") {
+    // Make sure it's okay to not have constraints.
+
+    class Unconstrained : public IpoptADOLC_OptimizationProblem {
+    public:
+        Unconstrained() : IpoptADOLC_OptimizationProblem(2, 0) {}
+        void objective(const std::vector<adouble>& x,
+                       adouble& obj_value) const override {
+            obj_value = (x[0] - 1.5) * (x[0] - 1.5)
+                      + (x[1] + 2.0) * (x[1] + 2.0);
+        }
+        // TODO Should not have to define this.
+        void constraints(const std::vector<adouble>&,
+                         std::vector<adouble>&) const override {}
+    };
+
+    Ipopt::SmartPtr<Unconstrained> prob = new Unconstrained();
+    prob->set_variable_bounds({-5, -5}, {5, 5});
+    // TODO Test that setting constraint bounds for an unconstrained problem
+    // gives an error.
+    // TODO set initial guess?
+
+    // TODO Not setting an initial guess causes an error...is that okay?
+    prob->set_initial_guess({0, 0});
+
+    Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+    Ipopt::ApplicationReturnStatus status = app->Initialize();
+    // Did initialization succeed?
+    REQUIRE(status == Ipopt::Solve_Succeeded);
+    status = app->OptimizeTNLP(prob);
+    REQUIRE(status == Ipopt::Solve_Succeeded);
+
+    std::vector<double> solution = prob->get_solution();
+    REQUIRE(Approx(solution[0]) == 1.5);
+    REQUIRE(Approx(solution[1]) == -2.0);
+}
+
 TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C.") {
     // This is mostly a test that the automatic differentiation works.
 
@@ -32,10 +69,12 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C.") {
     Ipopt::SmartPtr<HS071> prob = new HS071();
     prob->set_variable_bounds({1, 1, 1, 1}, {5, 5, 5, 5});
     prob->set_constraint_bounds({25, 40}, {2e19, 40.0});
-    // TODO try two different initial guesses.
+    // Arbitrary initial guess.
     prob->set_initial_guess({1.5, 2.5, 3.5, 4.5});
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+    // Make sure the ADOL-C derivatives are correct.
+    // Note: this check only emits warnings, and won't cause the test to fail.
     app->Options()->SetStringValue("derivative_test", "second-order");
     Ipopt::ApplicationReturnStatus status;
     status = app->Initialize();
@@ -59,49 +98,3 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C.") {
     REQUIRE(Approx(solution[3]) == 1.379408);
 
 }
-// TODO move elsewhere.
-class ToyProblem : public IpoptADOLC_OptimizationProblem {
-public:
-    ToyProblem() : IpoptADOLC_OptimizationProblem(2, 1) {}
-    void objective(const std::vector<adouble>& x,
-                   adouble& obj_value) const override {
-        obj_value = (x[0] - 1.5) * (x[0] - 1.5)
-                    + (x[1] + 2.0) * (x[1] + 2.0);
-    }
-    void constraints(const std::vector<adouble>& x,
-                     std::vector<adouble>& constraints) const override {
-        constraints[0] = x[1] - x[0] * x[0]; //x[0] + x[1];
-    }
-};
-//        // Ipopt::SmartPtr<ToyProblem> mynlp = new ToyProblem();
-//        // mynlp->set_variable_bounds({-5, -5}, {5, 5});
-//        // mynlp->set_constraint_bounds({-0.1}, {0.1});
-//        // mynlp->set_initial_guess({0, 0});
-//        Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
-//                new DirectCollocationSolver();
-//        std::shared_ptr<OptimalControlProblem<adouble>> problem(
-//                new SlidingMass());
-//        mynlp->set_problem(problem);
-//        // TODO return 0;
-//        Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
-//        app->Options()->SetNumericValue("tol", 1e-9);
-//        app->Options()->SetStringValue("mu_strategy", "adaptive");
-//        app->Options()->SetStringValue("output_file", "ipopt.out");
-//        // TODO temporary:
-//        app->Options()->SetStringValue("derivative_test", "second-order");
-//        Ipopt::ApplicationReturnStatus status;
-//        status = app->Initialize();
-//        if (status != Ipopt::Solve_Succeeded) {
-//            printf("\n\n*** Error during initialization!\n");
-//            FAIL("Error during initialization");
-//        }
-//        status = app->OptimizeTNLP(mynlp);
-//        if (status == Ipopt::Solve_Succeeded) {
-//            printf("\n\n*** The problem solved!\n");
-//        } else {
-//            printf("\n\n*** The problem FAILED!\n");
-//        }
-//        //ToyProblem toy;
-//        //adouble f;
-//        //toy.objective({1.5, -2.0}, f);
-//        //std::cout << "DEBUG " << f << std::endl;
