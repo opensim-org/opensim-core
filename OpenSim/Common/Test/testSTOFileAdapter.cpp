@@ -145,7 +145,7 @@ template<typename T>
 T createObject() {
     static double init{0};
     T elem{};
-    for(auto i = 0u; i < elem.size(); ++i)
+    for(auto i = 0; i < elem.size(); ++i)
         elem[i] = init++;
   
   return elem;

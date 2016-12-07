@@ -7,6 +7,7 @@
 #                                                                         #
 # Copyright (c) 2005-2016 Stanford University and the Authors             #
 # Author(s): Neil Dhir                                                    #
+# Contributor(s): Christopher Dembia                                      #
 #                                                                         #
 # Licensed under the Apache License, Version 2.0 (the "License");         #
 # you may not use this file except in compliance with the License.        #
@@ -20,33 +21,36 @@
 # permissions and limitations under the License.                          #
 # ----------------------------------------------------------------------- #
 
-# simple-arm.py
+# build_simple_arm_model.py
 # Author: Neil Dhir
 # ------------------------------------------------------------------------#
 # ABSTRACT: This short piece of OpenSim python API example demonstrates a #
 # simple arm which consists of two bodies, two joints, a muscle and a     #
 # controller. All model elements are labeled with their appropriate       #
 # biomechanical namesakes for easy identification and clarity of          #
-# demonstration. Further, the model does not include forward simulation,  #
-# but instead saves the model to an .osim file which can be used in the   #
-# OpenSim plotter or the graphics window.                                 #
+# demonstration.                                                          #
 # ------------------------------------------------------------------------#
 
 import opensim as osim
 
+import sys
+# Are we running this script as a test? Users can ignore this line!
+running_as_test = 'unittest' in str().join(sys.argv)
+
 # Define global model where the arm lives.
 arm = osim.Model()
+if not running_as_test: arm.setUseVisualizer(True)
 
 # ---------------------------------------------------------------------------
 # Create two links, each with a mass of 1 kg, centre of mass at the body's
 # origin, and moments and products of inertia of zero.
 # ---------------------------------------------------------------------------
 
-humerus = osim.Body('humerus',
+humerus = osim.Body("humerus",
                     1.0,
                     osim.Vec3(0, 0, 0),
                     osim.Inertia(0, 0, 0))
-radius = osim.Body('radius',
+radius = osim.Body("radius",
                    1.0,
                    osim.Vec3(0, 0, 0),
                    osim.Inertia(0, 0, 0))
@@ -60,26 +64,26 @@ shoulder = osim.PinJoint("shoulder",
                          osim.Vec3(0, 0, 0),
                          osim.Vec3(0, 0, 0),
                          humerus, # PhysicalFrame
-                         osim.Vec3(0, 0, 0),
-                         osim.Vec3(0, 1, 0))
+                         osim.Vec3(0, 1, 0),
+                         osim.Vec3(0, 0, 0))
 
 elbow = osim.PinJoint("elbow",
                       humerus, # PhysicalFrame
                       osim.Vec3(0, 0, 0),
                       osim.Vec3(0, 0, 0),
                       radius, # PhysicalFrame
-                      osim.Vec3(0, 0, 0),
-                      osim.Vec3(0, 1, 0))
+                      osim.Vec3(0, 1, 0),
+                      osim.Vec3(0, 0, 0))
 
 # ---------------------------------------------------------------------------
 # Add a muscle that flexes the elbow (actuator for robotics people).
 # ---------------------------------------------------------------------------
 
-biceps = osim.Millard2012AccelerationMuscle("biceps",  # Muscle name
-                                            200.0,  # Max isometric force
-                                            0.6,  # Optimal fibre length
-                                            0.55,  # Tendon slack length
-                                            0.0)  # Pennation angle
+biceps = osim.Millard2012EquilibriumMuscle("biceps",  # Muscle name
+                                           200.0,  # Max isometric force
+                                           0.6,  # Optimal fibre length
+                                           0.55,  # Tendon slack length
+                                           0.0)  # Pennation angle
 biceps.addNewPathPoint("origin",
                        humerus,
                        osim.Vec3(0, 0.8, 0))
@@ -94,7 +98,7 @@ biceps.addNewPathPoint("insertion",
 
 brain = osim.PrescribedController()
 brain.addActuator(biceps)
-brain.prescribeControlForActuator('biceps',  # Actuator's index in controller set
+brain.prescribeControlForActuator("biceps",
                                   osim.StepFunction(0.5, 3.0, 0.3, 1.0))
 
 # ---------------------------------------------------------------------------
@@ -112,13 +116,33 @@ arm.addController(brain)
 # Add a console reporter to print the muscle fibre force and elbow angle.
 # ---------------------------------------------------------------------------
 
-# We want to write our simulation to a file in the end.
-reporter = osim.TableReporter()
+# We want to write our simulation results to the console.
+reporter = osim.ConsoleReporter()
 reporter.set_report_time_interval(1.0)
-reporter.updInput("inputs").connect(biceps.getOutput("fiber_force"))
-elbow_cord = elbow.get_coordinates(0).getOutput("value")
-reporter.updInput("inputs").connect(elbow_cord, "elbow_angle")
+reporter.updInput().connect(biceps.getOutput("fiber_force"))
+elbow_coord = elbow.getCoordinate().getOutput("value")
+reporter.updInput().connect(elbow_coord, "elbow_angle")
 arm.addComponent(reporter)
+
+# ---------------------------------------------------------------------------
+# Add display geometry. 
+# ---------------------------------------------------------------------------
+
+bodyGeometry = osim.Ellipsoid(0.1, 0.5, 0.1)
+bodyGeometry.setColor(osim.Gray)
+humerusCenter = osim.PhysicalOffsetFrame()
+humerusCenter.setName("humerusCenter")
+humerusCenter.setParentFrame(humerus)
+humerusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0, 0.5, 0)))
+humerus.addComponent(humerusCenter)
+humerusCenter.attachGeometry(bodyGeometry.clone())
+
+radiusCenter = osim.PhysicalOffsetFrame()
+radiusCenter.setName("radiusCenter")
+radiusCenter.setParentFrame(radius)
+radiusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0, 0.5, 0)))
+radius.addComponent(radiusCenter)
+radiusCenter.attachGeometry(bodyGeometry.clone())
 
 # ---------------------------------------------------------------------------
 # Configure the model.
@@ -126,9 +150,18 @@ arm.addComponent(reporter)
 
 state = arm.initSystem()
 # Fix the shoulder at its default angle and begin with the elbow flexed.
-arm.upd_coordinates(0).setLocked(state, True)
-arm.upd_coordinates(1).setValue(state, 0.5 * osim.SimTK_PI)
+shoulder.getCoordinate().setLocked(state, True)
+elbow.getCoordinate().setValue(state, 0.5 * osim.SimTK_PI)
 arm.equilibrateMuscles(state)
+
+# ---------------------------------------------------------------------------
+# Simulate.
+# ---------------------------------------------------------------------------
+
+manager = osim.Manager(arm)
+manager.setInitialTime(0)
+manager.setFinalTime(10.0)
+manager.integrate(state)
 
 # ---------------------------------------------------------------------------
 # Print/save model file

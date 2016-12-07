@@ -69,6 +69,11 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
     #define SWIG_DECLARE_EXCEPTION
 #endif
 
+// Forward-declare SimTK types.
+namespace SimTK {
+    // Needed for Object_GetClassName<SimTK::SpatialVec>, defined in this file.
+    typedef Vec<2, Vec3> SpatialVec;
+}
 
 namespace OpenSim { 
 
@@ -360,14 +365,23 @@ public:
         PropertyName is empty or "*", the information for all properties in the 
         class is printed. If ClassName is empty, the information for the 
         properties of all registered classes is printed.
-    **/
-    static void PrintPropertyInfo(std::ostream&      os,
-                                  const std::string& classNameDotPropertyName);
+    @param           printFlagInfo 
+        Print to the ostream some instructions for using the -PropertyInfo
+        command line flag.
+
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&      os,
+                                  const std::string& classNameDotPropertyName,
+                                  bool printFlagInfo = true);
     /** Same as the other signature but the class name and property name are
-    provided as two separate strings. **/
-    static void PrintPropertyInfo(std::ostream&         os,
+    provided as two separate strings. 
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&         os,
                                   const std::string&    className,
-                                  const std::string&    propertyName);
+                                  const std::string&    propertyName,
+                                  bool printFlagInfo = true);
     /**@}**/
     //--------------------------------------------------------------------------
 
@@ -1079,9 +1093,13 @@ template <> struct Object_GetClassName<std::string>
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
-{   static const std::string name() { return "Vector"; } };
+{   static const std::string name() {return "Vector"; } };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
 {   static const std::string name() {return "Vector_<Vec3>";} };
+template <> struct Object_GetClassName<SimTK::SpatialVec>
+{   static const std::string name() {return "SpatialVec";} };
+template <> struct Object_GetClassName<SimTK::Transform>
+{   static const std::string name() {return "Transform";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \

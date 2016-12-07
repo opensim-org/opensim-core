@@ -77,7 +77,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 
 }
 
-/* Change the weighting of a marker to take affect when assemble or track is called next. 
+/* Change the weighting of a marker to take effect when assemble or track is called next. 
    Update a marker's weight by name. */
 void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, double value)
 {
@@ -218,18 +218,13 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
     // get markers defined by the model 
     const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
-    // get markers with specified tasks/weights
-    const Set<MarkerWeight>& mwSet = _markersReference.updMarkerWeightSet();
-    
     int index = -1;
-    int wIndex = -1;
     SimTK::Transform X_BF;
     //Loop through all markers in the reference
     for(unsigned int i=0; i < markerNames.size(); ++i){
         // Check if we have this marker in the model, else ignore it
         index = modelMarkerSet.getIndex(markerNames[i], index);
-        wIndex = mwSet.getIndex(markerNames[i],wIndex);
-        if((index >= 0) && (wIndex >=0)){
+        if(index >= 0) {
             Marker &marker = modelMarkerSet[index];
             const SimTK::MobilizedBody& mobod =
                 marker.getParentFrame().getMobilizedBody();

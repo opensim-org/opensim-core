@@ -419,8 +419,7 @@ bool RRATool::run()
         cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
     } else {
         cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-        desiredKinStore = new Storage();
-        loadQStorage( _desiredKinematicsFileName, *desiredKinStore );
+        desiredKinStore = new Storage(_desiredKinematicsFileName);
         desiredKinFlag = true;
     }
 
@@ -632,8 +631,16 @@ bool RRATool::run()
         cout<<" to set the initial configuration.\n" << endl;
     }
 
-    for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
-    for(int i=0;i<nu;i++) s.updU()[i] = u[i];
+    // formCompleteStorages ensures qSet is in order of model Coordinates
+    // but we cannot assume order of coordinates is the same in the State,
+    // so set each Coordinate value and speed individually.
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (int i = 0; i < nq; ++i) {
+        // The last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
+        coords[i].setValue(s, q[i], i==(nq-1));
+        coords[i].setSpeedValue(s, u[i]);
+    }
 
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates

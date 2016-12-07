@@ -1151,7 +1151,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
             comment, minSize, maxSize, initValue); }                        \
     template <template <class> class Container>                             \
     void set_##name(const Container<T>& value)                              \
-    {   updProperty_##name().setValue(value); }                             \
+    {   this->updProperty_##name().setValue(value); }                       \
     /** @endcond **/
 
 
@@ -1217,8 +1217,9 @@ A data member is also created but is intended for internal use only:
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
     void set_##pname(const T& value)                                        \
-    {   updProperty_##pname().setValue(value); }                            \
+    {   this->updProperty_##pname().setValue(value); }                      \
     /** @}                                                               */
+
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1254,8 +1255,9 @@ initialized with an object of type T.
     {   return this->updProperty_##T().updValue(); }                        \
     /** %Set the value of the <b> %##T </b> property.                    */ \
     void set_##T(const T& value)                                            \
-    {   updProperty_##T().setValue(value); }                                \
+    {   this->updProperty_##T().setValue(value); }                          \
     /** @}                                                               */
+
 
 /** Declare a property of the given \a pname containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
@@ -1295,8 +1297,9 @@ value of type T.
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
     void set_##pname(const T& value)                                        \
-    {   updProperty_##pname().setValue(value); }                            \
+    {   this->updProperty_##pname().setValue(value); }                      \
     /** @}                                                               */
+
 
 /** Declare a property of the given \a pname containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
