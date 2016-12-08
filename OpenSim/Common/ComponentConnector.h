@@ -233,7 +233,7 @@ protected:
     void checkConnecteeNameProperty() {
         // TODO Move this check elsewhere once the connectee_name
         // property is a ComponentPath (or a ChannelPath?).
-        for (int iname = 0; iname < getNumConnectees(); ++iname) {
+        for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
             
             if (connecteeName.find(" ") != std::string::npos) {
@@ -752,7 +752,7 @@ public:
     */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
         SimTK::Vector_<T> v(_connectees.size());
-        for (int ichan = 0; ichan < _connectees.size(); ++ichan) {
+        for (unsigned ichan = 0u; ichan < _connectees.size(); ++ichan) {
             v[ichan] = _connectees[ichan]->getValue(state);
         }
         return v;

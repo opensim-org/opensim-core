@@ -101,18 +101,18 @@ int main() {
     } catch (OpenSim::Exception&) {}
 
     const auto& avgRow = table.averageRow(0.2, 0.8);
-    for(size_t i = 0; i < avgRow.ncol(); ++i)
+    for(int i = 0; i < avgRow.ncol(); ++i)
         OPENSIM_THROW_IF(std::abs(avgRow[i] - 2) > 1e-8/*epsilon*/,
                          Exception,
                          "Test failed: averageRow() failed.");
 
     const auto& nearRow = table.getNearestRow(0.55);
-    for(size_t i = 0; i < nearRow.ncol(); ++i)
+    for(int i = 0; i < nearRow.ncol(); ++i)
         ASSERT(nearRow[i] == 2);
 
     table.updNearestRow(0.55) += 2;
     table.updNearestRow(0.55) -= 2;
-    for(size_t i = 0; i < nearRow.ncol(); ++i)
+    for(int i = 0; i < nearRow.ncol(); ++i)
         ASSERT(nearRow[i] == 2);
 
     table.updMatrix() += 2;
