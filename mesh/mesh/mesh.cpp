@@ -73,22 +73,14 @@ void IpoptSolver::TNLP::initialize(const std::vector<double>& guess) {
     // TODO or can I reuse the tape?
      /* TODO if (m_num_constraints)*/ {
         // TODO use trace_constraints.
-        short int tag = 0;
-        // =================================================================
-        // START ACTIVE
-        // -----------------------------------------------------------------
-        trace_on(tag);
-        std::vector<adouble> x_adouble(m_num_variables);
-        for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= guess[i];
-        std::vector<adouble> g_adouble(m_num_constraints);
-        m_problem.constraints(x_adouble, g_adouble);
-        std::vector<double> g(m_num_constraints);
-        for (unsigned i = 0; i < m_num_constraints; ++i) g_adouble[i] >>= g[i];
-        trace_off();
-        // -----------------------------------------------------------------
-        // END ACTIVE
-        // =================================================================
 
+
+        short int tag = 0;
+        std::vector<double> g(m_num_constraints);
+        trace_constraints(tag, m_num_variables, guess.data(),
+                m_num_constraints, g.data());
+
+        // TODO use jac_pat function instead.
         int repeated_call = 0;
         int num_nonzeros = -1; /*TODO*/
         unsigned int* row_indices = NULL; // Allocated by ADOL-C.
@@ -99,7 +91,7 @@ void IpoptSolver::TNLP::initialize(const std::vector<double>& guess) {
         options[1] = 0; /*TODO*/
         options[2] = 0; /*TODO*/
         options[3] = 0; /*TODO*/
-        int success = sparse_jac(tag, m_num_constraints, m_num_variables,
+        int success = sparse_jac(0, m_num_constraints, m_num_variables,
                 repeated_call, &guess[0],
                 &num_nonzeros, &row_indices, &col_indices,
                 &jacobian, options);
