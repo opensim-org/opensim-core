@@ -22,16 +22,14 @@
 % This script adds a PathActuator that spans the left knee.
 % https://simtk.org/api_docs/opensim/api_docs/classOpenSim_1_1PathActuator.html
 
-clc;
-
 % Import Java library.
 import org.opensim.modeling.*
 
 % Open the model.
-walkerModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+walkerModel = Model('../Model/WalkerModel.osim');
 
 % Change the name.
-walkerModel.setName('DW2013_WalkerModelTerrain_CoordAct');
+walkerModel.setName('WalkerModelTerrain_CoordAct');
 
 % Display all bodies in the model.
 numBodies = walkerModel.getNumBodies();
@@ -58,9 +56,9 @@ point2 = Vec3(0,0,0);
 pathAct.addNewPathPoint('pathAct_point2',body2,point2);
 
 % Add the force to the model.
-walkerModel.addForce(pathAct);
+walkerModel.addComponent(pathAct);
 
 % Save the new model file.
-modelFile_new = '../Model/DW2013_WalkerModelTerrain_PathAct.osim';
+modelFile_new = '../Model/WalkerModel_PathAct.osim';
 walkerModel.print(modelFile_new);
 fprintf('Model saved to %s\n',modelFile_new);
