@@ -67,9 +67,12 @@ void IpoptSolver::TNLP::initialize(const std::vector<double>& guess) {
 
     // Determine sparsity patterns.
     // ----------------------------
+    // TODO allow user to provide multiple points at which to determine
+    // sparsity?
     // TODO remove from here and utilize new_x.
     // TODO or can I reuse the tape?
      /* TODO if (m_num_constraints)*/ {
+        // TODO use trace_constraints.
         short int tag = 0;
         // =================================================================
         // START ACTIVE
@@ -274,6 +277,26 @@ double IpoptSolver::TNLP::trace_objective(short int tag,
     return f;
 }
 
+void IpoptSolver::TNLP::trace_constraints(short int tag,
+        Index num_variables, const Number* x,
+        Index num_constraints, Number* g) {
+    // TODO if (!num_constraints) return true;
+    // =====================================================================
+    // START ACTIVE
+    // ---------------------------------------------------------------------
+    trace_on(tag);
+    std::vector<adouble> x_adouble(num_variables);
+    // TODO efficiently store this result so it can be used in grad_f, etc.
+    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    std::vector<adouble> g_adouble(num_constraints);
+    m_problem.constraints(x_adouble, g_adouble);
+    for (Index i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
+    trace_off();
+    // ---------------------------------------------------------------------
+    // END ACTIVE
+    // =====================================================================
+}
+
 bool IpoptSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool /*new_x*/,
         Number& obj_value) {
@@ -293,8 +316,7 @@ bool IpoptSolver::TNLP::eval_f(
     //    m_cached_obj_value = obj_value;
     //} else {
     //    obj_value = m_cached_obj_value;
-    short int tag = 1;
-    obj_value = trace_objective(tag, num_variables, x);
+    obj_value = trace_objective(m_objective_tag, num_variables, x);
 
     return true;
 }
@@ -305,10 +327,9 @@ bool IpoptSolver::TNLP::eval_grad_f(
     assert((unsigned)num_variables == m_num_variables);
     // TODO it is important to use an independent tag!
     // TODO create an enum for this tag!!!
-    short int tag = 1;
 
-    if (new_x) trace_objective(tag, num_variables, x);
-    int success = gradient(tag, num_variables, x, grad_f);
+    if (new_x) trace_objective(m_objective_tag, num_variables, x);
+    int success = gradient(m_objective_tag, num_variables, x, grad_f);
     assert(success); // TODo probably want assert(status >= 0);
 
     return true;
@@ -319,19 +340,15 @@ bool IpoptSolver::TNLP::eval_g(
         Index num_constraints, Number* g) {
     assert((unsigned)num_variables   == m_num_variables);
     assert((unsigned)num_constraints == m_num_constraints);
-    // TODO if (!num_constraints) return true;
-    std::vector<adouble> x_adouble(num_variables);
-    // TODO efficiently store this result so it can be used in grad_f, etc.
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    std::vector<adouble> gradient(num_constraints);
-    m_problem.constraints(x_adouble, gradient);
-    for (Index i = 0; i < num_constraints; ++i) gradient[i] >>= g[i];
+    //// TODO if (!num_constraints) return true;
+    //// TODO efficiently store this result so it can be used in grad_f, etc.
+    trace_constraints(m_constraint_tag, num_variables, x, num_constraints, g);
     return true;
 }
 
 // TODO can Ipopt do finite differencing for us?
 bool IpoptSolver::TNLP::eval_jac_g(
-        Index num_variables, const Number* x, bool /*new_x*/,
+        Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Index num_nonzeros_jacobian,
         Index* iRow, Index *jCol, Number* values) {
     // TODO if (!num_constraints) return true;
@@ -345,21 +362,11 @@ bool IpoptSolver::TNLP::eval_jac_g(
         return true;
     }
 
-    short int tag = 0;
-    // =====================================================================
-    // START ACTIVE
-    // ---------------------------------------------------------------------
-    trace_on(tag);
-    std::vector<adouble> x_adouble(num_variables);
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    std::vector<adouble> g_adouble(num_constraints);
-    m_problem.constraints(x_adouble, g_adouble);
-    std::vector<double> g(num_constraints);
-    for (Index i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
-    trace_off();
-    // ---------------------------------------------------------------------
-    // END ACTIVE
-    // =====================================================================
+    if (new_x) {
+        std::vector<double> g(num_constraints);
+        trace_constraints(m_constraint_tag,
+                num_variables, x, num_constraints, values);
+    }
 
     int repeated_call = 0;
     int num_nonzeros = -1; /*TODO*/
@@ -371,7 +378,7 @@ bool IpoptSolver::TNLP::eval_jac_g(
     options[1] = 0; /*TODO*/
     options[2] = 0; /*TODO*/
     options[3] = 0; /*TODO*/
-    int success = sparse_jac(tag, num_constraints, num_variables,
+    int success = sparse_jac(m_constraint_tag, num_constraints, num_variables,
             repeated_call, x,
             &num_nonzeros, &row_indices, &col_indices,
             &jacobian, options);
@@ -525,6 +532,8 @@ set_initial_guess(const std::vector<double>& guess) {
 
     // Determine sparsity patterns.
     // ----------------------------
+    // TODO allow user to provide multiple points at which to determine
+    // sparsity?
     // TODO remove from here and utilize new_x.
     // TODO or can I reuse the tape?
     {
@@ -727,9 +736,9 @@ bool IpoptADOLC_OptimizationProblem::eval_g(
     std::vector<adouble> x_adouble(num_variables);
     // TODO efficiently store this result so it can be used in grad_f, etc.
     for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    std::vector<adouble> gradient(num_constraints);
-    constraints(x_adouble, gradient);
-    for (Index i = 0; i < num_constraints; ++i) gradient[i] >>= g[i];
+    std::vector<adouble> g_adouble(num_constraints);
+    constraints(x_adouble, g_adouble);
+    for (Index i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
     return true;
 }
 // TODO can Ipopt do finite differencing for us?

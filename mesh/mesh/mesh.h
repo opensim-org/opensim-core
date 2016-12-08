@@ -145,6 +145,8 @@ private:
             adouble& result) const;
     // TODO should move to OptimizationProblem<adouble>
     double trace_objective(short int tag, Index num_variables, const Number* x);
+    void trace_constraints(short int tag, Index num_variables, const Number* x,
+            Index num_constraints, Number* g);
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
             Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
             IndexStyleEnum& index_style) override {
@@ -213,8 +215,8 @@ private:
     std::vector<unsigned int> m_jacobian_col_indices;
 
     //double m_cached_obj_value = std::nan(nullptr);
-    const short int objective_tag = 1;
-    const short int constraint_tag = 1;
+    const short int m_objective_tag = 1;
+    const short int m_constraint_tag = 2;
     // TODO what about for lagrangian??
 };
 

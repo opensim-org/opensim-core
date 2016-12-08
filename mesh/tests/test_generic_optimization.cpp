@@ -45,7 +45,7 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
     // there are nonzero number of constraints.
 }
 
-TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TODO") {
+TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
     // This is mostly a test that the automatic differentiation works.
 
     /// This problem comes from
@@ -74,7 +74,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TODO") {
     std::vector<double> solution = {1.5, 2.5, 3.5, 4.5};
     double obj_value = solver.optimize(solution);
 
-    // TODO run the Ipopt derivative_test!
+    // TODO run the Ipopt derivativ_
 
     //Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     //// Make sure the ADOL-C derivatives are correct.
