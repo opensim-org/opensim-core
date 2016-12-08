@@ -1022,50 +1022,104 @@ void testComponentPathNames()
 
 void testInputOutputConnections()
 {
-    TheWorld world;
-    Foo* foo1 = new Foo();
-    Foo* foo2 = new Foo();
-    Bar* bar = new Bar();
+    {
+        TheWorld world;
+        Foo* foo1 = new Foo();
+        Foo* foo2 = new Foo();
+        Bar* bar = new Bar();
 
-    foo1->setName("foo1");
-    foo2->setName("foo2");
-    bar->setName("bar");
-    bar->updConnector<Foo>("parentFoo").connect(*foo1);
-    bar->updConnector<Foo>("childFoo").connect(*foo2);
-    
-    world.add(foo1);
-    world.add(foo2);
-    world.add(bar);
+        foo1->setName("foo1");
+        foo2->setName("foo2");
+        bar->setName("bar");
+        bar->updConnector<Foo>("parentFoo").connect(*foo1);
+        bar->updConnector<Foo>("childFoo").connect(*foo2);
 
-    MultibodySystem mbs;
+        world.add(foo1);
+        world.add(foo2);
+        world.add(bar);
 
-    world.connect();
+        MultibodySystem mbs;
 
-    // do any other input/output connections
-    foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
+        world.connect();
 
-    // Test various exceptions for inputs, outputs, connectors
-    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
-    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
-    ASSERT_THROW(OutputNotFound, 
-        world.getComponent("./internalSub").getOutput("subState0"));
-    // Ensure that getOutput does not perform a "find"
-    ASSERT_THROW(OutputNotFound,
-        world.getOutput("./internalSub/subState"));
+        // do any other input/output connections
+        foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
 
-    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
+        // Test various exceptions for inputs, outputs, connectors
+        ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+        ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+        ASSERT_THROW(OutputNotFound, 
+                world.getComponent("./internalSub").getOutput("subState0"));
+        // Ensure that getOutput does not perform a "find"
+        ASSERT_THROW(OutputNotFound,
+                world.getOutput("./internalSub/subState"));
 
-    foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
-    foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
+        foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
 
-    foo1->updInput("activation").connect(bar->getOutput("activation"));
-    foo1->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+        foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
+        foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
 
-    foo2->updInput("activation").connect(bar->getOutput("activation"));
-    foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+        foo1->updInput("activation").connect(bar->getOutput("activation"));
+        foo1->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
 
-    world.connect();
-    world.buildUpSystem(mbs);
+        foo2->updInput("activation").connect(bar->getOutput("activation"));
+        foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+
+        world.connect();
+        world.buildUpSystem(mbs);
+    }
+    // Test exception message when asking for the value of an input that is
+    // not wired up.
+    class A : public Component { // Test single-value input.
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        OpenSim_DECLARE_INPUT(in1, double, SimTK::Stage::Model, "");
+    };
+    class B : public Component { // Test list inputs.
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        OpenSim_DECLARE_LIST_INPUT(in1, double, SimTK::Stage::Model, "");
+    };
+    class C : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(C, Component);
+    public:
+        OpenSim_DECLARE_OUTPUT(out1, double, calcOut1, SimTK::Stage::Time);
+        double calcOut1(const SimTK::State& state) const { return 0; }
+    };
+    {
+        // Single-value input.
+        TheWorld world;
+        A* a = new A(); a->setName("a");
+        world.add(a);
+        MultibodySystem system;
+        world.connect();
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        SimTK_TEST_MUST_THROW_EXC(a->getInput<double>("in1").getValue(s),
+                InputNotConnected);
+    }
+    {
+        // List input.
+        // We must wire up an output to the input, as a list input with no
+        // connectees is always "connected."
+        TheWorld world;
+        B* b = new B(); b->setName("b");
+        C* c = new C(); c->setName("c");
+        world.add(b);
+        world.add(c);
+        b->updInput("in1").connect(c->getOutput("out1"));
+        MultibodySystem system;
+        world.connect();
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        // The following will work, now that the connection is satisfied.
+        b->getInput<double>("in1").getValue(s, 0);
+        b->disconnect(); // Disconnect to get the "not connected"exception.
+        SimTK_TEST_MUST_THROW_EXC(b->getInput<double>("in1").getValue(s, 0),
+                InputNotConnected);
+    }
 }
 
 void testInputConnecteeNames() {

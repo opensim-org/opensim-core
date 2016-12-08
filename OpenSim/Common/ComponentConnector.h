@@ -657,6 +657,7 @@ public:
     Output<T>'s getValue() with minimal overhead. Specify the index of the 
     Channel whose value is desired.                                           */
     const T& getValue(const SimTK::State &state, unsigned index) const {
+        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, getNumConnectees(),
                          "Input<T>::getValue()");
