@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
             timeV(i) = ((double)i)/((double)pts-1.0);
             xM(i,0) = amin;
             if( timeV(i)<=stepStart || timeV(i)>=stepEnd ){
-                xM(i,1) = 0;
+                xM(i,1) = amin;
             }else{
                 xM(i,1) = 1;
             }                 
