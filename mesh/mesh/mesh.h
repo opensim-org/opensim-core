@@ -143,6 +143,8 @@ private:
     void lagrangian(double obj_factor, const std::vector<adouble>& x,
             const std::vector<double>& lambda,
             adouble& result) const;
+    // TODO should move to OptimizationProblem<adouble>
+    double trace_objective(short int tag, Index num_variables, const Number* x);
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
             Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
             IndexStyleEnum& index_style) override {
@@ -209,6 +211,11 @@ private:
     unsigned m_jacobian_num_nonzeros = -1;
     std::vector<unsigned int> m_jacobian_row_indices;
     std::vector<unsigned int> m_jacobian_col_indices;
+
+    //double m_cached_obj_value = std::nan(nullptr);
+    const short int objective_tag = 1;
+    const short int constraint_tag = 1;
+    // TODO what about for lagrangian??
 };
 
 } // namespace mesh

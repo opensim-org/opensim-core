@@ -255,27 +255,8 @@ bool IpoptSolver::TNLP::get_starting_point(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_f(
-        Index num_variables, const Number* x, bool /*new_x*/,
-        Number& obj_value) {
-    assert((unsigned)num_variables == m_num_variables);
-    std::vector<adouble> x_adouble(num_variables);
-    // TODO efficiently store this result so it can be used in grad_f, etc.
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    adouble f = 0;
-    // TODO objective() could be templatized... so that we could use finite
-    // difference if necessary.
-    m_problem.objective(x_adouble, f);
-    obj_value = f.value();
-    return true;
-}
-
-bool IpoptSolver::TNLP::eval_grad_f(
-        Index num_variables, const Number* x, bool /*new_x*/,
-        Number* grad_f) {
-    assert((unsigned)num_variables == m_num_variables);
-    short int tag = 0;
-
+double IpoptSolver::TNLP::trace_objective(short int tag,
+        Index num_variables, const Number* x) {
     // =====================================================================
     // START ACTIVE
     // ---------------------------------------------------------------------
@@ -290,8 +271,45 @@ bool IpoptSolver::TNLP::eval_grad_f(
     // ---------------------------------------------------------------------
     // END ACTIVE
     // =====================================================================
+    return f;
+}
+
+bool IpoptSolver::TNLP::eval_f(
+        Index num_variables, const Number* x, bool /*new_x*/,
+        Number& obj_value) {
+    assert((unsigned)num_variables == m_num_variables);
+    //std::vector<adouble> x_adouble(num_variables);
+    //// TODO efficiently store this result so it can be used in grad_f, etc.
+    //for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    //adouble f = 0;
+    //// TODO objective() could be templatized... so that we could use finite
+    //// difference if necessary.
+    //m_problem.objective(x_adouble, f);
+    //obj_value = f.value();
+    //short int tag = 1;
+    //if (new_x) {
+    //    obj_value = trace_objective(tag, num_variables, x);
+    //    // TODO is this caching okay? threadsafe??
+    //    m_cached_obj_value = obj_value;
+    //} else {
+    //    obj_value = m_cached_obj_value;
+    short int tag = 1;
+    obj_value = trace_objective(tag, num_variables, x);
+
+    return true;
+}
+
+bool IpoptSolver::TNLP::eval_grad_f(
+        Index num_variables, const Number* x, bool new_x,
+        Number* grad_f) {
+    assert((unsigned)num_variables == m_num_variables);
+    // TODO it is important to use an independent tag!
+    // TODO create an enum for this tag!!!
+    short int tag = 1;
+
+    if (new_x) trace_objective(tag, num_variables, x);
     int success = gradient(tag, num_variables, x, grad_f);
-    assert(success);
+    assert(success); // TODo probably want assert(status >= 0);
 
     return true;
 }

@@ -28,10 +28,6 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
             obj_value = (x[0] - 1.5) * (x[0] - 1.5)
                       + (x[1] + 2.0) * (x[1] + 2.0);
         }
-        //void constraints(const std::vector<adouble>& x,
-        //        std::vector<adouble>& constraints) const override {
-        //    constraints[0] = x[0];
-        //}
     };
 
     Unconstrained problem;
