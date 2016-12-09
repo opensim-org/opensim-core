@@ -7,6 +7,7 @@
 
 using Eigen::Vector4d;
 using Eigen::Vector2d;
+using Eigen::VectorXd;
 
 using namespace mesh;
 // TODO test an unconstrained problem.
@@ -38,7 +39,7 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
     // generic solver interface?
     IpoptSolver solver(problem);
     Vector2d variables(0, 0);
-    double obj_value = solver.optimize(solution);
+    double obj_value = solver.optimize(variables);
 
     REQUIRE(Approx(variables[0]) == 1.5);
     REQUIRE(Approx(variables[1]) == -2.0);
@@ -49,21 +50,6 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
 }
 
 
-TEST_CASE("Solve HS071 with Eigen and ADOL-C in reverse mode.") {
-    // TODO move this to the regular tests in generic_optimization.
-    HS071 problem;
-    IpoptSolver solver(problem);
-    VectorXd variables(4);
-    variables << 1.5, 2.5, 3.5, 4.5;
-    double obj_value = solver.optimize(variables);
-
-    REQUIRE(variables[0] == 1.0);
-    REQUIRE(Approx(variables[1]) == 4.743);
-    REQUIRE(Approx(variables[2]) == 3.82115);
-    REQUIRE(Approx(variables[3]) == 1.379408);
-
-    REQUIRE(Approx(obj_value) == 17.014);
-}
 TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
     // This is mostly a test that the automatic differentiation works.
 
