@@ -290,6 +290,9 @@ public:
     void constraints(const std::vector<adouble>& x,
             std::vector<adouble>& constr) const override;
 
+    void interpret_iterate(const std::vector<double>& x,
+            std::vector<std::vector<double>>& states_trajectory,
+            std::vector<std::vector<double>>& controls_trajectory) const;
 private:
     int state_index(int i_mesh_point, int i_state) const {
         return i_mesh_point * m_num_continuous_variables + i_state;

@@ -73,6 +73,16 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
+    std::vector<std::vector<double>> states_trajectory;
+    std::vector<std::vector<double>> controls_trajectory;
+    dircol.interpret_iterate(variables, states_trajectory, controls_trajectory);
+
+    // Initial and final position.
+    REQUIRE(Approx(states_trajectory.front()[0]) == 0.0);
+    REQUIRE(Approx(states_trajectory.back()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(states_trajectory.front()[1]) == 0.0);
+    REQUIRE(Approx(states_trajectory.back()[1]) == 0.0);
 }
 
 

@@ -729,6 +729,26 @@ void EulerTranscription::constraints(const std::vector<adouble>& x,
     }
 }
 
+void EulerTranscription::interpret_iterate(const std::vector<double>& x,
+        std::vector<std::vector<double>>& states_trajectory,
+        std::vector<std::vector<double>>& controls_trajectory) const
+{
+    states_trajectory = std::vector<std::vector<double>>(m_num_mesh_points,
+            std::vector<double>(m_num_states));
+    controls_trajectory = std::vector<std::vector<double>>(m_num_mesh_points,
+            std::vector<double>(m_num_controls));
+
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        auto& states = states_trajectory[i_mesh];
+        for (int i_state = 0; i_state < m_num_states; ++i_state) {
+            states[i_state] = x[state_index(i_mesh, i_state)];
+        }
+        auto& controls = controls_trajectory[i_mesh];
+        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+            controls[i_control] = x[control_index(i_mesh, i_control)];
+        }
+    }
+}
 
 
 
