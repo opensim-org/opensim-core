@@ -9,6 +9,8 @@
 using Eigen::Matrix;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+using Eigen::Vector4d;
+using Eigen::Vector2d;
 using Eigen::Dynamic;
 using Eigen::Ref;
 
@@ -569,8 +571,9 @@ bool IpoptSolver::TNLP::eval_jac_g(
 
     if (new_x) {
         VectorXd g(num_constraints); // Not actually used.
+        // TODO create alternative signature that does not take g?
         trace_constraints(m_constraint_tag,
-                num_variables, x, num_constraints, values);
+                num_variables, x, num_constraints, g.data());
     }
 
     int repeated_call = 0;
@@ -729,20 +732,8 @@ void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
 class HS071 : public OptimizationProblem<adouble> {
 public:
     HS071() : OptimizationProblem(4, 2) {
-        {
-            VectorXd lower(4);
-            lower << 1, 1, 1, 1;
-            VectorXd upper(4);
-            upper << 5, 5, 5, 5;
-            set_variable_bounds(lower, upper);
-        }
-        {
-            VectorXd lower(2);
-            lower << 25, 40;
-            VectorXd upper(2);
-            upper << 2e19, 40.0;
-            set_constraint_bounds(lower, upper);
-        }
+        set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
+        set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
     }
     void objective(const VectorXa& x, adouble& obj_value) const override {
         obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
@@ -758,8 +749,7 @@ TEST_CASE("Solve HS071 with Eigen and ADOL-C in reverse mode.") {
     // TODO move this to the regular tests in generic_optimization.
     HS071 problem;
     IpoptSolver solver(problem);
-    VectorXd variables(4);
-    variables << 1.5, 2.5, 3.5, 4.5;
+    Vector4d variables(1.5, 2.5, 3.5, 4.5);
     double obj_value = solver.optimize(variables);
 
     REQUIRE(variables[0] == 1.0);

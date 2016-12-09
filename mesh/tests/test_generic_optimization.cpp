@@ -3,6 +3,10 @@
 #include <catch.hpp>
 
 #include <mesh.h>
+#include <legacy.h>
+
+using Eigen::Vector4d;
+using Eigen::Vector2d;
 
 using namespace mesh;
 // TODO test an unconstrained problem.
@@ -21,10 +25,9 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
     class Unconstrained : public OptimizationProblem<adouble> {
     public:
         Unconstrained() : OptimizationProblem(2, 0) {
-            set_variable_bounds({-5, -5}, {5, 5});
+            set_variable_bounds(Vector2d(-5, -5), Vector2d(5, 5));
         }
-        void objective(const std::vector<adouble>& x,
-                       adouble& obj_value) const override {
+        void objective(const VectorXa& x, adouble& obj_value) const override {
             obj_value = (x[0] - 1.5) * (x[0] - 1.5)
                       + (x[1] + 2.0) * (x[1] + 2.0);
         }
@@ -34,17 +37,33 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
     // TODO may not want user to directly use IpoptSolver; instead, use a
     // generic solver interface?
     IpoptSolver solver(problem);
-    std::vector<double> solution = {0, 0};
+    Vector2d variables(0, 0);
     double obj_value = solver.optimize(solution);
 
-    REQUIRE(Approx(solution[0]) == 1.5);
-    REQUIRE(Approx(solution[1]) == -2.0);
+    REQUIRE(Approx(variables[0]) == 1.5);
+    REQUIRE(Approx(variables[1]) == -2.0);
     REQUIRE(Approx(obj_value)   == 0);
 
     // TODO throw exception if constraints() is unimplemented and
     // there are nonzero number of constraints.
 }
 
+
+TEST_CASE("Solve HS071 with Eigen and ADOL-C in reverse mode.") {
+    // TODO move this to the regular tests in generic_optimization.
+    HS071 problem;
+    IpoptSolver solver(problem);
+    VectorXd variables(4);
+    variables << 1.5, 2.5, 3.5, 4.5;
+    double obj_value = solver.optimize(variables);
+
+    REQUIRE(variables[0] == 1.0);
+    REQUIRE(Approx(variables[1]) == 4.743);
+    REQUIRE(Approx(variables[2]) == 3.82115);
+    REQUIRE(Approx(variables[3]) == 1.379408);
+
+    REQUIRE(Approx(obj_value) == 17.014);
+}
 TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
     // This is mostly a test that the automatic differentiation works.
 
@@ -54,51 +73,36 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
     class HS071 : public OptimizationProblem<adouble> {
     public:
         HS071() : OptimizationProblem(4, 2) {
-            set_variable_bounds({1, 1, 1, 1}, {5, 5, 5, 5});
-            set_constraint_bounds({25, 40}, {2e19, 40.0});
+            set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
+            set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
         }
-        void objective(const std::vector<adouble>& x,
-                adouble& obj_value) const override {
+        void objective(const VectorXa& x, adouble& obj_value) const override {
             obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
         }
-        void constraints(const std::vector<adouble>& x,
-                std::vector<adouble>& constraints) const override {
-            constraints[0] = x[0] * x[1] * x[2] * x[3];
-            constraints[1] = x[0] * x[0] + x[1] * x[1]
-                    + x[2] * x[2] + x[3] * x[3];
+        void constraints(const VectorXa& x, Eigen::Ref<VectorXa> constr)
+        const override {
+            constr[0] = x.prod();
+            constr[1] = x.squaredNorm();
         }
     };
 
     HS071 problem;
     IpoptSolver solver(problem);
-    std::vector<double> solution = {1.5, 2.5, 3.5, 4.5};
-    double obj_value = solver.optimize(solution);
+    Vector4d variables(1.5, 2.5, 3.5, 4.5);
+    double obj_value = solver.optimize(variables);
 
-    // TODO run the Ipopt derivativ_
+    // TODO run the Ipopt derivative check. in the test.
 
-    //Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     //// Make sure the ADOL-C derivatives are correct.
     //// Note: this check only emits warnings, and won't cause the test to fail.
     //app->Options()->SetStringValue("derivative_test", "second-order");
-    //Ipopt::ApplicationReturnStatus status;
-    //status = app->Initialize();
-    //if (status != Ipopt::Solve_Succeeded) {
-    //    FAIL("Error during initialization");
-    //}
-    //status = app->OptimizeTNLP(prob);
-    //if (status == Ipopt::Solve_Succeeded) {
-    //    INFO("\n\n*** The problem solved!\n");
-    //} else {
-    //    FAIL("\n\n*** The problem FAILED!\n");
-    //}
 
-    REQUIRE(solution[0] == 1.0);
-    REQUIRE(Approx(solution[1]) == 4.743);
-    REQUIRE(Approx(solution[2]) == 3.82115);
-    REQUIRE(Approx(solution[3]) == 1.379408);
+    REQUIRE(       variables[0]  == 1.0);
+    REQUIRE(Approx(variables[1]) == 4.743);
+    REQUIRE(Approx(variables[2]) == 3.82115);
+    REQUIRE(Approx(variables[3]) == 1.379408);
 
     REQUIRE(Approx(obj_value) == 17.014);
-
 }
 
 TEST_CASE("Ipopt and ADOL-C, unconstrained") {

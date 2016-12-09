@@ -1,8 +1,12 @@
 
 #include <mesh.h>
+#include <legacy.h>
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
+
+using Eigen::Ref;
+using Eigen::VectorXd;
 
 
 TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
@@ -16,18 +20,19 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
         int num_states() const override { return 2; }
         int num_controls() const override { return 1; }
         void bounds(double& initial_time, double& final_time,
-                std::vector<double>& states_lower,
-                std::vector<double>& states_upper,
-                std::vector<double>& initial_states_lower,
-                std::vector<double>& initial_states_upper,
-                std::vector<double>& final_states_lower,
-                std::vector<double>& final_states_upper,
-                std::vector<double>& controls_lower,
-                std::vector<double>& controls_upper,
-                std::vector<double>& initial_controls_lower,
-                std::vector<double>& initial_controls_upper,
-                std::vector<double>& final_controls_lower,
-                std::vector<double>& final_controls_upper) const override {
+                Ref<VectorXd> states_lower,
+                Ref<VectorXd> states_upper,
+                Ref<VectorXd> initial_states_lower,
+                Ref<VectorXd> initial_states_upper,
+                Ref<VectorXd> final_states_upper,
+                Ref<VectorXd> final_states_lower,
+                Ref<VectorXd> controls_lower,
+                Ref<VectorXd> controls_upper,
+                Ref<VectorXd> initial_controls_lower,
+                Ref<VectorXd> initial_controls_upper,
+                Ref<VectorXd> final_controls_lower,
+                Ref<VectorXd> final_controls_upper) const override
+        {
             // TODO turn into bounds on time.
             initial_time = 0.0;
             final_time = 2.0;
@@ -45,9 +50,10 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
             final_controls_upper   = controls_upper;
         }
         const double mass = 10.0;
-        void dynamics(const std::vector<adouble>& states,
-                const std::vector<adouble>& controls,
-                std::vector<adouble>& derivatives) const override {
+        void dynamics(const VectorXa& states,
+                const VectorXa& controls,
+                Ref<VectorXa>& derivatives) const override
+        {
             derivatives[0] = states[1];
             derivatives[1] = controls[0] / mass;
         }
@@ -58,8 +64,8 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
 
         //}
         void integral_cost(const double& /*time*/,
-                const std::vector<adouble>& /*states*/,
-                const std::vector<adouble>& controls,
+                const VectorXa& /*states*/,
+                const VectorXa& controls,
                 adouble& integrand) const override {
             integrand = controls[0] * controls[0];
         }
@@ -73,21 +79,21 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
-    std::vector<std::vector<double>> states_trajectory;
-    std::vector<std::vector<double>> controls_trajectory;
+    MatrixXd states_trajectory;
+    MatrixXd controls_trajectory;
     dircol.interpret_iterate(variables, states_trajectory, controls_trajectory);
 
     // Initial and final position.
-    REQUIRE(Approx(states_trajectory.front()[0]) == 0.0);
-    REQUIRE(Approx(states_trajectory.back()[0]) == 1.0);
+    REQUIRE(Approx(states_trajectory(0, 0)) == 0.0);
+    REQUIRE(Approx(states_trajectory.rightCols<1>()[0]) == 1.0);
     // Initial and final speed.
-    REQUIRE(Approx(states_trajectory.front()[1]) == 0.0);
-    REQUIRE(Approx(states_trajectory.back()[1]) == 0.0);
+    REQUIRE(Approx(states_trajectory(1, 0)) == 0.0);
+    REQUIRE(Approx(states_trajectory.rightCols<1>()[1]) == 0.0);
 }
 
 
 
-TEST_CASE("Minimize effort of sliding a mass.") {
+TEST_CASE("Minimize effort of sliding a mass. LEGACY") {
 
     class SlidingMass : public OptimalControlProblem<adouble> {
         // TODO difficult... virtual void initial_guess()

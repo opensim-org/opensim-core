@@ -1,21 +1,11 @@
 #ifndef MESH_MESH_H
 #define MESH_MESH_H
 
-// TODO temp
-#include "legacy.h"
-
 #include <iostream>
-#include <fstream>
 #include <Eigen/Dense>
 #include <IpTNLP.hpp>
-#include <IpIpoptApplication.hpp>
 #include <adolc/adolc.h>
-#include <adolc/sparse/sparsedrivers.h>
 // TODO should not have using declarations in a header file.
-using Eigen::VectorXd;
-using Eigen::MatrixXd;
-using Ipopt::Index;
-using Ipopt::Number;
 
 // http://www.coin-or.org/Ipopt/documentation/node23.html
 
@@ -30,6 +20,12 @@ using Ipopt::Number;
 
 namespace mesh {
 
+using VectorXa = Eigen::Matrix<adouble, Eigen::Dynamic, 1>;
+using MatrixXa = Eigen::Matrix<adouble, Eigen::Dynamic, Eigen::Dynamic>;
+
+template <typename T>
+using VectorX = Eigen::Matrix<T, Eigen::Dynamic, 1>;
+
 // TODO consider namespace opt for generic NLP stuff.
 
 template <typename T>
@@ -41,9 +37,9 @@ public:
             : m_num_variables(num_variables),
               m_num_constraints(num_constraints) {}
 
-    virtual void objective(const std::vector<T>& x, T& obj_value) const;
-    virtual void constraints(const std::vector<T>& x,
-            std::vector<T>& constr) const;
+    virtual void objective(const VectorX<T>& x, T& obj_value) const;
+    virtual void constraints(const VectorX<T>& x,
+            Eigen::Ref<VectorX<T>> constr) const;
     // TODO can override to provide custom derivatives.
     //virtual void gradient(const std::vector<T>& x, std::vector<T>& grad) const;
     //virtual void jacobian(const std::vector<T>& x, TODO) const;
@@ -53,16 +49,16 @@ public:
 
     unsigned get_num_constraints() const { return m_num_constraints; }
 
-    const std::vector<double>& get_variable_lower_bounds() const {
+    const Eigen::VectorXd& get_variable_lower_bounds() const {
         return m_variable_lower_bounds;
     }
-    const std::vector<double>& get_variable_upper_bounds() const {
+    const Eigen::VectorXd& get_variable_upper_bounds() const {
         return m_variable_upper_bounds;
     }
-    const std::vector<double>& get_constraint_lower_bounds() const {
+    const Eigen::VectorXd& get_constraint_lower_bounds() const {
         return m_constraint_lower_bounds;
     }
-    const std::vector<double>& get_constraint_upper_bounds() const {
+    const Eigen::VectorXd& get_constraint_upper_bounds() const {
         return m_constraint_upper_bounds;
     }
 
@@ -74,8 +70,9 @@ protected:
     void set_num_constraints(unsigned num_constraints) {
         m_num_constraints = num_constraints;
     }
-    void set_variable_bounds(const std::vector<double>& lower,
-                             const std::vector<double>& upper) {
+    // TODO eigen wants these to be more generic to avoid temporaries.
+    void set_variable_bounds(const Eigen::VectorXd& lower,
+                             const Eigen::VectorXd& upper) {
         // TODO make sure num_variables has been set.
         // TODO can only call this if m_num_variables etc are already set.
         assert(lower.size() == m_num_variables);
@@ -83,8 +80,8 @@ protected:
         m_variable_lower_bounds = lower;
         m_variable_upper_bounds = upper;
     }
-    void set_constraint_bounds(const std::vector<double>& lower,
-                               const std::vector<double>& upper) {
+    void set_constraint_bounds(const Eigen::VectorXd& lower,
+                               const Eigen::VectorXd& upper) {
         assert(lower.size() == m_num_constraints);
         assert(upper.size() == m_num_constraints);
         m_constraint_lower_bounds = lower;
@@ -94,23 +91,20 @@ private:
     // TODO use safer types that will give exceptions for improper values.
     unsigned m_num_variables;
     unsigned m_num_constraints;
-    std::vector<double> m_variable_lower_bounds;
-    std::vector<double> m_variable_upper_bounds;
-    std::vector<double> m_constraint_lower_bounds;
-
-private:
-    // TODO
-    std::vector<double> m_constraint_upper_bounds;
+    Eigen::VectorXd m_variable_lower_bounds;
+    Eigen::VectorXd m_variable_upper_bounds;
+    Eigen::VectorXd m_constraint_lower_bounds;
+    Eigen::VectorXd m_constraint_upper_bounds;
 };
 
 template <typename T>
-void OptimizationProblem<T>::objective(const std::vector<T>&, T&) const {
+void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const {
     // TODO proper error messages.
     throw std::runtime_error("Not implemented.");
 }
 template <typename T>
-void OptimizationProblem<T>::constraints(const std::vector<T>&,
-        std::vector<T>&) const {
+void OptimizationProblem<T>::constraints(const VectorX<T>&,
+        Eigen::Ref<VectorX<T>>) const {
     // TODO throw std::runtime_error("Not implemented.");
 }
 
@@ -123,7 +117,7 @@ public:
     // TODO do not force adouble in the future.
     OptimizationSolver(const OptimizationProblem<adouble>& problem)
             : m_problem(problem) {}
-    virtual double optimize(std::vector<double>& variables) const = 0;
+    virtual double optimize(Eigen::Ref<Eigen::VectorXd> variables) const = 0;
 protected:
     const OptimizationProblem<adouble>& m_problem;
 };
@@ -135,7 +129,7 @@ public:
     IpoptSolver(const OptimizationProblem<adouble>& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
-    double optimize(std::vector<double>& variables) const override;
+    double optimize(Eigen::Ref<Eigen::VectorXd> variables) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
     class TNLP;
@@ -143,18 +137,22 @@ private:
 
 class IpoptSolver::TNLP : public Ipopt::TNLP {
 public:
+    using Index = Ipopt::Index;
+    using Number = Ipopt::Number;
     TNLP(const OptimizationProblem<adouble>& problem) : m_problem(problem) {
         m_num_variables = m_problem.get_num_variables();
         m_num_constraints = m_problem.get_num_constraints();
     }
-    void initialize(const std::vector<double>& guess);
-    const std::vector<double>& get_solution() const {
+    void initialize(const Eigen::VectorXd& guess);
+    const Eigen::VectorXd& get_solution() const {
         return m_solution;
     }
 private:
     // TODO move to OptimizationProblem if more than one solver would need this.
-    void lagrangian(double obj_factor, const std::vector<adouble>& x,
-            const std::vector<double>& lambda,
+    // TODO should use fancy arguments to avoid temporaries and to exploit
+    // expression templates.
+    void lagrangian(double obj_factor, const VectorXa& x,
+            const Eigen::VectorXd& lambda,
             adouble& result) const;
     // TODO should move to OptimizationProblem<adouble>
     double trace_objective(short int tag, Index num_variables, const Number* x);
@@ -176,7 +174,7 @@ private:
             Number* g_lower, Number* g_upper) override;
 
     // z: multipliers for bound constraints on x.
-// warmstart will require giving initial values for the multipliers.
+    // warmstart will require giving initial values for the multipliers.
     bool get_starting_point(Index num_variables, bool init_x, Number* x,
             bool init_z, Number* z_L, Number* z_U,
             Index num_constraints, bool init_lambda,
@@ -217,8 +215,8 @@ private:
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
 
     // TODO Don't need to store a copy here...?
-    std::vector<double> m_initial_guess;
-    std::vector<double> m_solution;
+    Eigen::VectorXd m_initial_guess;
+    Eigen::VectorXd m_solution;
 
     unsigned m_hessian_num_nonzeros = -1;
     std::vector<unsigned int> m_hessian_row_indices;
@@ -244,31 +242,31 @@ public:
     virtual int num_states() const = 0;
     virtual int num_controls() const = 0;
     virtual void bounds(double& initial_time, double& final_time,
-            std::vector<double>& states_lower,
-            std::vector<double>& states_upper,
-            std::vector<double>& initial_states_lower,
-            std::vector<double>& initial_states_upper,
-            std::vector<double>& final_states_upper,
-            std::vector<double>& final_states_lower,
-            std::vector<double>& controls_lower,
-            std::vector<double>& controls_upper,
-            std::vector<double>& initial_controls_lower,
-            std::vector<double>& initial_controls_upper,
-            std::vector<double>& final_controls_lower,
-            std::vector<double>& final_controls_upper) const = 0;
+            Eigen::Ref<Eigen::VectorXd> states_lower,
+            Eigen::Ref<Eigen::VectorXd> states_upper,
+            Eigen::Ref<Eigen::VectorXd> initial_states_lower,
+            Eigen::Ref<Eigen::VectorXd> initial_states_upper,
+            Eigen::Ref<Eigen::VectorXd> final_states_upper,
+            Eigen::Ref<Eigen::VectorXd> final_states_lower,
+            Eigen::Ref<Eigen::VectorXd> controls_lower,
+            Eigen::Ref<Eigen::VectorXd> controls_upper,
+            Eigen::Ref<Eigen::VectorXd> initial_controls_lower,
+            Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
+            Eigen::Ref<Eigen::VectorXd> final_controls_lower,
+            Eigen::Ref<Eigen::VectorXd> final_controls_upper) const = 0;
 
     // TODO use Eigen, not std::vector.
-    virtual void dynamics(const std::vector<T>& states,
-            const std::vector<T>& controls,
-            std::vector<T>& derivative) const = 0;
+    virtual void dynamics(const VectorX<T>& states,
+            const VectorX<T>& controls,
+            Eigen::Ref<VectorX<T>> derivative) const = 0;
     // TODO alternate form that takes a matrix; state at every time.
-    //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
+    //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     //virtual void endpoint_cost(const T& final_time,
-    //                           const std::vector<T>& final_states) const = 0;
+    //                           const VectorX<T>& final_states) const = 0;
     // TODO change time to T.
     virtual void integral_cost(const double& time,
-            const std::vector<T>& states,
-            const std::vector<T>& controls,
+            const VectorX<T>& states,
+            const VectorX<T>& controls,
             T& integrand) const = 0;
 };
 
@@ -285,14 +283,14 @@ public:
     }
     void set_problem(std::shared_ptr<Problem> problem);
 
-    void objective(const std::vector<adouble>& x,
+    void objective(const VectorXa& x,
             adouble& obj_value) const override;
-    void constraints(const std::vector<adouble>& x,
-            std::vector<adouble>& constr) const override;
+    void constraints(const VectorXa& x,
+            Eigen::Ref<VectorXa> constr) const override;
 
-    void interpret_iterate(const std::vector<double>& x,
-            std::vector<std::vector<double>>& states_trajectory,
-            std::vector<std::vector<double>>& controls_trajectory) const;
+    void interpret_iterate(const Eigen::VectorXd& x,
+            Eigen::Ref<Eigen::MatrixXd> states_trajectory,
+            Eigen::Ref<Eigen::MatrixXd> controls_trajectory) const;
 private:
     int state_index(int i_mesh_point, int i_state) const {
         return i_mesh_point * m_num_continuous_variables + i_state;
