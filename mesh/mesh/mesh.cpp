@@ -138,13 +138,13 @@ void IpoptSolver::TNLP::initialize(const std::vector<double>& guess) {
         double* hessian = NULL; // We don't actually need the hessian...
         // TODO use hess_pat instead!!!
         int num_nonzeros;
-        std::vector<double> x_and_lambda(m_num_variables + m_num_constraints);
-        for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
-            x_and_lambda[ivar] = guess[ivar];
-        }
-        for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
-            x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
-        }
+        //std::vector<double> x_and_lambda(m_num_variables + m_num_constraints);
+        //for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
+        //    x_and_lambda[ivar] = guess[ivar];
+        //}
+        //for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
+        //    x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
+        //}
         int success = sparse_hess(tag, m_num_variables, repeated_call,
                 &guess[0], &num_nonzeros,
                 &row_indices, &col_indices, &hessian,
