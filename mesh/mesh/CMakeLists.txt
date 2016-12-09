@@ -1,4 +1,4 @@
-add_library(mesh mesh.h mesh.cpp)
+add_library(mesh mesh.h mesh.cpp legacy.h legacy.cpp)
 
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
