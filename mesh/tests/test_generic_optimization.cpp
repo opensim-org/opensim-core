@@ -38,7 +38,7 @@ TEST_CASE("Ipopt and ADOL-C, unconstrained TODO new interface") {
     // TODO may not want user to directly use IpoptSolver; instead, use a
     // generic solver interface?
     IpoptSolver solver(problem);
-    Vector2d variables(0, 0);
+    VectorXd variables = Vector2d(0, 0);
     double obj_value = solver.optimize(variables);
 
     REQUIRE(Approx(variables[0]) == 1.5);
@@ -74,7 +74,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
 
     HS071 problem;
     IpoptSolver solver(problem);
-    Vector4d variables(1.5, 2.5, 3.5, 4.5);
+    VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
     double obj_value = solver.optimize(variables);
 
     // TODO run the Ipopt derivative check. in the test.
@@ -94,7 +94,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
 TEST_CASE("Ipopt and ADOL-C, unconstrained") {
     // Make sure it's okay to not have constraints.
 
-    class Unconstrained : public IpoptADOLC_OptimizationProblem {
+    class Unconstrained : public legacy::IpoptADOLC_OptimizationProblem {
     public:
         Unconstrained() : IpoptADOLC_OptimizationProblem(2, 0) {}
         void objective(const std::vector<adouble>& x,
@@ -134,7 +134,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C.") {
     /// This problem comes from
     /// https://www.coin-or.org/Ipopt/documentation/node23.html
     // TODO this class should be templated.
-    class HS071 : public IpoptADOLC_OptimizationProblem {
+    class HS071 : public legacy::IpoptADOLC_OptimizationProblem {
     public:
         HS071() : IpoptADOLC_OptimizationProblem(4, 2) {}
         void objective(const std::vector<adouble>& x,
