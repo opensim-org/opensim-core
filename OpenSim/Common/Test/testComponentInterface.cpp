@@ -1023,50 +1023,50 @@ void testComponentPathNames()
 void testInputOutputConnections()
 {
     {
-    TheWorld world;
-    Foo* foo1 = new Foo();
-    Foo* foo2 = new Foo();
-    Bar* bar = new Bar();
+        TheWorld world;
+        Foo* foo1 = new Foo();
+        Foo* foo2 = new Foo();
+        Bar* bar = new Bar();
 
-    foo1->setName("foo1");
-    foo2->setName("foo2");
-    bar->setName("bar");
-    bar->updConnector<Foo>("parentFoo").connect(*foo1);
-    bar->updConnector<Foo>("childFoo").connect(*foo2);
-    
-    world.add(foo1);
-    world.add(foo2);
-    world.add(bar);
+        foo1->setName("foo1");
+        foo2->setName("foo2");
+        bar->setName("bar");
+        bar->updConnector<Foo>("parentFoo").connect(*foo1);
+        bar->updConnector<Foo>("childFoo").connect(*foo2);
+        
+        world.add(foo1);
+        world.add(foo2);
+        world.add(bar);
 
-    MultibodySystem mbs;
+        MultibodySystem mbs;
 
-    world.connect();
+        world.connect();
 
-    // do any other input/output connections
-    foo1->connectInput_input1(bar->getOutput("PotentialEnergy"));
+        // do any other input/output connections
+        foo1->connectInput_input1(bar->getOutput("PotentialEnergy"));
 
-    // Test various exceptions for inputs, outputs, connectors
-    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
-    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
-    ASSERT_THROW(OutputNotFound, 
-        world.getComponent("./internalSub").getOutput("subState0"));
-    // Ensure that getOutput does not perform a "find"
-    ASSERT_THROW(OutputNotFound,
-        world.getOutput("./internalSub/subState"));
+        // Test various exceptions for inputs, outputs, connectors
+        ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+        ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+        ASSERT_THROW(OutputNotFound, 
+            world.getComponent("./internalSub").getOutput("subState0"));
+        // Ensure that getOutput does not perform a "find"
+        ASSERT_THROW(OutputNotFound,
+            world.getOutput("./internalSub/subState"));
 
-    foo2->connectInput_input1(world.getComponent("./internalSub").getOutput("subState"));
+        foo2->connectInput_input1(world.getComponent("./internalSub").getOutput("subState"));
 
-    foo1->connectInput_AnglesIn(foo2->getOutput("Qs"));
-    foo2->connectInput_AnglesIn(foo1->getOutput("Qs"));
+        foo1->connectInput_AnglesIn(foo2->getOutput("Qs"));
+        foo2->connectInput_AnglesIn(foo1->getOutput("Qs"));
 
-    foo1->connectInput_activation(bar->getOutput("activation"));
-    foo1->connectInput_fiberLength(bar->getOutput("fiberLength"));
+        foo1->connectInput_activation(bar->getOutput("activation"));
+        foo1->connectInput_fiberLength(bar->getOutput("fiberLength"));
 
-    foo2->connectInput_activation(bar->getOutput("activation"));
-    foo2->connectInput_fiberLength(bar->getOutput("fiberLength"));
+        foo2->connectInput_activation(bar->getOutput("activation"));
+        foo2->connectInput_fiberLength(bar->getOutput("fiberLength"));
 
-    world.connect();
-    world.buildUpSystem(mbs);
+        world.connect();
+        world.buildUpSystem(mbs);
     }
     // Test exception message when asking for the value of an input that is
     // not wired up.
