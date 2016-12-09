@@ -198,12 +198,14 @@ class TestInputsOutputs(unittest.TestCase):
         m.addComponent(rep)
 
         # Connect.
+        # There are multiple ways to perform the connection, especially
+        # for reporters.
         coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
-        rep.updInput('inputs').connect(coord.getOutput('speed'), 'spd')
-        rep.updInput('inputs').connect(
+        rep.updInput().connect(coord.getOutput('speed'), 'spd')
+        rep.connectInput_inputs(
                 source.getOutput('column').getChannel('col1'))
-        rep.updInput('inputs').connect(
+        rep.addToReport(
                 source.getOutput('column').getChannel('col2'), 'second_col')
 
         s = m.initSystem()

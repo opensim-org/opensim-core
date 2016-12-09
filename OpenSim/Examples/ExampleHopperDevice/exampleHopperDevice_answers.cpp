@@ -156,19 +156,19 @@ void addConsoleReporterToHopper(Model& hopper)
     //      knee angle, and any other variables of interest.
     #pragma region Step1_TaskB_solution
 
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(
         hopper.getComponent(hopperHeightCoord).getOutput("value"), "height");
 
     #pragma endregion
     #pragma region Step1_TaskB_solution
 
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(
         hopper.getComponent("/Dennis/vastus").getOutput("activation"));
 
     #pragma endregion
     #pragma region Step1_TaskB_solution
 
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(
         hopper.getComponent("/Dennis/knee/kneeFlexion").getOutput("value"), "knee_angle");
 
     #pragma endregion
@@ -206,8 +206,8 @@ void addSignalGeneratorToDevice(Device& device)
     //      activation input.
     #pragma region Step2_TaskE_solution
 
-    device.updComponent("controller").updInput("activation")
-        .connect(signalGen->getOutput("signal"));
+    device.updComponent("controller").updInput("activation").connect(
+            signalGen->getOutput("signal"));
 
     #pragma endregion
 }
@@ -227,11 +227,11 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 
     // Loop through the desired device outputs and add them to the reporter.
     for (auto thisOutputName : deviceOutputs)
-        reporter->updInput("inputs").connect(device.getOutput(thisOutputName));
+        reporter->addToReport(device.getOutput(thisOutputName));
 
     for (auto thisOutputName : deviceControllerOutputs)
-        reporter->updInput("inputs").
-            connect(device.getComponent("controller").getOutput(thisOutputName));
+        reporter->addToReport(
+                device.getComponent("controller").getOutput(thisOutputName));
 
     // Add the reporter to the model.
     model.addComponent(reporter);
@@ -403,8 +403,8 @@ void run(bool showVisualizer, bool simulateOnce)
         // Use the vastus muscle's activation as the control signal for the
         // device. The vastus string (at the top of this file) must
         // be filled in.
-        kneeDevice->updComponent("controller").updInput("activation")
-            .connect(assistedHopper.getComponent(vastus).getOutput("activation"));
+        kneeDevice->updComponent("controller").updInput("activation").connect(
+                assistedHopper.getComponent(vastus).getOutput("activation"));
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> kneeDeviceOutputs{ "tension", "height" };

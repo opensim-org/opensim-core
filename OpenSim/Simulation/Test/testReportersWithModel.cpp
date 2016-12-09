@@ -31,7 +31,7 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-void testConsoleReporerLabels() {
+void testConsoleReporterLabels() {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -46,10 +46,8 @@ void testConsoleReporerLabels() {
     // Create ConsoleReporter, and connect Outputs without and with alias.
     auto* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.);
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value") );
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value"), "height" );
+    reporter->addToReport(slider->getCoordinate().getOutput("value"));
+    reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
     // Redirect cout to stringstream so ConsoleReporter output can be tested.
@@ -83,7 +81,7 @@ void testConsoleReporerLabels() {
     SimTK_TEST(idxHeading2 < idxHeading3);
 }
 
-void testTableReporerLabels() {
+void testTableReporterLabels() {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -99,10 +97,8 @@ void testTableReporerLabels() {
     // Create TableReporter, and connect Outputs without and with alias.
     auto* reporter = new TableReporter();
     reporter->set_report_time_interval(1.);
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value") );
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value"), "height" );
+    reporter->addToReport(slider->getCoordinate().getOutput("value"));
+    reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
     // Simulate.
@@ -121,7 +117,7 @@ void testTableReporerLabels() {
 
 int main() {
     SimTK_START_TEST("testReporters");
-        SimTK_SUBTEST(testConsoleReporerLabels);
-        SimTK_SUBTEST(testTableReporerLabels);
+        SimTK_SUBTEST(testConsoleReporterLabels);
+        SimTK_SUBTEST(testTableReporterLabels);
     SimTK_END_TEST();
 };
