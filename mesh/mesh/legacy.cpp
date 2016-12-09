@@ -401,6 +401,14 @@ void IpoptADOLC_OptimizationProblem::finalize_solution(
     printf("f(x*) = %e\n", obj_value);
 }
 
+
+
+
+
+
+
+
+
 void DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem) {
     m_problem = problem;
     m_num_states = m_problem->num_states();

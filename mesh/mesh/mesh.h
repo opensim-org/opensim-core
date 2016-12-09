@@ -35,6 +35,8 @@ namespace mesh {
 template <typename T>
 class OptimizationProblem {
 public:
+    virtual ~OptimizationProblem() = default;
+    OptimizationProblem() = default;
     OptimizationProblem(unsigned num_variables, unsigned num_constraints)
             : m_num_variables(num_variables),
               m_num_constraints(num_constraints) {}
@@ -65,8 +67,16 @@ public:
     }
 
 protected:
+    void set_num_variables(unsigned num_variables) {
+        // TODO if set, invalidate variable bounds.
+        m_num_variables = num_variables;
+    }
+    void set_num_constraints(unsigned num_constraints) {
+        m_num_constraints = num_constraints;
+    }
     void set_variable_bounds(const std::vector<double>& lower,
                              const std::vector<double>& upper) {
+        // TODO make sure num_variables has been set.
         // TODO can only call this if m_num_variables etc are already set.
         assert(lower.size() == m_num_variables);
         assert(upper.size() == m_num_variables);
@@ -107,11 +117,6 @@ void OptimizationProblem<T>::constraints(const std::vector<T>&,
 // TODO Specialize OptimizationProblem<adouble> with implementations
 // for gradient, jacobian, hessian.
 
-template <typename T>
-class OptimalControlProblem : public OptimizationProblem<T> {
-
-};
-
 // TODO templatized?
 class OptimizationSolver {
 public:
@@ -129,6 +134,7 @@ class IpoptSolver : public OptimizationSolver {
 public:
     IpoptSolver(const OptimizationProblem<adouble>& problem)
             : OptimizationSolver(problem) {}
+    // TODO explain what happens if initial guess is omitted.
     double optimize(std::vector<double>& variables) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
@@ -207,8 +213,8 @@ private:
     // Members.
     const OptimizationProblem<adouble>& m_problem;
 
-    unsigned m_num_variables = -1;
-    unsigned m_num_constraints = -1;
+    unsigned m_num_variables = std::numeric_limits<unsigned>::max();
+    unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
 
     // TODO Don't need to store a copy here...?
     std::vector<double> m_initial_guess;
@@ -225,6 +231,100 @@ private:
     const short int m_objective_tag = 1;
     const short int m_constraint_tag = 2;
     // TODO what about for lagrangian??
+};
+
+template <typename T>
+class OptimalControlProblem {
+public:
+    virtual ~OptimalControlProblem() = default;
+    // TODO this is definitely not the interface I want.
+    // TODO difficult... virtual void initial_guess()
+    // TODO really want to declare each state variable individually, and give
+    // each one a name.
+    virtual int num_states() const = 0;
+    virtual int num_controls() const = 0;
+    virtual void bounds(double& initial_time, double& final_time,
+            std::vector<double>& states_lower,
+            std::vector<double>& states_upper,
+            std::vector<double>& initial_states_lower,
+            std::vector<double>& initial_states_upper,
+            std::vector<double>& final_states_upper,
+            std::vector<double>& final_states_lower,
+            std::vector<double>& controls_lower,
+            std::vector<double>& controls_upper,
+            std::vector<double>& initial_controls_lower,
+            std::vector<double>& initial_controls_upper,
+            std::vector<double>& final_controls_lower,
+            std::vector<double>& final_controls_upper) const = 0;
+
+    // TODO use Eigen, not std::vector.
+    virtual void dynamics(const std::vector<T>& states,
+            const std::vector<T>& controls,
+            std::vector<T>& derivative) const = 0;
+    // TODO alternate form that takes a matrix; state at every time.
+    //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
+    //virtual void endpoint_cost(const T& final_time,
+    //                           const std::vector<T>& final_states) const = 0;
+    // TODO change time to T.
+    virtual void integral_cost(const double& time,
+            const std::vector<T>& states,
+            const std::vector<T>& controls,
+            T& integrand) const = 0;
+};
+
+// TODO template <typename T>
+class EulerTranscription : public OptimizationProblem<adouble> {
+    // TODO should this *BE* an OptimizationProblem, or should it just
+    // contain one?
+public:
+    typedef OptimalControlProblem<adouble> Problem;
+
+    // TODO why would we want a shared_ptr? A copy would use the same Problem.
+    EulerTranscription(std::shared_ptr<Problem> problem) {
+        set_problem(problem);
+    }
+    void set_problem(std::shared_ptr<Problem> problem);
+
+    void objective(const std::vector<adouble>& x,
+            adouble& obj_value) const override;
+    void constraints(const std::vector<adouble>& x,
+            std::vector<adouble>& constr) const override;
+
+private:
+    int state_index(int i_mesh_point, int i_state) const {
+        return i_mesh_point * m_num_continuous_variables + i_state;
+    }
+    int control_index(int i_mesh_point, int i_control) const {
+        return i_mesh_point * m_num_continuous_variables
+                + i_control + m_num_states;
+    }
+    int constraint_index(int i_mesh, int i_state) const {
+        const int num_bound_constraints = 2 * m_num_continuous_variables;
+        return num_bound_constraints + (i_mesh - 1) * m_num_states + i_state;
+    }
+    enum BoundsCategory {
+        InitialStates   = 0,
+        FinalStates     = 1,
+        InitialControls = 2,
+        FinalControls   = 3,
+    };
+    int constraint_bound_index(BoundsCategory category, int index) const {
+        if (category <= 1) {
+            assert(index < m_num_states);
+            return category * m_num_states + index;
+        }
+        assert(index < m_num_controls);
+        return 2 * m_num_states + (category - 2) * m_num_controls + index;
+    }
+
+    std::shared_ptr<Problem> m_problem;
+    int m_num_mesh_points = 20;
+    int m_num_states = -1;
+    int m_num_controls = -1;
+    int m_num_continuous_variables = -1;
+    // TODO these should go eventually:
+    double m_initial_time = -1;
+    double m_final_time = -1;
 };
 
 } // namespace mesh
