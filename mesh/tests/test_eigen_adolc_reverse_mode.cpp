@@ -26,6 +26,24 @@ using VectorX = Matrix<T, Dynamic, 1>;
 template <typename T>
 using MatrixX = Matrix<T, Dynamic, Dynamic>;
 
+//VectorXa& operator<<=(VectorXa& left, const VectorXd& right)
+//{
+//    assert(left.size() == right.size());
+//    for (unsigned i = 0; i < left.size(); ++i) {
+//        left[i] <<= right[i];
+//    }
+//    return left;
+//}
+//VectorXa& operator>>=(VectorXa& left, const VectorXd& right)
+//{
+//    assert(left.size() == right.size());
+//    for (unsigned i = 0; i < left.size(); ++i) {
+//        left[i] >>= right[i];
+//    }
+//    return left;
+//}
+
+
 template <typename T>
 class OptimizationProblem {
 public:
@@ -731,9 +749,8 @@ public:
     }
     void constraints(const VectorXa& x, Eigen::Ref<VectorXa> constr)
             const override {
-        constr[0] = x[0] * x[1] * x[2] * x[3];
-        // TODO use Eigen to do the math in this next line (squaredNorm()).
-        constr[1] = x[0] * x[0] + x[1] * x[1] + x[2] * x[2] + x[3] * x[3];
+        constr[0] = x.prod();
+        constr[1] = x.squaredNorm();
     }
 };
 
