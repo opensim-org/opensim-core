@@ -29,9 +29,11 @@ public:
     void constraints(const VectorXa& x,
             Eigen::Ref<VectorXa> constr) const override;
 
+    // TODO change interface to be a templated function so users can pass in
+    // writeable blocks of a matrix.
     void interpret_iterate(const Eigen::VectorXd& x,
-            Eigen::Ref<Eigen::MatrixXd> states_trajectory,
-            Eigen::Ref<Eigen::MatrixXd> controls_trajectory) const;
+            Eigen::MatrixXd& states_trajectory,
+            Eigen::MatrixXd& controls_trajectory) const;
 private:
     int state_index(int i_mesh_point, int i_state) const {
         return i_mesh_point * m_num_continuous_variables + i_state;

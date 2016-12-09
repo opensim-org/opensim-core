@@ -7,6 +7,10 @@
 
 using Eigen::Ref;
 using Eigen::VectorXd;
+using Eigen::Vector2d;
+using Eigen::MatrixXd;
+
+using namespace mesh;
 
 
 TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
@@ -36,14 +40,14 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
             // TODO turn into bounds on time.
             initial_time = 0.0;
             final_time = 2.0;
-            states_lower           = {0, -10};
-            states_upper           = {2,  10};
-            initial_states_lower   = {0, 0};
+            states_lower           = Vector2d(0, -10);
+            states_upper           = Vector2d(2,  10);
+            initial_states_lower   = Vector2d(0, 0);
             initial_states_upper   = initial_states_lower;
-            final_states_lower     = {1, 0};
+            final_states_lower     = Vector2d(1, 0);
             final_states_upper     = final_states_lower;
-            controls_lower         = {-50};
-            controls_upper         = {50};
+            controls_lower         = VectorXd::Constant(1, -50);
+            controls_upper         = VectorXd::Constant(1,  50);
             initial_controls_lower = controls_lower;
             initial_controls_upper = controls_upper;
             final_controls_lower   = controls_lower;
@@ -52,7 +56,7 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
         const double mass = 10.0;
         void dynamics(const VectorXa& states,
                 const VectorXa& controls,
-                Ref<VectorXa>& derivatives) const override
+                Ref<VectorXa> derivatives) const override
         {
             derivatives[0] = states[1];
             derivatives[1] = controls[0] / mass;
@@ -75,7 +79,7 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     mesh::EulerTranscription dircol(ocp);
     mesh::IpoptSolver solver(dircol);
     //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
-    std::vector<double> variables;
+    VectorXd variables;
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
@@ -95,7 +99,7 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
 
 TEST_CASE("Minimize effort of sliding a mass. LEGACY") {
 
-    class SlidingMass : public OptimalControlProblem<adouble> {
+    class SlidingMass : public legacy::OptimalControlProblem<adouble> {
         // TODO difficult... virtual void initial_guess()
         // TODO really want to declare each state variable individually, and give
         // each one a name.
@@ -152,9 +156,9 @@ TEST_CASE("Minimize effort of sliding a mass. LEGACY") {
     };
 
     // TODO user interface should not involve directly using Ipopt.
-    Ipopt::SmartPtr<DirectCollocationSolver> mynlp =
-            new DirectCollocationSolver();
-    std::shared_ptr<OptimalControlProblem<adouble>> problem(
+    Ipopt::SmartPtr<legacy::DirectCollocationSolver> mynlp =
+            new legacy::DirectCollocationSolver();
+    std::shared_ptr<legacy::OptimalControlProblem<adouble>> problem(
             new SlidingMass());
     mynlp->set_problem(problem);
     // TODO return 0;

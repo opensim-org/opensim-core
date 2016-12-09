@@ -17,7 +17,9 @@ public:
     // TODO do not force adouble in the future.
     OptimizationSolver(const OptimizationProblem<adouble>& problem)
             : m_problem(problem) {}
-    virtual double optimize(Eigen::Ref<Eigen::VectorXd> variables) const = 0;
+    // TODO must be an lvalue??
+    // TODO might want to change this interface.
+    virtual double optimize(Eigen::VectorXd& variables) const = 0;
 protected:
     const OptimizationProblem<adouble>& m_problem;
 };
@@ -29,7 +31,8 @@ public:
     IpoptSolver(const OptimizationProblem<adouble>& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
-    double optimize(Eigen::Ref<Eigen::VectorXd> variables) const override;
+    // TODO cannot use temporary.
+    double optimize(Eigen::VectorXd& variables) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
     class TNLP;

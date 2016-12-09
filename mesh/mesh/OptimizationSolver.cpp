@@ -36,7 +36,7 @@ bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
 }
 
 
-double IpoptSolver::optimize(Ref<VectorXd> variables) const {
+double IpoptSolver::optimize(VectorXd& variables) const {
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.

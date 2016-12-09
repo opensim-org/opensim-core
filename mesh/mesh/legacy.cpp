@@ -1,13 +1,16 @@
 #include "legacy.h"
 
-void IpoptADOLC_OptimizationProblem::
-set_initial_guess(const std::vector<double>& guess) {
+using namespace mesh;
+
+void legacy::IpoptADOLC_OptimizationProblem::
+set_initial_guess(const std::vector<double>& guess)
+{
     // TODO should not be storing the solution at all.
     m_solution.clear();
     // TODO be smart about the need to copy "guess" (could be long)?
     m_initial_guess = guess;
     // TODO check their sizes.
-    assert(guess.size() == m_num_variables);
+    assert(guess.size()==m_num_variables);
 
     // Determine sparsity patterns.
     // ----------------------------
@@ -22,11 +25,11 @@ set_initial_guess(const std::vector<double>& guess) {
         // -----------------------------------------------------------------
         trace_on(tag);
         std::vector<adouble> x_adouble(m_num_variables);
-        for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= guess[i];
+        for (unsigned i = 0; i<m_num_variables; ++i) x_adouble[i] <<= guess[i];
         std::vector<adouble> g_adouble(m_num_constraints);
         constraints(x_adouble, g_adouble);
         std::vector<double> g(m_num_constraints);
-        for (unsigned i = 0; i < m_num_constraints; ++i) g_adouble[i] >>= g[i];
+        for (unsigned i = 0; i<m_num_constraints; ++i) g_adouble[i] >>= g[i];
         trace_off();
         // -----------------------------------------------------------------
         // END ACTIVE
@@ -50,13 +53,13 @@ set_initial_guess(const std::vector<double>& guess) {
         m_jacobian_num_nonzeros = num_nonzeros;
         m_jacobian_row_indices.reserve(num_nonzeros);
         m_jacobian_col_indices.reserve(num_nonzeros);
-        for (int i = 0; i < num_nonzeros; ++i) {
+        for (int i = 0; i<num_nonzeros; ++i) {
             m_jacobian_row_indices[i] = row_indices[i];
             m_jacobian_col_indices[i] = col_indices[i];
         }
-        delete [] row_indices;
-        delete [] col_indices;
-        delete [] jacobian;
+        delete[] row_indices;
+        delete[] col_indices;
+        delete[] jacobian;
     }
 
     {
@@ -69,7 +72,7 @@ set_initial_guess(const std::vector<double>& guess) {
         std::vector<double> lambda_vector(m_num_constraints, 1);
         adouble lagrangian_adouble;
         double lagr;
-        for (unsigned i = 0; i < m_num_variables; ++i) {
+        for (unsigned i = 0; i<m_num_variables; ++i) {
             x_adouble[i] <<= guess[i];
         }
         lagrangian(1.0, x_adouble, lambda_vector, lagrangian_adouble);
@@ -88,12 +91,12 @@ set_initial_guess(const std::vector<double>& guess) {
         double* hessian = NULL; // We don't actually need the hessian...
         // TODO use hess_pat instead!!!
         int num_nonzeros;
-        std::vector<double> x_and_lambda(m_num_variables + m_num_constraints);
-        for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
+        std::vector<double> x_and_lambda(m_num_variables+m_num_constraints);
+        for (unsigned ivar = 0; ivar<m_num_variables; ++ivar) {
             x_and_lambda[ivar] = guess[ivar];
         }
-        for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
-            x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
+        for (unsigned icon = 0; icon<m_num_constraints; ++icon) {
+            x_and_lambda[icon+m_num_variables] = 1; // TODO consistency?
         }
         int success = sparse_hess(tag, m_num_variables, repeated_call,
                 &guess[0], &num_nonzeros,
@@ -103,44 +106,46 @@ set_initial_guess(const std::vector<double>& guess) {
         m_hessian_num_nonzeros = num_nonzeros;
         m_hessian_row_indices.reserve(num_nonzeros);
         m_hessian_col_indices.reserve(num_nonzeros);
-        for (int i = 0; i < num_nonzeros; ++i) {
+        for (int i = 0; i<num_nonzeros; ++i) {
             m_hessian_row_indices[i] = row_indices[i];
             m_hessian_col_indices[i] = col_indices[i];
         }
         // TODO try to use modern memory management.
-        delete [] row_indices;
-        delete [] col_indices;
-        delete [] hessian;
+        delete[] row_indices;
+        delete[] col_indices;
+        delete[] hessian;
     }
 }
 
-bool IpoptADOLC_OptimizationProblem::get_bounds_info(
-        Index num_variables,   Number* x_lower, Number* x_upper,
-        Index num_constraints, Number* g_lower, Number* g_upper) {
-    assert((unsigned)num_variables   == m_num_variables);
-    assert((unsigned)num_constraints == m_num_constraints);
+bool legacy::IpoptADOLC_OptimizationProblem::get_bounds_info(
+        Index num_variables, Number* x_lower, Number* x_upper,
+        Index num_constraints, Number* g_lower, Number* g_upper)
+{
+    assert((unsigned) num_variables==m_num_variables);
+    assert((unsigned) num_constraints==m_num_constraints);
 
     // TODO pass onto subclass.
     // TODO efficient copying.
 
     // TODO make sure bounds have been set.
-    for (Index ivar = 0; ivar < num_variables; ++ivar) {
+    for (Index ivar = 0; ivar<num_variables; ++ivar) {
         x_lower[ivar] = m_variable_lower_bounds[ivar];
         x_upper[ivar] = m_variable_upper_bounds[ivar];
     }
     // TODO do not assume that there are no inequality constraints.
-    if (m_constraint_lower_bounds.size() != (unsigned)num_constraints ||
-            m_constraint_upper_bounds.size() != (unsigned)num_constraints) {
-        for (Index icon = 0; icon < num_constraints; ++icon) {
+    if (m_constraint_lower_bounds.size()!=(unsigned) num_constraints ||
+            m_constraint_upper_bounds.size()!=(unsigned) num_constraints) {
+        for (Index icon = 0; icon<num_constraints; ++icon) {
             g_lower[icon] = 0;
             g_upper[icon] = 0;
         }
-    } else {
-        for (Index icon = 0; icon < num_constraints; ++icon) {
+    }
+    else {
+        for (Index icon = 0; icon<num_constraints; ++icon) {
             const auto& lower = m_constraint_lower_bounds[icon];
             const auto& upper = m_constraint_upper_bounds[icon];
             // TODO turn the following into an exception message:
-            assert(lower <= upper);
+            assert(lower<=upper);
             g_lower[icon] = lower;
             g_upper[icon] = upper;
         }
@@ -150,31 +155,33 @@ bool IpoptADOLC_OptimizationProblem::get_bounds_info(
 
 // z: multipliers for bound constraints on x.
 // warmstart will require giving initial values for the multipliers.
-bool IpoptADOLC_OptimizationProblem::get_starting_point(
+bool legacy::IpoptADOLC_OptimizationProblem::get_starting_point(
         Index num_variables, bool init_x, Number* x,
         bool init_z, Number* /*z_L*/, Number* /*z_U*/,
         Index num_constraints, bool init_lambda,
-        Number* /*lambda*/) {
+        Number* /*lambda*/)
+{
     // Must this method provide initial values for x, z, lambda?
-    assert(init_x == true);
-    assert(init_z == false);
-    assert(init_lambda == false);
-    assert((unsigned)num_constraints == m_num_constraints);
+    assert(init_x==true);
+    assert(init_z==false);
+    assert(init_lambda==false);
+    assert((unsigned) num_constraints==m_num_constraints);
     // TODO change this interface so that the user specifies the initial
     // guess at the time they request the optimization?
-    for (Index ivar = 0; ivar < num_variables; ++ivar) {
+    for (Index ivar = 0; ivar<num_variables; ++ivar) {
         x[ivar] = m_initial_guess[ivar];
     }
     return true;
 }
 
-bool IpoptADOLC_OptimizationProblem::eval_f(
+bool legacy::IpoptADOLC_OptimizationProblem::eval_f(
         Index num_variables, const Number* x, bool /*new_x*/,
-        Number& obj_value) {
-    assert((unsigned)num_variables == m_num_variables);
+        Number& obj_value)
+{
+    assert((unsigned) num_variables==m_num_variables);
     std::vector<adouble> x_adouble(num_variables);
     // TODO efficiently store this result so it can be used in grad_f, etc.
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    for (Index i = 0; i<num_variables; ++i) x_adouble[i] <<= x[i];
     adouble f = 0;
     // TODO objective() could be templatized... so that we could use finite
     // difference if necessary.
@@ -182,10 +189,12 @@ bool IpoptADOLC_OptimizationProblem::eval_f(
     obj_value = f.value();
     return true;
 }
-bool IpoptADOLC_OptimizationProblem::eval_grad_f(
+
+bool legacy::IpoptADOLC_OptimizationProblem::eval_grad_f(
         Index num_variables, const Number* x, bool /*new_x*/,
-        Number* grad_f) {
-    assert((unsigned)num_variables == m_num_variables);
+        Number* grad_f)
+{
+    assert((unsigned) num_variables==m_num_variables);
     short int tag = 0;
 
     // =====================================================================
@@ -195,7 +204,7 @@ bool IpoptADOLC_OptimizationProblem::eval_grad_f(
     std::vector<adouble> x_adouble(num_variables);
     adouble f_adouble = 0;
     double f = 0;
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    for (Index i = 0; i<num_variables; ++i) x_adouble[i] <<= x[i];
     objective(x_adouble, f_adouble);
     f_adouble >>= f;
     trace_off();
@@ -207,28 +216,32 @@ bool IpoptADOLC_OptimizationProblem::eval_grad_f(
 
     return true;
 }
-bool IpoptADOLC_OptimizationProblem::eval_g(
+
+bool legacy::IpoptADOLC_OptimizationProblem::eval_g(
         Index num_variables, const Number* x, bool /*new_x*/,
-        Index num_constraints, Number* g) {
-    assert((unsigned)num_variables   == m_num_variables);
-    assert((unsigned)num_constraints == m_num_constraints);
+        Index num_constraints, Number* g)
+{
+    assert((unsigned) num_variables==m_num_variables);
+    assert((unsigned) num_constraints==m_num_constraints);
     std::vector<adouble> x_adouble(num_variables);
     // TODO efficiently store this result so it can be used in grad_f, etc.
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    for (Index i = 0; i<num_variables; ++i) x_adouble[i] <<= x[i];
     std::vector<adouble> g_adouble(num_constraints);
     constraints(x_adouble, g_adouble);
-    for (Index i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
+    for (Index i = 0; i<num_constraints; ++i) g_adouble[i] >>= g[i];
     return true;
 }
+
 // TODO can Ipopt do finite differencing for us?
-bool IpoptADOLC_OptimizationProblem::eval_jac_g(
+bool legacy::IpoptADOLC_OptimizationProblem::eval_jac_g(
         Index num_variables, const Number* x, bool /*new_x*/,
         Index num_constraints, Index num_nonzeros_jacobian,
-        Index* iRow, Index *jCol, Number* values) {
-    if (values == nullptr) {
+        Index* iRow, Index* jCol, Number* values)
+{
+    if (values==nullptr) {
         // TODO document: provide sparsity pattern.
-        assert((unsigned)num_nonzeros_jacobian == m_jacobian_num_nonzeros);
-        for (Index inz = 0; inz < num_nonzeros_jacobian; ++inz) {
+        assert((unsigned) num_nonzeros_jacobian==m_jacobian_num_nonzeros);
+        for (Index inz = 0; inz<num_nonzeros_jacobian; ++inz) {
             iRow[inz] = m_jacobian_row_indices[inz];
             jCol[inz] = m_jacobian_col_indices[inz];
         }
@@ -241,11 +254,11 @@ bool IpoptADOLC_OptimizationProblem::eval_jac_g(
     // ---------------------------------------------------------------------
     trace_on(tag);
     std::vector<adouble> x_adouble(num_variables);
-    for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    for (Index i = 0; i<num_variables; ++i) x_adouble[i] <<= x[i];
     std::vector<adouble> g_adouble(num_constraints);
     constraints(x_adouble, g_adouble);
     std::vector<double> g(num_constraints);
-    for (Index i = 0; i < num_constraints; ++i) g_adouble[i] >>= g[i];
+    for (Index i = 0; i<num_constraints; ++i) g_adouble[i] >>= g[i];
     trace_off();
     // ---------------------------------------------------------------------
     // END ACTIVE
@@ -266,26 +279,28 @@ bool IpoptADOLC_OptimizationProblem::eval_jac_g(
             &num_nonzeros, &row_indices, &col_indices,
             &jacobian, options);
     assert(success);
-    for (int inz = 0; inz < num_nonzeros; ++inz) {
+    for (int inz = 0; inz<num_nonzeros; ++inz) {
         values[inz] = jacobian[inz];
     }
 
-    delete [] row_indices;
-    delete [] col_indices;
-    delete [] jacobian;
+    delete[] row_indices;
+    delete[] col_indices;
+    delete[] jacobian;
 
     return true;
 }
-bool IpoptADOLC_OptimizationProblem::eval_h(
+
+bool legacy::IpoptADOLC_OptimizationProblem::eval_h(
         Index num_variables, const Number* x, bool /*new_x*/,
         Number obj_factor, Index num_constraints, const Number* lambda,
         bool /*new_lambda*/, Index num_nonzeros_hessian,
-        Index* iRow, Index *jCol, Number* values) {
-    assert((unsigned)num_nonzeros_hessian == m_hessian_num_nonzeros);
-    if (values == nullptr) {
+        Index* iRow, Index* jCol, Number* values)
+{
+    assert((unsigned) num_nonzeros_hessian==m_hessian_num_nonzeros);
+    if (values==nullptr) {
         // TODO use ADOLC to determine sparsity pattern; hess_pat
         // TODO
-        for (Index inz = 0; inz < num_nonzeros_hessian; ++inz) {
+        for (Index inz = 0; inz<num_nonzeros_hessian; ++inz) {
             iRow[inz] = m_hessian_row_indices[inz];
             jCol[inz] = m_hessian_col_indices[inz];
         }
@@ -305,11 +320,11 @@ bool IpoptADOLC_OptimizationProblem::eval_h(
     std::vector<double> lambda_vector(num_constraints);
     adouble lagrangian_adouble;
     double lagr;
-    for (Index ivar = 0; ivar < num_variables; ++ivar) {
+    for (Index ivar = 0; ivar<num_variables; ++ivar) {
         // TODO add this operator for std::vector.
         x_adouble[ivar] <<= x[ivar];
     }
-    for (Index icon = 0; icon < num_constraints; ++icon) {
+    for (Index icon = 0; icon<num_constraints; ++icon) {
         lambda_vector[icon] = lambda[icon];
     }
     lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
@@ -365,60 +380,55 @@ bool IpoptADOLC_OptimizationProblem::eval_h(
             x, &num_nonzeros, &row_indices, &col_indices,
             &vals, options);
     assert(success);
-    for (int i = 0; i < num_nonzeros; ++i) {
+    for (int i = 0; i<num_nonzeros; ++i) {
         values[i] = vals[i];
     }
     // TODO try to use modern memory management.
-    delete [] row_indices;
-    delete [] col_indices;
+    delete[] row_indices;
+    delete[] col_indices;
     // TODO avoid reallocating vals each time!!!
-    delete [] vals;
+    delete[] vals;
 
     return true;
 }
-void IpoptADOLC_OptimizationProblem::finalize_solution(
+
+void legacy::IpoptADOLC_OptimizationProblem::finalize_solution(
         Ipopt::SolverReturn /*TODO status*/,
         Index num_variables,
         const Number* x, const Number* z_L, const Number* z_U,
         Index /*num_constraints*/,
         const Number* /*g*/, const Number* /*lambda*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
-        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) {
+        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/)
+{
     m_solution.resize(num_variables);
     printf("\nSolution of the primal variables, x\n");
-    for (Index i = 0; i < num_variables; ++i) {
+    for (Index i = 0; i<num_variables; ++i) {
         printf("x[%d]: %e\n", i, x[i]);
         m_solution[i] = x[i];
     }
     printf("\nSolution of the bound multipliers, z_L and z_U\n");
-    for (Index i = 0; i < num_variables; ++i) {
+    for (Index i = 0; i<num_variables; ++i) {
         printf("z_L[%d] = %e\n", i, z_L[i]);
     }
-    for (Index i = 0; i < num_variables; ++i) {
+    for (Index i = 0; i<num_variables; ++i) {
         printf("z_U[%d] = %e\n", i, z_U[i]);
     }
     printf("\nObjective value\n");
     printf("f(x*) = %e\n", obj_value);
 }
 
-
-
-
-
-
-
-
-
-void DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem) {
+void legacy::DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem)
+{
     m_problem = problem;
     m_num_states = m_problem->num_states();
     m_num_controls = m_problem->num_controls();
-    m_num_continuous_variables = m_num_states + m_num_controls;
-    int num_variables = m_num_mesh_points * m_num_continuous_variables;
+    m_num_continuous_variables = m_num_states+m_num_controls;
+    int num_variables = m_num_mesh_points*m_num_continuous_variables;
     set_num_variables(num_variables);
-    int num_bound_constraints = 2 * m_num_continuous_variables;
-    int num_dynamics_constraints = (m_num_mesh_points - 1) * m_num_states;
-    set_num_constraints(num_bound_constraints + num_dynamics_constraints);
+    int num_bound_constraints = 2*m_num_continuous_variables;
+    int num_dynamics_constraints = (m_num_mesh_points-1)*m_num_states;
+    set_num_constraints(num_bound_constraints+num_dynamics_constraints);
 
     // Bounds.
     double initial_time;
@@ -447,7 +457,7 @@ void DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem) {
     // Bounds on variables.
     std::vector<double> variable_lower;
     std::vector<double> variable_upper;
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
         // TODO handle redundant constraints
         // (with the initial and final bounds).
         variable_lower.insert(variable_lower.end(),
@@ -499,19 +509,20 @@ void DirectCollocationSolver::set_problem(std::shared_ptr<Problem> problem) {
     set_initial_guess(std::vector<double>(num_variables)); // TODO user input
 }
 
-void DirectCollocationSolver::objective(const std::vector<adouble>& x,
-        adouble& obj_value) const {
-    const double step_size = (m_final_time - m_initial_time) /
-            (m_num_mesh_points - 1);
+void legacy::DirectCollocationSolver::objective(const std::vector<adouble>& x,
+        adouble& obj_value) const
+{
+    const double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
 
 // Create states and controls vectors.
 // TODO remove when using Eigen.
     std::vector<adouble> states(m_num_states);
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
+    for (int i_state = 0; i_state<m_num_states; ++i_state) {
         states[i_state] = x[state_index(0, i_state)];
     }
     std::vector<adouble> controls(m_num_controls);
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+    for (int i_control = 0; i_control<m_num_controls; ++i_control) {
         controls[i_control] = x[control_index(0, i_control)];
     }
 // Evaluate integral cost at the initial time.
@@ -521,26 +532,28 @@ void DirectCollocationSolver::objective(const std::vector<adouble>& x,
             integrand_value);
     obj_value = integrand_value;
 
-    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
+    for (int i_mesh = 1; i_mesh<m_num_mesh_points; ++i_mesh) {
+        for (int i_state = 0; i_state<m_num_states; ++i_state) {
             states[i_state] = x[state_index(i_mesh, i_state)];
         }
         std::vector<adouble> controls(m_num_controls);
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+        for (int i_control = 0; i_control<m_num_controls; ++i_control) {
             controls[i_control] = x[control_index(i_mesh, i_control)];
         }
         integrand_value = 0;
-        m_problem->integral_cost(step_size * i_mesh + m_initial_time,
+        m_problem->integral_cost(step_size*i_mesh+m_initial_time,
                 states, controls, integrand_value);
-        obj_value += step_size * integrand_value;
+        obj_value += step_size*integrand_value;
 // TODO use more intelligent quadrature.
     }
 }
-void DirectCollocationSolver::constraints(const std::vector<adouble>& x,
-        std::vector<adouble>& constraints) const {
+
+void legacy::DirectCollocationSolver::constraints(const std::vector<adouble>& x,
+        std::vector<adouble>& constraints) const
+{
 // TODO parallelize.
-    const double step_size = (m_final_time - m_initial_time) /
-            (m_num_mesh_points - 1);
+    const double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
 
 // TODO tradeoff between memory and parallelism.
 
@@ -560,17 +573,17 @@ void DirectCollocationSolver::constraints(const std::vector<adouble>& x,
             std::vector<adouble>(m_num_states));
 //std::vector<std::vector<adouble>>
 //        states_trajectory(m_num_mesh_points, {num_states});
-    for (int i_mesh_point = 0; i_mesh_point < m_num_mesh_points;
+    for (int i_mesh_point = 0; i_mesh_point<m_num_mesh_points;
          ++i_mesh_point) {
 // Get the states and controls for this mesh point.
 // TODO prefer having a view, not copying.
         std::vector<adouble> states(m_num_states);
 //const auto& states = states_trajectory[i_mesh_point];
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
+        for (int i_state = 0; i_state<m_num_states; ++i_state) {
             states[i_state] = x[state_index(i_mesh_point, i_state)];
         }
         std::vector<adouble> controls(m_num_controls);
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+        for (int i_control = 0; i_control<m_num_controls; ++i_control) {
             controls[i_control] = x[control_index(i_mesh_point, i_control)];
         }
         auto& derivatives = derivatives_trajectory[i_mesh_point];
@@ -579,84 +592,85 @@ void DirectCollocationSolver::constraints(const std::vector<adouble>& x,
 
 // Bounds on initial and final states and controls.
 // ------------------------------------------------
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
+    for (int i_state = 0; i_state<m_num_states; ++i_state) {
         constraints[constraint_bound_index(InitialStates, i_state)] =
                 x[state_index(0, i_state)];
     }
 // TODO separate loops might help avoid cache misses, based on the
 // orer of the constraint indices.
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
+    for (int i_state = 0; i_state<m_num_states; ++i_state) {
         constraints[constraint_bound_index(FinalStates, i_state)] =
-                x[state_index(m_num_mesh_points - 1, i_state)];
+                x[state_index(m_num_mesh_points-1, i_state)];
     }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+    for (int i_control = 0; i_control<m_num_controls; ++i_control) {
         constraints[constraint_bound_index(InitialControls, i_control)] =
                 x[control_index(0, i_control)];
     }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+    for (int i_control = 0; i_control<m_num_controls; ++i_control) {
         constraints[constraint_bound_index(FinalControls, i_control)] =
-                x[control_index(m_num_mesh_points - 1, i_control)];
+                x[control_index(m_num_mesh_points-1, i_control)];
     }
 
 // Compute constraint defects.
 // ---------------------------
-    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
+    for (int i_mesh = 1; i_mesh<m_num_mesh_points; ++i_mesh) {
 // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
 //const auto& states_i = states_trajectory[i_mesh];
 //const auto& states_im1 = states_trajectory[i_mesh - 1];
         const auto& derivatives_i = derivatives_trajectory[i_mesh];
 // TODO temporary:
-        assert(derivatives_i.size() == (unsigned)m_num_states);
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
-            const auto& state_i =  x[state_index(i_mesh, i_state)];
-            const auto& state_im1 = x[state_index(i_mesh - 1, i_state)];
+        assert(derivatives_i.size()==(unsigned) m_num_states);
+        for (int i_state = 0; i_state<m_num_states; ++i_state) {
+            const auto& state_i = x[state_index(i_mesh, i_state)];
+            const auto& state_im1 = x[state_index(i_mesh-1, i_state)];
             constraints[constraint_index(i_mesh, i_state)] =
-                    state_i - (state_im1 + step_size * derivatives_i[i_state]);
+                    state_i-(state_im1+step_size*derivatives_i[i_state]);
         }
 // TODO this would be so much easier with a matrix library.
     }
 }
 
-void DirectCollocationSolver::finalize_solution(Ipopt::SolverReturn /*TODO status*/,
+void legacy::DirectCollocationSolver::finalize_solution(Ipopt::SolverReturn /*TODO status*/,
         Index /*num_variables*/,
         const Number* x,
         const Number* /*z_L*/, const Number* /*z_U*/,
         Index /*num_constraints*/,
         const Number* /*g*/, const Number* /*lambda*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
-        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) {
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
+        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/)
+{
+    for (int i_state = 0; i_state<m_num_states; ++i_state) {
         printf("\nTrajectory of state variable %i\n", i_state);
-        for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
             printf("[%d]: %e\n", i_mesh, x[state_index(i_mesh, i_state)]);
         }
     }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+    for (int i_control = 0; i_control<m_num_controls; ++i_control) {
         printf("\nTrajectory of control variable %i\n", i_control);
-        for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
             printf("[%d]: %e\n", i_mesh,
                     x[control_index(i_mesh, i_control)]);
         }
     }
     std::ofstream f("solution.csv");
     double time;
-    double step_size = (m_final_time - m_initial_time) /
-            (m_num_mesh_points - 1);
+    double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
     f << "time";
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
+    for (int i_state = 0; i_state<m_num_states; ++i_state) {
         f << ",state" << i_state;
     }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+    for (int i_control = 0; i_control<m_num_controls; ++i_control) {
         f << ",control" << i_control;
     }
     f << std::endl;
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        time = i_mesh * step_size + m_initial_time;
+    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
+        time = i_mesh*step_size+m_initial_time;
         f << time;
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
+        for (int i_state = 0; i_state<m_num_states; ++i_state) {
             f << "," << x[state_index(i_mesh, i_state)];
         }
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
+        for (int i_control = 0; i_control<m_num_controls; ++i_control) {
             f << "," << x[control_index(i_mesh, i_control)];
         }
         f << std::endl;

@@ -12,6 +12,9 @@
 using Ipopt::Index;
 using Ipopt::Number;
 
+namespace mesh {
+namespace legacy {
+
 class IpoptADOLC_OptimizationProblem : public Ipopt::TNLP {
 private:
     unsigned m_num_variables = -1;
@@ -225,5 +228,9 @@ private:
     // templatized??
     std::shared_ptr<Problem> m_problem;
 };
+
+} // namespace legacy
+} // namespace mesh
+
 
 #endif // MESH_LEGACY_H
