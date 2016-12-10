@@ -2,3 +2,6 @@ Create Eigen-like wrapper for ADOL-C and its drivers, so that I am passing
 around Vectors, not C-style arrays.
 
 Move ADOL-C code from IpoptSolver::TNLP to OptimizationProblem<adouble>.
+
+Trying non-virtual interface for OptimizationProblem, but a Proxy class could
+ be preferable.
