@@ -11,28 +11,36 @@ namespace mesh {
 template<typename T>
 class OptimizationProblem;
 
+class OptimizationProblemProxy;
+
 // TODO templatized?
 class OptimizationSolver {
 public:
     // TODO do not force adouble in the future.
-    OptimizationSolver(const OptimizationProblem<adouble>& problem)
-            : m_problem(problem) {}
+    OptimizationSolver(const OptimizationProblem<adouble>& problem);
     // TODO must be an lvalue??
     // TODO might want to change this interface.
-    virtual double optimize(Eigen::VectorXd& variables) const = 0;
+    double optimize(Eigen::VectorXd& variables) const
+    {   return optimize_impl(variables); }
 protected:
-    const OptimizationProblem<adouble>& m_problem;
+    virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
+    std::shared_ptr<const OptimizationProblemProxy> m_problem;
+    // TODO rename m_problem to m_proxy? m_probproxy?
+//    const OptimizationProblemProxy& m_problem;
 };
 
 // TODO perhaps NewtonSolver {}; ?
 // TODO for now, assume that it requires using adolc.
 class IpoptSolver : public OptimizationSolver {
 public:
+    // TODO this means the IpoptSolver *would* get access to the Problem,
+    // and we don't want that.
     IpoptSolver(const OptimizationProblem<adouble>& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
-    double optimize(Eigen::VectorXd& variables) const override;
+protected:
+    double optimize_impl(Eigen::VectorXd& variables) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
     class TNLP;
@@ -42,7 +50,7 @@ class IpoptSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
-    TNLP(const OptimizationProblem<adouble>& problem);
+    TNLP(std::shared_ptr<const OptimizationProblemProxy> problem);
     void initialize(const Eigen::VectorXd& guess);
     const Eigen::VectorXd& get_solution() const
     {
@@ -52,13 +60,13 @@ private:
     // TODO move to OptimizationProblem if more than one solver would need this.
     // TODO should use fancy arguments to avoid temporaries and to exploit
     // expression templates.
-    void lagrangian(double obj_factor, const VectorXa& x,
-            const Eigen::VectorXd& lambda,
-            adouble& result) const;
+//    void lagrangian(double obj_factor, const VectorXa& x,
+//            const Eigen::VectorXd& lambda,
+//            adouble& result) const;
     // TODO should move to OptimizationProblem<adouble>
-    double trace_objective(short int tag, Index num_variables, const Number* x);
-    void trace_constraints(short int tag, Index num_variables, const Number* x,
-            Index num_constraints, Number* g);
+//    double trace_objective(short int tag, Index num_variables, const Number* x);
+//    void trace_constraints(short int tag, Index num_variables, const Number* x,
+//            Index num_constraints, Number* g);
     bool get_nlp_info(Index& num_variables, Index& num_constraints,
             Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
             IndexStyleEnum& index_style) override;
@@ -103,7 +111,9 @@ private:
             Ipopt::IpoptCalculatedQuantities* ip_cq) override;
 
     // Members.
-    const OptimizationProblem<adouble>& m_problem;
+//    const OptimizationProblemProxy& m_problem;
+    // TODO reconsider the type of this variable:
+    std::shared_ptr<const OptimizationProblemProxy> m_problem;
 
     unsigned m_num_variables = std::numeric_limits<unsigned>::max();
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
@@ -112,16 +122,14 @@ private:
     Eigen::VectorXd m_initial_guess;
     Eigen::VectorXd m_solution;
 
-    unsigned m_hessian_num_nonzeros = -1;
+    unsigned m_hessian_num_nonzeros = std::numeric_limits<unsigned>::max();
     std::vector<unsigned int> m_hessian_row_indices;
     std::vector<unsigned int> m_hessian_col_indices;
-    unsigned m_jacobian_num_nonzeros = -1;
+    unsigned m_jacobian_num_nonzeros = std::numeric_limits<unsigned>::max();
     std::vector<unsigned int> m_jacobian_row_indices;
     std::vector<unsigned int> m_jacobian_col_indices;
 
     //double m_cached_obj_value = std::nan(nullptr);
-    const short int m_objective_tag = 1;
-    const short int m_constraint_tag = 2;
     // TODO what about for lagrangian??
 };
 

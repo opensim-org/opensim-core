@@ -26,8 +26,12 @@ pkg_check_modules(ADOLC REQUIRED adolc)
 link_directories(${IPOPT_LIBRARY_DIRS})
 link_directories(${ADOLC_LIBRARY_DIRS})
 
+# Subdirectories.
+# ---------------
+# Build external libraries.
+add_subdirectory(external)
+
 add_subdirectory(mesh)
-# TODO add_executable(mesh mesh.h mesh.cpp)
 
 add_subdirectory(tests)
 

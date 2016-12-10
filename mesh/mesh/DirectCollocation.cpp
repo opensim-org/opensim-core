@@ -82,7 +82,7 @@ void EulerTranscription::set_problem(std::shared_ptr<Problem> problem) {
     // input
 }
 
-void EulerTranscription::objective_impl(const VectorXa& x,
+void EulerTranscription::objective(const VectorXa& x,
         adouble& obj_value) const {
     const double step_size = (m_final_time - m_initial_time) /
             (m_num_mesh_points - 1);
@@ -119,7 +119,7 @@ void EulerTranscription::objective_impl(const VectorXa& x,
     }
 }
 
-void EulerTranscription::constraints_impl(const VectorXa& x,
+void EulerTranscription::constraints(const VectorXa& x,
         Ref<VectorXa> constraints) const {
     // TODO parallelize.
     const double step_size = (m_final_time - m_initial_time) /

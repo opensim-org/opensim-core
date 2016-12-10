@@ -24,9 +24,9 @@ public:
     }
     void set_problem(std::shared_ptr<Problem> problem);
 
-    void objective_impl(const VectorXa& x,
+    void objective(const VectorXa& x,
             adouble& obj_value) const override;
-    void constraints_impl(const VectorXa& x,
+    void constraints(const VectorXa& x,
             Eigen::Ref<VectorXa> constr) const override;
 
     // TODO change interface to be a templated function so users can pass in

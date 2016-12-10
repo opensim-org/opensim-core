@@ -5,3 +5,9 @@ Move ADOL-C code from IpoptSolver::TNLP to OptimizationProblem<adouble>.
 
 Trying non-virtual interface for OptimizationProblem, but a Proxy class could
  be preferable.
+
+ For finite diff version (with doubles), make SURE to use Map<Matrix> to
+ avoid copying the variables (x). For adouble, it's fine and necessary (for
+ the autodiff conversion), but is NOT necessary for doubles.
+
+ TODO still allow users to specify their own derivatives even if using doubles?
