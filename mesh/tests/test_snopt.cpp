@@ -145,7 +145,7 @@ TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example") {
     SNOPTSolver solver(problem);
     VectorXd variables = Vector2d(2, 2);
     double obj_value = solver.optimize(variables);
-    REQUIRE(variables[0] == 0);
+    REQUIRE(Approx(variables[0]) == 0);
     REQUIRE(Approx(variables[1]) == -1);
     REQUIRE(Approx(obj_value)    == -1);
 }

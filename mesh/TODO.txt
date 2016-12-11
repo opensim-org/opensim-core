@@ -11,3 +11,5 @@ Trying non-virtual interface for OptimizationProblem, but a Proxy class could
  the autodiff conversion), but is NOT necessary for doubles.
 
  TODO still allow users to specify their own derivatives even if using doubles?
+
+ For Eigen, use mat.setZero() instead of static Mat::Zero() as much as possible.

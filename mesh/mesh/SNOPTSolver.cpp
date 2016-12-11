@@ -9,14 +9,19 @@ using namespace mesh;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 
-// TODO this is a big no-no:
+namespace {
+// TODO this global is a big no-no. I thought of using a lambda that captures
+// the Proxy pointer; lambdas can be converted into C function pointers, but
+// not if they capture variables (like the Proxy pointer).
+// TODO another option is to derive from snoptProblemA.
 std::shared_ptr<const OptimizationProblemProxy> probproxy = nullptr;
+}
 
 // TODO make this into a lambda?
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
-        int*   needF, int* length_F  , double      F[],
-        int*   needG, int* /* neG   */, double[] /* G */,
+        int*   needF, int* length_F  , double  F[],
+        int*   needG, int* neG, double G[],
         char*  /*    cu  */, int* /* lencu */,
         int   [] /* iu   */, int* /* leniu */,
         double[] /* ru   */, int* /* lenru */)
@@ -24,13 +29,18 @@ void snopt_userfunction(int*   /* Status */,
 
     // TODO make use of needF, needG
     static const bool new_variables = true; // TODO can be smarter about this.
-    //if (*needF > 0) {
+    if (*needF > 0) {
         probproxy->objective(*num_variables, x, new_variables, F[0]);
         probproxy->constraints(*num_variables, x, new_variables, *length_F-1, &F[1]);
-    //}
-    //if (*needG > 0) {
-    //    // TODO if needF and needG, then new_variables = false.
-    //}
+    }
+    if (*needG > 0) {
+        // TODO if needF and needG, then new_variables = false.
+        // The first num_variables elements of G are the gradient.
+        probproxy->gradient(*num_variables, x, new_variables, &G[0]);
+        // The jacobian's nonzeros start at G[n].
+        probproxy->jacobian(*num_variables, x, new_variables,
+                *neG - *num_variables, &G[*num_variables]);
+    }
 }
 
 double SNOPTSolver::optimize_impl(VectorXd& variables) const {
@@ -67,11 +77,13 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // The `finished()` is to get rid of Eigen's "expression templates."
     VectorXd Flow = (VectorXd(length_F) << -1e20, constraint_lower).finished();
     VectorXd Fupp = (VectorXd(length_F) <<  1e20, constraint_upper).finished();
-
     // TODO Fstate?
+
 
     // Sparsity pattern of the Jacobian.
     // ---------------------------------
+    // TODO perhaps these should give ints, not unsigneds; then we can reuse
+    // the memory.
     std::vector<unsigned int> jacobian_row_indices;
     std::vector<unsigned int> jacobian_col_indices;
     // TODO do not need these:
@@ -79,6 +91,23 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     std::vector<unsigned int> hessian_col_indices;
     m_problem->sparsity(variables, jacobian_row_indices, jacobian_col_indices,
             hessian_row_indices,  hessian_col_indices);
+    int jacobian_num_nonzeros = jacobian_row_indices.size();
+    int length_G = num_variables + jacobian_num_nonzeros;
+    int num_nonzeros_G = length_G;
+    // Row indices of Jacobian G (rows correspond to "fun"ctions).
+    VectorXi iGfun(length_G);
+    // Column indices of Jacobian G (columns correspond to "var"iables).
+    VectorXi jGvar(length_G);
+    // The first row is the gradient of the objective; we assume it is dense.
+    iGfun.head(num_variables).setZero();
+    // In MATLAB, this would be jGvar(1:num_variables) = 0:(num_variables-1).
+    jGvar.head(num_variables).setLinSpaced(num_variables, 0, num_variables - 1);
+    for (int index = 0; index < jacobian_num_nonzeros; ++index) {
+        // The Jacobian of the constraints is shifted down one row, since
+        // the first row of G is the gradient of the objective function.
+        iGfun[num_variables + index] = jacobian_row_indices[index] + 1;
+        jGvar[num_variables + index] = jacobian_col_indices[index];
+    }
 
 
     // Create the snoptProblemA.
@@ -100,7 +129,14 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // Memory related to the objective and constraint values.
     snopt_prob.setF(F.data(), Flow.data(), Fupp.data(),
             Fmul.data(), Fstate.data());
-    //snopt_prob.setG(lenG, neG, iGfun, jGvar);
+    // TODO linear portion of F. Can we omit this?
+    // TODO for our generic problems, we cannot provide this.
+    int lenA = 1; int neA = 0;
+    VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
+    snopt_prob.setA(lenA, neA, iAfun.data(), jAvar.data(), A.data());
+    // For some reason, SNOPT allows the length of the iGfun and jGvar arrays
+    // to be greater than the number of nonzero elements.
+    snopt_prob.setG(length_G, num_nonzeros_G, iGfun.data(), jGvar.data());
 
     // This function computes the objective and constraints (defined above).
     snopt_prob.setUserFun(snopt_userfunction);
