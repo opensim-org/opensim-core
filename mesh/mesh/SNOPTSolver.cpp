@@ -38,9 +38,10 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     probproxy = m_problem;
 
     // Allocate and initialize.
-    int num_variables     =  m_problem->num_variables();
+    int num_variables = m_problem->num_variables();
     // The F vector contains both the objective and constraints.
-    int length_F   =  1 + m_problem->num_constraints();
+    // TODO handle the case that the user does not define an objective function.
+    int length_F = 1 + m_problem->num_constraints();
 
     // TODO what does this do?
     VectorXi xstate = VectorXi::Zero(num_variables);
@@ -58,8 +59,8 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // Variable and constraint bounds.
     // -------------------------------
     // We make a copy of these because setX takes double*, not const double*.
-    auto xlow             = m_problem->variable_lower_bounds();
-    auto xupp             = m_problem->variable_upper_bounds();
+    auto xlow                    = m_problem->variable_lower_bounds();
+    auto xupp                    = m_problem->variable_upper_bounds();
     const auto& constraint_lower = m_problem->constraint_lower_bounds();
     const auto& constraint_upper = m_problem->constraint_upper_bounds();
     // There is no bound on the objective, thus the -1e20, 1e20.
@@ -88,10 +89,8 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
 
     snopt_prob.setProblemSize(num_variables, length_F);
 
-    // The first element of F contains the value of the objective function.
-    // TODO what is ObjAdd?
-    int    ObjRow  = 0;
-    double ObjAdd  = 0;
+    int    ObjRow  = 0; // The element of F that contains the objective func.
+    double ObjAdd  = 0; // A constant to add to the objective for reporting.
     snopt_prob.setObjective(ObjRow, ObjAdd);
 
     // Memory related to the variables (unknowns).

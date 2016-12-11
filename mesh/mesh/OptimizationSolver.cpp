@@ -109,8 +109,6 @@ void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
     m_problem->sparsity(guess,
             m_jacobian_row_indices, m_jacobian_col_indices,
             m_hessian_row_indices,  m_hessian_col_indices);
-    std::cout << "DEBUGinitialize " << m_hessian_row_indices.size() <<
-                                                                    std::endl;
     m_jacobian_num_nonzeros = m_jacobian_row_indices.size();
     m_hessian_num_nonzeros = m_hessian_row_indices.size();
 
@@ -459,13 +457,10 @@ bool IpoptSolver::TNLP::eval_h(
     if (values == nullptr) {
         // TODO use ADOLC to determine sparsity pattern; hess_pat
         // TODO
-        std::cout << "DEBUG eval_h nnz " << num_nonzeros_hessian;
         for (Index inz = 0; inz < num_nonzeros_hessian; ++inz) {
             iRow[inz] = m_hessian_row_indices[inz];
             jCol[inz] = m_hessian_col_indices[inz];
-            std::cout << " " << iRow[inz] << "," << jCol[inz];
         }
-        std::cout << std::endl;
         return true;
     }
 

@@ -166,15 +166,9 @@ sparsity(const Eigen::VectorXd& x,
         assert(success);
         hessian_row_indices.resize(num_nonzeros);
         hessian_col_indices.resize(num_nonzeros);
-        std::cout << "DEBUG_hess_sparse " << num_nonzeros << std::endl;
         for (int i = 0; i < num_nonzeros; ++i) {
             hessian_row_indices[i] = row_indices[i];
             hessian_col_indices[i] = col_indices[i];
-            std::cout << "DEBUG" << i << " "
-                      << hessian_row_indices[i] << "," <<
-                                                       hessian_col_indices[i]
-                      << " "
-                      << hessian[i] << std::endl;
         }
         // TODO try to use modern memory management.
         delete [] row_indices;
@@ -266,8 +260,6 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     // -----------------------------------------------------------------
     // START ACTIVE
     trace_on(tag);
-    std::cout << "DEBUGhesslag nv " << num_variables
-              << " nc " << num_constraints << std::endl;
     VectorXa x_adouble(num_variables);
     VectorXd lambda_vector(num_constraints); // TODO use Eigen::Map.
     adouble lagrangian_adouble;
@@ -334,12 +326,9 @@ hessian_lagrangian(unsigned num_variables, const double* x,
             x, &num_nz, &row_indices, &col_indices,
             &vals, options);
     assert(success);
-    std::cout << "DEBUGhess " << num_nonzeros << std::endl;
     for (unsigned i = 0; i < num_nonzeros; ++i) {
         nonzeros[i] = vals[i];
-        std::cout << " " << nonzeros[i];
     }
-    std::cout << std::endl;
     // TODO try to use modern memory management.
     delete [] row_indices;
     delete [] col_indices;
@@ -409,10 +398,7 @@ lagrangian(double obj_factor, const VectorXa& x,
     //    result *= obj_factor;
     //}
     m_problem.objective(x, result);
-    std::cout << "DEBUGlagrangian_result " << result << " "
-            << " x " << x[0] << "," << x[1] << std::endl;
     result *= obj_factor;
-    std::cout << "DEBUGlagrangian_obj_factor " << obj_factor << std::endl;
 
     // TODO if (!m_num_constraints) return;
     VectorXa constr(num_constraints());
