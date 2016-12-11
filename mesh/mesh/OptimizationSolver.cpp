@@ -19,14 +19,21 @@ OptimizationSolver::OptimizationSolver(
         const OptimizationProblem<adouble>& problem)
         : m_problem(problem.make_proxy()) {}
 
+double OptimizationSolver::optimize(Eigen::VectorXd& variables) const
+{
+    // If the user did not provide an initial guess, then we choose
+    // the initial guess to be all zeros.
+    // TODO Could be smarter: use the midpoint of the bounds of the variables.
+    if (variables.size() == 0) {
+        variables = VectorXd::Zero(m_problem->num_variables());
+    }
+    return optimize_impl(variables);
+}
+
 double IpoptSolver::optimize_impl(VectorXd& variables) const {
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
-    // TODO should move this to OptimizationProblem<adouble>...
-    if (variables.size() == 0) {
-        variables = VectorXd::Zero(m_problem->num_variables());
-    }
     nlp->initialize(variables);
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();

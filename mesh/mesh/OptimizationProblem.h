@@ -28,6 +28,7 @@ public:
     virtual const Eigen::VectorXd& variable_upper_bounds() const = 0;
     virtual const Eigen::VectorXd& constraint_lower_bounds() const = 0;
     virtual const Eigen::VectorXd& constraint_upper_bounds() const = 0;
+    // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     virtual void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,

@@ -21,8 +21,7 @@ public:
     OptimizationSolver(const OptimizationProblem<adouble>& problem);
     // TODO must be an lvalue??
     // TODO might want to change this interface.
-    double optimize(Eigen::VectorXd& variables) const
-    {   return optimize_impl(variables); }
+    double optimize(Eigen::VectorXd& variables) const;
 protected:
     virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
     std::shared_ptr<const OptimizationProblemProxy> m_problem;

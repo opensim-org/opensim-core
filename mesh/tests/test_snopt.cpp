@@ -9,6 +9,8 @@
 using namespace mesh;
 using Eigen::VectorXd;
 using Eigen::Vector2d;
+using Eigen::MatrixXd;
+using Eigen::Ref;
 
 // This example is taken from
 // https://github.com/snopt/snopt-interface/blob/master/cppexamples/sntoya.cpp
@@ -149,5 +151,86 @@ TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example") {
 }
 
 
+TEST_CASE("Sliding mass optimal control with SNOPT.") {
+
+    class SlidingMass : public mesh::OptimalControlProblem<adouble> {
+        // TODO difficult... virtual void initial_guess()
+        // TODO really want to declare each state variable individually, and give
+        // each one a name.
+        // TODO is there a better way to provide the number of states and
+        // controls?
+        int num_states() const override { return 2; }
+        int num_controls() const override { return 1; }
+        void bounds(double& initial_time, double& final_time,
+                Ref<VectorXd> states_lower,
+                Ref<VectorXd> states_upper,
+                Ref<VectorXd> initial_states_lower,
+                Ref<VectorXd> initial_states_upper,
+                Ref<VectorXd> final_states_upper,
+                Ref<VectorXd> final_states_lower,
+                Ref<VectorXd> controls_lower,
+                Ref<VectorXd> controls_upper,
+                Ref<VectorXd> initial_controls_lower,
+                Ref<VectorXd> initial_controls_upper,
+                Ref<VectorXd> final_controls_lower,
+                Ref<VectorXd> final_controls_upper) const override
+        {
+            // TODO turn into bounds on time.
+            initial_time = 0.0;
+            final_time = 2.0;
+            states_lower           = Vector2d(0, -10);
+            states_upper           = Vector2d(2,  10);
+            initial_states_lower   = Vector2d(0, 0);
+            initial_states_upper   = initial_states_lower;
+            final_states_lower     = Vector2d(1, 0);
+            final_states_upper     = final_states_lower;
+            controls_lower         = VectorXd::Constant(1, -50);
+            controls_upper         = VectorXd::Constant(1,  50);
+            initial_controls_lower = controls_lower;
+            initial_controls_upper = controls_upper;
+            final_controls_lower   = controls_lower;
+            final_controls_upper   = controls_upper;
+        }
+        const double mass = 10.0;
+        void dynamics(const VectorXa& states,
+                const VectorXa& controls,
+                Ref<VectorXa> derivatives) const override
+        {
+            derivatives[0] = states[1];
+            derivatives[1] = controls[0] / mass;
+        }
+        // TODO alternate form that takes a matrix; state at every time.
+        //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
+        //void endpoint_cost(const T& final_time,
+        //                   const std::vector<T>& final_states) const override {
+
+        //}
+        void integral_cost(const double& /*time*/,
+                const VectorXa& /*states*/,
+                const VectorXa& controls,
+                adouble& integrand) const override {
+            integrand = controls[0] * controls[0];
+        }
+    };
+
+    auto ocp = std::make_shared<SlidingMass>();
+    mesh::EulerTranscription dircol(ocp);
+    mesh::SNOPTSolver solver(dircol);
+    //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
+    VectorXd variables;
+    // TODO user should never get/want raw variables...wrap the solver
+    // interface for direct collocation!
+    double obj_value = solver.optimize(variables);
+    MatrixXd states_trajectory;
+    MatrixXd controls_trajectory;
+    dircol.interpret_iterate(variables, states_trajectory, controls_trajectory);
+
+    // Initial and final position.
+    REQUIRE(Approx(states_trajectory(0, 0)) == 0.0);
+    REQUIRE(Approx(states_trajectory.rightCols<1>()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(states_trajectory(1, 0)) == 0.0);
+    REQUIRE(Approx(states_trajectory.rightCols<1>()[1]) == 0.0);
+}
 
 
