@@ -16,7 +16,7 @@ using Ipopt::Number;
 using namespace mesh;
 
 OptimizationSolver::OptimizationSolver(
-        const OptimizationProblem<adouble>& problem)
+        const AbstractOptimizationProblem& problem)
         : m_problem(problem.make_proxy()) {}
 
 double OptimizationSolver::optimize(Eigen::VectorXd& variables) const

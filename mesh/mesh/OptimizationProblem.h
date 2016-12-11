@@ -83,8 +83,13 @@ public:
 //            Eigen::Ref<Eigen::VectorXd> nonzeros) const = 0;
 };
 
+class AbstractOptimizationProblem {
+public:
+    virtual std::shared_ptr<OptimizationProblemProxy> make_proxy() const = 0;
+};
+
 template<typename T>
-class OptimizationProblem {
+class OptimizationProblem : public AbstractOptimizationProblem {
 public:
     class Proxy;
 
@@ -96,7 +101,7 @@ public:
             :m_num_variables(num_variables),
              m_num_constraints(num_constraints) { }
 
-    std::shared_ptr<OptimizationProblemProxy> make_proxy() const;
+    std::shared_ptr<OptimizationProblemProxy> make_proxy() const override final;
 
     // TODO can override to provide custom derivatives.
     //virtual void gradient(const std::vector<T>& x, std::vector<T>& grad) const;

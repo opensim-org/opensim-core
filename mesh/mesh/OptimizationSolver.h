@@ -9,8 +9,7 @@
 
 namespace mesh {
 
-template<typename T>
-class OptimizationProblem;
+class AbstractOptimizationProblem;
 
 class OptimizationProblemProxy;
 
@@ -18,7 +17,7 @@ class OptimizationProblemProxy;
 class OptimizationSolver {
 public:
     // TODO do not force adouble in the future.
-    OptimizationSolver(const OptimizationProblem<adouble>& problem);
+    OptimizationSolver(const AbstractOptimizationProblem& problem);
     // TODO must be an lvalue??
     // TODO might want to change this interface.
     double optimize(Eigen::VectorXd& variables) const;
@@ -35,7 +34,7 @@ class IpoptSolver : public OptimizationSolver {
 public:
     // TODO this means the IpoptSolver *would* get access to the Problem,
     // and we don't want that.
-    IpoptSolver(const OptimizationProblem<adouble>& problem)
+    IpoptSolver(const AbstractOptimizationProblem& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.

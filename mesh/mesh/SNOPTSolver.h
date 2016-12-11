@@ -10,7 +10,7 @@ class SNOPTSolver : public OptimizationSolver {
 public:
     // TODO this means the SNOPTSolver *would* get access to the Problem,
     // and we don't want that.
-    SNOPTSolver(const OptimizationProblem<adouble>& problem)
+    SNOPTSolver(const AbstractOptimizationProblem& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
