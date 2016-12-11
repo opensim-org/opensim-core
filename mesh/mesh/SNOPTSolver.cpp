@@ -28,13 +28,14 @@ void snopt_userfunction(int*   /* Status */,
 {
 
     // TODO make use of needF, needG
-    static const bool new_variables = true; // TODO can be smarter about this.
+    bool new_variables = true; // TODO can be smarter about this.
     if (*needF > 0) {
         probproxy->objective(*num_variables, x, new_variables, F[0]);
-        probproxy->constraints(*num_variables, x, new_variables, *length_F-1, &F[1]);
+        probproxy->constraints(*num_variables, x, new_variables,
+                *length_F - 1, &F[1]);
     }
     if (*needG > 0) {
-        // TODO if needF and needG, then new_variables = false.
+        if (*needF > 0) new_variables = false;
         // The first num_variables elements of G are the gradient.
         probproxy->gradient(*num_variables, x, new_variables, &G[0]);
         // The jacobian's nonzeros start at G[n].

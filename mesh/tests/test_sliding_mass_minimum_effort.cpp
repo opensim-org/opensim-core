@@ -7,6 +7,7 @@
 
 using Eigen::Ref;
 using Eigen::VectorXd;
+using Eigen::RowVectorXd;
 using Eigen::Vector2d;
 using Eigen::MatrixXd;
 
@@ -93,6 +94,11 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     // Initial and final speed.
     REQUIRE(Approx(states_trajectory(1, 0)) == 0.0);
     REQUIRE(Approx(states_trajectory.rightCols<1>()[1]) == 0.0);
+
+    int N = controls_trajectory.cols();
+    RowVectorXd expected = RowVectorXd::LinSpaced(N-1, 14.25, -14.25);
+    RowVectorXd errors = controls_trajectory.rightCols(N-1) - expected;
+    REQUIRE(Approx(errors.norm()) == 0);
 }
 
 
