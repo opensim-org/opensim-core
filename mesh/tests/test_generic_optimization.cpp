@@ -63,8 +63,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C. TO") {
             set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
             set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
         }
-        void objective(
-                const VectorXa& x, adouble& obj_value) const override {
+        void objective(const VectorXa& x, adouble& obj_value) const override {
             obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
         }
         void constraints(

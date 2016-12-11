@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include <Eigen/Dense>
+// TODO should be able to remove dependenc on adolc in this file.
 #include <adolc/adolc.h>
 #include <IpTNLP.hpp>
 

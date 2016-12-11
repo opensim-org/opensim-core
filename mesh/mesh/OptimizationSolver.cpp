@@ -396,6 +396,7 @@ bool IpoptSolver::TNLP::eval_jac_g(
         Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Index num_nonzeros_jacobian,
         Index* iRow, Index *jCol, Number* values) {
+    assert((unsigned)num_constraints == m_num_constraints);
     // TODO if (!num_constraints) return true;
     if (values == nullptr) {
         // TODO document: provide sparsity pattern.

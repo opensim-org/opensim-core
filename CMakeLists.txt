@@ -1,4 +1,4 @@
-project(tomu)
+project(tomu C CXX Fortran) # TODO Fortran only for SNOPT interface.
 cmake_minimum_required(VERSION 3.2)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")

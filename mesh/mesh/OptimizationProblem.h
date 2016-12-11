@@ -165,6 +165,8 @@ protected:
     }
 
     // TODO eigen wants these to be more generic to avoid temporaries.
+    // TODO allow specifying these as std::vector<std::pair<double>>;
+    // this is a more logical way to specify bounds for users.
     void set_variable_bounds(const Eigen::VectorXd& lower,
             const Eigen::VectorXd& upper)
     {

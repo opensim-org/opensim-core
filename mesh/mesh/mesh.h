@@ -10,6 +10,8 @@
 // TODO remove.
 #include "OptimizationProblem.h"
 #include "OptimizationSolver.h"
+#include "SNOPTSolver.h"
+
 #include "OptimalControlProblem.h"
 #include "DirectCollocation.h"
 // TODO should not have using declarations in a header file.
