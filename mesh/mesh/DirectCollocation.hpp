@@ -122,24 +122,23 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     // Bounds on initial and final states and controls.
     // ================================================
     // TODO upgrade to use states view, controls view.
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
-        constraints[constraint_bound_index(InitialStates, i_state)] =
-                x[state_index(0, i_state)];
-    }
-    // TODO separate loops might help avoid cache misses, based on the
-    // order of the constraint indices.
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
-        constraints[constraint_bound_index(FinalStates, i_state)] =
-                x[state_index(m_num_mesh_points - 1, i_state)];
-    }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-        constraints[constraint_bound_index(InitialControls, i_control)] =
-                x[control_index(0, i_control)];
-    }
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-        constraints[constraint_bound_index(FinalControls, i_control)] =
-                x[control_index(m_num_mesh_points - 1, i_control)];
-    }
+    // TODO order these 4 assignments to reduce cache misses,
+    // based on the order of the constraint indices.
+    auto initial_states_constr = constraints.segment(
+            constraint_bound_index(InitialStates, 0), m_num_states);
+    initial_states_constr = states.col(0);
+
+    auto final_states_constr = constraints.segment(
+            constraint_bound_index(FinalStates, 0), m_num_states);
+    final_states_constr = states.rightCols(1);
+
+    auto initial_controls_constr = constraints.segment(
+            constraint_bound_index(InitialControls, 0), m_num_controls);
+    initial_controls_constr = controls.col(0);
+
+    auto final_controls_constr = constraints.segment(
+            constraint_bound_index(FinalControls, 0), m_num_controls);
+    final_controls_constr = controls.rightCols(1);
 
     // Dynamics.
     // =========
@@ -164,7 +163,7 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
         // This is a writable view into the constraints vector:
         auto constraints_i = constraints.segment(
                 constraint_index(i_mesh, 0), m_num_states);
-        const auto& state_i = states.col(i_mesh);
+        const auto& state_i   = states.col(i_mesh);
         const auto& state_im1 = states.col(i_mesh - 1);
         constraints_i = state_i - (state_im1 + step_size * derivatives_i);
     }
