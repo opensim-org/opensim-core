@@ -47,14 +47,22 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** A Force element is active (enabled) by default. **/
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
-        "Flag indicating whether the force is disabled or not. Disabled means"
-        " that the force is not active in subsequent dynamics realizations.");
-    //=============================================================================
+    /** A Force element is active (enabled) by default.
+    NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
+          If **isDisabled** is **true**, **appliesForce** is **false**.
+          If **isDisabled** is **false**, **appliesForce** is **true**.       */
+    OpenSim_DECLARE_PROPERTY(appliesForce, bool,
+        "Flag indicating whether the force is applied or not. Value of false "
+        "means that the force is not active in subsequent dynamics "
+        "realizations. NOTE: Prior to OpenSim 4.0, this property was named"
+        " **isDisabled**. If **isDisabled** is **true**, **appliesForce** "
+        "is **false**. If **isDisabled** is **false**, **appliesForce** is "
+        "**true**.");
+    //=========================================================================
     // OUTPUTS
-    //=============================================================================
-    OpenSim_DECLARE_OUTPUT(potential_energy, double, computePotentialEnergy, SimTK::Stage::Velocity);
+    //=========================================================================
+    OpenSim_DECLARE_OUTPUT(potential_energy, double,
+                           computePotentialEnergy, SimTK::Stage::Velocity);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -73,10 +81,10 @@ public:
         return false;
     }
 
-    /** Return if the Force is disabled or not. */
-    bool isDisabled(const SimTK::State& s) const;
-    /** %Set the Force as disabled (true) or not (false). */
-    void setDisabled(SimTK::State& s, bool disabled) const;
+    /** Return if the Force is applied (or enabled) or not.                   */
+    bool appliesForce(const SimTK::State& s) const;
+    /** %Set whether or not the Force is applied.                             */
+    void setAppliesForce(SimTK::State& s, bool applyForce) const;
 
     /**
      * Methods to query a Force for the value actually applied during 
@@ -91,7 +99,8 @@ public:
      * forces, application location frame, etc. used in conjunction with 
      * getRecordLabels and should return same size Array.
      */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+    virtual OpenSim::Array<double>
+    getRecordValues(const SimTK::State& state) const {
         return OpenSim::Array<double>();
     };
 
@@ -128,7 +137,8 @@ protected:
     beginning of the overriding method. **/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     /** Subclass should override; be sure to invoke 
-    Force::extendSetPropertiesFromState() at the beginning of the overriding method. **/
+    Force::extendSetPropertiesFromState() at the beginning of the overriding 
+    method. **/
     void extendSetPropertiesFromState(const SimTK::State& state) override;
     
     //--------------------------------------------------------------------------
@@ -136,8 +146,8 @@ protected:
     //--------------------------------------------------------------------------
 
     /**
-     * Subclasses must implement this method to compute the forces that should be applied to bodies
-     * and generalized speeds.
+     * Subclasses must implement this method to compute the forces that should 
+     * be applied to bodies and generalized speeds.
      * This is invoked by ForceAdapter to perform the force computation.
      */
     virtual void computeForce(const SimTK::State& state,
@@ -212,6 +222,9 @@ protected:
                                SimTK::Vector&       generalizedForces) const;
 
 protected:
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
+
     /** ID for the force in Simbody. */
     SimTK::ResetOnCopy<SimTK::ForceIndex> _index;
 

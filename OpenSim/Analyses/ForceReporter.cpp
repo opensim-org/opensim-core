@@ -213,7 +213,7 @@ void ForceReporter::constructColumnLabels(const SimTK::State& s)
         for(auto& force : forces) {
             // If body force we need to record six values for torque+force
             // If muscle we record one scalar
-            if (force.isDisabled(s)) continue; // Skip over disabled forces
+            if(!force.appliesForce(s)) continue; // Skip over disabled forces
             Array<string> forceLabels = force.getRecordLabels();
             // If prescribed force we need to record point, 
             columnLabels.append(forceLabels);
@@ -268,7 +268,7 @@ int ForceReporter::record(const SimTK::State& s)
     for(auto& force : forces) {
         // If body force we need to record six values for torque+force
         // If muscle we record one scalar
-        if (force.isDisabled(s)) continue;
+        if(!force.appliesForce(s)) continue;
         Array<double> values = force.getRecordValues(s);
         nextRow.getData().append(values);
     }

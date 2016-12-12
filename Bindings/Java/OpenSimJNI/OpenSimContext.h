@@ -125,12 +125,13 @@ public:
         _model->assemble(*_configState);
     }
     // Forces
-    bool isDisabled(const Force& force) const {
-        return  force.isDisabled(*_configState);
+    bool appliesForce(const Force& force) const {
+        return  force.appliesForce(*_configState);
     }
-    void setDisabled(Force& force, bool disable) const {
-        force.setDisabled(*_configState, disable);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    void setAppliesForce(Force& force, bool applyForce) const {
+        force.setAppliesForce(*_configState, applyForce);
+        _model->getMultibodySystem().realize(*_configState,
+                                             SimTK::Stage::Position);
     }
     // Muscles
     double getActivation(Muscle& act);

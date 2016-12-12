@@ -96,7 +96,7 @@ void Ligament::extendFinalizeFromProperties()
 void Ligament::extendRealizeDynamics(const SimTK::State& state) const {
     Super::extendRealizeDynamics(state); // Mandatory first line
 
-    if(!isDisabled(state)){
+    if(appliesForce(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);

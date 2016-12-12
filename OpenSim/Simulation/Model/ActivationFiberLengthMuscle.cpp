@@ -134,7 +134,7 @@ void ActivationFiberLengthMuscle::
     double adot = 0;
     double ldot = 0;
 
-    if (!isDisabled(s) && !isActuationOverridden(s)) {
+    if (appliesForce(s) && !isActuationOverridden(s)) {
         adot = getActivationRate(s);
         ldot = getFiberVelocity(s);
     }

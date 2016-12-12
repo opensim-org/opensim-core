@@ -292,7 +292,7 @@ void Millard2012AccelerationMuscle::
 {
     double adot=0, ldot=0, vdot=0;
 
-    if(!isDisabled(s)){
+    if(appliesForce(s)){
         adot = getActivationRate(s);
         ldot = getFiberVelocity(s);
         vdot = getFiberAcceleration(s);
