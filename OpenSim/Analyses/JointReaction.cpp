@@ -297,7 +297,7 @@ void JointReaction::setupReactionList()
             // determine if user wants reaction on child or parent
             currentKey.isAppliedOnChild = (appliedOnName == "child");
             currentKey.appliedOnBody = currentKey.isAppliedOnChild ?
-                &joint.getChildFrame() : &joint.getParentFrame();
+                &joint.getChildFrame().findBaseFrame() : &joint.getParentFrame().findBaseFrame();
 
             std::string expressedIn = "ground";
             if (_inFrame.size()) {
@@ -307,10 +307,10 @@ void JointReaction::setupReactionList()
             std::transform(expressedIn.begin(), expressedIn.end(),
                 expressedIn.begin(), ::tolower);
             if (expressedIn == "child"){
-                currentKey.expressedInFrame = &joint.getChildFrame();
+                currentKey.expressedInFrame = &joint.getChildFrame().findBaseFrame();
             }
             else if (expressedIn == "parent"){
-                currentKey.expressedInFrame = &joint.getParentFrame();
+                currentKey.expressedInFrame = &joint.getParentFrame().findBaseFrame();
             }
             else{ //if not child or parent use ground
                 currentKey.expressedInFrame = &_model->getGround();
@@ -549,16 +549,7 @@ record(const SimTK::State& s)
     const Ground& ground = _model->getGround();
     int numJoints = _model->getNumJoints();
 
-    /** define 2 variable length vectors of Vec3 vectors to contain calculated  
-    *   forces and moments for all the bodies in the model */
-    Vector_<Vec3> allForcesVec(numJoints);
-    Vector_<Vec3> allMomentsVec(numJoints);
-
-    /* Calculate All joint reaction forces and moments.
-    *  Applied to child bodies, expressed in ground frame.  
-    *  computeReactions realizes to the acceleration stage internally
-    *  so you don't have to call realize in this analysis.*/ 
-    _model->getSimbodyEngine().computeReactions(s_analysis, allForcesVec, allMomentsVec);
+    _model->realizeAcceleration(s_analysis);
 
     /* retrieved desired joint reactions, convert to desired bodies, and convert
     *  to desired reference frames*/
@@ -567,41 +558,34 @@ record(const SimTK::State& s)
     for(int i=0; i<numOutputJoints; i++) {
         JointReactionKey currentKey = _reactionList[i];
         const Joint& joint = *currentKey.joint;
-        Vec3 force = allForcesVec[currentKey.jointIndex];
-        Vec3 moment = allMomentsVec[currentKey.jointIndex];
-        const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
+        const Frame& expressedInBody = *currentKey.expressedInFrame;
+        SpatialVec jointReaction;
+        Vec3 pointOfApplication;
         
-        // find the point of application of the joint load on the child
-        // in the ground reference frame
-        Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
-        // set the point of application to the joint location in the child body
-        Vec3 pointOfApplication(0,0,0);
-        
-        // check if the load on the child needs to be converted to an equivalent
-        // load on the parent body.
+        // check if the load requested is on the parent or child
         if(!currentKey.isAppliedOnChild){
-            /*Take reaction load from child and apply on parent*/
-            force = -force;
-            moment = -moment;
+            jointReaction = joint.calcReactionOnParentExpressedInGround(s_analysis);
+
+            // find the point of application in immediate parent frame, then
+            // transform to the base frame of the parent (expressedInBody)
             Vec3 parentLocationInGlobal = joint.getParentFrame().getTransformInGround(s_analysis).p();
-
-            // define vector from the mobilizer location on the child to the location on the parent
-            Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
-            // find equivalent moment if the load is shifted to the parent location
-            moment -= translation % force;
-
-            // reset the point of application to the joint location in the parent expressed in ground
-            pointOfApplication = parentLocationInGlobal;
+            pointOfApplication = 
+                ground.findLocationInAnotherFrame(s_analysis, parentLocationInGlobal, expressedInBody);
         }
         else{
-            // set the point of application to the joint location in the child expressed in ground
-            pointOfApplication = childLocationInGlobal;
+            jointReaction = joint.calcReactionOnChildExpressedInGround(s_analysis);
+
+            // find the point of application in immediate child frame, then
+            // transform to the base frame of the child (expressedInBody)
+            Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
+            pointOfApplication =
+                ground.findLocationInAnotherFrame(s_analysis, childLocationInGlobal, expressedInBody);
         }
-        /* express loads in the desired reference frame*/
-        _model->getSimbodyEngine()
-            .transform(s_analysis, ground, force, expressedInBody, force);
-        _model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
-        _model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
+
+        // transform SpatialVec of reaction forces and moments to the
+        // requested base frame (expressedInBody)
+        Vec3 force = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[1], expressedInBody);
+        Vec3 moment = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[0], expressedInBody);
 
         /* place results in the truncated loads vectors*/
         forcesVec[i] = force;

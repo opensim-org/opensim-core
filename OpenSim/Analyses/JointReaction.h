@@ -72,12 +72,12 @@ private:
         /* Joint reference*/
         const Joint* joint;
         /* The body upon which the force is applied */
-        const PhysicalFrame* appliedOnBody;
+        const Frame* appliedOnBody;
         /* Is the reaction force applied on the Body the child or the parent
            of the joint?*/
         bool isAppliedOnChild;
         /* The reference Frame in which the force should be expressed */
-        const PhysicalFrame* expressedInFrame;
+        const Frame* expressedInFrame;
     };
 
 protected:
