@@ -13,10 +13,8 @@ set(MESH_INSTALL_INCLUDEDIR include/mesh)
 
 # Find dependencies.
 # ------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-find_package(Eigen3 REQUIRED)
 # Starting with version 3.3.1, Eigen provides a proper Config file.
-# TODO find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 
 find_package(PkgConfig REQUIRED)
 
