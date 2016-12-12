@@ -15,3 +15,5 @@ Trying non-virtual interface for OptimizationProblem, but a Proxy class could
  For Eigen, use mat.setZero() instead of static Mat::Zero() as much as possible.
 
  Rename AbstractOptimizationProblem to OptimizationProblemBase?
+
+ Eigen has spline support.

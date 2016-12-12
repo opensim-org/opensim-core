@@ -17,6 +17,11 @@ class EulerTranscription : public OptimizationProblem<T> {
     // contain one?
 public:
     typedef OptimalControlProblem<T> OCProblem;
+    struct Trajectory {
+        Eigen::RowVectorXd time;
+        Eigen::MatrixXd states;
+        Eigen::MatrixXd controls;
+    };
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     EulerTranscription(std::shared_ptr<OCProblem> ocproblem,
@@ -33,15 +38,35 @@ public:
     void constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
 
-    struct Trajectory {
-        Eigen::RowVectorXd time;
-        Eigen::MatrixXd states;
-        Eigen::MatrixXd controls;
-    };
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
     Trajectory interpret_iterate(const Eigen::VectorXd& x) const;
+
+protected:
+    /// Eigen::Map is a view on other data, and allows "slicing" so that we can
+    /// view part of the vector of unknowns as a matrix of (num_states x
+    /// num_mesh_points).
+    /// The second template argument specifies memory alignment; the default is
+    /// Unaligned.
+    /// The third template argument allows us to specify a stride so that we can
+    /// skip over the elements that are the control values (or the state
+    /// values, if we seek the trajectory of the controls). The value of the
+    /// outer stride is dynamic, since we do not know it at compile-time.
+    /// The "outer" stride is the distance between columns and "inner" stride is
+    /// the distance between elements of each column (for column-major format).
+    template<typename S>
+    using TrajectoryView = Eigen::Map<const MatrixX<S>,
+                                      Eigen::Unaligned,
+                                      Eigen::OuterStride<Eigen::Dynamic>>;
+    template<typename S>
+    TrajectoryView<S>
+    make_states_trajectory_view(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+    make_controls_trajectory_view(const VectorX<S>& variables) const;
 private:
+
+
     int state_index(int i_mesh_point, int i_state) const {
         return i_mesh_point * m_num_continuous_variables + i_state;
     }

@@ -90,36 +90,23 @@ void EulerTranscription<T>::objective(const VectorX<T>& x, T& obj_value) const {
     const double step_size = (m_final_time - m_initial_time) /
             (m_num_mesh_points - 1);
 
-    // Create states and controls vectors.
-    // TODO remove when using Eigen. Should definitely use a Map<>.
-    VectorX<T> states(m_num_states);
-    for (int i_state = 0; i_state < m_num_states; ++i_state) {
-        states[i_state] = x[state_index(0, i_state)];
-    }
-    VectorX<T> controls(m_num_controls);
-    for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-        controls[i_control] = x[control_index(0, i_control)];
-    }
-    // Evaluate integral cost at the initial time.
-    T integrand_value = 0;
-    // TODO avoid duplication here. Use lambda function?
-    m_ocproblem->integral_cost(m_initial_time, states, controls,
-            integrand_value);
-    obj_value = integrand_value;
+    // TODO I don't actually need to make a new view each time; just change the
+    // data pointer. TODO probably don't even need to update the data pointer!
+    auto states = make_states_trajectory_view(x);
+    auto controls = make_controls_trajectory_view(x);
 
-    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
-            states[i_state] = x[state_index(i_mesh, i_state)];
-        }
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-            controls[i_control] = x[control_index(i_mesh, i_control)];
-        }
-        integrand_value = 0;
-        m_ocproblem->integral_cost(step_size * i_mesh + m_initial_time,
-                states, controls, integrand_value);
-        obj_value += step_size * integrand_value;
-// TODO use more intelligent quadrature.
+    // TODO reuse memory; don't allocate every time.
+    VectorX<T> integrand = VectorX<T>::Zero(m_num_mesh_points);
+    // TODO parallelize.
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        const double time = step_size * i_mesh + m_initial_time;
+        m_ocproblem->integral_cost(time,
+                states.col(i_mesh), controls.col(i_mesh), integrand[i_mesh]);
     }
+    // TODO use more intelligent quadrature? trapezoidal rule?
+    // Rectangle rule:
+    obj_value = integrand[0]
+            + step_size * integrand.tail(m_num_mesh_points - 1).sum();
 }
 
 template<typename T>
@@ -129,41 +116,27 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     const double step_size = (m_final_time - m_initial_time) /
             (m_num_mesh_points - 1);
 
-    // TODO tradeoff between memory and parallelism.
+    auto states = make_states_trajectory_view(x);
+    auto controls = make_controls_trajectory_view(x);
 
     // Dynamics.
     // =========
 
     // Obtain state derivatives at each mesh point.
     // --------------------------------------------
-    // TODO these can be Matrix in the future.
-    //std::vector<std::vector<adouble>> m_states_trajectory;
-    //std::vector<std::vector<adouble>> m_controls_trajectory;
     // TODO storing 1 too many derivatives trajectory; don't need the first
     // xdot (at t0).
-    // We have N vectors; each one has length num_states.
+    // TODO tradeoff between memory and parallelism.
+    // TODO reuse this memory!!!!!! Don't allocate every time!!!
     MatrixX<T> derivatives_trajectory(m_num_states, m_num_mesh_points);
-    //std::vector<std::vector<adouble>>
-    //        states_trajectory(m_num_mesh_points, {num_states});
-    for (int i_mesh_point = 0; i_mesh_point < m_num_mesh_points;
-         ++i_mesh_point) {
-        // Get the states and controls for this mesh point.
-        // TODO prefer having a view, not copying.
-        VectorX<T> states(m_num_states);
-        //const auto& states = states_trajectory[i_mesh_point];
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
-            states[i_state] = x[state_index(i_mesh_point, i_state)];
-        }
-        VectorX<T> controls(m_num_controls);
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-            controls[i_control] = x[control_index(i_mesh_point, i_control)];
-        }
-        m_ocproblem->dynamics(states, controls,
-                derivatives_trajectory.col(i_mesh_point));
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
+                derivatives_trajectory.col(i_mesh));
     }
 
     // Bounds on initial and final states and controls.
     // ------------------------------------------------
+    // TODO upgrade to use states view, controls view.
     for (int i_state = 0; i_state < m_num_states; ++i_state) {
         constraints[constraint_bound_index(InitialStates, i_state)] =
                 x[state_index(0, i_state)];
@@ -187,16 +160,12 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     // ---------------------------
     for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
         // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
-        //const auto& states_i = states_trajectory[i_mesh];
-        //const auto& states_im1 = states_trajectory[i_mesh - 1];
         const auto& derivatives_i = derivatives_trajectory.col(i_mesh);
-        // TODO helper methods to get portions of the state.
         // This is a writable view into the constraints vector:
         auto constraints_i = constraints.segment(
                 constraint_index(i_mesh, 0), m_num_states);
-        const auto& state_i = x.segment(state_index(i_mesh, 0), m_num_states);
-        const auto& state_im1 = x.segment(state_index(i_mesh - 1, 0),
-                m_num_states);
+        const auto& state_i = states.col(i_mesh);
+        const auto& state_im1 = states.col(i_mesh - 1);
         constraints_i = state_i - (state_im1 + step_size * derivatives_i);
     }
 }
@@ -208,16 +177,37 @@ interpret_iterate(const VectorXd& x) const
     Trajectory traj;
     traj.time = RowVectorXd::LinSpaced(m_num_mesh_points,
             m_initial_time, m_final_time);
-    traj.states.resize(m_num_states, m_num_mesh_points);
-    traj.controls.resize(m_num_controls, m_num_mesh_points);
 
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        traj.states.col(i_mesh) =
-                x.segment(state_index(i_mesh, 0), m_num_states);
-        traj.controls.col(i_mesh) =
-                x.segment(control_index(i_mesh, 0), m_num_controls);
-    }
+    traj.states = this->make_states_trajectory_view(x);
+    traj.controls = this->make_controls_trajectory_view(x);
+
     return traj;
+}
+
+template<typename T>
+template<typename S>
+EulerTranscription<T>::template TrajectoryView<S>
+EulerTranscription<T>::make_states_trajectory_view(const VectorX<S>& x) const
+{
+    return TrajectoryView<S>(
+            x.data(),          // Pointer to the start of the data.
+            m_num_states,      // Number of rows.
+            m_num_mesh_points, // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls));
+}
+
+template<typename T>
+template<typename S>
+EulerTranscription<T>::template TrajectoryView<S>
+EulerTranscription<T>::make_controls_trajectory_view(const VectorX<S>& x) const
+{
+    return TrajectoryView<S>(
+            x.data() + m_num_states, // Skip over the states for i_mesh = 0.
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points,       // Number of columns.
+            // Distance between the start of each column; same as above.
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls));
 }
 
 } // namespace mesh
