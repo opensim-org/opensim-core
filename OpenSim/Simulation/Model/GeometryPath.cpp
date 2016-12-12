@@ -119,14 +119,8 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 {        
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
-    // Ensure that the state has been realized to Stage::Dynamics to give
-    // clients of this path a chance to calculate meaningful color information.
-    // TODO: this should be removed. Generate decorations is reporting it should 
-    // not force computations.
-    this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
 
-    const Array<PathPoint*>& pathPoints =
-        getCacheVariableValue<Array<PathPoint*> >(state, "current_path");
+    const Array<PathPoint*>& pathPoints = getCurrentPath(state);
 
     const PathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
