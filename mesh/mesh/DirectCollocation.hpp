@@ -119,23 +119,8 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
 
-    // Dynamics.
-    // =========
-
-    // Obtain state derivatives at each mesh point.
-    // --------------------------------------------
-    // TODO storing 1 too many derivatives trajectory; don't need the first
-    // xdot (at t0).
-    // TODO tradeoff between memory and parallelism.
-    // TODO reuse this memory!!!!!! Don't allocate every time!!!
-    MatrixX<T> derivatives_trajectory(m_num_states, m_num_mesh_points);
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                derivatives_trajectory.col(i_mesh));
-    }
-
     // Bounds on initial and final states and controls.
-    // ------------------------------------------------
+    // ================================================
     // TODO upgrade to use states view, controls view.
     for (int i_state = 0; i_state < m_num_states; ++i_state) {
         constraints[constraint_bound_index(InitialStates, i_state)] =
@@ -154,6 +139,21 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     for (int i_control = 0; i_control < m_num_controls; ++i_control) {
         constraints[constraint_bound_index(FinalControls, i_control)] =
                 x[control_index(m_num_mesh_points - 1, i_control)];
+    }
+
+    // Dynamics.
+    // =========
+
+    // Obtain state derivatives at each mesh point.
+    // --------------------------------------------
+    // TODO storing 1 too many derivatives trajectory; don't need the first
+    // xdot (at t0).
+    // TODO tradeoff between memory and parallelism.
+    // TODO reuse this memory!!!!!! Don't allocate every time!!!
+    MatrixX<T> derivatives_trajectory(m_num_states, m_num_mesh_points);
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
+                derivatives_trajectory.col(i_mesh));
     }
 
     // Compute constraint defects.
