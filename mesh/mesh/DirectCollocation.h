@@ -11,29 +11,36 @@ namespace mesh {
 template<typename T>
 class OptimalControlProblem;
 
-// TODO template <typename T>
-class EulerTranscription : public OptimizationProblem<adouble> {
+template<typename T>
+class EulerTranscription : public OptimizationProblem<T> {
     // TODO should this *BE* an OptimizationProblem, or should it just
     // contain one?
 public:
-    typedef OptimalControlProblem<adouble> Problem;
+    typedef OptimalControlProblem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
-    EulerTranscription(std::shared_ptr<Problem> problem) {
-        set_problem(problem);
+    EulerTranscription(std::shared_ptr<OCProblem> ocproblem,
+            unsigned num_mesh_points = 20) {
+        set_num_mesh_points(num_mesh_points);
+        set_ocproblem(ocproblem);
     }
-    void set_problem(std::shared_ptr<Problem> problem);
+    // TODO order of calls?
+    // TODO right now, must call this BEFORE set_problem.
+    void set_num_mesh_points(unsigned N) { m_num_mesh_points = N; }
+    void set_ocproblem(std::shared_ptr<OCProblem> ocproblem);
 
-    void objective(const VectorXa& x,
-            adouble& obj_value) const override;
-    void constraints(const VectorXa& x,
-            Eigen::Ref<VectorXa> constr) const override;
+    void objective(const VectorX<T>& x, T& obj_value) const override;
+    void constraints(const VectorX<T>& x,
+            Eigen::Ref<VectorX<T>> constr) const override;
 
+    struct Trajectory {
+        Eigen::RowVectorXd time;
+        Eigen::MatrixXd states;
+        Eigen::MatrixXd controls;
+    };
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
-    void interpret_iterate(const Eigen::VectorXd& x,
-            Eigen::MatrixXd& states_trajectory,
-            Eigen::MatrixXd& controls_trajectory) const;
+    Trajectory interpret_iterate(const Eigen::VectorXd& x) const;
 private:
     int state_index(int i_mesh_point, int i_state) const {
         return i_mesh_point * m_num_continuous_variables + i_state;
@@ -61,7 +68,7 @@ private:
         return 2 * m_num_states + (category - 2) * m_num_controls + index;
     }
 
-    std::shared_ptr<Problem> m_problem;
+    std::shared_ptr<OCProblem> m_ocproblem;
     int m_num_mesh_points = 20;
     int m_num_states = -1;
     int m_num_controls = -1;

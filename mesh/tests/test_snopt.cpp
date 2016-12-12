@@ -152,6 +152,85 @@ TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example") {
 }
 
 
+//TEST_CASE("First order minimum effort.") {
+//
+//    /// minimize     integral_{t=0}^{t=1) u(t)^2 dt
+//    /// subject to   xdot = -2x + u
+//    ///              x(0) = 1
+//    ///              x(1) = 0
+//    class FirstOrderMinEffort : public mesh::OptimalControlProblem<adouble> {
+//        int num_states() const override { return 1; }
+//        int num_controls() const override { return 1; }
+//        void bounds(double& initial_time, double& final_time,
+//                Ref<VectorXd> states_lower,
+//                Ref<VectorXd> states_upper,
+//                Ref<VectorXd> initial_states_lower,
+//                Ref<VectorXd> initial_states_upper,
+//                Ref<VectorXd> final_states_upper,
+//                Ref<VectorXd> final_states_lower,
+//                Ref<VectorXd> controls_lower,
+//                Ref<VectorXd> controls_upper,
+//                Ref<VectorXd> initial_controls_lower,
+//                Ref<VectorXd> initial_controls_upper,
+//                Ref<VectorXd> final_controls_lower,
+//                Ref<VectorXd> final_controls_upper) const override
+//        {
+//            // TODO turn into bounds on time.
+//            initial_time = 0.0;
+//            final_time = 1.0;
+//            states_lower           = VectorXd::Constant(1, -50);
+//            states_upper           = VectorXd::Constant(1,  50);
+//            initial_states_lower   = VectorXd::Constant(1, 1);
+//            initial_states_upper   = initial_states_lower;
+//            final_states_lower     = VectorXd::Constant(1, 0);
+//            final_states_upper     = final_states_lower;
+//            controls_lower         = VectorXd::Constant(1, -100);
+//            controls_upper         = VectorXd::Constant(1,  100);
+//            initial_controls_lower = controls_lower;
+//            initial_controls_upper = controls_upper;
+//            final_controls_lower   = controls_lower;
+//            final_controls_upper   = controls_upper;
+//        }
+//        void dynamics(const VectorXa& states,
+//                const VectorXa& controls,
+//                Ref<VectorXa> derivatives) const override
+//        {
+//            derivatives[0] = -2 * states[0] + controls[0];
+//        }
+//        void integral_cost(const double& /*time*/,
+//                const VectorXa& /*states*/,
+//                const VectorXa& controls,
+//                adouble& integrand) const override {
+//            integrand = controls[0] * controls[0];
+//        }
+//    };
+//
+//    auto ocp = std::make_shared<FirstOrderMinEffort>();
+//    mesh::EulerTranscription dircol(ocp, 100);
+//    mesh::SNOPTSolver solver(dircol);
+//    VectorXd variables;
+//    // TODO user should never get/want raw variables...wrap the solver
+//    // interface for direct collocation!
+//    double obj_value = solver.optimize(variables);
+//    EulerTranscription::Trajectory traj = dircol.interpret_iterate(variables);
+//
+//    std::cout << traj.controls.transpose() << std::endl;
+//    // Initial and final states satisfy constraints.
+//    REQUIRE(Approx(traj.states(0, 0)) == 1.0);
+//    REQUIRE(Approx(traj.states.rightCols<1>()[0]) == 0.0);
+//    std::cout << traj.states << std::endl;
+//
+//    // u*(t) = -4 exp(2t) / (e^4 - 1)
+//    const double factor = -4 / (std::exp(4) - 1);
+//    RowVectorXd expected = factor * (2 * traj.time).array().exp();
+//    std::cout << "DEBUG" << std::endl;
+//    std::cout << expected.transpose() << std::endl;
+//    RowVectorXd errors = traj.controls - expected;
+//    REQUIRE(Approx(errors.norm()) == 0);
+//}
+
+
+
 TEST_CASE("Sliding mass optimal control with SNOPT.") {
 
     class SlidingMass : public mesh::OptimalControlProblem<adouble> {
@@ -222,21 +301,18 @@ TEST_CASE("Sliding mass optimal control with SNOPT.") {
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
-    MatrixXd states_trajectory;
-    MatrixXd controls_trajectory;
-    dircol.interpret_iterate(variables, states_trajectory, controls_trajectory);
+    EulerTranscription::Trajectory traj = dircol.interpret_iterate(variables);
 
     // Initial and final position.
-    REQUIRE(Approx(states_trajectory(0, 0)) == 0.0);
-    REQUIRE(Approx(states_trajectory.rightCols<1>()[0]) == 1.0);
+    REQUIRE(Approx(traj.states(0, 0)) == 0.0);
+    REQUIRE(Approx(traj.states.rightCols<1>()[0]) == 1.0);
     // Initial and final speed.
-    REQUIRE(Approx(states_trajectory(1, 0)) == 0.0);
-    REQUIRE(Approx(states_trajectory.rightCols<1>()[1]) == 0.0);
+    REQUIRE(Approx(traj.states(1, 0)) == 0.0);
+    REQUIRE(Approx(traj.states.rightCols<1>()[1]) == 0.0);
 
-    int N = controls_trajectory.cols();
+    int N = traj.time.size();
     RowVectorXd expected = RowVectorXd::LinSpaced(N-1, 14.25, -14.25);
-    RowVectorXd errors = controls_trajectory.rightCols(N-1) - expected;
+    RowVectorXd errors = traj.controls.rightCols(N-1) - expected;
     REQUIRE(Approx(errors.norm()) == 0);
 }
-
 

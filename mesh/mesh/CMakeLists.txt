@@ -1,13 +1,13 @@
 add_library(mesh
-        mesh.h
-        common.h
-        OptimizationProblem.h OptimizationProblem.cpp
-        OptimizationSolver.h OptimizationSolver.cpp
-        SNOPTSolver.h SNOPTSolver.cpp
-        DirectCollocation.h DirectCollocation.cpp
-        OptimalControlProblem.h
-        legacy.h legacy.cpp
-        )
+    mesh.h
+    common.h
+    OptimizationProblem.h   OptimizationProblem.hpp OptimizationProblem.cpp
+    OptimizationSolver.h                            OptimizationSolver.cpp
+    SNOPTSolver.h                                   SNOPTSolver.cpp
+    DirectCollocation.h     DirectCollocation.hpp   DirectCollocation.cpp
+    OptimalControlProblem.h
+    legacy.h                                        legacy.cpp
+    )
 
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
