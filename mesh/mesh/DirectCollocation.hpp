@@ -86,8 +86,7 @@ void EulerTranscription<T>::set_ocproblem(
 }
 
 template<typename T>
-void EulerTranscription<T>::objective(const VectorX<T>& x,
-        T& obj_value) const {
+void EulerTranscription<T>::objective(const VectorX<T>& x, T& obj_value) const {
     const double step_size = (m_final_time - m_initial_time) /
             (m_num_mesh_points - 1);
 
@@ -170,7 +169,7 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
                 x[state_index(0, i_state)];
     }
     // TODO separate loops might help avoid cache misses, based on the
-    // orer of the constraint indices.
+    // order of the constraint indices.
     for (int i_state = 0; i_state < m_num_states; ++i_state) {
         constraints[constraint_bound_index(FinalStates, i_state)] =
                 x[state_index(m_num_mesh_points - 1, i_state)];
@@ -191,16 +190,14 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
         //const auto& states_i = states_trajectory[i_mesh];
         //const auto& states_im1 = states_trajectory[i_mesh - 1];
         const auto& derivatives_i = derivatives_trajectory.col(i_mesh);
-        // TODO temporary:
-        assert(derivatives_i.size() == (unsigned)m_num_states);
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
-            // TODO do vector math here.
-            const auto& state_i =  x[state_index(i_mesh, i_state)];
-            const auto& state_im1 = x[state_index(i_mesh - 1, i_state)];
-            constraints[constraint_index(i_mesh, i_state)] =
-                    state_i - (state_im1 + step_size * derivatives_i[i_state]);
-        }
-        // TODO this would be so much easier with a matrix library.
+        // TODO helper methods to get portions of the state.
+        // This is a writable view into the constraints vector:
+        auto constraints_i = constraints.segment(
+                constraint_index(i_mesh, 0), m_num_states);
+        const auto& state_i = x.segment(state_index(i_mesh, 0), m_num_states);
+        const auto& state_im1 = x.segment(state_index(i_mesh - 1, 0),
+                m_num_states);
+        constraints_i = state_i - (state_im1 + step_size * derivatives_i);
     }
 }
 
@@ -214,15 +211,11 @@ interpret_iterate(const VectorXd& x) const
     traj.states.resize(m_num_states, m_num_mesh_points);
     traj.controls.resize(m_num_controls, m_num_mesh_points);
 
-    auto& states = traj.states;
-    auto& controls = traj.controls;
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        for (int i_state = 0; i_state < m_num_states; ++i_state) {
-            states(i_state, i_mesh) = x[state_index(i_mesh, i_state)];
-        }
-        for (int i_control = 0; i_control < m_num_controls; ++i_control) {
-            controls(i_control, i_mesh) = x[control_index(i_mesh, i_control)];
-        }
+        traj.states.col(i_mesh) =
+                x.segment(state_index(i_mesh, 0), m_num_states);
+        traj.controls.col(i_mesh) =
+                x.segment(control_index(i_mesh, 0), m_num_controls);
     }
     return traj;
 }
