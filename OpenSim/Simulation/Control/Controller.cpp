@@ -71,7 +71,7 @@ void Controller::constructProperties()
 void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
     if(versionNumber < XMLDocument::getLatestVersion()) {
-        if(versionNumber < 30510) {
+        if(versionNumber < 30508) {
             // Rename property 'isDisabled' to 'appliesForce' and
             // negate the contained value.
             std::string oldName{"isDisabled"};
