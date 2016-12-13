@@ -51,7 +51,7 @@ PrescribedForce::PrescribedForce(const std::string& name, const PhysicalFrame& f
     PrescribedForce()
 {
     setName(name);
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    connectConnector_frame(frame);
 }
 
 //_____________________________________________________________________________

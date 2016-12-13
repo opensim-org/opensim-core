@@ -53,7 +53,8 @@ end
 body = Body.safeDownCast(joint.getConnectee('child_frame'));
 assert(body.getMass() == 2);
 
-% Connect a connector.
+% Connect a connector. Try the different methods to ensure they all work.
+offset.connectConnector_parent(ground);
 offset.updConnector('parent').connect(ground);
 assert(strcmp(offset.getConnector('parent').getConnecteeName(), '../ground'));
 

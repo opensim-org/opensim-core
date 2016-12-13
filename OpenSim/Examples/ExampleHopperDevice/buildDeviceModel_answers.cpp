@@ -85,7 +85,7 @@ Device* buildDevice() {
     //      frame will be connected in exampleHopperDevice.cpp.
     #pragma region Step2_TaskC_solution
 
-    anchorA->updConnector("child_frame").connect(*cuffA);
+    anchorA->connectConnector_child_frame(*cuffA);
 
     #pragma endregion
     
@@ -103,7 +103,7 @@ Device* buildDevice() {
 
     auto anchorB = new WeldJoint();
     anchorB->setName("anchorB");
-    anchorB->updConnector("child_frame").connect(*cuffB);
+    anchorB->connectConnector_child_frame(*cuffB);
     device->addComponent(anchorB);
 
     #pragma endregion
@@ -124,7 +124,7 @@ Device* buildDevice() {
     //TODO: Connect the controller's "actuator" Connector to pathActuator.
     #pragma region Step2_TaskC_solution
 
-    controller->updConnector("actuator").connect(*pathActuator);
+    controller->connectConnector_actuator(*pathActuator);
 
     #pragma endregion
 

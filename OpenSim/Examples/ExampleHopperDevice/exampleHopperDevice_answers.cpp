@@ -114,9 +114,9 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     #pragma region Step2_TaskD_solution
 
     const auto& frameA = model.getComponent<PhysicalFrame>(modelFrameAname);
-    anchorA.updConnector("parent_frame").connect(frameA);
+    anchorA.connectConnector_parent_frame(frameA);
     const auto& frameB = model.getComponent<PhysicalFrame>(modelFrameBname);
-    anchorB.updConnector("parent_frame").connect(frameB);
+    anchorB.connectConnector_parent_frame(frameB);
 
     #pragma endregion
 

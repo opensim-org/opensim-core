@@ -480,7 +480,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
-    bar.updConnector<Foo>("childFoo").connect(foo);
+    bar.connectConnector_childFoo(foo);
         
     // add a subcomponent
     // connect internals
@@ -527,7 +527,7 @@ void testMisc() {
     SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
 
 
-    bar.updConnector<Foo>("childFoo").connect(foo2);
+    bar.connectConnector_childFoo(foo2);
     string connectorName = bar.updConnector<Foo>("childFoo").getName();
 
     // Bar should connect now
@@ -675,7 +675,7 @@ void testMisc() {
     bar2.updConnector<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
     
-    bar2.updConnector<Foo>("childFoo").connect(foo);
+    bar2.connectConnector_childFoo(foo);
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
@@ -864,7 +864,7 @@ void testListConnectors() {
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
-    bar.updConnector<Foo>("parentFoo").connect(foo);
+    bar.connectConnector_parentFoo(foo);
     // TODO The "Already connected to 'foo'" is caught by `connect()`.
     SimTK_TEST(bar.getConnector<Foo>("parentFoo").getNumConnectees() == 1);
     
@@ -1001,9 +1001,8 @@ void testComponentPathNames()
     ASSERT(&foo1inA == foo1);
 
     // This bar2 that belongs to A and connects the two foo2s
-    bar2->updConnector<Foo>("parentFoo").connect(*foo2);
-    bar2->updConnector<Foo>("childFoo")
-        .connect(F->getComponent<Foo>("Foo2"));
+    bar2->connectConnector_parentFoo(*foo2);
+    bar2->connectConnector_childFoo(F->getComponent<Foo>("Foo2"));
 
     // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
 
@@ -1012,7 +1011,7 @@ void testComponentPathNames()
     auto& fbar2 = F->updComponent<Bar>("Bar2");
     ASSERT(&fbar2 != bar2);
 
-    fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
+    fbar2.connectConnector_parentFoo(*foo1);
     fbar2.updConnector<Foo>("childFoo")
         .setConnecteeName("../Foo1");
 
@@ -1031,8 +1030,8 @@ void testInputOutputConnections()
         foo1->setName("foo1");
         foo2->setName("foo2");
         bar->setName("bar");
-        bar->updConnector<Foo>("parentFoo").connect(*foo1);
-        bar->updConnector<Foo>("childFoo").connect(*foo2);
+        bar->connectConnector_parentFoo(*foo1);
+        bar->connectConnector_childFoo(*foo2);
         
         world.add(foo1);
         world.add(foo2);
