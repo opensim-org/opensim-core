@@ -22,7 +22,8 @@ void EulerTranscription<T>::set_ocproblem(
     int num_variables = m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
     int num_bound_constraints = 2 * m_num_continuous_variables;
-    int num_dynamics_constraints = (m_num_mesh_points - 1) * m_num_states;
+    m_num_defects = m_num_mesh_points - 1;
+    int num_dynamics_constraints = (m_num_defects) * m_num_states;
     int num_constraints = num_bound_constraints + num_dynamics_constraints;
     this->set_num_constraints(num_constraints);
 
@@ -70,13 +71,13 @@ void EulerTranscription<T>::set_ocproblem(
     // Defects must be 0.
     VectorXd dynamics_bounds = VectorXd::Zero(num_dynamics_constraints);
     constraint_lower << initial_states_lower,
-            final_states_lower,
             initial_controls_lower,
+            final_states_lower,
             final_controls_lower,
             dynamics_bounds;
     constraint_upper << initial_states_upper,
-            final_states_upper,
             initial_controls_upper,
+            final_states_upper,
             final_controls_upper,
             dynamics_bounds;
     this->set_constraint_bounds(constraint_lower, constraint_upper);
@@ -119,26 +120,17 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
 
+    // Organize the constraints vector.
+    ConstraintsView constr_view = make_constraints_view(constraints);
+
     // Bounds on initial and final states and controls.
     // ================================================
-    // TODO upgrade to use states view, controls view.
     // TODO order these 4 assignments to reduce cache misses,
     // based on the order of the constraint indices.
-    auto initial_states_constr = constraints.segment(
-            constraint_bound_index(InitialStates, 0), m_num_states);
-    initial_states_constr = states.col(0);
-
-    auto final_states_constr = constraints.segment(
-            constraint_bound_index(FinalStates, 0), m_num_states);
-    final_states_constr = states.rightCols(1);
-
-    auto initial_controls_constr = constraints.segment(
-            constraint_bound_index(InitialControls, 0), m_num_controls);
-    initial_controls_constr = controls.col(0);
-
-    auto final_controls_constr = constraints.segment(
-            constraint_bound_index(FinalControls, 0), m_num_controls);
-    final_controls_constr = controls.rightCols(1);
+    constr_view.initial_states = states.col(0);
+    constr_view.initial_controls = controls.col(0);
+    constr_view.final_states = states.rightCols(1);
+    constr_view.final_controls = controls.rightCols(1);
 
     // Dynamics.
     // =========
@@ -149,24 +141,21 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     // xdot (at t0).
     // TODO tradeoff between memory and parallelism.
     // TODO reuse this memory!!!!!! Don't allocate every time!!!
-    MatrixX<T> derivatives_trajectory(m_num_states, m_num_mesh_points);
+    MatrixX<T> derivs(m_num_states, m_num_mesh_points);
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                derivatives_trajectory.col(i_mesh));
+                derivs.col(i_mesh));
     }
 
     // Compute constraint defects.
     // ---------------------------
-    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
-        // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
-        const auto& derivatives_i = derivatives_trajectory.col(i_mesh);
-        // This is a writable view into the constraints vector:
-        auto constraints_i = constraints.segment(
-                constraint_index(i_mesh, 0), m_num_states);
-        const auto& state_i   = states.col(i_mesh);
-        const auto& state_im1 = states.col(i_mesh - 1);
-        constraints_i = state_i - (state_im1 + step_size * derivatives_i);
-    }
+    // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
+    // TODO this is backward Euler; do we want forward Euler?
+    const unsigned N = m_num_mesh_points;
+    const auto& x_i = states.rightCols(N-1);
+    const auto& x_im1 = states.leftCols(N-1);
+    const auto& xdot_i = derivs.rightCols(N-1);
+    constr_view.defects = x_i - (x_im1 + step_size * xdot_i);
 }
 
 template<typename T>
@@ -207,6 +196,25 @@ EulerTranscription<T>::make_controls_trajectory_view(const VectorX<S>& x) const
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls));
+}
+
+template<typename T>
+typename EulerTranscription<T>::ConstraintsView
+EulerTranscription<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr)
+const
+{
+    // Starting indices of different parts of the constraints vector.
+    const unsigned is = 0;                   // initial states.
+    const unsigned ic = is + m_num_states;   // initial controls.
+    const unsigned fs = ic + m_num_controls; // final states.
+    const unsigned fc = fs + m_num_states;   // final controls.
+    const unsigned d  = fc + m_num_controls; // defects.
+    return ConstraintsView(StatesView(&constr[is], m_num_states),
+                           ControlsView(&constr[ic], m_num_controls),
+                           StatesView(&constr[fs], m_num_states),
+                           ControlsView(&constr[fc], m_num_controls),
+                           DefectsTrajectoryView(&constr[d], m_num_states,
+                                   m_num_defects));
 }
 
 } // namespace mesh

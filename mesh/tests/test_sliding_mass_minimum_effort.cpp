@@ -77,6 +77,8 @@ class SlidingMass : public mesh::OptimalControlProblem<T> {
 TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
+    //EulerTranscription transcription;
+    //DirectCollocationSolver dircol(ocp, transcription);
     mesh::EulerTranscription<adouble> dircol(ocp);
     mesh::IpoptSolver solver(dircol);
     //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
