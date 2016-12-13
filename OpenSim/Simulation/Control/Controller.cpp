@@ -61,13 +61,36 @@ Controller::Controller()
 void Controller::constructProperties()
 {
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
-    constructProperty_isDisabled(false);
+    constructProperty_enabled(true);
     constructProperty_actuator_list();
 
     // Set is only a reference list, not ownership
     _actuatorSet.setMemoryOwner(false);
 }
 
+void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'enabled' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"enabled"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'enabled'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
+}
 
 //=============================================================================
 // GET AND SET
@@ -78,23 +101,23 @@ void Controller::constructProperties()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get whether or not this controller is disabled.
+ * Get whether or not this controller is enabled.
  */
-bool Controller::isDisabled() const
+bool Controller::isEnabled() const
 {
     if( getModel().getAllControllersEnabled() ) {
-       return( get_isDisabled() );
+       return( get_enabled() );
     } else {
-       return( true );
+       return( false );
     }
 }
 //_____________________________________________________________________________
 /**
  * Turn this controller on or off.
  */
-void Controller::setDisabled(bool aTrueFalse)
+void Controller::setEnabled(bool aTrueFalse)
 {
-    upd_isDisabled()=aTrueFalse;
+    upd_enabled() = aTrueFalse;
 }
 
 // for any post XML deserialization initialization
