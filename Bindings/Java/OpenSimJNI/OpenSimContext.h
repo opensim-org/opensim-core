@@ -117,11 +117,11 @@ public:
     bool isPrescribed(const Coordinate& coord) const;
     bool isConstrained(const Coordinate& coord) const;
     // Constraints
-    bool isDisabled(const Constraint& constraint) const {
-        return  constraint.isDisabled(*_configState);
+    bool isEnforced(const Constraint& constraint) const {
+        return constraint.isEnforced(*_configState);
     }
-    void setDisabled(Constraint& constraint, bool disable) {
-        constraint.setDisabled(*_configState, disable);
+    void setIsEnforced(Constraint& constraint, bool isEnforced) {
+        constraint.setIsEnforced(*_configState, isEnforced);
         _model->assemble(*_configState);
     }
     // Forces

@@ -160,7 +160,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // ******************************* end ERROR CHECKING *******************************/
     
         for(int i=0; i<constraintOn.getSize(); i++) {
-            _replacementConstraints[i].setDisabled(s_solver, !constraintOn[i]);
+            _replacementConstraints[i].setIsEnforced(s_solver, constraintOn[i]);
             // Make sure we stay at Dynamics so each constraint can evaluate its conditions
             _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
         }
@@ -365,14 +365,14 @@ Array<bool> InducedAccelerationsSolver::
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);
 
             // turn on the constraint
-            _replacementConstraints[i].setDisabled(s, false);
+            _replacementConstraints[i].setIsEnforced(s, true);
             // return the state of the constraint
             constraintOn[i] = true;
 
         }
         else{
             // turn off the constraint
-            _replacementConstraints[i].setDisabled(s, true);
+            _replacementConstraints[i].setIsEnforced(s, false);
             // return the state of the constraint
             constraintOn[i] = false;
         }
