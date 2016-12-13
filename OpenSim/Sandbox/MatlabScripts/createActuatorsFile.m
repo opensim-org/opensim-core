@@ -1,12 +1,11 @@
-function createActuatorsFile
 %createActuatorsFile   make and Print an OpenSim Actuator File from a Model
 %
-%  createActuatorsFile attempts to make a template actuators file that can
-%  be used in Static Optimization, RRA and CMC. This tries to identify the
-%  coordinates  that are connected to ground and place point or torque
+%  createActuatorsFile makes a template actuators file that can
+%  be used in Static Optimization, RRA and CMC. This identifies the
+%  coordinates that are connected to ground and places point or torque
 %  actuators on translational or rotational coordinates, respectively. All
-%  other coordiantes will get coordinate actuators. Any locked, prescribed
-%  or constrained coordinates will be ignored.
+%  other coordiantes will get coordinate actuators. Any constrained 
+%  coordinates will be ignored.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -30,14 +29,27 @@ function createActuatorsFile
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Author: James Dunne, Chris Dembia, Tom Uchida,
+% Author: James Dunne, Tom Uchida, Chris Dembia, 
 % Ajay Seth, Ayman Habib, Shrinidhi K. Lakshmikanth, Jen Hicks.
+
+function createActuatorsFile(varargin)
 
 % Import OpenSim Libraries
 import org.opensim.modeling.*
 
-% open dialog boxes to select the model
-[filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
+if isempty(varargin)
+    % open dialog boxes to select the model
+    [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
+elseif nargin == 1
+    if exist(varargin{1}, 'file') == 2
+        [pathname,filename,ext] = fileparts(varargin{1});
+        filename = [filename ext];
+    else 
+        error(['Input file is invalid or does not exist']);
+    end
+else
+    error(['Number of inputs is > 1. Function only takes a single filepath']);
+end
 
 % get the model path
 modelFilePath = fullfile(pathname,filename);
@@ -66,7 +78,8 @@ for iCoord = 0 : nCoord - 1
 
     % get a reference to the current coordinate
     coordinate = coordSet.get(iCoord);
-    % If the coodinate is constrained, don't add an actuator
+    % If the coodinate is constrained (locked or prescribed), don't 
+    % add an actuator
     if coordinate.isConstrained(state)
         continue
     end
@@ -78,16 +91,17 @@ for iCoord = 0 : nCoord - 1
 
     % If the coordinates parent body is connected to ground, we need to
     % add residual actuators (torque or point).
-    if strmatch(parentName, model.getGround.getName() )
+    if strcmp(parentName, model.getGround.getName() )
 
-        % if the joint type is custom or free
+        % Custom and Free Joints have three translational and three
+        % rotational coordinates. 
         if strcmp(joint.getConcreteClassName(), 'CustomJoint') | strcmp(joint.getConcreteClassName(), 'FreeJoint')
                % get the coordainte motion type
-               motion = char(coordinate.getMotionType);
-               % to get the axis value for the coordiante, we need to drill
+               motion = char(coordinate.getMotionType());
+               % to get the axis value for the coordinate, we need to drill
                % down into the coordinate transform axis
                eval(['concreteJoint = ' char(joint.getConcreteClassName()) '.safeDownCast(joint);'])
-               sptr = concreteJoint.getSpatialTransform;
+               sptr = concreteJoint.getSpatialTransform();
                for ip = 0 : 5
                   if strcmp(char(sptr.getCoordinateNames().get(ip)), char(coordinate.getName))
                         sptr.getTransformAxis(ip).getAxis(axisValues);
@@ -100,25 +114,24 @@ for iCoord = 0 : nCoord - 1
                if strcmp(motion, 'Rotational')
                    newActuator = TorqueActuator(joint.getParentFrame(),...
                                          joint.getParentFrame(),...
-                                         axisValues,...
-                                         1);
+                                         axisValues);
 
-               % make a point actuator if a translational coordainte.
+               % make a point actuator if a translational coordinate.
              elseif strcmp(motion, 'translational')
                     % make a new Point actuator
                     newActuator = PointActuator();
                     % set the body
                     newActuator.set_body(char(joint.getChildFrame().getName()))
-                    % set <point>      -0.07243760       0.00000000       0.00000000 </point>
+                    % set point that forces acts at
                     newActuator.set_point(massCenter)
-                    % set <point_is_global> false </point_is_global>
-                    newActuator.set_point_is_global(0)
-                    % set <direction>      -0.00000000       1.00000000      -0.00000000 </direction>
+                    % the point is expressed in the local
+                    newActuator.set_point_is_global(false)
+                    % set the direction that actuator will act in
                     newActuator.set_direction(axisValues)
-                    % set <force_is_global> true </force_is_global>
-                    newActuator.set_force_is_global(1)
+                    % the force is expressed in the global
+                    newActuator.set_force_is_global(true)
               else % something else that we don't support right now
-                    error(['Motion Type ' char(motion) 'not supported yet'])
+                    newActuator = CoordinateActuator();
               end
         else % if the joint type is not free or custom, just add coordinate actuators
                 % make a new coordinate actuator for that coordinate
@@ -134,13 +147,11 @@ for iCoord = 0 : nCoord - 1
     newActuator.setOptimalForce(optimalForce);
     % set the actuator name
     newActuator.setName( coordinate.getName() );
-    % set the optimal force for that coordinate
-    newActuator.setOptimalForce(optimalForce);
     % set min and max controls
     newActuator.setMaxControl(Inf)
     newActuator.setMinControl(-Inf)
 
-    % append the new acuator onto the empty force set
+    % append the new actuator onto the empty force set
     forceSet.cloneAndAppend(newActuator);
 end
 
