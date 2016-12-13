@@ -856,7 +856,7 @@ private:
     /** @cond                                                            */ \
     PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
         this->template constructConnector<T>(#cname,                        \
-                "Path to a Component to satisfy the Connector '"            \
+                "Path to a Component that satisfies the Connector '"        \
                 #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
     /** @endcond                                                         */ \
@@ -968,7 +968,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     using T = _connector_##cname##_type;                                    \
     std::string typeStr = T::getClassName();                                \
     return this->template constructConnector<T>(#cname,                     \
-        "Path to a Component to satisfy the Connector '"                    \
+        "Path to a Component that satisfies the Connector '"                \
         #cname "' of type " + typeStr + ".");                               \
 }
 /// @}
