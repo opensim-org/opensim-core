@@ -437,8 +437,8 @@ generateMarkerDataFromModelAndStates(const Model& model,
     
     auto markers = m->getComponentList<Marker>();
     for (const auto& marker : markers) {
-        markerReporter->updInput().
-            connect(marker.getOutput("location"), marker.getName());
+        markerReporter->addToReport(
+                marker.getOutput("location"), marker.getName());
     }
 
     m->addComponent(markerReporter);

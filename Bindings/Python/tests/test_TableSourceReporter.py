@@ -37,8 +37,8 @@ class TestTableSourceReporter(unittest.TestCase):
         m.addComponent(t_rep)
 
         # Connect.
-        c_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col1"))
-        t_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col2"))
+        c_rep.addToReport(source.getOutput("column").getChannel("col1"))
+        t_rep.addToReport(source.getOutput("column").getChannel("col2"))
 
         # Realize.
         s = m.initSystem()

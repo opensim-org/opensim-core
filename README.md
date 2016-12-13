@@ -71,8 +71,8 @@ int main() {
     // Add a console reporter to print the muscle fiber force and elbow angle.
     ConsoleReporter* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.0);
-    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(biceps->getOutput("fiber_force"));
+    reporter->addToReport(
         elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
         "elbow_angle");
     model.addComponent(reporter);

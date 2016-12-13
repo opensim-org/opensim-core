@@ -987,14 +987,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This input is needed at stage istage.                            */ \
+    /** This input is needed at stage istage##.                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_INPUT macro.                                    */ \
+    /** #OpenSim_DECLARE_INPUT macro;                                    */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1003,7 +1004,27 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued (single-channel) Output.   */ \
+    /** The output must be of type T##.                                  */ \
+    /** This input is single-valued and thus cannot connect to a         */ \
+    /** list output.                                                     */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output.                                */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called first
@@ -1027,14 +1048,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input can connect to multiple outputs, all of which are     */ \
-    /** needed at stage istage.                                          */ \
+    /** needed at stage istage##.                                        */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
+    /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1044,7 +1066,28 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             #iname "' of type " #T " (description: " comment "). "          \
             "To specify multiple paths, put spaces between them.", istage)  \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued or list Output.            */ \
+    /** The output must be of type T##.                                  */ \
+    /** If the output is a list output, this connects to all of the      */ \
+    /** channels of the output.                                          */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output; the alias will be used for all */ \
+    /** channels of the output.                                          */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 /// @}
 
 } // end of namespace OpenSim
