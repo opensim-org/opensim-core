@@ -76,19 +76,21 @@ void Constraint::constructProperties(void)
 
 void Constraint::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
-    if(versionNumber < XMLDocument::getLatestVersion()) {
-        if(versionNumber < 30508) {
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30509) {
             // Rename property 'isDisabled' to 'isEnforced' and
             // negate the contained value.
-            std::string oldName{"isDisabled"};
-            std::string newName{"isEnforced"};
-            if(node.hasElement(oldName)) {
+            std::string oldName{ "isDisabled" };
+            std::string newName{ "isEnforced" };
+            if (node.hasElement(oldName)) {
                 auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'isEnforced'
                 elem.setElementTag(newName);
-                if(elem.getValue().find("true") != std::string::npos)
-                    elem.setValue("false");
-                else if(elem.getValue().find("false") != std::string::npos)
-                    elem.setValue("true");
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
             }
         }
     }
