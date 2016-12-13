@@ -1,9 +1,3 @@
-%% // Example script for use in OpenSim 4.0
-% (1) Reading c3d files into opensim table format
-% (2) 'flattenning' a vec3 table to a table of doubles
-% (3) Rotating table data and writing to a new table
-% (4) Writing marker (.trc) and force (.mot) data to file
-
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -29,6 +23,12 @@
 % Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
 % Ajay Seth, Ayman Habib, Jen Hicks.
 
+%% // Example script for use in OpenSim 4.0
+% (1) Reading c3d files into opensim table format
+% (2) 'flattening' a vec3 table to a table of doubles
+% (3) Rotating table data and writing to a new table
+% (4) Writing marker (.trc) and force (.mot) data to file
+
 import org.opensim.modeling.*
 
 %% Use a c3dAdapter to turn read a c3d file
@@ -41,22 +41,40 @@ markers = tables.get('markers');
 % get the number of markers and frames
 nMarkers = markers.getNumColumns();
 nMarkerFrames = markers.getNumRows();
-% get the array of the metadata key names
+% get the data rate of the markers. The Meta data is created from the c3d,
+% so the keys are not generic. In this case, we know we are looking for
+% 'DataRate'
 MarkerMetaDataKeys = markers.getTableMetaDataKeys();
-MarkerRate = str2num(markers.getTableMetaDataAsString(MarkerMetaDataKeys.get(0)));
+for i = 0 : MarkerMetaDataKeys.size() - 1
+
+    if strcmp( char(MarkerMetaDataKeys.get(i)), 'DataRate')
+        MarkerRate = str2num(markers.getTableMetaDataAsString(...   
+                                               MarkerMetaDataKeys.get(i)));
+        break
+    end
+end
 
 %% get the force data
 forces = tables.get('forces');
 % get the numner of forces and rows
 nForces = forces.getNumColumns();
 nForceFrames = forces.getNumRows();
-% get the array of the metadata key names
+% get the data rate of the forces. The Meta data is created from the c3d,
+% so the keys are not generic. In this case, we know we are looking for
+% 'DataRate'
 ForceMetaDataKeys = forces.getTableMetaDataKeys();
-ForceRate = str2num(forces.getTableMetaDataAsString(ForceMetaDataKeys.get(2)));
+for i = 0 : ForceMetaDataKeys.size() - 1
+
+    if strcmp( char(ForceMetaDataKeys.get(i)), 'DataRate')
+        ForceRate = str2num(forces.getTableMetaDataAsString(...   
+                                               ForceMetaDataKeys.get(i)));
+        break
+    end
+end
 
 %% Define a rotation matix
-Rot = 90;
-rotationMatrix = [1,0,0;0,cos(Rot*pi/180),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cos(Rot*pi/180)];
+Rot = -90;
+rotationMatrix = [1,0,0;0,cosd(Rot),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cosd(Rot)];
 
 %% Rotate marker data
 % make a clean copuy to alter
@@ -76,7 +94,7 @@ for iMarker = 0 : nMarkers - 1
                       marker.getElt(0,iRow).get(2)];
 
         % rotate the marker data
-        rotatedData = [rotationMatrix'*vectorData']';
+        rotatedData = [rotationMatrix*vectorData']';
 
         % Write the rotated data back to the Vec3TimesSeriesTable
         elem = Vec3(rotatedData(1),rotatedData(2),rotatedData(3));
@@ -86,7 +104,7 @@ for iMarker = 0 : nMarkers - 1
 end
 
 %% Rotate Force data
-% make a clean copuy to alter
+% make a clean copy to alter
 forces_rotated = forces();
 
 for iForce = 0 : nForces - 1
@@ -103,7 +121,7 @@ for iForce = 0 : nForces - 1
                       force.getElt(0,iRow).get(2)];
 
         % rotate the marker data
-        rotatedData = [rotationMatrix'*vectorData']';
+        rotatedData = [rotationMatrix*vectorData']';
 
         % Write the rotated data back to the Vec3TimesSeriesTable
         elem = Vec3(rotatedData(1),rotatedData(2),rotatedData(3));
