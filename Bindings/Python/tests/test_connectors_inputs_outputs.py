@@ -202,7 +202,7 @@ class TestInputsOutputs(unittest.TestCase):
         # for reporters.
         coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
-        rep.updInput().connect(coord.getOutput('speed'), 'spd')
+        rep.connectInput_inputs(coord.getOutput('speed'), 'spd')
         rep.connectInput_inputs(
                 source.getOutput('column').getChannel('col1'))
         rep.addToReport(

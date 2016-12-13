@@ -93,7 +93,7 @@ assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
 % Only need the abstract types in order to connect.
 rep.updInput('inputs').connect(coord.getOutput('value'));
 % With alias:
-rep.updInput().connect(coord.getOutput('speed'), 'target');
+rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 % These commands use the AbstractChannel.
 rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...

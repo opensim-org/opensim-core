@@ -30,8 +30,7 @@ class TestReporter {
         tableReporter.updInput("inputs").
                       connect(tableSource.getOutput("column").
                                           getChannel("col1"));
-        tableReporter.updInput().
-                      connect(tableSource.getOutput("column").
+        tableReporter.addToReport(tableSource.getOutput("column").
                                           getChannel("col2"));
 
         State state = model.initSystem();

@@ -117,9 +117,6 @@ public:
     // PUBLIC METHODS
     //==========================================================================
 
-    // Allow overloading of updInput
-    using AbstractReporter::updInput;
-
     /** Connect an output (single-valued or list) to this reporter. 
     The output must be of type InputT.
     If the output is a list output, this connects to all of the channels of the
@@ -152,18 +149,6 @@ public:
     void addToReport(const AbstractChannel& channel,
                      const std::string& alias = "") {
         connectInput_inputs(channel, alias);
-    }
-
-    /** Convenience method that can be used in place of `updInput("inputs")`. 
-    @code
-    auto* reporter = new ConsoleReporter();
-    auto* src = new TableSource();
-    reporter->updInput().getLabel();
-    @endcode
-    */
-    AbstractInput& updInput()
-    {
-        return updInput("inputs");
     }
 
 protected:
