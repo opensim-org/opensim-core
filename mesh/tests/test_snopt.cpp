@@ -294,14 +294,14 @@ TEST_CASE("Sliding mass optimal control with SNOPT.") {
     };
 
     auto ocp = std::make_shared<SlidingMass>();
-    mesh::EulerTranscription dircol(ocp);
+    mesh::EulerTranscription<adouble> dircol(ocp);
     mesh::SNOPTSolver solver(dircol);
     //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
     VectorXd variables;
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
-    EulerTranscription::Trajectory traj = dircol.interpret_iterate(variables);
+    auto traj = dircol.interpret_iterate(variables);
 
     // Initial and final position.
     REQUIRE(Approx(traj.states(0, 0)) == 0.0);
