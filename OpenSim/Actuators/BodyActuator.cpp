@@ -93,7 +93,7 @@ const std::string& BodyActuator::getBodyName() const
 */
 void BodyActuator::setBody(const Body& body)
 {
-    updConnector<Body>("body").connect(body);
+    connectConnector_body(body);
 }
 
 /**

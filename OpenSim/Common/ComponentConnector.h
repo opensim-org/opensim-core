@@ -848,7 +848,9 @@ private:
     /** In an XML file, you can set this Connector's connectee name      */ \
     /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
     /** This connector was generated with the                            */ \
-    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    /** #OpenSim_DECLARE_CONNECTOR macro;                                */ \
+    /** see AbstractConnector for more information.                      */ \
+    /** @connectormethods connectConnector_##cname##()                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -857,7 +859,14 @@ private:
                 "Path to a Component to satisfy the Connector '"            \
                 #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Connector-related functions                                */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Connector to an object of type T##.      */ \
+    void connectConnector_##cname(const Object& object) {                   \
+        this->updConnector(#cname).connect(object);                         \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
@@ -914,6 +923,8 @@ private:
     /** comment                                                          */ \
     /** In an XML file, you can set this Connector's connectee name      */ \
     /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
+    /** See AbstractConnector for more information.                      */ \
+    /** @connectormethods connectConnector_##cname##()                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -925,7 +936,14 @@ private:
     PropertyIndex constructConnector_##cname();                             \
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
     typedef T _connector_##cname##_type;                                    \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Connector-related functions                                */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Connector to an object of type T##.      */ \
+    void connectConnector_##cname(const Object& object) {                   \
+        this->updConnector(#cname).connect(object);                         \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* When specifying a Connector to a forward-declared type (using

@@ -94,7 +94,7 @@ void ConditionalPathPoint::constructProperties()
  */
 void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("coordinate").connect(coordinate);
+    connectConnector_coordinate(coordinate);
 }
 
 bool ConditionalPathPoint::hasCoordinate() const
