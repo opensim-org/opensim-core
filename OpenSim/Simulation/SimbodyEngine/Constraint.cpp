@@ -77,7 +77,7 @@ void Constraint::constructProperties(void)
 void Constraint::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
     if(versionNumber < XMLDocument::getLatestVersion()) {
-        if(versionNumber < 30509) {
+        if(versionNumber < 30508) {
             // Rename property 'isDisabled' to 'isEnforced' and
             // negate the contained value.
             std::string oldName{"isDisabled"};
