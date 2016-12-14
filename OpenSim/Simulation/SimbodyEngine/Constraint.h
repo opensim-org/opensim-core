@@ -67,7 +67,15 @@ public:
 
     virtual void updateFromConstraint(SimTK::State& s,
                                       const Constraint &aConstraint);
+
+    /**
+    * Determine whether or not this Constraint is being enforced. */
     virtual bool isEnforced(const SimTK::State& s) const;
+
+   /**
+    * Set whether or not this Constraint is enforced.
+    * The realization Stage is dropped to Instance whenever the 'isEnforced'
+    * flag is changed, but setting the same value has no effect. */
     virtual bool setIsEnforced(SimTK::State& s, bool isEnforced);
 
     virtual void

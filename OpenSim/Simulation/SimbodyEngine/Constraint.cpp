@@ -150,29 +150,14 @@ void Constraint::updateFromConstraint(SimTK::State& s,
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// DISABLE
+// ENFORCED
 //-----------------------------------------------------------------------------
 
-//_____________________________________________________________________________
-/**
- * Get whether or not this Constraint is enforced.
- * Simbody multibody system instance is realized every time the isEnforced
- * changes, BUT multiple sets to the same value have no cost.
- */
 bool Constraint::isEnforced(const SimTK::State& s) const
 {
     return !_model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
 }
 
-//_____________________________________________________________________________
-/**
- * Set whether or not this Constraint is enforced.
- * Simbody multibody system instance is realized every time the isEnforced
- * changes, BUT multiple sets to the same value have no cost.
- *
- * @param isEnforced If true the constraint is enabled (active).
- *                   If false the constraint is disabled (in-active).
- */
 bool Constraint::setIsEnforced(SimTK::State& s, bool isEnforced)
 {
     SimTK::Constraint& simConstraint =
