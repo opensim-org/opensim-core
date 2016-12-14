@@ -47,17 +47,14 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
 // PROPERTY
 //=============================================================================
 public:
-    /** Constraint is active (enabled) by default. 
-    NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
-          If **isDisabled** is **true**, **isEnforced** is **false**.
-          If **isDisabled** is **false**, **isEnforced** is **true**.*/
-    OpenSim_DECLARE_PROPERTY(isEnforced, bool, 
+    /* Note: 'isEnforced' replaced 'isDisabled' as of OpenSim 4.0 */
+    OpenSim_DECLARE_PROPERTY(isEnforced, bool,
         "Flag indicating whether the constraint is enforced or not."
         "Enforced means that the constraint is active in subsequent "
-        "dynamics realizations. NOTE: Prior to OpenSim 4.0, this property was"
-        " named **isDisabled**. If **isDisabled** is **true**, **isEnforced**"
-        " is **false**. If **isDisabled** is **false**, **isEnforced** is"
-        " **true**.");
+        "dynamics realizations. NOTE: Prior to OpenSim 4.0, this behavior "
+        "was controlled by the 'isDisabled' property, where 'true' meant "
+        "the constraint was not being enforced. Thus, if 'isDisabled' is"
+        "'true', then 'isEnforced' is false." );
 
 //=============================================================================
 // METHODS
@@ -79,17 +76,16 @@ public:
                        SimTK::Vector& mobilityForces) const;
 
     /** 
-     * Methods to query a Constraint forces (defaults to the Lagrange 
-     * multipliers) applied The names of the quantities (column labels) is 
-     * returned by this first function getRecordLabels()
-     */
+     * Methods to query the Constraint forces (defaults to the Lagrange 
+     * multipliers) applied to the MultibodySystem. The names of the quantities
+     * (column labels) are returned by this first method, getRecordLabels() */
     virtual Array<std::string> getRecordLabels() const;
     /**
-     * Given SimTK::State object extract all the values necessary to report 
-     * constraint forces (multipliers) Subclasses can override to report force,
-     * application location frame, etc. used in conjunction with 
-     * getRecordLabels and should return same size Array
-     */
+     * Given a SimTK::State, extract all the values necessary to report 
+     * constraint forces (e.g. multipliers). Subclasses can override to report
+     * the location, frame, etc.. of force application. This method is used in
+     * conjunction with getRecordLabels() and must return an Array of equal
+     * size. */
     virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
     virtual void scale(const ScaleSet& aScaleSet) {};
