@@ -70,8 +70,8 @@ Joint::Joint(const std::string &name, const PhysicalFrame& parent,
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").connect(parent);
-    updConnector<PhysicalFrame>("child_frame").connect(child);
+    connectConnector_parent_frame(parent);
+    connectConnector_child_frame(child);
 }
 
 /* Convenience Constructor*/
@@ -130,8 +130,8 @@ Joint::Joint(const std::string &name,
     static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
     static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
 
-    updConnector<PhysicalFrame>("parent_frame").connect(upd_frames(pix));
-    updConnector<PhysicalFrame>("child_frame").connect(upd_frames(cix));
+    connectConnector_parent_frame(upd_frames(pix));
+    connectConnector_child_frame(upd_frames(cix));
 }
 
 //=============================================================================

@@ -101,7 +101,7 @@ const PhysicalFrame& ContactGeometry::getFrame() const
 
 void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    connectConnector_frame(frame);
 }
 
 const PhysicalFrame& ContactGeometry::getBody() const
