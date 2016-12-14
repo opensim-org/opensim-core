@@ -106,7 +106,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         //Make sure all the actuators are on!
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, false);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, true);
         }
 
         // Get to  the point where we can evaluate unilateral constraint conditions
@@ -178,7 +178,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // disable other forces
         for(int f=0; f<_modelCopy.getForceSet().getSize(); f++){
-            _modelCopy.updForceSet()[f].setDisabled(s_solver, true);
+            _modelCopy.updForceSet()[f].setAppliesForce(s_solver, false);
         }
     }
     else if(forceName == "velocity"){       
@@ -190,7 +190,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
             
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
         // Set the configuration (gen. coords and speeds) of the model.
         _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Velocity);
@@ -201,7 +201,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
 
         // zero velocity
@@ -215,7 +215,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
                 _modelCopy.getName() << "'." << endl;
         }
         Force &force = _modelCopy.getForceSet().get(ai);
-        force.setDisabled(s_solver, false);
+        force.setAppliesForce(s_solver, true);
 
         ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
         if(actuator){

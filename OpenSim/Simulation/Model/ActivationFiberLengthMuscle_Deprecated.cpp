@@ -184,7 +184,7 @@ void ActivationFiberLengthMuscle_Deprecated::
 {
     double adot = 0;
     double ldot = 0;
-    if (!isDisabled(s)) {
+    if (appliesForce(s)) {
         adot = getActivationDeriv(s);
         ldot = getFiberVelocity(s);
     }

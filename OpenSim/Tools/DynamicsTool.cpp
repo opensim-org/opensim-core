@@ -172,21 +172,21 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
         //Check for keywords first starting with ALL
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ALL"){
             for(int i=0; i<modelForces.getSize(); i++){
-                modelForces[i].setDisabled(s, true);
+                modelForces[i].setAppliesForce(s, false);
             }
             return;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ACTUATORS"){
             Set<Actuator> &acts = model.updActuators();
             for(int i=0; i<acts.getSize(); i++){
-                acts[i].setDisabled(s, true);
+                acts[i].setAppliesForce(s, false);
             }
             continue;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "MUSCLES"){
             Set<Muscle> &muscles = model.updMuscles();
             for(int i=0; i<muscles.getSize(); i++){
-                muscles[i].setDisabled(s, true);
+                muscles[i].setAppliesForce(s, false);
             }
             continue;
         }
@@ -202,13 +202,13 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
                 const ObjectGroup* group = modelForces.getGroup(k);
                 Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
-                    ((Force *)(members[j]))->setDisabled(s, true);
+                    ((Force *)(members[j]))->setAppliesForce(s, false);
             }
         } //otherwise, check for individual forces
         else{
             k = modelForces.getIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
-                modelForces[k].setDisabled(s, true);
+                modelForces[k].setAppliesForce(s, false);
             }
         }
         // No force or group was found

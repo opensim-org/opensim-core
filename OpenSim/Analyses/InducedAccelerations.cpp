@@ -556,7 +556,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             //Make sure all the actuators are on!
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, false);
+                _model->updActuators().get(f).setAppliesForce(s_analysis, true);
             }
 
             // Get to  the point where we can evaluate unilateral constraint conditions
@@ -634,7 +634,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             // disable actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
         }
         else if(_contributors[c] == "velocity"){        
@@ -650,7 +651,8 @@ int InducedAccelerations::record(const SimTK::State& s)
             
             // zero actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
             // Set the configuration (gen. coords and speeds) of the model.
             _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
@@ -661,7 +663,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             // zero actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
 
             //s_analysis = _model->initSystem();
@@ -679,7 +682,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             
             Actuator &actuator = _model->getActuators().get(ai);
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&actuator);
-            act->setDisabled(s_analysis, false);
+            act->setAppliesForce(s_analysis, true);
             act->overrideActuation(s_analysis, false);
             Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
             if(muscle){
@@ -818,8 +821,8 @@ void InducedAccelerations::initialize(const SimTK::State& s)
         ExternalForce *exf = dynamic_cast<ExternalForce *>(&_model->getForceSet().get(i));
         if(exf){
             addContactConstraintFromExternalForce(exf);
-            exf->setDisabled(s_copy, true);
-            exf->set_isDisabled(true);
+            exf->setAppliesForce(s_copy, false);
+            exf->set_appliesForce(false);
         }
     }
 
