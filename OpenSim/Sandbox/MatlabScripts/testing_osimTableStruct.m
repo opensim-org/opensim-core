@@ -40,22 +40,22 @@ nLabels3 = markerTable_Frank_vec3.getNumColumns();
 nRows3 =   markerTable_Frank_vec3.getNumRows();
 
 if nLabels1 == nLabels2 && nLabels2 == nLabels3
-    disp(['number of labels are consistent across for each data type'])
+    disp(['number of labels are consistent across each data type'])
 else 
     error(['number of labels are inconsistent between transformation'])
 end
 
 if nRows1 == nRows2 && nRows2 == nRows3
-    disp(['number of Rows are consistent across for each data type'])
+    disp(['number of Rows are consistent across each data type'])
 else 
     error(['number of labels are inconsistent between transformation'])
 end
 
-% check 100 random columns and rows and compare elements across all types    
-randomLabelIndex = randi([1 nLabels1-1],1,100);
-randomRowIndex = randi([1 nRows1-1],1,100);
+% check 500 random columns and rows and compare elements across all types    
+randomLabelIndex = randi([1 nLabels1-1],1,500);
+randomRowIndex = randi([1 nRows1-1],1,500);
 
-for i = 1 : 100 
+for i = 1 : 500 
     
 %   disp(char(markerTable_vec3.getColumnLabel(randomLabelIndex(i))));
     colData = markerTable_vec3.getDependentColumnAtIndex(randomLabelIndex(i));
@@ -72,14 +72,14 @@ for i = 1 : 100
         error('Transform from table to struct resulted in incorrect values')
      end
      
-    if i == 100
+    if i == 500
         disp('Transformation from table to struct was successfull - data in correct index')
     end
 end
 
 %% test that the resulting struct is the same as the original
 
-% check 100 random columns and rows and compare elements across all types    
+% check 500 random columns and rows and compare elements across all types    
 randomLabelIndex = randi([1 nLabels1-1],1,500);
 randomRowIndex = randi([1 nRows1-1],1,500);
 
@@ -96,7 +96,7 @@ for i = 1 : 500
         error('New Table is different from original')
      end
      
-    if i == 100
+    if i == 500
         disp('New Table is the same as the original')
     end
 end
