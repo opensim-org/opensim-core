@@ -610,7 +610,8 @@ int InducedAccelerations::record(const SimTK::State& s)
             // ******************************* end ERROR CHECKING *******************************/
     
             for(int i=0; i<constraintOn.getSize(); i++) {
-                _constraintSet.get(i).setDisabled(s_analysis, !constraintOn[i]);
+                _constraintSet.get(i).setIsEnforced(s_analysis,
+                                                    constraintOn[i]);
                 // Make sure we stay at Dynamics so each constraint can evaluate its conditions
                 _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
             }
@@ -986,14 +987,14 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
 
             // turn on the constraint
-            _constraintSet.get(i).setDisabled(s, false);
+            _constraintSet.get(i).setIsEnforced(s, true);
             // return the state of the constraint
             constraintOn[i] = true;
 
         }
         else{
             // turn off the constraint
-            _constraintSet.get(i).setDisabled(s, true);
+            _constraintSet.get(i).setIsEnforced(s, false);
             // return the state of the constraint
             constraintOn[i] = false;
         }

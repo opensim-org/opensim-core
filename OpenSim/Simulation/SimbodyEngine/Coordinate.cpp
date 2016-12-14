@@ -469,7 +469,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
             dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
             if (couplerp->getDependentCoordinateName() == getName())
-                return !couplerp->isDisabled(s);
+                return couplerp->isEnforced(s);
         }
     }
     return false;

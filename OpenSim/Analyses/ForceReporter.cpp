@@ -222,7 +222,8 @@ void ForceReporter::constructColumnLabels(const SimTK::State& s)
         if(_includeConstraintForces){
             auto constraints = _model->getComponentList<Constraint>();
             for(auto& c : constraints) {
-                if (c.isDisabled(s)) continue; // Skip over disabled constraints
+                if (!c.isEnforced(s))
+                    continue; // Skip over disabled constraints
                 // Ask constraint how many columns and their names it reports
                 Array<string> forceLabels = c.getRecordLabels();
                 // If prescribed force we need to record point, 
@@ -277,7 +278,8 @@ int ForceReporter::record(const SimTK::State& s)
         // Model Constraints
         auto constraints = _model->getComponentList<Constraint>();
         for (auto& constraint : constraints) {
-            if (constraint.isDisabled(s)) continue;
+            if (!constraint.isEnforced(s))
+                continue;
             Array<double> values = constraint.getRecordValues(s);
             nextRow.getData().append(values);
         }
