@@ -130,29 +130,31 @@ for iForce = 0 : nForces - 1
 
     end
 end
-%% Print the rotated markers to trc file
 
+%% Print the rotated markers to trc file
 % make trc adapter and write marker tables to file.
-% trcfileadapter = TRCFileAdapter();
-% trcfileadapter.write(markers,'test_walking.trc');
-% trcfileadapter.write(markers_rotated,'test_walking_rotated.trc');
+% TRCFileAdapter requires the table to have DataRate and Units meta data.
+% In this case, we made a copy of markers table, so the meta data got
+% copied. If you make a new table, you will need to set these meta data
+% keys before using TRCFileAdapter.
+% ie markers.addTableMetaDataString('DataRate', '250')
 TRCFileAdapter().write(markers,'test_walking.trc');
 TRCFileAdapter().write(markers_rotated,'test_walking_rotated.trc');
 
-%% Print the force data
+%% Print the force data as a Vec3 sto file and a flattened doubles sto file
 % make postfix string vector for naming colomns
 postfix = StdVectorString();
 postfix.add('_x');
 postfix.add('_y');
 postfix.add('_z');
 
-% flatten the Vec3 table to a doubles table
+%% flatten the Vec3 table to a doubles table. 
+% This converts a table of Vec3's into a flat table of doubles. Default
+% column names have '_1', '_2', '_3' added. Here we specify the postfic as
+% '_x', '_y', and 'z'.
 forces_flattened = forces.flatten(postfix);
 forces_rot_flattened = forces_rotated.flatten(postfix);
 
-% make a sto adapter and write the forces table to file.
-% stofileadapater = STOFileAdapter();
-% stofileadapater.write(forces_flattened,'test_walking_grf.mot');
-% stofileadapater.write(forces_rot_flattened,'test_walking_grf_rotated.mot');
+%% make a sto adapter and write the forces table to file.
 STOFileAdapter().write(forces_flattened,'test_walking_grf.mot');
 STOFileAdapter().write(forces_rot_flattened,'test_walking_grf_rotated.mot');
