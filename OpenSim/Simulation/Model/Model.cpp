@@ -1058,7 +1058,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     auto muscles = getComponentList<Muscle>();
 
     for (auto& muscle : muscles) {
-        if (!muscle.isDisabled(state)){
+        if (muscle.appliesForce(state)){
             try{
                 muscle.equilibrate(state);
             }
@@ -1863,7 +1863,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
     for (auto& controller : getComponentList<Controller>()) {
-        if (!controller.isDisabled()) {
+        if (controller.isEnabled()) {
             controller.computeControls(s, controls);
         }
     }

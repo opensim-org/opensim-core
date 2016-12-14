@@ -98,15 +98,15 @@ const Coordinate& MovingPathPoint::getZCoordinate() const
 
 void MovingPathPoint::setXCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("x_coordinate").connect(coordinate);
+    connectConnector_x_coordinate(coordinate);
 }
 void MovingPathPoint::setYCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("y_coordinate").connect(coordinate);
+    connectConnector_y_coordinate(coordinate);
 }
 void MovingPathPoint::setZCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("z_coordinate").connect(coordinate);
+    connectConnector_z_coordinate(coordinate);
 }
 
 void MovingPathPoint::extendConnectToModel(Model& model)

@@ -21,17 +21,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testControllers builds OpenSim models using the OpenSim API and verifies that controllers
-//  behave as described.
+//=============================================================================
+//  testControllers builds OpenSim models using the OpenSim API and verifies 
+//  that controllers behave as described.
 //
 //  Tests Include:
-//      1. Test a control set controller on a block with an ideal actuator
-//      2. Test a corrective controller on a block with an ideal actuator
-//      
+//  1. Test a ControlSetController on a block with an ideal actuator
+//  2. Test a PrescribedController on a block with an ideal actuator
+//  3. Test a CorrectionController tracking a block with an ideal actuator
+//  4. Test a PrescribedController on the arm26 model with reserves.
 //     Add tests here as new controller types are added to OpenSim
 //
-//==========================================================================================================
+//=============================================================================
+
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -39,7 +41,7 @@ using namespace OpenSim;
 using namespace std;
 
 void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool disabled);
+void testPrescribedControllerOnBlock(bool enabled);
 void testCorrectionControllerOnBlock();
 void testPrescribedControllerFromFile(const std::string& modelFile,
                                       const std::string& actuatorsFile,
@@ -51,8 +53,8 @@ int main()
         cout << "Testing ControlSetController" << endl; 
         testControlSetControllerOnBlock();
         cout << "Testing PrescribedController" << endl; 
-        testPrescribedControllerOnBlock(false);
         testPrescribedControllerOnBlock(true);
+        testPrescribedControllerOnBlock(false);
         cout << "Testing CorrectionController" << endl; 
         testCorrectionControllerOnBlock();
         cout << "Testing PrescribedController from File" << endl;
@@ -163,7 +165,7 @@ void testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
-void testPrescribedControllerOnBlock(bool disabled)
+void testPrescribedControllerOnBlock(bool enabled)
 {
     using namespace SimTK;
 
@@ -212,7 +214,7 @@ void testPrescribedControllerOnBlock(bool disabled)
     actuatorController.setName("testPrescribedController");
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
-    actuatorController.setDisabled(disabled);
+    actuatorController.setEnabled(enabled);
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
@@ -245,8 +247,10 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     si.getQ().dump("Final position:");
 
-    double expected = disabled ? 0 : 0.5*(controlForce/blockMass)*finalTime*finalTime;
-    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
+    double expected = enabled ? 0.5*(controlForce/blockMass)*finalTime*finalTime : 0;
+    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy,
+        __FILE__, __LINE__, 
+        "PrescribedController failed to produce the expected motion of block.");
 
     // Save the simulation results
     Storage states(manager.getStateStorage());

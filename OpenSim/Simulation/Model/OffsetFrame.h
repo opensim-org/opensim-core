@@ -292,7 +292,7 @@ calcAccelerationInGround(const SimTK::State& state) const
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
-    this->template updConnector<C>("parent").connect(parent);
+    this->connectConnector_parent(parent);
 }
 
 template <class C>

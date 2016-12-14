@@ -84,11 +84,11 @@ class TestConnectors(unittest.TestCase):
         j1 = osim.PinJoint()
         j1.setName("j1")
         j1.updConnector("parent_frame").connect(model.getGround())
-        j1.updConnector("child_frame").connect(b1)
+        j1.connectConnector_child_frame(b1)
 
         j2 = osim.PinJoint()
         j2.setName("j2")
-        j2.updConnector("parent_frame").connect(b1)
+        j2.connectConnector_parent_frame(b1)
         j2.updConnector("child_frame").connect(b2)
 
         model.addBody(b1)
@@ -198,12 +198,14 @@ class TestInputsOutputs(unittest.TestCase):
         m.addComponent(rep)
 
         # Connect.
+        # There are multiple ways to perform the connection, especially
+        # for reporters.
         coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
-        rep.updInput('inputs').connect(coord.getOutput('speed'), 'spd')
-        rep.updInput('inputs').connect(
+        rep.connectInput_inputs(coord.getOutput('speed'), 'spd')
+        rep.connectInput_inputs(
                 source.getOutput('column').getChannel('col1'))
-        rep.updInput('inputs').connect(
+        rep.addToReport(
                 source.getOutput('column').getChannel('col2'), 'second_col')
 
         s = m.initSystem()

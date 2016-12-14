@@ -275,6 +275,7 @@ bool ForwardTool::run()
     // Initialize integrator
     integrator.setInternalStepLimit(_maxSteps);
     integrator.setMaximumStepSize(_maxDT);
+    integrator.setMinimumStepSize(_minDT);
     integrator.setAccuracy(_errorTolerance);
 
 

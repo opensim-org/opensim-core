@@ -149,11 +149,12 @@ void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& sta
     }
 }
 
-void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State& state)
-{
+void
+RollingOnSurfaceConstraint::
+extendSetPropertiesFromState(const SimTK::State& state) {
     Super::extendSetPropertiesFromState(state);
 
-    set_isDisabled(isDisabled(state));
+    set_isEnforced(isEnforced(state));
     for(int i=0; i < _numConstraintEquations; i++){
         SimTK::Constraint& simConstraint = 
             updSystem().updMatterSubsystem().updConstraint(_indices[i]);
@@ -293,37 +294,39 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
     return conditionsSatisfied;
 }
 
-//-----------------------------------------------------------------------------
-// DISABLE
-//-----------------------------------------------------------------------------
-bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
-{
+bool RollingOnSurfaceConstraint::isEnforced(const SimTK::State &state) const {
     // The parent constraint in is the plane constraint, so check its value
-    return updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return !updSystem().
+           updMatterSubsystem().
+           updConstraint(_indices[0]).
+           isDisabled(state);
 }
 
-bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled)
-{
-    // All constraints treated the same as default behavior i.e. at initialization
-    std::vector<bool> shouldBeOn(_numConstraintEquations, !isDisabled);
+bool RollingOnSurfaceConstraint::setIsEnforced(SimTK::State& state,
+                                               bool isEnforced) {
+    // All constraints treated the same as default behavior i.e. at
+    // initialization
+    std::vector<bool> shouldBeOn(_numConstraintEquations, isEnforced);
 
-    // If dynamics has been realized, then this is an attempt to enable/disable the constraint
-    // during a computation and not an initialization, in which case we must check the 
-    // unilateral conditions for each constraint
+    // If dynamics has been realized, then this is an attempt to enforce/disable
+    //  the constraint during a computation and not an initialization, in which
+    // case we must check the unilateral conditions for each constraint
     if(state.getSystemStage() > Stage::Dynamics)
         shouldBeOn = unilateralConditionsSatisfied(state);
 
-    return setDisabled(state, isDisabled, shouldBeOn);
+    return setIsEnforced(state, isEnforced, shouldBeOn);
 }
 
-bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn)
-{
-
+bool RollingOnSurfaceConstraint::setIsEnforced(SimTK::State& state,
+                                               bool isEnforced,
+                                               std::vector<bool> shouldBeOn) {
     for(int i=0; i < _numConstraintEquations; i++){
-        SimTK::Constraint& simConstraint = updSystem().updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint =
+            updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         bool isConstraintOn = !simConstraint.isDisabled(state);
 
-        // Check if we already have the correct enabling of the constraint then do nothing 
+        // Check if we already have the correct enabling of the constraint then
+        // do nothing 
         if(shouldBeOn[i] == isConstraintOn)
             continue;
 
@@ -337,13 +340,15 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
     }
 
     //Update the property accordingly
-    set_isDisabled(isDisabled);
+    set_isEnforced(isEnforced);
 
     // Return whether or not constraint is in the state the caller wanted
     // The first constraint is the "master" so its state is what we care about
-    return isDisabled == updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return isEnforced != updSystem().
+                         updMatterSubsystem().
+                         updConstraint(_indices[0]).
+                         isDisabled(state);
 }
-
 
 //-----------------------------------------------------------------------------
 // FORCES
@@ -411,4 +416,11 @@ void RollingOnSurfaceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+bool
+RollingOnSurfaceConstraint::
+setIsEnforcedWithCachedUnilateralConditions(bool isEnforced,
+                                            SimTK::State& state) {
+    return setIsEnforced(state, isEnforced, _defaultUnilateralConditions);
 }

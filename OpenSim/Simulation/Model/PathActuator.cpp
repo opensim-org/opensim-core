@@ -234,7 +234,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 
     // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverridden(state)){
+    if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);

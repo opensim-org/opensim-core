@@ -53,7 +53,8 @@ end
 body = Body.safeDownCast(joint.getConnectee('child_frame'));
 assert(body.getMass() == 2);
 
-% Connect a connector.
+% Connect a connector. Try the different methods to ensure they all work.
+offset.connectConnector_parent(ground);
 offset.updConnector('parent').connect(ground);
 assert(strcmp(offset.getConnector('parent').getConnecteeName(), '../ground'));
 
@@ -93,9 +94,9 @@ assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
 % Only need the abstract types in order to connect.
 rep.updInput('inputs').connect(coord.getOutput('value'));
 % With alias:
-rep.updInput('inputs').connect(coord.getOutput('speed'), 'target');
+rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 % These commands use the AbstractChannel.
-rep.updInput('inputs').connect(source.getOutput('column').getChannel('c1'));
+rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
                                'second_col');
 

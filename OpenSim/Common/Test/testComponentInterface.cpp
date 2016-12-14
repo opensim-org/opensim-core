@@ -480,7 +480,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
-    bar.updConnector<Foo>("childFoo").connect(foo);
+    bar.connectConnector_childFoo(foo);
         
     // add a subcomponent
     // connect internals
@@ -527,7 +527,7 @@ void testMisc() {
     SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
 
 
-    bar.updConnector<Foo>("childFoo").connect(foo2);
+    bar.connectConnector_childFoo(foo2);
     string connectorName = bar.updConnector<Foo>("childFoo").getName();
 
     // Bar should connect now
@@ -538,7 +538,7 @@ void testMisc() {
     ASSERT(foo2 == foo2found);
 
     // do any other input/output connections
-    foo.updInput("input1").connect(bar.getOutput("PotentialEnergy"));
+    foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
     
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
@@ -675,7 +675,7 @@ void testMisc() {
     bar2.updConnector<Foo>("parentFoo")
     .setConnecteeName(compFoo.getRelativePathName(bar2));
     
-    bar2.updConnector<Foo>("childFoo").connect(foo);
+    bar2.connectConnector_childFoo(foo);
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
@@ -696,7 +696,7 @@ void testMisc() {
 
     auto* reporter = new TableReporterVector();
     reporter->set_report_time_interval(0.1);
-    reporter->updInput("inputs").connect(foo.getOutput("Qs"));
+    reporter->connectInput_inputs(foo.getOutput("Qs"));
     theWorld.add(reporter);
 
     MultibodySystem system3;
@@ -704,8 +704,8 @@ void testMisc() {
     theWorld.buildUpSystem(system3);
 
     // Connect our state variables.
-    foo.updInput("fiberLength").connect(bar.getOutput("fiberLength"));
-    foo.updInput("activation").connect(bar.getOutput("activation"));
+    foo.connectInput_fiberLength(bar.getOutput("fiberLength"));
+    foo.connectInput_activation(bar.getOutput("activation"));
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
@@ -808,10 +808,10 @@ void testListInputs() {
     theWorld.add(reporter);
 
     // wire up console reporter inputs to desired model outputs
-    reporter->updInput("inputs").connect(foo.getOutput("Output1"));
-    reporter->updInput("inputs").connect(bar.getOutput("PotentialEnergy"));
-    reporter->updInput("inputs").connect(bar.getOutput("fiberLength"));
-    reporter->updInput("inputs").connect(bar.getOutput("activation"));
+    reporter->connectInput_inputs(foo.getOutput("Output1"));
+    reporter->connectInput_inputs(bar.getOutput("PotentialEnergy"));
+    reporter->connectInput_inputs(bar.getOutput("fiberLength"));
+    reporter->connectInput_inputs(bar.getOutput("activation"));
 
     auto* tabReporter = new TableReporter();
     tabReporter->setName("TableReporterMixedOutputs");
@@ -819,10 +819,10 @@ void testListInputs() {
 
     // wire up table reporter inputs (using convenience method) to desired 
     // model outputs
-    tabReporter->updInput().connect(bar.getOutput("fiberLength"));
-    tabReporter->updInput().connect(bar.getOutput("activation"));
-    tabReporter->updInput().connect(foo.getOutput("Output1"));
-    tabReporter->updInput().connect(bar.getOutput("PotentialEnergy"));
+    tabReporter->addToReport(bar.getOutput("fiberLength"));
+    tabReporter->addToReport(bar.getOutput("activation"));
+    tabReporter->addToReport(foo.getOutput("Output1"));
+    tabReporter->addToReport(bar.getOutput("PotentialEnergy"));
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -864,7 +864,7 @@ void testListConnectors() {
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
-    bar.updConnector<Foo>("parentFoo").connect(foo);
+    bar.connectConnector_parentFoo(foo);
     // TODO The "Already connected to 'foo'" is caught by `connect()`.
     SimTK_TEST(bar.getConnector<Foo>("parentFoo").getNumConnectees() == 1);
     
@@ -1001,9 +1001,8 @@ void testComponentPathNames()
     ASSERT(&foo1inA == foo1);
 
     // This bar2 that belongs to A and connects the two foo2s
-    bar2->updConnector<Foo>("parentFoo").connect(*foo2);
-    bar2->updConnector<Foo>("childFoo")
-        .connect(F->getComponent<Foo>("Foo2"));
+    bar2->connectConnector_parentFoo(*foo2);
+    bar2->connectConnector_childFoo(F->getComponent<Foo>("Foo2"));
 
     // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
 
@@ -1012,7 +1011,7 @@ void testComponentPathNames()
     auto& fbar2 = F->updComponent<Bar>("Bar2");
     ASSERT(&fbar2 != bar2);
 
-    fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
+    fbar2.connectConnector_parentFoo(*foo1);
     fbar2.updConnector<Foo>("childFoo")
         .setConnecteeName("../Foo1");
 
@@ -1022,50 +1021,104 @@ void testComponentPathNames()
 
 void testInputOutputConnections()
 {
-    TheWorld world;
-    Foo* foo1 = new Foo();
-    Foo* foo2 = new Foo();
-    Bar* bar = new Bar();
+    {
+        TheWorld world;
+        Foo* foo1 = new Foo();
+        Foo* foo2 = new Foo();
+        Bar* bar = new Bar();
 
-    foo1->setName("foo1");
-    foo2->setName("foo2");
-    bar->setName("bar");
-    bar->updConnector<Foo>("parentFoo").connect(*foo1);
-    bar->updConnector<Foo>("childFoo").connect(*foo2);
-    
-    world.add(foo1);
-    world.add(foo2);
-    world.add(bar);
+        foo1->setName("foo1");
+        foo2->setName("foo2");
+        bar->setName("bar");
+        bar->connectConnector_parentFoo(*foo1);
+        bar->connectConnector_childFoo(*foo2);
+        
+        world.add(foo1);
+        world.add(foo2);
+        world.add(bar);
 
-    MultibodySystem mbs;
+        MultibodySystem mbs;
 
-    world.connect();
+        world.connect();
 
-    // do any other input/output connections
-    foo1->updInput("input1").connect(bar->getOutput("PotentialEnergy"));
+        // do any other input/output connections
+        foo1->connectInput_input1(bar->getOutput("PotentialEnergy"));
 
-    // Test various exceptions for inputs, outputs, connectors
-    ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
-    ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
-    ASSERT_THROW(OutputNotFound, 
-        world.getComponent("./internalSub").getOutput("subState0"));
-    // Ensure that getOutput does not perform a "find"
-    ASSERT_THROW(OutputNotFound,
-        world.getOutput("./internalSub/subState"));
+        // Test various exceptions for inputs, outputs, connectors
+        ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
+        ASSERT_THROW(ConnectorNotFound, bar->updConnector<Foo>("parentFoo0"));
+        ASSERT_THROW(OutputNotFound, 
+            world.getComponent("./internalSub").getOutput("subState0"));
+        // Ensure that getOutput does not perform a "find"
+        ASSERT_THROW(OutputNotFound,
+            world.getOutput("./internalSub/subState"));
 
-    foo2->updInput("input1").connect(world.getComponent("./internalSub").getOutput("subState"));
+        foo2->connectInput_input1(world.getComponent("./internalSub").getOutput("subState"));
 
-    foo1->updInput("AnglesIn").connect(foo2->getOutput("Qs"));
-    foo2->updInput("AnglesIn").connect(foo1->getOutput("Qs"));
+        foo1->connectInput_AnglesIn(foo2->getOutput("Qs"));
+        foo2->connectInput_AnglesIn(foo1->getOutput("Qs"));
 
-    foo1->updInput("activation").connect(bar->getOutput("activation"));
-    foo1->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+        foo1->connectInput_activation(bar->getOutput("activation"));
+        foo1->connectInput_fiberLength(bar->getOutput("fiberLength"));
 
-    foo2->updInput("activation").connect(bar->getOutput("activation"));
-    foo2->updInput("fiberLength").connect(bar->getOutput("fiberLength"));
+        foo2->connectInput_activation(bar->getOutput("activation"));
+        foo2->connectInput_fiberLength(bar->getOutput("fiberLength"));
 
-    world.connect();
-    world.buildUpSystem(mbs);
+        world.connect();
+        world.buildUpSystem(mbs);
+    }
+    // Test exception message when asking for the value of an input that is
+    // not wired up.
+    class A : public Component { // Test single-value input.
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        OpenSim_DECLARE_INPUT(in1, double, SimTK::Stage::Model, "");
+    };
+    class B : public Component { // Test list inputs.
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        OpenSim_DECLARE_LIST_INPUT(in1, double, SimTK::Stage::Model, "");
+    };
+    class C : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(C, Component);
+    public:
+        OpenSim_DECLARE_OUTPUT(out1, double, calcOut1, SimTK::Stage::Time);
+        double calcOut1(const SimTK::State& state) const { return 0; }
+    };
+    {
+        // Single-value input.
+        TheWorld world;
+        A* a = new A(); a->setName("a");
+        world.add(a);
+        MultibodySystem system;
+        world.connect();
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        SimTK_TEST_MUST_THROW_EXC(a->getInput<double>("in1").getValue(s),
+                InputNotConnected);
+    }
+    {
+        // List input.
+        // We must wire up an output to the input, as a list input with no
+        // connectees is always "connected."
+        TheWorld world;
+        B* b = new B(); b->setName("b");
+        C* c = new C(); c->setName("c");
+        world.add(b);
+        world.add(c);
+        b->updInput("in1").connect(c->getOutput("out1"));
+        MultibodySystem system;
+        world.connect();
+        world.buildUpSystem(system);
+        State s = system.realizeTopology();
+        system.realize(s, Stage::Model);
+        // The following will work, now that the connection is satisfied.
+        b->getInput<double>("in1").getValue(s, 0);
+        b->disconnect(); // Disconnect to get the "not connected"exception.
+        SimTK_TEST_MUST_THROW_EXC(b->getInput<double>("in1").getValue(s, 0),
+                InputNotConnected);
+    }
 }
 
 void testInputConnecteeNames() {
@@ -1476,7 +1529,7 @@ void testTableSource() {
     theWorld.add(tableSource);
     theWorld.add(tableReporter);
 
-    tableReporter->updInput("inputs").connect(tableSource->getOutput("column"));
+    tableReporter->addToReport(tableSource->getOutput("column"));
 
     theWorld.finalizeFromProperties();
 
@@ -1579,10 +1632,10 @@ void testListInputConnecteeSerialization() {
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
-        reporter->updInput("inputs").connect(output.getChannel("a"));
-        reporter->updInput("inputs").connect(output.getChannel("c"));
+        reporter->addToReport(output.getChannel("a"));
+        reporter->addToReport(output.getChannel("c"));
         // We want to make sure aliases are preserved.
-        reporter->updInput("inputs").connect(output.getChannel("b"), "berry");
+        reporter->addToReport(output.getChannel("b"), "berry");
         world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
@@ -1665,9 +1718,9 @@ void testSingleValueInputConnecteeSerialization() {
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
-        foo->updInput("input1").connect(output.getChannel("b"));
+        foo->connectInput_input1(output.getChannel("b"));
         // We want to make sure aliases are preserved.
-        foo->updInput("fiberLength").connect(output.getChannel("d"), "desert");
+        foo->connectInput_fiberLength(output.getChannel("d"), "desert");
         world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
@@ -1821,7 +1874,7 @@ void testAliasesAndLabels() {
     ASSERT_THROW(InputNotConnected, foo->getInput("input1").getLabel(0));
 
     // Non-list Input, no alias.
-    foo->updInput("input1").connect( bar->getOutput("Output1") );
+    foo->connectInput_input1( bar->getOutput("Output1") );
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
     SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
 
@@ -1842,13 +1895,13 @@ void testAliasesAndLabels() {
     foo->updInput("input1").disconnect();
 
     // Non-list Input, with alias.
-    foo->updInput("input1").connect( bar->getOutput("Output1"), "baz" );
+    foo->connectInput_input1( bar->getOutput("Output1"), "baz" );
     SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
     SimTK_TEST(foo->getInput("input1").getLabel() == "baz");
 
     // List Input, no aliases.
-    foo->updInput("listInput1").connect( bar->getOutput("Output1") );
-    foo->updInput("listInput1").connect( bar->getOutput("Output3") );
+    foo->connectInput_listInput1( bar->getOutput("Output1") );
+    foo->connectInput_listInput1( bar->getOutput("Output3") );
 
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
@@ -1862,8 +1915,8 @@ void testAliasesAndLabels() {
     foo->updInput("listInput1").disconnect();
 
     // List Input, with aliases.
-    foo->updInput("listInput1").connect( bar->getOutput("Output1"), "plugh" );
-    foo->updInput("listInput1").connect( bar->getOutput("Output3"), "thud" );
+    foo->connectInput_listInput1( bar->getOutput("Output1"), "plugh" );
+    foo->connectInput_listInput1( bar->getOutput("Output3"), "thud" );
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
     SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "plugh");

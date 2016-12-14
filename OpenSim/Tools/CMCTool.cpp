@@ -418,7 +418,7 @@ bool CMCTool::run()
 
     controller->setActuators(getActuatorsForCMC(_excludedActuators));
     _model->addController(controller );
-    controller->setDisabled(false);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);
@@ -1103,7 +1103,7 @@ Set<Actuator> CMCTool::
 {   
     Set<Actuator> actuatorsForCMC = _model->getActuators();
     for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if (actuatorsForCMC.get(i).get_isDisabled())
+        if(!actuatorsForCMC.get(i).get_appliesForce())
             actuatorsForCMC.remove(i);
     }
     Array<string> groupNames;

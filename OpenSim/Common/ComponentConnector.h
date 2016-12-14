@@ -657,6 +657,7 @@ public:
     Output<T>'s getValue() with minimal overhead. Specify the index of the 
     Channel whose value is desired.                                           */
     const T& getValue(const SimTK::State &state, unsigned index) const {
+        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, getNumConnectees(),
                          "Input<T>::getValue()");
@@ -847,16 +848,25 @@ private:
     /** In an XML file, you can set this Connector's connectee name      */ \
     /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
     /** This connector was generated with the                            */ \
-    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    /** #OpenSim_DECLARE_CONNECTOR macro;                                */ \
+    /** see AbstractConnector for more information.                      */ \
+    /** @connectormethods connectConnector_##cname##()                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
     PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
         this->template constructConnector<T>(#cname,                        \
-                "Path to a Component to satisfy the Connector '"            \
+                "Path to a Component that satisfies the Connector '"        \
                 #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Connector-related functions                                */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Connector to an object of type T##.      */ \
+    void connectConnector_##cname(const Object& object) {                   \
+        this->updConnector(#cname).connect(object);                         \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
@@ -913,6 +923,8 @@ private:
     /** comment                                                          */ \
     /** In an XML file, you can set this Connector's connectee name      */ \
     /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
+    /** See AbstractConnector for more information.                      */ \
+    /** @connectormethods connectConnector_##cname##()                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -924,7 +936,14 @@ private:
     PropertyIndex constructConnector_##cname();                             \
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
     typedef T _connector_##cname##_type;                                    \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Connector-related functions                                */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Connector to an object of type T##.      */ \
+    void connectConnector_##cname(const Object& object) {                   \
+        this->updConnector(#cname).connect(object);                         \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
 /* When specifying a Connector to a forward-declared type (using
@@ -949,7 +968,7 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     using T = _connector_##cname##_type;                                    \
     std::string typeStr = T::getClassName();                                \
     return this->template constructConnector<T>(#cname,                     \
-        "Path to a Component to satisfy the Connector '"                    \
+        "Path to a Component that satisfies the Connector '"                \
         #cname "' of type " + typeStr + ".");                               \
 }
 /// @}
@@ -986,14 +1005,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This input is needed at stage istage.                            */ \
+    /** This input is needed at stage istage##.                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_INPUT macro.                                    */ \
+    /** #OpenSim_DECLARE_INPUT macro;                                    */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1002,7 +1022,27 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued (single-channel) Output.   */ \
+    /** The output must be of type T##.                                  */ \
+    /** This input is single-valued and thus cannot connect to a         */ \
+    /** list output.                                                     */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output.                                */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called first
@@ -1026,14 +1066,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input can connect to multiple outputs, all of which are     */ \
-    /** needed at stage istage.                                          */ \
+    /** needed at stage istage##.                                        */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
+    /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1043,7 +1084,28 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             #iname "' of type " #T " (description: " comment "). "          \
             "To specify multiple paths, put spaces between them.", istage)  \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued or list Output.            */ \
+    /** The output must be of type T##.                                  */ \
+    /** If the output is a list output, this connects to all of the      */ \
+    /** channels of the output.                                          */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output; the alias will be used for all */ \
+    /** channels of the output.                                          */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 /// @}
 
 } // end of namespace OpenSim

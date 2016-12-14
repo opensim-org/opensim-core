@@ -306,8 +306,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->connectConnector_frame1(get_frames(ix1));
+    this->connectConnector_frame2(get_frames(ix2));
 
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
@@ -333,8 +333,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->connectConnector_frame1(get_frames(ix1));
+    this->connectConnector_frame2(get_frames(ix2));
 }
 
 template <class C, class F>
