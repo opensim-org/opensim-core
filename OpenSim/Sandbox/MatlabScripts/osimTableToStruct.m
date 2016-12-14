@@ -1,10 +1,3 @@
-function data = osimTableToStruct(table)
-%% // Convert Matlab Struct to OpenSim time Series Table
-%  Input is an OpenSim TimesSeriesTable
-%
-%  Output is a Maltab stucture where data.label = n X 1 or n x 3 array
-%  ie structdata.LASI = [2 3 4; 4 5 6, ...
-
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -12,7 +5,7 @@ function data = osimTableToStruct(table)
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -27,65 +20,78 @@ function data = osimTableToStruct(table)
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
+%% Convert Matlab Struct to OpenSim time Series Table
+%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
+%
+%  Output is a Maltab stucture where data.label = nX1 or nx3 array
+%  eg structdata.LASI = [2 3 4; 4 5 6, ...
+
+% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
 % Ajay Seth, Ayman Habib, Jen Hicks.
 
-%%
+function structdata = osimTableToStruct(osimtable)
+
+% Import Java libraries 
 import org.opensim.modeling.*
 
-%%
-nCol = table.getNumColumns;
-nRow = table.getNumRows;
+%% Type check the input variables 
+if strcmp( char(osimtable.getClass()), 'class org.opensim.modeling.TimeSeriesTableVec3')
+        vec3Table = true;
 
-%% make an empty data structure
-data = struct();
-
-%%
-if strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
-    rowdata = zeros(nRow, 3);
-elseif strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTable')
-    rowdata = zeros(nRow, 1);
+elseif strcmp( char(osimtable.getClass()), 'class org.opensim.modeling.TimeSeriesTable')
+        vec3Table = false;
+        
 else
-    disp(['Input is of type ' char(table.getClass)'])
-    error(['This function only deals with TimeSeriesTable or TimeSeriesTableVec3']);
+    disp(['Input is of type ' char(osimtable.getClass()) ])
+    error(['This function only converts TimeSeriesTable and TimeSeriesTableVec3']);
 end
 
-%%
-for iCol = 0 : nCol -1
+%% get the number of data columns as label headers and data rows
+nLabels = osimtable.getNumColumns(); 
+nRows = osimtable.getNumRows();
 
-    if strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
+%% pre-allocate data arrarys. 
+structdata = struct();
+if vec3Table == true
+    dataArray = NaN([nRows 3]);
+else
+    dataArray = NaN([nRows 1]);
+end
 
-        for iRow = 0 : nRow - 1
-            rowdata(iRow+1,1) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(0);
-            rowdata(iRow+1,2) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(1);
-            rowdata(iRow+1,3) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(2);
+%% cycle through columns and rows to make new arrays, then addd then to struct. 
+for iLabel = 0 : nLabels - 1
+    %     
+    if vec3Table == true
+        % If the data is Vec3 type
+        for iRow = 0 : nRows - 1
+            dataArray(iRow+1,1) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(0);
+            dataArray(iRow+1,2) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(1);
+            dataArray(iRow+1,3) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(2);
         end
-
-    elseif strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTable')
-
-        for iRow = 0 : nRow - 1
-            rowdata(iRow+1,1) = table.getDependentColumnAtIndex(iCol).getElt(iRow,0);
-        end
-    end
-
-    col_label  = char(table.getColumnLabels.get(iCol));
-
-    if isempty(strfind(col_label, '/'))
-        eval(['[data.' col_label '] = rowdata;']);
     else
-       temp = strfind(col_label, '/');
-       new_col_label = col_label(temp(end-1)+1:temp(end)-1);
-       eval(['[data.' new_col_label '] = rowdata;']);
+        % If the data is double type
+        for iRow = 0 : nRows - 1
+            dataArray(iRow+1,1) = osimtable.getDependentColumnAtIndex(iLabel).getElt(iRow,0);
+        end
     end
+    
+    % Get the osim table column label
+    col_label  = char(osimtable.getColumnLabels.get(iLabel));
+    % replace fwd slashes if present
+    if isempty(strfind(col_label, '/'))
+        col_label = strrep(col_label,'/', '_');
+    end
+    % Add the label and data to the data struct
+    structdata.(col_label) = dataArray;
 end
 
-%%
-time = zeros(nRow,1);
-
-for iRow = 0 : nRow - 1
-    time(iRow+1,1) = table.getIndependentColumn.get(iRow);
+% Get the time
+time = NaN([nRows 1]);
+% read time data from table
+for iRow = 0 : nRows - 1
+    time(iRow+1,1) = osimtable.getIndependentColumn.get(iRow);
 end
-
-[data.time] = time;
+% add time field to structure
+[structdata.time] = time;
 
 end
