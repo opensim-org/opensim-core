@@ -282,7 +282,6 @@ void JointReaction::setupReactionList()
         if (index > -1) { // found the Joint in the model
             // Add joint to JointReactionKey 
             const Joint& joint = jointSet[index];
-            currentKey.jointIndex = index;
             currentKey.joint = &joint;
 
             // Want joint reaction applied to child or parent?

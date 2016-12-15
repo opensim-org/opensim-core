@@ -65,10 +65,6 @@ private:
      *  of each analyzed joint.*/
     struct JointReactionKey
     {
-        /* The index of the joint to be reported on in the Model's JointSet.
-           This corresponds to the index in the Vector of reaction forces/moments
-           returned by the SimbodyEngine::computeReactions() method. */
-        int jointIndex;
         /* Joint reference*/
         const Joint* joint;
         /* The body upon which the force is applied */
