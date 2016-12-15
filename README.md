@@ -295,7 +295,7 @@ On Windows using Visual Studio
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
            variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.
@@ -541,7 +541,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
            docopt.cpp installation is `~/docopt.cpp-install`, then set this 
            variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.
@@ -757,7 +757,7 @@ And you could get all the optional dependencies via:
     release version of the command-line applications instead of the slow debug
     versions.
 8. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.
