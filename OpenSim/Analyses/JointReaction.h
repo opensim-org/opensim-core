@@ -67,12 +67,17 @@ private:
     {
         /* Joint reference*/
         const Joint* joint;
-        /* The body upon which the force is applied */
-        const Frame* appliedOnBody;
         /* Is the reaction force applied on the Body the child or the parent
            of the joint?*/
         bool isAppliedOnChild;
-        /* The reference Frame in which the force should be expressed */
+        /* The body upon which the force is applied. Specifically, this is
+           the base frame of the body specifiied (i.e. child or parent) from
+           isAppliedOnChild. Note that this is only used for printing the
+           onBodyName when constructing column labels. */
+        const Frame* appliedOnBody;
+        /* The reference Frame in which the force should be expressed.
+           Specifically this is either Ground or the base frame of the
+           body specified (i.e. child or parent). */
         const Frame* expressedInFrame;
     };
 
