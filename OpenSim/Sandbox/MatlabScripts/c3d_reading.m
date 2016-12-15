@@ -23,114 +23,81 @@
 % Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
 % Ajay Seth, Ayman Habib, Jen Hicks.
 
-%% // Example script for use in OpenSim 4.0
-% (1) Reading c3d files into opensim table format
-% (2) 'flattening' a vec3 table to a table of doubles
-% (3) Rotating table data and writing to a new table
-% (4) Writing marker (.trc) and force (.mot) data to file
+%% // Utility function for convertin c3d data to .trc and .mot format. 
+% TODO: Write documentation
 
+
+function c3d_reading(varargin)
+
+p = inputParser;
+defaultFirstRotation = 0;
+default2ndRotation = 0;
+defaultFilePath = '';
+defaultAxis = '';
+expectedAxis = {'X','Y','Z'};
+
+addOptional(p,'filepath',defaultFilePath)
+addOptional(p,'firstRotation',defaultFirstRotation,@isnumeric);
+addOptional(p,'secondRotation',default2ndRotation,@isnumeric);
+addOptional(p,'axis',defaultAxis,...
+                 @(x) any(validatestring(x,expectedAxis)));
+addOptional(p,'axis2',defaultAxis,...
+                 @(x) any(validatestring(x,expectedAxis)));
+             
+parse(p,varargin{:});
+
+axis = p.Results.axis;
+axis2 = p.Results.axis2;
+filepath = p.Results.filepath;
+rot1 = p.Results.firstRotation;
+rot2 = p.Results.secondRotation;
+
+
+%% check for file path
+if isempty(filepath)
+        [filein, pathname] = uigetfile({'*.c3d','C3D file'}, 'C3D data file...');
+        filepath = fullfile(pathname,filein);
+elseif nargin >= 1
+        if exist(filepath,'file') == 0
+            error('file does not exist')
+        end        
+end
+[path, filename, ext] = fileparts(filepath);
+
+%% import java libraries
 import org.opensim.modeling.*
 
 %% Use a c3dAdapter to turn read a c3d file
 adapter = C3DFileAdapter();
-
-tables = adapter.read('test_walking.c3d');
+tables = adapter.read(filepath);
 
 %% get the marker data
 markers = tables.get('markers');
-% get the number of markers and frames
-nMarkers = markers.getNumColumns();
-nMarkerFrames = markers.getNumRows();
-% get the data rate of the markers. The Meta data is created from the c3d,
-% so the keys are not generic. In this case, we know we are looking for
-% 'DataRate'
-MarkerMetaDataKeys = markers.getTableMetaDataKeys();
-for i = 0 : MarkerMetaDataKeys.size() - 1
-
-    if strcmp( char(MarkerMetaDataKeys.get(i)), 'DataRate')
-        MarkerRate = str2num(markers.getTableMetaDataAsString(...   
-                                               MarkerMetaDataKeys.get(i)));
-        break
-    end
-end
 
 %% get the force data
 forces = tables.get('forces');
-% get the numner of forces and rows
-nForces = forces.getNumColumns();
-nForceFrames = forces.getNumRows();
-% get the data rate of the forces. The Meta data is created from the c3d,
-% so the keys are not generic. In this case, we know we are looking for
-% 'DataRate'
-ForceMetaDataKeys = forces.getTableMetaDataKeys();
-for i = 0 : ForceMetaDataKeys.size() - 1
-
-    if strcmp( char(ForceMetaDataKeys.get(i)), 'DataRate')
-        ForceRate = str2num(forces.getTableMetaDataAsString(...   
-                                               ForceMetaDataKeys.get(i)));
-        break
-    end
-end
 
 %% Define a rotation matix
-Rot = -90;
-rotationMatrix = [1,0,0;0,cosd(Rot),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cosd(Rot)];
+rotations = rotateCoordinateSys(axis,rot1,axis2,rot2);
 
-%% Rotate marker data
-% make a clean copuy to alter
-markers_rotated = markers();
-
-for iMarker = 0 : nMarkers - 1
-
-    % get the column data for the marker
-    marker = markers_rotated.updDependentColumnAtIndex(iMarker);
-
-    % go through each element of the table column, rotate the Vec3, and write
-    % back to the column.
-    for iRow = 0 : markers_rotated.getNumRows - 1
-        % get Matlab vector marker position
-        vectorData = [marker.getElt(0,iRow).get(0)...
-                      marker.getElt(0,iRow).get(1)...
-                      marker.getElt(0,iRow).get(2)];
-
-        % rotate the marker data
-        rotatedData = [rotationMatrix*vectorData']';
-
-        % Write the rotated data back to the Vec3TimesSeriesTable
-        elem = Vec3(rotatedData(1),rotatedData(2),rotatedData(3));
-        % set the value of the element
-        marker.set(iRow, elem);
-    end
+if isempty(rotations);
+    rotate = false;
+else
+    rotate = true;
+    rotNames = fieldnames(rotations);
+    nRots    = length(rotNames);
 end
 
-%% Rotate Force data
-% make a clean copy to alter
-forces_rotated = forces();
-
-for iForce = 0 : nForces - 1
-
-    % get the column data for the marker
-    force = forces_rotated.updDependentColumnAtIndex( iForce   );
-
-    % go through each element of the table column, rotate the Vec3, and write
-    % back to the column.
-    for iRow = 0 : nForceFrames - 1
-        % get Matlab vector marker position
-        vectorData = [force.getElt(0,iRow).get(0)...
-                      force.getElt(0,iRow).get(1)...
-                      force.getElt(0,iRow).get(2)];
-
-        % rotate the marker data
-        rotatedData = [rotationMatrix*vectorData']';
-
-        % Write the rotated data back to the Vec3TimesSeriesTable
-        elem = Vec3(rotatedData(1),rotatedData(2),rotatedData(3));
-        % set the value of the element
-        force.set(iRow, elem);
-
+%% Rotate marker and force data
+if rotate
+    for i = 1 : nRots
+        rotationMatrix = rotations.(rotNames{i});
+        % rotate marker data
+        markers = rotateTableData(markers, rotationMatrix);
+        % rotate force data
+        forces_rotated = rotateTableData(forces,rotationMatrix);
     end
 end
-
 %% Print the rotated markers to trc file
 % make trc adapter and write marker tables to file.
 % TRCFileAdapter requires the table to have DataRate and Units meta data.
@@ -138,8 +105,7 @@ end
 % copied. If you make a new table, you will need to set these meta data
 % keys before using TRCFileAdapter.
 % ie markers.addTableMetaDataString('DataRate', '250')
-TRCFileAdapter().write(markers,'test_walking.trc');
-TRCFileAdapter().write(markers_rotated,'test_walking_rotated.trc');
+TRCFileAdapter().write(markers,[filename '.trc']);
 
 %% Print the force data as a Vec3 sto file and a flattened doubles sto file
 % make postfix string vector for naming colomns
@@ -153,8 +119,85 @@ postfix.add('_z');
 % column names have '_1', '_2', '_3' added. Here we specify the postfic as
 % '_x', '_y', and 'z'.
 forces_flattened = forces.flatten(postfix);
-forces_rot_flattened = forces_rotated.flatten(postfix);
+% make a sto adapter and write the forces table to file.
+STOFileAdapter().write(forces_flattened,[filename '.mot']);
 
-%% make a sto adapter and write the forces table to file.
-STOFileAdapter().write(forces_flattened,'test_walking_grf.mot');
-STOFileAdapter().write(forces_rot_flattened,'test_walking_grf_rotated.mot');
+end
+
+
+function table_rotated = rotateTableData(table, rotationMatrix)
+
+import org.opensim.modeling.*
+
+nLabels = table.getNumColumns();
+nRows = table.getNumRows();
+
+table_rotated = table();
+
+for it = 0 : nLabels - 1
+
+    % get the column data for the marker
+    table_column = table_rotated.updDependentColumnAtIndex( it   );
+
+    % go through each element of the table column, rotate the Vec3, and write
+    % back to the column.
+    for iRow = 0 : nRows - 1
+        % get Matlab vector marker position
+        vectorData = [table_column.getElt(0,iRow).get(0)...
+                      table_column.getElt(0,iRow).get(1)...
+                      table_column.getElt(0,iRow).get(2)];
+
+        % rotate the marker data
+        rotatedData = [rotationMatrix*vectorData']';
+
+        % Write the rotated data back to the Vec3TimesSeriesTable
+        elem = Vec3(rotatedData(1),rotatedData(2),rotatedData(3));
+        % set the value of the element
+        table_column.set(iRow, elem);
+     end
+end
+end
+
+function rotations = rotateCoordinateSys(axis,rot1,axis2,rot2)
+
+if isempty(axis)
+    rotations = [];
+    return
+elseif isempty(axis2)
+    nRot = 1;
+else
+    nRot = 2;
+end
+
+rotations = struct();
+
+for i = 1 : nRot
+ 
+    if i == 1 
+        rotAxis = axis;
+        Rot     = rot1;
+        rotOrder = 'firstRotation';
+    else
+        rotAxis = axis2;
+        Rot     = rot2;
+        rotOrder = 'secondRotation';
+    end
+    
+    % Create roation matrices according to Rot (degrees)   
+    RotAboutX1 = [1,0,0;0,cosd(Rot),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cosd(Rot)];
+    RotAboutY1 = [cosd(Rot),0,sin(Rot*pi/180);0,1,0;-(sin(Rot*pi/180)),0,cosd(Rot)];
+    RotAboutZ1 = [cosd(Rot),-(sin(Rot*pi/180)),0;sin(Rot*pi/180),cosd(Rot),0;0,0,1];
+
+    % choose which rotation matrix to use based on user input 
+    if strcmp(rotAxis,'X') 
+        rotationMatrix = RotAboutX1;
+    elseif strcmp(rotAxis,'Y') 
+        rotationMatrix = RotAboutY1;
+    elseif strcmpi(rotAxis,'Z')
+        rotationMatrix = RotAboutZ1;
+    end
+    
+    rotations.(rotOrder) = rotationMatrix;
+      
+end
+end
