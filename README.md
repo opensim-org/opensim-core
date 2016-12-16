@@ -194,7 +194,9 @@ On Windows using Visual Studio
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+        * Note: Older versions of Matlab may use an older version of JVM. Run
+                'ver' in Matlab to check Matlab's JVM version (must be >= 1.7).
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
@@ -448,7 +450,9 @@ ctest -j8
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+        * Note: Older versions of Matlab may use an older version of JVM. Run
+                'ver' in Matlab to check Matlab's JVM version (must be >= 1.7).
     * **python scripting** (optional):
         * Mac OSX comes with python, but you could also use:
         * [`brew install python`](http://brew.sh),
@@ -646,6 +650,8 @@ specific Ubuntu versions under 'For the impatient' below.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
+        * Note: Older versions of Matlab may use an older version of JVM. Run
+                'ver' in Matlab to check Matlab's JVM version (must be >= 1.7).
     * **python scripting** (optional): `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
