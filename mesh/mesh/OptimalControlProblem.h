@@ -41,13 +41,21 @@ public:
     //        const VectorX<T>& final_states) const = 0;
     virtual void endpoint_cost(const double& final_time,
                                const VectorX<T>& final_states,
-                               T& cost) const {}
+                               T& cost) const;
     // TODO change time to T.
     virtual void integral_cost(const double& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
-            T& integrand) const {}
+            T& integrand) const;
 };
+
+template<typename T>
+void OptimalControlProblem<T>::endpoint_cost(const double&,
+        const VectorX<T>&, T&) const {}
+
+template<typename T>
+void OptimalControlProblem<T>::integral_cost(const double&,
+        const VectorX<T>&, const VectorX<T>&, T&) const {}
 
 struct Bounds {
     Bounds() = default;

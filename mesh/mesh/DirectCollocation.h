@@ -127,7 +127,7 @@ public:
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?
     LowOrder(std::shared_ptr<const OCProblem> ocproblem,
-            unsigned num_mesh_points = 50) {
+            unsigned num_mesh_points = 200) {
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }

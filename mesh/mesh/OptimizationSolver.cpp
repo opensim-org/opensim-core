@@ -564,7 +564,8 @@ void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
         Index /*num_constraints*/,
         const Number* /*g*/, const Number* /*lambda*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
-        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) {
+        Ipopt::IpoptCalculatedQuantities* /*ip_cq*/)
+{
     m_solution.resize(num_variables);
     //printf("\nSolution of the primal variables, x\n");
     //for (Index i = 0; i < num_variables; ++i) {

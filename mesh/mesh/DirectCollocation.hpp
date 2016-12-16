@@ -4,6 +4,7 @@
 #include "DirectCollocation.h"
 #include "OptimalControlProblem.h"
 #include "OptimizationSolver.h"
+#include "SNOPTSolver.h"
 
 namespace mesh {
 
@@ -31,6 +32,8 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
         // TODO this may not be good for IpoptSolver; IpoptSolver should
         // have a shared_ptr??
         m_optsolver.reset(new IpoptSolver(*m_transcription.get()));
+    } else if (optsolver_lower == "snopt") {
+        m_optsolver.reset(new SNOPTSolver(*m_transcription.get()));
     } else {
         throw std::runtime_error("Unrecognized optimization solver '" +
                 optsolver + "'.");
