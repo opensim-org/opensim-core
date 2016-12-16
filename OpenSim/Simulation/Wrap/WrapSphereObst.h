@@ -78,11 +78,9 @@ public:
     std::string getDimensionsString() const override;
     void scale(const SimTK::Vec3& aScaleFactors) override { }
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
-#ifndef SWIG
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
-protected:
     void setupProperties();
 
 private:
