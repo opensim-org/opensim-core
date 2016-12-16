@@ -59,8 +59,10 @@ class DirectCollocationSolver {
 public:
     typedef OptimalControlProblem<T> OCProblem;
     DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem,
-            const std::string& transcription_method,
-            const std::string& optimization_solver);
+                            const std::string& transcription_method,
+                            const std::string& optimization_solver,
+                            // TODO remove; put somewhere better.
+                            const unsigned& num_mesh_points = 20);
     OptimalControlSolution solve() const;
     // Solution solve(const OptimalControlIterate& initial_guess);
 private:

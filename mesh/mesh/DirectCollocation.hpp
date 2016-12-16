@@ -12,14 +12,16 @@ template<typename T>
 DirectCollocationSolver<T>::DirectCollocationSolver(
         std::shared_ptr<const OCProblem> ocproblem,
         const std::string& transcrip,
-        const std::string& optsolver)
+        const std::string& optsolver,
+        const unsigned& num_mesh_points)
 {
     std::locale loc;
     std::string transcrip_lower = transcrip;
     std::transform(transcrip_lower.begin(), transcrip_lower.end(),
             transcrip_lower.begin(), ::tolower);
-    if (transcrip_lower == "euler") {
-        m_transcription.reset(new transcription::LowOrder<T>(ocproblem));
+    if (transcrip_lower == "trapezoidal") {
+        m_transcription.reset(new transcription::LowOrder<T>(ocproblem,
+                                                             num_mesh_points));
     } else {
         throw std::runtime_error("Unrecognized transcription method '" +
                 transcrip + "'.");
