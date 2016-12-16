@@ -66,17 +66,21 @@ void LowOrder<T>::set_ocproblem(
     m_num_states = m_ocproblem->num_states();
     m_num_controls = m_ocproblem->num_controls();
     m_num_continuous_variables = m_num_states+m_num_controls;
-    int num_variables = m_num_mesh_points*m_num_continuous_variables;
+    m_num_time_variables = 2;
+    int num_variables = m_num_time_variables
+            + m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    int num_bound_constraints = 2*m_num_continuous_variables;
-    m_num_defects = m_num_mesh_points-1;
-    int num_dynamics_constraints = (m_num_defects)*m_num_states;
-    int num_constraints = num_bound_constraints+num_dynamics_constraints;
+    int num_bound_constraints = 2 * m_num_continuous_variables;
+    m_num_defects = m_num_mesh_points - 1;
+    int num_dynamics_constraints = m_num_defects * m_num_states;
+    int num_constraints = num_bound_constraints + num_dynamics_constraints;
     this->set_num_constraints(num_constraints);
 
     // Bounds.
-    double initial_time;
-    double final_time;
+    double initial_time_lower;
+    double initial_time_upper;
+    double final_time_lower;
+    double final_time_upper;
     // TODO these could be fixed sizes for certain types of problems.
     using Eigen::VectorXd;
     VectorXd states_lower(m_num_states);
@@ -91,7 +95,8 @@ void LowOrder<T>::set_ocproblem(
     VectorXd initial_controls_upper(m_num_controls);
     VectorXd final_controls_lower(m_num_controls);
     VectorXd final_controls_upper(m_num_controls);
-    m_ocproblem->bounds(initial_time, final_time,
+    m_ocproblem->bounds(initial_time_lower, initial_time_upper,
+            final_time_lower, final_time_upper,
             states_lower, states_upper,
             initial_states_lower, initial_states_upper,
             final_states_lower, final_states_upper,
@@ -99,15 +104,21 @@ void LowOrder<T>::set_ocproblem(
             initial_controls_lower, initial_controls_upper,
             final_controls_lower, final_controls_upper);
     // TODO validate sizes.
-    m_initial_time = initial_time; // TODO make these variables.
-    m_final_time = final_time;
+    //m_initial_time = initial_time; // TODO make these variables.
+    //m_final_time = final_time;
     // Bounds on variables.
-    VectorXd variable_lower =
+    VectorXd variable_lower(num_variables);
+    variable_lower[0] = initial_time_lower;
+    variable_lower[1] = final_time_lower;
+    variable_lower.tail(num_variables - m_num_time_variables) =
             (VectorXd(m_num_continuous_variables)
                     << states_lower, controls_lower)
                     .finished()
                     .replicate(m_num_mesh_points, 1);
-    VectorXd variable_upper =
+    VectorXd variable_upper(num_variables);
+    variable_upper[0] = initial_time_upper;
+    variable_upper[1] = final_time_upper;
+    variable_upper.tail(num_variables - m_num_time_variables) =
             (VectorXd(m_num_continuous_variables)
                     << states_upper, controls_upper)
                     .finished()
@@ -132,26 +143,29 @@ void LowOrder<T>::set_ocproblem(
     // TODO won't work if the bounds don't include zero!
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
     // input
-    const double step_size = (m_final_time-m_initial_time)/
-            (m_num_mesh_points-1);
+    const unsigned num_mesh_intervals = m_num_mesh_points - 1;
+    const double interval_frac = 1.0 / num_mesh_intervals;
     // For integrating the integral cost.
-    const unsigned num_mesh_intervals = m_num_mesh_points-1;
     // The duration of each mesh interval.
     VectorXd mesh_intervals =
-            VectorXd::Constant(num_mesh_intervals, step_size);
+            VectorXd::Constant(num_mesh_intervals, interval_frac);
     m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
+    // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
     m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
-            0.5*mesh_intervals;
+            0.5 * mesh_intervals;
     m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) =
-            0.5*mesh_intervals;
+            0.5 * mesh_intervals;
 }
 
 template<typename T>
 void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
 {
-    const double step_size = (m_final_time-m_initial_time)/
-            (m_num_mesh_points-1);
+    // TODO move this to a "make_variables_view()"
+    const T& initial_time = x[0];
+    const T& final_time = x[1];
+    const T duration = final_time - initial_time;
+    const T step_size = duration / (m_num_mesh_points - 1);
 
     // TODO I don't actually need to make a new view each time; just change the
     // data pointer. TODO probably don't even need to update the data pointer!
@@ -161,7 +175,7 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
     // Endpoint cost.
     // --------------
     // TODO does this cause the final_states to get copied?
-    m_ocproblem->endpoint_cost(m_final_time, states.rightCols(1), obj_value);
+    m_ocproblem->endpoint_cost(final_time, states.rightCols(1), obj_value);
 
 
     // Integral cost.
@@ -169,8 +183,8 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
     // TODO reuse memory; don't allocate every time.
     VectorX<T> integrand = VectorX<T>::Zero(m_num_mesh_points);
     // TODO parallelize.
-    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
-        const double time = step_size*i_mesh+m_initial_time;
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        const T time = step_size * i_mesh + initial_time;
         m_ocproblem->integral_cost(time,
                 states.col(i_mesh), controls.col(i_mesh), integrand[i_mesh]);
     }
@@ -181,10 +195,15 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
     // The left vector is of type T b/c the dot product requires the same type.
     // TODO the following doesn't work because of different numerical types.
     // obj_value = m_trapezoidal_quadrature_coefficients.dot(integrand);
-    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
-        obj_value += m_trapezoidal_quadrature_coefficients[i_mesh] *
+    T integral_cost = 0;
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        integral_cost += m_trapezoidal_quadrature_coefficients[i_mesh] *
                 integrand[i_mesh];
     }
+    // The quadrature coefficients are fractions of the duration; multiply
+    // by duration to get the correct units.
+    integral_cost *= duration;
+    obj_value += integral_cost;
 }
 
 template<typename T>
@@ -192,8 +211,10 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
         Eigen::Ref<VectorX<T>> constraints) const
 {
     // TODO parallelize.
-    const double step_size = (m_final_time-m_initial_time)/
-            (m_num_mesh_points-1);
+    const T& initial_time = x[0];
+    const T& final_time = x[1];
+    const T duration = final_time - initial_time;
+    const T step_size = duration / (m_num_mesh_points - 1);
 
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
@@ -221,6 +242,7 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     // TODO reuse this memory!!!!!! Don't allocate every time!!!
     MatrixX<T> derivs(m_num_states, m_num_mesh_points);
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        // TODO should pass the time.
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
                 derivs.col(i_mesh));
     }
@@ -230,24 +252,32 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
     // TODO this is backward Euler; do we want forward Euler?
     const unsigned N = m_num_mesh_points;
-    const auto& x_i = states.rightCols(N-1);
-    const auto& x_im1 = states.leftCols(N-1);
-    const auto& xdot_i = derivs.rightCols(N-1);
+    const auto& x_i = states.rightCols(N - 1);
+    const auto& x_im1 = states.leftCols(N - 1);
+    const auto& xdot_i = derivs.rightCols(N - 1);
     const auto& h = step_size;
     //constr_view.defects = x_i-(x_im1+h*xdot_i);
     // TODO Trapezoidal:
     const auto& xdot_im1 = derivs.leftCols(N-1);
     //constr_view.defects = x_i-(x_im1+h*xdot_im1);
     constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
+    //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
+    //    const auto& h = m_mesh_intervals[i_mesh];
+    //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
+    //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
+    // (i_mesh) + xdot_im1.col(i_mesh)));
+    //}
 }
 
 template<typename T>
 typename Transcription<T>::Trajectory LowOrder<T>::
 interpret_iterate(const Eigen::VectorXd& x) const
 {
+    const double& initial_time = x[0];
+    const double& final_time = x[1];
     typename Transcription<T>::Trajectory traj;
     traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
-            m_initial_time, m_final_time);
+            initial_time, final_time);
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
@@ -261,7 +291,8 @@ LowOrder<T>::template TrajectoryView<S>
 LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
-            x.data(),          // Pointer to the start of the data.
+            // Pointer to the start of the states.
+            x.data() + m_num_time_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
@@ -274,7 +305,8 @@ LowOrder<T>::template TrajectoryView<S>
 LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
-            x.data() + m_num_states, // Skip over the states for i_mesh = 0.
+            // Start of controls for first mesh interval.
+            x.data() + m_num_time_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.

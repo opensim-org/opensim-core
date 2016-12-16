@@ -18,7 +18,7 @@ class SlidingMassNew : public mesh::OptimalControlProblemNamed<T> {
 public:
     SlidingMassNew() {
         // TODO when time is a variable, this has to be more advanced:
-        this->set_time(0, 2);
+        this->set_time({0}, {2});
         this->add_state("x", {0, 2}, {0}, {1});
         this->add_state("u", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
@@ -36,7 +36,7 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void integral_cost(const double& /*time*/,
+    void integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
             const VectorX<T>& controls,
             adouble& integrand) const override {
@@ -89,7 +89,8 @@ class SlidingMass : public mesh::OptimalControlProblem<T> {
     // controls?
     int num_states() const override { return 2; }
     int num_controls() const override { return 1; }
-    void bounds(double& initial_time, double& final_time,
+    void bounds(double& initial_time_lower, double& initial_time_upper,
+            double& final_time_lower, double& final_time_upper,
             Ref<VectorXd> states_lower,
             Ref<VectorXd> states_upper,
             Ref<VectorXd> initial_states_lower,
@@ -104,8 +105,10 @@ class SlidingMass : public mesh::OptimalControlProblem<T> {
             Ref<VectorXd> final_controls_upper) const override
     {
         // TODO turn into bounds on time.
-        initial_time = 0.0;
-        final_time = 2.0;
+        initial_time_lower = 0.0;
+        initial_time_upper = 0.0;
+        final_time_lower = 2.0;
+        final_time_upper = 2.0;
         states_lower           = Vector2d(0, -10);
         states_upper           = Vector2d(2,  10);
         initial_states_lower   = Vector2d(0, 0);
@@ -133,7 +136,7 @@ class SlidingMass : public mesh::OptimalControlProblem<T> {
     //                   const std::vector<T>& final_states) const override {
 
     //}
-    void integral_cost(const double& /*time*/,
+    void integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
             const VectorX<T>& controls,
             adouble& integrand) const override {

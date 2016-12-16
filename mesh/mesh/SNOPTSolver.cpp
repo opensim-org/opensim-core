@@ -142,10 +142,11 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // This function computes the objective and constraints (defined above).
     snopt_prob.setUserFun(snopt_userfunction);
 
+    // TODO call snJac().
     // snopta will compute the Jacobian by finite-differences.
     // The user has the option of calling  snJac  to define the
     // coordinate arrays (iAfun,jAvar,A) and (iGfun, jGvar).
-    snopt_prob.setIntParameter("Derivative option", 0);
+    snopt_prob.setIntParameter("Derivative option", 0 /* TODO 1 */);
     snopt_prob.setIntParameter("Verify level ", 3);
 
     // Solve the problem.

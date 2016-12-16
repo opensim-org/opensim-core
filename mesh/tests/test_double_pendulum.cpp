@@ -42,13 +42,14 @@ public:
         const T M01 = m1 * L1*L1 + z0;
         Matrix2<T> M;
         M << m0 * L0*L0 + m1 * (L0*L0 + L1*L1) + 2*z0,    M01,
-             M01,                                         m1 * L1 * L1;
+             M01,                                         m1 * L1*L1;
         Vector2<T> V(-u1 * (2 * u0 + u1),
                      u0 * u0);
         V *= m1*L0*L1*sin(q1);
-        Vector2<T> G(g * (L0 * cos(q0) * (m0 + m1) + m1 * L1),
+        Vector2<T> G(g * ((m0 + m1) * L0 * cos(q0) + m1 * L1 * cos(q0 + q1)),
                      g * m1 * L1 * cos(q0 + q1));
 
+        //Vector2<T> drag(-10 * u0, -10 * u1);
         // TODO xdot.tail<2>() =
         xdot.tail(2) = M.inverse() * (tau - (V + G));
     }
@@ -63,28 +64,35 @@ public:
         // TODO fix allowing final bounds to be unconstrained.
         this->add_state("q0", {-10, 10}, {0});
         this->add_state("q1", {-10, 10}, {0});
-        this->add_state("u0", {-10, 10}, {0}, {0});
-        this->add_state("u1", {-10, 10}, {0}, {0});
+        this->add_state("u0", {-20, 20}, {0}, {0});
+        this->add_state("u1", {-20, 20}, {0}, {0});
         this->add_control("tau0", {-50, 50});
         this->add_control("tau1", {-50, 50});
     }
     //void terminal_cost(const double& final_time, const VectorX<T>&
     // final_states, const VectorX<T>& final_controls, T& cost)
     // TODO want to take const T& final_time.
-    void endpoint_cost(const double& /*final_time*/,
-            const VectorX<T>& final_states,
-            T& cost) const override
+//    void endpoint_cost(const T& /*final_time*/,
+//            const VectorX<T>& final_states,
+//            T& cost) const override
+//    {
+//        // TODO a final state constraint probably makes more sense.
+//        const auto& q0 = final_states[0];
+//        const auto& q1 = final_states[1];
+//        const auto& L0 = this->L0;
+//        const auto& L1 = this->L1;
+//        Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
+//                                   L0 * sin(q0) + L1 * sin(q0 + q1));
+//        const Vector2<T> desired_location(0, 2);
+//        cost = (actual_location - desired_location).squaredNorm();
+//        // cost = final_time;
+//    }
+    void integral_cost(const T& /*time*/,
+            const VectorX<T>& /*states*/,
+            const VectorX<T>& controls,
+            T& integrand) const override
     {
-        // TODO a final state constraint probably makes more sense.
-        const auto& q0 = final_states[0];
-        const auto& q1 = final_states[1];
-        const auto& L0 = this->L0;
-        const auto& L1 = this->L1;
-        Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q1),
-                                   L0 * sin(q0) + L1 * sin(q1));
-        const Vector2<T> desired_location(0, 2);
-        cost = (actual_location - desired_location).squaredNorm();
-        // cost = final_time;
+        integrand = controls.squaredNorm();
     }
 };
 

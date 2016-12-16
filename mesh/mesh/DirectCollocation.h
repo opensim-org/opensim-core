@@ -127,7 +127,7 @@ public:
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?
     LowOrder(std::shared_ptr<const OCProblem> ocproblem,
-            unsigned num_mesh_points = 200) {
+            unsigned num_mesh_points = 50) {
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
@@ -160,6 +160,7 @@ protected:
     using TrajectoryView = Eigen::Map<const MatrixX<S>,
                                       Eigen::Unaligned,
                                       Eigen::OuterStride<Eigen::Dynamic>>;
+    // TODO move to a single "make_variables_view"
     template<typename S>
     TrajectoryView<S>
     make_states_trajectory_view(const VectorX<S>& variables) const;
@@ -190,13 +191,14 @@ private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
     int m_num_mesh_points;
+    int m_num_time_variables = -1;
     int m_num_defects = -1;
     int m_num_states = -1;
     int m_num_controls = -1;
     int m_num_continuous_variables = -1;
     // TODO these should go eventually:
-    double m_initial_time = -1;
-    double m_final_time = -1;
+    //double m_initial_time = -1;
+    //double m_final_time = -1;
     Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
 };
 

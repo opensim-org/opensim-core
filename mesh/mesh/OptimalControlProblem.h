@@ -16,7 +16,9 @@ public:
     // each one a name.
     virtual int num_states() const = 0;
     virtual int num_controls() const = 0;
-    virtual void bounds(double& initial_time, double& final_time,
+    virtual void bounds(
+            double& initial_time_lower, double& initial_time_upper,
+            double& final_time_lower, double& final_time_upper,
             Eigen::Ref<Eigen::VectorXd> states_lower,
             Eigen::Ref<Eigen::VectorXd> states_upper,
             Eigen::Ref<Eigen::VectorXd> initial_states_lower,
@@ -31,6 +33,7 @@ public:
             Eigen::Ref<Eigen::VectorXd> final_controls_upper) const = 0;
 
     // TODO use Eigen, not std::vector.
+    // TODO must pass in the time.
     virtual void dynamics(const VectorX<T>& states,
             const VectorX<T>& controls,
             Eigen::Ref<VectorX<T>> derivative) const = 0;
@@ -39,22 +42,22 @@ public:
     // TODO endpoint or terminal cost?
     //virtual void endpoint_cost(const T& final_time,
     //        const VectorX<T>& final_states) const = 0;
-    virtual void endpoint_cost(const double& final_time,
+    virtual void endpoint_cost(const T& final_time,
                                const VectorX<T>& final_states,
                                T& cost) const;
     // TODO change time to T.
-    virtual void integral_cost(const double& time,
+    virtual void integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
             T& integrand) const;
 };
 
 template<typename T>
-void OptimalControlProblem<T>::endpoint_cost(const double&,
+void OptimalControlProblem<T>::endpoint_cost(const T&,
         const VectorX<T>&, T&) const {}
 
 template<typename T>
-void OptimalControlProblem<T>::integral_cost(const double&,
+void OptimalControlProblem<T>::integral_cost(const T&,
         const VectorX<T>&, const VectorX<T>&, T&) const {}
 
 struct Bounds {
@@ -93,10 +96,11 @@ private:
         FinalBounds final_bounds;
     };
 public:
-    void set_time(const double& initial_time, const double& final_time)
+    void set_time(const InitialBounds& initial_time,
+            const FinalBounds& final_time)
     {
-        m_initial_time = initial_time;
-        m_final_time = final_time;
+        m_initial_time_bounds = initial_time;
+        m_final_time_bounds = final_time;
     }
     void add_state(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
@@ -112,7 +116,8 @@ public:
     }
     int num_states() const override final { return m_state_infos.size(); }
     int num_controls() const override final { return m_control_infos.size(); }
-    void bounds(double& initial_time, double& final_time,
+    void bounds(double& initial_time_lower, double& initial_time_upper,
+            double& final_time_lower, double& final_time_upper,
             Eigen::Ref<Eigen::VectorXd> states_lower,
             Eigen::Ref<Eigen::VectorXd> states_upper,
             Eigen::Ref<Eigen::VectorXd> initial_states_lower,
@@ -127,8 +132,10 @@ public:
             Eigen::Ref<Eigen::VectorXd> final_controls_upper)
                 const override final
     {
-        initial_time = m_initial_time;
-        final_time = m_final_time;
+        initial_time_lower = m_initial_time_bounds.lower;
+        initial_time_upper = m_initial_time_bounds.upper;
+        final_time_lower = m_final_time_bounds.lower;
+        final_time_upper = m_final_time_bounds.upper;
         for (unsigned is = 0; is < m_state_infos.size(); ++is) {
             const auto& info = m_state_infos[is];
             states_lower[is]         = info.bounds.lower;
@@ -172,8 +179,8 @@ public:
         }
     }
 private:
-    double m_initial_time;
-    double m_final_time;
+    InitialBounds m_initial_time_bounds;
+    FinalBounds m_final_time_bounds;
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
 };
