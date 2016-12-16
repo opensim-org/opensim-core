@@ -1,1 +1,3 @@
-OpenSimAddApplication(NAME versionUpdate)
+if(OPENSIM_BUILD_INDIVIDUAL_APPS)
+    OpenSimAddApplication(NAME versionUpdate)
+endif()
