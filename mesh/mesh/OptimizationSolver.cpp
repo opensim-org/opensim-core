@@ -568,10 +568,10 @@ void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
 {
     m_solution.resize(num_variables);
     //printf("\nSolution of the primal variables, x\n");
-    //for (Index i = 0; i < num_variables; ++i) {
-    //    printf("x[%d]: %e\n", i, x[i]);
-    //    m_solution[i] = x[i];
-    //}
+    for (Index i = 0; i < num_variables; ++i) {
+        //printf("x[%d]: %e\n", i, x[i]);
+        m_solution[i] = x[i];
+    }
     //printf("\nSolution of the bound multipliers, z_L and z_U\n");
     //for (Index i = 0; i < num_variables; ++i) {
     //    printf("z_L[%d] = %e\n", i, z_L[i]);
