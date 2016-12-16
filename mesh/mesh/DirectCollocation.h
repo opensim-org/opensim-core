@@ -5,60 +5,144 @@
 #include "OptimizationProblem.h"
 #include <Eigen/Dense>
 #include <adolc/adolc.h>
+#include <fstream>
 
 namespace mesh {
 
 template<typename T>
 class OptimalControlProblem;
 
-template<typename T>
-class Transcription : public OptimizationProblem<T> {
+class OptimizationSolver;
 
+struct OptimalControlSolution {
+    Eigen::RowVectorXd time;
+    Eigen::MatrixXd states;
+    Eigen::MatrixXd controls;
+    double objective;
+    void write(const std::string& filepath) const {
+        std::ofstream f(filepath);
+
+        // Column headers.
+        f << "time";
+        for (int i_state = 0; i_state < states.rows(); ++i_state) {
+            f << ",state" << i_state;
+        }
+        for (int i_control = 0; i_control < controls.rows(); ++i_control) {
+            f << ",control" << i_control;
+        }
+        f << std::endl;
+
+        // Data.
+        for (int i_mesh = 0; i_mesh < time.size(); ++i_mesh) {
+            f << time[i_mesh];
+            for (int i_state = 0; i_state< states.rows(); ++i_state) {
+                f << "," << states(i_state, i_mesh);
+            }
+            for (int i_control = 0; i_control< controls.rows(); ++i_control) {
+                f << "," << controls(i_control, i_mesh);
+            }
+            f << std::endl;
+        }
+        f.close();
+    }
 };
+
+namespace transcription {
+
+template<typename T>
+class Transcription;
+
+}
 
 template<typename T>
 class DirectCollocationSolver {
 public:
     typedef OptimalControlProblem<T> OCProblem;
-    DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem);
+    DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem,
+            const std::string& transcription_method,
+            const std::string& optimization_solver);
+    OptimalControlSolution solve() const;
+    // Solution solve(const OptimalControlIterate& initial_guess);
 private:
     std::shared_ptr<const OCProblem> m_ocproblem;
-    Transcription<T> m_transcription;
+    // TODO perhaps ideally DirectCollocationSolver would not be templated?
+    std::unique_ptr<transcription::Transcription<T>> m_transcription;
+    std::unique_ptr<OptimizationSolver> m_optsolver;
 };
 
+//namespace transcription {
+//
+//class LowOrder;
+//
+//class Orthogonal;
+//
+//class Pseudospectral;
+//}
 
+//template<typename T>
+//class TrapezoidalTranscription : public OptimizationProblem<T> {
+//
+//};
+
+//template<typename T>
+//class LowOrder : public OptimizationProblem<T> {
+//public:
+//    struct Trajectory {
+//        Eigen::RowVectorXd time;
+//        Eigen::MatrixXd states;
+//        Eigen::MatrixXd controls;
+//    };
+//protected:
+//    virtual void integrate_integral_cost(const VectorX<T>& integrands,
+//            T& integral) const = 0;
+//    virtual void compute_defects(const StatesView& states,
+//            const MatrixX<T>& derivs,
+//            DefectsTrajectoryView& defects);
+//};
+
+namespace transcription {
 
 template<typename T>
-class EulerTranscription : public OptimizationProblem<T> {
-    // TODO should this *BE* an OptimizationProblem, or should it just
-    // contain one?
+class Transcription : public OptimizationProblem<T> {
 public:
-    typedef OptimalControlProblem<T> OCProblem;
+    // TODO do we still need this type?
     struct Trajectory {
         Eigen::RowVectorXd time;
         Eigen::MatrixXd states;
         Eigen::MatrixXd controls;
     };
 
+    // TODO change interface to be a templated function so users can pass in
+    // writeable blocks of a matrix.
+    virtual Trajectory interpret_iterate(const Eigen::VectorXd& x) const = 0;
+};
+
+template<typename T>
+class LowOrder : public Transcription<T> {
+    // TODO should this *BE* an OptimizationProblem, or should it just
+    // contain one?
+public:
+    typedef OptimalControlProblem<T> OCProblem;
+
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?
-    EulerTranscription(std::shared_ptr<OCProblem> ocproblem,
-            unsigned num_mesh_points = 20) {
+    LowOrder(std::shared_ptr<const OCProblem> ocproblem,
+            unsigned num_mesh_points = 50) {
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
     // TODO order of calls?
     // TODO right now, must call this BEFORE set_problem.
     void set_num_mesh_points(unsigned N) { m_num_mesh_points = N; }
-    void set_ocproblem(std::shared_ptr<OCProblem> ocproblem);
+    void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
     void objective(const VectorX<T>& x, T& obj_value) const override;
     void constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
 
-    // TODO change interface to be a templated function so users can pass in
-    // writeable blocks of a matrix.
-    Trajectory interpret_iterate(const Eigen::VectorXd& x) const;
+    // TODO can this have a generic implementation in the Transcription class?
+    typename Transcription<T>::Trajectory interpret_iterate(
+            const Eigen::VectorXd& x) const override;
 
 protected:
     /// Eigen::Map is a view on other data, and allows "slicing" so that we can
@@ -103,34 +187,9 @@ protected:
             const;
 
 private:
-//    int state_index(int i_mesh_point, int i_state) const {
-//        return i_mesh_point * m_num_continuous_variables + i_state;
-//    }
-//    int control_index(int i_mesh_point, int i_control) const {
-//        return i_mesh_point * m_num_continuous_variables
-//                + i_control + m_num_states;
-//    }
-//    int constraint_index(int i_mesh, int i_state) const {
-//        const int num_bound_constraints = 2 * m_num_continuous_variables;
-//        return num_bound_constraints + (i_mesh - 1) * m_num_states + i_state;
-//    }
-//    enum BoundsCategory {
-//        InitialStates   = 0,
-//        FinalStates     = 1,
-//        InitialControls = 2,
-//        FinalControls   = 3,
-//    };
-//    int constraint_bound_index(BoundsCategory category, int index) const {
-//        if (category <= 1) {
-//            assert(index < m_num_states);
-//            return category * m_num_states + index;
-//        }
-//        assert(index < m_num_controls);
-//        return 2 * m_num_states + (category - 2) * m_num_controls + index;
-//    }
 
-    std::shared_ptr<OCProblem> m_ocproblem;
-    int m_num_mesh_points = 20;
+    std::shared_ptr<const OCProblem> m_ocproblem;
+    int m_num_mesh_points;
     int m_num_defects = -1;
     int m_num_states = -1;
     int m_num_controls = -1;
@@ -138,8 +197,10 @@ private:
     // TODO these should go eventually:
     double m_initial_time = -1;
     double m_final_time = -1;
+    Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
 };
 
+} // namespace transcription
 } // namespace mesh
 
 #endif // MESH_DIRECTCOLLOCATION_H

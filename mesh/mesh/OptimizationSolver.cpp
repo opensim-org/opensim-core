@@ -268,11 +268,11 @@ bool IpoptSolver::TNLP::get_bounds_info(
         }
     } else {
         // TODO vectorized:
-        assert((constraint_lower.array() <= constraint_upper.array()).all());
+        // TODO turn the following into an exception message:
+        // assert((constraint_lower.array() <= constraint_upper.array()).all());
         for (Index icon = 0; icon < num_constraints; ++icon) {
             const auto& lower = constraint_lower[icon];
             const auto& upper = constraint_upper[icon];
-            // TODO turn the following into an exception message:
             assert(lower <= upper);
             g_lower[icon] = lower;
             g_upper[icon] = upper;
@@ -566,20 +566,20 @@ void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
         Ipopt::IpoptCalculatedQuantities* /*ip_cq*/) {
     m_solution.resize(num_variables);
-    printf("\nSolution of the primal variables, x\n");
-    for (Index i = 0; i < num_variables; ++i) {
-        printf("x[%d]: %e\n", i, x[i]);
-        m_solution[i] = x[i];
-    }
-    printf("\nSolution of the bound multipliers, z_L and z_U\n");
-    for (Index i = 0; i < num_variables; ++i) {
-        printf("z_L[%d] = %e\n", i, z_L[i]);
-    }
-    for (Index i = 0; i < num_variables; ++i) {
-        printf("z_U[%d] = %e\n", i, z_U[i]);
-    }
-    printf("\nObjective value\n");
-    printf("f(x*) = %e\n", obj_value);
+    //printf("\nSolution of the primal variables, x\n");
+    //for (Index i = 0; i < num_variables; ++i) {
+    //    printf("x[%d]: %e\n", i, x[i]);
+    //    m_solution[i] = x[i];
+    //}
+    //printf("\nSolution of the bound multipliers, z_L and z_U\n");
+    //for (Index i = 0; i < num_variables; ++i) {
+    //    printf("z_L[%d] = %e\n", i, z_L[i]);
+    //}
+    //for (Index i = 0; i < num_variables; ++i) {
+    //    printf("z_U[%d] = %e\n", i, z_U[i]);
+    //}
+    //printf("\nObjective value\n");
+    //printf("f(x*) = %e\n", obj_value);
     // TODO also implement Ipopt's intermediate_() function.
 }
 

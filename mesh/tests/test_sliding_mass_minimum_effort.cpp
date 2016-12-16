@@ -14,6 +14,73 @@ using Eigen::MatrixXd;
 using namespace mesh;
 
 template<typename T>
+class SlidingMassNew : public mesh::OptimalControlProblemNamed<T> {
+public:
+    SlidingMassNew() {
+        // TODO when time is a variable, this has to be more advanced:
+        this->set_time(0, 2);
+        this->add_state("x", {0, 2}, {0}, {1});
+        this->add_state("u", {-10, 10}, {0}, {0});
+        this->add_control("F", {-50, 50});
+        // this->add_state("x", Bounds(  0,  2), InitialBounds(0), FinalBounds(1));
+        // this->add_state("u", Bounds(-10, 10), InitialBounds(0), FinalBounds(0));
+        // this->add_control("F", Bounds(-50, 50));
+    }
+    const double mass = 10.0;
+    void dynamics(const VectorX<T>& states,
+            const VectorX<T>& controls,
+            Ref<VectorX<T>> derivatives) const override
+    {
+        derivatives[0] = states[1];
+        derivatives[1] = controls[0] / mass;
+    }
+    // TODO alternate form that takes a matrix; state at every time.
+    //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
+    void integral_cost(const double& /*time*/,
+            const VectorX<T>& /*states*/,
+            const VectorX<T>& controls,
+            adouble& integrand) const override {
+        integrand = controls[0] * controls[0];
+    }
+};
+
+TEST_CASE("Sliding mass new interface") {
+
+    auto ocp = std::make_shared<SlidingMassNew<adouble>>();
+    DirectCollocationSolver<adouble> dircol(ocp, "euler", "ipopt");
+    OptimalControlSolution solution = dircol.solve();
+    solution.write("sliding_mass_solution.csv");
+    //OptimalControlIterate initial_guess = ocp->make_guess_template();
+    //OptimalControlSolution solution = dircol.solve(initial_guess);
+
+    //auto ocp = std::make_shared<SlidingMassNew<adouble>>();
+    //EulerTranscription transcription;
+    //DirectCollocationSolver dircol(ocp, transcription);
+    //mesh::transcription::LowOrder<adouble> dircol(ocp);
+    //mesh::IpoptSolver solver(dircol);
+    //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
+    //VectorXd variables;
+    //// TODO user should never get/want raw variables...wrap the solver
+    //// interface for direct collocation!
+    //double obj_value = solver.optimize(variables);
+    //using Trajectory = transcription::LowOrder<adouble>::Trajectory;
+    //Trajectory traj = dircol.interpret_iterate(variables);
+
+    // Initial and final position.
+    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+
+    int N = solution.time.size();
+    std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 1, 14.25, -14.25);
+    RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+    REQUIRE(Approx(errors.norm()) == 0);
+}
+
+template<typename T>
 class SlidingMass : public mesh::OptimalControlProblem<T> {
     // TODO difficult... virtual void initial_guess()
     // TODO really want to declare each state variable individually, and give
@@ -79,14 +146,14 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     //EulerTranscription transcription;
     //DirectCollocationSolver dircol(ocp, transcription);
-    mesh::EulerTranscription<adouble> dircol(ocp);
+    mesh::transcription::LowOrder<adouble> dircol(ocp);
     mesh::IpoptSolver solver(dircol);
     //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
     VectorXd variables;
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
-    using Trajectory = EulerTranscription<adouble>::Trajectory;
+    using Trajectory = transcription::LowOrder<adouble>::Trajectory;
     Trajectory traj = dircol.interpret_iterate(variables);
 
     // Initial and final position.
@@ -97,8 +164,8 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     REQUIRE(Approx(traj.states.rightCols<1>()[1]) == 0.0);
 
     int N = traj.time.size();
-    RowVectorXd expected = RowVectorXd::LinSpaced(N-1, 14.25, -14.25);
-    RowVectorXd errors = traj.controls.rightCols(N-1) - expected;
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 1, 14.25, -14.25);
+    RowVectorXd errors = traj.controls.rightCols(N - 1) - expected;
     REQUIRE(Approx(errors.norm()) == 0);
 }
 

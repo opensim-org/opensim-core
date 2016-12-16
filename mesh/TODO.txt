@@ -17,3 +17,10 @@ Trying non-virtual interface for OptimizationProblem, but a Proxy class could
  Rename AbstractOptimizationProblem to OptimizationProblemBase?
 
  Eigen has spline support.
+
+ linear tangent steering example.
+
+ Integrate Optizelle solver! KNITRO solver!!
+
+List of optimization solvers:
+http://plato.asu.edu/sub/nlores.html#general

@@ -3,34 +3,79 @@
 
 #include "DirectCollocation.h"
 #include "OptimalControlProblem.h"
-
-// TODO don't use these
-using Eigen::VectorXd;
-using Eigen::MatrixXd;
-using Eigen::RowVectorXd;
-using Eigen::Ref;
+#include "OptimizationSolver.h"
 
 namespace mesh {
 
 template<typename T>
-void EulerTranscription<T>::set_ocproblem(
-        std::shared_ptr<OCProblem> ocproblem) {
+DirectCollocationSolver<T>::DirectCollocationSolver(
+        std::shared_ptr<const OCProblem> ocproblem,
+        const std::string& transcrip,
+        const std::string& optsolver)
+{
+    std::locale loc;
+    std::string transcrip_lower = transcrip;
+    std::transform(transcrip_lower.begin(), transcrip_lower.end(),
+            transcrip_lower.begin(), ::tolower);
+    if (transcrip_lower == "euler") {
+        m_transcription.reset(new transcription::LowOrder<T>(ocproblem));
+    } else {
+        throw std::runtime_error("Unrecognized transcription method '" +
+                transcrip + "'.");
+    }
+
+    std::string optsolver_lower = optsolver;
+    std::transform(optsolver_lower.begin(), optsolver_lower.end(),
+            optsolver_lower.begin(), ::tolower);
+    if (optsolver_lower == "ipopt") {
+        // TODO this may not be good for IpoptSolver; IpoptSolver should
+        // have a shared_ptr??
+        m_optsolver.reset(new IpoptSolver(*m_transcription.get()));
+    } else {
+        throw std::runtime_error("Unrecognized optimization solver '" +
+                optsolver + "'.");
+    }
+}
+
+template<typename T>
+OptimalControlSolution DirectCollocationSolver<T>::solve() const
+{
+    Eigen::VectorXd variables;
+    double obj_value = m_optsolver->optimize(variables);
+    // TODO
+    using Trajectory = typename transcription::LowOrder<T>::Trajectory;
+    Trajectory traj = m_transcription->interpret_iterate(variables);
+    OptimalControlSolution solution;
+    solution.time = traj.time;
+    solution.states = traj.states;
+    solution.controls = traj.controls;
+    solution.objective = obj_value;
+    return solution;
+}
+
+namespace transcription {
+
+template<typename T>
+void LowOrder<T>::set_ocproblem(
+        std::shared_ptr<const OCProblem> ocproblem)
+{
     m_ocproblem = ocproblem;
     m_num_states = m_ocproblem->num_states();
     m_num_controls = m_ocproblem->num_controls();
-    m_num_continuous_variables = m_num_states + m_num_controls;
-    int num_variables = m_num_mesh_points * m_num_continuous_variables;
+    m_num_continuous_variables = m_num_states+m_num_controls;
+    int num_variables = m_num_mesh_points*m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    int num_bound_constraints = 2 * m_num_continuous_variables;
-    m_num_defects = m_num_mesh_points - 1;
-    int num_dynamics_constraints = (m_num_defects) * m_num_states;
-    int num_constraints = num_bound_constraints + num_dynamics_constraints;
+    int num_bound_constraints = 2*m_num_continuous_variables;
+    m_num_defects = m_num_mesh_points-1;
+    int num_dynamics_constraints = (m_num_defects)*m_num_states;
+    int num_constraints = num_bound_constraints+num_dynamics_constraints;
     this->set_num_constraints(num_constraints);
 
     // Bounds.
     double initial_time;
     double final_time;
     // TODO these could be fixed sizes for certain types of problems.
+    using Eigen::VectorXd;
     VectorXd states_lower(m_num_states);
     VectorXd states_upper(m_num_states);
     VectorXd initial_states_lower(m_num_states);
@@ -84,38 +129,68 @@ void EulerTranscription<T>::set_ocproblem(
     // TODO won't work if the bounds don't include zero!
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
     // input
+    const double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
+    // For integrating the integral cost.
+    const unsigned num_mesh_intervals = m_num_mesh_points-1;
+    // The duration of each mesh interval.
+    VectorXd mesh_intervals =
+            VectorXd::Constant(num_mesh_intervals, step_size);
+    m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
+    // Betts 2010 equation 4.195, page 169.
+    m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
+            0.5*mesh_intervals;
+    m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) =
+            0.5*mesh_intervals;
 }
 
 template<typename T>
-void EulerTranscription<T>::objective(const VectorX<T>& x, T& obj_value) const {
-    const double step_size = (m_final_time - m_initial_time) /
-            (m_num_mesh_points - 1);
+void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
+{
+    const double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
 
     // TODO I don't actually need to make a new view each time; just change the
     // data pointer. TODO probably don't even need to update the data pointer!
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
 
+    // Endpoint cost.
+    // --------------
+    // TODO does this cause the final_states to get copied?
+    m_ocproblem->endpoint_cost(m_final_time, states.rightCols(1), obj_value);
+
+
+    // Integral cost.
+    // --------------
     // TODO reuse memory; don't allocate every time.
     VectorX<T> integrand = VectorX<T>::Zero(m_num_mesh_points);
     // TODO parallelize.
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        const double time = step_size * i_mesh + m_initial_time;
+    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
+        const double time = step_size*i_mesh+m_initial_time;
         m_ocproblem->integral_cost(time,
                 states.col(i_mesh), controls.col(i_mesh), integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
     // Rectangle rule:
-    obj_value = integrand[0]
-            + step_size * integrand.tail(m_num_mesh_points - 1).sum();
+    //obj_value = integrand[0]
+    //        + step_size * integrand.tail(m_num_mesh_points - 1).sum();
+    // The left vector is of type T b/c the dot product requires the same type.
+    // TODO the following doesn't work because of different numerical types.
+    // obj_value = m_trapezoidal_quadrature_coefficients.dot(integrand);
+    for (int i_mesh = 0; i_mesh<m_num_mesh_points; ++i_mesh) {
+        obj_value += m_trapezoidal_quadrature_coefficients[i_mesh] *
+                integrand[i_mesh];
+    }
 }
 
 template<typename T>
-void EulerTranscription<T>::constraints(const VectorX<T>& x,
-        Ref<VectorX<T>> constraints) const {
+void LowOrder<T>::constraints(const VectorX<T>& x,
+        Eigen::Ref<VectorX<T>> constraints) const
+{
     // TODO parallelize.
-    const double step_size = (m_final_time - m_initial_time) /
-            (m_num_mesh_points - 1);
+    const double step_size = (m_final_time-m_initial_time)/
+            (m_num_mesh_points-1);
 
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
@@ -155,15 +230,20 @@ void EulerTranscription<T>::constraints(const VectorX<T>& x,
     const auto& x_i = states.rightCols(N-1);
     const auto& x_im1 = states.leftCols(N-1);
     const auto& xdot_i = derivs.rightCols(N-1);
-    constr_view.defects = x_i - (x_im1 + step_size * xdot_i);
+    const auto& h = step_size;
+    //constr_view.defects = x_i-(x_im1+h*xdot_i);
+    // TODO Trapezoidal:
+    const auto& xdot_im1 = derivs.leftCols(N-1);
+    //constr_view.defects = x_i-(x_im1+h*xdot_im1);
+    constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
 }
 
 template<typename T>
-typename EulerTranscription<T>::Trajectory EulerTranscription<T>::
-interpret_iterate(const VectorXd& x) const
+typename Transcription<T>::Trajectory LowOrder<T>::
+interpret_iterate(const Eigen::VectorXd& x) const
 {
-    Trajectory traj;
-    traj.time = RowVectorXd::LinSpaced(m_num_mesh_points,
+    typename Transcription<T>::Trajectory traj;
+    traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
             m_initial_time, m_final_time);
 
     traj.states = this->make_states_trajectory_view(x);
@@ -174,8 +254,8 @@ interpret_iterate(const VectorXd& x) const
 
 template<typename T>
 template<typename S>
-EulerTranscription<T>::template TrajectoryView<S>
-EulerTranscription<T>::make_states_trajectory_view(const VectorX<S>& x) const
+LowOrder<T>::template TrajectoryView<S>
+LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
             x.data(),          // Pointer to the start of the data.
@@ -187,8 +267,8 @@ EulerTranscription<T>::make_states_trajectory_view(const VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-EulerTranscription<T>::template TrajectoryView<S>
-EulerTranscription<T>::make_controls_trajectory_view(const VectorX<S>& x) const
+LowOrder<T>::template TrajectoryView<S>
+LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
             x.data() + m_num_states, // Skip over the states for i_mesh = 0.
@@ -199,8 +279,8 @@ EulerTranscription<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 }
 
 template<typename T>
-typename EulerTranscription<T>::ConstraintsView
-EulerTranscription<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr)
+typename LowOrder<T>::ConstraintsView
+LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr)
 const
 {
     // Starting indices of different parts of the constraints vector.
@@ -210,13 +290,13 @@ const
     const unsigned fc = fs + m_num_states;   // final controls.
     const unsigned d  = fc + m_num_controls; // defects.
     return ConstraintsView(StatesView(&constr[is], m_num_states),
-                           ControlsView(&constr[ic], m_num_controls),
-                           StatesView(&constr[fs], m_num_states),
-                           ControlsView(&constr[fc], m_num_controls),
-                           DefectsTrajectoryView(&constr[d], m_num_states,
-                                   m_num_defects));
+            ControlsView(&constr[ic], m_num_controls),
+            StatesView(&constr[fs], m_num_states),
+            ControlsView(&constr[fc], m_num_controls),
+            DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects));
 }
 
+} // namespace transcription
 } // namespace mesh
 
 #endif // MESH_DIRECTCOLLOCATION_HPP

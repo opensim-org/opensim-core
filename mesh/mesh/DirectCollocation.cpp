@@ -3,6 +3,11 @@
 
 namespace mesh {
 
-template class EulerTranscription<adouble>;
+template class DirectCollocationSolver<adouble>;
 
+namespace transcription {
+
+template class LowOrder<adouble>;
+
+} // namespace transcription
 } // namespace mesh
