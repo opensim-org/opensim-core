@@ -2,6 +2,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
+#include "testing.h"
 
 using Eigen::Ref;
 using Eigen::VectorXd;
@@ -76,20 +77,7 @@ TEST_CASE("Sliding mass minimum time.")
 
     OptimalControlSolution expected = ocp->actual_solution(solution.time);
 
-//    REQUIRE_EIGEN(solution.states, expected.states, 0.001);
-//    REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
-
-    for (int im = 0; im < solution.time.size(); ++im) {
-        for (int is = 0; is < solution.states.rows(); ++is) {
-            const auto abs_error = std::abs(
-                    solution.states(is, im) - expected.states(is, im));
-            REQUIRE(abs_error < 0.001);
-        }
-        for (int ic = 0; ic < solution.controls.rows(); ++ic) {
-            const auto abs_error = std::abs(
-                    solution.controls(ic, im) - expected.controls(ic, im));
-            REQUIRE(abs_error < 0.001);
-        }
-    }
+    REQUIRE_EIGEN(solution.states, expected.states, 0.001);
+    REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
 }
 
