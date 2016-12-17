@@ -3,6 +3,7 @@
 
 #include <catch.hpp>
 
+/// TODO
 #define REQUIRE_EIGEN(actual, expected, abs_error_tolerance)                 \
 do {                                                                         \
     REQUIRE(actual.rows() == expected.rows());                               \
