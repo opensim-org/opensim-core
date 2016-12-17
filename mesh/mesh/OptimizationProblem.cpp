@@ -178,11 +178,11 @@ sparsity(const Eigen::VectorXd& x,
 }
 
 void OptimizationProblem<adouble>::Proxy::
-objective(unsigned num_variables, const double* variables,
-        bool /*new_variables*/,
+objective(unsigned num_variables, const double* x,
+        bool /*new_x*/,
         double& obj_value) const
 {
-    trace_objective(m_objective_tag, num_variables, variables, obj_value);
+    trace_objective(m_objective_tag, num_variables, x, obj_value);
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -196,27 +196,33 @@ constraints(unsigned num_variables, const double* variables,
 }
 
 void OptimizationProblem<adouble>::Proxy::
-gradient(unsigned num_variables, const double* x, bool new_x,
+gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
-    if (new_x) {
+    // TODO removing the "new_x" optimization until we handle the fact that
+    // a previous evaluation might have been of one of the functions that does
+    // NOT compute the objective (e.g., the constraints).
+    // TODO if (new_x) {
         double obj_value; // Not needed.
         trace_objective(m_objective_tag, num_variables, x, obj_value);
-    }
+    // TODO }
     int success = ::gradient(m_objective_tag, num_variables, x, grad);
     assert(success); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
 }
 
 void OptimizationProblem<adouble>::Proxy::
-jacobian(unsigned num_variables, const double* x, bool new_x,
+jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* nonzeros) const
 {
-    if (new_x) {
+    // TODO removing the "new_x" optimization until we handle the fact that
+    // a previous evaluation might have been of one of the functions that does
+    // NOT compute the constraints (e.g., the objective).
+    // TODO if (new_x) {
         // TODO where to get num_constraints from? Store in local variable.
         VectorXd g(num_constraints());
         trace_constraints(m_constraints_tag,
                 num_variables, x, num_constraints(), g.data());
-    }
+    // TODO }
 
     int repeated_call = 0;
     int num_nz = -1; /*TODO*/
@@ -272,8 +278,6 @@ hessian_lagrangian(unsigned num_variables, const double* x,
         lambda_vector[icon] = lambda[icon];
     }
     lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
-    //lagrangian_adouble = obj_factor * (x[0] - 1.5) * (x[0] - 1.5) +
-    //        (x[1] + 2.0) * (x[1] + 2.0);
     lagrangian_adouble >>= lagr;
     trace_off();
     // END ACTIVE
