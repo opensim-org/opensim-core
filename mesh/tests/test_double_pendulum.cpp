@@ -60,47 +60,47 @@ class DoublePendulumHorizontalVertical : public DoublePendulum<T> {
 public:
     DoublePendulumHorizontalVertical()
     {
-        this->set_time(0, 2);
+        this->set_time(0, 2); //{0, 5});
         // TODO fix allowing final bounds to be unconstrained.
         this->add_state("q0", {-10, 10}, {0});
         this->add_state("q1", {-10, 10}, {0});
         this->add_state("u0", {-20, 20}, {0}, {0});
         this->add_state("u1", {-20, 20}, {0}, {0});
-        this->add_control("tau0", {-50, 50});
-        this->add_control("tau1", {-50, 50});
+        this->add_control("tau0", {-200, 200});
+        this->add_control("tau1", {-200, 200});
     }
     //void terminal_cost(const double& final_time, const VectorX<T>&
     // final_states, const VectorX<T>& final_controls, T& cost)
     // TODO want to take const T& final_time.
-//    void endpoint_cost(const T& /*final_time*/,
-//            const VectorX<T>& final_states,
-//            T& cost) const override
-//    {
-//        // TODO a final state constraint probably makes more sense.
-//        const auto& q0 = final_states[0];
-//        const auto& q1 = final_states[1];
-//        const auto& L0 = this->L0;
-//        const auto& L1 = this->L1;
-//        Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
-//                                   L0 * sin(q0) + L1 * sin(q0 + q1));
-//        const Vector2<T> desired_location(0, 2);
-//        cost = (actual_location - desired_location).squaredNorm();
-//        // cost = final_time;
-//    }
+    void endpoint_cost(const T& /*final_time*/,
+            const VectorX<T>& final_states,
+            T& cost) const override
+    {
+        // TODO a final state constraint probably makes more sense.
+        const auto& q0 = final_states[0];
+        const auto& q1 = final_states[1];
+        const auto& L0 = this->L0;
+        const auto& L1 = this->L1;
+        Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
+                                   L0 * sin(q0) + L1 * sin(q0 + q1));
+        const Vector2<T> desired_location(0, 2);
+        cost = 10.0 * (actual_location - desired_location).squaredNorm();
+        // cost = final_time;
+    }
     void integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
             const VectorX<T>& controls,
             T& integrand) const override
     {
-        integrand = controls.squaredNorm();
+        // TODO different penalties for tau0 vs. tau1.
+        integrand = 0.001 * controls.squaredNorm();
     }
 };
 
-TEST_CASE("Double pendulum horizontal to vertical", "[adolc][trapezoidal]") {
-
+TEST_CASE("Double pendulum horizontal to vertical", "[adolc][trapezoidal]")
+{
     auto ocp = std::make_shared<DoublePendulumHorizontalVertical<adouble>>();
-    // TODO fix "euler"
-    DirectCollocationSolver<adouble> dircol(ocp, "euler", "snopt");
+    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 100);
     OptimalControlSolution solution = dircol.solve();
     solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
 
