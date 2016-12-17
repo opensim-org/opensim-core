@@ -56,18 +56,8 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
         // TODO give detailed diagnostics.
         throw std::runtime_error("Failed to find a solution.");
     }
-    // TODO cleaner way to get f?
     variables = nlp->get_solution();
-    //VectorXa variables_adouble(variables.size());
-    //for (unsigned i = 0; i < variables.size(); ++i) {
-    //    variables_adouble[i] = variables[i];
-    //}
-    //adouble obj_value;
-    double obj_value;
-    m_problem->objective(variables.size(), variables.data(), true,
-            obj_value);
-
-    return obj_value;
+    return nlp->get_optimal_objective_value();
 }
 
 IpoptSolver::TNLP::TNLP(
@@ -572,6 +562,7 @@ void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
         //printf("x[%d]: %e\n", i, x[i]);
         m_solution[i] = x[i];
     }
+    m_optimal_obj_value = obj_value;
     //printf("\nSolution of the bound multipliers, z_L and z_U\n");
     //for (Index i = 0; i < num_variables; ++i) {
     //    printf("z_L[%d] = %e\n", i, z_L[i]);

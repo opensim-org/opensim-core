@@ -55,6 +55,10 @@ public:
     {
         return m_solution;
     }
+    const double& get_optimal_objective_value() const
+    {
+        return m_optimal_obj_value;
+    }
 private:
     // TODO move to OptimizationProblem if more than one solver would need this.
     // TODO should use fancy arguments to avoid temporaries and to exploit
@@ -120,6 +124,7 @@ private:
     // TODO Don't need to store a copy here...?
     Eigen::VectorXd m_initial_guess;
     Eigen::VectorXd m_solution;
+    double m_optimal_obj_value;
 
     unsigned m_hessian_num_nonzeros = std::numeric_limits<unsigned>::max();
     std::vector<unsigned int> m_hessian_row_indices;
