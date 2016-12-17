@@ -79,24 +79,17 @@ public:
 TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
 
     auto ocp = std::make_shared<SecondOrderLinearMinEffort<adouble>>();
-    // TODO fix "euler"
-    DirectCollocationSolver<adouble> dircol(ocp, "euler", "ipopt");
+    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 1000);
     OptimalControlSolution solution = dircol.solve();
     solution.write("second_order_linear_min_effort_solution.csv");
 
     MatrixXd expected_states = ocp->states_solution(solution.time);
-    std::cout << "DEBUG_actual_expected" << std::endl;
-    MatrixXd comparison(solution.time.size(), 2 * solution.states.rows());
-    comparison << solution.states.transpose(), expected_states.transpose();
-    std::cout << comparison << std::endl;
-//    std::cout << solution.states.transpose() << std::endl;
-//    std::cout << expected_states.transpose() << std::endl;
-    // TODO check individual entries.
-    REQUIRE(Approx((expected_states - solution.states).norm()) == 0);
 
-    //int N = solution.time.size();
-    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
-    //RowVectorXd expected = RowVectorXd::LinSpaced(N - 1, 14.25, -14.25);
-    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
-    //REQUIRE(Approx(errors.norm()) == 0);
+    for (int im = 0; im < solution.states.cols(); ++im) {
+        for (int is = 0; is < solution.states.rows(); ++is) {
+            const auto abs_error = std::abs(
+                    solution.states(is, im) - expected_states(is, im));
+            REQUIRE(abs_error < 0.005);
+        }
+    }
 }

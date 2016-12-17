@@ -5,19 +5,6 @@
 
 namespace mesh {
 
-// TODO Specialize OptimizationProblem<adouble> with implementations
-// for gradient, jacobian, hessian.
-
-//class OptimizationProblemProxy {
-//public:
-//    Proxy(const OptimizationProblem<T>& problem) : m_problem(problem) {}
-//    unsigned get_num_variables() const;
-//    unsigned get_num_constraints() const;
-//    void objective(const Eigen::VectorXd& variables, double& obj_value) const;
-//    void constraints(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> constr) const;
-
-//class AbstractOptimizationProblem {
 class OptimizationProblemProxy {
     // TODO rename all method names to verbs
 public:
@@ -55,32 +42,10 @@ public:
             unsigned num_constraints, const double* lambda,
             bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const = 0;
-//    void objective(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            double& obj_value) const = 0;
-//    void constraints(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> constr) const = 0;
-//    void gradient(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> grad) const = 0;
-//    void jacobian(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const = 0;
-//    // TODO also lambda multipliers...
-//    void hessian(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const = 0;
-//    void objective(const Eigen::VectorXd& variables, double& obj_value) const = 0;
-//    void constraints(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> constr) const = 0;
-//    void gradient(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> grad) const = 0;
-//    void jacobian(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const = 0;
-//    // TODO also lambda multipliers...
-//    void hessian(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const = 0;
+    // TODO consider providing alternative signatures like:
+    // void objective(const Eigen::VectorXd& variables,
+    //         bool new_variables = true,
+    //         double& obj_value) const = 0;
 };
 
 class AbstractOptimizationProblem {
@@ -276,46 +241,11 @@ public:
     void jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const override;
-    // TODO also lambda multipliers...
     void hessian_lagrangian(unsigned num_variables, const double* variables,
             bool new_variables, double obj_factor,
             unsigned num_constraints, const double* lambda,
             bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const override;
-//    void objective(unsigned num_variables, const bool* variables,
-//            bool new_variables,
-//            double& obj_value) const override;
-//    void constraints(unsigned num_variables, const bool* variables,
-//            bool new_variables,
-//            Eigen::Ref<Eigen::VectorXd> constr) const override;
-//    void gradient(unsigned num_variables, const bool* variables,
-//            bool new_variables,
-//            Eigen::Ref<Eigen::VectorXd> grad) const override;
-//    void jacobian(unsigned num_variables, const bool* variables,
-//            bool new_variables,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const override;
-//    // TODO also lambda multipliers...
-//    void hessian(unsigned num_variables, const bool* variables,
-//            bool new_variables,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const override;
-    // TODO provide alternatives that take raw buffers. This is the interface
-    // for optimizers, after all...
-//    void objective(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            double& obj_value) const override;
-//    void constraints(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> constr) const override;
-//    void gradient(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> grad) const override;
-//    void jacobian(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const override;
-//    // TODO also lambda multipliers...
-//    void hessian(const Eigen::VectorXd& variables,
-//            bool new_variables = true,
-//            Eigen::Ref<Eigen::VectorXd> nonzeros) const override;
 private:
     void trace_objective(short int tag,
             unsigned num_variables, const double* variables,
