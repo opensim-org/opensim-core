@@ -14,5 +14,6 @@ mesh_add_test(test_eigen_adolc_reverse_mode mesh)
 mesh_add_test(test_generic_optimization mesh)
 mesh_add_test(test_snopt mesh) # snopt7_cpp
 mesh_add_test(test_sliding_mass_minimum_effort mesh)
+mesh_add_test(test_sliding_mass_minimum_time mesh)
 mesh_add_test(test_analytic_optimal_control_solutions mesh)
 mesh_add_test(test_double_pendulum mesh)
