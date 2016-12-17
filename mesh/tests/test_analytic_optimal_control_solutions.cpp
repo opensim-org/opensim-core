@@ -1,6 +1,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
+#include "testing.h"
 
 #include <mesh.h>
 
@@ -34,7 +35,7 @@ public:
         // xdot.row(0) = x.row(1);
         // xdot.row(1) = -x.row(1) + u.row(0);
     }
-    void integral_cost(const double& /*t*/,
+    void integral_cost(const T& /*t*/,
             const VectorX<T>& /*x*/,
             const VectorX<T>& u,
             T& integrand) const override
@@ -80,16 +81,10 @@ TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
 
     auto ocp = std::make_shared<SecondOrderLinearMinEffort<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 1000);
-i    OptimalControlSolution solution = dircol.solve();
+    OptimalControlSolution solution = dircol.solve();
     solution.write("second_order_linear_min_effort_solution.csv");
 
     MatrixXd expected_states = ocp->states_solution(solution.time);
 
-    for (int im = 0; im < solution.states.cols(); ++im) {
-        for (int is = 0; is < solution.states.rows(); ++is) {
-            const auto abs_error = std::abs(
-                    solution.states(is, im) - expected_states(is, im));
-            REQUIRE(abs_error < 0.005);
-        }
-    }
+    REQUIRE_EIGEN(solution.states, expected_states, 0.005);
 }
