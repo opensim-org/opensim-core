@@ -4,6 +4,7 @@ add_library(mesh
     OptimizationProblem.h   OptimizationProblem.hpp OptimizationProblem.cpp
     OptimizationSolver.h                            OptimizationSolver.cpp
     SNOPTSolver.h                                   SNOPTSolver.cpp
+    IpoptSolver.h                                   IpoptSolver.cpp
     DirectCollocation.h     DirectCollocation.hpp   DirectCollocation.cpp
     OptimalControlProblem.h
     legacy.h                                        legacy.cpp

@@ -5,6 +5,7 @@
 #include "OptimalControlProblem.h"
 #include "OptimizationSolver.h"
 #include "SNOPTSolver.h"
+#include "IpoptSolver.h"
 
 namespace mesh {
 

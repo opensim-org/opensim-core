@@ -11,6 +11,7 @@
 #include "OptimizationProblem.h"
 #include "OptimizationSolver.h"
 #include "SNOPTSolver.h"
+#include "IpoptSolver.h"
 
 #include "OptimalControlProblem.h"
 #include "DirectCollocation.h"
