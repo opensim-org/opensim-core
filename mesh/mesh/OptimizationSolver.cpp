@@ -38,7 +38,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
-    app->Options()->SetStringValue("derivative_test", "second-order");
+    // TODO app->Options()->SetStringValue("derivative_test", "second-order");
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
@@ -560,7 +560,7 @@ bool IpoptSolver::TNLP::eval_h(
 void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
         Index num_variables,
         const Number* x,
-        const Number* z_L, const Number* z_U,
+        const Number* /*z_L*/, const Number* /*z_U*/,
         Index /*num_constraints*/,
         const Number* /*g*/, const Number* /*lambda*/,
         Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
