@@ -173,21 +173,26 @@ protected:
     using StatesView = Eigen::Map<VectorX<T>>;
     using ControlsView = Eigen::Map<VectorX<T>>;
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
+    using PathConstraintsTrajectoryView = Eigen::Map<MatrixX<T>>;
     struct ConstraintsView {
         ConstraintsView(StatesView is, ControlsView ic, StatesView fs,
-                ControlsView fc, DefectsTrajectoryView d)
+                        ControlsView fc, DefectsTrajectoryView d,
+                        PathConstraintsTrajectoryView pc)
                 : initial_states(is), initial_controls(ic),
-                  final_states(fs), final_controls(fc), defects(d) {}
+                  final_states(fs), final_controls(fc), defects(d),
+                  path_constraints(pc) {}
         StatesView initial_states = StatesView(nullptr, 0);
         ControlsView initial_controls = ControlsView(nullptr, 0);
         StatesView final_states = StatesView(nullptr, 0);
         ControlsView final_controls = ControlsView(nullptr, 0);
         // TODO what is the proper name for this? dynamic defects?
         DefectsTrajectoryView defects = DefectsTrajectoryView(nullptr, 0, 0);
+        PathConstraintsTrajectoryView path_constraints =
+                PathConstraintsTrajectoryView(nullptr, 0, 0);
     };
 
     ConstraintsView make_constraints_view(Eigen::Ref<VectorX<T>> constraints)
-            const;
+    const;
 
 private:
 
@@ -198,6 +203,8 @@ private:
     int m_num_states = -1;
     int m_num_controls = -1;
     int m_num_continuous_variables = -1;
+    int m_num_dynamics_constraints = -1;
+    int m_num_path_constraints = -1;
     // TODO these should go eventually:
     //double m_initial_time = -1;
     //double m_final_time = -1;

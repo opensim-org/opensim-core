@@ -16,6 +16,8 @@ public:
     // each one a name.
     virtual int num_states() const = 0;
     virtual int num_controls() const = 0;
+    // TODO assume 0?
+    virtual int num_path_constraints() const { return 0; }
     virtual void bounds(
             double& initial_time_lower, double& initial_time_upper,
             double& final_time_lower, double& final_time_upper,
@@ -30,13 +32,18 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_controls_lower,
             Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
             Eigen::Ref<Eigen::VectorXd> final_controls_lower,
-            Eigen::Ref<Eigen::VectorXd> final_controls_upper) const = 0;
+            Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+            Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
+            Eigen::Ref<Eigen::VectorXd> path_constraints_upper) const = 0;
 
     // TODO use Eigen, not std::vector.
     // TODO must pass in the time.
     virtual void dynamics(const VectorX<T>& states,
-            const VectorX<T>& controls,
-            Eigen::Ref<VectorX<T>> derivative) const = 0;
+                          const VectorX<T>& controls,
+                          Eigen::Ref<VectorX<T>> derivative) const = 0;
+    virtual void path_constraints(const VectorX<T>& states,
+                                  const VectorX<T>& controls,
+                                  Eigen::Ref<VectorX<T>> constraints) const;
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     // TODO endpoint or terminal cost?
@@ -53,12 +60,18 @@ public:
 };
 
 template<typename T>
+void OptimalControlProblem<T>::path_constraints(const VectorX <T>&,
+                                                const VectorX <T>&,
+                                                Eigen::Ref<VectorX<T>>) const {}
+
+template<typename T>
 void OptimalControlProblem<T>::endpoint_cost(const T&,
-        const VectorX<T>&, T&) const {}
+                                             const VectorX<T>&, T&) const {}
 
 template<typename T>
 void OptimalControlProblem<T>::integral_cost(const T&,
-        const VectorX<T>&, const VectorX<T>&, T&) const {}
+                                             const VectorX<T>&,
+                                             const VectorX<T>&, T&) const {}
 
 struct Bounds {
     Bounds() = default;
@@ -95,6 +108,10 @@ private:
         InitialBounds initial_bounds;
         FinalBounds final_bounds;
     };
+    struct PathConstraintInfo {
+        std::string name;
+        Bounds bounds;
+    };
 public:
     void set_time(const InitialBounds& initial_time,
             const FinalBounds& final_time)
@@ -114,23 +131,32 @@ public:
     {
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
     }
+    void add_path_constraint(const std::string& name, const Bounds& bounds) {
+        m_path_constraint_infos.push_back({name, bounds});
+    }
     int num_states() const override final { return m_state_infos.size(); }
     int num_controls() const override final { return m_control_infos.size(); }
+    int num_path_constraints() const override final
+    {
+        return m_path_constraint_infos.size();
+    }
     void bounds(double& initial_time_lower, double& initial_time_upper,
-            double& final_time_lower, double& final_time_upper,
-            Eigen::Ref<Eigen::VectorXd> states_lower,
-            Eigen::Ref<Eigen::VectorXd> states_upper,
-            Eigen::Ref<Eigen::VectorXd> initial_states_lower,
-            Eigen::Ref<Eigen::VectorXd> initial_states_upper,
-            Eigen::Ref<Eigen::VectorXd> final_states_lower,
-            Eigen::Ref<Eigen::VectorXd> final_states_upper,
-            Eigen::Ref<Eigen::VectorXd> controls_lower,
-            Eigen::Ref<Eigen::VectorXd> controls_upper,
-            Eigen::Ref<Eigen::VectorXd> initial_controls_lower,
-            Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
-            Eigen::Ref<Eigen::VectorXd> final_controls_lower,
-            Eigen::Ref<Eigen::VectorXd> final_controls_upper)
-                const override final
+                double& final_time_lower, double& final_time_upper,
+                Eigen::Ref<Eigen::VectorXd> states_lower,
+                Eigen::Ref<Eigen::VectorXd> states_upper,
+                Eigen::Ref<Eigen::VectorXd> initial_states_lower,
+                Eigen::Ref<Eigen::VectorXd> initial_states_upper,
+                Eigen::Ref<Eigen::VectorXd> final_states_lower,
+                Eigen::Ref<Eigen::VectorXd> final_states_upper,
+                Eigen::Ref<Eigen::VectorXd> controls_lower,
+                Eigen::Ref<Eigen::VectorXd> controls_upper,
+                Eigen::Ref<Eigen::VectorXd> initial_controls_lower,
+                Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
+                Eigen::Ref<Eigen::VectorXd> final_controls_lower,
+                Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+                Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
+                Eigen::Ref<Eigen::VectorXd> path_constraints_upper)
+    const override final
     {
         initial_time_lower = m_initial_time_bounds.lower;
         initial_time_upper = m_initial_time_bounds.upper;
@@ -177,12 +203,18 @@ public:
                 final_controls_upper[ic]   = info.bounds.upper;
             }
         }
+        for (unsigned ip = 0; ip < m_path_constraint_infos.size(); ++ip) {
+            const auto& info = m_path_constraint_infos[ip];
+            path_constraints_lower[ip] = info.bounds.lower;
+            path_constraints_upper[ip] = info.bounds.upper;
+        }
     }
 private:
     InitialBounds m_initial_time_bounds;
     FinalBounds m_final_time_bounds;
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
+    std::vector<PathConstraintInfo> m_path_constraint_infos;
 };
 
 

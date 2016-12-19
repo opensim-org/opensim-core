@@ -236,13 +236,13 @@ public:
     }
 };
 
-TEST_CASE("Sliding mass minimize effort with SNOPT.")
+TEST_CASE("Sliding mass minimum effort with SNOPT.")
 {
 
     auto ocp = std::make_shared<SlidingMassMinimumEffort<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", 30);
     OptimalControlSolution solution = dircol.solve();
-    solution.write("sliding_mass_minimize_effort_snopt_solution.csv");
+    solution.write("sliding_mass_minimum_effort_snopt_solution.csv");
 
     // Initial and final position.
     REQUIRE(Approx(solution.states(0, 0)) == 0.0);
