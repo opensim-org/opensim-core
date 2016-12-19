@@ -55,6 +55,20 @@ class TestModelBuilding {
         arm.updCoordinateSet().get(1).setValue(state, 0.5*3.14);
         arm.equilibrateMuscles(state);
 
+        // WrapObjects.
+        WrapSphere sphere = new WrapSphere();
+        arm.getGround().addWrapObject(sphere);
+
+        WrapCylinder cylinder = new WrapCylinder();
+        cylinder.set_radius(0.5);
+        arm.getGround().addWrapObject(cylinder);
+
+        WrapTorus torus = new WrapTorus();
+        arm.getGround().addWrapObject(torus);
+
+        WrapEllipsoid ellipsoid = new WrapEllipsoid();
+        arm.getGround().addWrapObject(ellipsoid);
+
         System.out.println("Test finished!");
     }
     catch (IOException ex){

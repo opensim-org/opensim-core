@@ -80,6 +80,10 @@ MODEL_ADOPT_HELPER(Controller);
     geom._markAdopted()
 %}
 
+%pythonappend OpenSim::PhysicalFrame::addWrapObject %{
+    wrapObject._markAdopted()
+%}
+
 // PrescribedController::prescribeControlForActuator takes ownership of
 // the passed-in function.
 // There are two overloads of this function; we append to both of them.
