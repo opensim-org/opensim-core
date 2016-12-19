@@ -100,7 +100,7 @@ public:
 TEST_CASE("Double pendulum horizontal to vertical", "[adolc][trapezoidal]")
 {
     auto ocp = std::make_shared<DoublePendulumHorizontalVertical<adouble>>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 100);
+    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", 100);
     OptimalControlSolution solution = dircol.solve();
     solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
 

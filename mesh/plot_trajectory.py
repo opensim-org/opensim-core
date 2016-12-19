@@ -17,7 +17,9 @@ for i in range(num_plots):
     ax = fig.add_subplot(num_plots, 1, i + 1)
     name = data.dtype.names[i + 1]
     ax.plot(data['time'], data[name])
-    ax.set_title(name)
+    ax.set_ylabel(name)
+    if i == num_plots - 1:
+        ax.set_xlabel('time')
 pl.show()
 
 

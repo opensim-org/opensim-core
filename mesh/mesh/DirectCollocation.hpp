@@ -318,8 +318,7 @@ LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 
 template<typename T>
 typename LowOrder<T>::ConstraintsView
-LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr)
-const
+LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
     const unsigned is = 0;                   // initial states.

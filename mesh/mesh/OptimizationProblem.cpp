@@ -92,7 +92,6 @@ sparsity(const Eigen::VectorXd& x,
         Eigen::VectorXd constraint_values(num_constraints()); // Unused.
         trace_constraints(tag, num_variables(), x.data(),
                 num_constraints(), constraint_values.data());
-        //constraints(x, constraint_values);
 
         // TODO use jac_pat function instead.
         int repeated_call = 0;
@@ -369,8 +368,6 @@ trace_constraints(short int tag,
 //    assert(x.size() == m_num_variables);
 //    assert(constr.size() == m_num_constraints);
     // TODO if (!num_constraints) return true;
-
-    //static const short int constraints_tag = 2;
     // =====================================================================
     // START ACTIVE
     // ---------------------------------------------------------------------
