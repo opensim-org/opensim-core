@@ -180,7 +180,7 @@ TEST_CASE("First order minimum effort.", "[analytic]")
         {
             derivatives[0] = -2*states[0] + controls[0];
         }
-        void integral_cost(const double& /*time*/,
+        void integral_cost(const adouble& /*time*/,
                            const VectorXa& /*states*/,
                            const VectorXa& controls,
                            adouble& integrand) const
@@ -227,10 +227,10 @@ public:
         derivatives[0] = states[1];
         derivatives[1] = controls[0]/mass;
     }
-    void integral_cost(const double& /*time*/,
+    void integral_cost(const T& /*time*/,
                        const VectorX<T>& /*states*/,
                        const VectorX<T>& controls,
-                       adouble& integrand) const override
+                       T& integrand) const override
     {
         integrand = controls.squaredNorm();
     }
