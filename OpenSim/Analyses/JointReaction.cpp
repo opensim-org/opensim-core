@@ -298,22 +298,13 @@ void JointReaction::setupReactionList()
             currentKey.appliedOnBody = currentKey.isAppliedOnChild ?
                 &joint.getChildFrame().findBaseFrame() : &joint.getParentFrame().findBaseFrame();
 
+            // set frame that reactions are expressed in
             std::string expressedIn = "ground";
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
-            // convert to lowercase
-            std::transform(expressedIn.begin(), expressedIn.end(),
-                expressedIn.begin(), ::tolower);
-            if (expressedIn == "child"){
-                currentKey.expressedInFrame = &joint.getChildFrame().findBaseFrame();
-            }
-            else if (expressedIn == "parent"){
-                currentKey.expressedInFrame = &joint.getParentFrame().findBaseFrame();
-            }
-            else{ //if not child or parent use ground
-                currentKey.expressedInFrame = &_model->getGround();
-            }
+            currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
+
             _reactionList.append(currentKey);
         }
         else {

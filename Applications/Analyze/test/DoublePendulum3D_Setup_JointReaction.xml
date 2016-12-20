@@ -350,7 +350,7 @@
 					<forces_file>  </forces_file>
 					<!--Names of the joints on which to perform the analysis.The key word
 					    'All' indicates that the analysis should be performed for all bodies.-->
-					<joint_names> ALL </joint_names>
+					<joint_names> pin1 pin2 </joint_names>
 					<!--Choice of body (parent or child) on which the calculated reactions are
 					    applied.  Child body is default.  If the array has one entry only,
 					    that selection is applied to all chosen joints.-->
@@ -358,7 +358,7 @@
 					<!--Choice of frame (ground, parent, or child) in which the calculated
 					    reactions are expressed.  ground body is default.  If the array has
 					    one entry only, that selection is applied to all chosen joints.-->
-					<express_in_frame> child </express_in_frame>
+					<express_in_frame> rod1 rod2 </express_in_frame>
 				</JointReaction>
 			</objects>
 			<groups/>
