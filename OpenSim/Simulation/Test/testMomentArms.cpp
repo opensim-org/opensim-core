@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -289,13 +289,13 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
     // Disable all forces
     for(int i=0; i<osimModel.updForceSet().getSize(); i++){
-        osimModel.updForceSet()[i].setDisabled(s, true);
+        osimModel.updForceSet()[i].setAppliesForce(s, false);
     }
     // Also disable gravity
     osimModel.getGravityForce().disable(s);
 
     // Enable just muscle we are interested in.
-    muscle.setDisabled(s, false);
+    muscle.setAppliesForce(s, true);
 
     coord.setClamped(s, false);
     coord.setLocked(s, false);

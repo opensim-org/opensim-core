@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,18 +25,17 @@
 // INCLUDES
 //=============================================================================
 #include "MarkerPlacer.h"
-#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include "IKCoordinateTask.h"
+#include "IKTaskSet.h"
 #include <OpenSim/Analyses/StatesReporter.h>
 //=============================================================================
 // STATICS
@@ -244,6 +243,40 @@ bool MarkerPlacer::processModel(Model* aModel,
     /* Load the static pose marker file, and average all the
     * frames in the user-specified time range.
     */
+    TimeSeriesTableVec3 staticPoseTable{aPathToSubject + _markerFileName};
+    const auto& timeCol = staticPoseTable.getIndependentColumn();
+    auto numRowsInRange = std::count_if(timeCol.cbegin(),
+                                        timeCol.cend(),
+                                        [&] (const double& val) {
+                                            return val >= _timeRange[0] &&
+                                                   val <= _timeRange[1];
+                                        });
+    const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
+                                                   _timeRange[1]);
+    for(int r = staticPoseTable.getNumRows() - 1; r > 0; --r)
+        staticPoseTable.removeRowAtIndex(r);
+    staticPoseTable.updRowAtIndex(0) = avgRow;
+    
+    OPENSIM_THROW_IF(!staticPoseTable.hasTableMetaDataKey("Units"),
+                     Exception,
+                     "MarkerPlacer::processModel -- Marker file does not have "
+                     "'Units'.");
+    Units
+    staticPoseUnits{staticPoseTable.getTableMetaData<std::string>("Units")};
+    double scaleFactor = staticPoseUnits.convertTo(aModel->getLengthUnits());
+    OPENSIM_THROW_IF(SimTK::isNaN(scaleFactor),
+                     Exception,
+                     "Model has unspecified units.");
+    if(std::fabs(scaleFactor - 1) >= SimTK::Eps) {
+        for(unsigned r = 0; r < staticPoseTable.getNumRows(); ++r)
+            staticPoseTable.updRowAtIndex(r) *= scaleFactor;
+
+        staticPoseUnits = aModel->getLengthUnits();
+        staticPoseTable.removeTableMetaDataKey("Units");
+        staticPoseTable.addTableMetaData("Units",
+                                         staticPoseUnits.getAbbreviation());
+    }
+    
     MarkerData* staticPose = new MarkerData(aPathToSubject + _markerFileName);
     staticPose->averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
     staticPose->convertToUnits(aModel->getLengthUnits());
@@ -260,7 +293,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
     // MarkersReference takes ownership of marker data (staticPose)
-    MarkersReference markersReference(staticPose, &markerWeightSet);
+    MarkersReference markersReference(staticPoseTable, &markerWeightSet);
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // Load the coordinate data
@@ -278,21 +311,21 @@ bool MarkerPlacer::processModel(Model* aModel,
     for(int i=0; i< _ikTaskSet.getSize(); i++){
         IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i]);
         if (coordTask && coordTask->getApply()){
-            CoordinateReference *coordRef = NULL;
+            std::unique_ptr<CoordinateReference> coordRef{};
             if(coordTask->getValueType() == IKCoordinateTask::FromFile){
                 index = coordFunctions->getIndex(coordTask->getName(), index);
                 if(index >= 0){
-                    coordRef = new CoordinateReference(coordTask->getName(),coordFunctions->get(index));
+                    coordRef.reset(new CoordinateReference(coordTask->getName(),coordFunctions->get(index)));
                 }
             }
             else if((coordTask->getValueType() == IKCoordinateTask::ManualValue)){
                 Constant reference(Constant(coordTask->getValue()));
-                coordRef = new CoordinateReference(coordTask->getName(), reference);
+                coordRef.reset(new CoordinateReference(coordTask->getName(), reference));
             }
             else{ // assume it should be held at its current/default value
                 double value = aModel->getCoordinateSet().get(coordTask->getName()).getValue(s);
                 Constant reference = Constant(value);
-                coordRef = new CoordinateReference(coordTask->getName(), reference);
+                coordRef.reset(new CoordinateReference(coordTask->getName(), reference));
             }
 
             if(coordRef == NULL)
@@ -411,7 +444,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
                     Vec3 globalPt = globalMarker;
                     double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
                     pt = conversionFactor*globalPt;
-                    pt2 = modelMarker.getParentFrame().findLocationInAnotherFrame(s, pt, aModel.getGround());
+                    pt2 = aModel.getGround().findLocationInAnotherFrame(s, pt, modelMarker.getParentFrame());
                     modelMarker.set_location(pt2);
                 }
                 else

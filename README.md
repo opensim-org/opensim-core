@@ -23,67 +23,92 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle:
+Let's simulate a simple arm whose elbow is actuated by a muscle, using 
+the C++ interface (You can find a python version of this example at 
+`Bindings/Python/examples/build_simple_arm_model.py`):
+
 ```cpp
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
-using namespace OpenSim; using OpenSim::Body;
+using namespace OpenSim;
 int main() {
-    Model model; model.setUseVisualizer(true);
-    // Two links, with mass of 1 kg, center of mass at the
-    // origin of the body's frame, and moments/products of inertia of zero.
-    OpenSim::Body* link1 = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* link2 = new OpenSim::Body("radius", 1, Vec3(0), Inertia(0));
+    Model model;
+    model.setUseVisualizer(true);
 
-    // Joints that connect the bodies together.
-    PinJoint* joint1 = new PinJoint("shoulder",
+    // Create two links, each with a mass of 1 kg, center of mass at the body's
+    // origin, and moments and products of inertia of zero.
+    OpenSim::Body* humerus = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
+    OpenSim::Body* radius  = new OpenSim::Body("radius",  1, Vec3(0), Inertia(0));
+
+    // Connect the bodies with pin joints. Assume each body is 1 m long.
+    PinJoint* shoulder = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *link1, Vec3(0, 1, 0), Vec3(0));
-    PinJoint* joint2 = new PinJoint("elbow",
-            *link1, Vec3(0), Vec3(0), *link2, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, 1, 0), Vec3(0));
+    PinJoint* elbow = new PinJoint("elbow",
+            *humerus, Vec3(0), Vec3(0), *radius, Vec3(0, 1, 0), Vec3(0));
 
-    // Add an actuator that crosses the elbow, and a joint stop.
-    Millard2012EquilibriumMuscle* muscle = new
+    // Add a muscle that flexes the elbow.
+    Millard2012EquilibriumMuscle* biceps = new
         Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    muscle->addNewPathPoint("point1", *link1, Vec3(0, 0.8, 0));
-    muscle->addNewPathPoint("point2", *link2, Vec3(0, 0.7, 0));
+    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.8, 0));
+    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.7, 0));
 
-    // A controller that specifies the excitation of the biceps muscle.
+    // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
-    brain->addActuator(*muscle);
-    // Muscle excitation is 0.3 for the first 0.5 seconds, and 1.0 thereafter.
+    brain->addActuator(*biceps);
+    // Muscle excitation is 0.3 for the first 0.5 seconds, then increases to 1.
     brain->prescribeControlForActuator("biceps",
             new StepFunction(0.5, 3, 0.3, 1));
 
-    // Add bodies and joints to the model.
-    model.addBody(link1); model.addBody(link2);
-    model.addJoint(joint1); model.addJoint(joint2);
-    model.addForce(muscle);
+    // Add components to the model.
+    model.addBody(humerus);    model.addBody(radius);
+    model.addJoint(shoulder);  model.addJoint(elbow);
+    model.addForce(biceps);
     model.addController(brain);
+
+    // Add a console reporter to print the muscle fiber force and elbow angle.
+    ConsoleReporter* reporter = new ConsoleReporter();
+    reporter->set_report_time_interval(1.0);
+    reporter->addToReport(biceps->getOutput("fiber_force"));
+    reporter->addToReport(
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
+    model.addComponent(reporter);
+
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    bodyGeometry.setColor(Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
+        "humerusCenter", "humerus", Transform(Vec3(0, 0.5, 0)));
+    humerus->addComponent(humerusCenter);
+    humerusCenter->attachGeometry(bodyGeometry.clone());
+    PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
+        "radiusCenter", "radius", Transform(Vec3(0, 0.5, 0)));
+    radius->addComponent(radiusCenter);
+    radiusCenter->attachGeometry(bodyGeometry.clone());
 
     // Configure the model.
     State& state = model.initSystem();
-    // Fix shoulder joint, flex elbow joint.
-    model.updCoordinateSet()[0].setLocked(state, true);
-    model.updCoordinateSet()[1].setValue(state, 0.5 * Pi);
+    // Fix the shoulder at its default angle and begin with the elbow flexed.
+    shoulder->getCoordinate().setLocked(state, true);
+    elbow->getCoordinate().setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
-    // Add display geometry.
+    // Configure the visualizer.
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-    viz.setBackgroundColor(Vec3(1, 1, 1));
-    // Ellipsoids: 0.5 m radius along y axis, centered 0.5 m up along y axis.
-    DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(link1->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration(link2->getMobilizedBodyIndex(), Transform(center), geom);
+    viz.setBackgroundColor(White);
 
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0); manager.setFinalTime(10.0);
     manager.integrate(state);
+    
+    return 0;
 };
 ```
 
@@ -91,8 +116,26 @@ This code produces the following animation:
 
 ![Simulation of an arm actuated by a muscle][simple_example_gif]
 
----
+and prints the following information to the console:
 
+        [reporter]
+                    |           /m|             |
+                    | odel_/biceps|             |
+                time| /fiber_force|  elbow_angle|
+        ------------| ------------| ------------|
+                   0|     1.180969|    1.5707963|
+                   1|     57.27509|   0.77066412|
+                   2|    19.728411|    1.5680456|
+                   3|    56.090431|    1.4419861|
+                   4|     34.54835|     1.508348|
+                   5|    32.603721|    1.5180237|
+                   6|    37.136052|    1.5021235|
+                   7|    35.698502|    1.5071888|
+                   8|     34.18601|    1.5079186|
+                   9|    34.341649|     1.506727|
+                  10|    35.784713|     1.507164|
+
+---
 
 Building from the source code
 -----------------------------
@@ -100,7 +143,7 @@ Building from the source code
 We support a few ways of building OpenSim:
 
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
-2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). In a rush? Use [these instructions](#for-the-impatient-mac-os-x).
+2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). Need extended instructions? Use [these instructions](#extended-instructions-for-osx).
 3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles). In a rush? Use [these instructions](#for-the-impatient-ubuntu).
 
 
@@ -111,7 +154,7 @@ On Windows using Visual Studio
 
 * **operating system**: Windows 7 or 8.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.1.3
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
         If you want to use *Visual Studio Enterprise 2015*, you may be able
@@ -121,8 +164,18 @@ On Windows using Visual Studio
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
       for Visual C++ 2015*.
-      You can uncheck all other boxes. If you have already installed Visual
-      Studio without C++ support, simply re-run the installer and select *Modify*.
+      You can uncheck all other boxes. If Visual Studio is installed without C++
+      support, CMake will report the following errors:
+      
+      ```
+      The C compiler identification is unknown
+      The CXX compiler identification is unknown
+      ```
+      
+      If you have already installed Visual Studio without C++ support, simply
+      re-run the installer and select *Modify*. Alternatively, go to
+      *File > New > Project...* in Visual Studio, select *Visual C++*, and click
+      *Install Visual C++ 2015 Tools for Windows Desktop*.
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
@@ -130,6 +183,9 @@ On Windows using Visual Studio
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -137,7 +193,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
@@ -234,6 +290,10 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
+           variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -330,12 +390,48 @@ ctest -C RelWithDebInfo --parallel 8
 On Mac OSX using Xcode
 ======================
 
+### For Mac OSX 10.11 El Capitan
+Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
+```shell 
+sudo xcodebuild -license
+``` 
+If you already have **Xcode**, update it to 7.3, or the latest version.
+
+Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
+```shell
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install cmake swig
+brew cask install java
+git clone https://github.com/opensim-org/opensim-core.git
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j8
+cd ..
+mkdir opensim_build
+cd opensim_build
+cmake ../opensim-core \
+      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DBUILD_PYTHON_WRAPPING=ON \
+      -DBUILD_JAVA_WRAPPING=ON \
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
+      -DWITH_BTK=ON
+make -j8
+ctest -j8
+```
+
+
+### Extended Instructions for OSX
+
 #### Get the dependencies
 
-* **operating system**: Mac OSX 10.8 or later.
+* **operating system**: Mac OSX 10.11 El Capitan.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8
-* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 5, through
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
+* **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -343,12 +439,15 @@ On Mac OSX using Xcode
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
     * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
     * **python scripting** (optional):
         * Mac OSX comes with python, but you could also use:
@@ -437,6 +536,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -511,49 +614,21 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 
 Your changes will only take effect in new terminal windows.
 
-#### For the impatient (Mac OS X)
-##### Mac OS X 10.10 Yosemite and OS X 10.11 El Capitan
-Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement.
-In **Terminal** --
-```shell
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install cmake swig
-brew cask install java
-git clone https://github.com/opensim-org/opensim-core.git
-mkdir opensim_dependencies_build
-cd opensim_dependencies_build
-cmake ../opensim-core/dependencies \
-      -DCMAKE_INSTALL_PREFIX="~/opensim_dependencies_install" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo
-make -j8
-cd ..
-mkdir opensim_build
-cd opensim_build
-cmake ../opensim-core \
-      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
-      -DWITH_BTK=ON
-make -j8
-ctest -j8
-```
+
 On Ubuntu using Unix Makefiles
 ==============================
 
 #### Get the dependencies
 
-Most dependencies can be obtained via the Ubuntu software repositories. On each
-line below, we show the corresponding package.
+Most dependencies can be obtained via the Ubuntu software repositories;
+especially if you are using Ubuntu 15.10 or later. On each line below, we show
+the Ubuntu package names for the dependencies. You can find instructions for
+specific Ubuntu versions under 'For the impatient' below.
 
-* **operating system**: Ubuntu 13.10 or later.
 * **cross-platform build system**:
-  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 2.8.8;
-  `cmake-gui`. Ubuntu 12.04 only has 2.8.6 available; download from the website
-  or from this [third party
-  PPA](https://launchpad.net/~robotology/+archive/ubuntu/ppa).
-* **compiler**: [gcc](http://gcc.gnu.org) >= 4.8; `g++-4.8`, or
+  [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
+  `cmake-gui`. 
+* **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**: Simbody >= 3.6. Two options:
   * Let OpenSim get this for you using superbuild (see below).
@@ -561,18 +636,21 @@ line below, we show the corresponding package.
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+* **command-line argument parsing**: docopt.cpp. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.5; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
     * **python scripting** (optional): `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
-    $ sudo apt-get install cmake-gui g++-4.8
+    $ sudo apt-get install cmake-gui g++-4.9
 
 And you could get all the optional dependencies via:
 
@@ -658,6 +736,10 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
+        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+           containing `docopt-config.cmake`. If the root directory of your 
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           variable to `~/docopt.cpp-install/lib/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
@@ -732,15 +814,6 @@ And you could get all the optional dependencies via:
 
 Your changes will only take effect in new terminal windows.
 
-
-[buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
-[travisci]: https://travis-ci.org/opensim-org/opensim-core
-[buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
-[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[running_gif]: doc/images/opensim_running.gif
-[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
-[java]: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
-
 #### For the impatient (Ubuntu)
 ##### Ubuntu 14.04 Trusty Tahr
 In **Terminal** --
@@ -806,7 +879,7 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
-##### Ubuntu 16.04 Xenial Xerus
+##### Ubuntu 16.04 Xenial Xerus AND Ubuntu 16.10 Yakkety Yak
 In **Terminal** --
 ```shell
 sudo apt-get update
@@ -835,3 +908,11 @@ cmake ../opensim-core \
 make -j8
 ctest -j8
 ```
+
+[buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
+[travisci]: https://travis-ci.org/opensim-org/opensim-core
+[buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
+[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
+[running_gif]: doc/images/opensim_running.gif
+[simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
+[java]: http://www.oracle.com/technetwork/java/javase/downloads/index.html

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,6 +28,8 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
+    5. PhysicalOffsetFrame on PhysicalOffsetFrame in non-Multibody tree order
+    6. Filtering of Frames by their type
       
      Add tests here as Frames are added to OpenSim
 
@@ -44,6 +46,7 @@ void testBody();
 void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
 void testFilterByFrameType();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
@@ -82,6 +85,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() << endl;
         failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
+    }
+
+    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder");
     }
 
     try { testFilterByFrameType(); }
@@ -332,8 +341,78 @@ void testPhysicalOffsetFrameOnBodySerialize()
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
 }
 
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
+{
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder" << endl;
+    // The order of the offset frames in the Model's "components" property list
+    // is specified to be the reverse of the order of the offset frames in the
+    // Multibody tree. This test ensures that the calls to addToSystem() for 
+    // PhysicalOffsetFrames occur in the order of the Multibody tree instead of
+    // the order in Model's property list, which can be arbitrary.
+    Model pendulum("double_pendulum.osim");
+
+    SimTK::Transform X_RO;
+    X_RO.setP(SimTK::Vec3(0.1, 0.2, 0.3));
+    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::ZAxis);
+
+    // create PhysicalOffsetFrames Distal and Proximal to identify their
+    // relative location to w.r.t a Body in the Model.
+    PhysicalOffsetFrame* offsetFrameDistal = new PhysicalOffsetFrame();
+    offsetFrameDistal->setName("offsetFrameDistal");
+    offsetFrameDistal->setOffsetTransform(X_RO);
+    // add Distal offset first so it appears before Proximal in the Model's
+    // property list.
+    pendulum.addComponent(offsetFrameDistal);
+
+    PhysicalOffsetFrame* offsetFrameProximal = new PhysicalOffsetFrame();
+    offsetFrameProximal->setName("offsetFrameProximal");
+    offsetFrameProximal->setOffsetTransform(~X_RO);
+    pendulum.addComponent(offsetFrameProximal);
+
+    // Now attach them such that offsetFrameProximal is attached to rod2 of
+    // the pendulum and offsetFrameDistal is attached to offsetFrameProximal
+    const Body& rod2 = pendulum.getComponent<Body>("rod2");
+    offsetFrameProximal->setParentFrame(rod2);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    SimTK::State& s = pendulum.initSystem();
+
+    // make sure that this offsetFrameDistal knows that it is rigidly fixed 
+    // to the same MobilizedBody as the rod2 Body
+    ASSERT(rod2.getMobilizedBodyIndex() == 
+                offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
+        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
+        "incorrect MobilizedBodyIndex");
+
+    // Verify that a direct loop throws an exception
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
+
+    // Now test that we do not get stuck in a loop of PhysicalOffsetFrames
+    // for more than two frames
+    PhysicalOffsetFrame* offsetFrameMiddle = new PhysicalOffsetFrame();
+    offsetFrameMiddle->setName("offsetFrameMiddle");
+    offsetFrameMiddle->setOffsetTransform(X_RO);
+    pendulum.addComponent(offsetFrameMiddle);
+
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameMiddle->setParentFrame(*offsetFrameProximal);
+    offsetFrameDistal->setParentFrame(*offsetFrameMiddle);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
+}
+
 void testFilterByFrameType()
 {
+    cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
 

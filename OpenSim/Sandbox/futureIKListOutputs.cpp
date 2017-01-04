@@ -8,7 +8,7 @@ using namespace SimTK;
 // single value of type T. The key notion here is that outputs can contain
 // any number of channels.
 
-// TODO Multiplexer, channels of type T into 1 vector. with the same annotations.
+// TODO Multiplexer, channels of type T into 1 vector. with the same aliases.
 
 // TODO this could be a type of component that has a minimum required number
 // of inputs: need 3 markers to define a body.
@@ -173,7 +173,7 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(coords, double, getSolution,
         SimTK::Stage::Position);
     OpenSim_DECLARE_LIST_INPUT(targets, Vec3, SimTK::Stage::Position,
-        "The target (experimental) marker positions. Input annotations must "
+        "The target (experimental) marker positions. Input aliases must "
         "be the name of the model marker to pair with each target.");
     // TODO OpenSim_DECLARE_LIST_INPUT(marker_weights, double, SimTK::Stage::Position,
     // TODO     "Weights for each marker specified in targets.");
@@ -215,7 +215,7 @@ public:
         const_cast<Self*>(this)->_stationPinB.clear();
         const auto& input = getInput<Vec3>("targets");
         for (int ichan = 0; ichan < input.getNumConnectees(); ++ichan) {
-            const auto& markerName = input.getAnnotation(ichan);
+            const auto& markerName = input.getAlias(ichan);
             const auto& marker = getModel().getMarkerSet().get(markerName);
             const auto& mbi = marker.getParentFrame().getMobilizedBodyIndex();
             const_cast<Self*>(this)->_onBodyB.push_back(mbi);
@@ -268,7 +268,7 @@ void createModel(Model& model) {
                              *pelvis, Vec3(0), Vec3(0),
                              *femur,  Vec3(0, 1, 0), Vec3(0));
     model.addJoint(hip);
-    hog->getCoordinateSet().get(0).setDefaultValue(0.5 * SimTK::Pi);
+    hog->updCoordinate().setDefaultValue(0.5 * SimTK::Pi);
     
     auto* asis = new OpenSim::Marker();
     asis->setName("asis"); asis->setParentFrame(*pelvis);
@@ -383,9 +383,9 @@ void testFutureIKListOutputs() {
     // Set the marker targets for IK. Connect to all channels in the "col"
     // list output.
     ik->updInput("targets").connect(exp->getOutput("col"));
-    // Must annotate this output since we need a way to figure out which marker
-    // it corresponds to. The InverseKinematics component uses annotations to
-    // pair target Vec3's with model markers.
+    // Must provide an alias for this output since we need a way to figure out
+    // which marker it corresponds to. The InverseKinematics component uses
+    // aliases to pair target Vec3's with model markers.
     ik->updInput("targets").connect(hjc->getOutput("joint_center"), "hjc");
     
     // Connect up the reporters.

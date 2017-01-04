@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 //=============================================================================
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "PointKinematics.h"
 
 
@@ -51,7 +50,6 @@ const int PointKinematics::BUFFER_LENGTH = PointKinematicsBUFFER_LENGTH;
  */
 PointKinematics::~PointKinematics()
 {
-    if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
     deleteStorage();
 }
 //_____________________________________________________________________________
@@ -150,7 +148,6 @@ void PointKinematics::
 setNull()
 {
     // POINTERS
-    _dy = NULL;
     _kin = NULL;
     _pStore = NULL;
     _vStore = NULL;
@@ -314,12 +311,6 @@ setModel(Model& aModel)
     _body = &aModel.updBodySet().get(_bodyName);
     if (aModel.updBodySet().contains(_relativeToBodyName))
         _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
-
-    // ALLOCATIONS
-    if (_dy != 0)
-        delete[] _dy;
-
-    _dy = new double[_model->getNumStateVariables()];
 
     // DESCRIPTION AND LABELS
     constructDescription();

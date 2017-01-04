@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 
 #include "SimbodyEngine.h"
-#include "Joint.h"
 #include "Coordinate.h"
 
 
@@ -864,7 +863,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 
     // Compute generalized speeds
     GCVSplineSet tempQset(5,qStore);
-    Storage *uStore = tempQset.constructStorage(1);
+    std::unique_ptr<Storage> uStore{tempQset.constructStorage(1)};
 
     // Compute constraints
     Array<double> qu(0.0,nq+nu);

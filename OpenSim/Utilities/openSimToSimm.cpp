@@ -1,4 +1,4 @@
-/* Copyright (c)  2007, Stanford University and Eran Guendelman.
+/* Copyright (c) 2005-2016 Stanford University and Eran Guendelman.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 *   1. The software is used only for non-commercial research and education. It may not

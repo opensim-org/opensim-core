@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,7 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Station.h"
-#include "SimTKcommon.h"
 
 namespace OpenSim {
 

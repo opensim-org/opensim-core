@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Ajay Seth                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -39,8 +39,24 @@ void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
+// This component, used solely for testing, is used to satisfy the Inputs of
+// the components we test.
+class OutputGenerator : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(OutputGenerator, Component);
+public:
+    OpenSim_DECLARE_OUTPUT(outdouble, double, calcDouble, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outvec3, SimTK::Vec3, calcVec3, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outxform, SimTK::Transform, calcXform, SimTK::Stage::Model);
+    double calcDouble(const SimTK::State&) const {return 0.0;}
+    SimTK::Vec3 calcVec3(const SimTK::State&) const {return SimTK::Vec3(0);}
+    SimTK::Transform calcXform(const SimTK::State&) const
+    {return SimTK::Transform(SimTK::Vec3(0));}
+};
+
 int main()
 {
+    Object::registerType(OutputGenerator());
+
     SimTK::Array_<std::string> failures;
 
     // get all registered Components
@@ -177,15 +193,14 @@ void testComponent(const Component& instanceToTest)
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
+
     // First make sure Connectors are satisfied.
     Component* sub = instance;
-    ComponentList<Component> comps = instance->getComponentList<Component>();
-    ComponentList<Component>::const_iterator it = comps.begin();
-
-    while(sub) {
-        int nc = sub->getNumConnectors();
-        for (int i = 0; i < nc; ++i){
-            AbstractConnector& connector = sub->updConnector(i);
+    auto comps = instance->updComponentList<Component>();
+    ComponentList<Component>::iterator itc = comps.begin();
+    while (sub) {
+        for (const auto& connectorName : sub->getConnectorNames()) {
+            AbstractConnector& connector = sub->updConnector(connectorName);
             string dependencyTypeName = connector.getConnecteeTypeName();
             cout << "Connector '" << connector.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
@@ -212,31 +227,66 @@ void testComponent(const Component& instanceToTest)
                 continue;
             }
 
-            Object* dependency =
-                Object::newInstanceOfType(dependencyTypeName);
-
-            if (dependency == nullptr){
-                // Get a concrete instance of a PhysicalFrame, which is a Body
-                if (dependencyTypeName == "PhysicalFrame"){
-                    dependency = Object::newInstanceOfType("Body");
-                }
+            std::unique_ptr<Object> dependency;
+            if (dynamic_cast< Connector<Frame>*>(&connector) ||
+                dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
+                dependency.reset(Object::newInstanceOfType("Body"));
+            } else {
+                dependency.reset(Object::newInstanceOfType(dependencyTypeName));
             }
 
             if (dependency) {
                 //give it some random values including a name
-                randomize(dependency);
+                randomize(dependency.get());
                 connector.setConnecteeName(dependency->getName());
 
                 // add the dependency 
-                addObjectAsComponentToModel(dependency, model);
+                addObjectAsComponentToModel(dependency.release(), model);
             }
         }
-        const Component& next = *it;
+        
+        Component& next = *itc;
         //Now keep checking the subcomponents
-        sub = const_cast<Component *>(&next);
-        it++;
+        sub = &next;
+        itc++;
     }
-
+    
+    // Now make sure Inputs are satisfied.
+    // We'll use the custom OutputGenerator class to satisfy the inputs.
+    OutputGenerator* outputGen = new OutputGenerator();
+    outputGen->setName("output_gen");
+    model.addComponent(outputGen);
+    for (auto& sub : model.updComponentList()) {
+        for (const auto& inputName : sub.getInputNames()) {
+            AbstractInput& input = sub.updInput(inputName);
+            
+            // Special case: Geometry cannot have both its input and connector
+            // connected.
+            if (dynamic_cast<Geometry*>(&sub) && inputName == "transform") {
+                input.setConnecteeName("");
+                continue;
+            }
+            
+            string dependencyTypeName = input.getConnecteeTypeName();
+            cout << "Input '" << input.getName() << "' has dependency on: " <<
+                "Output<" << dependencyTypeName << ">" << endl;
+            
+            // Find an output of the correct type.
+            bool foundAnOutput = false;
+            for (const auto& ito : outputGen->getOutputs()) {
+                const AbstractOutput* output = ito.second.get();
+                if (dependencyTypeName == output->getTypeName()) {
+                    input.setConnecteeName(output->getChannel("").getPathName());
+                    foundAnOutput = true;
+                }
+            }
+            if (!foundAnOutput) {
+                throw Exception("OutputGenerator does not provide an output "
+                                "of type " + dependencyTypeName + ".");
+            }
+        }
+    }
+    
     // This method calls connect().
     cout << "Call Model::setup()." << endl;
     try{
@@ -265,12 +315,10 @@ void testComponent(const Component& instanceToTest)
 
     // Outputs.
     // --------
-    cout << "Invoking Outputs." << endl;
-    for (auto it = instance->getOutputsBegin();
-            it != instance->getOutputsEnd(); ++it)
-    {
-        const std::string thisName = it->first;
-        const AbstractOutput* thisOutput = it->second.get();
+    cout << "Invoking Output's." << endl;
+    for (const auto& entry : instance->getOutputs()) {
+        const std::string thisName = entry.first;
+        const AbstractOutput* thisOutput = entry.second.get();
 
         cout << "Testing Output " << thisName << ", dependent on " <<
             thisOutput->getDependsOnStage().getName() << endl;
@@ -313,21 +361,22 @@ void testComponent(const Component& instanceToTest)
 
         // Catch a possible decrease in the memory footprint, which will cause
         // size_t (unsigned int) to wrap through zero.
-        const size_t increaseInMemory = getCurrentRSS() > initMemory ?
-                                        getCurrentRSS() - initMemory : 0;
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
         const long double leakPercent = (100.0*increaseInMemory/instanceSize)
                                         /nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
-            << setprecision(3) << leakPercent << "%";
+            << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-            msg.str() + "exceeds acceptable tolerance (" + 
-            to_string(acceptableMemoryLeakPercent) + ").\n Instance size: " +
+            msg.str() + "\nExceeds acceptable tolerance of " +
+            to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str()  << endl;
@@ -346,8 +395,14 @@ void testComponent(const Component& instanceToTest)
         {
             finalInitState = model.initSystem();
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
+
+        // Catch a possible decrease in the memory footprint, which will cause
+        // size_t (unsigned int) to wrap through zero.
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)
+                                        /nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
@@ -364,7 +419,7 @@ void testComponent(const Component& instanceToTest)
             to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str() << endl;
@@ -397,8 +452,8 @@ void testComponentEquivalence(const Component* a, const Component* b)
     ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
         className + " components differ in number of outputs.");
 
-    ComponentList<Component> aSubsList = a->getComponentList<Component>();
-    ComponentList<Component> bSubsList = b->getComponentList<Component>();
+    auto aSubsList = a->getComponentList<Component>();
+    auto bSubsList = b->getComponentList<Component>();
     auto iter_a = aSubsList.begin();
     auto iter_b = bSubsList.begin();
 
@@ -469,40 +524,28 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     const string& className = instance->getConcreteClassName();
     cout << "Adding " << className << " to the model." << endl;
 
-    try{
-        if (Object::isObjectTypeDerivedFrom< Analysis >(className))
-            model.addAnalysis(dynamic_cast<Analysis*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Body >(className))
-            model.addBody(dynamic_cast<Body*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
-            model.addConstraint(dynamic_cast<Constraint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
-            model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Controller >(className))
-            model.addController(dynamic_cast<Controller*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Force >(className))
-            model.addForce(dynamic_cast<Force*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Probe >(className))
-            model.addProbe(dynamic_cast<Probe*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Joint >(className))
-            model.addJoint(dynamic_cast<Joint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Frame >(className))
-            model.addFrame(dynamic_cast<Frame*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
-            model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
-        else
-        {
-            throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
-        }
-    }
-    // It is more than likely that connect() will fail, but the subcomponents tree
-    // will be traversable, so we can continue to resolve dependencies by visiting
-    // subcomponents' connectors
-    catch (const std::exception& e) {
-        cout << "testComponents: Model unable to connect after adding ";
-        cout << instance->getName() << endl;
-        cout << "ERROR: " << e.what() << "'" << endl;
-        cout << "Possible that dependency was not added yet. Continuing...." << endl;
+    if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+        throw Exception("Analysis is not a Component.", __FILE__, __LINE__);
+    else if (Object::isObjectTypeDerivedFrom< Body >(className))
+        model.addBody(dynamic_cast<Body*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+        model.addConstraint(dynamic_cast<Constraint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+        model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+        model.addController(dynamic_cast<Controller*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Force >(className))
+        model.addForce(dynamic_cast<Force*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+        model.addProbe(dynamic_cast<Probe*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+        model.addJoint(dynamic_cast<Joint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Frame >(className))
+        model.addFrame(dynamic_cast<Frame*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Component >(className))
+        model.addComponent(dynamic_cast<Component*>(instance));
+    else {
+        throw Exception(className + " is not a Component.",
+            __FILE__, __LINE__);
     }
 }

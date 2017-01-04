@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  * Contributor(s): Thomas Uchida                                              *
  *                                                                            *
@@ -27,6 +27,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "Umberger2010MuscleMetabolicsProbe.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 //#define DEBUG_METABOLICS
 

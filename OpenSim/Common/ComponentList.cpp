@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Authors: Ayman Habib                                                       *
  * Contributers : Chris Dembia                                                *
  *                                                                            *
@@ -27,7 +27,7 @@
 
 using namespace OpenSim;
 
-bool ComponentFilterFullPathNameContainsString::isMatch(const Component& comp)
+bool ComponentFilterAbsolutePathNameContainsString::isMatch(const Component& comp)
         const {
-    return comp.getFullPathName().find(_substring) != std::string::npos;
+    return comp.getAbsolutePathName().find(_substring) != std::string::npos;
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,10 +25,9 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-
+#include <OpenSim/Simulation/Model/Appearance.h>
 namespace OpenSim {
 
-class Body;
 class PathPoint;
 class PathWrap;
 class WrapResult;
@@ -59,11 +58,9 @@ public:
     OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
         "Translation of the WrapObject.");
 
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color as RGB with each being any value on [0, 1]");
+    // Default display properties e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance for this Geometry");
 
     OpenSim_DECLARE_PROPERTY(quadrant, std::string,
         "The name of quadrant over which the wrap object is active. "

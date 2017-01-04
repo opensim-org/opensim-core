@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,13 @@
 // INCLUDES
 //=============================================================================
 #include "InverseDynamicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
-#include "AnalyzeTool.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -244,15 +237,21 @@ bool InverseDynamicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.")
+
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
         _model->printBasicInfo(cout);
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
 
-        _model->setup();
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
+        // Initialize the model's underlying computational system and get its default state.
+        SimTK::State& s = _model->initSystem();
 
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
@@ -260,15 +259,15 @@ bool InverseDynamicsTool::run()
         string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
         IO::chDir(directoryOfSetupFile);
 
-        const CoordinateSet &coords = _model->getCoordinateSet();
+        auto coords = _model->getCoordinatesInMultibodyTreeOrder();
         int nq = _model->getNumCoordinates();
 
         FunctionSet *coordFunctions = NULL;
-        //Storage *coordinateValues = NULL;
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
-                cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
+                cout << "\n\nLow-pass filtering coordinates data with a cutoff frequency of "
+                    << _lowpassCutoffFrequency << "..." << endl << endl;
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
                 _coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
                 if (getVerboseLevel()==Debug) _coordinateValues->print("coordinateDataFiltered.sto");
@@ -282,13 +281,14 @@ bool InverseDynamicsTool::run()
 
             //Functions must correspond to model coordinates and their order for the solver
             for(int i=0; i<nq; i++){
-                if(coordFunctions->contains(coords[i].getName())){
-                    coordFunctions->insert(i,coordFunctions->get(coords[i].getName()));
+                const Coordinate& coord = *coords[i];
+                if(coordFunctions->contains(coord.getName())){
+                    coordFunctions->insert(i,coordFunctions->get(coord.getName()));
                 }
                 else{
-                    coordFunctions->insert(i,new Constant(coords[i].getDefaultValue()));
+                    coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
                     std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate "
-                        << coords[i].getName() << " assuming default value" 
+                        << coord.getName() << " assuming default value" 
                         << std::endl;
                 }
             }
@@ -298,13 +298,9 @@ bool InverseDynamicsTool::run()
         }
         else{
             IO::chDir(saveWorkingDirectory);
-            throw Exception("InverseDynamicsTool: no coordinate file found, or setCoordinateValues() was not called.");
-
+            throw Exception("InverseDynamicsTool: no coordinate file found, "
+                " or setCoordinateValues() was not called.");
         }
-
-        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
-        // Initialize the model's underlying computational system and get its default state.
-        SimTK::State& s = _model->initSystem();
 
         // Exclude user-specified forces from the dynamics for this analysis
         disableModelForces(*_model, s, _excludedForces);
@@ -336,20 +332,23 @@ bool InverseDynamicsTool::run()
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
         ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
-
-
         success = true;
 
-        cout << "InverseDynamicsTool: " << nt << " time frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+        cout << "InverseDynamicsTool: " << nt << " time frames in " 
+            << (double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
     
         JointSet jointsForEquivalentBodyForces;
         getJointsByName(*_model, _jointsForReportingBodyForces, jointsForEquivalentBodyForces);
         int nj = jointsForEquivalentBodyForces.getSize();
 
+        // Generalized forces from ID Solver are in MultibodyTree order and not
+        // necessarily in the order of the Coordinates in the Model.
+        // We can get the Coordinates in Tree order from the Model.
         Array<string> labels("time", nq+1);
         for(int i=0; i<nq; i++){
-            labels[i+1] = coords[i].getName();
-            labels[i+1] += (coords[i].getMotionType() == Coordinate::Rotational) ? "_moment" : "_force";
+            labels[i+1] = coords[i]->getName();
+            labels[i+1] += (coords[i]->getMotionType() == Coordinate::Rotational) ? 
+                "_moment" : "_force";
         }
 
         Array<string> body_force_labels("time", 6*nj+1);
@@ -368,13 +367,16 @@ bool InverseDynamicsTool::run()
         SpatialVec equivalentBodyForceAtJoint;
 
         for(int i=0; i<nt; i++){
-            StateVector genForceVec(times[i], nq, &((genForceTraj[i])[0]));
+            StateVector
+                genForceVec(times[i], genForceTraj[i]);
             genForceResults.append(genForceVec);
 
             // if there are joints requested for equivalent body forces then calculate them
             if(nj>0){
                 Vector forces(6*nj, 0.0);
-                StateVector bodyForcesVec(times[i], 6*nj, &forces[0]);
+                StateVector bodyForcesVec(times[i],
+                                          SimTK::Vector_<double>(6*nj,
+                                                                 &forces[0]));
 
                 s.updTime() = times[i];
                 Vector &q = s.updQ();

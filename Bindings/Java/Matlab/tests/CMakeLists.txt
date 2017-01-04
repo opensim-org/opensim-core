@@ -8,29 +8,46 @@ set(matlab_output_dir "${CMAKE_BINARY_DIR}/Matlab")
 file(WRITE "${matlab_output_dir}/javaclasspath.txt"
     "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}")
 if(MSVC OR XCODE) 
+    # TODO: should not write all configuration build dirs to the
+    # librarypath.txt file; this means that Debug libraries are available to
+    # the Release build, for example.
     set(_binary_dirs)
     foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
         set(_binary_dirs "${CMAKE_BINARY_DIR}/${cfg}\n${_binary_dirs}")
     endforeach()
-    file(WRITE "${matlab_output_dir}/javalibrarypath.txt"
-        "${_binary_dirs}"
-        )
+else() # Single-configuration generator.
+    set(_binary_dirs "${CMAKE_BINARY_DIR}")
 endif()
+file(WRITE "${matlab_output_dir}/javalibrarypath.txt"
+    "${_binary_dirs}"
+    )
 
-macro(OpenSimAddMatlabTest MFILE)
+macro(OpenSimAddMatlabTest TESTNAME MFILE)
     get_filename_component(_full_path_to_mfile "${MFILE}" ABSOLUTE)
-    if(WIN32)
-        # On Windows, must set ADDITIONAL_PATH to find the opensim
-        # libraries.
-        set(_additional_path "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    if(MSVC OR XCODE)
+        # Multi-generator configurations are handled differently.
+        # TODO Ideally, we would use a different WORKING_DIRECTORY for each
+        # config.
+        foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+            matlab_add_unit_test(NAME Matlab_${TESTNAME}_${cfg}
+                UNITTEST_FILE "${_full_path_to_mfile}"
+                TEST_ARGS CONFIGURATIONS ${cfg}
+                NO_UNITTEST_FRAMEWORK
+                )
+            #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
+        if(WIN32)
+            # Must set PATH so that osimJavaJNI can find osimCommon, etc.
+            set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
+                    "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+            endif()
+    endforeach()
+    else()
+        matlab_add_unit_test(NAME Matlab_${TESTNAME}
+            UNITTEST_FILE "${_full_path_to_mfile}"
+            NO_UNITTEST_FRAMEWORK
+            )
+        #TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
     endif()
-    matlab_add_unit_test(NAME Matlab_TugOfWar
-        UNITTEST_FILE "${_full_path_to_mfile}"
-        TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
-        ADDITIONAL_PATH "${_additional_path}"
-        NO_UNITTEST_FRAMEWORK
-        )
-    #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
 endmacro()
 
 # Allow MSVC users to run only the Matlab tests directly from the MSVC GUI.
@@ -53,4 +70,13 @@ add_dependencies(RunMatlabTests JavaBindings)
 # Tests.
 # ------
 
-OpenSimAddMatlabTest(../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
+OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
+OpenSimAddMatlabTest(Simbody testSimbody.m)
+OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
+    ../examples/wiringInputsAndOutputsWithTableReporter.m)
+
+# Copy resources.
+file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+     DESTINATION "${matlab_output_dir}")

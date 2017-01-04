@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,16 +27,15 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <sstream>
 #include <iostream>
 #include "IO.h"
 #include "Signal.h"
 #include "Storage.h"
 #include "GCVSplineSet.h"
-#include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
+#include "GCVSpline.h"
+#include "StateVector.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -122,7 +121,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     setNull();
 
     // OPEN FILE
-    ifstream *fp = IO::OpenInputFile(aFileName);
+    std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
     if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
 
     int nr=0,nc=0;
@@ -131,6 +130,9 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
     if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
+    if(_fileVersion > 1)
+      throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
+                      ") not supported. Use STOFileAdapter instead."};
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();
@@ -175,8 +177,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }else{  //MM the modifications below are to make the Storage class
             //well behaved when it is given data that does not contain a 
             //time or a range column
@@ -190,8 +190,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }
     // If what we read was really a sIMM motion file, adjust the data 
     // to account for different assumptions between SIMM.mot OpenSim.sto
@@ -1248,7 +1246,7 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 
 
     for(int i=0; i<found.getSize(); ++i){
-        Array<double> data = *new Array<double>;
+        Array<double> data{};
         getDataColumn(found[i]-off, data);
         rData.append(data);
     }
@@ -1290,7 +1288,7 @@ TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     table.setColumnLabels(_columnLabels.get() + 1, 
                           _columnLabels.get() + _columnLabels.getSize());
 
-    for(unsigned i = 0; i < _storage.getSize(); ++i) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
         const auto& row = getStateVector(i)->getData();
         const auto time = getStateVector(i)->getTime();
         // Exclude the first column. It is 'time'. Time is a separate column in
@@ -1430,7 +1428,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
     if(aN<0) return(_storage.getSize());
 
     // APPEND
-    StateVector vec(aT,aN,aY);
+    StateVector vec(aT, SimTK::Vector_<double>(aN, aY));
     append(vec,aCheckForDuplicateTime);
     // TODO: use some tolerance when checking for duplicate time?
     /*
@@ -1565,15 +1563,12 @@ add(int aN, double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to add to the state vectors.
+ * @param values Array of values to add to the state vectors.
  * @see StateVector::add(int,double[])
  */
-void Storage::
-add(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].add(aN,aY);
+void Storage::add(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].add(values);
     }
 }
 //_____________________________________________________________________________
@@ -1620,7 +1615,7 @@ add(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // ADD
-        _storage[i].add(nN,Y);
+        _storage[i].add(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1650,15 +1645,12 @@ subtract(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to subtract from the state vectors.
+ * @param values Array of values to subtract from the state vectors.
  * @see StateVector::subtract(int,double[])
  */
-void Storage::
-subtract(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].subtract(aN,aY);
+void Storage::subtract(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].subtract(values);
     }
 }
 //_____________________________________________________________________________
@@ -1705,7 +1697,7 @@ subtract(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // SUBTRACT
-        _storage[i].subtract(nN,Y);
+        _storage[i].subtract(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1735,15 +1727,12 @@ multiply(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be multiplied by.
+ * @param values Array of values the states are to be multiplied by.
  * @see StateVector::multiply(int,double[])
  */
-void Storage::
-multiply(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].multiply(aN,aY);
+void Storage::multiply(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].multiply(values);
     }
 }
 
@@ -1791,7 +1780,7 @@ multiply(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // MULTIPLY
-        _storage[i].multiply(nN,Y);
+        _storage[i].multiply(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1837,14 +1826,11 @@ divide(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be divided by.
+ * @param values Array of values the states are to be divided by.
  */
-void Storage::
-divide(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].divide(aN,aY);
+void Storage::divide(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].divide(values);
     }
 }
 //_____________________________________________________________________________
@@ -1891,7 +1877,7 @@ divide(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // DIVIDE
-        _storage[i].divide(nN,Y);
+        _storage[i].divide(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -2625,7 +2611,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
         StateVector vec;
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         _storage.insert(tIndex+1, vec);
     }
@@ -2806,7 +2792,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         // PRINT
         n = vec.print(fp);
@@ -3283,7 +3269,7 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
  * If endTime is not specified the comparison goes to the end of the file
  * @returns the root mean square, using a spline to calculate values where the times do not match up.
  */
-double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
+double Storage::compareColumnRMS(const Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime) const
 {
     int thisColumnIndex = getStateIndex(aColumnName);
     int otherColumnIndex = aOtherStorage.getStateIndex(aColumnName);
@@ -3329,23 +3315,17 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
  * errors for columns occurring in both storage objects, and record the
  * values and column names in the comparisons and columnsUsed Arrays.
  */
-void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed, Array<double> &comparisons)
+void Storage::compareWithStandard(const Storage& standard, std::vector<string>& columnsUsed, std::vector<double>& comparisons) const
 {
     int maxColumns = _columnLabels.getSize();
-    columnsUsed.ensureCapacity(maxColumns);
-    comparisons.ensureCapacity(maxColumns);
 
-    int columns = 0;
     for (int i = 1; i < maxColumns; ++i) {
         double comparison = compareColumnRMS(standard, _columnLabels[i]);
         if (!SimTK::isNaN(comparison)) {
-            comparisons[columns] = comparison;
-            columnsUsed[columns++] = _columnLabels[i];
+            comparisons.push_back(comparison);
+            columnsUsed.push_back(_columnLabels[i]);
         }
     }
-
-    columnsUsed.setSize(columns);
-    comparisons.setSize(columns);
 }
 
 bool Storage::makeStorageLabelsUnique() {

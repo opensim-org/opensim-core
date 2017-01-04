@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,18 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "WrapObject.h"
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 

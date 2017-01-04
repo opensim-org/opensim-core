@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Contributor(s): Frank C. Anderson, Eran Guendelman, Chand T. John          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,27 +21,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "RRATool.h"
+#include "CMC.h"
+#include "CMC_TaskSet.h"
+#include "ActuatorForceTarget.h"
+#include "ActuatorForceTargetFast.h"
 #include "AnalyzeTool.h"
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
 #include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
-#include "CMC_TaskSet.h"
-#include "ActuatorForceTarget.h"
-#include "ActuatorForceTargetFast.h"
+
 
 using namespace std;
 using namespace SimTK;
@@ -390,7 +384,7 @@ bool RRATool::run()
     controller->setName( "CMC" );
     controller->setActuators(_model->updActuators());
     _model->addController(controller );
-    controller->setDisabled(false);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(.001);
     controller->setCheckTargetTime(true);
@@ -425,8 +419,7 @@ bool RRATool::run()
         cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
     } else {
         cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-        desiredKinStore = new Storage();
-        loadQStorage( _desiredKinematicsFileName, *desiredKinStore );
+        desiredKinStore = new Storage(_desiredKinematicsFileName);
         desiredKinFlag = true;
     }
 
@@ -638,8 +631,16 @@ bool RRATool::run()
         cout<<" to set the initial configuration.\n" << endl;
     }
 
-    for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
-    for(int i=0;i<nu;i++) s.updU()[i] = u[i];
+    // formCompleteStorages ensures qSet is in order of model Coordinates
+    // but we cannot assume order of coordinates is the same in the State,
+    // so set each Coordinate value and speed individually.
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (int i = 0; i < nq; ++i) {
+        // The last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
+        coords[i].setValue(s, q[i], i==(nq-1));
+        coords[i].setSpeedValue(s, u[i]);
+    }
 
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,13 +31,15 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "FunctionSet.h"
-#include "GCVSpline.h"
-#include "Storage.h"
+
 
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class GCVSpline;
+class Storage;
 
 /**
  * A class for holding a set of generalized cross-validated splines.

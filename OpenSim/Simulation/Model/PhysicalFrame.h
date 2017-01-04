@@ -9,7 +9,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                      
 *                                                                       
-* Copyright (c) 2005-2015 Stanford University and the Authors           
+* Copyright (c) 2005-2016 Stanford University and the Authors           
 * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                        
 *                                                                       
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,9 +25,14 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+#include "simbody/internal/Body.h"
 
 // TODO remove these when corresponding properties are removed
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+
+namespace SimTK {
+class MobilizedBody;
+}
 
 namespace OpenSim {
 
@@ -162,9 +167,7 @@ protected:
     underlying MultibodySystem. The PhysicalFrame's MobilizedBodyIndex must be
     set by the end of PhysicalFrame::addToSystem()
         */
-    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        const_cast<Self*>(this)->_mbIndex = mbix; 
-    }
+    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const;
 
     /** Extend how PhysicalFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override {

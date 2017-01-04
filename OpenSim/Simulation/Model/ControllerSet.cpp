@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -172,8 +172,9 @@ void ControllerSet::setActuators( Set<Actuator>& as)
 void ControllerSet::setDesiredStates( Storage* yStore)
 {
    for(int i=0;i<getSize();i++ ) {
-       if( !get(i).isDisabled() ) {
-           TrackingController *controller = dynamic_cast<TrackingController *>(&get(i));
+       if( get(i).isEnabled() ) {
+           TrackingController *controller =
+               dynamic_cast<TrackingController *>(&get(i));
            if(controller != NULL)
                 controller->setDesiredStatesStorage( yStore );
        }
@@ -186,7 +187,7 @@ void ControllerSet::printInfo() const
 
     for(int i=0;i<getSize(); i++ ) {
       Controller& c = get(i);
-      if( !c.isDisabled() ) {
+      if( c.isEnabled() ) {
           printf(" controller %d =%llx %s model=%llx \n", 
               i+1, (unsigned long long)&c, c.getName().c_str(), 
               (unsigned long long)&c.getModel() );

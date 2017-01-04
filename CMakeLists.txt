@@ -8,13 +8,7 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-if(MSVC)
-    # To properly support Visual Studio 2015.
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 3.1.3)
-else()
-    set(OPENSIM_REQUIRED_CMAKE_VERSION 2.8.8)
-endif()
-cmake_minimum_required(VERSION ${OPENSIM_REQUIRED_CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.2)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -97,7 +91,18 @@ SimbodyFiles project. If OFF, you likely must set those environment variables
 for both OpenSim and Simbody." ON)
 
 option(BUILD_API_ONLY "Build/install only headers, libraries,
-wrapping, tests; not applications (ik, rra, etc.)." OFF)
+wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
+
+
+set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
+if(WIN32)
+    # For backwards compatibility in the Windows binary distribution.
+    set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT ON)
+endif()
+option(OPENSIM_BUILD_INDIVIDUAL_APPS
+    "Build/install the old command line applications (ik, id, rra, cmc, etc.)."
+    ${OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT})
+mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 
 # Configure installation directories across platforms.
@@ -172,6 +177,7 @@ else()
 endif()
 
 set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
+set(OPENSIM_INSTALL_PYTHONEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Python")
 
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)
@@ -186,16 +192,16 @@ endif()
 get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
 if(UNIX AND ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
              "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local"))
-    if(${BUILD_API_ONLY} AND ${OPENSIM_INSTALL_UNIX_FHS})
+    set(no_name_conflict ${BUILD_API_ONLY} OR NOT ${OPENSIM_BUILD_INDIVIDUAL_APPS})
+    if(${OPENSIM_INSTALL_UNIX_FHS} AND ${no_name_conflict})
         # In this case it's fine to install into /usr or /usr/local.
     else()
         message(SEND_ERROR "
-        Cannot install into /usr or /usr/local if building
-        applications (since OpenSim executable names conflict with those of
-        vital UNIX executables) or if the OpenSim installation does not
-        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set
-        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change
-        CMAKE_INSTALL_PREFIX.")
+        Cannot install into /usr or /usr/local if the OpenSim installation does
+        not conform to the UNIX Filesystem Hierarchy Standard or if building
+        the old command-line applications (there are name conflicts with vital
+        UNIX executables). Either (a) set OPENSIM_INSTALL_UNIX_FHS to ON, or
+        (b) change CMAKE_INSTALL_PREFIX.")
     endif()
 endif()
 
@@ -377,6 +383,41 @@ if(${BUILD_JAVA_WRAPPING})
     # Also, the mechanism we use to set the java classpath and library path 
     # for MATLAB requires version 7.0 (R14).
     find_package(Matlab 7.0 COMPONENTS MAIN_PROGRAM)
+    # Issue warning if Matlab and OpenSim build architectures differ.
+    # That is, one is 64-bit and other is not.
+    if(Matlab_FOUND)
+        if(${Matlab_MEX_EXTENSION} MATCHES "64")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if(UNIX AND NOT ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
+                string(CONCAT MSG 
+                       "Matlab found is 64-bit but host is 32-bit. Matlab arch"
+                       " and OpenSim binaries arch have to be same.")
+                message(WARNING ${MSG})
+            elseif(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "64")
+                string(CONCAT MSG 
+                       "Matlab found is 64-bit but C++ compiler chosen is "
+                       "32-bit. Matlab arch and OpenSim binaries arch have"
+                       " to be same.")
+                message(WARNING ${MSG})
+            endif()
+        elseif(${Matlab_MEX_EXTENSION} MATCHES "32")
+            # On Unix, assume host architecture to be same as target 
+            # architecture.
+            if(UNIX AND ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
+                string(CONCAT MSG
+                       "Matlab found is 32-bit but host is 64-bit. Matlab arch"
+                       " and OpenSim binaries arch have to be same.")
+                message(WARNING ${MSG})
+            elseif(MSVC AND ${CMAKE_GENERATOR} MATCHES "64")
+                string(CONCAT MSG
+                       "Matlab found is 32-bit but C++ compiler chosen is "
+                       "64-bit. Matlab arch and OpenSim binaries arch have"
+                       " to be same.")
+                message(WARNING ${MSG})
+            endif()
+        endif()
+    endif()
 endif()
 
 if(WIN32)

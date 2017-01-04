@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKcommon/internal/Xml.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -64,6 +65,7 @@ void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -140,6 +142,12 @@ int main()
         failures.push_back("testExpressionBasedCoordinateForce");
     }
 
+    try { testSerializeDeserialize(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testSerializeDeserialize");
+    }
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -185,10 +193,10 @@ void testExpressionBasedCoordinateForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&slider);
@@ -207,7 +215,7 @@ void testExpressionBasedCoordinateForce()
     SimTK::State& osim_state = osimModel.initSystem();
 
     // move ball to initial conditions
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
@@ -385,10 +393,10 @@ void testPathSpring()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("block_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("block_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel.addBody(&block);
     osimModel.addJoint(&weld);
@@ -422,7 +430,7 @@ void testPathSpring()
     //osimModel.setUseVisualizer(true);
     SimTK::State& osim_state = osimModel.initSystem();
 
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
@@ -490,10 +498,10 @@ void testSpringMass()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&slider);
@@ -517,7 +525,7 @@ void testSpringMass()
 
     SimTK::State& osim_state = osimModel.initSystem();
 
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
@@ -588,10 +596,10 @@ void testBushingForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&slider);
@@ -627,7 +635,7 @@ void testBushingForce()
 
     SimTK::State& osim_state = osimModel.initSystem();
 
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
@@ -703,10 +711,10 @@ void testFunctionBasedBushingForce()
                                  ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&slider);
@@ -733,7 +741,7 @@ void testFunctionBasedBushingForce()
 
     SimTK::State& osim_state = osimModel.initSystem();
 
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
 
     //==========================================================================
@@ -811,10 +819,10 @@ void testExpressionBasedBushingForceTranslational()
     SliderJoint sliderY("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
     
     double positionRange[2] = {-10, 10};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = sliderY.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = sliderY.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
     
     osimModel.addBody(&ball);
     osimModel.addJoint(&sliderY);
@@ -855,7 +863,7 @@ void testExpressionBasedBushingForceTranslational()
     SimTK::State& osim_state = osimModel.initSystem();
     
     // set the initial height of the ball on slider
-    slider_coords[0].setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state, start_h);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
     
     //==========================================================================
@@ -942,10 +950,10 @@ void testExpressionBasedBushingForceRotational()
         ball, Vec3(0), Vec3(Pi / 2, 0, 0));
 
     double thetaRange[2] = { -2*Pi, 2*Pi };
-    // Rename coordinates for a pin joint
-    CoordinateSet &pin_coords = pin.upd_CoordinateSet();
-    pin_coords[0].setName("ball_theta");
-    pin_coords[0].setRange(thetaRange);
+    // Rename coordinate for the pin joint
+    auto& pinCoord = pin.updCoordinate();
+    pinCoord.setName("ball_theta");
+    pinCoord.setRange(thetaRange);
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&pin);
@@ -977,7 +985,7 @@ void testExpressionBasedBushingForceRotational()
     SimTK::State& osim_state = osimModel.initSystem();
 
     // set the initial pin joint angle
-    pin_coords[0].setValue(osim_state, start_theta);
+    pinCoord.setValue(osim_state, start_theta);
     osimModel.getMultibodySystem().realize(osim_state, Stage::Position);
 
     //=========================================================================
@@ -1001,7 +1009,8 @@ void testExpressionBasedBushingForceRotational()
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         // compute the current rotation about the y axis
-        double simulated_theta = pin_coords[0].getValue(osim_state);
+        double simulated_theta = pin.getCoordinate(PinJoint::Coord::RotationZ)
+                                 .getValue(osim_state);
 
         // compute the rotation about y-axis from the analytic solution 
         // for 1-D spring-mass system with zero-velocity at initial offset.
@@ -1216,10 +1225,10 @@ void testCoordinateLimitForce()
     SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {0.1, 2};
-    // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider.upd_CoordinateSet();
-    slider_coords[0].setName("ball_h");
-    slider_coords[0].setRange(positionRange);
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&slider);
@@ -1361,10 +1370,10 @@ void testCoordinateLimitForceRotational()
 
     // NOTE: Angular limits are in degrees NOT radians
     double positionRange[2] = {-30, 90};
-    // Rename coordinates for a slider joint
-    CoordinateSet &pin_coords = pin.upd_CoordinateSet();
-    pin_coords[0].setName("theta");
-    pin_coords[0].setRange(positionRange);
+    // Rename coordinate for the pin joint
+    auto& pinCoord = pin.updCoordinate();
+    pinCoord.setName("theta");
+    pinCoord.setRange(positionRange);
 
     osimModel.addBody(&block);
     osimModel.addJoint(&pin);
@@ -1485,16 +1494,17 @@ void testExternalForce()
 
     // Add joint connecting the tower to the ground and associate joint to tower body
     FreeJoint freeJoint("groundTower", ground, Vec3(0), Vec3(0), tower, Vec3(0, -0.5, 0), Vec3(0));
-    // Rename coordinates for the free joint
-    CoordinateSet &freeCoords = freeJoint.upd_CoordinateSet();
-    for(int i=0; i< freeCoords.getSize(); ++i){
-        if(freeCoords[i].getMotionType() == Coordinate::Translational){
-            freeCoords[i].setRange(posRange);
+    // Set range and default value for each Coordinate in freeJoint.
+    for(int i=0; i< freeJoint.numCoordinates(); ++i){
+        if (freeJoint.get_coordinates(i).getMotionType()
+            == Coordinate::Translational)
+        {
+            freeJoint.upd_coordinates(i).setRange(posRange);
         }
-        else{
-            freeCoords[i].setRange(angRange);
+        else {
+            freeJoint.upd_coordinates(i).setRange(angRange);
         }
-        freeCoords[i].setDefaultValue(0);
+        freeJoint.upd_coordinates(i).setDefaultValue(0);
     }
 
     // add the tower body to the model
@@ -1520,7 +1530,7 @@ void testExternalForce()
     SimTK::State& s = model.initSystem();
 
     // set the starting location of the tower to be right over the point
-    freeCoords[3].setValue(s, 0.1);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s, 0.1);
 
     double accuracy = 1e-6;
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
@@ -1565,14 +1575,15 @@ void testExternalForce()
 
     // set the starting location of the tower to be offset as to counter-balance the torque
     // point is 0.1, by moving fwd to 0.3, force has -0.2m moment-arm to generate -2Nm
-    freeCoords[3].setValue(s2, 0.3);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s2, 0.3);
     model.setPropertiesFromState(s2);
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
     integrator2.setAccuracy(accuracy);
-
-    manager.setIntegrator(integrator2);
-    manager.integrate(s2);
+    Manager manager2(model, integrator2);
+    manager2.setInitialTime(0.0);
+    manager2.setFinalTime(tf);
+    manager2.integrate(s2);
 
     // all dofs should remain constant
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1602,14 +1613,15 @@ void testExternalForce()
     SimTK::State& s3 = model.initSystem();
 
     // only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
-    freeCoords[3].setValue(s3, 0.4); // yield -3Nm for force only
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s3, 0.4); // yield -3Nm for force only
     model.setPropertiesFromState(s3);
 
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
     integrator3.setAccuracy(accuracy);
-
-    manager.setIntegrator(integrator3);
-    manager.integrate(s3);
+    Manager manager3(model, integrator3);
+    manager3.setInitialTime(0.0);
+    manager3.setFinalTime(tf);
+    manager3.integrate(s3);
 
     // all dofs should remain constant except Y
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1651,14 +1663,15 @@ void testExternalForce()
     model.getGravityForce().disable(s4);
 
     // only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
-    freeCoords[3].setValue(s4, 0);
+    freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s4, 0);
     model.setPropertiesFromState(s4);
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
     integrator4.setAccuracy(accuracy);
-
-    manager.setIntegrator(integrator4);
-    manager.integrate(s4);
+    Manager manager4(model, integrator4);
+    manager4.setInitialTime(0.0);
+    manager4.setFinalTime(tf);
+    manager4.integrate(s4);
 
     // all dofs should remain constant except X-translation
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1667,4 +1680,54 @@ void testExternalForce()
         if(i !=3)
             ASSERT_EQUAL(def, val, 10*accuracy);
     }
+}
+
+void testSerializeDeserialize() {
+    std::cout << "Test serialize & deserialize." << std::endl;
+    
+    std::string origModelFile{"PushUpToesOnGroundWithMuscles.osim"};
+    std::string oldModelFile{"testForces_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testForces_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedMuscles{"glut_med1_r", "bifemlh_r",
+                                         "add_mag2_r"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto thelenMuscles = xml.getRootElement().
+                                 getRequiredElement("Model").
+                                 getRequiredElement("ForceSet").
+                                 getRequiredElement("objects").
+                                 getAllElements("Thelen2003Muscle");
+        for(unsigned i = 0; i < thelenMuscles.size(); ++i) {
+            const auto& muscleName =
+                thelenMuscles[i].getRequiredAttributeValue("name");
+            if(flippedMuscles.find(muscleName) != flippedMuscles.end()) {
+                auto elem = thelenMuscles[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+    
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldForceSet = oldModel.getForceSet();
+    const auto& newForceSet = newModel.getForceSet();
+
+    ASSERT(oldForceSet.getSize() == newForceSet.getSize());
+    for(int i = 0; i < oldForceSet.getSize(); ++i) {
+        ASSERT(oldForceSet.get(i).get_appliesForce() ==
+               newForceSet.get(i).get_appliesForce());
+
+        if(flippedMuscles.find(newForceSet.get(i).getName()) !=
+           flippedMuscles.end())
+            ASSERT(newForceSet.get(i).get_appliesForce() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,11 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
-#include "SimTKcommon.h"
 #include "StorageInterface.h"
 #include "TimeSeriesTable.h"
 
@@ -262,21 +259,21 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(int aN,double aY[]);
+    void add(const SimTK::Vector_<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void add(Storage *aStorage);
     void subtract(double aValue);
-    void subtract(int aN,double aY[]);
+    void subtract(const SimTK::Vector_<double>& values);
     void subtract(StateVector *aStateVector);
     void subtract(Storage *aStorage);
     void multiply(double aValue);
     void multiplyColumn(int aIndex, double aValue);
-    void multiply(int aN,double aY[]);
+    void multiply(const SimTK::Vector_<double>& values);
     void multiply(StateVector *aStateVector);
     void multiply(Storage *aStorage);
     void divide(double aValue);
-    void divide(int aN,double aY[]);
+    void divide(const SimTK::Vector_<double>& values);
     void divide(StateVector *aStateVector);
     void divide(Storage *aStorage);
     Storage* integrate(int aI1=-2,int aI2=-1) const;
@@ -302,11 +299,13 @@ public:
     double compareColumn(Storage& aOtherStorage, 
                          const std::string& aColumnName,
                          double startTime, double endTime=-1.0);
-    double compareColumnRMS(Storage& aOtherStorage, 
-                         const std::string& aColumnName,
-                         double startTime=SimTK::NaN, double endTime=SimTK::NaN);
+    double compareColumnRMS(const Storage& aOtherStorage, 
+                            const std::string& aColumnName,
+                            double startTime=SimTK::NaN, double endTime=SimTK::NaN) const;
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-    void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    void compareWithStandard(const Storage& standard, 
+                             std::vector<std::string>& columnsUsed, 
+                             std::vector<double>& comparisons) const;
     /** Force column labels for a Storage object to become unique. This is done
      * by prepending the string (n_) as needed where n=1, 2, ...
      *

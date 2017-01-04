@@ -69,6 +69,8 @@
     <memberdecl>
       <properties title="OpenSim Properties, Connectors, Outputs, Inputs"/>
       <publicmethods title=""/>
+      <publicstaticmethods title=""/>
+      <membergroups visible="yes"/>
     </memberdecl>
    
     <detaileddescription title="Detailed Description "/>
@@ -77,10 +79,10 @@
       <typedefs title=""/>
       <functions title=""/>
       <properties title="OpenSim Property, Connector, Output, Input Documentation"/>
-      <!-- <enums title=""/>
+      <enums title=""/>
       
       
-      <related title=""/>
+      <!-- <related title=""/>
       <variables title=""/>
       <properties title=""/>
       <events title=""/> -->

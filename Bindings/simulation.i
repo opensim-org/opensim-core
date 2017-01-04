@@ -209,23 +209,107 @@
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 // Iterators.
-%template(FrameList) OpenSim::ComponentList<OpenSim::Frame>;
-%template(FrameIterator) OpenSim::ComponentListIterator<OpenSim::Frame>;
+%template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
+%template(FrameIterator) OpenSim::ComponentListIterator<const OpenSim::Frame>;
 
-%template(BodyList) OpenSim::ComponentList<OpenSim::Body>;
-%template(BodyIterator) OpenSim::ComponentListIterator<OpenSim::Body>;
+%template(BodyList) OpenSim::ComponentList<const OpenSim::Body>;
+%template(BodyIterator) OpenSim::ComponentListIterator<const OpenSim::Body>;
 
-%template(MuscleList) OpenSim::ComponentList<OpenSim::Muscle>;
-%template(MuscleIterator) OpenSim::ComponentListIterator<OpenSim::Muscle>;
+%template(MuscleList) OpenSim::ComponentList<const OpenSim::Muscle>;
+%template(MuscleIterator) OpenSim::ComponentListIterator<const OpenSim::Muscle>;
 
-%template(ModelComponentList) OpenSim::ComponentList<OpenSim::ModelComponent>;
-%template(ModelComponentIterator) OpenSim::ComponentListIterator<OpenSim::ModelComponent>;
+%template(ModelComponentList) OpenSim::ComponentList<const OpenSim::ModelComponent>;
+%template(ModelComponentIterator) OpenSim::ComponentListIterator<const OpenSim::ModelComponent>;
 
-%template(JointList) OpenSim::ComponentList<OpenSim::Joint>;
-%template(JointIterator) OpenSim::ComponentListIterator<OpenSim::Joint>;
+%template(JointList) OpenSim::ComponentList<const OpenSim::Joint>;
+%template(JointIterator) OpenSim::ComponentListIterator<const OpenSim::Joint>;
 
 %template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
 %template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
 %template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
 %template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
 %template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
+
+%include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
+%include <OpenSim/Actuators/Thelen2003Muscle.h>
+%include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+
+%template(Thelen2003MuscleList)
+    OpenSim::ComponentList<const OpenSim::Thelen2003Muscle>;
+%template(Thelen2003MuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Thelen2003Muscle>;
+
+%template(Millard2012EquilibriumMuscleList)
+    OpenSim::ComponentList<const OpenSim::Millard2012EquilibriumMuscle>;
+%template(Millard2012EquilibriumMuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Millard2012EquilibriumMuscle>;
+
+%template(getThelen2003MuscleList)
+  OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
+%template(getMillard2012EquilibriumMuscleList)
+  OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;
+
+// Compensate for insufficient C++11 support in SWIG
+// =================================================
+/*
+Extend concrete Joints to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
+    NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const PhysicalFrame& child) {
+        return new NAME(name, parent, child, false);
+    }
+    
+    NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const SimTK::Vec3& locationInParent,
+         const SimTK::Vec3& orientationInParent,
+         const PhysicalFrame& child,
+         const SimTK::Vec3& locationInChild,
+         const SimTK::Vec3& orientationInChild) {
+        return new NAME(name, parent, locationInParent, orientationInParent,
+                    child, locationInChild, orientationInChild, false);
+    }
+};
+%enddef
+
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
+
+%extend OpenSim::PhysicalOffsetFrame {
+    PhysicalOffsetFrame() {
+        return new PhysicalOffsetFrame();
+    }
+    PhysicalOffsetFrame(const PhysicalFrame& parent, 
+                        const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(parent, offset);
+    }
+    PhysicalOffsetFrame(const std::string& name, 
+                const PhysicalFrame& parent,
+                const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(name, parent, offset);
+    }
+        
+    PhysicalOffsetFrame(const std::string& name,
+                const std::string& parentName,
+                const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(name, parentName, offset);
+    }
+};

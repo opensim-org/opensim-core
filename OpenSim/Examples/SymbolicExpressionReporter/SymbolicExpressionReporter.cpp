@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -230,7 +230,7 @@ record(const SimTK::State& s)
         _variables.find(stateNames[i])->second = rStateValues[i];
     }
     double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow{s.getTime(), {}};
      nextRow.getData().append(value);
     _resultStore.append(nextRow);
 

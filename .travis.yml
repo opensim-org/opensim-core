@@ -10,16 +10,23 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=1 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=no # (TEMP bintray not working) yes
     - os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
+      
+branches:
+  except:
+  # Branches containing Development Proposals do not need to be tested.
+  # Exclude any branch whose name starts with devprop (case-insensitive).
+  # For example, devprop-feature and DEVPROP_feature are ignored.
+  - /^(?i:devprop).*$/
 
 env:
   global:
@@ -44,6 +51,8 @@ addons:
       #- llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
+      - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
+
     packages:
       - cmake
       # For Simbody.
@@ -63,6 +72,13 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
   # Stop build if comment contains [skip travis].
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
+  
+  - cmake --version # To help debug any cmake-related issues.
+      
+  ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
+  # This prevents the build from failing with:
+  # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
+  - rvm get head
   
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
@@ -131,11 +147,11 @@ before_install:
   ## On OSX, we know that testInitState fails; exclude it.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testInitState"; fi
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testCMC|testOptimizationExample|testWrapping"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testCMC|testOptimizationExample|testWrapping|testContactGeometry"; fi
   
   ## Set compiler flags.
-  - export CXX_FLAGS="-Werror"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"; fi;
+  - export CXX_FLAGS="-Werror -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export CXX_FLAGS="$CXX_FLAGS -Wno-inconsistent-missing-override"; fi;
 
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
@@ -209,7 +225,7 @@ script:
 
   ## Test python wrapping.
   # Add OpenSim libraries to library path.
-  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
+  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.

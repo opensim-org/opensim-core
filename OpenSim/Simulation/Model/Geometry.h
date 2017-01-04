@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,18 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "SimTKcommon.h"
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Set.h>
-#include "ModelComponent.h"
 #include "Appearance.h"
 
 namespace OpenSim { 
 
-class PhysicalFrame;
-class Model;
 class Frame;
-class ModelComponent;
 //=============================================================================
 //=============================================================================
 /**
@@ -150,7 +144,7 @@ public:
         (bool                                       fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 
 
 protected:
@@ -649,6 +643,12 @@ public:
     }
     /// destructor
     virtual ~FrameGeometry() {};
+
+    void generateDecorations
+        (bool                                       fixed,
+            const ModelDisplayHints&                    hints,
+            const SimTK::State&                         state,
+            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 protected:
     /// Method to map FrameGeometry to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "WeldConstraint.h"
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <simbody/internal/Constraint_Weld.h>
+#include <simbody/internal/MobilizedBody.h>
 
 //=============================================================================
 // STATICS
@@ -157,7 +158,7 @@ void WeldConstraint::
         _internalOffset1.reset(new PhysicalOffsetFrame(frame1, in1));
         _internalOffset1->setName("internal_" + frame1.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset1.get());
-        updConnector<PhysicalFrame>("frame1").connect(*_internalOffset1);
+        connectConnector_frame1(*_internalOffset1);
     }
     else { // otherwise it is already "wired" up so just update
         _internalOffset1->setOffsetTransform(in1);
@@ -167,7 +168,7 @@ void WeldConstraint::
         _internalOffset2.reset(new PhysicalOffsetFrame(frame2, in2));
         _internalOffset2->setName("internal_" + frame2.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset2.get());
-        updConnector<PhysicalFrame>("frame2").connect(*_internalOffset2);
+        connectConnector_frame2(*_internalOffset2);
     }
     else {
         _internalOffset2->setOffsetTransform(in2);

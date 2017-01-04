@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,8 +36,28 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                              Muscle Exceptions
+//==============================================================================
+class MuscleCannotEquilibrate : public Exception {
+public:
+    MuscleCannotEquilibrate(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const Object& obj,
+                            const std::string& detail) :
+        Exception(file, line, func, obj, detail) {
+        std::string msg = "Unable to compute equilibrium for this muscle.\n";
+        msg += "Please verify that the initial activation is valid and that ";
+        msg += "the length of the musculotendon actuator doesn't produce a ";
+        msg += "pennation angle of 90 degrees or a negative fiber length.";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                                    Muscle
+//==============================================================================
 /**
  * A base class for modeling a muscle-tendon actuator. It defines muscle parameters
  * and methods to PathActuator, but does not implement all of the necessary methods,
@@ -256,11 +276,12 @@ public:
     double getFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current active fiber force (N) due to activation*force_length*force_velocity relationships */
     double getActiveFiberForce(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) passive_force_length relationship */
+    /** get the total force applied by all passive elements in the fiber (N) */
     double getPassiveFiberForce(const SimTK::State& s) const;
     /** get the current active fiber force (N) projected onto the tendon direction */
     double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) projected onto the tendon direction */
+    /** get the total force applied by all passive elements in the fiber (N)
+        projected onto the tendon direction */
     double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current tendon force (N) applied to bones */
     double getTendonForce(const SimTK::State& s) const;
@@ -804,7 +825,7 @@ protected:
         MusclePotentialEnergyInfo contains quantities related to the potential
         energy of the muscle (fiber + tendon) complex.
         
-        The function that populates this struct, calcMusclePotentialEnrgyInfo, can
+        The function that populates this struct, calcMusclePotentialEnergyInfo, can
         be called when position information is known. This function is
         dependent on calcMuscleLengthInfo.
 
@@ -817,7 +838,7 @@ protected:
 
         [4] This vector is left for the muscle modeler to populate with any
             computationally expensive quantities that are computed in 
-            calcMusclePotentialEnrgyInfo, that might be useful for others to
+            calcMusclePotentialEnergyInfo, that might be useful for others to
             access.
 
     */

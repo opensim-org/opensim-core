@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,11 +24,9 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 
-#include "Simbody.h"
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <cmath>
+#include "SimTKmath.h"
+#include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/System.h"
 
 
 namespace OpenSim {

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "WrapObject.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include "WrapResult.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
 
 //=============================================================================
 // STATICS
@@ -67,12 +62,11 @@ void WrapObject::constructProperties()
     constructProperty_translation(defaultTranslations);
 
     constructProperty_quadrant("Unassigned");
-
-    constructProperty_display_preference(1);
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
-
-    constructProperty_color(defaultColor);
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_opacity(0.5);
+    defaultAppearance.set_representation(VisualRepresentation::DrawSurface);
+    constructProperty_Appearance(defaultAppearance);
 }
 
 const PhysicalFrame& WrapObject::getFrame() const

@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2014 Stanford University and the Authors                     *
+* Copyright (c) 2005-2016 Stanford University and the Authors                     *
 * Author(s): Soha Pouya, Michael Sherman                                     *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 #include "BodyActuator.h"
 
@@ -95,7 +93,7 @@ const std::string& BodyActuator::getBodyName() const
 */
 void BodyActuator::setBody(const Body& body)
 {
-    updConnector<Body>("body").connect(body);
+    connectConnector_body(body);
 }
 
 /**

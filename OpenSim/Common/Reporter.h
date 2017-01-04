@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                        *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -113,6 +113,44 @@ public:
     OpenSim_DECLARE_LIST_INPUT(inputs, InputT, SimTK::Stage::Report,
         "Variable list of quantities to be reported.");
 
+    //==========================================================================
+    // PUBLIC METHODS
+    //==========================================================================
+
+    /** Connect an output (single-valued or list) to this reporter. 
+    The output must be of type InputT.
+    If the output is a list output, this connects to all of the channels of the
+    output. You can optionally provide an alias that will be used by this
+    component to refer to the output; the alias will be used for all channels
+    of the output.                                          
+    @code
+    auto* reporter = new ConsoleReporter();
+    auto* src = new TableSource();
+    reporter->addToReport(src->getOutput("all_columns"));
+    @endcode
+    This method is equivalent to
+    connectInput_inputs(const AbstractOutput&, const std::string&). */
+    void addToReport(const AbstractOutput& output,
+                     const std::string& alias = "") {
+        connectInput_inputs(output, alias);
+    }
+
+    /** Connect an output channel to this reporter.
+    The output channel must be of type InputT.
+    You can optionally provide an alias that will be used by this component to
+    refer to the channel.
+    @code
+    auto* reporter = new ConsoleReporter();
+    auto* src = new TableSource();
+    reporter->addToReport(src->getOutput("column").getChannel("ankle"));
+    @endcode
+    This method is equivalent to
+    connectInput_inputs(const AbstractChannel&, const std::string&). */
+    void addToReport(const AbstractChannel& channel,
+                     const std::string& alias = "") {
+        connectInput_inputs(channel, alias);
+    }
+
 protected:
     /** Default constructor sets up Reporter-level properties; can only be
     called from a derived class constructor. **/
@@ -144,8 +182,18 @@ public:
     TableReporter_() = default;
     virtual ~TableReporter_() = default;
 
-    const TimeSeriesTable_<ValueT>& getReport() const {
+    /** Retrieve the report as a TimeSeriesTable.                             */
+    const TimeSeriesTable_<ValueT>& getTable() const {
         return _outputTable;
+    }
+
+    /** Clear the report. This can be used for example in loops performing 
+    simulation. Each new iteration should start with an empty report and so this
+    function can be used to clear the report at the end of each iteration.    */
+    void clearTable() {
+        auto columnLabels = _outputTable.getColumnLabels();
+        _outputTable = TimeSeriesTable_<ValueT>{};
+        _outputTable.setColumnLabels(columnLabels);
     }
 
 protected:
@@ -158,7 +206,16 @@ protected:
               const auto& value = chan.getValue(state);
               result[idx] = value;
         }
-        const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(), result);
+        try {
+            const_cast<Self*>(this)->_outputTable.appendRow(state.getTime(),
+                                                            result);
+        } catch(const InvalidTimestamp& exception) {
+            OPENSIM_THROW(Exception,
+                          "Attempting to update reporter with rows having "
+                          "invalid timestamps. Hint: If running simulation in "
+                          "a loop, use clearTable() to clear table at the end"
+                          "of each loop.\n\n" + std::string{exception.what()});
+        }
     }
 
 
@@ -169,12 +226,7 @@ protected:
 
         std::vector<std::string> labels;
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-            const auto& chan = input.getChannel(idx);
-            std::string label = chan.getName();
-            if (label.empty()) {
-                label = chan.getOutput().getName();
-            }
-            labels.push_back(label);
+            labels.push_back( input.getLabel(idx) );
         }
         const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
     }
@@ -211,26 +263,54 @@ private:
             const_cast<ConsoleReporter_<T>*>(this)->_printCount = 0;
         }
 
+        // Periodically display column headers.
         if (_printCount % 40 == 0) {
-            std::cout << "[" << this->getName() << "] " << "\n";
-            std::cout << std::setw(_width) << "time" << "| ";
-            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-                const auto& chan = input.getChannel(idx);
-                const auto& outName = chan.getName();
-                const auto& truncName = 
-                    static_cast<int>(outName.size()) <= _width ?
-                    outName : outName.substr(outName.size() - _width);
-                std::cout << std::setw(_width) << truncName << "|";
+            std::cout << "[" << this->getName() << "]" << "\n";
+
+            // Split labels over multiple lines. First, find the length of the
+            // longest label.
+            int longestLabel = 0;
+            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx)
+                longestLabel = std::max(longestLabel,
+                                        (int)input.getLabel(idx).size());
+
+            // Round up to the nearest multiple of _width to determine the
+            // number of header rows.
+            const int numHeaderRows = (longestLabel-1) / _width + 1;
+
+            // Display labels in chunks of size _width.
+            for (int row = 0; row < numHeaderRows; ++row)
+            {
+                // Time column.
+                if (row == numHeaderRows-1)
+                    std::cout << std::setw(_width) << "time" << "| ";
+                else
+                    std::cout << std::setw(_width+2) << "| ";
+
+                // Data columns.
+                for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
+                    const auto& outName = input.getLabel(idx);
+                    const std::string lbl =
+                        std::string(numHeaderRows*_width - outName.size(), ' ')
+                        + outName;
+                    std::cout << lbl.substr(_width*row, _width) << "| ";
+                }
+                std::cout << "\n";
             }
+
+            // Horizontal rule.
+            for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
+                std::cout << std::string(_width, '-') << "| ";
             std::cout << "\n";
         }
+
         // TODO set width based on number of significant digits.
         std::cout << std::setw(_width) << state.getTime() << "| ";
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             std::cout << std::setw(_width)
-                << std::setprecision(nSigFigs) << value << "|";
+                << std::setprecision(nSigFigs) << value << "| ";
         }
         std::cout << std::endl;
 
@@ -251,7 +331,7 @@ inline void TableReporter_<SimTK::Vector, SimTK::Real>::
     
     if (_outputTable.getNumRows() == 0) {
         std::vector<std::string> labels;
-        const std::string& base = input.getChannel(0).getName();
+        const std::string& base = input.getLabel(0);
         for (int ix = 0; ix < result.size(); ++ix) {
             labels.push_back(base + "[" + std::to_string(ix)+"]");
         }

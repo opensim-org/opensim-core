@@ -42,45 +42,6 @@ using namespace SimTK;
     }
 };
 
-/*
-Extend concrete Joints to use the inherited base constructors.
-This is only necessary because SWIG does not generate these inherited
-constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
-Note that CustomJoint and EllipsoidJoint do implement their own
-constructors because they have additional arguments.
-*/
-%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
-%extend OpenSim::NAME {
-    NAME() {
-        return new NAME();
-    }
-    NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const PhysicalFrame& child) {
-        return new NAME(name, parent, child, false);
-    }
-	
-    NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const SimTK::Vec3& locationInParent,
-         const SimTK::Vec3& orientationInParent,
-         const PhysicalFrame& child,
-         const SimTK::Vec3& locationInChild,
-         const SimTK::Vec3& orientationInChild) {
-        return new NAME(name, parent, locationInParent, orientationInParent,
-                        child, locationInChild, orientationInChild, false);
-    }
-};
-%enddef
-
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 %extend OpenSim::Manager {
     void setIntegratorAccuracy(double accuracy){
@@ -125,6 +86,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %javamethodmodifiers OpenSim::Model::addContactGeometry "private";
 %javamethodmodifiers OpenSim::Model::addController "private";
 %javamethodmodifiers OpenSim::Model::addAnalysis "private";
+%javamethodmodifiers OpenSim::Model::addJoint "private";
 
 %rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
@@ -134,6 +96,10 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::Model::addContactGeometry private_addContactGeometry;
 %rename OpenSim::Model::addController private_addController;
 %rename OpenSim::Model::addAnalysis private_addAnalysis;
+%rename OpenSim::Model::addJoint private_addJoint;
+
+%rename OpenSim::PrescribedController::prescribeControlForActuator prescribeControlForActuator_private;
+%javamethodmodifiers OpenSim::PrescribedController::prescribeControlForActuator_private "private";
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
@@ -200,6 +166,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       aController.markAdopted();
       private_addController(aController);
   }
+
+  public void addJoint(Joint aJoint) {
+      aJoint.markAdopted();
+      private_addJoint(aJoint);
+  }
 %}
 
 %extend OpenSim::Model {
@@ -211,6 +182,29 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         self->updDefaultControls() = newControls;
     }
 }
+
+%typemap(javacode) OpenSim::PrescribedController %{
+    public void prescribeControlForActuator(int index, Function prescribedFunction) {
+       prescribedFunction.markAdopted();
+       prescribeControlForActuator_private(index, prescribedFunction);
+    }
+    
+    public void prescribeControlForActuator(String name, Function prescribedFunction) {
+       prescribedFunction.markAdopted();
+       prescribeControlForActuator_private(name, prescribedFunction);
+    }
+%}
+
+
+%javamethodmodifiers OpenSim::Frame::attachGeometry "private";
+%rename OpenSim::Frame::attachGeometry private_attachGeometry;
+%typemap(javacode) OpenSim::Frame %{
+  public void attachGeometry(Geometry geom) {
+      geom.markAdopted();
+      private_attachGeometry(geom);
+  }
+%}
+
 
 
 %import "java_common.i"

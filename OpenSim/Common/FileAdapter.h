@@ -6,7 +6,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -151,9 +151,12 @@ class IncorrectTableType : public InvalidArgument {
 public:
     IncorrectTableType(const std::string& file,
                        size_t line,
-                       const std::string& func) :
+                       const std::string& func,
+                       const std::string& message = "") :
         InvalidArgument(file, line, func) {
         std::string msg = "Incorrect Table type.";
+        if(!message.empty())
+            msg += " " + message;
 
         addMessage(msg);
     }
@@ -194,12 +197,12 @@ public:
     static void writeFile(const InputTables& tables, 
                           const std::string& fileName);
 
-protected:    
-    /** Convenience function to find the extension from a filename.           */
+    /** Find the extension from a filename.                                   */
     static
     std::string findExtension(const std::string& filename);
 
-    /** Tokenize/split a given string using the given delimiters. The delimters 
+protected:    
+    /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 
     specifies that either a space or a tab can act as the delimiter.          */

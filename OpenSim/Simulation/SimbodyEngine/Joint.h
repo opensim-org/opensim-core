@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,9 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
 
@@ -98,8 +98,9 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
-        "Set holding the generalized coordinates (q's) that parameterize this joint." );
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, Coordinate,
+        "List containing the generalized coordinates (q's) that parameterize "
+        "this joint.");
 
     OpenSim_DECLARE_PROPERTY(reverse, bool,
         "Advanced option. Specify the direction of the joint in the multibody tree: "
@@ -223,13 +224,22 @@ public:
      */
     const OpenSim::PhysicalFrame& getParentFrame() const;
 
-    // Coordinate Set
-    const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
+    /** Convenience method to get a const reference to the Coordinate associated
+        with a single-degree-of-freedom Joint. If the Joint has more than one
+        Coordinate, you must provide the appropriate argument to the
+        getCoordinate() method defined in the derived class. */
+    const Coordinate& getCoordinate() const;
+
+    /** Convenience method to get a writable reference to the Coordinate
+        associated with a single-degree-of-freedom Joint. If the Joint has more
+        than one Coordinate, you must provide the appropriate argument to the
+        updCoordinate() method defined in the derived class. */
+    Coordinate& updCoordinate();
 
     bool getReverse() const { return get_reverse(); }
 
     //Model building
-    int numCoordinates() const { return get_CoordinateSet().getSize(); }
+    int numCoordinates() const { return getProperty_coordinates().size(); }
 
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
@@ -309,21 +319,34 @@ public:
     Coordinate::MotionType getMotionType(CoordinateIndex cix) const;
 #endif //SWIG
 protected:
-    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:  
+    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:
     \code{.cpp}
-    class My2DofJoint::Joint {
-        CoordinateIndex dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
-        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translational) };
+    class My2DofJoint : public Joint {
+    public:
+        enum class Coord: unsigned {
+            RotationX,
+            TranslationX
+        };
+
+    private:
+        CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                            static_cast<unsigned>(Coord::RotationX)) };
+        CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                            static_cast<unsigned>(Coord::TranslationX)) };
         ...
-    }
+    };
     \endcode
     */
 #ifndef SWIG
-    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
-    Derived Joints must construct as many Coordinates as reflected by the
-    Mobilizer Qs. */
-    CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
-
+    /** Utility for a derived Joint to add the Coordinates that correspond to
+    the motion it permits. Derived Joints must construct as many Coordinates as
+    are reflected by the underlying Mobilizer Qs. The index of the corresponding
+    enumeration (enum) is required at construction to ensure the Joint's
+    internal list of Coordinates is consistent with its interface; an exception
+    is thrown if the Coordinates are not constructed in the same order as the
+    enums have been defined. */
+    CoordinateIndex constructCoordinate(Coordinate::MotionType mt,
+                                        unsigned idx);
 
     // This is only intended to allow the CustomJoint to set the MotionTypes
     // of its Coordinates
@@ -454,10 +477,6 @@ protected:
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
-        SimTK_ASSERT1(numCoordinates() == get_CoordinateSet().getSize(), 
-                      "%s list of coordinates does not match number of mobilities.",
-                      getConcreteClassName().c_str());
-
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
             physicalFrame,
             getNumMobilities<T>(simtkBody),
@@ -568,6 +587,17 @@ inline int Joint::getNumMobilities(const SimTK::MobilizedBody::Free& mobod) cons
     return 6;
 }
 
+class JointHasNoCoordinates : public Exception {
+public:
+    JointHasNoCoordinates(const std::string& file,
+                          size_t line,
+                          const std::string& func) :
+        Exception(file, line, func) {
+        std::string mesg = "The Joint has no Coordinates.";
+
+        addMessage(mesg);
+    }
+};
 
 } // end of namespace OpenSim
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,7 @@
 
 #include <SimTKsimbody.h>
 #include <ctime>
+#include <fstream>
 #include <string>
 #include <stdio.h>
 
@@ -1173,13 +1174,19 @@ int main(int argc, char* argv[])
         ///////////////////////////////////////
             cout <<"**************************************************"<<endl;
             cout <<"TENDON CURVE TESTING                              "<<endl;
-                double e0   = 0.04;
-                double kiso = 1.5/e0;
-                double c    = 0.5;//0.75;    
-                double ftoe = 1.0/3.0;
-            SmoothSegmentedFunction tendonCurve = *SmoothSegmentedFunctionFactory::
-                           createTendonForceLengthCurve(e0,kiso,ftoe,c,true,
-                           "test_tendonCurve");
+            double e0   = 0.04;
+            double kiso = 1.5/e0;
+            double c    = 0.5;//0.75;    
+            double ftoe = 1.0/3.0;
+            auto tendonCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createTendonForceLengthCurve(e0,
+                                             kiso,
+                                             ftoe,
+                                             c,
+                                             true,
+                                             "test_tendonCurve")};
+            auto& tendonCurve = *tendonCurve_ptr;
             SimTK::Matrix tendonCurveSample
                 =tendonCurve.calcSampledMuscleCurve(6,1.0,1+e0);
             //tendonCurve.printMuscleCurveToCSVFile(filePath);
@@ -1235,15 +1242,20 @@ int main(int argc, char* argv[])
         ///////////////////////////////////////
             cout <<"**************************************************"<<endl;
             cout <<"FIBER FORCE LENGTH CURVE TESTING                  "<<endl;
-                double e0f      = 0.6;
-                double kisof    = 8.389863790885878;
-                double cf       = 0.65;
-                double klow     = 0.5*(1.0/e0f);
-            SmoothSegmentedFunction fiberFLCurve = *SmoothSegmentedFunctionFactory::
-                                    createFiberForceLengthCurve(0.0, e0f,
-                                    klow,kisof,
-                                    cf,true,
-                                    "test_fiberForceLength");
+            double e0f      = 0.6;
+            double kisof    = 8.389863790885878;
+            double cf       = 0.65;
+            double klow     = 0.5*(1.0/e0f);
+            auto fiberFLCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createFiberForceLengthCurve(0.0,
+                                            e0f,
+                                            klow,
+                                            kisof,
+                                            cf,
+                                            true,
+                                            "test_fiberForceLength")};
+            auto& fiberFLCurve = *fiberFLCurve_ptr;
 
             SimTK::Matrix fiberFLCurveSample 
                             = fiberFLCurve.calcSampledMuscleCurve(6,1.0,1.0+e0f);
@@ -1301,12 +1313,18 @@ int main(int argc, char* argv[])
             cout <<"FIBER COMPRESSIVE FORCE LENGTH CURVE TESTING      "<<endl;
 
 
-                double lmax = 0.6;
-                double kce  = -8.389863790885878;
-                double cce  = 0.5;//0.0;
-            SmoothSegmentedFunction fiberCECurve = *SmoothSegmentedFunctionFactory::
-               createFiberCompressiveForceLengthCurve(lmax,kce,cce,true,
-                                "test_fiberCompressiveForceLengthCurve");
+            double lmax = 0.6;
+            double kce  = -8.389863790885878;
+            double cce  = 0.5;//0.0;
+            auto fiberCECurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createFiberCompressiveForceLengthCurve(lmax,
+                                                       kce,
+                                                       cce,
+                                                       true,
+                                                       "test_fiberCompressive"
+                                                       "ForceLengthCurve")};
+            auto& fiberCECurve = *fiberCECurve_ptr;
             //fiberCECurve.printMuscleCurveToFile("C:/mjhmilla/Stanford/dev"
             //    "/OpenSim_LOCALPROJECTS/MuscleLibrary_Bench_20120210/build");
         SimTK::Matrix fiberCECurveSample 
@@ -1363,13 +1381,20 @@ int main(int argc, char* argv[])
             cout <<"**************************************************"<<endl;
             cout <<"FIBER COMPRESSIVE FORCE PHI CURVE TESTING      "<<endl;
 
-                double phi0 = (SimTK::Pi/2)*(1.0/2.0);
-                double phi1 = SimTK::Pi/2;
-                double kphi  = 8.389863790885878;
-                double cphi  = 0.0;  
-            SmoothSegmentedFunction fiberCEPhiCurve = *SmoothSegmentedFunctionFactory::          
-          createFiberCompressiveForcePennationCurve(phi0,kphi,cphi,true,
-                                    "test_fiberCompressiveForcePennationCurve");          
+            double phi0 = (SimTK::Pi/2)*(1.0/2.0);
+            double phi1 = SimTK::Pi/2;
+            double kphi  = 8.389863790885878;
+            double cphi  = 0.0;  
+            auto fiberCEPhiCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::          
+                createFiberCompressiveForcePennationCurve(phi0,
+                                                          kphi,
+                                                          cphi,
+                                                          true,
+                                                          "test_fiberCompress"
+                                                          "iveForcePennationC"
+                                                          "urve")};
+            auto& fiberCEPhiCurve = *fiberCEPhiCurve_ptr;
         
             SimTK::Matrix fiberCEPhiCurveSample 
                             = fiberCEPhiCurve.calcSampledMuscleCurve(6,phi0,phi1);
@@ -1428,12 +1453,20 @@ int main(int argc, char* argv[])
             cout <<"**************************************************"<<endl;
             cout <<"FIBER COMPRESSIVE FORCE COSPHI CURVE TESTING      "<<endl;
 
-                double cosPhi0 = cos( (80.0/90.0)*SimTK::Pi/2);
-                double kcosPhi  = -1.2/(cosPhi0);
-                double ccosPhi  = 0.5;
-            SmoothSegmentedFunction fiberCECosPhiCurve = *SmoothSegmentedFunctionFactory::
-            createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,ccosPhi
-                         ,true,"test_fiberCompressiveForceCosPennationCurve");
+            double cosPhi0 = cos( (80.0/90.0)*SimTK::Pi/2);
+            double kcosPhi  = -1.2/(cosPhi0);
+            double ccosPhi  = 0.5;
+            auto fiberCECosPhiCurve_ptr =
+                std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(cosPhi0,
+                                                             kcosPhi,
+                                                             ccosPhi,
+                                                             true,
+                                                             "test_fiberCompre"
+                                                             "ssiveForceCosPen"
+                                                             "nationCurve")};
+            auto& fiberCECosPhiCurve = *fiberCECosPhiCurve_ptr;
 
             SimTK::Matrix fiberCECosPhiCurveSample 
                             = fiberCECosPhiCurve.calcSampledMuscleCurve(6,0,cosPhi0);
@@ -1505,13 +1538,19 @@ int main(int argc, char* argv[])
             double concCurviness = 0.1;
             double eccCurviness = 0.75;
 
-            SmoothSegmentedFunction fiberFVCurve = *SmoothSegmentedFunctionFactory::
+            auto fiberFVCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, 
-                                dydxC, dydxNearC, 
-                                dydxIso,
-                                dydxE, dydxNearE,
-                                concCurviness,  eccCurviness,false,
-                                "test_fiberForceVelocityCurve");
+                                              dydxC,
+                                              dydxNearC, 
+                                              dydxIso,
+                                              dydxE,
+                                              dydxNearE,
+                                              concCurviness,
+                                              eccCurviness,
+                                              false,
+                                              "test_fiberForceVelocityCurve")};
+            auto& fiberFVCurve = *fiberFVCurve_ptr;
             //fiberFVCurve.printMuscleCurveToCSVFile(filePath);
 
             SimTK::Matrix fiberFVCurveSample 
@@ -1609,12 +1648,20 @@ int main(int argc, char* argv[])
             cout <<"**************************************************"<<endl;
             cout <<"FIBER FORCE VELOCITY INVERSE CURVE TESTING        "<<endl;
 
-            SmoothSegmentedFunction fiberFVInvCurve = *SmoothSegmentedFunctionFactory::
-                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxNearC, 
-                    dydxIso, 
-                    dydxE, dydxNearE,
-                    concCurviness,  eccCurviness,false,
-                    "test_fiberForceVelocityInverseCurve");
+            auto fiberFVInvCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE,
+                                                     dydxC,
+                                                     dydxNearC, 
+                                                     dydxIso, 
+                                                     dydxE,
+                                                     dydxNearE,
+                                                     concCurviness,
+                                                     eccCurviness,
+                                                     false,
+                                                     "test_fiberForceVelocity"
+                                                     "InverseCurve")};
+            auto& fiberFVInvCurve = *fiberFVInvCurve_ptr;
             //fiberFVInvCurve.printMuscleCurveToFile(filePath);
 
             SimTK::Matrix fiberFVInvCurveSample 
@@ -1744,10 +1791,19 @@ int main(int argc, char* argv[])
             double shoulderVal  = 0.05;
             double plateauSlope = 0.75;//0.75;
             double curviness    = 0.75;
-            SmoothSegmentedFunction fiberfalCurve = *SmoothSegmentedFunctionFactory::
-                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
-                              shoulderVal, plateauSlope, curviness,false,
-                              "test_fiberActiveForceLengthCurve");
+            auto fiberfalCurve_ptr = std::unique_ptr<SmoothSegmentedFunction>{
+                SmoothSegmentedFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0,
+                                                  lce1,
+                                                  lce2,
+                                                  lce3, 
+                                                  shoulderVal,
+                                                  plateauSlope,
+                                                  curviness,
+                                                  false,
+                                                  "test_fiberActiveForceLength"
+                                                  "Curve")};
+            auto& fiberfalCurve = *fiberfalCurve_ptr;
             //fiberfalCurve.printMuscleCurveToCSVFile(filePath);
 
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -48,14 +48,18 @@ int main()
 
 void testCopyModel(string fileName)
 {
-    size_t mem0 = getCurrentRSS( );
+    const size_t mem0 = getCurrentRSS();
 
     // Automatically finalizes properties by default when loading from file
     Model* model = new Model(fileName, false);
 
-    size_t mem1 = getCurrentRSS() - mem0;
+    // Catch a possible decrease in the memory footprint, which will cause
+    // size_t (unsigned int) to wrap through zero.
+    const size_t mem1 = getCurrentRSS();
+    const size_t increaseInMemory = mem1 > mem0 ? mem1-mem0 : 0;
 
-    cout << "Memory use of '" << fileName <<"' model: " << mem1/1024 << "KB" << endl;
+    cout << "Memory use of '" << fileName <<"' model: " << increaseInMemory/1024
+         << "KB" << endl;
 
     Model *test = nullptr;
     for (int i = 0; i < 10; ++i){
@@ -93,9 +97,11 @@ void testCopyModel(string fileName)
     delete modelCopy;
     delete cloneModel;
 
-    size_t mem2 = getCurrentRSS( );
-    int64_t delta = mem2-mem1;
+    // New memory footprint.
+    const size_t mem2 = getCurrentRSS();
+    // Increase in memory footprint.
+    const int64_t memory_increase = mem2 > mem1 ? mem2-mem1 : 0;
 
-    cout << "Memory change AFTER copy and init and delete:  " 
-         << double(delta)/mem1*100 << "%." << endl;
+    cout << "Memory increase AFTER copy and init and delete:  " 
+         << double(memory_increase)/mem1*100 << "%." << endl;
 }

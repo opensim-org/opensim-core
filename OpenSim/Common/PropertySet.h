@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -33,8 +33,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
-#include "Property_Deprecated.h"
-#include "PropertyGroup.h"
+//#include "Property_Deprecated.h"
 #include "PropertyDblVec.h"
 
 
@@ -53,6 +52,8 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 
 
 namespace OpenSim { 
+
+class Property_Deprecated;
 
 // convenient abbreviations
 typedef PropertyDblVec_<2> PropertyDblVec2;

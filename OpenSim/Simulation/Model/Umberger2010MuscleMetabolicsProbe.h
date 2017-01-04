@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  * Contributor(s): Thomas Uchida                                              *
  *                                                                            *
@@ -25,11 +25,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "Probe.h"
-#include "Model.h"
+#include <OpenSim/Common/Set.h>
 
+namespace OpenSim {
 
-
-namespace OpenSim { 
+class Model;
+class Muscle;
 
 // Helper classes defined below.
 class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter;

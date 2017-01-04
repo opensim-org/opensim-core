@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -25,8 +25,35 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <unordered_set>
+
 using namespace OpenSim;
 using namespace std;
+
+// Write STO file using STOFileAdapter, read it multiple times using MarkerData.
+// Make sure the file does not contain duplicates in the header.
+void testSTOFileAdapterWithMarkerData() {
+    TimeSeriesTable table{};
+    table.setColumnLabels({"0.x", "0.y", "0.z", "1.x", "1.y", "1.z"});
+    table.appendRow(0.1, {1, 1, 1, 1, 1, 1});
+    table.appendRow(0.2, {2, 2, 2, 2, 2, 2});
+    table.appendRow(0.3, {3, 3, 3, 3, 3, 3});
+
+    std::string filename{"table.sto"};
+    STOFileAdapter_<double>::write(table, filename);
+
+    MarkerData markerdata1{filename};
+    MarkerData markerdata2{filename};
+    MarkerData markerdata3{filename};
+
+    std::ifstream filestream{filename};
+    std::unordered_set<std::string> headerlines{};
+    for(std::string line; std::getline(filestream, line); )
+        if(!headerlines.insert(line).second)
+            throw Exception{"Test failed: found duplicates in header."};
+
+    std::remove(filename.c_str());
+}
 
 int main() {
     // Create a storage from a std file "std_storage.sto"
@@ -81,6 +108,8 @@ int main() {
         /*const SimTK::Vec3& m31 = */markers3[1];    
         /* SimTK::Vec3 diff3 = */(markers3[1]-SimTK::Vec3(expectedData3));
         ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
+
+        testSTOFileAdapterWithMarkerData();
     }
     catch(const Exception& e) {
         e.print(cerr);

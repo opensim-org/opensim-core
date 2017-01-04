@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Constraint.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
@@ -107,7 +107,7 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
         override;
 
-    /** Updating XML formating to latest revision */
+    /** Updating XML formatting to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 
@@ -118,7 +118,7 @@ private:
     void setNull();
 
 //=============================================================================
-};  // END of class ConstantDistanceConstraint
+}; // END of class ConstantDistanceConstraint
 //=============================================================================
 //=============================================================================
 

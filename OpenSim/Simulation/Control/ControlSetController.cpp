@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Jack Middleton                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -33,7 +33,8 @@
 #include "ControlSetController.h"
 #include "ControlLinear.h"
 #include "ControlSet.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Common/Storage.h>
 
 
 //=============================================================================
@@ -220,8 +221,9 @@ void ControlSetController::extendFinalizeFromProperties()
         std::cout << "ControlSetController::extendFinalizeFromProperties '";
         std::cout << _controlsFileNameProp.getName() << "' unassigned.\n";
         std::cout << "No ControlSet loaded or set. Use ControSetController::";
-        std::cout << "setControlSetFileName() to\n specify file and try again." << std::endl;
-        setDisabled(true);
+        std::cout << "setControlSetFileName() to\n specify file and try again."
+                  << std::endl;
+        setEnabled(false);
         return;
     }
 
@@ -258,7 +260,7 @@ void ControlSetController::extendFinalizeFromProperties()
     if (loadedControlSet) {
         // Now set the current control set from what was loaded
         _controlSet = loadedControlSet;
-        setDisabled(false);
+        setEnabled(true);
     }
 
     std::string ext = ".excitation";

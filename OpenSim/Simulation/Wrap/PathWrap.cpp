@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,10 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "PathWrap.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 //=============================================================================
 // STATICS
@@ -91,7 +88,7 @@ void PathWrap::extendConnectToModel(Model& model)
         + "' must have a GeometryPath as its parent.";
     OPENSIM_THROW_IF(_path == nullptr, Exception, msg);
 
-    ComponentList<PhysicalFrame> bodiesList = 
+    ComponentList<const PhysicalFrame> bodiesList =
         model.getComponentList<PhysicalFrame>();
     for (ComponentList<PhysicalFrame>::const_iterator it = bodiesList.begin();
             it != bodiesList.end(); ++it) {

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -235,7 +235,7 @@ int ProbeReporter::record(const SimTK::State& s)
     // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
 
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow(s.getTime());
 
     // NUMBER OF Probes
     const ProbeSet& probes = _model->getProbeSet();

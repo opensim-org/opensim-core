@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2016 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,15 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimTKsimbody.h"
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
-#include "WrapResult.h"
 #include "WrapMath.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include "WrapResult.h"
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/SimmMacros.h>
+
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -812,7 +811,10 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
     if (fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
         SimTK::Transform ztoy;
         // Make transform that takes z axis to y axis due to different
         // assumptions between DecorativeCylinder aligned with y  and
@@ -824,6 +826,7 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
             SimTK::DecorativeCylinder(get_radius(),
                 get_length() / 2)
             .setTransform(X_GW).setResolution(2.0)
-            .setColor(color).setOpacity(0.5));
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation()));
     }
 }
