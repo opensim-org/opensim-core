@@ -1494,6 +1494,28 @@ PrintPropertyInfo(ostream &aOStream,
     }
 }
 
+void Object::copyPropertiesFromObject(const OpenSim::Object& fromObject)
+{
+    // Cycle thru properties, find name and check if this object has similarly named Property
+    // if so, delegate to Property assignment. 
+    // Special cases: Lists, Objects, Defaults
+    const int numProps = getNumProperties();
+    for (int px = 0; px < numProps; ++px) {
+        AbstractProperty& fromProp = updPropertyByIndex(px);
+        const std::string& pName = fromProp.getName();
+        if (hasProperty(pName)) {
+            AbstractProperty& myProp = updPropertyByName(pName);
+            if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault())
+                if (myProp.isOneObjectProperty()) {
+                    Object& asObj = fromProp.updValueAsObject();
+                    std::cout << asObj.dump() << std::endl;
+                    myProp.updValueAsObject().copyPropertiesFromObject(fromProp.getValueAsObject());
+                }
+                else
+                    myProp = fromProp;
+        }
+    }
+}
 
 //=============================================================================
 // Utilities, factory methods
