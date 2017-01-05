@@ -211,7 +211,7 @@ void Component::componentsFinalizeFromProperties() const
 }
 
 // Base class implementation of non virtual connect method.
-void Component::connect(Component &root)
+void Component::finalizeConnections(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -278,27 +278,27 @@ void Component::componentsConnect(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[i].upd()->connect(root);
+        _memberSubcomponents[i].upd()->finalizeConnections(root);
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); ++i){
-        _propertySubcomponents[i].get()->connect(root);
+        _propertySubcomponents[i].get()->finalizeConnections(root);
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[i].upd()->connect(root);
+        _adoptedSubcomponents[i].upd()->finalizeConnections(root);
     }
 }
 
-void Component::disconnect()
+void Component::clearConnections()
 {
     // First give the subcomponents the opportunity to disconnect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        _memberSubcomponents[i]->disconnect();
+        _memberSubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
-        _propertySubcomponents[i]->disconnect();
+        _propertySubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        _adoptedSubcomponents[i]->disconnect();
+        _adoptedSubcomponents[i]->clearConnections();
     }
 
     //Now cycle through and disconnect all connectors for this component

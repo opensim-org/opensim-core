@@ -76,7 +76,7 @@ public:
 
     // Top level connection method for this all encompassing component, TheWorld
     void connect() {
-        Super::connect(*this);
+        Super::finalizeConnections(*this);
     }
     void buildUpSystem(MultibodySystem& system) { 
         connect();
@@ -1115,7 +1115,8 @@ void testInputOutputConnections()
         system.realize(s, Stage::Model);
         // The following will work, now that the connection is satisfied.
         b->getInput<double>("in1").getValue(s, 0);
-        b->disconnect(); // Disconnect to get the "not connected"exception.
+        // Disconnect to get the "not connected"exception.
+        b->clearConnections(); 
         SimTK_TEST_MUST_THROW_EXC(b->getInput<double>("in1").getValue(s, 0),
                 InputNotConnected);
     }

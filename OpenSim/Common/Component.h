@@ -387,11 +387,11 @@ public:
 
     /** Connect this Component to its aggregate component, which is the root
         of a tree of components.*/
-    void connect(Component& root);
+    void finalizeConnections(Component& root);
 
-    /** Disconnect this Component from its aggregate component. Empties all
-        component's connectors and sets them as disconnected.*/
-    void disconnect();
+    /** Disconnect/clear this Component from its aggregate component. Empties 
+        all component's connectors and sets them as disconnected.*/
+    void clearConnections();
 
     /** Have the Component add itself to the underlying computational System */
     void addToSystem(SimTK::MultibodySystem& system) const;
