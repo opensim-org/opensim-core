@@ -210,7 +210,7 @@ void Component::componentsFinalizeFromProperties() const
     }
 }
 
-// Base class implementation of non virtual connect method.
+// Base class implementation of non-virtual finalizeConnections method.
 void Component::finalizeConnections(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
