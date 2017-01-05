@@ -75,9 +75,7 @@ private:
            isAppliedOnChild. Note that this is only used for printing the
            onBodyName when constructing column labels. */
         const Frame* appliedOnBody;
-        /* The reference Frame in which the force should be expressed.
-           Specifically this is either Ground or the base frame of the
-           body specified (i.e. child or parent). */
+        /* The reference Frame in which the force should be expressed. */
         const Frame* expressedInFrame;
     };
 

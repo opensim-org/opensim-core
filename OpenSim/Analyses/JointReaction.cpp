@@ -204,7 +204,7 @@ setupProperties()
     _propertySet.append(&_onBodyProp);
 
     _inFrameProp.setName("express_in_frame");
-    _inFrameProp.setComment("Choice of frame (ground, parent, or child) in which the calculated "
+    _inFrameProp.setComment("Names of frames in which the calculated "
         "reactions are expressed.  ground body is default.  If the array has one entry only, "
         "that selection is applied to all chosen joints.");
     _propertySet.append(&_inFrameProp);
@@ -266,14 +266,13 @@ void JointReaction::setupReactionList()
     if (_inFrame.getSize() == 1);
     else if (_inFrame.getSize() != numJointNames) {
         cout << "\n WARNING: express_in_frame list is not the same length as joint_names."
-            <<"\n All reaction loads will be reported in the child body frames.\n";
+            <<"\n All reaction loads will be reported in the ground frame.\n";
         _inFrame.setSize(1);
         _inFrame[0] = "ground";}
     
 
     /* setup the JointReactionKey and, for valid joint names, determine and set the 
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
-
     _reactionList.setSize(0);
     int index = -1;
     for (int i = 0; i < _jointNames.getSize(); ++i) {
@@ -303,6 +302,7 @@ void JointReaction::setupReactionList()
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
+            _model->dumpSubcomponents();
             currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
 
             _reactionList.append(currentKey);
