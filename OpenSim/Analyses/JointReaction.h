@@ -43,12 +43,14 @@ class Joint;
 
 /**
  * An analysis for reporting the joint reaction loads from a model. For a given
- * joint, the reaction load is calculated as the forces and moments required to 
- * constrain the body motions to satisfy the joint as if the joint did not exist.
- * The reaction load acts at the joint center (mobilizer frame) of both the parent 
- * and child bodies and either force can be reported and expressed in the either
- * the child, parent or ground frames. The default behavior is the force
- * on the child expressed in the ground frame.
+ * joint, the reaction load is calculated as the forces and moments required to
+ * constrain the body motions to satisfy the joint as if the joint did not 
+ * exist.
+ * 
+ * The reaction load acts at the joint center (mobilizer frame) of both the 
+ * parent and child bodies and either force can be reported and expressed in 
+ * any specified frame. The default behavior is the force on the child 
+ * expressed in the ground frame.
  *
  * @author Matt DeMers, Ajay Seth
  * @version 1.0
