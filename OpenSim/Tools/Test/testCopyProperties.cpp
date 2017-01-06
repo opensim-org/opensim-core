@@ -33,6 +33,8 @@ int main() {
         modelCopy.updForceSet().setSize(0);
         for (const auto& thelenMusc : m.getComponentList<OpenSim::Thelen2003Muscle>()) {
             Millard2012EquilibriumMuscle millardMusc;
+            const GeometryPath& gp = thelenMusc.get_GeometryPath();
+            std::cout << gp.dump() << std::endl;
             millardMusc.copyPropertiesFromObject(thelenMusc);
             millardMusc.setName(thelenMusc.getName());
             modelCopy.updForceSet().cloneAndAppend(millardMusc);

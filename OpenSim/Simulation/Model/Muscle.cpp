@@ -649,6 +649,43 @@ void Muscle::updateGeometry(const SimTK::State& s)
     updGeometryPath().updateGeometry(s);
 }
 
+void Muscle::copyPropertiesFromObject(const OpenSim::Muscle& fromObject)
+{
+    // Cycle thru properties, find name and check if this object has similarly named Property
+    // if so, delegate to Property assignment to copy values. 
+    // Special cases: Lists, Objects
+    //std::cout << (const_cast<OpenSim::Muscle&>(fromObject)).dump() << std::endl;
+
+    const int numProps = getNumProperties();
+    bool debug = false;
+    for (int px = 0; px < numProps; ++px) {
+        const AbstractProperty& fromProp = getPropertyByIndex(px);
+        const std::string& pName = fromProp.getName();
+        if (hasProperty(pName)) {
+            AbstractProperty& myProp = updPropertyByName(pName); // Get writable reference to my property
+            if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
+                if (fromProp.isOneObjectProperty()) { // Either recur or "clone the object
+                    Object& fromObj = const_cast<Object&>(fromProp.getValueAsObject());
+                    const GeometryPath& gpp2 = fromObject.get_GeometryPath();
+                    const GeometryPath* gpp = dynamic_cast<GeometryPath*>(&fromObj);
+                    if (gpp != nullptr) {
+                        cout << gpp->getPathPointSet().getSize() << std::endl;
+                        cout << gpp2.getPathPointSet().getSize() << std::endl;
+                        myProp.setValueAsObject(gpp2);
+                    }
+                    else
+                        myProp.setValueAsObject(fromObj);
+
+                    //if (debug)
+                     //   std::cout << fromObj.dump() << std::endl;
+                    //myProp.updValueAsObject().copyPropertiesFromObject(asObj); // if we want to recur we could do that instead
+                }
+                else
+                    myProp = fromProp;
+            }
+        }
+    }
+}
 
 //_____________________________________________________________________________
 /**

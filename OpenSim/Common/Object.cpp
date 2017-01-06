@@ -1497,22 +1497,27 @@ PrintPropertyInfo(ostream &aOStream,
 void Object::copyPropertiesFromObject(const OpenSim::Object& fromObject)
 {
     // Cycle thru properties, find name and check if this object has similarly named Property
-    // if so, delegate to Property assignment. 
-    // Special cases: Lists, Objects, Defaults
+    // if so, delegate to Property assignment to copy values. 
+    // Special cases: Lists, Objects
+
     const int numProps = getNumProperties();
+    bool debug = false;
     for (int px = 0; px < numProps; ++px) {
-        AbstractProperty& fromProp = updPropertyByIndex(px);
+        const AbstractProperty& fromProp = getPropertyByIndex(px);
         const std::string& pName = fromProp.getName();
         if (hasProperty(pName)) {
-            AbstractProperty& myProp = updPropertyByName(pName);
-            if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault())
-                if (myProp.isOneObjectProperty()) {
-                    Object& asObj = fromProp.updValueAsObject();
-                    std::cout << asObj.dump() << std::endl;
-                    myProp.updValueAsObject().copyPropertiesFromObject(fromProp.getValueAsObject());
+            AbstractProperty& myProp = updPropertyByName(pName); // Get writable reference to my property
+            if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
+                if (fromProp.isOneObjectProperty()) { // Either recur or "clone the object
+                    const Object& fromObj = fromProp.getValueAsObject();
+                    //if (debug)
+                    //    std::cout << fromObj.dump() << std::endl;
+                    //myProp.updValueAsObject().copyPropertiesFromObject(asObj); // if we want to recur we could do that instead
+                    myProp.setValueAsObject(fromObj);
                 }
                 else
                     myProp = fromProp;
+            }
         }
     }
 }
@@ -1594,16 +1599,16 @@ void Object::updateFromXMLDocument()
     IO::chDir(saveWorkingDirectory);
 }
 
-std::string Object::dump(bool dumpName) {
+std::string Object::dump(bool dumpName) const {
     SimTK::String outString;
     XMLDocument doc;
     std::string saveName = getName();
-    if (!dumpName) setName("");
+    //if (!dumpName) setName("");
     Object::setSerializeAllDefaults(true);
     SimTK::Xml::Element elem = doc.getRootElement();
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
-    setName(saveName);
+    //setName(saveName);
     doc.getRootElement().node_begin()->writeToString(outString);
     return outString;
     }
