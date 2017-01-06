@@ -615,7 +615,7 @@ void Umberger2010MuscleMetabolicsProbe::
             << muscleName << "' specified. No metabolic muscles removed." << endl;
         return;
     }
-    disconnect();
+    clearConnections();
     upd_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().remove(k);
 }
 

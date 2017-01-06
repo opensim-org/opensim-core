@@ -1440,11 +1440,11 @@ void testPinJoint()
     // use the same coordinate name
     knee3.upd_coordinates(0).setName("knee_q");
 
-    knee3.connect(*osimModel);
+    knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
     knee3.dumpSubcomponents();
 
-    knee.connect(*osimModel);
+    knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
     knee.dumpSubcomponents();
 
