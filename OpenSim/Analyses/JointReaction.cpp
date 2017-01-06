@@ -302,7 +302,6 @@ void JointReaction::setupReactionList()
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
-            _model->dumpSubcomponents();
             currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
 
             _reactionList.append(currentKey);

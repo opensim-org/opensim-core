@@ -73,7 +73,7 @@ private:
            of the joint?*/
         bool isAppliedOnChild;
         /* The body upon which the force is applied. Specifically, this is
-           the base frame of the body specifiied (i.e. child or parent) from
+           the base frame of the body specified (i.e. child or parent) from
            isAppliedOnChild. Note that this is only used for printing the
            onBodyName when constructing column labels. */
         const Frame* appliedOnBody;
