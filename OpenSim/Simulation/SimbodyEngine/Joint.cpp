@@ -554,7 +554,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child");
         }
-        // Version 30501 converted Socket_Body_ to Connector_PhysicalFrame_
+        // Version 30501 converted Connector_Body_ to Connector_PhysicalFrame_
         if (documentVersion < 30501) {
             // Handle any models that have the Joint connecting to Bodies instead
             // of PhyscialFrames

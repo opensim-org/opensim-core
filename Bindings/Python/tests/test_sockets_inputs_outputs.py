@@ -69,9 +69,9 @@ class TestSockets(unittest.TestCase):
         # By iterator.
         # TODO doesn't exist yet.
         # TODO count_by_iter = 0
-        # TODO for conn in shoulder.getSockets():
+        # TODO for socket in shoulder.getSockets():
         # TODO     count_by_iter += 1
-        # TODO     assert conn.getName() == names[count_by_iter]
+        # TODO     assert socket.getName() == names[count_by_iter]
         # TODO assert count_by_iter == 2
 
     def test_connecting(self):

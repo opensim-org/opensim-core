@@ -1194,7 +1194,7 @@ void testExceptionsForConnecteeTypeMismatch() {
     class C : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(C, Component);
     public:
-        OpenSim_DECLARE_SOCKET(conn1, A, "");
+        OpenSim_DECLARE_SOCKET(socket1, A, "");
     };
     
     // Test various type mismatches.
@@ -1206,7 +1206,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         B* b = new B(); b->setName("b");
         C* c = new C(); c->setName("c");
         model.add(b); model.add(c);
-        SimTK_TEST_MUST_THROW_EXC(c->updSocket("conn1").connect(*b),
+        SimTK_TEST_MUST_THROW_EXC(c->updSocket("socket1").connect(*b),
                                   OpenSim::Exception);
     }
     { // single-value output -> single-value input.
@@ -1251,7 +1251,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         B* b = new B(); b->setName("b");
         C* c = new C(); c->setName("c");
         model.add(b); model.add(c);
-        c->updSocket("conn1").setConnecteeName("../b");
+        c->updSocket("socket1").setConnecteeName("../b");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> single-value input.
@@ -1298,32 +1298,32 @@ void testExceptionsSocketNameExistsAlready() {
     class Y : public Component
     {   OpenSim_DECLARE_CONCRETE_OBJECT(Y, Component); };
 
-    // A is the base class that has a socket named 'conn1', of type Z.
+    // A is the base class that has a socket named 'socket1', of type Z.
     class A : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
     public:
-        OpenSim_DECLARE_SOCKET(conn1, Z, "");
+        OpenSim_DECLARE_SOCKET(socket1, Z, "");
     };
 
-    // BSame tries to reuse the name 'conn1', and also connect to type Z.
+    // BSame tries to reuse the name 'socket1', and also connect to type Z.
     class BSame : public A {
         OpenSim_DECLARE_CONCRETE_OBJECT(BSame, A);
     public:
-        OpenSim_DECLARE_SOCKET(conn1, Z, "");
+        OpenSim_DECLARE_SOCKET(socket1, Z, "");
     };
 
-    // BDifferent uses the same name 'conn1' but connects to a different type.
+    // BDifferent uses the same name 'socket1' but connects to a different type.
     class BDifferent : public A {
         OpenSim_DECLARE_CONCRETE_OBJECT(BDifferent, A);
     public:
-        OpenSim_DECLARE_SOCKET(conn1, Y, "");
+        OpenSim_DECLARE_SOCKET(socket1, Y, "");
     };
 
     ASSERT_THROW_MSG(OpenSim::Exception,
-            "BSame already has a socket named 'conn1'",
+            "BSame already has a socket named 'socket1'",
             BSame b;);
     ASSERT_THROW_MSG(OpenSim::Exception,
-            "BDifferent already has a socket named 'conn1'",
+            "BDifferent already has a socket named 'socket1'",
             BDifferent b;);
 
     // The API user may try to create two sockets with the

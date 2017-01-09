@@ -727,7 +727,7 @@ public:
      * can use this to iterate through the sockets:
      * @code
      * for (std::string name : comp.getSocketNames()) {
-     *     const AbstractSocket& conn = getSocket(name);
+     *     const AbstractSocket& socket = getSocket(name);
      * }
      * @endcode */
     std::vector<std::string> getSocketNames() {
@@ -2211,11 +2211,11 @@ protected:
      */
     /// @{
     /**
-    * Construct a specialized Socket for this Component's dependence on an
+    * Construct a specialized Socket for this Component's dependence on
     * another Component. It serves as a placeholder for the Component and its
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
-    * incompatible or non-existant. This function also creates a Property in
+    * incompatible or non-existent. This function also creates a Property in
     * this component to store the connectee name for this socket; the
     * propertyComment argument is the comment to use for that Property. */
     template <typename T>

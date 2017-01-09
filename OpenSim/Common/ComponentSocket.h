@@ -939,7 +939,7 @@ private:
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
     typedef T _socket_##cname##_type;                                       \
     /** @endcond                                                         */ \
-    /** @name socket-related functions                                   */ \
+    /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
     /** Connect the '##cname##' Socket to an object of type T##.         */ \
     void connectSocket_##cname(const Object& object) {                      \

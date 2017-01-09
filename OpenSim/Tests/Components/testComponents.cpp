@@ -434,10 +434,10 @@ void testComponentEquivalence(const Component* a, const Component* b)
     ASSERT(same, __FILE__, __LINE__,
         className + " components are not equivalent in properties.");
 
-    int nc_a = a->getNumSockets();
-    int nc_b = b->getNumSockets();
-    cout << className << " getNumSockets: " << nc_a << endl;
-    ASSERT(nc_a==nc_b, __FILE__, __LINE__, 
+    int ns_a = a->getNumSockets();
+    int ns_b = b->getNumSockets();
+    cout << className << " getNumSockets: " << ns_a << endl;
+    ASSERT(ns_a==ns_b, __FILE__, __LINE__, 
         className + "components differ in number of sockets.");
 
     int nin_a = a->getNumInputs();
