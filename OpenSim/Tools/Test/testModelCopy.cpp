@@ -29,14 +29,17 @@
 using namespace OpenSim;
 using namespace std;
 
-void testCopyModel(string fileName);
+// Test copying, serializing and deserializing models and verify 
+// that the number of bodies (nbods) are number of attached geometry
+// on ground (nGroundGeom) are preserved.
+void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom);
 
 int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
-        testCopyModel("arm26.osim");
-        testCopyModel("Neck3dof_point_constraint.osim");
+        testCopyModel("arm26.osim", 2, 6);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, 0);
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -46,7 +49,7 @@ int main()
     return 0;
 }
 
-void testCopyModel(string fileName)
+void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom)
 {
     const size_t mem0 = getCurrentRSS();
 
@@ -93,9 +96,22 @@ void testCopyModel(string fileName)
     //ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
     //ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
 
+    std::string latestFile = "lastest_" + fileName;
+    modelCopy->print(latestFile);
+
+    Model* modelSerialized = new Model(latestFile, false);
+    ASSERT(*modelSerialized == *modelCopy);
+
+    int nb = modelSerialized->getNumBodies();
+    int nggeom = modelSerialized->getGround().getProperty_attached_geometry().size();
+
+    ASSERT(nb == nbod);
+    ASSERT(nggeom == nGroundGeom);
+
     delete model;
     delete modelCopy;
     delete cloneModel;
+    delete modelSerialized;
 
     // New memory footprint.
     const size_t mem2 = getCurrentRSS();
