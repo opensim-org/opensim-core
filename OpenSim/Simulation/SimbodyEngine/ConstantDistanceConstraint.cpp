@@ -169,7 +169,7 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Sockets
+            // replace old properties with latest use of Connectors
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("body_2");
             std::string body1_name(""), body2_name("");

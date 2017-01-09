@@ -76,7 +76,7 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
 {
     // Base class
     if (versionNumber < 30506) {
-        // Convert body property into a socket to PhysicalFrame with name "frame"
+        // Convert body property into a connector to PhysicalFrame with name "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
         if (bodyElement != aNode.element_end()) {

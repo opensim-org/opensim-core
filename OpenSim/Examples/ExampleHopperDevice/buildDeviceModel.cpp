@@ -69,14 +69,14 @@ Device* buildDevice() {
     // Create a WeldJoint to anchor cuffA to the hopper.
     auto anchorA = new WeldJoint();
     anchorA->setName("anchorA");
-    //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
+    //TODO: Connect the "child_frame" (a PhysicalFrame) Socket of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
     //      frame will be connected in exampleHopperDevice.cpp.
 
     //TODO: Add anchorA to the device.
 
     //TODO: Create a WeldJoint to anchor cuffB to the hopper. Connect the
-    //      "child_frame" Connector of anchorB to cuffB and add anchorB to the
+    //      "child_frame" Socket of anchorB to cuffB and add anchorB to the
     //      device.
 
     // Attach a PathActuator between the two cuffs.
@@ -92,7 +92,7 @@ Device* buildDevice() {
     controller->setName("controller");
     controller->set_gain(GAIN);
 
-    //TODO: Connect the controller's "actuator" Connector to pathActuator.
+    //TODO: Connect the controller's "actuator" Socket to pathActuator.
 
     //TODO: Add the controller to the device.
 

@@ -609,7 +609,7 @@ void Model::createMultibodyTree()
 
         // hack to make sure underlying Frame is also connected so it can 
         // traverse to the base frame and get its name. This allows the
-        // (offset) frames to satisfy the connectors of Joint to be added
+        // (offset) frames to satisfy the sockets of Joint to be added
         // to a Body, for example, and not just joint itself.
         // TODO: try to create the multibody tree later when components
         // can already be expected to be connected then traverse those

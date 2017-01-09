@@ -162,7 +162,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         XMLDocument::renameChildNode(aNode,"ZAttachment", "z_location");
     }
     if (documentVersion < 30505) {
-        // replace old properties with latest use of Sockets
+        // replace old properties with latest use of Connectors
         SimTK::Xml::element_iterator xCoord = aNode.element_begin("x_coordinate");
         SimTK::Xml::element_iterator yCoord = aNode.element_begin("y_coordinate");
         SimTK::Xml::element_iterator zCoord = aNode.element_begin("z_coordinate");

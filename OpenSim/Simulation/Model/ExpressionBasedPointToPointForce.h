@@ -172,7 +172,7 @@ private:
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram _forceProg;
 
-    // Temporary solution until implemented with Connectors
+    // Temporary solution until implemented with Sockets
     SimTK::ReferencePtr<const PhysicalFrame> _body1;
     SimTK::ReferencePtr<const PhysicalFrame> _body2;
     SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1; 

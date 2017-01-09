@@ -65,7 +65,7 @@ public:
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
-    Connectors to the PhysicalFrames they attach to. This must be addressed prior
+    Sockets to the PhysicalFrames they attach to. This must be addressed prior
     to OpenSim 4.0 release. - aseth
 
     Note: VisibleObject was removed from this class by @aymanhab via PR #417.

@@ -844,7 +844,7 @@ private:
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
 #define OpenSim_DECLARE_SOCKET(cname, T, comment)                           \
-    /** @name sockets                                                    */ \
+    /** @name Sockets                                                    */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** In an XML file, you can set this Socket's connectee name         */ \
