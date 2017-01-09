@@ -70,8 +70,8 @@ Joint::Joint(const std::string &name, const PhysicalFrame& parent,
     setName(name);
     set_reverse(reverse);
 
-    connectConnector_parent_frame(parent);
-    connectConnector_child_frame(child);
+    connectSocket_parent_frame(parent);
+    connectSocket_child_frame(child);
 }
 
 /* Convenience Constructor*/
@@ -130,8 +130,8 @@ Joint::Joint(const std::string &name,
     static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
     static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
 
-    connectConnector_parent_frame(upd_frames(pix));
-    connectConnector_child_frame(upd_frames(cix));
+    connectSocket_parent_frame(upd_frames(pix));
+    connectSocket_child_frame(upd_frames(cix));
 }
 
 //=============================================================================
@@ -201,7 +201,7 @@ void Joint::extendFinalizeFromProperties()
 //-----------------------------------------------------------------------------
 const PhysicalFrame& Joint::getChildFrame() const
 {
-    return getConnector<PhysicalFrame>("child_frame").getConnectee();
+    return getSocket<PhysicalFrame>("child_frame").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
@@ -209,7 +209,7 @@ const PhysicalFrame& Joint::getChildFrame() const
 //-----------------------------------------------------------------------------
 const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
 }
 
 const Coordinate& Joint::getCoordinate() const {
@@ -339,9 +339,9 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // The parent node in the multibody tree must part of the system
     if(get_reverse())
         // this will be the child if the joint definition is reversed
-        getConnector<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
+        getSocket<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
     else // otherwise it is the parent frame
-        getConnector<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
+        getSocket<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
 }
 
 void Joint::extendInitStateFromProperties(SimTK::State& s) const
@@ -554,7 +554,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             XMLDocument::renameChildNode(aNode, "location", "location_in_child"); 
             XMLDocument::renameChildNode(aNode, "orientation", "orientation_in_child");
         }
-        // Version 30501 converted Connector_Body_ to Connector_PhysicalFrame_
+        // Version 30501 converted Socket_Body_ to Connector_PhysicalFrame_
         if (documentVersion < 30501) {
             // Handle any models that have the Joint connecting to Bodies instead
             // of PhyscialFrames

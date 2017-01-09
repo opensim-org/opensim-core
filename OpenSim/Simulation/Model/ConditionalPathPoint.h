@@ -50,9 +50,9 @@ public:
         "for which the PathPoint is active. Angular coordinates in radians.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(coordinate, Coordinate,
         "The coordinate whose value determines when "
         "the path point is active according to the specified range.");
 

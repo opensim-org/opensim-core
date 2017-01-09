@@ -81,7 +81,7 @@ namespace OpenSim {
 namespace OpenSim {
     %ignore Input::downcast(AbstractInput&); // suppress warning 509.
 }
-%include <OpenSim/Common/ComponentConnector.h>
+%include <OpenSim/Common/ComponentSocket.h>
 %template(InputDouble) OpenSim::Input<double>;
 %template(InputVec3) OpenSim::Input<SimTK::Vec3>;
 // TODO These classes had issues from SimTK typedefs:

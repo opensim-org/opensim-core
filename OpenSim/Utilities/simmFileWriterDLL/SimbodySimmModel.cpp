@@ -1047,7 +1047,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
                     aStream << " ranges 1 " << coord.getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
             } else {
                 aStream << " ranges 1 " 
-                    << mvp->getConnector<Coordinate>("coordinate").getConnecteeName()
+                    << mvp->getSocket<Coordinate>("coordinate").getConnecteeName()
                     << " (0.0, 1.0)" << endl;
             }
         } else if (pt.getConcreteClassName()==("MovingPathPoint")) {
