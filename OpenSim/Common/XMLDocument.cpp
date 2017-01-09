@@ -55,8 +55,9 @@ using namespace std;
 // 30507 for changing serialization of Coordinates owned by Joint
 // 30508 for moving Connector's connectee_name to enclosing Component.
 // 30509 for replacing 'isDisabled' with: 'appliesForce', 'isEnforced' and
-//       'enabled', for Force, Constraint and Controller, respectively 
-const int XMLDocument::LatestVersion = 30509;
+//       'enabled', for Force, Constraint and Controller, respectively
+// 30510 for renaming Connector to Socket.
+const int XMLDocument::LatestVersion = 30510;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
