@@ -1,25 +1,25 @@
-#ifndef FUNCTION_COMPONENT_CONNECTOR_H
-#define FUNCTION_COMPONENT_CONNECTOR_H
+#ifndef FUNCTION_COMPONENT_SOCKET_H
+#define FUNCTION_COMPONENT_SOCKET_H
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim
 {
     /**
-    * Implements a connector between a non component function and a Component.
+    * Implements a socket between a non component function and a Component.
     *
     * @author Dimitar Stanev
     */
     template<class T>
-    class FunctionComponentConnector : public ModelComponent
+    class FunctionComponentSocket : public ModelComponent
     {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FunctionComponentConnector, ModelComponent);
+        OpenSim_DECLARE_CONCRETE_OBJECT(FunctionComponentSocket, ModelComponent);
 
     public:
 
         OpenSim_DECLARE_OUTPUT(output, T, getValue, SimTK::Stage::Time);
 
-        FunctionComponentConnector(std::function<T(const SimTK::State& s)> f)
+        FunctionComponentSocket(std::function<T(const SimTK::State& s)> f)
             : ModelComponent(), function(f)
         {
         }

@@ -107,9 +107,9 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& f1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
+        getSocket<PhysicalFrame>("body_1").getConnectee();
     const PhysicalFrame& f2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+        getSocket<PhysicalFrame>("body_2").getConnectee();
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
@@ -129,12 +129,12 @@ void PointConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
  * Following methods set attributes of the frames of constraint */
 void PointConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
 }
 
 void PointConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -156,9 +156,9 @@ void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State 
     getSystem().realize(s, SimTK::Stage::Position);
 
     const PhysicalFrame& body1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
+        getSocket<PhysicalFrame>("body_1").getConnectee();
     const PhysicalFrame& body2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+        getSocket<PhysicalFrame>("body_2").getConnectee();
 
     // For external forces we assume point position vector is defined wrt foot (i.e., _body2)
     // because we are passing it in from a prescribed force.

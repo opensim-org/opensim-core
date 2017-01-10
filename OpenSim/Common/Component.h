@@ -44,7 +44,7 @@
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
 #include "OpenSim/Common/Object.h"
-#include "OpenSim/Common/ComponentConnector.h"
+#include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
@@ -122,15 +122,15 @@ public:
     }
 };
 
-class ConnectorNotFound : public Exception {
+class SocketNotFound : public Exception {
 public:
-    ConnectorNotFound(const std::string& file,
-                      size_t line,
-                      const std::string& func,
-                      const Object& obj,
-                      const std::string& connectorName) :
+    SocketNotFound(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const Object& obj,
+                   const std::string& socketName) :
         Exception(file, line, func, obj) {
-        std::string msg = "no Connector '" + connectorName;
+        std::string msg = "no Socket '" + socketName;
         msg += "' found for this Component.";
         addMessage(msg);
     }
@@ -390,7 +390,7 @@ public:
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
-        all component's connectors and sets them as disconnected.*/
+        all component's sockets and sets them as disconnected.*/
     void clearConnections();
 
     /** Have the Component add itself to the underlying computational System */
@@ -715,43 +715,43 @@ public:
     Array<std::string> getStateVariableNames() const;
 
 
-    /** @name Component Connector Access methods
-        Access Connectors of this component by name. */
+    /** @name Component Socket Access methods
+        Access Sockets of this component by name. */
     //@{ 
-    /** Get the number of Connectors in this Component. */
-    int getNumConnectors() const {
-        return int(_connectorsTable.size());
+    /** Get the number of Sockets in this Component. */
+    int getNumSockets() const {
+        return int(_socketsTable.size());
     }
 
-    /** Collect and return the names of the connectors in this component. You
-     * can use this to iterate through the connectors:
+    /** Collect and return the names of the sockets in this component. You
+     * can use this to iterate through the sockets:
      * @code
-     * for (std::string name : comp.getConnectorNames()) {
-     *     const AbstractConnector& conn = getConnector(name);
+     * for (std::string name : comp.getSocketNames()) {
+     *     const AbstractSocket& socket = getSocket(name);
      * }
      * @endcode */
-    std::vector<std::string> getConnectorNames() {
+    std::vector<std::string> getSocketNames() {
         std::vector<std::string> names;
-        for (const auto& it : _connectorsTable) {
+        for (const auto& it : _socketsTable) {
             names.push_back(it.first);
         }
         return names;
     }
 
     /**
-    * Get the "connectee" object that the Component's Connector
+    * Get the "connectee" object that the Component's Socket
     * is bound to. Guaranteed to be valid only after the Component
     * has been connected (that is connect() has been invoked).
-    * If the Connector has not been connected, an exception is thrown.
+    * If the Socket has not been connected, an exception is thrown.
     *
     * This method is for getting the concrete connectee object, and is not
     * available in scripting. If you want generic access to the connectee as an
     * Object, use the non-templated version.
     *
     * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
-    * @param name       the name of the connector
+    * @param name       the name of the socket
     * @return T         const reference to object that satisfies
-    *                   the Connector
+    *                   the Socket
     *
     * Example:
     * @code
@@ -761,11 +761,11 @@ public:
     */
     template<typename T>
     const T& getConnectee(const std::string& name) const {
-        // get the Connector and check if it is connected.
-        const Connector<T>& connector = getConnector<T>(name);
-        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
-                "Connector '" + name + "' not connected.");
-        return connector.getConnectee();
+        // get the Socket and check if it is connected.
+        const Socket<T>& socket = getSocket<T>(name);
+        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
+                "Socket '" + name + "' not connected.");
+        return socket.getConnectee();
     }
 
     /** Get the connectee as an Object. This means you will not have
@@ -793,95 +793,95 @@ public:
     * @endcode
     */
     const Object& getConnectee(const std::string& name) const {
-        const AbstractConnector& connector = getConnector(name);
-        OPENSIM_THROW_IF_FRMOBJ(!connector.isConnected(), Exception,
-                "Connector '" + name + "' not connected.");
-        return connector.getConnecteeAsObject();
+        const AbstractSocket& socket = getSocket(name);
+        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
+                "Socket '" + name + "' not connected.");
+        return socket.getConnecteeAsObject();
     }
 
-    /** Get an AbstractConnector for the given connector name. This
-     * lets you get information about the connection (like if the connector is
-     * connected), but does not give you access to the connector's connectee.
+    /** Get an AbstractSocket for the given socket name. This
+     * lets you get information about the connection (like if the socket is
+     * connected), but does not give you access to the socket's connectee.
      * For that, use getConnectee().
      *
      * @internal If you have not yet called finalizeFromProperties() on this
-     * component, this function will update the Connector (to tell it which
+     * component, this function will update the Socket (to tell it which
      * component it's in) before providing it to you.
      *
      * <b>C++ example</b>
      * @code{.cpp}
-     * model.getComponent("/path/to/component").getConnector("connectorName");
+     * model.getComponent("/path/to/component").getSocket("socketName");
      * @endcode
      */
-    const AbstractConnector& getConnector(const std::string& name) const {
-        auto it = _connectorsTable.find(name);
+    const AbstractSocket& getSocket(const std::string& name) const {
+        auto it = _socketsTable.find(name);
 
-        if (it != _connectorsTable.end()) {
-            // The following allows one to use a Connector immediately after
+        if (it != _socketsTable.end()) {
+            // The following allows one to use a Socket immediately after
             // copying the component;
-            // e.g., myComponent.clone().getConnector("a").getConnecteeName().
+            // e.g., myComponent.clone().getSocket("a").getConnecteeName().
             // Since we use the default copy constructor for Component,
-            // the copied AbstractConnector cannot know its new owner
+            // the copied AbstractSocket cannot know its new owner
             // immediately after copying.
             if (!it->second->hasOwner()) {
-                // The `this` pointer must be non-const because the Connector
+                // The `this` pointer must be non-const because the Socket
                 // will want to be able to modify the connectee_name property.
-                const_cast<AbstractConnector*>(it->second.get())->setOwner(
+                const_cast<AbstractSocket*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
             }
             return it->second.getRef();
         }
 
-        OPENSIM_THROW_FRMOBJ(ConnectorNotFound, name);
+        OPENSIM_THROW_FRMOBJ(SocketNotFound, name);
     }
 
-    /** Get a writable reference to the AbstractConnector for the given
-     * connector name. Use this method to connect the Connector to something.
+    /** Get a writable reference to the AbstractSocket for the given
+     * socket name. Use this method to connect the Socket to something.
      * 
      * <b>C++ example</b>
      * @code
-     * joint.updConnector("parent_frame").connect(model.getGround());
+     * joint.updSocket("parent_frame").connect(model.getGround());
      * @endcode
      *
      * @internal If you have not yet called finalizeFromProperties() on this
-     * component, this function will update the Connector (to tell it which
+     * component, this function will update the Socket (to tell it which
      * component it's in) before providing it to you.
      */
-    AbstractConnector& updConnector(const std::string& name) {
-        return const_cast<AbstractConnector&>(getConnector(name));
+    AbstractSocket& updSocket(const std::string& name) {
+        return const_cast<AbstractSocket&>(getSocket(name));
     }
 
     /**
-    * Get a const reference to the concrete Connector provided by this
+    * Get a const reference to the concrete Socket provided by this
     * Component by name.
     *
     * @internal If you have not yet called finalizeFromProperties() on this
-    * component, this function will update the Connector (to tell it which
+    * component, this function will update the Socket (to tell it which
     * component it's in) before providing it to you.
     *
-    * @param name       the name of the Connector
-    * @return const reference to the (Abstract)Connector
+    * @param name       the name of the Socket
+    * @return const reference to the (Abstract)Socket
     */
     template<typename T>
-    const Connector<T>& getConnector(const std::string& name) const {
-        return Connector<T>::downcast(getConnector(name));
+    const Socket<T>& getSocket(const std::string& name) const {
+        return Socket<T>::downcast(getSocket(name));
     }
 
     /**
-    * Get a writable reference to the concrete Connector provided by this
+    * Get a writable reference to the concrete Socket provided by this
     * Component by name.
     *
     * @internal If you have not yet called finalizeFromProperties() on this
-    * component, this function will update the Connector (to tell it which
+    * component, this function will update the Socket (to tell it which
     * component it's in) before providing it to you.
     *
-    * @param name       the name of the Connector
-    * @return const reference to the (Abstract)Connector
+    * @param name       the name of the Socket
+    * @return const reference to the (Abstract)Socket
     */
-    template<typename T> Connector<T>& updConnector(const std::string& name) {
-        return const_cast<Connector<T>&>(getConnector<T>(name));
+    template<typename T> Socket<T>& updSocket(const std::string& name) {
+        return const_cast<Socket<T>&>(getSocket<T>(name));
     }
-    //@} end of Component Connector Access methods
+    //@} end of Component Socket Access methods
 
     /** @name Component Inputs and Outputs Access methods
         Access inputs and outputs by name and iterate over all outputs.
@@ -942,11 +942,11 @@ public:
             // copying the component;
             // e.g., myComponent.clone().getInput("a").getConnecteeName().
             // Since we use the default copy constructor for Component,
-            // the copied AbstractConnector (base class of AbstractInput)
+            // the copied AbstractSocket (base class of AbstractInput)
             // cannot know its new owner immediately after copying.
             if (!it->second->hasOwner()) {
             
-                // The `this` pointer must be non-const because the Connector
+                // The `this` pointer must be non-const because the Socket
                 // will want to be able to modify the connectee_name property.
                 const_cast<AbstractInput*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
@@ -1438,7 +1438,7 @@ public:
     /** Debugging method to list all subcomponents by name and recurse
         into these components to list their subcomponents, and so on. */
     void dumpSubcomponents(int depth=0) const;
-    /** List all the Connectors and Inputs and whether or not they are
+    /** List all the Sockets and Inputs and whether or not they are
      * connected. */
     void dumpConnections() const;
     /// @}
@@ -1995,7 +1995,7 @@ protected:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsupported-friend"
     template<class C>
-    friend void Connector<C>::findAndConnect(const Component& root);
+    friend void Socket<C>::findAndConnect(const Component& root);
 #pragma clang diagnostic pop
 
     /** Utility method to find a component in the list of sub components of this
@@ -2194,12 +2194,12 @@ protected:
 
     //@} 
 
-    /** @name Internal methods for constructing Connectors, Outputs, Inputs
-     * To declare Connector%s, Output%s, and Input%s for your component,
+    /** @name Internal methods for constructing Sockets, Outputs, Inputs
+     * To declare Socket%s, Output%s, and Input%s for your component,
      * use the following macros within your class declaration (ideally at
      * the top near property declarations):
      *
-     *  - #OpenSim_DECLARE_CONNECTOR
+     *  - #OpenSim_DECLARE_SOCKET
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -2211,31 +2211,31 @@ protected:
      */
     /// @{
     /**
-    * Construct a specialized Connector for this Component's dependence on an
+    * Construct a specialized Socket for this Component's dependence on
     * another Component. It serves as a placeholder for the Component and its
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
-    * incompatible or non-existant. This function also creates a Property in
-    * this component to store the connectee name for this connector; the
+    * incompatible or non-existent. This function also creates a Property in
+    * this component to store the connectee name for this socket; the
     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    PropertyIndex constructConnector(const std::string& name,
+    PropertyIndex constructSocket(const std::string& name,
                                      const std::string& propertyComment) {
-        OPENSIM_THROW_IF(_connectorsTable.count(name), Exception,
-            getConcreteClassName() + " already has a connector named '"
+        OPENSIM_THROW_IF(_socketsTable.count(name), Exception,
+            getConcreteClassName() + " already has a socket named '"
             + name + "'.");
 
-        // This property is accessed / edited by the Connector class. It is
+        // This property is accessed / edited by the Socket class. It is
         // not easily accessible to users.
         // TODO does putting the addProperty here break the ability to
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
         PropertyIndex propIndex = this->template addProperty<std::string>(
-                "connector_" + name + "_connectee_name", propertyComment, "");
-        // We must create the Property first: the Connector needs the property's
+                "socket_" + name + "_connectee_name", propertyComment, "");
+        // We must create the Property first: the Socket needs the property's
         // index in order to access the property later on.
-        _connectorsTable[name].reset(
-            new Connector<T>(name, propIndex, SimTK::Stage::Topology, *this));
+        _socketsTable[name].reset(
+            new Socket<T>(name, propIndex, SimTK::Stage::Topology, *this));
         return propIndex;
     }
     
@@ -2360,7 +2360,7 @@ protected:
             + name + "'.");
 
         PropertyIndex propIndex;
-        // This property is accessed / edited by the AbstractConnector class.
+        // This property is accessed / edited by the AbstractSocket class.
         // It is not easily accessible to users.
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
@@ -2560,7 +2560,7 @@ protected:
         _orderedSubcomponents.clear();
     }
 
-    /// Handle a change in XML syntax for Connectors.
+    /// Handle a change in XML syntax for Sockets.
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
             override;
 
@@ -2577,8 +2577,8 @@ private:
 
     // propertiesTable maintained by Object
 
-    // Table of Component's structural Connectors indexed by name.
-    std::map<std::string, SimTK::ClonePtr<AbstractConnector>> _connectorsTable;
+    // Table of Component's structural Sockets indexed by name.
+    std::map<std::string, SimTK::ClonePtr<AbstractSocket>> _socketsTable;
 
     // Table of Component's Inputs indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractInput>> _inputsTable;
@@ -2806,7 +2806,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 
 
 template<class C>
-void Connector<C>::findAndConnect(const Component& root) {
+void Socket<C>::findAndConnect(const Component& root) {
  
     ComponentPath path(getConnecteeName());
     const C* comp = nullptr;
@@ -2845,13 +2845,13 @@ void Input<T>::connect(const AbstractOutput& output,
         OPENSIM_THROW(Exception, msg.str());
     }
     
-    if (!isListConnector() && outT->isListOutput()) {
+    if (!isListSocket() && outT->isListOutput()) {
         OPENSIM_THROW(Exception,
             "Non-list input '" + getName() +
             "' cannot connect to list output '" + output.getPathName() + ".");
     }
 
-    // For a non-list connector, there will only be one channel.
+    // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
@@ -2898,7 +2898,7 @@ void Input<T>::connect(const AbstractChannel& channel,
         OPENSIM_THROW(Exception, msg.str());
     }
     
-    if (!isListConnector()) {
+    if (!isListSocket()) {
         // Remove the existing connecteee (if it exists).
         disconnect();
     }

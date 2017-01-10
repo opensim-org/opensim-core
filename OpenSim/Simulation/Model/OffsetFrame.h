@@ -72,9 +72,9 @@ public:
     "frame-fixed x-y-z rotation sequence.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(parent, C, "The parent frame to this frame.");
+    OpenSim_DECLARE_SOCKET(parent, C, "The parent frame to this frame.");
 
 //=============================================================================
 // PUBLIC METHODS
@@ -223,7 +223,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updConnector<C>("parent").setConnecteeName(parentName);
+    this->template updSocket<C>("parent").setConnecteeName(parentName);
     setOffsetTransform(offset);
 }
 
@@ -292,13 +292,13 @@ calcAccelerationInGround(const SimTK::State& state) const
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
-    this->connectConnector_parent(parent);
+    this->connectSocket_parent(parent);
 }
 
 template <class C>
 const C& OffsetFrame<C>::getParentFrame() const
 {
-    return this->template getConnector<C>("parent").getConnectee();
+    return this->template getSocket<C>("parent").getConnectee();
 }
 
 template <class C>

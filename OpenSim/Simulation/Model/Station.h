@@ -50,7 +50,7 @@ public:
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
         "The fixed location of the station expressed in its parent frame.");
-    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
         "The frame to which this station is fixed.");
 
 public:

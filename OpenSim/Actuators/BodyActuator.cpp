@@ -60,7 +60,7 @@ BodyActuator::BodyActuator(const Body& body,
     setAuthors("Soha Pouya, Michael Sherman");
     constructProperties();
 
-    updConnector<Body>("body").setConnecteeName(body.getName());
+    updSocket<Body>("body").setConnecteeName(body.getName());
 
     set_point(point); // origin
     set_point_is_global(pointIsGlobal);
@@ -76,12 +76,12 @@ void BodyActuator::constructProperties()
 
 void BodyActuator::setBodyName(const std::string& name)
 {
-    updConnector<Body>("body").setConnecteeName(name);
+    updSocket<Body>("body").setConnecteeName(name);
 }
 
 const std::string& BodyActuator::getBodyName() const
 {
-    return getConnector<Body>("body").getConnecteeName();
+    return getSocket<Body>("body").getConnecteeName();
 }
 
 //=============================================================================
@@ -93,7 +93,7 @@ const std::string& BodyActuator::getBodyName() const
 */
 void BodyActuator::setBody(const Body& body)
 {
-    connectConnector_body(body);
+    connectSocket_body(body);
 }
 
 /**

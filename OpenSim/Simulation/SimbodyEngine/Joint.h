@@ -116,11 +116,11 @@ public:
         "to the Joint. When the joint is delete so are the Frames in this list.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
         "The parent frame for the joint.");
-    OpenSim_DECLARE_CONNECTOR(child_frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(child_frame, PhysicalFrame,
         "The child frame for the joint.");
 
 //=============================================================================
@@ -136,7 +136,7 @@ public:
 // METHODS
 //=============================================================================
     /** Default Constructor. Create an unnamed Joint with parent and child
-        frame connectors that are unsatisfied. */
+        frame sockets that are unsatisfied. */
     Joint();
 
     /** Convenience Constructor */

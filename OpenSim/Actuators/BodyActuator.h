@@ -64,9 +64,9 @@ public:
         "Interpret axis in Ground frame if true; otherwise, body's frame.");
     
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(body, Body,
+    OpenSim_DECLARE_SOCKET(body, Body,
         "The body on which to apply the spatial force.");
 
 //==============================================================================

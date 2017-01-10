@@ -27,7 +27,7 @@
 
 namespace OpenSim {
 
-// TODO update doxygen comments to mention connector.
+// TODO update doxygen comments to mention socket.
 
 /**
  * This class represents a polygonal mesh for use in contact modeling.

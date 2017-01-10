@@ -114,9 +114,9 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& fl =
-        getConnector<PhysicalFrame>("line_body").getConnectee();
+        getSocket<PhysicalFrame>("line_body").getConnectee();
     const PhysicalFrame& ff =
-        getConnector<PhysicalFrame>("follower_body").getConnectee();
+        getSocket<PhysicalFrame>("follower_body").getConnectee();
 
     SimTK::MobilizedBody bl = fl.getMobilizedBody();
     SimTK::MobilizedBody bf = ff.getMobilizedBody();
@@ -140,12 +140,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
 
 }
 
@@ -173,7 +173,7 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
             std::string body1_name(""), body2_name("");
