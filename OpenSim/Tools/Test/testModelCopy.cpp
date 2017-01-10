@@ -30,16 +30,17 @@ using namespace OpenSim;
 using namespace std;
 
 // Test copying, serializing and deserializing models and verify 
-// that the number of bodies (nbods) are number of attached geometry
-// on ground (nGroundGeom) are preserved.
-void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom);
+// that the number of bodies (nbods) and the number of attached geometry
+// (ngeom) on a given PhysicalFrame (by name) are preserved.
+void testCopyModel( const string& fileName, const int nbod, 
+                    const string& physicalFrameName, const int ngeom);
 
 int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
-        testCopyModel("arm26.osim", 2, 6);
-        testCopyModel("Neck3dof_point_constraint.osim", 25, 0);
+        testCopyModel("arm26.osim", 2, "ground", 6);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -49,12 +50,14 @@ int main()
     return 0;
 }
 
-void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom)
+void testCopyModel(const string& fileName, const int nbod, 
+    const string& physicalFrameName, const int ngeom)
 {
     const size_t mem0 = getCurrentRSS();
 
     // Automatically finalizes properties by default when loading from file
-    Model* model = new Model(fileName, false);
+    Model* model = new Model(fileName);
+    model->finalizeFromProperties();
 
     // Catch a possible decrease in the memory footprint, which will cause
     // size_t (unsigned int) to wrap through zero.
@@ -75,6 +78,7 @@ void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom
     //SimTK::State& defaultState = model->initSystem();
     
     Model* modelCopy = new Model(*model);
+    modelCopy->finalizeFromProperties();
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
     ASSERT( model->getActuators().getSize() == modelCopy->getActuators().getSize() );
@@ -86,6 +90,7 @@ void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom
 
     //  Now delete original model and make sure copy can stand
     Model *cloneModel = modelCopy->clone();
+    cloneModel->finalizeFromProperties();
     ASSERT(*model == *cloneModel);
     ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
 
@@ -98,15 +103,22 @@ void testCopyModel(const string& fileName, const int nbod, const int nGroundGeom
 
     std::string latestFile = "lastest_" + fileName;
     modelCopy->print(latestFile);
+    modelCopy->finalizeFromProperties();
 
-    Model* modelSerialized = new Model(latestFile, false);
+    Model* modelSerialized = new Model(latestFile);
+    modelSerialized->finalizeFromProperties();
     ASSERT(*modelSerialized == *modelCopy);
 
     int nb = modelSerialized->getNumBodies();
-    int nggeom = modelSerialized->getGround().getProperty_attached_geometry().size();
+
+
+    const PhysicalFrame& physFrame =
+        modelSerialized->getComponent<PhysicalFrame>("./"+physicalFrameName);
+
+    int ng = physFrame.getProperty_attached_geometry().size();
 
     ASSERT(nb == nbod);
-    ASSERT(nggeom == nGroundGeom);
+    ASSERT(ng == ngeom);
 
     delete model;
     delete modelCopy;
