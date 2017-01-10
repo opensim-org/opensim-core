@@ -56,6 +56,7 @@ public:
 //==============================================================================
     HuntCrossleyForce();
 #ifndef SWIG
+    /** The force takes ownership of the passed-in params. */
     explicit HuntCrossleyForce(ContactParameters* params);
 #endif
     ContactParametersSet& updContactParametersSet();
