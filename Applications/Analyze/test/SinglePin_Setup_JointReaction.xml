@@ -284,15 +284,15 @@
 					<forces_file>  </forces_file>
 					<!--Names of the joints on which to perform the analysis.The key word
 					    'All' indicates that the analysis should be performed for all bodies.-->
-					<joint_names> pin1 pin1 </joint_names>
+					<joint_names> pin1 pin1 pin1 </joint_names>
 					<!--Choice of body (parent or child) on which the calculated reactions are
 					    applied.  Child body is default.  If the array has one entry only,
 					    that selection is applied to all chosen joints.-->
-					<apply_on_bodies> child child </apply_on_bodies>
-					<!--Choice of frame (ground, parent, or child) in which the calculated
-					    reactions are expressed.  ground body is default.  If the array has
-					    one entry only, that selection is applied to all chosen joints.-->
-					<express_in_frame> rod1 ground </express_in_frame>
+					<apply_on_bodies> child child child </apply_on_bodies>
+					<!--Names of frames in which the calculated reactions are expressed. 
+					    ground body is default.  If the array has one entry only, that
+					    selection is applied to all chosen joints.-->
+					<express_in_frame> rod1 pin1/rod1_offset ground </express_in_frame>
 				</JointReaction>
 			</objects>
 			<groups/>
