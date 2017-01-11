@@ -521,7 +521,7 @@ record(const SimTK::State& s)
     const double& time = s.getTime();
 
     // POSITION
-    de.getPosition(s, *_body,_point,vec);
+    vec = _body->findLocationInGround(s, _point);
     if(_relativeToBody){
         de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
     }

@@ -454,7 +454,7 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET POSITIONS AND EULER ANGLES
-        _model->getSimbodyEngine().getPosition(s, body,com,vec);
+        vec = body.findLocationInGround(s, com);
         _model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
         _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
             &angVec[0],&angVec[1],&angVec[2]);

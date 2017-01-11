@@ -167,8 +167,8 @@ public:
     //-------------------------------------------------------------------------
     /** @name Deprecated */
     // @{
-    /** <b>(Deprecated)</b> Use Station::getLocationInGround() instead. */
-    DEPRECATED_14("use Station::getLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::findLocationInGround() instead. */
+    DEPRECATED_14("use Frame::findLocationInGround() instead")
     void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
 
     void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;

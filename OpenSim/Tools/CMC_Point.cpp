@@ -138,7 +138,7 @@ updateWorkVariables(const SimTK::State& s)
             for(int i=0;i<bs.getSize();i++) {
                 Body& body = bs.get(i);
                 const SimTK::Vec3& com = body.get_mass_center();
-                _model->getSimbodyEngine().getPosition(s, body,com,pVec);
+                pVec = body.findLocationInGround(s, com);
                 if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
                 _model->getSimbodyEngine().getVelocity(s, body,com,vVec);
