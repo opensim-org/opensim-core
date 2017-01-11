@@ -529,7 +529,7 @@ record(const SimTK::State& s)
     _pStore->append(time, vec);
 
     // VELOCITY
-    de.getVelocity(s, *_body,_point,vec);
+    vec = _body->findVelocityInGround(s, _point);
     if(_relativeToBody){
         de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
     }

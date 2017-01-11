@@ -477,7 +477,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            _model->getSimbodyEngine().getPosition(s, body,com,vec);
+            vec = body.findLocationInGround(s, com);
             // ADD TO WHOLE BODY MASS
             Mass += body.get_mass();
             rP[0] += body.get_mass() * vec[0];
@@ -500,7 +500,7 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET VELOCITIES AND ANGULAR VELOCITIES
-        _model->getSimbodyEngine().getVelocity(s, body,com,vec);
+        vec = body.findVelocityInGround(s, com);
         if(_expressInLocalFrame) {
             _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
             _model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
@@ -526,7 +526,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            _model->getSimbodyEngine().getVelocity(s, body,com,vec);
+            vec = body.findVelocityInGround(s, com);
             rV[0] += body.get_mass() * vec[0];
             rV[1] += body.get_mass() * vec[1];
             rV[2] += body.get_mass() * vec[2];

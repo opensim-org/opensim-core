@@ -170,7 +170,7 @@ public:
     /** <b>(Deprecated)</b> Use Frame::findLocationInGround() instead. */
     DEPRECATED_14("use Frame::findLocationInGround() instead")
     void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
-
+    DEPRECATED_14("use Frame::findVelocityInGround() instead")
     void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
     void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
