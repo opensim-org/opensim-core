@@ -230,6 +230,17 @@ public:
     SimTK::Vec3 findVelocityInGround(const SimTK::State& state,
         const SimTK::Vec3& point_f) const;
 
+    /**
+    Take a point located and expressed in this frame (F) and determine
+    its acceleration expressed in Ground (G).
+
+    @param state       The state of the model.
+    @param point_F     The point to be re-expressed.
+    @return point_G    The re-expression of the point in Ground.
+    */
+    SimTK::Vec3 findAccelerationInGround(const SimTK::State& state,
+        const SimTK::Vec3& point_f) const;
+
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 

@@ -739,7 +739,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             const SimTK::Vec3& com = body.get_mass_center();
             
             // Get the body acceleration
-            _model->getSimbodyEngine().getAcceleration(s_analysis, body, com, vec);
+            vec = body.findAccelerationInGround(s_analysis, com);
             _model->getSimbodyEngine().getAngularAcceleration(s_analysis, body, angVec);    
 
             // CONVERT TO DEGREES?

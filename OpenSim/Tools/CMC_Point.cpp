@@ -141,7 +141,6 @@ updateWorkVariables(const SimTK::State& s)
                 pVec = body.findLocationInGround(s, com);
                 if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
-                _model->getSimbodyEngine().getVelocity(s, body,com,vVec);
                 vVec = body.findVelocityInGround(s, com);
                 if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
@@ -439,7 +438,7 @@ computeAccelerations(const SimTK::State& s )
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             com = body.get_mass_center();
-            _model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
+            aVec = body.findAccelerationInGround(s, com);
             if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
             // ADD TO WHOLE BODY MASS
@@ -453,8 +452,7 @@ computeAccelerations(const SimTK::State& s )
     } else {
 
         _wrtBody =  &bs.get(_wrtBodyName);
-
-        _model->getSimbodyEngine().getAcceleration(s, *_wrtBody,_point,_a);
+        _a = _wrtBody->findAccelerationInGround(s, _point);
         if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
     }
