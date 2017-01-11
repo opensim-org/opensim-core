@@ -440,7 +440,6 @@ record(const SimTK::State& s)
     // Realize to Acceleration first since we'll ask for Accelerations 
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     // VARIABLES
-    double dirCos[3][3];
     SimTK::Vec3 vec,angVec;
     double Mass = 0.0;
 
@@ -455,9 +454,7 @@ record(const SimTK::State& s)
         const SimTK::Vec3& com = body.get_mass_center();
         // GET POSITIONS AND EULER ANGLES
         vec = body.findLocationInGround(s, com);
-        _model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
-        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-            &angVec[0],&angVec[1],&angVec[2]);
+        angVec = body.getTransformInGround(s).R().convertRotationToBodyFixedXYZ();
 
         // CONVERT TO DEGREES?
         if(getInDegrees()) {

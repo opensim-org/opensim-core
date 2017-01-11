@@ -500,8 +500,8 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylObstToUcylBody[9];   load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
     double VcylObstToVcylBody[9];   load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
-    double UcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
-    double VcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
+    double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
+    double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
     double VcylObstToUcylBody[9];   quick_mul_mtx_by_mtx(VcylBodyToUcylBody,VcylObstToVcylBody,VcylObstToUcylBody);
     quick_mul_mtxT_by_mtx(UcylObstToUcylBody,VcylObstToUcylBody,VcylObstToUcylObst);
@@ -576,8 +576,8 @@ getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9])
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylBodyToUcylObst[9];   load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
     double VcylBodyToVcylObst[9];   load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
-    double UcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
-    double VcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
+    double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
+    double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
     double VcylObstToUcylBody[9];   quick_mul_mtx_by_mtxT(VcylBodyToUcylBody,VcylBodyToVcylObst,VcylObstToUcylBody);
     quick_mul_mtx_by_mtx(UcylBodyToUcylObst,VcylObstToUcylBody,VcylObstToUcylObst);

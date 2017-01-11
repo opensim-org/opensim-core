@@ -798,37 +798,6 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 //--- Private Utility Methods Below Here ---
 
 
-void SimbodyEngine::formEulerTransform(const SimTK::State& s, const PhysicalFrame &aBody, double *rE) const
-{
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
-
-    if (&aBody && rE)
-    {
-        // GET ORIENTATION OF aBody
-        double ang[3], dc[3][3];
-
-        getDirectionCosines(s, aBody, dc);
-        convertDirectionCosinesToAngles(dc, &ang[0], &ang[1], &ang[2]);
-
-        // ROW 1
-        *rE =  cos(ang[2]) / cos(ang[1]);
-        rE++;  *rE = -sin(ang[2]) / cos(ang[1]);
-        rE++;  *rE = 0.0;
-
-        // ROW 2
-        rE++;  *rE = sin(ang[2]);
-        rE++;  *rE = cos(ang[2]);
-        rE++;  *rE = 0.0;
-
-        // ROW 3
-        rE++;  *rE = -cos(ang[2]) * sin(ang[1]) / cos(ang[1]);
-        rE++;  *rE =  sin(ang[1]) * sin(ang[2]) / cos(ang[1]);
-        rE++;  *rE = 1.0;
-    }
-}
-
 //_____________________________________________________________________________
 /**
  * Scale the dynamics engine

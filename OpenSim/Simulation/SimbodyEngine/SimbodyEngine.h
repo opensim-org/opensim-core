@@ -174,15 +174,15 @@ public:
     void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
     DEPRECATED_14("use Frame::findAccelerationInGround() instead")
     void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
+    DEPRECATED_14("use Frame::getTransformInGround().R() instead")
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
+    DEPRECATED_14("use Frame::getTransformInGround().R() instead")
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double *rDirCos) const;
     void getAngularVelocity(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
     void getAngularVelocityBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
     void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
     void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
     SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
-
-    void formEulerTransform(const SimTK::State& s, const PhysicalFrame &aBody, double *rE) const;
 
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
