@@ -696,6 +696,7 @@ class TestTables {
 
     public static void test_vector_rowvector() {
         {
+        System.out.println("Test transpose RowVector to Vector.");
         RowVector rowVec = new RowVector(4);
         for(int i = 0; i < 4; ++i)
             rowVec.set(i, i);
@@ -703,12 +704,14 @@ class TestTables {
         assert colVec.size() == 4;
         for(int i = 0; i < 4; ++i)
             assert colVec.get(i) == i;
+        System.out.println("Test transpose Vector to RowVector.");
         RowVector rowVec_copy = colVec.transpose();
         assert rowVec_copy.size() == 4;
         for(int i = 0; i < 4; ++i)
             assert rowVec_copy.get(i) == i;
         }
         {
+        System.out.println("Test transpose RowVectorOfVec3 to VectorOfVec3.");
         StdVectorVec3 elems = new StdVectorVec3();
         for(int i = 0; i < 4; ++i)
             elems.add(new Vec3(i, i+1, i+2)); 
@@ -719,6 +722,7 @@ class TestTables {
             assert colVec.get(i).get(0) == i &&
                    colVec.get(i).get(1) == i+1 &&
                    colVec.get(i).get(2) == i+2;
+        System.out.println("Test transpose VectorOfVec3 to RowVectorOfVec3.");
         RowVectorOfVec3 rowVec_copy = colVec.transpose();
         assert rowVec_copy.size() == 4;
         for(int i = 0; i < 4; ++i)
