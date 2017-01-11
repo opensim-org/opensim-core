@@ -205,7 +205,14 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   }
 %}
 
-
+%javamethodmodifiers OpenSim::PhysicalFrame::addWrapObject "private";
+%rename OpenSim::PhysicalFrame::addWrapObject private_addWrapObject;
+%typemap(javacode) OpenSim::PhysicalFrame %{
+  public void addWrapObject(WrapObject wrapObject) {
+      wrapObject.markAdopted();
+      private_addWrapObject(wrapObject);
+  }
+%}
 
 %import "java_common.i"
 

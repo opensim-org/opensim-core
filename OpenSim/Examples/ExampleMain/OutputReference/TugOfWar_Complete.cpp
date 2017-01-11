@@ -298,7 +298,7 @@ int main()
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
         // Enable constraint consistent with current configuration of the model
-        constDist->setDisabled(si, false);
+        constDist->setIsEnforced(si, true);
 
         cout << "Start height = "<< h_start << endl;
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);

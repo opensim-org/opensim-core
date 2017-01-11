@@ -49,7 +49,7 @@ class OSIMSIMULATION_API WeldConstraint
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, TwoFrameLinker);
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
-        connectors that are unsatisfied. */
+        sockets that are unsatisfied. */
     WeldConstraint();
 
     /** Convenience Constructor.
@@ -102,6 +102,9 @@ public:
         applied at the point of contact specified. */
     virtual void setContactPointForInducedAccelerations(
         const SimTK::State &s, SimTK::Vec3 point) override;
+
+    void scale(const ScaleSet& scaleSet) override
+    {   Super::scaleFrames(scaleSet); }
 
 protected:
     /** Extend Component Interface. */

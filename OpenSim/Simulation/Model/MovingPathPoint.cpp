@@ -70,15 +70,15 @@ void MovingPathPoint::constructProperties()
 
 bool MovingPathPoint::hasXCoordinate() const
 {
-    return getConnector<Coordinate>("x_coordinate").isConnected();
+    return getSocket<Coordinate>("x_coordinate").isConnected();
 }
 bool MovingPathPoint::hasYCoordinate() const
 {
-    return getConnector<Coordinate>("y_coordinate").isConnected();
+    return getSocket<Coordinate>("y_coordinate").isConnected();
 }
 bool MovingPathPoint::hasZCoordinate() const
 {
-    return getConnector<Coordinate>("z_coordinate").isConnected();
+    return getSocket<Coordinate>("z_coordinate").isConnected();
 }
 
 const Coordinate& MovingPathPoint::getXCoordinate() const
@@ -98,29 +98,29 @@ const Coordinate& MovingPathPoint::getZCoordinate() const
 
 void MovingPathPoint::setXCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("x_coordinate").connect(coordinate);
+    connectSocket_x_coordinate(coordinate);
 }
 void MovingPathPoint::setYCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("y_coordinate").connect(coordinate);
+    connectSocket_y_coordinate(coordinate);
 }
 void MovingPathPoint::setZCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("z_coordinate").connect(coordinate);
+    connectSocket_z_coordinate(coordinate);
 }
 
 void MovingPathPoint::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
     // Hang on to references to the Coordinates instead of
-    // finding the connector each time we need a Coordinate value
-    if (getConnector<Coordinate>("x_coordinate").isConnected()) {
+    // finding the socket each time we need a Coordinate value
+    if (getSocket<Coordinate>("x_coordinate").isConnected()) {
         _xCoordinate.reset(&getConnectee<Coordinate>("x_coordinate"));
     }
-    if (getConnector<Coordinate>("y_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("y_coordinate").isConnected()) {
         _yCoordinate.reset(&getConnectee<Coordinate>("y_coordinate"));
     }
-    if (getConnector<Coordinate>("z_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("z_coordinate").isConnected()) {
         _zCoordinate.reset(&getConnectee<Coordinate>("z_coordinate"));
     }
 

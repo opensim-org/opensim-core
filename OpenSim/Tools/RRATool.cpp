@@ -384,7 +384,7 @@ bool RRATool::run()
     controller->setName( "CMC" );
     controller->setActuators(_model->updActuators());
     _model->addController(controller );
-    controller->setDisabled(false);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(.001);
     controller->setCheckTargetTime(true);

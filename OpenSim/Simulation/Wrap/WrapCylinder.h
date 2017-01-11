@@ -60,15 +60,16 @@ public:
     std::string getDimensionsString() const override;
     void scale(const SimTK::Vec3& aScaleFactors) override;
 
-#ifndef SWIG
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
+    // WrapTorus uses WrapCylinder::wrapLine.
+    friend class WrapTorus;
+
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
-protected:
     void extendFinalizeFromProperties() override;
 
 private:

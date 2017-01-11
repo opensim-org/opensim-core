@@ -158,7 +158,7 @@ void WeldConstraint::
         _internalOffset1.reset(new PhysicalOffsetFrame(frame1, in1));
         _internalOffset1->setName("internal_" + frame1.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset1.get());
-        updConnector<PhysicalFrame>("frame1").connect(*_internalOffset1);
+        connectSocket_frame1(*_internalOffset1);
     }
     else { // otherwise it is already "wired" up so just update
         _internalOffset1->setOffsetTransform(in1);
@@ -168,7 +168,7 @@ void WeldConstraint::
         _internalOffset2.reset(new PhysicalOffsetFrame(frame2, in2));
         _internalOffset2->setName("internal_" + frame2.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset2.get());
-        updConnector<PhysicalFrame>("frame2").connect(*_internalOffset2);
+        connectSocket_frame2(*_internalOffset2);
     }
     else {
         _internalOffset2->setOffsetTransform(in2);

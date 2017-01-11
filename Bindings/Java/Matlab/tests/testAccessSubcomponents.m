@@ -22,7 +22,7 @@ it = comps.begin();
 countComps = 0;
 while ~it.equals(comps.end())
     it.getName(); % Object.
-    it.getNumConnectors(); % Component.
+    it.getNumSockets(); % Component.
     it.next();
     countComps = countComps + 1;
 end

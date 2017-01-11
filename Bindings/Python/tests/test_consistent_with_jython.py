@@ -16,7 +16,7 @@ test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
 osim.Model.setDebugLevel(0)
 
 def assert_almost_equal(valA, valB, tol=1e-5):
-    assert abs(valA - valB) < 1e-5
+    assert abs(valA - valB) < tol
 
 class TestConsistentWithJython(unittest.TestCase):
     def test_makeUlnaHeavy(self):

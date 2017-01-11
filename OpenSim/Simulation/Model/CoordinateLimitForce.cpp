@@ -338,7 +338,7 @@ double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 void CoordinateLimitForce::
     computeStateVariableDerivatives(const SimTK::State& s) const
 {
-    if (!isDisabled(s) && isComputingDissipationEnergy()){
+    if (appliesForce(s) && isComputingDissipationEnergy()){
         setStateVariableDerivativeValue(s, "dissipatedEnergy", 
             getPowerDissipation(s));
     }
