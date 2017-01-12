@@ -117,7 +117,6 @@ void BodyActuator::computeForce(const SimTK::State& s,
 {
     if (!_model) return;
 
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
     
     const Body& body = getBody();
@@ -137,15 +136,15 @@ void BodyActuator::computeForce(const SimTK::State& s,
     // if the user has given the spatialForces in body frame, transform them to
     // global (ground) frame
     if (!spatialForceIsGlobal){
-        engine.transform(s, body, torqueVec, getModel().getGround(), torqueVec);
-        engine.transform(s, body, forceVec, getModel().getGround(), forceVec);
+        torqueVec = body.expressVectorInGround(s, torqueVec);
+        forceVec = body.expressVectorInGround(s, forceVec);
     }
 
     // if the point of applying force is not in body frame (which is the default 
     // case) transform it to body frame
     if (get_point_is_global())
-        engine.transformPosition(s, getModel().getGround(), pointOfApplication,
-                                 body, pointOfApplication);
+        pointOfApplication = getModel().getGround().
+            findLocationInAnotherFrame(s, pointOfApplication, body);
 
     applyTorque(s, body, torqueVec, bodyForces);
     applyForceToPoint(s, body, pointOfApplication, forceVec, bodyForces);

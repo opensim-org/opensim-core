@@ -142,7 +142,6 @@ void TorqueActuator::computeForce(const State& s,
                                   Vector& generalizedForces) const
 {
     if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
     const bool torqueIsGlobal = getTorqueIsGlobal();
     const Vec3& axis = getAxis();
@@ -163,7 +162,7 @@ void TorqueActuator::computeForce(const State& s,
     Vec3 torque = actuation * UnitVec3(axis);
     
     if (!torqueIsGlobal)
-        engine.transform(s, *_bodyA, torque, getModel().getGround(), torque);
+        torque = _bodyA->expressVectorInGround(s, torque);
     
     applyTorque(s, *_bodyA, torque, bodyForces);
 

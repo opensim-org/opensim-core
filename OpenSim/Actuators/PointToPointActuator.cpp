@@ -154,7 +154,6 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
     const SimTK::Vec3& pointB = getPointB();
 
     if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     
     if( !_bodyA || !_bodyB )
         return;
@@ -165,24 +164,21 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 
     SimTK::Vec3 pointA_inGround, pointB_inGround, 
                 pointA_inBodyA, pointB_inBodyB;
+    Ground ground = getModel().getGround();
 
     if (pointsAreGlobal)
     {
         pointA_inGround = pointA;
         pointB_inGround = pointB;
-        engine.transformPosition(s, getModel().getGround(), pointA_inGround, 
-                                 *_bodyA, pointA_inBodyA);
-        engine.transformPosition(s, getModel().getGround(), pointB_inGround, 
-                                 *_bodyB, pointB_inBodyB);
+        pointA_inBodyA = ground.findLocationInAnotherFrame(s, pointA_inGround, *_bodyA);
+        pointB_inBodyB = ground.findLocationInAnotherFrame(s, pointB_inGround, *_bodyB);
     }
     else
     {
         pointA_inBodyA = pointA;
         pointB_inBodyB = pointB;
-        engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
-                                 getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
-                                 getModel().getGround(), pointB_inGround);
+        pointA_inGround = _bodyA->findLocationInGround(s, pointA_inBodyA);
+        pointB_inGround = _bodyB->findLocationInGround(s, pointB_inGround);
     }
 
     // Find the direction along which the actuator applies its force.

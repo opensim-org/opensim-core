@@ -513,17 +513,16 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(const SimTK::State& s)
 {
-    const SimbodyEngine& de = _model->getSimbodyEngine();
-
     // VARIABLES
     SimTK::Vec3 vec;
 
     const double& time = s.getTime();
+    Ground ground = _model->getGround();
 
     // POSITION
     vec = _body->findLocationInGround(s, _point);
     if(_relativeToBody){
-        de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.findLocationInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _pStore->append(time, vec);
@@ -531,7 +530,7 @@ record(const SimTK::State& s)
     // VELOCITY
     vec = _body->findVelocityInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _vStore->append(time, vec);
@@ -540,7 +539,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     vec = _body->findAccelerationInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _aStore->append(time, vec);

@@ -318,27 +318,24 @@ void ExternalForce::computeForce(const SimTK::State& state,
                               SimTK::Vector& generalizedForces) const
 {
     double time = state.getTime();
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
     assert(_appliedToBody!=nullptr);
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, 
-                                getModel().getGround(), force);
+        force = _forceExpressedInBody->expressVectorInGround(state, force);
         Vec3 point(0); // Default is body origin.
         if (_specifiesPoint) {
             point = getPointAtTime(time);
-            engine.transformPosition(state, *_pointExpressedInBody, point, 
-                                            *_appliedToBody,        point);
+            point = _pointExpressedInBody->
+                findLocationInAnotherFrame(state, point, *_appliedToBody);
         }
         applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
     }
 
     if (_appliesTorque) {
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, 
-                                getModel().getGround(), torque);
+        torque = _forceExpressedInBody->expressVectorInGround(state, torque);
         applyTorque(state, *_appliedToBody, torque, bodyForces);
     }
 }
@@ -425,26 +422,26 @@ OpenSim::Array<std::string> ExternalForce::getRecordLabels() const {
  */
 OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state) const
 {
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     OpenSim::Array<double>  values(SimTK::NaN);
     double time = state.getTime();
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, getModel().getGround(), force);
+        force = _forceExpressedInBody->expressVectorInGround(state, force);
         for(int i=0; i<3; ++i)
             values.append(force[i]);
     
         if (_specifiesPoint) {
             Vec3 point = getPointAtTime(time);
-            engine.transformPosition(state, *_pointExpressedInBody, point, *_appliedToBody, point);
+            point = _pointExpressedInBody->
+                findLocationInAnotherFrame(state, point, *_appliedToBody);
             for(int i=0; i<3; ++i)
                 values.append(point[i]);
         }
     }
     if (_appliesTorque){
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, getModel().getGround(), torque);
+        torque = _forceExpressedInBody->expressVectorInGround(state, torque);
         for(int i=0; i<3; ++i)
             values.append(torque[i]);
     }

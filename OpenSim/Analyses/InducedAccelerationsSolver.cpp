@@ -359,7 +359,7 @@ Array<bool> InducedAccelerationsSolver::
                 const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
 
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                getModel().getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+                point = expressedInBody.findLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);

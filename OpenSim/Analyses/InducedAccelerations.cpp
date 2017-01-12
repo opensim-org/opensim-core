@@ -984,7 +984,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
                 const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
 
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                _model->getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+                point = expressedInBody.findLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);

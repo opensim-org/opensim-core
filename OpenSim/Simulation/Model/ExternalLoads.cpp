@@ -348,7 +348,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         
         // get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
         pGround = exForce.getPointAtTime(time);
-        getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
+        pAppliedBody = ground.findLocationInAnotherFrame(s, pGround, appliedToBody);
 
         // populate the force data for this instant in time
         for(int j =0; j<3; ++j){

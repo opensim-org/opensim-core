@@ -186,13 +186,20 @@ public:
     void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
     DEPRECATED_14("use Frame::getAccelerationInGround()(0) instead")
     void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    DEPRECATED_14("use Frame::getTransformInGround() instead")
     SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
 
+    DEPRECATED_14("use Frame::expressVectorInAnotherframe() instead") 
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
+    DEPRECATED_14("use Frame::expressVectorInAnotherframe() instead")
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
+    DEPRECATED_14("use Frame::findLocationInAnotherFrame() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const;
+    DEPRECATED_14("use Frame::findLocationInAnotherFrame() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, const PhysicalFrame &aBodyTo, SimTK::Vec3& rPos) const;
+    DEPRECATED_14("use Frame::findLocationInGround() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const;
+    DEPRECATED_14("use Frame::findLocationInGround() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
     double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,

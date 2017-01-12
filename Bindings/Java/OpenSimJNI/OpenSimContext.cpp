@@ -53,18 +53,20 @@ OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
 
 // Transforms
 void OpenSimContext::transformPosition(const PhysicalFrame& body, double* offset, double* gOffset) {
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-    _model->getSimbodyEngine().transformPosition(*_configState, body, offset, gOffset );
+    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    SimTK::Vec3::updAs(gOffset) = 
+        body.findLocationInGround(*_configState, SimTK::Vec3(offset));
 }
 
 SimTK::Transform OpenSimContext::getTransform(const PhysicalFrame& body) { // Body Should be made const
-   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-     return _model->getSimbodyEngine().getTransform(*_configState, body );
+     _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+     return body.getTransformInGround(*_configState);
 }
 
 void OpenSimContext::transform(const PhysicalFrame& ground, double* d, PhysicalFrame& body, double* dragVectorBody) {
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-    _model->getSimbodyEngine().transform(*_configState, ground, SimTK::Vec3(d), body, SimTK::Vec3::updAs(dragVectorBody) );
+    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    SimTK::Vec3::updAs(dragVectorBody) = 
+        ground.expressVectorInAnotherFrame(*_configState, SimTK::Vec3(d), body);
     return;
 }
 
