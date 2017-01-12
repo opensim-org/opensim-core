@@ -175,12 +175,12 @@ void Component::finalizeFromProperties()
     for (auto& it : _connectorsTable) {
         it.second->setOwner(*this);
         // Let the Connector handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        //it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
         // Let the Connector handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        //it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
@@ -236,7 +236,7 @@ void Component::connect(Component &root)
     for (auto& it : _inputsTable) {
         auto& input = it.second;
 
-        if (!input->isListConnector() && input->getConnecteeName(0).empty()) {
+        if (!input->isList() && input->getConnecteePath(0).toString().empty()) {
             // TODO When we support verbose/debug logging we should include
             // message about unspecified Outputs but generally this OK
             // if the Input's value is not required.
@@ -1478,7 +1478,7 @@ void Component::dumpConnections() const {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < connector->getNumConnectees(); ++i) {
-                std::cout << connector->getConnecteeName(i) << " ";
+                std::cout << connector->getConnecteePath(i) << " ";
             }
             std::cout << std::endl;
         }
@@ -1496,7 +1496,7 @@ void Component::dumpConnections() const {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
-                std::cout << input->getConnecteeName(i) << " ";
+                std::cout << input->getConnecteePath(i) << " ";
                 // TODO as is, requires the input connections to be satisfied. 
                 // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }

@@ -2008,17 +2008,16 @@ protected:
          by owning component(s). */
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
-    const C* findComponent(const std::string& name, 
+    const C* findComponent(const ComponentPath& pathToFind,
                            const StateVariable** rsv = nullptr) const {
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
-        if (name.empty()) {
+        if (pathToFind.toString().empty() /* TODO empty on Path */) {
             msg += "cannot find a nameless subcomponent.";
             throw Exception(msg);
         }
 
         ComponentPath thisAbsPath(getAbsolutePathName());
-        ComponentPath pathToFind(name);
 
         const C* found = NULL;
         if (thisAbsPath == pathToFind) {
@@ -2060,7 +2059,7 @@ protected:
                 // when what appears to be the complete path.
                 if (comp.getDebugLevel() > 0) {
                     std::string details = msg + " Found '" + compAbsPath.toString() +
-                        "' as a match for:\n Component '" + name + "' of type " + 
+                        "' as a match for:\n Component '" + pathToFind.toString() + "' of type " +
                         comp.getConcreteClassName() + ", but it "
                         "is not on specified path.\n";
                     //throw Exception(details, __FILE__, __LINE__);
@@ -2790,20 +2789,20 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Connector<C>::findAndConnect(const Component& root) {
  
-    ComponentPath path(getConnecteeName());
+    const ComponentPath path = getConnecteePath();
     const C* comp = nullptr;
 
     try {
         if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path.toString());
+            comp =  &root.template getComponent<C>(path);
         }
         else {
-            comp =  &getOwner().template getComponent<C>(path.toString());
+            comp =  &getOwner().template getComponent<C>(path);
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath&) {
         // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
-        comp =  root.template findComponent<C>(path.toString());
+        comp =  root.template findComponent<C>(path);
     }
     if (comp)
         connect(*comp);
@@ -2827,7 +2826,7 @@ void Input<T>::connect(const AbstractOutput& output,
         OPENSIM_THROW(Exception, msg.str());
     }
     
-    if (!isListConnector() && outT->isListOutput()) {
+    if (!isList() && outT->isListOutput()) {
         OPENSIM_THROW(Exception,
             "Non-list input '" + getName() +
             "' cannot connect to list output '" + output.getPathName() + ".");
@@ -2850,9 +2849,9 @@ void Input<T>::connect(const AbstractOutput& output,
         // Set the connectee name so that the connection can be serialized.
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(path.toString(), idxThisConnectee);
+            setConnecteePath(idxThisConnectee, path);
         else
-            appendConnecteeName(path.toString()); // TODO change param to ChannelPath
+            appendConnecteePath(path); // TODO change param to ChannelPath
 
         // Use the provided alias for all channels.
         _aliases.push_back(alias);
@@ -2872,7 +2871,7 @@ void Input<T>::connect(const AbstractChannel& channel,
         OPENSIM_THROW(Exception, msg.str());
     }
     
-    if (!isListConnector()) {
+    if (!isList()) {
         // Remove the existing connecteee (if it exists).
         disconnect();
     }
@@ -2891,9 +2890,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(path.toString(), idxThisConnectee);
+        setConnecteePath(idxThisConnectee, path);
     else
-        appendConnecteeName(path.toString());
+        appendConnecteePath(path);
     
     // Store the provided alias.
     // TODO no longer need to store aliases, since we *have* the ChannelPath!
@@ -2904,7 +2903,7 @@ template<class T>
 void Input<T>::findAndConnect(const Component& root) {
     for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
         // TODO get ChannelPath directly.
-        ChannelPath path(getConnecteeName(ix));
+        ChannelPath path = getConnecteePath(ix);
         const std::string componentPathStr = path.getComponentPath().toString();
         const std::string& outputName = path.getOutputName();
         const AbstractOutput* output = nullptr;

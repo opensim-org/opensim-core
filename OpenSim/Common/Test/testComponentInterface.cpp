@@ -480,7 +480,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     // TODO update to accept ComponentPaths.
-    bar.updConnector<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName().toString());
+    bar.updConnector<Foo>("parentFoo").setConnecteePath(foo.getAbsolutePathName().toString());
     bar.updConnector<Foo>("childFoo").connect(foo);
         
     // connect internals
@@ -674,7 +674,7 @@ void testMisc() {
     //Configure the connector to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updConnector<Foo>("parentFoo")
-    .setConnecteeName(compFoo.getRelativePathName(bar2).toString() /*TODO*/);
+    .setConnecteePath(compFoo.getRelativePathName(bar2));
     
     bar2.updConnector<Foo>("childFoo").connect(foo);
     compFoo.upd_Foo1().updInput("input1")
@@ -801,8 +801,8 @@ void testListInputs() {
     bar.setName("Bar");
     theWorld.add(&bar);
 
-    bar.updConnector<Foo>("parentFoo").setConnecteeName("Foo");
-    bar.updConnector<Foo>("childFoo").setConnecteeName("Foo2");
+    bar.updConnector<Foo>("parentFoo").setConnecteePath("Foo");
+    bar.updConnector<Foo>("childFoo").setConnecteePath("Foo2");
     
     auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
@@ -860,8 +860,8 @@ void testListConnectors() {
     theWorld.add(&bar);
     
     // Non-list connectors.
-    bar.updConnector<Foo>("parentFoo").setConnecteeName("foo");
-    bar.updConnector<Foo>("childFoo").setConnecteeName("foo2");
+    bar.updConnector<Foo>("parentFoo").setConnecteePath("foo");
+    bar.updConnector<Foo>("childFoo").setConnecteePath("foo2");
     
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
@@ -1017,7 +1017,7 @@ void testComponentPathNames()
 
     fbar2.updConnector<Foo>("parentFoo").connect(*foo1);
     fbar2.updConnector<Foo>("childFoo")
-        .setConnecteeName("../Foo1");
+        .setConnecteePath(ComponentPath("../Foo1"));
 
     top.dumpSubcomponents();
     top.connect();
@@ -1215,7 +1215,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         B* b = new B(); b->setName("b");
         C* c = new C(); c->setName("c");
         model.add(b); model.add(c);
-        c->updConnector("conn1").setConnecteeName("../b");
+        c->updConnector("conn1").setConnecteePath("../b");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> single-value input.
@@ -1223,7 +1223,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("in1").setConnecteeName("../a/out1");
+        b->updInput("in1").setConnecteePath("../a/out1");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> list input.
@@ -1231,7 +1231,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("inL").appendConnecteeName("../a/out1");
+        b->updInput("inL").appendConnecteePath("../a/out1");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // list output -> single-value input.
@@ -1239,7 +1239,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("in1").setConnecteeName("../a/outL:2");
+        b->updInput("in1").setConnecteePath("../a/outL:2");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // list output -> list input.
@@ -1247,7 +1247,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("inL").appendConnecteeName("../a/outL:0");
+        b->updInput("inL").appendConnecteePath("../a/outL:0");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
 }
@@ -1382,7 +1382,7 @@ void testListInputConnecteeSerialization() {
         const auto numConnectees = in.getNumConnectees();
         std::vector<std::string> connecteeNames(numConnectees);
         for (int ic = 0; ic < numConnectees; ++ic) {
-            connecteeNames[ic] = in.getConnecteeName(ic);
+            connecteeNames[ic] = in.getConnecteePath(ic).toString();
         }
         return connecteeNames;
     };
@@ -1445,7 +1445,7 @@ void testListInputConnecteeSerialization() {
         TheWorld world(modelFileName);
         const auto& reporter = world.getComponent("consumer");
         const auto& input = reporter.getInput("inputs");
-        SimTK_TEST(input.isListConnector());
+        SimTK_TEST(input.isList());
         // Check connectee names before *and* after connecting, since
         // the connecting process edits the connectee_name property.
         SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
@@ -1492,8 +1492,8 @@ void testSingleValueInputConnecteeSerialization() {
         foo->setName("consumer");
         // Make sure we are dealing with single-value inputs
         // (future-proofing this test).
-        SimTK_TEST(!foo->updInput("input1").isListConnector());
-        SimTK_TEST(!foo->updInput("fiberLength").isListConnector());
+        SimTK_TEST(!foo->updInput("input1").isList());
+        SimTK_TEST(!foo->updInput("fiberLength").isList());
         
         // Add to world.
         world.add(source);
@@ -1519,7 +1519,7 @@ void testSingleValueInputConnecteeSerialization() {
         
         // We won't wire up this input, but its connectee name should still
         // (de)serialize.
-        foo->updInput("activation").setConnecteeName("non/existant");
+        foo->updInput("activation").setConnecteePath("non/existant");
         
         // Serialize.
         world.print(modelFileName);
@@ -1535,31 +1535,31 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Make sure these inputs are single-value after deserialization,
         // even before connecting.
-        SimTK_TEST(!input1.isListConnector());
-        SimTK_TEST(!fiberLength.isListConnector());
-        SimTK_TEST(!activation.isListConnector());
+        SimTK_TEST(!input1.isList());
+        SimTK_TEST(!fiberLength.isList());
+        SimTK_TEST(!activation.isList());
         
         // Check connectee names before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
-        SimTK_TEST(fiberLength.getConnecteeName() ==
+        SimTK_TEST(input1.getConnecteePath().toString() == "../producer/column:b");
+        SimTK_TEST(fiberLength.getConnecteePath().toString() ==
                    "../producer/column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
-        SimTK_TEST(activation.getConnecteeName() == "non/existant");
+        SimTK_TEST(activation.getConnecteePath().toString() == "non/existant");
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
-        activation.setConnecteeName("");
+        activation.setConnecteePath("");
         
         // Connect.
         world.connect();
         
         // Make sure these inputs are single-value even after connecting.
-        SimTK_TEST(!input1.isListConnector());
-        SimTK_TEST(!fiberLength.isListConnector());
-        SimTK_TEST(!activation.isListConnector());
+        SimTK_TEST(!input1.isList());
+        SimTK_TEST(!fiberLength.isList());
+        SimTK_TEST(!activation.isList());
         
-        SimTK_TEST(input1.getConnecteeName() == "../producer/column:b");
-        SimTK_TEST(fiberLength.getConnecteeName() ==
+        SimTK_TEST(input1.getConnecteePath().toString() == "../producer/column:b");
+        SimTK_TEST(fiberLength.getConnecteePath().toString() ==
                    "../producer/column:d(desert)");
         
         // Check aliases.
@@ -1624,7 +1624,7 @@ void testSingleValueInputConnecteeSerialization() {
         world.add(foo);
         auto& input1 = foo->updInput("input1");
         // '+' is invalid for ComponentPath.
-        SimTK_TEST_MUST_THROW_EXC(input1.setConnecteeName("abc+def"),
+        SimTK_TEST_MUST_THROW_EXC(input1.setConnecteePath("abc+def"),
                                   OpenSim::Exception);
         // The check for invalid names occurs in
         // AbstractConnector::checkConnecteeNameProperty(), which is invoked

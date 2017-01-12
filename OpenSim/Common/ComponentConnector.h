@@ -66,6 +66,97 @@ public:
     }
 };
 
+// TODO first try private inheritance.
+template <typename PathType>
+class Port {
+public:
+    virtual Port* clone() const = 0;
+    virtual ~Port() = default;
+    const std::string& getName() const { return _name; }
+    
+    // TODO want names like "isListInput()" , not isListPort() or isListConnector()
+    bool isList() const { return _isList; }
+    virtual unsigned getNumConnectees() const {
+        return static_cast<unsigned>(getConnecteeNameProp().size());
+    }
+    virtual bool isConnected() const = 0;
+    virtual void disconnect() = 0;
+    virtual void findAndConnect(const Component& root) = 0; // TODO
+
+    void setConnecteePath(const PathType& path) {
+        OPENSIM_THROW_IF(_isList, Exception,
+                         "An index must be provided for a list Connector.");
+        setConnecteePath(0, path);
+    }
+// TODO not for Connectors    virtual void setConnecteePath(unsigned ix, const std::string&
+    void setConnecteePath(unsigned index, const PathType& path) {
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
+                                "TODO::setConnecteePath()");
+                                // TODO have an equivalent getConcreteClassName()?
+        // TODO should this take a string or a ComponentPath?
+        updConnecteeNameProp().setValue(index, path);
+    }
+    
+    const PathType& getConnecteePath() const {
+        OPENSIM_THROW_IF(_isList, Exception,
+                         "An index must be provided for a list Connector.");
+        return getConnecteePath(0);
+    }
+    // TODO don't want this variant for Connectors?
+    const PathType& getConnecteePath(unsigned index) const {
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
+                                "TODO::getConnecteeName()");
+        // TODO should this return a string or a ComponentPath?
+        return getConnecteeNameProp().getValue(index);
+    }
+    void appendConnecteePath(const PathType& path) {
+        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
+            "Multiple connectee names can only be appended to a list Connector.");
+        // TODO take ComponentPath or a string?
+        updConnecteeNameProp().appendValue(path);
+    }
+    
+    void setConnecteePath(const std::string& path)
+    {   setConnecteePath(PathType(path)); }
+    void setConnecteePath(unsigned index, const std::string& path)
+    {   setConnecteePath(index, PathType(path)); }
+    void appendConnecteePath(const std::string& path)
+    {   appendConnecteePath(PathType(path)); }
+protected:
+    Port(const std::string& name,
+                      const PropertyIndex& connecteeNameIndex,
+    //                  const SimTK::Stage& connectAtStage,
+                      Component& owner) :
+            _name(name),
+      //      _connectAtStage(connectAtStage),
+            _connecteeNameIndex(connecteeNameIndex),
+            _owner(&owner),
+            _isList(getConnecteeNameProp().isListProperty()) {}
+
+    const Component& getOwner() const { return _owner.getRef(); }
+    void setOwner(Component& o) { _owner.reset(&o); }
+    bool hasOwner() const { return !_owner.empty(); }
+    
+private:
+    const Property<PathType>& getConnecteeNameProp() const;
+    Property<PathType>& updConnecteeNameProp();
+    std::string _name;
+  //  SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
+    PropertyIndex _connecteeNameIndex;
+    // Even though updConnecteeNameProp() requires non-const access to this
+    // pointer, we make this a const pointer to reduce the chance of mis-use.
+    // If this were a non-const pointer, then const functions in this class
+    // would be able to edit _owner (see declaration of ReferencePtr).
+    SimTK::ReferencePtr<const Component> _owner;
+    // _isList must be after _owner, as _owner is used to set its value.
+    bool _isList;
+    
+    /* So that Component can invoke setOwner(), etc. */
+    friend Component;
+};
+
 //=============================================================================
 //                        OPENSIM COMPONENT CONNECTOR
 //=============================================================================
@@ -96,7 +187,7 @@ public:
  *
  * @author  Ajay Seth
  */
-class OSIMCOMMON_API AbstractConnector {
+class OSIMCOMMON_API AbstractConnector : public Port<ComponentPath> {
 public:
 
     // default copy constructor, copy assignment
@@ -109,16 +200,16 @@ public:
     /// SimTK::ClonePtr<AbstractConnector>.
     virtual AbstractConnector* clone() const = 0;
     
-    const std::string& getName() const { return _name; }
+   // const std::string& getName() const { return _name; }
     /** Get the system Stage when the connection should be made. */
-    SimTK::Stage getConnectAtStage() const { return _connectAtStage; }
+ //   SimTK::Stage getConnectAtStage() const { return _connectAtStage; }
     /** Can this Connector have more than one connectee? */
-    bool isListConnector() const { return _isList; }
+//    bool isListConnector() const { return _isList; }
     /** The number of slots to fill in order to satisfy this connector.
      * This is 1 for a non-list connector. */
-    virtual unsigned getNumConnectees() const {
-        return static_cast<unsigned>(getConnecteeNameProp().size());
-    }
+//    virtual unsigned getNumConnectees() const {
+//        return static_cast<unsigned>(getConnecteeNameProp().size());
+//    }
 
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
@@ -126,7 +217,7 @@ public:
     /** Is the Connector connected to its connectee(s)? For a list connector,
     this is only true if this connector is connected to all its connectees.
      */
-    virtual bool isConnected() const = 0;
+    //virtual bool isConnected() const = 0;
     
     /** Get the type of object this connector connects to. */
     virtual std::string getConnecteeTypeName() const = 0;
@@ -145,57 +236,57 @@ public:
     /** Connect this %Connector according to its connectee_name property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
-    virtual void findAndConnect(const Component& root) {
-        throw Exception("findAndConnect() not implemented; not supported "
-                        "for this type of connector", __FILE__, __LINE__);
-    }
+//    virtual void findAndConnect(const Component& root) {
+//        throw Exception("findAndConnect() not implemented; not supported "
+//                        "for this type of connector", __FILE__, __LINE__);
+//    }
 
     /** Disconnect this %Connector from its connectee. */
-    virtual void disconnect() = 0;
+    //virtual void disconnect() = 0;
 
     /** %Set connectee name. This function can only be used if this connector is
     not a list connector.                                                     */
-    virtual void setConnecteeName(const std::string& name) {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Connector.");
-        setConnecteeName(name, 0);
-    }
-
-    /** %Set connectee name of a connectee among a list of connectees. This
-    function is used if this connector is a list connector.                   */
-    virtual void setConnecteeName(const std::string& name, unsigned ix) {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::setConnecteeName()");
-        // TODO should this take a string or a ComponentPath?
-        updConnecteeNameProp().setValue(ix, ComponentPath(name));
-    }
-
-    /** Get connectee name. This function can only be used if this connector is
-    not a list connector.                                                     */
-    virtual std::string /*const std::string& */getConnecteeName() const {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Connector.");
-        return getConnecteeName(0);
-    }
-
-    /** Get connectee name of a connectee among a list of connectees.         */
-    virtual std::string /*const std::string& */getConnecteeName(unsigned ix) const {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::getConnecteeName()");
-        // TODO should this return a string or a ComponentPath?
-        return getConnecteeNameProp().getValue(ix).toString();
-    }
-
-    virtual void appendConnecteeName(const std::string& name) {
-        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
-            "Multiple connectee names can only be appended to a list Connector.");
-        // TODO take ComponentPath or a string?
-        updConnecteeNameProp().appendValue(ComponentPath(name));
-    }
+//    virtual void setConnecteeName(const std::string& name) {
+//        OPENSIM_THROW_IF(_isList,
+//                         Exception,
+//                         "An index must be provided for a list Connector.");
+//        setConnecteeName(name, 0);
+//    }
+//
+//    /** %Set connectee name of a connectee among a list of connectees. This
+//    function is used if this connector is a list connector.                   */
+//    virtual void setConnecteeName(const std::string& name, unsigned ix) {
+//        using SimTK::isIndexInRange;
+//        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+//                                "AbstractConnector::setConnecteeName()");
+//        // TODO should this take a string or a ComponentPath?
+//        updConnecteeNameProp().setValue(ix, ComponentPath(name));
+//    }
+//
+//    /** Get connectee name. This function can only be used if this connector is
+//    not a list connector.                                                     */
+//    virtual std::string /*const std::string& */getConnecteeName() const {
+//        OPENSIM_THROW_IF(_isList,
+//                         Exception,
+//                         "An index must be provided for a list Connector.");
+//        return getConnecteeName(0);
+//    }
+//
+//    /** Get connectee name of a connectee among a list of connectees.         */
+//    virtual std::string /*const std::string& */getConnecteeName(unsigned ix) const {
+//        using SimTK::isIndexInRange;
+//        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+//                                "AbstractConnector::getConnecteeName()");
+//        // TODO should this return a string or a ComponentPath?
+//        return getConnecteeNameProp().getValue(ix).toString();
+//    }
+//
+//    virtual void appendConnecteeName(const std::string& name) {
+//        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
+//            "Multiple connectee names can only be appended to a list Connector.");
+//        // TODO take ComponentPath or a string?
+//        updConnecteeNameProp().appendValue(ComponentPath(name));
+//    }
 
 protected:
     //--------------------------------------------------------------------------
@@ -208,29 +299,31 @@ protected:
                               that holds this Connector's connectee_name(s).
     @param connectAtStage     Stage at which Connector should be connected.
     @param owner              Component to which this Connector belongs. */
+    // TODO could skip constructor all together?
     AbstractConnector(const std::string& name,
                       const PropertyIndex& connecteeNameIndex,
                       const SimTK::Stage& connectAtStage,
                       Component& owner) :
-            _name(name),
-            _connectAtStage(connectAtStage),
-            _connecteeNameIndex(connecteeNameIndex),
-            _owner(&owner),
-            _isList(getConnecteeNameProp().isListProperty()) {}
+            Port(name, connecteeNameIndex, owner) {}
+//            _name(name),
+//            _connectAtStage(connectAtStage),
+//            _connecteeNameIndex(connecteeNameIndex),
+//            _owner(&owner),
+//            _isList(getConnecteeNameProp().isListProperty()) {}
 
-    // TODO
-    AbstractConnector(const std::string& name,
-                      const PropertyIndex& connecteeNameIndex,
-                      const SimTK::Stage& connectAtStage,
-                      Component& owner,
-                      bool isList) :
-            _name(name),
-            _connectAtStage(connectAtStage),
-            _connecteeNameIndex(connecteeNameIndex),
-            _owner(&owner),
-            _isList(isList) {}
+    // TODO remove
+//    AbstractConnector(const std::string& name,
+//                      const PropertyIndex& connecteeNameIndex,
+//                      const SimTK::Stage& connectAtStage,
+//                      Component& owner,
+//                      bool isList) :
+//            _name(name),
+//            _connectAtStage(connectAtStage),
+//            _connecteeNameIndex(connecteeNameIndex),
+//            _owner(&owner),
+//            _isList(isList) {}
 
-    const Component& getOwner() const { return _owner.getRef(); }
+   // const Component& getOwner() const { return _owner.getRef(); }
     /** %Set an internal pointer to the Component that contains this Connector.
     This should only be called by Component.
     This exists so that after the containing Component is copied, the 'owner'
@@ -239,12 +332,12 @@ protected:
     a writeable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
-    void setOwner(Component& o) { _owner.reset(&o); }
+  //  void setOwner(Component& o) { _owner.reset(&o); }
     /** This will be false immediately after copy construction or assignment.*/
-    bool hasOwner() const { return !_owner.empty(); }
+  //  bool hasOwner() const { return !_owner.empty(); }
     
     // TODO should be removed
-    PropertyIndex getConnecteeNameIndex() const { return _connecteeNameIndex; }
+  //  PropertyIndex getConnecteeNameIndex() const { return _connecteeNameIndex; }
     
     /** Check if entries of the connectee_name property's value is valid (if 
     it contains spaces, etc.); if so, print out a warning. */
@@ -252,13 +345,13 @@ protected:
         // TODO Move this check elsewhere once the connectee_name
         // property is a ComponentPath (or a ChannelPath?).
         for (int iname = 0; iname < getNumConnectees(); ++iname) {
-            const auto& connecteeName = getConnecteeName(iname);
+            const auto& connecteeName = getConnecteePath(iname).toString();
             
             if (connecteeName.find(" ") != std::string::npos) {
                 std::string msg = "In Connector '" + getName() +
                         "', connectee name '" + connecteeName +
                         "' contains spaces, but spaces are not allowed.";
-                if (!_isList) {
+                if (!isList()) {
                     msg += " Did you try to specify multiple connectee "
                            "names for a single-value Connector?";
                 }
@@ -274,7 +367,7 @@ protected:
             // currently treats spaces as valid.
             ComponentPath compPath(connecteeName);
             // Use the cleaned-up connectee_name created by ComponentPath.
-            setConnecteeName(compPath.toString(), iname);
+            setConnecteePath(iname, compPath);
             // TODO update the above for Inputs when ChannelPath exists.
             
             // TODO There might be a bug with empty connectee_name being
@@ -289,26 +382,26 @@ private:
     /// 'connector_<name>_connectee_name'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
     /// `get_connector_<name>_connectee_name()` function).
-    const Property<ComponentPath>& getConnecteeNameProp() const;
+ //   const Property<ComponentPath>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
     /// which this Connector resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
-    Property<ComponentPath>& updConnecteeNameProp();
+ //   Property<ComponentPath>& updConnecteeNameProp();
     
-    std::string _name;
-    SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
-    PropertyIndex _connecteeNameIndex;
+ //   std::string _name;
+ //   SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
+ //   PropertyIndex _connecteeNameIndex;
     // Even though updConnecteeNameProp() requires non-const access to this
     // pointer, we make this a const pointer to reduce the chance of mis-use.
     // If this were a non-const pointer, then const functions in this class
     // would be able to edit _owner (see declaration of ReferencePtr).
-    SimTK::ReferencePtr<const Component> _owner;
+ //   SimTK::ReferencePtr<const Component> _owner;
     // _isList must be after _owner, as _owner is used to set its value.
-    bool _isList;
+  //  bool _isList;
     
     /* So that Component can invoke setOwner(), etc. */
-    friend Component;
+  //  friend Component;
 
 //=============================================================================
 };  // END class AbstractConnector
@@ -341,7 +434,7 @@ public:
     const T& getConnectee() const {
         if (!isConnected()) {
             std::string msg = getOwner().getConcreteClassName() + "::Connector '"
-                + getName() + "' is not connected to '" + getConnecteeName()
+                + getName() + "' is not connected to '" + getConnecteePath().toString()
                 + "' of type " + T::getClassName();
             OPENSIM_THROW(Exception, msg);
         }
@@ -373,16 +466,16 @@ public:
             // better off stripping off the / to identify it as a "floating"
             // Component and we will need to find its absolute path next 
             // time we try to connect
-            setConnecteeName(objT->getName());
+            setConnecteePath(objT->getName());
         }
         // This can happen when top level components like a Joint and Body
         // have the same name like a pelvis Body and pelvis Joint that
         // connects that connects to a Body of the same name.
         else if(objPathName == ownerPathName)
-            setConnecteeName(objPathName);
+            setConnecteePath(objPathName);
         else { // otherwise store the relative path name to the object
             std::string relPathName = objT->getRelativePathName(getOwner()).toString() /*TODO*/;
-            setConnecteeName(relPathName);
+            setConnecteePath(relPathName);
         }
     }
 
@@ -484,7 +577,7 @@ entries separated by a space. For example:
 </input_experimental_markers_connectee_names>
 @endcode
 */
-class OSIMCOMMON_API AbstractInput : public AbstractConnector {
+class OSIMCOMMON_API AbstractInput : public Port<ChannelPath> {
 public:
 
     virtual ~AbstractInput() {}
@@ -494,13 +587,15 @@ public:
     AbstractInput* clone() const override = 0;
     
     // Connector interface
-    void connect(const Object& object) override {
-        std::stringstream msg;
-        msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
-            << "' of type " << object.getConcreteClassName() <<
-            ". Input can only connect to an Output.";
-        throw Exception(msg.str(), __FILE__, __LINE__);
-    }
+//    void connect(const Object& object) override {
+//        std::stringstream msg;
+//        msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
+//            << "' of type " << object.getConcreteClassName() <<
+//            ". Input can only connect to an Output.";
+//        throw Exception(msg.str(), __FILE__, __LINE__);
+//    }
+
+    virtual std::string getConnecteeTypeName() const = 0; // TODO rename? to just
 
     /** Connect this Input to a single-valued (single-channel) Output or, if
     this is a list %Input and the %Output is a list %Output, connect to all the
@@ -549,64 +644,64 @@ public:
     path of the %Channel that has been connected to this Input. */
     virtual std::string getLabel(unsigned index) const = 0;
     
-    unsigned getNumConnectees() const override {
-        return static_cast<unsigned>(getConnecteeNameProp().size());
-    }
+//    unsigned getNumConnectees() const override {
+//        return static_cast<unsigned>(getConnecteeNameProp().size());
+//    }
 
     /** %Set connectee name. This function can only be used if this connector is
     not a list connector.                                                     */
-    void setConnecteeName(const std::string& name) override {
-        OPENSIM_THROW_IF(isListConnector(),
-                         Exception,
-                         "An index must be provided for a list Connector.");
-        setConnecteeName(name, 0);
-    }
-    
-    // TODO don't use virtual functions; use some other mechanism.
-    /** %Set connectee name of a connectee among a list of connectees. This
-    function is used if this connector is a list connector.                   */
-    void setConnecteeName(const std::string& name, unsigned ix) override {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::setConnecteeName()");
-        // TODO should this take a string or a ComponentPath?
-        updConnecteeNameProp().setValue(ix, ChannelPath(name));
-    }
-    
-    /** Get connectee name. This function can only be used if this connector is
-    not a list connector.                                                     */
-    std::string /*const std::string& */getConnecteeName() const override {
-        OPENSIM_THROW_IF(isListConnector(),
-                         Exception,
-                         "An index must be provided for a list Connector.");
-        return getConnecteeName(0);
-    }
-    
-    /** Get connectee name of a connectee among a list of connectees.         */
-    std::string /*const std::string& */getConnecteeName(unsigned ix) const override {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::getConnecteeName()");
-        // TODO should this return a string or a ComponentPath?
-        return getConnecteeNameProp().getValue(ix).toString();
-    }
-
-    void appendConnecteeName(const std::string& name) override {
-        OPENSIM_THROW_IF(getNumConnectees() > 0 && !isListConnector(), Exception,
-            "Multiple connectee names can only be appended to a list Connector.");
-        // TODO take ComponentPath or a string?
-        updConnecteeNameProp().appendValue(ChannelPath(name));
-    }
+//    void setConnecteeName(const std::string& name) override {
+//        OPENSIM_THROW_IF(isListConnector(),
+//                         Exception,
+//                         "An index must be provided for a list Connector.");
+//        setConnecteeName(name, 0);
+//    }
+//    
+//    // TODO don't use virtual functions; use some other mechanism.
+//    /** %Set connectee name of a connectee among a list of connectees. This
+//    function is used if this connector is a list connector.                   */
+//    void setConnecteeName(const std::string& name, unsigned ix) override {
+//        using SimTK::isIndexInRange;
+//        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+//                                "AbstractConnector::setConnecteeName()");
+//        // TODO should this take a string or a ComponentPath?
+//        updConnecteeNameProp().setValue(ix, ChannelPath(name));
+//    }
+//    
+//    /** Get connectee name. This function can only be used if this connector is
+//    not a list connector.                                                     */
+//    std::string /*const std::string& */getConnecteeName() const override {
+//        OPENSIM_THROW_IF(isListConnector(),
+//                         Exception,
+//                         "An index must be provided for a list Connector.");
+//        return getConnecteeName(0);
+//    }
+//    
+//    /** Get connectee name of a connectee among a list of connectees.         */
+//    std::string /*const std::string& */getConnecteeName(unsigned ix) const override {
+//        using SimTK::isIndexInRange;
+//        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
+//                                "AbstractConnector::getConnecteeName()");
+//        // TODO should this return a string or a ComponentPath?
+//        return getConnecteeNameProp().getValue(ix).toString();
+//    }
+//
+//    void appendConnecteeName(const std::string& name) override {
+//        OPENSIM_THROW_IF(getNumConnectees() > 0 && !isListConnector(), Exception,
+//            "Multiple connectee names can only be appended to a list Connector.");
+//        // TODO take ComponentPath or a string?
+//        updConnecteeNameProp().appendValue(ChannelPath(name));
+//    }
     // TODO use templatized member functions to get connectee name prop?
 
     // TODO should remove and put the check in at the place where ChannelPath
     // is deserialized.
-    void checkConnecteeNameProperty() override {
-        // TODO does nothing for now.
-       // Property code gives:
-       // Too many values for N7OpenSim11ChannelPathE property input_input1_connectee_name; input='apple/apple banana/banana lemon/lemon'. Expected 1, got 3. Ignoring extras.
-       // TODO don't want this though, as model's names might have spaces in them.
-    }
+//    void checkConnecteeNameProperty() override {
+//        // TODO does nothing for now.
+//       // Property code gives:
+//       // Too many values for N7OpenSim11ChannelPathE property input_input1_connectee_name; input='apple/apple banana/banana lemon/lemon'. Expected 1, got 3. Ignoring extras.
+//       // TODO don't want this though, as model's names might have spaces in them.
+//    }
     
     /** Break up a connectee name into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
@@ -679,13 +774,8 @@ protected:
                   const PropertyIndex& connecteeNameIndex,
                   const SimTK::Stage& connectAtStage,
                   Component& owner, bool isList) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner,
-            isList /* TODO remove using the property*/) {}
+        Port(name, connecteeNameIndex/*, connectAtStage*/, owner) {}
 
-private:
-    const Property<ChannelPath>& getConnecteeNameProp() const;
-    Property<ChannelPath>& updConnecteeNameProp();
-    
 //=============================================================================
 };  // END class AbstractInput
 
@@ -727,7 +817,7 @@ public:
     Output<T>'s getValue() with minimal overhead. This method can be used only
     for non-list Input(s). For list Input(s), use the other overload.         */
     const T& getValue(const SimTK::State &state) const {
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isList(),
                          Exception,
                          "Input<T>::getValue(): an index must be "
                          "provided for a list input.");
@@ -749,7 +839,7 @@ public:
     /** Get the Channel associated with this Input. This method can only be
     used for non-list Input(s). For list Input(s), use the other overload.    */
     const Channel& getChannel() const {
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isList(),
                          Exception,
                          "Input<T>::getChannel(): an index must be "
                          "provided for a list input.");
@@ -770,7 +860,7 @@ public:
     
     const std::string& getAlias() const override {
         OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isList(),
                          Exception,
                          "Input<T>::getAlias(): this is a list Input; an index "
                          "must be provided.");
@@ -806,7 +896,7 @@ public:
     std::string getLabel() const override {
         OPENSIM_THROW_IF(!isConnected(),
                          InputNotConnected, getName());
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isList(),
                          Exception,
                          "Input<T>::getLabel(): this is a list Input; an index "
                          "must be provided.");

@@ -26,6 +26,24 @@
 
 using namespace OpenSim;
 
+template <typename PathType>
+const Property<PathType>& Port<PathType>::getConnecteeNameProp() const {
+    return _owner->getProperty<PathType>(_connecteeNameIndex);
+}
+
+template <typename PathType>
+Property<PathType>& Port<PathType>::updConnecteeNameProp() {
+    return const_cast<Component*>(_owner.get())->updProperty<PathType>(
+                _connecteeNameIndex);
+}
+
+namespace OpenSim {
+
+template class Port<ComponentPath>;
+template class Port<ChannelPath>;
+
+}
+/* TODO
 const Property<ComponentPath>&
 AbstractConnector::getConnecteeNameProp() const {
     return _owner->getProperty<ComponentPath>(_connecteeNameIndex);
@@ -47,3 +65,4 @@ AbstractInput::updConnecteeNameProp() {
     return const_cast<Component&>(getOwner()).updProperty<ChannelPath>(
                 getConnecteeNameIndex());
 }
+*/
