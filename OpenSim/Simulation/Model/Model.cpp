@@ -605,17 +605,19 @@ void Model::createMultibodyTree()
         // Currently we need to take a first pass at connecting the joints
         // in order to ask the joint for the frames that they attach to and
         // to determine their underlying base (physical) frames.
-        joint->connect(*this);
+        joint->finalizeConnections(*this);
 
         // hack to make sure underlying Frame is also connected so it can 
         // traverse to the base frame and get its name. This allows the
-        // (offset) frames to satisfy the connectors of Joint to be added
+        // (offset) frames to satisfy the sockets of Joint to be added
         // to a Body, for example, and not just joint itself.
         // TODO: try to create the multibody tree later when components
         // can already be expected to be connected then traverse those
         // relationships to create the multibody tree. -aseth
-        const_cast<PhysicalFrame&>(joint->getParentFrame()).connect(*this);
-        const_cast<PhysicalFrame&>(joint->getChildFrame()).connect(*this);
+        const_cast<PhysicalFrame&>(joint->getParentFrame()).
+            finalizeConnections(*this);
+        const_cast<PhysicalFrame&>(joint->getChildFrame()).
+            finalizeConnections(*this);
 
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
@@ -783,7 +785,7 @@ void Model::extendConnectToModel(Model &model)
         // PhysicalOffsetFrame can be listed in any order and may be attached
         // to any other PhysicalOffsetFrame, so we need to find their parent(s)
         // in the tree and add them first.
-        pof.connect(*this);
+        pof.finalizeConnections(*this);
         const PhysicalOffsetFrame* parentPof =
             dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
         std::vector<const PhysicalOffsetFrame*> parentPofs;
@@ -952,7 +954,7 @@ void Model::addProbe(OpenSim::Probe *probe)
  */
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
-    disconnect();
+    clearConnections();
     updProbeSet().remove(aProbe);
     finalizeFromProperties();
 }
@@ -993,7 +995,7 @@ void Model::setup()
     // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
-    connect(*this);
+    finalizeConnections(*this);
 }
 
 //_____________________________________________________________________________
@@ -1004,7 +1006,7 @@ void Model::setup()
  */
 void Model::cleanup()
 {
-    disconnect();
+    clearConnections();
     upd_ForceSet().setSize(0);
 }
 
@@ -1058,7 +1060,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     auto muscles = getComponentList<Muscle>();
 
     for (auto& muscle : muscles) {
-        if (!muscle.isDisabled(state)){
+        if (muscle.appliesForce(state)){
             try{
                 muscle.equilibrate(state);
             }
@@ -1863,7 +1865,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
     for (auto& controller : getComponentList<Controller>()) {
-        if (!controller.isDisabled()) {
+        if (controller.isEnabled()) {
             controller.computeControls(s, controls);
         }
     }

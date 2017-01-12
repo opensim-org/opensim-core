@@ -53,12 +53,12 @@ def print_model():
     reporter.setName('reporter')
     reporter.set_report_time_interval(0.1)
     # Report the position of the origin of the body.
-    reporter.updInput().connect(body.getOutput('position'))
+    reporter.addToReport(body.getOutput('position'))
     # For comparison, we will also get the center of mass position from the
     # Model, and we can check that the two outputs are the same for our
     # one-body system. The (optional) second argument is an alias for the name
     # of the output; it is used as the column label in the table.
-    reporter.updInput().connect(model.getOutput('com_position'), 'com_pos')
+    reporter.addToReport(model.getOutput('com_position'), 'com_pos')
     # Display what input-output connections look like in XML (in .osim files).
     print("Reporter input-output connections in XML:\n" + reporter.dump())
     

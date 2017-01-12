@@ -90,7 +90,7 @@ void Station::constructProperties()
 */
 const PhysicalFrame& Station::getParentFrame() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
 }
 
 /*
@@ -98,7 +98,7 @@ const PhysicalFrame& Station::getParentFrame() const
  */
 void Station::setParentFrame(const OpenSim::PhysicalFrame& aFrame)
 {
-    updConnector<PhysicalFrame>("parent_frame").connect(aFrame);
+    connectSocket_parent_frame(aFrame);
 }
 
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,

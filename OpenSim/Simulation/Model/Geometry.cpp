@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
+OpenSim_DEFINE_SOCKET_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
@@ -44,21 +44,21 @@ Geometry::Geometry() {
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+    updSocket<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
 {
-    return getConnector<Frame>("frame").getConnectee();
+    return getSocket<Frame>("frame").getConnectee();
 }
 
 void Geometry::extendConnect(Component& root)
 {
     Super::extendConnect(root);
 
-    bool attachedToFrame = getConnector<Frame>("frame").isConnected();
+    bool attachedToFrame = getSocket<Frame>("frame").isConnected();
     bool hasInputTransform = getInput("transform").isConnected();
-    // Being both attached to a Frame (i.e. Connector<Frame> connected) 
+    // Being both attached to a Frame (i.e. Socket<Frame> connected) 
     // and the Input transform connected has ambiguous behavior so disallow it
     if (attachedToFrame && hasInputTransform ) {
         OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()

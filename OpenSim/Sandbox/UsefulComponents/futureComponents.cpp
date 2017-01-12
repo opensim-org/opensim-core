@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <OpenSim/OpenSim.h>
-#include "FunctionComponentConnector.h"
+#include "FunctionComponentSocket.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -18,8 +18,8 @@ void test()
 {
     Model model;
 
-    FunctionComponentConnector<double>* fun =
-        new FunctionComponentConnector<double>(testFunction);
+    FunctionComponentSocket<double>* fun =
+        new FunctionComponentSocket<double>(testFunction);
     model.addModelComponent(fun);
 
     ConsoleReporter* rep = new ConsoleReporter();

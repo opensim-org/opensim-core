@@ -192,8 +192,10 @@ double ScalarActuator::getOptimalForce() const
 
 double ScalarActuator::getActuation(const State &s) const
 {
-    if (isDisabled(s)) return 0.0;
-    return getCacheVariableValue<double>(s, "actuation");
+    if (appliesForce(s))
+        return getCacheVariableValue<double>(s, "actuation");
+    else
+        return 0.0;
 }
 
 void ScalarActuator::setActuation(const State& s, double aActuation) const

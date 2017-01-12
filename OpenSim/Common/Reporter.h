@@ -113,23 +113,42 @@ public:
     OpenSim_DECLARE_LIST_INPUT(inputs, InputT, SimTK::Stage::Report,
         "Variable list of quantities to be reported.");
 
-    //=============================================================================
+    //==========================================================================
     // PUBLIC METHODS
-    //=============================================================================
+    //==========================================================================
 
-    // Allow overloading of updInput
-    using AbstractReporter::updInput;
-
-    /** Convenience method that can be used in place of `updInput("inputs")`. 
+    /** Connect an output (single-valued or list) to this reporter. 
+    The output must be of type InputT.
+    If the output is a list output, this connects to all of the channels of the
+    output. You can optionally provide an alias that will be used by this
+    component to refer to the output; the alias will be used for all channels
+    of the output.                                          
     @code
     auto* reporter = new ConsoleReporter();
-    auto* src = new DataSource();
-    reporter->updInput().connect(src->getOutput("outputName"));
+    auto* src = new TableSource();
+    reporter->addToReport(src->getOutput("all_columns"));
     @endcode
-    */
-    AbstractInput& updInput()
-    {
-        return updInput("inputs");
+    This method is equivalent to
+    connectInput_inputs(const AbstractOutput&, const std::string&). */
+    void addToReport(const AbstractOutput& output,
+                     const std::string& alias = "") {
+        connectInput_inputs(output, alias);
+    }
+
+    /** Connect an output channel to this reporter.
+    The output channel must be of type InputT.
+    You can optionally provide an alias that will be used by this component to
+    refer to the channel.
+    @code
+    auto* reporter = new ConsoleReporter();
+    auto* src = new TableSource();
+    reporter->addToReport(src->getOutput("column").getChannel("ankle"));
+    @endcode
+    This method is equivalent to
+    connectInput_inputs(const AbstractChannel&, const std::string&). */
+    void addToReport(const AbstractChannel& channel,
+                     const std::string& alias = "") {
+        connectInput_inputs(channel, alias);
     }
 
 protected:

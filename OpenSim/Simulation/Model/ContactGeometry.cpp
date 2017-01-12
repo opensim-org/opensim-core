@@ -96,12 +96,12 @@ SimTK::Transform ContactGeometry::getTransform() const
 
 const PhysicalFrame& ContactGeometry::getFrame() const
 {
-    return getConnector<PhysicalFrame>("frame").getConnectee();
+    return getSocket<PhysicalFrame>("frame").getConnectee();
 }
 
 void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    connectSocket_frame(frame);
 }
 
 const PhysicalFrame& ContactGeometry::getBody() const
