@@ -500,9 +500,10 @@ record(const SimTK::State& s)
         vec = body.findVelocityInGround(s, com);
         if(_expressInLocalFrame) {
             _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-            _model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
+            SimTK::Vec3 angVecInGround = body.getVelocityInGround(s)(0);
+            angVec = ground.expressVectorInAnotherFrame(s, angVecInGround, body);
         } else {
-            _model->getSimbodyEngine().getAngularVelocity(s, body,angVec);
+            angVec = body.getVelocityInGround(s)(0);
         }
 
         // CONVERT TO DEGREES?
@@ -548,9 +549,11 @@ record(const SimTK::State& s)
         vec = body.findAccelerationInGround(s, com);
         if(_expressInLocalFrame) {
             _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-            _model->getSimbodyEngine().getAngularAccelerationBodyLocal(s, body,angVec);
+            SimTK::Vec3 angVecInGround = body.getAccelerationInGround(s)(0);
+            angVec = ground.expressVectorInAnotherFrame(s, angVecInGround, body);
+
         } else {
-            _model->getSimbodyEngine().getAngularAcceleration(s, body,angVec);
+            angVec = body.getAccelerationInGround(s)(0);
         }
 
         // CONVERT TO DEGREES?

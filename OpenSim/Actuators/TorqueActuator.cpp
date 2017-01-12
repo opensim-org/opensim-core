@@ -173,8 +173,9 @@ void TorqueActuator::computeForce(const State& s,
 
     // get the angular velocity of the body in ground
     Vec3 omegaA(0), omegaB(0);
-    engine.getAngularVelocity(s, *_bodyA, omegaA);
-    engine.getAngularVelocity(s, *_bodyB, omegaB);
+    omegaA = _bodyA->getVelocityInGround(s)(0);
+    omegaB = _bodyB->getVelocityInGround(s)(0);
+
     // the "speed" is the relative angular velocity of the bodies
     // projected onto the torque axis.
     setSpeed(s, ~(omegaA-omegaB)*axis);

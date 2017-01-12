@@ -178,9 +178,13 @@ public:
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
     DEPRECATED_14("use Frame::getTransformInGround().R() instead")
     void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double *rDirCos) const;
+    DEPRECATED_14("use Frame::getVelocityInGround()(0) instead")
     void getAngularVelocity(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    DEPRECATED_14("use Frame::getVelocityInGround()(0) instead")
     void getAngularVelocityBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    DEPRECATED_14("use Frame::getAccelerationInGround()(0) instead")
     void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    DEPRECATED_14("use Frame::getAccelerationInGround()(0) instead")
     void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
     SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
 
