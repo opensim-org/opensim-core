@@ -202,10 +202,10 @@ public:
     DEPRECATED_14("use Frame::findLocationInGround() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
-    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
-        const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
-    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
-        const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findLocationInGround() instead")
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findLocationInGround() instead")
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
 
     // @}
 
