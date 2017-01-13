@@ -72,10 +72,16 @@ namespace OpenSim {
 
         if( 0 == os.compare("Windows")) {
             switch( atoi(GET_COMPILER_INFO) ) {
-                case 1700:
-                    str = "Visual Studio 2011";
-                    break;
-                case 1600:
+            case 1900:
+                str = "Visual Studio 2015";
+                break;
+            case 1800:
+                str = "Visual Studio 2013";
+                break;
+            case 1700:
+                str = "Visual Studio 2011";
+                break;
+            case 1600:
                     str = "Visual Studio 2010";
                     break;
                 case 1500:
