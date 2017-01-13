@@ -45,6 +45,10 @@ class OSIMSIMULATION_API Marker : public Station {
     OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
 
 class Body;
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
     OpenSim_DECLARE_PROPERTY(fixed, bool,
         "Flag(true or false) specifying whether or not a marker "
         "should be kept fixed in the marker placement step.  i.e. If false, the marker is allowed to move.");
