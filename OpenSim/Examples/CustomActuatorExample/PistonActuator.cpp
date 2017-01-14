@@ -219,7 +219,6 @@ void PistonActuator::computeForce(const SimTK::State& s,
                                     SimTK::Vector& generalizedForces) const
 {
     if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     
     if(_bodyA ==NULL || _bodyB ==NULL)
         return;
@@ -232,17 +231,18 @@ void PistonActuator::computeForce(const SimTK::State& s,
 
     SimTK::Vec3 _pointA = get_pointA();
     SimTK::Vec3 _pointB = get_pointB();
+    Ground ground = getModel().getGround();
     if (get_points_are_global())
     {
         pointA_inGround = _pointA;
         pointB_inGround = _pointB;
-        engine.transformPosition(s, getModel().getGround(), _pointA, *_bodyA, _pointA);
-        engine.transformPosition(s, getModel().getGround(), _pointB, *_bodyB, _pointB);
+        _pointA = ground.findLocationInAnotherFrame(s, _pointA, *_bodyA);
+        _pointB = ground.findLocationInAnotherFrame(s, _pointB, *_bodyB);
     }
     else
     {
-        engine.transformPosition(s, *_bodyA, _pointA, getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, _pointB, getModel().getGround(), pointB_inGround);
+        pointA_inGround = _bodyA->findLocationInGround(s, _pointA);
+        pointB_inGround = _bodyB->findLocationInGround(s, _pointB);
     }
 
     // find the direction along which the actuator applies its force

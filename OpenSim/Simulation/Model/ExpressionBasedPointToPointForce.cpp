@@ -247,13 +247,13 @@ getRecordValues(const SimTK::State& state) const
     values.append(3, &forces[0]);
 
     SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, *_body1, getPoint1(), gpoint);
+    gpoint = _body1->findLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, *_body2, getPoint2(), gpoint);
+    gpoint = _body2->findLocationInGround(state, getPoint2());
     values.append(3, &gpoint[0]);
 
     return values;

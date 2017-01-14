@@ -202,7 +202,8 @@ SimTK::Vec3 Frame::findVelocityInGround(const SimTK::State& state,
     const SimTK::Vec3& point) const
 {
     const SimTK::SpatialVec& V_GF = getVelocityInGround(state);
-    return V_GF(1) + SimTK::cross(V_GF(0), point);
+    SimTK::Vec3 r_G = expressVectorInGround(state, point);
+    return V_GF(1) + SimTK::cross(V_GF(0), r_G);
 }
 
 SimTK::Vec3 Frame::findAccelerationInGround(const SimTK::State& state,
@@ -210,8 +211,9 @@ SimTK::Vec3 Frame::findAccelerationInGround(const SimTK::State& state,
 {
     const SimTK::SpatialVec& V_GF = getVelocityInGround(state);
     const SimTK::SpatialVec& A_GF = getAccelerationInGround(state);
-    return A_GF(1) + SimTK::cross(A_GF(0), point) +
-        SimTK::cross(V_GF(0), SimTK::cross(V_GF(0), point));
+    SimTK::Vec3 r_G = expressVectorInGround(state, point);
+    return A_GF(1) + SimTK::cross(A_GF(0), r_G) +
+        SimTK::cross(V_GF(0), SimTK::cross(V_GF(0), r_G));
 }
 
 const Frame& Frame::findBaseFrame() const
