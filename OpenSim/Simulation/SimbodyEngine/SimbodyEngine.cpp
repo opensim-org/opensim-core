@@ -49,7 +49,7 @@ static std::string SimbodyGroundName = "ground";
 //=============================================================================
 // EXCEPTIONS
 //=============================================================================
-class CannotUsePhysicalOffsetFrame : public Exception {
+class CannotUsePhysicalOffsetFrame : public OpenSim::Exception {
 public:
     CannotUsePhysicalOffsetFrame(const std::string& file,
         size_t line,
