@@ -321,6 +321,22 @@ public:
     };
 #endif
 
+    /** Thrown by createFromStatesStorage(). */
+    class ModelHasNoSystem : public Exception {
+    public:
+        ModelHasNoSystem(const std::string& file, size_t line,
+                const std::string& func,
+                const std::string& modelName) :
+                    OpenSim::Exception(file, line, func) {
+            std::string msg = "You must first call initSystem() on your Model";
+            if (!modelName.empty()) {
+                msg += " '" + modelName + "'";
+            }
+            msg += ".";
+            addMessage(msg);
+        }
+    };
+
     /** Thrown when trying to create a StatesTrajectory from a states Storage,
      * and the Storage does not contain a column for every continuous state
      * variable. */
@@ -414,6 +430,9 @@ public:
      * exactly reproduce results from the initial state trajectory; constraints
      * may not be satisfied, etc.
      *
+     * The states in the resulting trajectory will be realized to
+     * SimTK::Stage::Instance.
+     *
      * @note The naming convention for state variables changed in OpenSim v4.0;
      * `ankle_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
      * `soleus_r/activation` used to be `soleus_r.activation`, etc. This
@@ -433,6 +452,8 @@ public:
      *      ignored.
      *
      * #### Usage
+     * You must have called Model::initSystem() on your model before calling
+     * this function.
      * Here is how you might use this function in python:
      * @code{.py}
      * import opensim
@@ -443,6 +464,9 @@ public:
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
+     * 
+     * @throws ModelHasNoSystem Thrown if you have not yet called initSystem()
+     *      on the model.
      * 
      * @throws MissingColumnsInStatesStorage See the description of the
      *      `allowMissingColumns` argument.
