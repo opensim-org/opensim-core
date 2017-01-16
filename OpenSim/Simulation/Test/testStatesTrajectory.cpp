@@ -35,11 +35,9 @@ using namespace SimTK;
 // TODO nondecreasing or increasing? might affect upper_bound/lower_bound.
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
-// TODO accessing acceleration-level outputs.
 // TODO Improve performance of createFromStatesStorage(): it is very slow now.
 
 // Big to-do's:
-// TODO convert to data table (specify which columns).
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
@@ -445,8 +443,6 @@ void testFromStatesStoragePre40CorrectStates() {
     model.initSystem();
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
-    model.initSystem();
-
     // Test that the states are correct.
     // ---------------------------------
     int itime = 0;
@@ -500,9 +496,19 @@ void testFromStatesStoragePre40CorrectStates() {
         SimTK_TEST(!loc.isNaN());
 
         SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
-        // TODO acceleration-level stuff gives segfault.
-        // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
-        // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
+
+        // Make sure that we can realize to Dynamics without an issue.
+        // There used to be a bug (GitHub Issue #1455) wherein Instance-stage
+        // cache variables contain raw pointers to SimTK::Force objects,
+        // therefore one cannot use such a state with different instances
+        // of the same model.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+        SimTK_TEST(!SimTK::isNaN(
+                    model.getMuscles().get(0).getActiveFiberForce(state)));
+
+        // Similarly, make sure we can do an acceleration-level calculation.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+        SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
 
         itime++;
     }

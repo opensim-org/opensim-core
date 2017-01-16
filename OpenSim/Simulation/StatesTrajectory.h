@@ -431,7 +431,10 @@ public:
      * may not be satisfied, etc.
      *
      * The states in the resulting trajectory will be realized to
-     * SimTK::Stage::Instance.
+     * SimTK::Stage::Instance. You should not use the resulting trajectory with
+     * an instance of the model other than the you pass to this function; the
+     * state contains Instance-stage cache variables that point to force
+     * elements within the model.
      *
      * @note The naming convention for state variables changed in OpenSim v4.0;
      * `ankle_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
