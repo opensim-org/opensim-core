@@ -1184,7 +1184,8 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
+    void setStateVariableValues(SimTK::State& state,
+                                const SimTK::Vector& values) const;
 
     /**
      * Get the value of a state variable derivative computed by this Component.

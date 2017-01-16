@@ -35,7 +35,6 @@ using namespace SimTK;
 // TODO nondecreasing or increasing? might affect upper_bound/lower_bound.
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
-// TODO Improve performance of createFromStatesStorage(): it is very slow now.
 
 // Big to-do's:
 // TODO append two StateTrajectories together.
