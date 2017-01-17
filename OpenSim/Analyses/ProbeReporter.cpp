@@ -197,7 +197,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
         for(int i=0 ; i<nP ; i++) {
             Probe& p = _model->getProbeSet().get(i);
 
-            if (p.isDisabled()) continue; // Skip over disabled probes
+            if (!p.isEnabled()) continue; // Skip over disabled probes
 
             // Get column names for the probe after the operation
             Array<string> probeLabels = p.getProbeOutputLabels();
@@ -244,7 +244,7 @@ int ProbeReporter::record(const SimTK::State& s)
     for(int i=0 ; i<nP ; i++) {
         Probe& nextProbe = (Probe&)probes[i];
 
-        if (!nextProbe.isDisabled())
+        if (nextProbe.isEnabled())
         {
             // Get probe values after the probe operation
             SimTK::Vector values = nextProbe.getProbeOutputs(s);

@@ -157,7 +157,7 @@ public:
         for(int i=0 ; i<nP ; i++) {
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
-                nextProbe.setDisabled(true);
+                nextProbe.setEnabled(false);
                 std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
 
             }

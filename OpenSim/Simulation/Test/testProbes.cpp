@@ -435,7 +435,7 @@ void simulateMuscle(
     // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
     SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);  // use copy constructor
     sysPowerProbe->setName("SystemPower");
-    sysPowerProbe->setDisabled(false);
+    sysPowerProbe->setEnabled(true);
     sysPowerProbe->setOperation("differentiate");
     model.addProbe(sysPowerProbe);
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
