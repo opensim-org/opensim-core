@@ -234,8 +234,7 @@ void testExpressionBasedCoordinateForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        pos = ball.findLocationInGround(osim_state, Vec3(0));
+        Vec3 pos = ball.findLocationInGround(osim_state, Vec3(0));
         
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
@@ -544,8 +543,7 @@ void testSpringMass()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        pos = ball.findLocationInGround(osim_state, Vec3(0));
+        Vec3 pos = ball.findLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
@@ -654,8 +652,7 @@ void testBushingForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        pos = ball.findLocationInGround(osim_state, Vec3(0));
+        Vec3 pos = ball.findLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);

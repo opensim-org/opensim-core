@@ -83,10 +83,9 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         *  and multiply it by -1.
         */
         Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-        Vec3 velocity;
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
         const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
-        velocity = hand.findVelocityInGround(s, massCenter);
+        Vec3 velocity = hand.findVelocityInGround(s, massCenter);
         f = -velocity[0];
         stepCount++;
         

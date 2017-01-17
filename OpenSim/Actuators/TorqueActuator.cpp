@@ -171,9 +171,8 @@ void TorqueActuator::computeForce(const State& s,
         applyTorque(s, *_bodyB, -torque, bodyForces);
 
     // get the angular velocity of the body in ground
-    Vec3 omegaA(0), omegaB(0);
-    omegaA = _bodyA->getVelocityInGround(s)(0);
-    omegaB = _bodyB->getVelocityInGround(s)(0);
+    Vec3 omegaA = _bodyA->getVelocityInGround(s)[0];
+    Vec3 omegaB = _bodyB->getVelocityInGround(s)[0];
 
     // the "speed" is the relative angular velocity of the bodies
     // projected onto the torque axis.

@@ -187,8 +187,7 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    gpoint = body1.findLocationInGround(state, getPoint1());
+    SimTK::Vec3 gpoint = body1.findLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(body2.getMobilizedBodyIndex())[1];

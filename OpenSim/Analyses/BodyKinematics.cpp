@@ -498,12 +498,10 @@ record(const SimTK::State& s)
         const SimTK::Vec3& com = body.get_mass_center();
         // GET VELOCITIES AND ANGULAR VELOCITIES
         vec = body.findVelocityInGround(s, com);
-        if(_expressInLocalFrame) {
+        angVec = body.getVelocityInGround(s)[0];
+        if (_expressInLocalFrame) {
             vec = ground.expressVectorInAnotherFrame(s, vec, body);
-            SimTK::Vec3 angVecInGround = body.getVelocityInGround(s)(0);
-            angVec = ground.expressVectorInAnotherFrame(s, angVecInGround, body);
-        } else {
-            angVec = body.getVelocityInGround(s)(0);
+            angVec = ground.expressVectorInAnotherFrame(s, angVec, body);
         }
 
         // CONVERT TO DEGREES?
@@ -547,13 +545,10 @@ record(const SimTK::State& s)
 
         // GET ACCELERATIONS AND ANGULAR ACCELERATIONS
         vec = body.findAccelerationInGround(s, com);
+        angVec = body.getAccelerationInGround(s)[0];
         if(_expressInLocalFrame) {
             vec = ground.expressVectorInAnotherFrame(s, vec, body);
-            SimTK::Vec3 angVecInGround = body.getAccelerationInGround(s)(0);
-            angVec = ground.expressVectorInAnotherFrame(s, angVecInGround, body);
-
-        } else {
-            angVec = body.getAccelerationInGround(s)(0);
+            angVec = ground.expressVectorInAnotherFrame(s, angVec, body);
         }
 
         // CONVERT TO DEGREES?

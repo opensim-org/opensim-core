@@ -49,9 +49,9 @@ static std::string SimbodyGroundName = "ground";
 //=============================================================================
 // EXCEPTIONS
 //=============================================================================
-class CannotUsePhysicalOffsetFrame : public OpenSim::Exception {
+class PhysicalOffsetFrameIsInvalidArgument : public OpenSim::Exception {
 public:
-    CannotUsePhysicalOffsetFrame(const std::string& file,
+    PhysicalOffsetFrameIsInvalidArgument(const std::string& file,
         size_t line,
         const std::string& func,
         const Object& obj) :
@@ -208,7 +208,7 @@ void SimbodyEngine::getPosition(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rPos = aBody.getMobilizedBody().findStationLocationInGround(s, aPoint);
 }
@@ -229,7 +229,7 @@ void SimbodyEngine::getVelocity(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rVel = aBody.getMobilizedBody().findStationVelocityInGround(s, aPoint);
 }
@@ -253,7 +253,7 @@ void SimbodyEngine::getAcceleration(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rAcc = aBody.getMobilizedBody().findStationAccelerationInGround(s, aPoint);
 }
@@ -270,7 +270,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     Mat33::updAs(&rDirCos[0][0]) =
         aBody.getMobilizedBody().getBodyRotation(s).asMat33();
@@ -288,7 +288,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     Mat33::updAs(rDirCos) =
         aBody.getMobilizedBody().getBodyRotation(s).asMat33();
@@ -306,7 +306,7 @@ void SimbodyEngine::getAngularVelocity(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rAngVel = aBody.getMobilizedBody().getBodyAngularVelocity(s);
 }
@@ -323,7 +323,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rAngVel = aBody.getMobilizedBody().getBodyAngularVelocity(s);
 }
@@ -341,7 +341,7 @@ void SimbodyEngine::getAngularAcceleration(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -358,7 +358,7 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -375,7 +375,7 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     return aBody.getMobilizedBody().getBodyTransform(s);
 }
@@ -452,11 +452,11 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyTo),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     if(&aBodyFrom == &aBodyTo) { for(int i=0; i<3; i++) { rVec[i]=aVec[i]; } return; }
     const Body* bFrom = (const Body*)&aBodyFrom;
@@ -479,11 +479,11 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyTo),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     if(&aBodyFrom == &aBodyTo) { rVec=aVec; return; }   
 
@@ -508,11 +508,11 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyTo),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     if(&aBodyFrom == &aBodyTo) {
        for (int i=0; i<3; i++) rPos[i] = aPos[i];
@@ -541,11 +541,11 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyTo),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     if(&aBodyFrom == &aBodyTo) {
        for (int i=0; i<3; i++) rPos[i] = aPos[i];
@@ -570,7 +570,7 @@ void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     //const Body* bFrom = (const Body*)&aBodyFrom;
 
@@ -595,7 +595,7 @@ transformPosition(const SimTK::State& s, const PhysicalFrame& aBodyFrom,
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
     rPos = aBodyFrom.getMobilizedBody().findStationLocationInGround(s, aPos);
@@ -618,11 +618,11 @@ const Vec3& aPoint1, const PhysicalFrame& aBody2, const Vec3& aPoint2)
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     return aBody1.getMobilizedBody().calcStationToStationDistance(s, aPoint1,
             aBody2.getMobilizedBody(), aPoint2);
@@ -644,11 +644,11 @@ double SimbodyEngine::calcDistance(const SimTK::State& s, const PhysicalFrame&
 {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
-        CannotUsePhysicalOffsetFrame);
+        PhysicalOffsetFrameIsInvalidArgument);
 
     return aBody1.getMobilizedBody().calcStationToStationDistance(s,
             Vec3::getAs(aPoint1), aBody2.getMobilizedBody(),

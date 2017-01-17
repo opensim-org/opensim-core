@@ -178,7 +178,7 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
         pointA_inBodyA = pointA;
         pointB_inBodyB = pointB;
         pointA_inGround = _bodyA->findLocationInGround(s, pointA_inBodyA);
-        pointB_inGround = _bodyB->findLocationInGround(s, pointB_inGround);
+        pointB_inGround = _bodyB->findLocationInGround(s, pointB_inBodyB);
     }
 
     // Find the direction along which the actuator applies its force.
@@ -203,10 +203,9 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
     applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
 
     // Get the relative velocity of the points in ground.
-    SimTK::Vec3 velA_G, velB_G, velAB_G;
-    velA_G = _bodyA->findVelocityInGround(s, pointA_inBodyA);
-    velB_G = _bodyB->findVelocityInGround(s, pointB_inBodyB);
-    velAB_G = velA_G-velB_G;
+    SimTK::Vec3 velA_G =  _bodyA->findVelocityInGround(s, pointA_inBodyA);
+    SimTK::Vec3 velB_G = _bodyB->findVelocityInGround(s, pointB_inBodyB);
+    SimTK::Vec3 velAB_G = velA_G-velB_G;
     // Speed used to compute power is the speed along the line connecting 
     // the two bodies.
     setSpeed(s, ~velAB_G*direction);

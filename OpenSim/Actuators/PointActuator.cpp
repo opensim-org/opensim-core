@@ -184,8 +184,7 @@ void PointActuator::computeForce(const SimTK::State& s,
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 
     // get the velocity of the actuator in ground
-    Vec3 velocity(0);
-    velocity = _body->findVelocityInGround(s, lpoint);
+    Vec3 velocity = _body->findVelocityInGround(s, lpoint);
 
     // the speed of the point is the "speed" of the actuator used to compute 
     // power

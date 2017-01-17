@@ -129,7 +129,7 @@ public:
     /** The spatial velocity V_GF {omega; v} for this Frame in ground.
         It can be used to compute the velocity of any stationary point on F,
         located at r_F (Vec3), in ground, G, as:
-            v_G = V_GF(1) + SimTK::cross(V_GF(0), r_F);
+            v_G = V_GF[1] + SimTK::cross(V_GF[0], r_F);
         Is only valid at Stage::Velocity or higher. */
     const SimTK::SpatialVec&
         getVelocityInGround(const SimTK::State& state) const;
@@ -137,8 +137,8 @@ public:
     /** The spatial acceleration A_GF {alpha; a} for this Frame in ground.
         It can also be used to compute the acceleration of any stationary point
         on F, located at r_F (Vec3), in ground, G, as:
-            a_G = A_GF(1) + SimTK::cross(A_GF(0), r_F) + 
-                  SimTK::cross(V_GF(0), SimTK::cross(V_GF(0), r_F));
+            a_G = A_GF[1] + SimTK::cross(A_GF[0], r_F) + 
+                  SimTK::cross(V_GF[0], SimTK::cross(V_GF[0], r_F));
         Is only valid at Stage::Acceleration or higher. */
     const SimTK::SpatialVec&
         getAccelerationInGround(const SimTK::State& state) const;
@@ -217,7 +217,7 @@ public:
     @return point_G    The re-expression of the point in Ground.
     */
     SimTK::Vec3 findLocationInGround(const SimTK::State& state,
-                    const SimTK::Vec3& point_f) const;
+                    const SimTK::Vec3& point_F) const;
 
     /**
     Take a point located and expressed in this frame (F) and determine
@@ -228,7 +228,7 @@ public:
     @return point_G    The re-expression of the point in Ground.
     */
     SimTK::Vec3 findVelocityInGround(const SimTK::State& state,
-        const SimTK::Vec3& point_f) const;
+        const SimTK::Vec3& point_F) const;
 
     /**
     Take a point located and expressed in this frame (F) and determine
@@ -239,7 +239,7 @@ public:
     @return point_G    The re-expression of the point in Ground.
     */
     SimTK::Vec3 findAccelerationInGround(const SimTK::State& state,
-        const SimTK::Vec3& point_f) const;
+        const SimTK::Vec3& point_F) const;
 
     /**@}**/
 
