@@ -125,7 +125,7 @@ public:
 //==============================================================================
     /** Enabled (true) by default. **/
     OpenSim_DECLARE_PROPERTY(enabled, bool,
-        "Flag indicating whether the Probe is disabled or not.");
+        "Flag indicating whether the Probe is Enabled.");
 
     OpenSim_DECLARE_PROPERTY(probe_operation, std::string,
         "The operation to perform on the probe input value: "
@@ -160,7 +160,7 @@ public:
     /** Get the number of states in the underlying SimTK::Measure. */
     int getNumInternalMeasureStates() const;
 
-    /** Returns true if the Probe is enaabled and false if the probe is 
+    /** Returns true if the Probe is enabled and false if the probe is 
         disabled. */
     bool isEnabled() const;
     
