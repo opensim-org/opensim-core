@@ -274,7 +274,7 @@ void Mesh::extendFinalizeFromProperties() {
         try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            pmesh.loadFile(attempts.back().c_str());
+            //pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
 
         }
