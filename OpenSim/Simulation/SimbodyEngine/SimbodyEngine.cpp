@@ -804,7 +804,8 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     int nu = _model->getNumSpeeds();
 
     // Get coordinate file indices
-    Array<string> columnLabels, speedLabels, coordStateNames;
+    Array<string> columnLabels, speedLabels;
+    std::vector<string> coordStateNames;
     columnLabels.append("time");
     speedLabels = columnLabels;
 

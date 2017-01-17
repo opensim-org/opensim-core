@@ -117,12 +117,13 @@ constructStorage()
     Array<string> columnLabels;
 
     // STATES
-    Array<string> stateNames = _model->getStateVariableNames();
-    int ny = stateNames.getSize();
+    std::vector<string> stateNames = _model->getStateVariableNames();
     _stateStore.reset(new Storage(512,"states"));
     columnLabels.setSize(0);
     columnLabels.append("time");
-    for(int i=0;i<ny;i++) columnLabels.append(stateNames[i]);
+    for (auto const& name : stateNames) {
+        columnLabels.append(name);
+    }
     _stateStore->setColumnLabels(columnLabels);
 
     return(true);

@@ -409,13 +409,14 @@ void OpenSimContext::restoreStateFromCachedModel()
     _model->initSystem();
     clonedModel->initSystem();
 
-    Array<std::string> modelVariableNames = _model->getStateVariableNames();
-    Array<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
+    std::vector<std::string> modelVariableNames = _model->getStateVariableNames();
+    std::vector<std::string> clonedModelVariableNames = clonedModel->getStateVariableNames();
 
-    for(int i = 0; i < modelVariableNames.getSize(); i++)
+    for(auto const& name : modelVariableNames)
     {
-        std::string name = modelVariableNames.get(i);
-        if(clonedModelVariableNames.findIndex(name) >= 0)
+        std::vector<std::string>::iterator it;
+        it = std::find(clonedModelVariableNames.begin(), clonedModelVariableNames.end(), name);
+        if(it != clonedModelVariableNames.end())
         {
             double value = clonedModel->getStateVariableValue(clonedState, name);
             _model->setStateVariableValue(_model->updWorkingState(), name, value);

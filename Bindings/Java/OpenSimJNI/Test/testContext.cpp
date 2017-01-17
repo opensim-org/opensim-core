@@ -89,7 +89,7 @@ int main()
     SimTK::State stateCopy = context->getCurrentStateCopy();
     assert(context->getCurrentStateRef().toString()==stateCopy.toString());
 
-    Array<std::string> stateNames = model->getStateVariableNames();
+    std::vector<std::string> stateNames = model->getStateVariableNames();
     OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
     Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
     assert(dTRIlong);

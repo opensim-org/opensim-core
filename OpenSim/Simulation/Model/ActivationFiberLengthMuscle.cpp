@@ -240,9 +240,9 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
         // in the case the actuation is being overridden, the states aren't 
         // being used but a valid derivative cache entry is still required
         int numStateVariables = getNumStateVariables();
-        Array<std::string> stateVariableNames = getStateVariableNames();
-        for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDerivativeValue(s, stateVariableNames[i], 0.0);
+        std::vector<std::string> stateVariableNames = getStateVariableNames();
+        for (auto const& name : stateVariableNames) {
+            setStateVariableDerivativeValue(s, name, 0.0);
         }
     } 
 }

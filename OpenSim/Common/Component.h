@@ -46,7 +46,6 @@
 #include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/ComponentOutput.h"
-#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
 #include "ComponentPath.h"
 #include <functional>
@@ -712,7 +711,7 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    Array<std::string> getStateVariableNames() const;
+    std::vector<std::string> getStateVariableNames() const;
 
 
     /** @name Component Socket Access methods
@@ -2439,7 +2438,7 @@ private:
     // managed by this Component.
     int getNumStateVariablesAddedByComponent() const 
     {   return (int)_namedStateVariableInfo.size(); }
-    Array<std::string> getStateVariablesNamesAddedByComponent() const;
+    std::vector<std::string> getStateVariablesNamesAddedByComponent() const;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const
         {   return getSystem().getDefaultSubsystem(); }

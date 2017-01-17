@@ -285,11 +285,11 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     if(aQStore.getSize() != aUStore.getSize())
         throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
 
-    Array<string> stateNames("", ny);
+    std::vector<string> stateNames(ny);
     Array<string> qLabels = aQStore.getColumnLabels();
     Array<string> uLabels = aUStore.getColumnLabels();
     stateNames = aModel.getStateVariableNames();
-    stateNames.insert(0, "time");
+    stateNames.insert(stateNames.begin(), "time");
     
     // Preserve the labels from the data file which are typically abbreviated
     // label[0] = time
@@ -304,7 +304,11 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
     const SimTK::State &s = aModel.getWorkingState();
 
     Storage *statesStore = new Storage(512,"states");
-    statesStore->setColumnLabels(stateNames);
+    Array<string> stateNamesArray;
+    for (auto const& name : stateNames) {
+        stateNamesArray.append(name);
+    }
+    statesStore->setColumnLabels(stateNamesArray);
     Array<double> y(0.0,ny);
 
     // initialize the state storage from the default state so that states have relevant values
@@ -622,7 +626,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     // compare to the column labels of the storage and construct a dataToModel
     // mapping.
     const Array<std::string>& stateNames = aStatesStore.getColumnLabels();
-    Array<std::string> modelStateNames = aModel.getStateVariableNames();
+    std::vector<std::string> modelStateNames = aModel.getStateVariableNames();
 
     int nsData = stateNames.size() - 1;  //-1 since time is a column
     Array<int> dataToModel(-1, nsData);
