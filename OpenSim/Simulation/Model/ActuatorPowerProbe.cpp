@@ -170,7 +170,7 @@ void ActuatorPowerProbe::extendConnectToModel(Model& model)
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
         else

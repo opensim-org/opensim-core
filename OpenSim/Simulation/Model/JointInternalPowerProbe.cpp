@@ -174,7 +174,7 @@ void JointInternalPowerProbe::extendConnectToModel(Model& aModel)
             string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
                     + jointName + "' specified in <joint_names>.";
             std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            setEnabled(false);
         }
         else
             _jointIndex.push_back(k);
