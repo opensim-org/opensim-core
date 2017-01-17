@@ -123,8 +123,8 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
+    /** Enabled (true) by default. **/
+    OpenSim_DECLARE_PROPERTY(enabled, bool,
         "Flag indicating whether the Probe is disabled or not.");
 
     OpenSim_DECLARE_PROPERTY(probe_operation, std::string,
@@ -160,10 +160,12 @@ public:
     /** Get the number of states in the underlying SimTK::Measure. */
     int getNumInternalMeasureStates() const;
 
-    /** Returns true if the Probe is disabled or false if the probe is enabled. */
-    bool isDisabled() const;
-    /** %Set the Probe as disabled (true) or enabled (false). */
-    void setDisabled(bool isDisabled);
+    /** Returns true if the Probe is enaabled and false if the probe is 
+        disabled. */
+    bool isEnabled() const;
+    
+    /** %Set the Probe as enabled (true) or disabled (false). */
+    void setEnabled(bool enabled);
 
     /** Return the operation being performed on the probe value. */
     std::string getOperation() const;
@@ -214,6 +216,8 @@ public:
     @return         The SimTK::Vector of probe output values.**/
     SimTK::Vector getProbeOutputs(const SimTK::State& state) const;
 
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
 
 protected:
     // ModelComponent interface.
