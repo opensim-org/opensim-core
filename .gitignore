@@ -20,3 +20,6 @@ dependencies/*
 
 # Ignore log files from OpenSim crashing
 *.log
+
+# Ignore OSX attribute files
+*.DS_Store

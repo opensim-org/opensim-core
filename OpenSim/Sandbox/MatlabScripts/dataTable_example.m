@@ -1,57 +1,57 @@
 
 
+
+
+clear all; close all; clc
+
+%% import opensim libraries 
 import org.opensim.modeling.*
 
-new_table = TimeSeriesTable()
+%% make a blank data table
+table = DataTable;
 
-table = DataTable
-
+%% make a vector of strings that will be used to make column labels
 colnames = StdVectorString;
+colnames.add('data_1')
+colnames.add('data_2')
+colnames.add('data_3')
+colnames.add('data_4')
+colnames.add('data_5')
 
-colnames.isEmpty
-
-colnames.add('0')
-colnames.add('1')
-colnames.add('2')
-colnames.add('3')
-colnames.add('4')
-
-colnames.isEmpty
-colnames.size
-
+%% Set the column label names
 table.setColumnLabels(colnames);
 
-
-row0 = RowVector(5, 0);
+%% create some row arbitary row vectors 
+row0 = RowVector(5, 0); 
 row1 = RowVector(5, 0.25 );
 row2 = RowVector(5, 0.50 );
 row3 = RowVector(5, 0.75 );
 row4 = RowVector(5, 1 );
 
-
+%% append the rows to the table
 table.appendRow(0, row0);
 table.appendRow(0, row1);
 table.appendRow(0, row2);
 table.appendRow(0, row3);
 table.appendRow(0, row4);
 
-% Retrieve a column by its label.
-col3 = table.getDependentColumn('3');
+%% Retrieve a column by its label and by the label
+col3 = table.updDependentColumnAtIndex(0);
+col2 = table.updDependentColumn('data_2');
 
-col3.getElt(0,0)
-col3.getElt(1,0)
-col3.getElt(2,0)
-col3.getElt(3,0)
-col3.getElt(4,0)
+%% dump the column data into a matlab array
+data = [];
+for iRow = 0 : table.getNumRows - 1
+    data = [data; col3.get(iRow)];    
+end    
+
+%% do transformation and write the data back to the OpenSim table
+data_new = data * 1000;
+for iRow = 0 : table.getNumRows - 1
+    col3.set( iRow , data_new(iRow + 1) );    
+end 
 
 
-col2 = table.getDependentColumn('2');
-
-col2.getElt(0,0)
-col2.getElt(1,0)
-col2.getElt(2,0)
-col2.getElt(3,0)
-col2.getElt(4,0)
 
 
 
