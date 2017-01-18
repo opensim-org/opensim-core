@@ -170,7 +170,7 @@ public:
     // MarkersReference (set of marker trajectories and their weights) and
     // CoordinateReferences that are being used by the InverseKinematicsSolver.
     void populateReferences(MarkersReference& markersReference,
-        SimTK::Array_<CoordinateReference>&coordinateReferences);
+        SimTK::Array_<CoordinateReference>&coordinateReferences) const;
 
 //=============================================================================
 };  // END of class InverseKinematicsTool

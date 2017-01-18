@@ -518,7 +518,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
 }
 
 void InverseKinematicsTool::populateReferences(MarkersReference& markersReference,
-    SimTK::Array_<CoordinateReference>&coordinateReferences)
+    SimTK::Array_<CoordinateReference>&coordinateReferences) const
 {
     FunctionSet *coordFunctions = NULL;
     // Load the coordinate data
