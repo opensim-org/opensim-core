@@ -571,11 +571,11 @@ get_property(Simbody_BUILD_TYPE
   TARGET SimTKcommon
   PROPERTY IMPORTED_CONFIGURATIONS)
 message(${Simbody_BUILD_TYPE})
-message(${CMAKE_BUILD_TYPE})
+#message(${CMAKE_BUILD_TYPE})
 
 # if(${PLATFORM_NAME} STREQUAL Linux)
 add_custom_target(Simbody_CONFIG_check ALL
-  COMMAND "exit" "$<NOT:$<CONFIG:${CMAKE_BUILD_TYPE}>>")
+  COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_BUILD_TYPE}>>")
 # elseif(${PLATFORM_NAME} STREQUAL Windows)
 #   add_custom_target(Simbody_CONFIG ALL)
 # endif()
