@@ -34,7 +34,8 @@
 using namespace OpenSim;
 using namespace std;
 
-void testMarkerWeightAssignments(const std::string& ikSetupFile); 
+void testMarkerWeightAssignments(const std::string& ikSetupFile);
+void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik);
 
 int main()
 {
@@ -75,11 +76,13 @@ int main()
 
 void testMarkerWeightAssignments(const std::string& ikSetupFile)
 {
+    // Check the consistency for the IKTaskSet in the IKTool setup
     InverseKinematicsTool ik(ikSetupFile);
 
     // Get a copy of the IK tasks
     IKTaskSet tasks = ik.getIKTaskSet();
 
+    // assign different weightings so we can verify the assignments
     int nt = tasks.getSize();
     for (int i{ 0 }; i < nt; ++i) {
         tasks[i].setWeight(double(i));
@@ -89,34 +92,14 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     // update tasks used by the IK tool
     ik.getIKTaskSet() = tasks;
 
-    MarkersReference markersReference;
-    SimTK::Array_<CoordinateReference> coordinateReferences;
-    
-    ik.populateReferences(markersReference, coordinateReferences);
+    // perform the check
+    checkMarkersReferenceConsistencyFromTool(ik);
 
-    SimTK::Array_<string> names = markersReference.getNames();
-
-    // Need a model to get a state, doesn't matter which model.
-    Model model;
-    SimTK::State& state = model.initSystem();
-
-    SimTK::Array_<double> weights;
-    markersReference.getWeights(state, weights);
-
-    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
-        "Number of markers does not match number of weights.");
-
-    for (auto i{ 0 }; i < names.size(); ++i) {
-        std::cout << names[i] << ": " << weights[i] << " in TaskSet: "
-        << tasks.get(names[i]).getWeight() << std::endl;
-        SimTK_ASSERT_ALWAYS(weights[i] == tasks.get(names[i]).getWeight(),
-            "Mismatched weight to marker");
-    }
-
+    // Now reverse the order and half the number of tasks
+    // so that marker and tasks lists are no longer the same
     IKTaskSet tasks2;
     tasks2.setName("half_markers");
 
-    // Now reverse order and with half the number of tasks
     for (int i{ nt / 2 }; i > -1 ; --i) {
         tasks2.adoptAndAppend(tasks[2*i].clone());
     }
@@ -124,30 +107,65 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     cout << tasks2.dump(true) << endl;
     ik.getIKTaskSet() = tasks2;
 
-    MarkersReference markersReference2;
-    SimTK::Array_<CoordinateReference> coordinateReferences2;
+    // perform the check
+    checkMarkersReferenceConsistencyFromTool(ik);
 
-    ik.populateReferences(markersReference2, coordinateReferences2);
+    //Now use more tasks than there are actual markers
+    IKMarkerTask* newMarker = new IKMarkerTask();
+    newMarker->setName("A");
+    newMarker->setWeight(101);
+    //insert at the very beginning
+    tasks.insert(0, newMarker);
+    newMarker = new IKMarkerTask();
+    newMarker->setName("B");
+    newMarker->setWeight(101);
+    // add one in the middle
+    tasks.insert(nt / 2, newMarker);
+    newMarker = new IKMarkerTask();
+    newMarker->setName("C");
+    newMarker->setWeight(103);
+    // and one more at the end
+    tasks.adoptAndAppend(newMarker);
+    tasks.setName("Added superfluous tasks");
+    cout << tasks.dump(true) << endl;
+    
+    cout << tasks.dump(true) << endl;
+    // update the tasks of the IK Tool
+    ik.getIKTaskSet() = tasks;
 
-    SimTK::Array_<string> names2 = markersReference2.getNames();
-    SimTK::Array_<double> weights2;
-    markersReference2.getWeights(state, weights2);
+    // perform the check: superfluous tasks should be ignored
+    checkMarkersReferenceConsistencyFromTool(ik);
+}
 
-    for (auto i{ 0 }; i < names2.size(); ++i) {
-        std::cout << names2[i] << ": " << weights2[i];
-        int ix = tasks2.getIndex(names2[i]);
+void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
+{
+    MarkersReference markersReference;
+    SimTK::Array_<CoordinateReference> coordinateReferences;
+
+    ik.populateReferences(markersReference, coordinateReferences);
+    const IKTaskSet& tasks = ik.getIKTaskSet();
+
+    // Need a model to get a state, doesn't matter which model.
+    Model model;
+    SimTK::State& state = model.initSystem();
+
+    SimTK::Array_<string> names = markersReference.getNames();
+    SimTK::Array_<double> weights;
+    markersReference.getWeights(state, weights);
+
+    for (auto i{ 0 }; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i];
+        int ix = tasks.getIndex(names[i]);
         if (ix > -1) {
-            cout << " in TaskSet: " << tasks2[ix].getWeight() << endl;
-            SimTK_ASSERT_ALWAYS(weights2[i] == tasks2[ix].getWeight(),
+            cout << " in TaskSet: " << tasks[ix].getWeight() << endl;
+            SimTK_ASSERT_ALWAYS(weights[i] == tasks[ix].getWeight(),
                 "Mismatched weight to marker task");
         }
         else {
-            cout << " default: " << markersReference2.get_default_weight() << endl;
+            cout << " default: " << markersReference.get_default_weight() << endl;
             SimTK_ASSERT_ALWAYS(
-                weights2[i] == markersReference2.get_default_weight(),
+                weights[i] == markersReference.get_default_weight(),
                 "Mismatched weight to default weight");
         }
     }
 }
-
-
