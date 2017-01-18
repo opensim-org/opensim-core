@@ -498,10 +498,10 @@ endif()
 # Note that not all libraries offer import-able cmake targets. It is possible
 # to encounter problems even with following lines in place if CMAKE_BUILD_TYPE
 # is not identical/compatible between OpenSim and dependencies.
-set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG          Debug)
-set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo)
-set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE        Release)
-set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL     MinSizeRel)
+# set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG          Debug)
+# set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo)
+# set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE        Release)
+# set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL     MinSizeRel)
 
 set(OPENSIM_DEPENDENCIES_DIR 
     "" 
@@ -566,6 +566,20 @@ if(NOT Simbody_FOUND)
         Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
         SIMBODY_HOME to the installation directory of Simbody.")
 endif()
+
+get_property(Simbody_BUILD_TYPE
+  TARGET SimTKcommon
+  PROPERTY IMPORTED_CONFIGURATIONS)
+message(${Simbody_BUILD_TYPE})
+message(${CMAKE_BUILD_TYPE})
+
+# if(${PLATFORM_NAME} STREQUAL Linux)
+add_custom_target(Simbody_CONFIG_check ALL
+  COMMAND "exit" "$<NOT:$<CONFIG:${CMAKE_BUILD_TYPE}>>")
+# elseif(${PLATFORM_NAME} STREQUAL Windows)
+#   add_custom_target(Simbody_CONFIG ALL)
+# endif()
+
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
