@@ -142,6 +142,9 @@ Building from the source code
 
 We support a few ways of building OpenSim:
 
+**NOTE -- In all platforms (Windows, OSX, Linux), OpenSim Dependencies (Simbody, BTK etc) are required to be built with same
+*CMAKE_BUILD_TYPE* as OpenSim. For example, if OpenSim is to be built with *CMAKE_BUILD_TYPE* as *Debug*,  Simbody, BTK and all other OpenSim dependencies also need to be built with *CMAKE_BUILD_TYPE* as *Debug*. Failing to do so will result in mysterious runtime errors like 'segfault' in standard c++ library implementation.**
+
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
 2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). Need extended instructions? Use [these instructions](#extended-instructions-for-osx).
 3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles). In a rush? Use [these instructions](#for-the-impatient-ubuntu).
