@@ -28,14 +28,19 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
+#include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
+void testMarkerWeightAssignments(const std::string& ikSetupFile); 
+
 int main()
 {
     try {
+
+        testMarkerWeightAssignments("subject01_Setup_InverseKinematics.xml");
 
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
@@ -67,3 +72,82 @@ int main()
     cout << "Done" << endl;
     return 0;
 }
+
+void testMarkerWeightAssignments(const std::string& ikSetupFile)
+{
+    InverseKinematicsTool ik(ikSetupFile);
+
+    // Get a copy of the IK tasks
+    IKTaskSet tasks = ik.getIKTaskSet();
+
+    int nt = tasks.getSize();
+    for (int i{ 0 }; i < nt; ++i) {
+        tasks[i].setWeight(double(i));
+    }
+
+    cout << tasks.dump(true) << endl;
+    // update tasks used by the IK tool
+    ik.getIKTaskSet() = tasks;
+
+    MarkersReference markersReference;
+    SimTK::Array_<CoordinateReference> coordinateReferences;
+    
+    ik.populateReferences(markersReference, coordinateReferences);
+
+    SimTK::Array_<string> names = markersReference.getNames();
+
+    // Need a model to get a state, doesn't matter which model.
+    Model model;
+    SimTK::State& state = model.initSystem();
+
+    SimTK::Array_<double> weights;
+    markersReference.getWeights(state, weights);
+
+    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
+        "Number of markers does not match number of weights.");
+
+    for (auto i{ 0 }; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i] << " in TaskSet: "
+        << tasks.get(names[i]).getWeight() << std::endl;
+        SimTK_ASSERT_ALWAYS(weights[i] == tasks.get(names[i]).getWeight(),
+            "Mismatched weight to marker");
+    }
+
+    IKTaskSet tasks2;
+    tasks2.setName("half_markers");
+
+    // Now reverse order and with half the number of tasks
+    for (int i{ nt / 2 }; i > -1 ; --i) {
+        tasks2.adoptAndAppend(tasks[2*i].clone());
+    }
+
+    cout << tasks2.dump(true) << endl;
+    ik.getIKTaskSet() = tasks2;
+
+    MarkersReference markersReference2;
+    SimTK::Array_<CoordinateReference> coordinateReferences2;
+
+    ik.populateReferences(markersReference2, coordinateReferences2);
+
+    SimTK::Array_<string> names2 = markersReference2.getNames();
+    SimTK::Array_<double> weights2;
+    markersReference2.getWeights(state, weights2);
+
+    for (auto i{ 0 }; i < names2.size(); ++i) {
+        std::cout << names2[i] << ": " << weights2[i];
+        int ix = tasks2.getIndex(names2[i]);
+        if (ix > -1) {
+            cout << " in TaskSet: " << tasks2[ix].getWeight() << endl;
+            SimTK_ASSERT_ALWAYS(weights2[i] == tasks2[ix].getWeight(),
+                "Mismatched weight to marker task");
+        }
+        else {
+            cout << " default: " << markersReference2.get_default_weight() << endl;
+            SimTK_ASSERT_ALWAYS(
+                weights2[i] == markersReference2.get_default_weight(),
+                "Mismatched weight to default weight");
+        }
+    }
+}
+
+
