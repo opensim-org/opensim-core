@@ -36,6 +36,12 @@
 using namespace OpenSim;
 using namespace std;
 
+
+// Verify that the marker weight are consistent with the initial Set
+// of MarkerWeights used to construct the MarkersReference
+void testMarkersReference();
+
+
 // Utility function to build a simple pendulum with markers attached
 Model* constructPendulumWithMarkers();
 // Using a model with markers and trajectory of states, create synthetic
@@ -62,6 +68,8 @@ void testTrackWithUpdateMarkerWeights();
 int main()
 {
     SimTK::Array_<std::string> failures;
+
+    testMarkersReference();
 
     try { testAccuracy(); }
     catch (const std::exception& e) {
@@ -91,6 +99,71 @@ int main()
 //=============================================================================
 // Test Cases
 //=============================================================================
+void testMarkersReference()
+{
+    vector<std::string> labels{ "A", "B", "C", "D", "E", "F" };
+    size_t nc = labels.size();
+    size_t nr = 5;
+
+    TimeSeriesTable_<SimTK::Vec3> markerData;
+    markerData.setColumnLabels(labels);
+    for (size_t r{0}; r < nr; ++r) {
+    SimTK::RowVector_<SimTK::Vec3> row{ int(nc), SimTK::Vec3(0) };
+    markerData.appendRow(0.1*r, row);
+    }
+
+    vector<int> order = { 3, 5, 1, 4, 0, 2};
+    Set<MarkerWeight> markerWeights;
+    for (size_t m{0}; m < nc; ++m)
+    markerWeights.adoptAndAppend(
+        new MarkerWeight(labels[order[m]], double(order[m])) );
+
+    std::cout << markerWeights.dump() << std::endl;
+
+    MarkersReference markersRef(markerData, &markerWeights);
+
+    Model model;
+    SimTK::State& s = model.initSystem();
+    s.updTime() = 0.0;
+
+    SimTK::Array_<string> names = markersRef.getNames();
+
+    SimTK::Array_<double> weights;
+    markersRef.getWeights(s, weights);
+
+    SimTK_ASSERT_ALWAYS(names.size() == weights.size(), 
+        "Number of markers does not match number of weights.");
+
+    for (auto i{ 0 }; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i] << std::endl;
+        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
+            "Mismatched weight to marker.");
+    }
+
+    // Add marker weights for markers not present in the data
+    markerWeights.adoptAndAppend(new MarkerWeight("X", 0.1));
+    markerWeights.insert(0, new MarkerWeight("Y", 0.01));
+
+    MarkersReference markersRef2(markerData, &markerWeights);
+
+    auto mWeightSet = markersRef2.get_marker_weights();
+
+    // verify that internal weight set was updated 
+    std::cout << mWeightSet.dump() << std::endl;
+
+    names = markersRef2.getNames();
+    markersRef2.getWeights(s, weights);
+
+    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
+        "Number of markers does not match number of weights.");
+
+    for (auto i{ 0 }; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i] << std::endl;
+        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
+            "Mismatched weight to marker.");
+    }
+}
+
 
 void testAccuracy()
 {
