@@ -568,18 +568,16 @@ if(NOT Simbody_FOUND)
 endif()
 
 get_property(Simbody_BUILD_TYPE
-  TARGET SimTKcommon
-  PROPERTY IMPORTED_CONFIGURATIONS)
-message(${Simbody_BUILD_TYPE})
-#message(${CMAKE_BUILD_TYPE})
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
 
-# if(${PLATFORM_NAME} STREQUAL Linux)
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
 add_custom_target(Simbody_CONFIG_check ALL
-  COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_BUILD_TYPE}>>")
-# elseif(${PLATFORM_NAME} STREQUAL Windows)
-#   add_custom_target(Simbody_CONFIG ALL)
-# endif()
-
+    COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_BUILD_TYPE}>>"
+    COMMENT ${MESSAGE})
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
