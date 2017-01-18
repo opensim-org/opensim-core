@@ -39,6 +39,8 @@ namespace OpenSim {
 
 class Model;
 class IKTaskSet;
+class MarkersReference;
+class CoordinateReference;
 
 //=============================================================================
 //=============================================================================
@@ -164,6 +166,11 @@ public:
     //--------------------------------------------------------------------------
     bool run() override SWIG_DECLARE_EXCEPTION;
 
+    // For testing/debugging it is necessary to know exactly what are the
+    // MarkersReference (set of marker trajectories and their weights) and
+    // CoordinateReferences that are being used by the InverseKinematicsSolver.
+    void populateReferences(MarkersReference& markersReference,
+        SimTK::Array_<CoordinateReference>&coordinateReferences);
 
 //=============================================================================
 };  // END of class InverseKinematicsTool
