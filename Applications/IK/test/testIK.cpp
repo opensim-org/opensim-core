@@ -84,7 +84,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
 
     // assign different weightings so we can verify the assignments
     int nt = tasks.getSize();
-    for (int i{ 0 }; i < nt; ++i) {
+    for (int i=0; i < nt; ++i) {
         tasks[i].setWeight(double(i));
     }
 
@@ -95,13 +95,13 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     // perform the check
     checkMarkersReferenceConsistencyFromTool(ik);
 
-    // Now reverse the order and half the number of tasks
+    // Now reverse the order and reduce the number of tasks
     // so that marker and tasks lists are no longer the same
     IKTaskSet tasks2;
     tasks2.setName("half_markers");
 
-    for (int i{ nt / 2 }; i > -1 ; --i) {
-        tasks2.adoptAndAppend(tasks[2*i].clone());
+    for (int i = nt-1; i >= 0 ; i -= 2) {
+        tasks2.adoptAndAppend(tasks[i].clone());
     }
 
     cout << tasks2.dump(true) << endl;
@@ -127,8 +127,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     // and one more at the end
     tasks.adoptAndAppend(newMarker);
     tasks.setName("Added superfluous tasks");
-    cout << tasks.dump(true) << endl;
-    
+
     cout << tasks.dump(true) << endl;
     // update the tasks of the IK Tool
     ik.getIKTaskSet() = tasks;
