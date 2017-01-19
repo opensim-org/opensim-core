@@ -19,4 +19,6 @@ OpenSimAddLibrary(
     TESTDIRS "Test"
     )
 
+add_dependencies(osimCommon Simbody_BUILD_TYPE)
+
     
