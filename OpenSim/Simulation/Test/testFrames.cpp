@@ -492,7 +492,6 @@ void testVelocityAndAccelerationMethods()
     pendulum->getCoordinateSet().get("q1").setValue(s, 2.0);
     pendulum->getCoordinateSet().get("q2").setValue(s, -1.0);
     
-
     SimTK::RungeKuttaMersonIntegrator integrator(pendulum->getSystem());
     SimTK::TimeStepper ts(pendulum->getSystem(), integrator);
     ts.initialize(s);
@@ -501,9 +500,8 @@ void testVelocityAndAccelerationMethods()
     double dt = 0.01;
     int n = int(round(finalT / dt));
 
-    // Hold the computed kinematics from OpenSim and Simbody
+    // Hold the computed kinematics from Station and Frame methods
     SimTK::Vec3 lo, vo, ao, l, v, a;
-    SimTK::MobilizedBody mb_rod2 = rod2.getMobilizedBody();
 
     for (int i = 1; i <= n; ++i) {
         ts.stepTo(i*dt);
@@ -524,7 +522,7 @@ void testVelocityAndAccelerationMethods()
         cout << "t = " << s.getTime() << ": os_a = " << ao;
         cout << " | sb_a = " << a << endl;
 
-        // Compare Simbody values to values from Station
+        // Compare Station values to values from Frame
         SimTK_TEST_EQ(l, lo);
         SimTK_TEST_EQ(v, vo);
         SimTK_TEST_EQ(a, ao);
