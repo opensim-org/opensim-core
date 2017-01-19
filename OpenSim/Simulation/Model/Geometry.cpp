@@ -274,8 +274,9 @@ void Mesh::extendFinalizeFromProperties() {
         try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            //pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
+            // if the file can be opened but had bad contents e.g. binary vtp 
+            // it will be handled downstream 
 
         }
         catch (const std::exception& e) {
