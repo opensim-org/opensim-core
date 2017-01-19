@@ -176,7 +176,7 @@ typedef DataSource_<SimTK::Vec3> DataSourceVec3;
 class InverseKinematics : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematics, ModelComponent);
 public:
-    // TODO connector to a model.
+    // TODO socket to a model.
     
     // TODO convert these to vectors.
     OpenSim_DECLARE_VECTOR_OUTPUT(model_marker_pos, Vec3, getModelMarkerPositions,

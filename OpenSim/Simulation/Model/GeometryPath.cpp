@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -119,14 +119,12 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 {        
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
+    
     // Ensure that the state has been realized to Stage::Dynamics to give
     // clients of this path a chance to calculate meaningful color information.
-    // TODO: this should be removed. Generate decorations is reporting it should 
-    // not force computations.
-    this->getModel().getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+    getModel().realizeDynamics(state);
 
-    const Array<PathPoint*>& pathPoints =
-        getCacheVariableValue<Array<PathPoint*> >(state, "current_path");
+    const Array<PathPoint*>& pathPoints = getCurrentPath(state);
 
     const PathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
@@ -186,7 +184,7 @@ void GeometryPath::constructProperties()
 
     constructProperty_PathWrapSet(PathWrapSet());
     
-    Vec3 defaultColor = SimTK::White;
+    Vec3 defaultColor = SimTK::Gray;
     constructProperty_default_color(defaultColor);
 }
 

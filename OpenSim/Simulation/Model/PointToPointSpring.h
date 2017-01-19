@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -54,11 +54,11 @@ public:
         "Spring resting length (m).");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(body1, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body1, PhysicalFrame,
         "A frame on the first body that this spring connects to.");
-    OpenSim_DECLARE_CONNECTOR(body2, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body2, PhysicalFrame,
         "A frame on the second body that this spring connects to.");
 
 //==============================================================================
