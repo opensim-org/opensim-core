@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth, Matthew Millard                                      *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -435,7 +435,7 @@ void simulateMuscle(
     // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
     SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);  // use copy constructor
     sysPowerProbe->setName("SystemPower");
-    sysPowerProbe->setDisabled(false);
+    sysPowerProbe->setEnabled(true);
     sysPowerProbe->setOperation("differentiate");
     model.addProbe(sysPowerProbe);
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
