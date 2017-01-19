@@ -1599,16 +1599,16 @@ void Object::updateFromXMLDocument()
     IO::chDir(saveWorkingDirectory);
 }
 
-std::string Object::dump(bool dumpName) const {
+std::string Object::dump(bool dumpName) {
     SimTK::String outString;
     XMLDocument doc;
     std::string saveName = getName();
-    //if (!dumpName) setName("");
+    if (!dumpName) setName("");
     Object::setSerializeAllDefaults(true);
     SimTK::Xml::Element elem = doc.getRootElement();
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
-    //setName(saveName);
+    setName(saveName);
     doc.getRootElement().node_begin()->writeToString(outString);
     return outString;
     }
