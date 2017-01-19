@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
  *            Thomas Uchida                                                   *
  *                                                                            *
@@ -115,7 +115,7 @@ protected:
 // PropMyoController is a type of Controller that produces a control signal k*a,
 // where 'k' is the gain property and 'a' is the activation input. This
 // Controller is intended to simulate a proportional myoelectric controller [1],
-// and can control any ScalarActuator (set using the "actuator" connector).
+// and can control any ScalarActuator (set using the "actuator" socket).
 // [1] https://en.wikipedia.org/wiki/Proportional_myoelectric_control
 // [Step 2, Task B]
 //------------------------------------------------------------------------------
@@ -128,9 +128,9 @@ public:
     OpenSim_DECLARE_PROPERTY(gain, double,
         "Gain used to convert muscle activation into a control signal");
 
-    // Connector to the ScalarActuator for which the controller is computing a
+    // Socket to the ScalarActuator for which the controller is computing a
     // control signal.
-    //TODO: Add a connector called "actuator" for connecting the ScalarActuator.
+    //TODO: Add a socket called "actuator" for connecting the ScalarActuator.
 
     // Input the activation signal 'a' to which the controller's output should
     // be proportional.

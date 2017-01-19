@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,8 +49,8 @@ namespace OpenSim {
 class OSIMCOMMON_API Path {
 
 public:
-    /// Default constructor
-    Path() = default;
+    /// Create an empty path.
+    Path(const char separator, const std::string invalidChars);
 
     /// Construct Path from a string, given separator character and a string
     /// of invalidChars. Will also clean up the path by removing "." and
@@ -72,7 +72,7 @@ public:
     Path& operator=(const Path&) = default;
 
     /// Destructor.
-    ~Path() = default;
+    virtual ~Path() = default;
 
     /// Write out the path to a string with each element separated by the
     /// specified separator.

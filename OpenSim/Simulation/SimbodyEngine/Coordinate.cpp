@@ -152,11 +152,11 @@ void Coordinate::extendFinalizeFromProperties()
         double dv = get_default_value();
         SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
             "Default coordinate value is less than range minimum.\n" 
-            "Default value = %d  < min = %d.", dv,  get_range(0));
+            "Default value = %g  < min = %g.", dv,  get_range(0));
 
         SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
             "Default coordinate value is greater than range maximum.\n"
-            "Default value = %d > max = %d.", dv, get_range(1));    
+            "Default value = %g > max = %g.", dv, get_range(1));    
     }
 
     _lockedWarningGiven=false;
@@ -469,7 +469,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
             dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
             if (couplerp->getDependentCoordinateName() == getName())
-                return !couplerp->isDisabled(s);
+                return couplerp->isEnforced(s);
         }
     }
     return false;

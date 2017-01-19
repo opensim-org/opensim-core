@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard, Tom Uchida, Ajay Seth                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -895,7 +895,11 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
             dFm_dlce = calcFiberStiffness(fiso, a,
                                           mvi.fiberForceVelocityMultiplier,
                                           mli.normFiberLength, optFiberLen);
-            dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFm_dlce,
+            const double dFmAT_dlce =
+                calc_DFiberForceAT_DFiberLength(fm, dFm_dlce, mli.fiberLength,
+                                                mli.sinPennationAngle,
+                                                mli.cosPennationAngle);
+            dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce,
                 mli.sinPennationAngle, mli.cosPennationAngle, mli.fiberLength);
 
             // Compute the stiffness of the tendon.
@@ -1024,7 +1028,7 @@ void Millard2012EquilibriumMuscle::
     if(!get_ignore_activation_dynamics()) {
         double adot = 0;
         // if not disabled or overridden then compute its derivative
-        if (!isDisabled(s) && !isActuationOverridden(s)) {
+        if (appliesForce(s) && !isActuationOverridden(s)) {
             adot =getActivationDerivative(s);
         }
         setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
@@ -1034,7 +1038,7 @@ void Millard2012EquilibriumMuscle::
     if(!get_ignore_tendon_compliance()) {
         double ldot = 0;
         // if not disabled or overridden then compute its derivative
-        if (!isDisabled(s) && !isActuationOverridden(s)) {
+        if (appliesForce(s) && !isActuationOverridden(s)) {
             ldot = getFiberVelocity(s);
         }
         setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);

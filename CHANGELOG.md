@@ -32,10 +32,17 @@ Converting from v3.x to v4.0
   also use the `extend` variants. Otherwise, you will enter into an infinite recursion.
 - OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler
   must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
-- The following components have been upgraded to use Connectors to connect to
+- The following components have been upgraded to use Sockets to connect to
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
+- We created a new unified command line interface that will replace the
+  single-tool command line executables (`scale`, `ik`, `id`, `rra`, `cmc`,
+  etc.).
+  - `scale -S setup.xml` -> `opensim run-tool setup.xml`.
+  - `scale -PS` -> `opensim print-xml scale`
+  - `scale -PropertyInfo ...` -> `opensim info ...`
+  - `versionUpdate ...` -> `opensim update-file ...`
 - The `CoordinateSet` property in `Joint` has been replaced with a `coordinates`
   list property and enumerations have been added for accessing the Coordinates
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes

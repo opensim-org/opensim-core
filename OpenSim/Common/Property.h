@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Michael A. Sherman                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -1151,7 +1151,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
             comment, minSize, maxSize, initValue); }                        \
     template <template <class> class Container>                             \
     void set_##name(const Container<T>& value)                              \
-    {   updProperty_##name().setValue(value); }                             \
+    {   this->updProperty_##name().setValue(value); }                       \
     /** @endcond **/
 
 
@@ -1207,7 +1207,7 @@ A data member is also created but is intended for internal use only:
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
@@ -1217,8 +1217,9 @@ A data member is also created but is intended for internal use only:
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
     void set_##pname(const T& value)                                        \
-    {   updProperty_##pname().setValue(value); }                            \
+    {   this->updProperty_##pname().setValue(value); }                      \
     /** @}                                                               */
+
 
 /** Declare a required, unnamed property holding exactly one object of type
 T derived from %OpenSim's Object class and identified by that object's class 
@@ -1244,7 +1245,7 @@ initialized with an object of type T.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, T)                                        \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> %##T </b> property.                     */ \
     const T& get_##T() const                                                \
@@ -1254,8 +1255,9 @@ initialized with an object of type T.
     {   return this->updProperty_##T().updValue(); }                        \
     /** %Set the value of the <b> %##T </b> property.                    */ \
     void set_##T(const T& value)                                            \
-    {   updProperty_##T().setValue(value); }                                \
+    {   this->updProperty_##T().setValue(value); }                          \
     /** @}                                                               */
+
 
 /** Declare a property of the given \a pname containing an optional value of
 the given type T (that is, the value list can be of length 0 or 1 only).
@@ -1285,7 +1287,7 @@ value of type T.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
@@ -1295,8 +1297,9 @@ value of type T.
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
     void set_##pname(const T& value)                                        \
-    {   updProperty_##pname().setValue(value); }                            \
+    {   this->updProperty_##pname().setValue(value); }                      \
     /** @}                                                               */
+
 
 /** Declare a property of the given \a pname containing a variable-length
 list of values of the given type T. The property may be constructed as empty, 
@@ -1321,7 +1324,7 @@ supports a %size() method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                          0, std::numeric_limits<int>::max())\
@@ -1353,7 +1356,7 @@ method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                          (listSize), (listSize))            \
@@ -1381,7 +1384,7 @@ selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                 (minSize), std::numeric_limits<int>::max()) \
@@ -1409,7 +1412,7 @@ method and operator[] element selection.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment, 0, (maxSize))   \
     /** @cond **/                                                           \
@@ -1443,7 +1446,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
-    /** @name Property-related methods                                   */ \
+    /** @name Property-related functions                                 */ \
     /** @{                                                               */ \
     OpenSim_DECLARE_LIST_PROPERTY_HELPER(pname, T, comment,                 \
                                         (minSize), (maxSize))               \

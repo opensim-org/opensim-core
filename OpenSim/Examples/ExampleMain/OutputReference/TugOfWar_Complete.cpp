@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -298,7 +298,7 @@ int main()
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
         // Enable constraint consistent with current configuration of the model
-        constDist->setDisabled(si, false);
+        constDist->setIsEnforced(si, true);
 
         cout << "Start height = "<< h_start << endl;
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);

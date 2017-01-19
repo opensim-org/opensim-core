@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -52,6 +52,17 @@ int main(int argc,char **argv)
     //----------------------
 
     //LoadOpenSimLibrary("osimSdfastEngine");
+
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      id -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      id -PS              -> opensim-cmd print-xml id
+    )";
+    std::cout << deprecationNotice << std::endl;
 
 
     // PARSE COMMAND LINE

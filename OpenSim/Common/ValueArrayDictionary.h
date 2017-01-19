@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -138,6 +138,16 @@ public:
     /** Get begin iterator to the associative array.                          */
     Dictionary::const_iterator getKeyValueEnd() const {
         return _dictionary.cend();
+    }
+
+    /** Get value corresponding to the given key as string.
+
+    \throws KeyNotFound If key is not found.                                  */
+    std::string getValueAsString(const std::string& key) const {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        
+        return _dictionary.at(key)->toString(0);
     }
 
 private:

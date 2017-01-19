@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -55,9 +55,9 @@ public:
         "to be rigidly maintained between the two points "
         "fixed on each body.");
 
-    OpenSim_DECLARE_CONNECTOR(body_1, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_1, PhysicalFrame,
         "The first body participating in this constraint.");
-    OpenSim_DECLARE_CONNECTOR(body_2, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_2, PhysicalFrame,
         "The second body participating in this constraint.");
 
 

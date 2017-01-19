@@ -15,10 +15,5 @@
 %include <OpenSim/Actuators/ForceVelocityCurve.h>
 %include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 %include <OpenSim/Actuators/TendonForceLengthCurve.h>
-%include <OpenSim/Actuators/ClutchedPathSpring.h>
-%include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
-%include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
-%include <OpenSim/Actuators/Thelen2003Muscle.h>
-%include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>

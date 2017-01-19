@@ -55,6 +55,10 @@ namespace SimTK {
          return new RowVector_<double>{static_cast<int>(row.size()),
                                        row.data()};
      }
+
+     Vector_<double> transpose() {
+         return $self->operator~();
+     }
  }
 %extend VectorBase<double> {
      double __getitem__(size_t i) {
@@ -75,6 +79,10 @@ namespace SimTK {
      Vector_(const std::vector<double>& row) {
          return new Vector_<double>{static_cast<int>(row.size()),
                                     row.data()};
+     }
+
+     RowVector_<double> transpose() {
+         return $self->operator~();
      }
  }
 %template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
@@ -108,6 +116,13 @@ namespace SimTK {
          return new RowVector_<Vec3>{static_cast<int>(row.size()),
                                      row.data()};
      }
+
+     Vector_<Vec3> transpose() {
+         Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
+         for(unsigned i = 0; i < colVec.nelt(); ++i)
+             colVec[i] = $self->operator[](i);
+         return colVec;
+     }
  }
 %extend VectorBase<Vec3> {
      Vec3 __getitem__(size_t i) {
@@ -128,6 +143,13 @@ namespace SimTK {
      Vector_(const std::vector<Vec3>& row) {
          return new Vector_<Vec3>{static_cast<int>(row.size()),
                                   row.data()};
+     }
+
+     RowVector_<Vec3> transpose() {
+         RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
+         for(unsigned i = 0; i < rowVec.nelt(); ++i)
+             rowVec[i] = $self->operator[](i);
+         return rowVec;
      }
  }
 %template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
@@ -196,9 +218,9 @@ namespace SimTK {
 %template(ArrayIndexInt) ArrayIndexTraits<int>; 
 }
 
+%include <SWIGSimTK/PolygonalMesh.h>
 %include <SWIGSimTK/DecorativeGeometry.h>
 
-%include <SWIGSimTK/PolygonalMesh.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;

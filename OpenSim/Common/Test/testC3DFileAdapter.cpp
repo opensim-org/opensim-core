@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -66,6 +66,9 @@ void test(const std::string filename) {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
 
+    std::cout << marker_table->toString({6, 7, 8, 9, 10}) << std::endl;
+    std::cout <<  force_table->toString({6, 7, 8, 9, 10}) << std::endl;
+    
     {
         using namespace OpenSim;
         using MT = TimeSeriesTableVec3;
@@ -99,6 +102,7 @@ int main() {
     filenames.push_back("walking5.c3d");
 
     for(const auto& filename : filenames) {
+        std::cout << "Test reading '" + filename + "'." << std::endl;
         test(filename);
     }
 

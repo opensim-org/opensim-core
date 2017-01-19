@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -72,9 +72,9 @@ public:
     "frame-fixed x-y-z rotation sequence.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(parent, C, "The parent frame to this frame.");
+    OpenSim_DECLARE_SOCKET(parent, C, "The parent frame to this frame.");
 
 //=============================================================================
 // PUBLIC METHODS
@@ -223,7 +223,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updConnector<C>("parent").setConnecteeName(parentName);
+    this->template updSocket<C>("parent").setConnecteeName(parentName);
     setOffsetTransform(offset);
 }
 
@@ -273,7 +273,6 @@ template <class C>
 SimTK::SpatialVec OffsetFrame<C>::
 calcAccelerationInGround(const SimTK::State& state) const
 {
-    std::cout << getConcreteClassName() << "::calcAccelerationInGround" << std::endl;
     // The rigid offset of the OffsetFrame expressed in ground
     const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
         getOffsetTransform().p();
@@ -292,13 +291,13 @@ calcAccelerationInGround(const SimTK::State& state) const
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
-    this->template updConnector<C>("parent").connect(parent);
+    this->connectSocket_parent(parent);
 }
 
 template <class C>
 const C& OffsetFrame<C>::getParentFrame() const
 {
-    return this->template getConnector<C>("parent").getConnectee();
+    return this->template getSocket<C>("parent").getConnectee();
 }
 
 template <class C>

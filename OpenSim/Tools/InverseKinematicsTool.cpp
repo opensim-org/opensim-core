@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -342,7 +342,11 @@ bool InverseKinematicsTool::run()
             }
         }
 
-        //Set the weights for markers
+        // Set the default weight for markers
+        markersReference.setDefaultWeight(1.0);
+        // Set the weights for markers (markers in the model and the marker file
+        // but not assigned a weight in the markerWeightSet will use the default
+        // weight
         markersReference.setMarkerWeightSet(markerWeights);
         //Load the makers
         markersReference.loadMarkersFile(_markerFileName);

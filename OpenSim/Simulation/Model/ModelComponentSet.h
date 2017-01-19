@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -91,16 +91,15 @@ public:
     {
     }
 
-#ifndef SWIG
     /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return _model.get(); }
+    bool hasModel() const { return !_model.empty(); }
     /**
      * Get this Model this set is part of.
      */
     const Model& getModel() const
     {
-        if (_model){
-            return *this->_model;
+        if (hasModel()){
+            return _model.getRef();
         }
         else{
             std::string msg = getClassName();
@@ -118,7 +117,6 @@ public:
 
     void setModel(Model& model) { _model = &model; }
 
-#endif
 
     /**
      * Adding an object to the set causes its Model field to be set.

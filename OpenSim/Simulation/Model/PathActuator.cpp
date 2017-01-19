@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -234,7 +234,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 
     // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverridden(state)){
+    if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);

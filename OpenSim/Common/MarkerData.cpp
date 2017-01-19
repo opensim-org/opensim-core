@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -486,8 +486,9 @@ void MarkerData::readStoFile(const string& aFileName)
     // If the file was written by STOFileAdapter, make the file readable by
     // Storage. Calls below have no effect otherwise.
     std::string tmpFileName{"tmp.sto"};
-    revertToVersionNumber1(aFileName, tmpFileName);
-    addNumRowsNumColumns(tmpFileName, aFileName);
+    bool versionChanged{revertToVersionNumber1(aFileName, tmpFileName)};
+    if(versionChanged)
+        addNumRowsNumColumns(tmpFileName, aFileName);
     std::remove(tmpFileName.c_str());
 
     Storage store(aFileName);

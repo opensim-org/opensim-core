@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Eran Guendelman, Jeffrey A. Reinbolt                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -169,7 +169,7 @@ constructColumnLabels()
            auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
            for (int i=0; i < _numCoordinateActuators; i++) {
               Force& force = _forceSet->get(i);
-              for(int i=0; i<coordinates.size(); ++i) {
+              for(size_t i=0u; i<coordinates.size(); ++i) {
                  const Coordinate& coord = *coordinates[i];
                  if(coord.getName()==force.getName()) {
                     if(coord.getMotionType() == Coordinate::Rotational) {
@@ -455,7 +455,7 @@ begin(SimTK::State& s )
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
         auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
-        for(int i=0; i<coordinates.size(); ++i) {
+        for(size_t i=0u; i<coordinates.size(); ++i) {
             const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 _accelerationIndices.append(i);

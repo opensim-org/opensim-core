@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -65,9 +65,10 @@ static void dumpObj(const Object& obj, int nSpaces) {
 
 int main()
 {
-    // Need to force Windows to load Actuators library if there are no
-    // explicit uses.
-    LoadOpenSimLibrary("osimActuators");
+    // Actuators library is not loaded automatically (unless using clang).
+    #if !defined(__clang__)
+        LoadOpenSimLibrary("osimActuators");
+    #endif
 
     try {
         Model testModel;

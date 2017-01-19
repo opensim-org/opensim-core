@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -556,7 +556,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             //Make sure all the actuators are on!
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, false);
+                _model->updActuators().get(f).setAppliesForce(s_analysis, true);
             }
 
             // Get to  the point where we can evaluate unilateral constraint conditions
@@ -610,7 +610,8 @@ int InducedAccelerations::record(const SimTK::State& s)
             // ******************************* end ERROR CHECKING *******************************/
     
             for(int i=0; i<constraintOn.getSize(); i++) {
-                _constraintSet.get(i).setDisabled(s_analysis, !constraintOn[i]);
+                _constraintSet.get(i).setIsEnforced(s_analysis,
+                                                    constraintOn[i]);
                 // Make sure we stay at Dynamics so each constraint can evaluate its conditions
                 _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
             }
@@ -633,7 +634,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             // disable actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
         }
         else if(_contributors[c] == "velocity"){        
@@ -649,7 +651,8 @@ int InducedAccelerations::record(const SimTK::State& s)
             
             // zero actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
             // Set the configuration (gen. coords and speeds) of the model.
             _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
@@ -660,7 +663,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
             // zero actuator forces
             for(int f=0; f<_model->getActuators().getSize(); f++){
-                _model->updActuators().get(f).setDisabled(s_analysis, true);
+                _model->updActuators().get(f).setAppliesForce(s_analysis,
+                                                              false);
             }
 
             //s_analysis = _model->initSystem();
@@ -678,7 +682,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             
             Actuator &actuator = _model->getActuators().get(ai);
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&actuator);
-            act->setDisabled(s_analysis, false);
+            act->setAppliesForce(s_analysis, true);
             act->overrideActuation(s_analysis, false);
             Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
             if(muscle){
@@ -817,8 +821,8 @@ void InducedAccelerations::initialize(const SimTK::State& s)
         ExternalForce *exf = dynamic_cast<ExternalForce *>(&_model->getForceSet().get(i));
         if(exf){
             addContactConstraintFromExternalForce(exf);
-            exf->setDisabled(s_copy, true);
-            exf->set_isDisabled(true);
+            exf->setAppliesForce(s_copy, false);
+            exf->set_appliesForce(false);
         }
     }
 
@@ -986,14 +990,14 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
 
             // turn on the constraint
-            _constraintSet.get(i).setDisabled(s, false);
+            _constraintSet.get(i).setIsEnforced(s, true);
             // return the state of the constraint
             constraintOn[i] = true;
 
         }
         else{
             // turn off the constraint
-            _constraintSet.get(i).setDisabled(s, true);
+            _constraintSet.get(i).setIsEnforced(s, false);
             // return the state of the constraint
             constraintOn[i] = false;
         }

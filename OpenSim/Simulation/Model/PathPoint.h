@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,11 +77,12 @@ public:
         if (aCoordIndex >= 0 && aCoordIndex <= 2)
            upd_location()[aCoordIndex] = aLocation;
     }
-
+#ifndef SWIG
     // A variant that uses basic types for use by GUI
     void setLocation( const SimTK::State& s, double pt[]){ 
         setLocation(s,SimTK::Vec3::updAs(pt));
     }
+#endif
     void setBody(const PhysicalFrame& body) {
         this->setParentFrame(body);
     }

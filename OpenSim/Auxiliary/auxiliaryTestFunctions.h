@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -127,6 +127,34 @@ do { \
     } \
 } while(false) 
 
+// MESSAGE is a std::string; the assert passes if the expected exception is
+// thrown and the exception's message contains MESSAGE.
+#define ASSERT_THROW_MSG(EXPECTED_EXCEPTION, MESSAGE, STATEMENT) \
+do { \
+    bool caughtExpectedException = false; \
+    try { \
+        STATEMENT; \
+    } \
+    catch (EXPECTED_EXCEPTION const& exc) { \
+        caughtExpectedException = true; \
+        std::string actualMessage = std::string(exc.what()); \
+        if (actualMessage.find(MESSAGE) == std::string::npos) { \
+            throw OpenSim::Exception("TESTING: Caught expected exception " \
+                    "type but message did not contain desired string.\n"  \
+                    "Actual message:\n" + actualMessage + "\n" \
+                    "Desired substring:\n" + MESSAGE); \
+        } \
+    } \
+    catch (...) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but caught different exception."); \
+    } \
+    if (!caughtExpectedException) { \
+        throw OpenSim::Exception("TESTING: Expected exception " \
+            #EXPECTED_EXCEPTION " but no exception thrown."); \
+    } \
+} while(false) 
+
 OpenSim::Object* randomize(OpenSim::Object* obj)
 {
     using namespace OpenSim;
@@ -207,20 +235,24 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
 }
 
 // Change version number of the file to 1 so that Storage can read it.
-// Storage can only read files with version <= 1.
+// Storage can only read files with version <= 1. Returns 'true' if
+// version number was changed. Returns 'false' if no change.
 // This function can be removed when Storage class is removed.
-inline void revertToVersionNumber1(const std::string& filenameOld,
+inline bool revertToVersionNumber1(const std::string& filenameOld,
                                    const std::string& filenameNew) {
-    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*\d[ \t]*)" };
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*2[ \t]*)" };
     std::ifstream fileOld{ filenameOld };
     std::ofstream fileNew{ filenameNew };
     std::string line{};
+    bool changedVersion{false};
     while (std::getline(fileOld, line)) {
-        if (std::regex_match(line, versionline))
+        if (std::regex_match(line, versionline)) {
             fileNew << "version=1\n";
-        else
+            changedVersion = true;
+        } else
             fileNew << line << "\n";
     }
+    return changedVersion;
 }
 
 // Add number of rows (nRows) and number of columns (nColumns) to the header of
