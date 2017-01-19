@@ -134,7 +134,7 @@ void testMarkersReference()
     SimTK_ASSERT_ALWAYS(names.size() == weights.size(), 
         "Number of markers does not match number of weights.");
 
-    for (auto i{ 0 }; i < names.size(); ++i) {
+    for (unsigned int i{ 0 }; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i] << std::endl;
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
             "Mismatched weight to marker.");
@@ -157,7 +157,7 @@ void testMarkersReference()
     SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
         "Number of markers does not match number of weights.");
 
-    for (auto i{ 0 }; i < names.size(); ++i) {
+    for (unsigned int i{ 0 }; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i] << std::endl;
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
             "Mismatched weight to marker.");
