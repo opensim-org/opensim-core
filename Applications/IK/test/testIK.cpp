@@ -153,7 +153,7 @@ void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
     SimTK::Array_<double> weights;
     markersReference.getWeights(state, weights);
 
-    for (auto i{ 0 }; i < names.size(); ++i) {
+    for (unsigned int i=0; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i];
         int ix = tasks.getIndex(names[i]);
         if (ix > -1) {
