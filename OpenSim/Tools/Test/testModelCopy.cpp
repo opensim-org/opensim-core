@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,14 +29,18 @@
 using namespace OpenSim;
 using namespace std;
 
-void testCopyModel(string fileName);
+// Test copying, serializing and deserializing models and verify 
+// that the number of bodies (nbods) and the number of attached geometry
+// (ngeom) on a given PhysicalFrame (by name) are preserved.
+void testCopyModel( const string& fileName, const int nbod, 
+                    const string& physicalFrameName, const int ngeom);
 
 int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
-        testCopyModel("arm26.osim");
-        testCopyModel("Neck3dof_point_constraint.osim");
+        testCopyModel("arm26.osim", 2, "ground", 6);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -46,12 +50,14 @@ int main()
     return 0;
 }
 
-void testCopyModel(string fileName)
+void testCopyModel(const string& fileName, const int nbod, 
+    const string& physicalFrameName, const int ngeom)
 {
     const size_t mem0 = getCurrentRSS();
 
     // Automatically finalizes properties by default when loading from file
-    Model* model = new Model(fileName, false);
+    Model* model = new Model(fileName);
+    model->finalizeFromProperties();
 
     // Catch a possible decrease in the memory footprint, which will cause
     // size_t (unsigned int) to wrap through zero.
@@ -72,6 +78,7 @@ void testCopyModel(string fileName)
     //SimTK::State& defaultState = model->initSystem();
     
     Model* modelCopy = new Model(*model);
+    modelCopy->finalizeFromProperties();
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
     ASSERT( model->getActuators().getSize() == modelCopy->getActuators().getSize() );
@@ -83,6 +90,7 @@ void testCopyModel(string fileName)
 
     //  Now delete original model and make sure copy can stand
     Model *cloneModel = modelCopy->clone();
+    cloneModel->finalizeFromProperties();
     ASSERT(*model == *cloneModel);
     ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
 
@@ -93,9 +101,29 @@ void testCopyModel(string fileName)
     //ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
     //ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
 
+    std::string latestFile = "lastest_" + fileName;
+    modelCopy->print(latestFile);
+    modelCopy->finalizeFromProperties();
+
+    Model* modelSerialized = new Model(latestFile);
+    modelSerialized->finalizeFromProperties();
+    ASSERT(*modelSerialized == *modelCopy);
+
+    int nb = modelSerialized->getNumBodies();
+
+
+    const PhysicalFrame& physFrame =
+        modelSerialized->getComponent<PhysicalFrame>("./"+physicalFrameName);
+
+    int ng = physFrame.getProperty_attached_geometry().size();
+
+    ASSERT(nb == nbod);
+    ASSERT(ng == ngeom);
+
     delete model;
     delete modelCopy;
     delete cloneModel;
+    delete modelSerialized;
 
     // New memory footprint.
     const size_t mem2 = getCurrentRSS();

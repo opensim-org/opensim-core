@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -92,8 +92,8 @@ void RollingOnSurfaceConstraint::constructProperties()
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    _rollingFrame = &getConnector<PhysicalFrame>("rolling_body").getConnectee();
-    _surfaceFrame = &getConnector<PhysicalFrame>("surface_body").getConnectee();
+    _rollingFrame = &getSocket<PhysicalFrame>("rolling_body").getConnectee();
+    _surfaceFrame = &getSocket<PhysicalFrame>("surface_body").getConnectee();
 }
 
 void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -171,12 +171,12 @@ extendSetPropertiesFromState(const SimTK::State& state) {
  * Following methods set attributes of the weld constraint */
 void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("rolling_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("rolling_body").setConnecteeName(aBodyName);
 }
 
 void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("surface_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("surface_body").setConnecteeName(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
@@ -400,7 +400,7 @@ void RollingOnSurfaceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("rolling_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("surface_body");
             std::string body1_name(""), body2_name("");

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
  *            Thomas Uchida                                                   *
  *                                                                            *
@@ -25,7 +25,7 @@
 /* This example demonstrates some of the new features of the OpenSim 4.0 API.
 The Component architecture allows us to join sub-assemblies to form larger
 Models, with information flowing between Components via Inputs, Outputs, and
-Connectors. For more information, please refer to the Component documentation.
+Sockets. For more information, please refer to the Component documentation.
 
 This interactive example consists of three steps:
   Step 1. Build and simulate a single-legged hopping mechanism.

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  ComponentConnector.cpp                      *
+ *                      OpenSim:  ComponentSocket.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Chris Dembia                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,18 +21,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ComponentConnector.h"
+#include "ComponentSocket.h"
 #include "Component.h"
 
 using namespace OpenSim;
 
 const Property<std::string>&
-AbstractConnector::getConnecteeNameProp() const {
+AbstractSocket::getConnecteeNameProp() const {
     return _owner->getProperty<std::string>(_connecteeNameIndex);
 }
 
 Property<std::string>&
-AbstractConnector::updConnecteeNameProp() {
+AbstractSocket::updConnecteeNameProp() {
     return const_cast<Component*>(_owner.get())->updProperty<std::string>(
                 _connecteeNameIndex);
 }

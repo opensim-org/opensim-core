@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -404,9 +404,9 @@ public:
         }
     };
 
-    /// @name Create partial trajectory from pre-4.0 files
+    /// @name Create partial trajectory from a states Storage
     /// @{
-    /** Create a partial trajectory of States from a (pre-4.0) states Storage
+    /** Create a partial trajectory of States from a states Storage
      * object. The resulting StatesTrajectory will restore continuous state
      * variable values, but not discrete state variable values, modeling
      * option values, etc. Also, keep in mind that states Storage files usually

@@ -1,7 +1,7 @@
 // SimbodySimmModel.cpp
 // Authors: Peter Loan
 /*
- * Copyright (c) 2005-2016 Stanford University. All rights reserved. 
+ * Copyright (c) 2005-2017 Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 *   1. The software is used only for non-commercial research and education. It may not
@@ -1047,7 +1047,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
                     aStream << " ranges 1 " << coord.getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
             } else {
                 aStream << " ranges 1 " 
-                    << mvp->getConnector<Coordinate>("coordinate").getConnecteeName()
+                    << mvp->getSocket<Coordinate>("coordinate").getConnecteeName()
                     << " (0.0, 1.0)" << endl;
             }
         } else if (pt.getConcreteClassName()==("MovingPathPoint")) {

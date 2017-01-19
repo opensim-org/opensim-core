@@ -1,5 +1,5 @@
-/* -------------------------------------------------------------------------- *
-*                       OpenSim:  BodyActuator.cpp                        *
+/* ------------------------------------------------------------------------- *
+*                       OpenSim:  BodyActuator.cpp                           *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                     *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Soha Pouya, Michael Sherman                                     *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -60,7 +60,7 @@ BodyActuator::BodyActuator(const Body& body,
     setAuthors("Soha Pouya, Michael Sherman");
     constructProperties();
 
-    updConnector<Body>("body").setConnecteeName(body.getName());
+    updSocket<Body>("body").setConnecteeName(body.getName());
 
     set_point(point); // origin
     set_point_is_global(pointIsGlobal);
@@ -76,12 +76,12 @@ void BodyActuator::constructProperties()
 
 void BodyActuator::setBodyName(const std::string& name)
 {
-    updConnector<Body>("body").setConnecteeName(name);
+    updSocket<Body>("body").setConnecteeName(name);
 }
 
 const std::string& BodyActuator::getBodyName() const
 {
-    return getConnector<Body>("body").getConnecteeName();
+    return getSocket<Body>("body").getConnecteeName();
 }
 
 //=============================================================================
@@ -93,7 +93,7 @@ const std::string& BodyActuator::getBodyName() const
 */
 void BodyActuator::setBody(const Body& body)
 {
-    connectConnector_body(body);
+    connectSocket_body(body);
 }
 
 /**
