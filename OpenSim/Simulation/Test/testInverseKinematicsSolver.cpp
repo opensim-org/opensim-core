@@ -101,18 +101,21 @@ int main()
 //=============================================================================
 void testMarkersReference()
 {
+    // column labels for marker data
     vector<std::string> labels{ "A", "B", "C", "D", "E", "F" };
+    // for testing construct a set of marker weights is a different order 
+    vector<int> order = { 3, 5, 1, 4, 0, 2 };
+
     size_t nc = labels.size();
     size_t nr = 5;
 
     TimeSeriesTable_<SimTK::Vec3> markerData;
     markerData.setColumnLabels(labels);
     for (size_t r{0}; r < nr; ++r) {
-    SimTK::RowVector_<SimTK::Vec3> row{ int(nc), SimTK::Vec3(0) };
-    markerData.appendRow(0.1*r, row);
+        SimTK::RowVector_<SimTK::Vec3> row{ int(nc), SimTK::Vec3(0) };
+        markerData.appendRow(0.1*r, row);
     }
 
-    vector<int> order = { 3, 5, 1, 4, 0, 2};
     Set<MarkerWeight> markerWeights;
     for (size_t m{0}; m < nc; ++m)
     markerWeights.adoptAndAppend(
@@ -157,7 +160,7 @@ void testMarkersReference()
     SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
         "Number of markers does not match number of weights.");
 
-    for (unsigned int i{ 0 }; i < names.size(); ++i) {
+    for (unsigned int i=0; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i] << std::endl;
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
             "Mismatched weight to marker.");
