@@ -548,6 +548,22 @@ if(NOT Simbody_FOUND)
         SIMBODY_HOME to the installation directory of Simbody.")
 endif()
 
+# Check if Simbody targets were built using same BUILD_TYPE/CONFIGURATION as
+# current OpenSim build. If build/configuration types mismatch, stop the build.
+# ------------------------------------------------------------------------------
+get_property(Simbody_CONFIGURATION
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
+
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
+add_custom_target(Simbody_CONFIG_check ALL
+    COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_CONFIGURATION}>>"
+    COMMENT ${MESSAGE})
+  
+
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
 include_directories("${Simbody_INCLUDE_DIR}")
