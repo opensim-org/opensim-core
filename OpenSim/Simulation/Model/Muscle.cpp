@@ -659,15 +659,18 @@ void Muscle::copyPropertiesFromObject(const OpenSim::Muscle& fromObject)
     const int numProps = getNumProperties();
     bool debug = false;
     for (int px = 0; px < numProps; ++px) {
-        const AbstractProperty& fromProp = getPropertyByIndex(px);
+        AbstractProperty& fromProp = updPropertyByIndex(px);
         const std::string& pName = fromProp.getName();
         if (hasProperty(pName)) {
             AbstractProperty& myProp = updPropertyByName(pName); // Get writable reference to my property
             if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
                 if (fromProp.isOneObjectProperty()) { // Either recur or "clone the object
-                    Object& fromPropertyAsObject = const_cast<Object&>(fromProp.getValueAsObject());
-                    const GeometryPath& gpp2 = fromObject.get_GeometryPath(); // This works getProperty_GeometryPath().getValue();
-                    const GeometryPath* gpp = dynamic_cast<GeometryPath*>(&fromPropertyAsObject); // This produces emoty Path
+                    // Expands to Property<GeometryPath>::updAs(fromProp).updValue() and works perfectly
+                    GeometryPath& gpp2 = const_cast<Muscle&>(fromObject).upd_GeometryPath();
+                    // While these line produces empty Path
+                    Object& fromPropertyAsObject = fromProp.updValueAsObject();
+                    std::cout << fromPropertyAsObject.dump() << std::endl;
+                    const GeometryPath* gpp = dynamic_cast<GeometryPath*>(&fromPropertyAsObject);
                     if (gpp != nullptr) {
                         cout << gpp->getPathPointSet().getSize() << std::endl;
                         cout << gpp2.getPathPointSet().getSize() << std::endl;
