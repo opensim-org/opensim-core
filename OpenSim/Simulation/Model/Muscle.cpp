@@ -667,7 +667,7 @@ void Muscle::copyPropertiesFromObject(const OpenSim::Muscle& fromObject)
                 if (fromProp.isOneObjectProperty()) { // Either recur or "clone the object
                     // Expands to Property<GeometryPath>::updAs(fromProp).updValue() and works perfectly
                     GeometryPath& gpp2 = const_cast<Muscle&>(fromObject).upd_GeometryPath();
-                    // While these line produces empty Path
+                    // While the following lines produce an empty Path
                     Object& fromPropertyAsObject = fromProp.updValueAsObject();
                     std::cout << fromPropertyAsObject.dump() << std::endl;
                     const GeometryPath* gpp = dynamic_cast<GeometryPath*>(&fromPropertyAsObject);
