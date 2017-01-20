@@ -183,7 +183,7 @@ void testFromStatesStorageGivesCorrectStates() {
     // This will fail because we have not yet called initSystem() on the model.
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto),
-            OpenSim::StatesTrajectory::ModelHasNoSystem);
+            OpenSim::ModelHasNoSystem);
 
     model.initSystem();
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);

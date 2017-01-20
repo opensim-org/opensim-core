@@ -76,6 +76,21 @@ class ScaleSet;
 //==============================================================================
 /// Model  Exceptions
 //==============================================================================
+class ModelHasNoSystem : public Exception {
+public:
+    ModelHasNoSystem(const std::string& file, size_t line,
+            const std::string& func,
+            const std::string& modelName) :
+                OpenSim::Exception(file, line, func) {
+        std::string msg = "You must first call initSystem() on your Model";
+        if (!modelName.empty()) {
+            msg += " '" + modelName + "'";
+        }
+        msg += ".";
+        addMessage(msg);
+    }
+};
+
 class PhysicalOffsetFramesFormLoop : public Exception {
 public:
     PhysicalOffsetFramesFormLoop(const std::string& file,
