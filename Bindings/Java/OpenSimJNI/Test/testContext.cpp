@@ -177,6 +177,7 @@ int main()
     ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
 
     // Exercise Editing workflow
+    // These are the same calls done from GUI code base through Property edits
     OpenSim::Body& bdy = model->updBodySet().get("r_humerus");
     AbstractProperty& massProp = bdy.updPropertyByName("mass");
     double oldValue = PropertyHelper::getValueDouble(massProp);

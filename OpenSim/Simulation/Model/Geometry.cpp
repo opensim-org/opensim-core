@@ -280,7 +280,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         }
         catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't read "
+            std::cout << "Visualizer couldn't open "
                 << attempts.back() << " because:\n"
                 << e.what() << "\n";
             return;
