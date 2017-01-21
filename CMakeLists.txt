@@ -567,10 +567,19 @@ string(CONCAT MESSAGE
     "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
     "the current OpenSim BUILD_TYPE or CONFIGURATION.")
 
-add_custom_target(Simbody_CONFIG_check ALL
-    COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_CONFIGURATION}>>"
-    COMMENT ${MESSAGE})
-  
+if(PLATFORM_NAME EQUAL Windows)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)  
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
+        COMMAND "if"
+              "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%==\"%Simbody_CONFIG%\""
+              "exit" "1"
+        COMMENT ${MESSAGE})
+elseif(PLATFORM_NAME EQUAL Mac OR PLATFORM_NAME EQUAL Linux)
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_CONFIGURATION}>>"
+        COMMENT ${MESSAGE})
+endif()
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
