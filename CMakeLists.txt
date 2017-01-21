@@ -567,7 +567,7 @@ string(CONCAT MESSAGE
     "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
     "the current OpenSim BUILD_TYPE or CONFIGURATION.")
 
-if(${PLATFORM_NAME} EQUAL Windows)
+if(${PLATFORM_NAME} STREQUAL Windows)
     string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)  
     add_custom_target(Simbody_CONFIG_check ALL
         COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
@@ -575,7 +575,7 @@ if(${PLATFORM_NAME} EQUAL Windows)
               "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%==\"%Simbody_CONFIG%\""
               "exit" "1"
         COMMENT ${MESSAGE})
-elseif(${PLATFORM_NAME} EQUAL Mac OR ${PLATFORM_NAME} EQUAL Linux)
+elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
     add_custom_target(Simbody_CONFIG_check ALL
         COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_CONFIGURATION}>>"
         COMMENT ${MESSAGE})
