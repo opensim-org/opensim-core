@@ -193,53 +193,65 @@ public:
                         const SimTK::Vec3& vec_F) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its location expressed in another frame (A). The transform accounts for
-    the difference in orientation and translation between the frames.
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in another frame (A). The transform
+    accounts for the difference in orientation and translation between the 
+    frames.
     This is mathematically stated as: 
-        point_A = X_AF*point_F
+        loc_A = X_AF*station_F
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @param otherFrame  The frame in which the point will be re-expressed
-    @return point_A    The re-expression of the point in another frame.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @param otherFrame  The frame (A) in which the station's location 
+                       will be relative to and expressed.
+    @return loc_A      The location of the station in another frame (A).
     */
-    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
-                    const SimTK::Vec3& point_F, const Frame& otherFrame) const;
+    SimTK::Vec3 findStationLocationInAnotherFrame(const SimTK::State& state, 
+                    const SimTK::Vec3& station_F, const Frame& otherFrame) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its location expressed in Ground (G). This method is equivalent to
-    `findLocationInAnotherFrame()` where `otherFrame` is always Ground.
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in Ground (G). This method is
+    equivalent to `findLocationInAnotherFrame()` where `otherFrame` is 
+    always Ground.
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getLocationInGround(state)` instead.
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @return point_G    The re-expression of the point in Ground.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return loc_G      The location of the station in Ground.
     */
-    SimTK::Vec3 findLocationInGround(const SimTK::State& state,
-                    const SimTK::Vec3& point_F) const;
+    SimTK::Vec3 findStationLocationInGround(const SimTK::State& state,
+                    const SimTK::Vec3& station_F) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its velocity expressed in Ground (G).
+    Take a station located and expressed in this frame (F) and determine
+    its velocity relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getVelocityInGround(state)` instead.
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @return point_G    The re-expression of the point in Ground.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return vel_G      The velocity of the station in Ground.
     */
-    SimTK::Vec3 findVelocityInGround(const SimTK::State& state,
-        const SimTK::Vec3& point_F) const;
+    SimTK::Vec3 findStationVelocityInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its acceleration expressed in Ground (G).
+    Take a station located and expressed in this frame (F) and determine
+    its acceleration relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getAccelerationInGround(state)` instead.
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @return point_G    The re-expression of the point in Ground.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return acc_G      The acceleration of the station in Ground.
     */
-    SimTK::Vec3 findAccelerationInGround(const SimTK::State& state,
-        const SimTK::Vec3& point_F) const;
+    SimTK::Vec3 findStationAccelerationInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
 
     /**@}**/
 

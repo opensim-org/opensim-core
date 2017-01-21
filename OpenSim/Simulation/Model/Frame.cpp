@@ -186,32 +186,32 @@ SimTK::Vec3 Frame::expressVectorInGround(const SimTK::State& state,
     return getTransformInGround(state).R()*vec_F;
 }
 
-SimTK::Vec3 Frame::findLocationInAnotherFrame(const SimTK::State& state,
-        const SimTK::Vec3& point, const Frame& otherFrame) const
+SimTK::Vec3 Frame::findStationLocationInAnotherFrame(const SimTK::State& state,
+        const SimTK::Vec3& station_F, const Frame& otherFrame) const
 {
-    return findTransformBetween(state, otherFrame)*point;
+    return findTransformBetween(state, otherFrame)*station_F;
 }
 
-SimTK::Vec3 Frame::findLocationInGround(const SimTK::State& state,
-        const SimTK::Vec3& point) const
+SimTK::Vec3 Frame::findStationLocationInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const
 {
-    return getTransformInGround(state)*point;
+    return getTransformInGround(state)*station_F;
 }
 
-SimTK::Vec3 Frame::findVelocityInGround(const SimTK::State& state,
-    const SimTK::Vec3& point) const
+SimTK::Vec3 Frame::findStationVelocityInGround(const SimTK::State& state,
+    const SimTK::Vec3& station_F) const
 {
     const SimTK::SpatialVec& V_GF = getVelocityInGround(state);
-    SimTK::Vec3 r_G = expressVectorInGround(state, point);
+    SimTK::Vec3 r_G = expressVectorInGround(state, station_F);
     return V_GF[1] + SimTK::cross(V_GF[0], r_G);
 }
 
-SimTK::Vec3 Frame::findAccelerationInGround(const SimTK::State& state,
-    const SimTK::Vec3& point) const
+SimTK::Vec3 Frame::findStationAccelerationInGround(const SimTK::State& state,
+    const SimTK::Vec3& station_F) const
 {
     const SimTK::SpatialVec& V_GF = getVelocityInGround(state);
     const SimTK::SpatialVec& A_GF = getAccelerationInGround(state);
-    SimTK::Vec3 r_G = expressVectorInGround(state, point);
+    SimTK::Vec3 r_G = expressVectorInGround(state, station_F);
     return A_GF[1] + SimTK::cross(A_GF[0], r_G) +
         SimTK::cross(V_GF[0], SimTK::cross(V_GF[0], r_G));
 }
