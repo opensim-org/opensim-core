@@ -328,7 +328,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
         if (_specifiesPoint) {
             point = getPointAtTime(time);
             point = _pointExpressedInBody->
-                findLocationInAnotherFrame(state, point, *_appliedToBody);
+                findStationLocationInAnotherFrame(state, point, *_appliedToBody);
         }
         applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
     }
@@ -434,7 +434,7 @@ OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state)
         if (_specifiesPoint) {
             Vec3 point = getPointAtTime(time);
             point = _pointExpressedInBody->
-                findLocationInAnotherFrame(state, point, *_appliedToBody);
+                findStationLocationInAnotherFrame(state, point, *_appliedToBody);
             for(int i=0; i<3; ++i)
                 values.append(point[i]);
         }

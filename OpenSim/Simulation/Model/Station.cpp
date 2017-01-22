@@ -105,7 +105,7 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
     // transform location from the station's frame to the other frame
-    return getParentFrame().findLocationInAnotherFrame(s, 
+    return getParentFrame().findStationLocationInAnotherFrame(s, 
                                                 get_location(), aFrame);
 }
 

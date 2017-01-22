@@ -248,7 +248,7 @@ void testFromStatesStorageGivesCorrectStates() {
         }
 
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());
@@ -481,7 +481,7 @@ void testFromStatesStoragePre40CorrectStates() {
 
         // More complicated computations based on state.
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());

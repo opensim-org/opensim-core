@@ -199,7 +199,7 @@ void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const Si
     getSystem().realize(s, SimTK::Stage::Position);
 
     // For external forces we assume w.r.t. ground
-    Vec3 spoint = _rollingFrame->findLocationInAnotherFrame(s, point, *_surfaceFrame);
+    Vec3 spoint = _rollingFrame->findStationLocationInAnotherFrame(s, point, *_surfaceFrame);
 
     // The contact point coordinates in the surface body frame 
     contactY.setDefaultPlaneNormal(UnitVec3(surfaceNormal));

@@ -236,13 +236,13 @@ void PistonActuator::computeForce(const SimTK::State& s,
     {
         pointA_inGround = _pointA;
         pointB_inGround = _pointB;
-        _pointA = ground.findLocationInAnotherFrame(s, _pointA, *_bodyA);
-        _pointB = ground.findLocationInAnotherFrame(s, _pointB, *_bodyB);
+        _pointA = ground.findStationLocationInAnotherFrame(s, _pointA, *_bodyA);
+        _pointB = ground.findStationLocationInAnotherFrame(s, _pointB, *_bodyB);
     }
     else
     {
-        pointA_inGround = _bodyA->findLocationInGround(s, _pointA);
-        pointB_inGround = _bodyB->findLocationInGround(s, _pointB);
+        pointA_inGround = _bodyA->findStationLocationInGround(s, _pointA);
+        pointB_inGround = _bodyB->findStationLocationInGround(s, _pointB);
     }
 
     // find the direction along which the actuator applies its force

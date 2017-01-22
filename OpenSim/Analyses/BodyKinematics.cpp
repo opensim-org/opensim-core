@@ -453,7 +453,7 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET POSITIONS AND EULER ANGLES
-        vec = body.findLocationInGround(s, com);
+        vec = body.findStationLocationInGround(s, com);
         angVec = body.getTransformInGround(s).R().convertRotationToBodyFixedXYZ();
 
         // CONVERT TO DEGREES?
@@ -474,7 +474,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            vec = body.findLocationInGround(s, com);
+            vec = body.findStationLocationInGround(s, com);
             // ADD TO WHOLE BODY MASS
             Mass += body.get_mass();
             rP[0] += body.get_mass() * vec[0];
@@ -497,7 +497,7 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET VELOCITIES AND ANGULAR VELOCITIES
-        vec = body.findVelocityInGround(s, com);
+        vec = body.findStationVelocityInGround(s, com);
         angVec = body.getVelocityInGround(s)[0];
         if (_expressInLocalFrame) {
             vec = ground.expressVectorInAnotherFrame(s, vec, body);
@@ -522,7 +522,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            vec = body.findVelocityInGround(s, com);
+            vec = body.findStationVelocityInGround(s, com);
             rV[0] += body.get_mass() * vec[0];
             rV[1] += body.get_mass() * vec[1];
             rV[2] += body.get_mass() * vec[2];
@@ -544,7 +544,7 @@ record(const SimTK::State& s)
         const SimTK::Vec3& com = body.get_mass_center();
 
         // GET ACCELERATIONS AND ANGULAR ACCELERATIONS
-        vec = body.findAccelerationInGround(s, com);
+        vec = body.findStationAccelerationInGround(s, com);
         angVec = body.getAccelerationInGround(s)[0];
         if(_expressInLocalFrame) {
             vec = ground.expressVectorInAnotherFrame(s, vec, body);
@@ -569,7 +569,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            vec = body.findAccelerationInGround(s, com);
+            vec = body.findStationAccelerationInGround(s, com);
             rA[0] += body.get_mass() * vec[0];
             rA[1] += body.get_mass() * vec[1];
             rA[2] += body.get_mass() * vec[2];

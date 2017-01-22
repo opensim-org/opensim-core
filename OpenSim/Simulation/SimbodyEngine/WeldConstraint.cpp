@@ -146,7 +146,7 @@ void WeldConstraint::
     // wrt foot (i.e., frame2) because we are passing it in from a
     // prescribed force.
     // We must also get that point position vector wrt ground (i.e., frame1)
-    Vec3 spoint = frame2.findLocationInAnotherFrame(s, point, frame1);
+    Vec3 spoint = frame2.findStationLocationInAnotherFrame(s, point, frame1);
 
     SimTK::Transform in1(frame1.getTransformInGround(s).R(), spoint);
     SimTK::Transform in2(frame2.getTransformInGround(s).R(), point);

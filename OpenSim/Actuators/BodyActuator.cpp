@@ -144,7 +144,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
     // case) transform it to body frame
     if (get_point_is_global())
         pointOfApplication = getModel().getGround().
-            findLocationInAnotherFrame(s, pointOfApplication, body);
+            findStationLocationInAnotherFrame(s, pointOfApplication, body);
 
     applyTorque(s, body, torqueVec, bodyForces);
     applyForceToPoint(s, body, pointOfApplication, forceVec, bodyForces);

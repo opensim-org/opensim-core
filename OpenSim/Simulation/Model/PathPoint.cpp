@@ -49,7 +49,7 @@ changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
+    upd_location() = currentFrame.findStationLocationInAnotherFrame(s, get_location(), body);
 
     // now make "body" this PathPoint's parent Frame
     setParentFrame(body);

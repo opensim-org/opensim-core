@@ -180,11 +180,11 @@ void PointActuator::computeForce(const SimTK::State& s,
         forceVec = _body->expressVectorInGround(s, forceVec);
     if (get_point_is_global())
         lpoint = getModel().getGround().
-            findLocationInAnotherFrame(s, lpoint, *_body);
+            findStationLocationInAnotherFrame(s, lpoint, *_body);
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 
     // get the velocity of the actuator in ground
-    Vec3 velocity = _body->findVelocityInGround(s, lpoint);
+    Vec3 velocity = _body->findStationVelocityInGround(s, lpoint);
 
     // the speed of the point is the "speed" of the actuator used to compute 
     // power

@@ -267,7 +267,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
         }
         applyForceToPoint(state, frame, point, force, bodyForces);
@@ -400,7 +400,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
         } else {
             Vec3 point = getApplicationPoint(state);
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);

@@ -739,7 +739,7 @@ int InducedAccelerations::record(const SimTK::State& s)
             const SimTK::Vec3& com = body.get_mass_center();
             
             // Get the body acceleration
-            vec = body.findAccelerationInGround(s_analysis, com);
+            vec = body.findStationAccelerationInGround(s_analysis, com);
             angVec = body.getAccelerationInGround(s_analysis)[0];
 
             // CONVERT TO DEGREES?
@@ -984,7 +984,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
                 const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
 
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findLocationInAnotherFrame(s, point, appliedToBody);
+                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);

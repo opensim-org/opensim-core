@@ -231,7 +231,7 @@ void testPhysicalOffsetFrameOnBody()
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
     SimTK::Vec3 p_G = 
-        rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGround());
+        rod1.findStationLocationInAnotherFrame(s, p_R, pendulum->getGround());
     SimTK::Vec3 p_G_2 = 
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
@@ -515,9 +515,9 @@ void testVelocityAndAccelerationMethods()
         v = p2_station->getVelocityInGround(s);
         a = p2_station->getAccelerationInGround(s);
 
-        lo = rod2.findLocationInGround(s, p2);
-        vo = rod2.findVelocityInGround(s, p2);
-        ao = rod2.findAccelerationInGround(s, p2);
+        lo = rod2.findStationLocationInGround(s, p2);
+        vo = rod2.findStationVelocityInGround(s, p2);
+        ao = rod2.findStationAccelerationInGround(s, p2);
 
         cout << "t = " << s.getTime() << ": os_a = " << ao;
         cout << " | sb_a = " << a << endl;

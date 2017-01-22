@@ -559,7 +559,7 @@ record(const SimTK::State& s)
             // transform to the base frame of the parent (expressedInBody)
             Vec3 parentLocationInGlobal = joint.getParentFrame().getTransformInGround(s_analysis).p();
             pointOfApplication = 
-                ground.findLocationInAnotherFrame(s_analysis, parentLocationInGlobal, expressedInBody);
+                ground.findStationLocationInAnotherFrame(s_analysis, parentLocationInGlobal, expressedInBody);
         }
         else{
             jointReaction = joint.calcReactionOnChildExpressedInGround(s_analysis);
@@ -568,7 +568,7 @@ record(const SimTK::State& s)
             // transform to the base frame of the child (expressedInBody)
             Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
             pointOfApplication =
-                ground.findLocationInAnotherFrame(s_analysis, childLocationInGlobal, expressedInBody);
+                ground.findStationLocationInAnotherFrame(s_analysis, childLocationInGlobal, expressedInBody);
         }
 
         // transform SpatialVec of reaction forces and moments to the

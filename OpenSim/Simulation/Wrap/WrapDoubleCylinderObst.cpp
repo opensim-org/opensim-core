@@ -507,19 +507,19 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     quick_mul_mtxT_by_mtx(UcylObstToUcylBody,VcylObstToUcylBody,VcylObstToUcylObst);
 
     double u[3];    // Position of Ucyl center in Vcyl frame;   NOTE:  U is Posn of Ucyl center in Ucyl body frame
-    SimTK::Vec3::updAs(u) = _wrapUcylHomeBody->findLocationInAnotherFrame(s, SimTK::Vec3(U), *_wrapVcylHomeBody);
+    SimTK::Vec3::updAs(u) = _wrapUcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(U), *_wrapVcylHomeBody);
     quick_sub_vec_fm_vec( u, V, u );                    // Translate u from Vcyl body to Vcyl obstacle
     quick_mul_vec_by_mtxT( u, VcylObstToVcylBody, u );  // Rotate u into Vcyl obstacle frame
 
     double v[3];    // Position of Vcyl center in Ucyl frame;   NOTE:  V is Posn of Vcyl center in Vcyl body frame
-    SimTK::Vec3::updAs(v) = _wrapVcylHomeBody->findLocationInAnotherFrame(s, SimTK::Vec3(V), *_wrapUcylHomeBody);
+    SimTK::Vec3::updAs(v) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(V), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( v, U, v );                    // Translate v from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( v, UcylObstToUcylBody, v );  // Rotate v into Ucyl obstacle frame
 
     double vs[3],ss[3]; // Position of S in Vcyl obstacle frame;    NOTE:  S is Posn of S in Ucyl obstacle frame
     quick_mul_vec_by_mtx( S, UcylObstToUcylBody, vs );  // Rotate S into Ucyl body frame
     quick_add_vec_to_vec( vs, U, vs );                  // Translate s into Ucyl body frame
-    SimTK::Vec3::updAs(ss) = _wrapUcylHomeBody->findLocationInAnotherFrame(s, SimTK::Vec3(vs), *_wrapVcylHomeBody);
+    SimTK::Vec3::updAs(ss) = _wrapUcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(vs), *_wrapVcylHomeBody);
     quick_sub_vec_fm_vec( ss, V, vs );                  // Translate s from Vcyl body to Vcyl obstacle
     quick_mul_vec_by_mtxT( vs, VcylObstToVcylBody, vs );    // Rotate s into Vcyl obstacle frame
 
@@ -532,14 +532,14 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // Transform T back into Ucylinder frame
     quick_mul_vec_by_mtx( T, VcylObstToVcylBody, T );
     quick_add_vec_to_vec( T, V, T );
-    SimTK::Vec3::updAs(T) = _wrapVcylHomeBody->findLocationInAnotherFrame(s, SimTK::Vec3(T), *_wrapUcylHomeBody);
+    SimTK::Vec3::updAs(T) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(T), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( T, U, T );                    // Translate T from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( T, UcylObstToUcylBody, T );  // Rotate T into Ucyl obstacle frame
 
     // Transform t back into Ucylinder frame
     quick_mul_vec_by_mtx( t, VcylObstToVcylBody, t );
     quick_add_vec_to_vec( t, V, t );
-    SimTK::Vec3::updAs(t) = _wrapVcylHomeBody->findLocationInAnotherFrame(s, SimTK::Vec3(t), *_wrapUcylHomeBody);
+    SimTK::Vec3::updAs(t) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(t), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( t, U, t );                    // Translate t from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( t, UcylObstToUcylBody, t );  // Rotate t into Ucyl obstacle frame
 

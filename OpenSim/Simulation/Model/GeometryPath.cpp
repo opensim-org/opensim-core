@@ -577,10 +577,10 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
         const Vec3& basePt = get_PathPointSet()[base].getLocation();
 
         Vec3 startPt2 = get_PathPointSet()[start].getBody()
-            .findLocationInAnotherFrame(s, startPt, aBody);
+            .findStationLocationInAnotherFrame(s, startPt, aBody);
 
         Vec3 endPt2 = get_PathPointSet()[end].getBody()
-            .findLocationInAnotherFrame(s, endPt, aBody);
+            .findStationLocationInAnotherFrame(s, endPt, aBody);
 
         aOffset = basePt + distance * (endPt2 - startPt2);
     } else if (get_PathPointSet().getSize() == 1){

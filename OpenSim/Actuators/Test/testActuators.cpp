@@ -152,7 +152,7 @@ void testMcKibbenActuator()
         manager.setFinalTime(dt*i);
         manager.integrate(si);
         model->getMultibodySystem().realize(si, Stage::Velocity);
-        Vec3 pos = ball->findLocationInGround(si, Vec3(0));
+        Vec3 pos = ball->findStationLocationInGround(si, Vec3(0));
 
         double applied = actuator->computeActuation(si);;
 

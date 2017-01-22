@@ -520,15 +520,15 @@ record(const SimTK::State& s)
     Ground ground = _model->getGround();
 
     // POSITION
-    vec = _body->findLocationInGround(s, _point);
+    vec = _body->findStationLocationInGround(s, _point);
     if(_relativeToBody){
-        vec = ground.findLocationInAnotherFrame(s, vec, *_relativeToBody);
+        vec = ground.findStationLocationInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _pStore->append(time, vec);
 
     // VELOCITY
-    vec = _body->findVelocityInGround(s, _point);
+    vec = _body->findStationVelocityInGround(s, _point);
     if(_relativeToBody){
         vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
@@ -537,7 +537,7 @@ record(const SimTK::State& s)
 
     // ACCELERATIONS
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-    vec = _body->findAccelerationInGround(s, _point);
+    vec = _body->findStationAccelerationInGround(s, _point);
     if(_relativeToBody){
         vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
