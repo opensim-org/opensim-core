@@ -575,6 +575,7 @@ if(${PLATFORM_NAME} STREQUAL Windows)
         COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
         COMMAND "echo" "%Simbody_CONFIG%"
         COMMAND "echo" "$<CONFIG>"
+        COMMAND "echo" "asdf" "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%" "asdf"
         COMMAND "if"
               "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%==\"%Simbody_CONFIG%\""
               "exit" "1"
