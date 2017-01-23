@@ -51,7 +51,7 @@ def copy_common_muscle_properties(from_muscle, to_muscle):
     # - ignore_tendon_compliance
     # - ignore_activation_dynamics
     to_muscle.copyPropertiesFromObject(from_muscle)
-    
+
 # Helper method to convert one Thelen muscle to Millard type
 def convert_to_millard(one_thelen_muscle, one_millard_muscle):
     print ("Converting muscle:" +one_thelen_muscle.getName())
@@ -142,7 +142,7 @@ for thelen_musc in thelen_muscles:
     
 
 # Now clone the model and remove all Thelen muscles
-convert_model = original_model.clone();
+convert_model = arm.clone();
 # remove Thelen muscles 
 convert_model_forces = convert_model.getForceSet()
 convert_model_forces.dump()
