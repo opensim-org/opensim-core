@@ -1,4 +1,4 @@
-# ----------------------------------------------------------------------- #
+﻿# ----------------------------------------------------------------------- #
 # The OpenSim API is a toolkit for musculoskeletal modeling and           #
 # simulation. See http://opensim.stanford.edu and the NOTICE file         #
 # for more information. OpenSim is developed at Stanford University       #
@@ -35,6 +35,10 @@
 import opensim as osim
 
 import sys
+
+# Are we running this script as a test? Users can ignore this line!
+running_as_test = 'unittest' in str().join(sys.argv)
+
 # Helper function to copy Properties between two objects
 def copy_common_muscle_properties(from_muscle, to_muscle):
     print ("Copying Properties for muscle:" +from_muscle.getName())
@@ -46,22 +50,7 @@ def copy_common_muscle_properties(from_muscle, to_muscle):
     # - max_contraction_velocity
     # - ignore_tendon_compliance
     # - ignore_activation_dynamics
-    to_muscle.copyProperty_max_isometric_force(from_muscle)
-    to_muscle.copyProperty_optimal_fiber_length(from_muscle)
-    to_muscle.copyProperty_tendon_slack_length(from_muscle)
-    to_muscle.copyProperty_pennation_angle_at_optimal(from_muscle)
-    to_muscle.copyProperty_max_contraction_velocity(from_muscle)
-    to_muscle.copyProperty_ignore_tendon_compliance(from_muscle)
-    to_muscle.copyProperty_ignore_activation_dynamics(from_muscle)
-    # Properties inherited from PathActuator
-    to_muscle.set_GeometryPath(from_muscle.get_GeometryPath().clone())
-    to_muscle.copyProperty_optimal_force(from_muscle)
-    # Properties from ScalarActuator
-    to_muscle.copyProperty_max_control(from_muscle)
-    to_muscle.copyProperty_min_control(from_muscle)
-    # Properties from Force
-    to_muscle.copyProperty_appliesForce(from_muscle)
-    # print (to_muscle.dump())
+    to_muscle.copyPropertiesFromObject(from_muscle)
     
 # Helper method to convert one Thelen muscle to Millard type
 def convert_to_millard(one_thelen_muscle, one_millard_muscle):
@@ -70,12 +59,74 @@ def convert_to_millard(one_thelen_muscle, one_millard_muscle):
     copy_common_muscle_properties(one_thelen_muscle, one_millard_muscle)
     one_millard_muscle.dump()
 
-original_model = osim.Model("arm26.osim")
+# Will create the model programmatically to avoid maintaining .osim files
+arm = osim.Model()
+if not running_as_test: arm.setUseVisualizer(True)
+
+# ---------------------------------------------------------------------------
+# Create two links, each with a mass of 1 kg, centre of mass at the body's
+# origin, and moments and products of inertia of zero.
+# ---------------------------------------------------------------------------
+
+humerus = osim.Body("humerus",
+                    1.0,
+                    osim.Vec3(0, 0, 0),
+                    osim.Inertia(0, 0, 0))
+radius = osim.Body("radius",
+                   1.0,
+                   osim.Vec3(0, 0, 0),
+                   osim.Inertia(0, 0, 0))
+
+# ---------------------------------------------------------------------------
+# Connect the bodies with pin joints. Assume each body is 1m long.
+# ---------------------------------------------------------------------------
+
+shoulder = osim.PinJoint("shoulder",
+                         arm.getGround(), # PhysicalFrame
+                         osim.Vec3(0, 0, 0),
+                         osim.Vec3(0, 0, 0),
+                         humerus, # PhysicalFrame
+                         osim.Vec3(0, 1, 0),
+                         osim.Vec3(0, 0, 0))
+
+elbow = osim.PinJoint("elbow",
+                      humerus, # PhysicalFrame
+                      osim.Vec3(0, 0, 0),
+                      osim.Vec3(0, 0, 0),
+                      radius, # PhysicalFrame
+                      osim.Vec3(0, 1, 0),
+                      osim.Vec3(0, 0, 0))
+
+# ---------------------------------------------------------------------------
+# Add a muscle that flexes the elbow (actuator for robotics people).
+# ---------------------------------------------------------------------------
+
+biceps = osim.Thelen2003Muscle("biceps",  # Muscle name
+                                           200.0,  # Max isometric force
+                                           0.6,  # Optimal fibre length
+                                           0.55,  # Tendon slack length
+                                           0.0)  # Pennation angle
+biceps.addNewPathPoint("origin",
+                       humerus,
+                       osim.Vec3(0, 0.8, 0))
+
+biceps.addNewPathPoint("insertion",
+                       radius,
+                       osim.Vec3(0, 0.7, 0))
+# ---------------------------------------------------------------------------
+# Build model with components created above.
+# ---------------------------------------------------------------------------
+arm.addBody(humerus)
+arm.addBody(radius)
+arm.addJoint(shoulder) # Now required in OpenSim4.0
+arm.addJoint(elbow)
+arm.addForce(biceps)
+
 # Will be working with Properties only, although we may not need a state
 # the traversal of the model objects requires initSystem
-original_s = original_model.initSystem()
+original_s = arm.initSystem()
 # Cycle through objects of type Thelen2003Muscle
-thelen_muscles = original_model.getThelen2003MuscleList()
+thelen_muscles = arm.getThelen2003MuscleList()
 
 # Create ForceSet to contain the new muscles
 millard_muscles = osim.ForceSet()
@@ -85,7 +136,7 @@ millard_muscles.setMemoryOwner(False)
 
 for thelen_musc in thelen_muscles:
     print ("Processing muscle:"+thelen_musc.getName())
-    millard_musc = osim.Millard2012AccelerationMuscle()
+    millard_musc = osim.Millard2012EquilibriumMuscle()
     convert_to_millard(thelen_musc, millard_musc)
     millard_muscles.cloneAndAppend(millard_musc)
     
