@@ -15,6 +15,14 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+string(CONCAT DEP_BUILD_MSG
+  "\n-------------------------IMPORTANT----------------------------------\n"
+  "| Make sure that all OpenSim dependencies are built with the same   |\n"
+  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
+  "| to avoid mysterious runtime errors.                               |\n"
+  "-------------------------IMPORTANT----------------------------------\n")
+message(${DEP_BUILD_MSG})
+
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
