@@ -176,6 +176,15 @@ int main()
     assert(context->getLocked(dr_elbow_flexNew));
     ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
 
+    // Exercise Editing workflow
+    // These are the same calls done from GUI code base through Property edits
+    OpenSim::Body& bdy = model->updBodySet().get("r_humerus");
+    AbstractProperty& massProp = bdy.updPropertyByName("mass");
+    double oldValue = PropertyHelper::getValueDouble(massProp);
+    double v = oldValue + 1.0;
+    context->cacheModelAndState();
+    PropertyHelper::setValueDouble(v, massProp);
+    context->restoreStateFromCachedModel();
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;
