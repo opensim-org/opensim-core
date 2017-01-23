@@ -577,7 +577,7 @@ if(${PLATFORM_NAME} STREQUAL Windows)
         COMMAND "echo" "$<CONFIG>"
         COMMAND "echo" "asdf" "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%" "asdf"
         COMMAND "if"
-              "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>= %==\"%Simbody_CONFIG%\""
+              "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
               "exit" "1"
         COMMENT ${MESSAGE})
 elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
