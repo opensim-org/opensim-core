@@ -321,22 +321,6 @@ public:
     };
 #endif
 
-    /** Thrown by createFromStatesStorage(). */
-    class ModelHasNoSystem : public Exception {
-    public:
-        ModelHasNoSystem(const std::string& file, size_t line,
-                const std::string& func,
-                const std::string& modelName) :
-                    OpenSim::Exception(file, line, func) {
-            std::string msg = "You must first call initSystem() on your Model";
-            if (!modelName.empty()) {
-                msg += " '" + modelName + "'";
-            }
-            msg += ".";
-            addMessage(msg);
-        }
-    };
-
     /** Thrown when trying to create a StatesTrajectory from a states Storage,
      * and the Storage does not contain a column for every continuous state
      * variable. */
