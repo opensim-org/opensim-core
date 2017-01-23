@@ -2067,7 +2067,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
         rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
 
         //Get Joint frame B location in parent, Po, to apply to parent Body
-        rB_Po = Bo.findLocationInAnotherFrame(state, rB_Bo, Po);
+        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
 
         // get the equivalent spatial force on the joint frame of the (child) body expressed in ground
         SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);

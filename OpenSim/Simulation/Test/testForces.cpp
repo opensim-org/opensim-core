@@ -234,8 +234,7 @@ void testExpressionBasedCoordinateForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
@@ -339,7 +338,7 @@ void testExpressionBasedPointToPointForce()
     
     // Save the forces
     //reporter->getForceStorage().print("path_spring_forces.mot");
-    double d = model.getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
+    double d = (p1 - ball.findStationLocationInGround(state, p2)).norm();
     const MobilizedBody& b1 = ground.getMobilizedBody();
     const MobilizedBody& b2 = ball.getMobilizedBody();
 
@@ -544,8 +543,7 @@ void testSpringMass()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
@@ -654,8 +652,7 @@ void testBushingForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -759,8 +756,7 @@ void testFunctionBasedBushingForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -881,8 +877,7 @@ void testExpressionBasedBushingForceTranslational()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         // compute the height based on the analytic solution for 1-D spring-mass
         // system with zero-velocity at initial offset.

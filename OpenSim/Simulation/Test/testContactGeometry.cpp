@@ -199,12 +199,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos, vel;
-
-        osimModel->updSimbodyEngine().getPosition(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), pos);
-        osimModel->updSimbodyEngine().getVelocity(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), vel);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
+        Vec3 vel = ball.findStationVelocityInGround(osim_state, Vec3(0));
 
         double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 

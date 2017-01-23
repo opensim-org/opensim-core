@@ -162,8 +162,6 @@ void PointActuator::computeForce(const SimTK::State& s,
                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                                  SimTK::Vector& generalizedForces) const
 {
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
-
     if( !_model || !_body ) return;
 
     double force;
@@ -179,16 +177,14 @@ void PointActuator::computeForce(const SimTK::State& s,
     Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
     Vec3 lpoint = get_point();
     if (!get_force_is_global())
-        engine.transform(s, *_body, forceVec, 
-                         getModel().getGround(), forceVec);
+        forceVec = _body->expressVectorInGround(s, forceVec);
     if (get_point_is_global())
-        engine.transformPosition(s, getModel().getGround(), lpoint, 
-                                 *_body, lpoint);
+        lpoint = getModel().getGround().
+            findStationLocationInAnotherFrame(s, lpoint, *_body);
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 
     // get the velocity of the actuator in ground
-    Vec3 velocity(0);
-    engine.getVelocity(s, *_body, lpoint, velocity);
+    Vec3 velocity = _body->findStationVelocityInGround(s, lpoint);
 
     // the speed of the point is the "speed" of the actuator used to compute 
     // power
