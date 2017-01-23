@@ -645,7 +645,8 @@ if(${OPENSIM_COPY_SIMBODY})
         # (in the binary build directory).  Those are produced by the OUTPUT
         # custom command below, which depends on the source files from the
         # Simbody installation directory.
-        add_custom_target(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+        add_custom_target(SimbodyFiles ALL
+            DEPENDS Simbody_CONFIG_check ${COPIED_LIB_FILES})
         set_target_properties(SimbodyFiles
             PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 
