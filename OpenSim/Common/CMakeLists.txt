@@ -19,4 +19,4 @@ OpenSimAddLibrary(
     TESTDIRS "Test"
     )
 
-    
+add_dependencies(osimCommon Simbody_CONFIG_check)
