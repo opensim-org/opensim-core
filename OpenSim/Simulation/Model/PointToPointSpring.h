@@ -54,11 +54,11 @@ public:
         "Spring resting length (m).");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(body1, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body1, PhysicalFrame,
         "A frame on the first body that this spring connects to.");
-    OpenSim_DECLARE_CONNECTOR(body2, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body2, PhysicalFrame,
         "A frame on the second body that this spring connects to.");
 
 //==============================================================================

@@ -1440,11 +1440,11 @@ void testPinJoint()
     // use the same coordinate name
     knee3.upd_coordinates(0).setName("knee_q");
 
-    knee3.connect(*osimModel);
+    knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
     knee3.dumpSubcomponents();
 
-    knee.connect(*osimModel);
+    knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
     knee.dumpSubcomponents();
 
@@ -2248,15 +2248,15 @@ void testAutomaticJointReversal()
     auto fcpath = footConstraint->getRelativePathName(cfoot);
 
     auto& off1 = footConstraint->getFrame1();
-    auto& c1 = off1.getConnector<PhysicalFrame>("parent");
+    auto& sock1 = off1.getSocket<PhysicalFrame>("parent");
     auto& off2 = footConstraint->getFrame2();
-    auto& c2 = off2.getConnector<PhysicalFrame>("parent");
+    auto& sock2 = off2.getSocket<PhysicalFrame>("parent");
 
     auto off1Path = off1.getAbsolutePathName();
     auto off2Path = off2.getAbsolutePathName();
 
-    /*auto& pathOff1 = */c1.getConnecteeName();
-    /*auto& pathOff2 = */c2.getConnecteeName();
+    /*auto& pathOff1 = */sock1.getConnecteeName();
+    /*auto& pathOff2 = */sock2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);

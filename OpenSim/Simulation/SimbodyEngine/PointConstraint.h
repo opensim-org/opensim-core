@@ -50,9 +50,9 @@ public:
     OpenSim_DECLARE_PROPERTY(location_body_2, SimTK::Vec3,
         "Location of the point in second body specified in body_2 reference frame.");
 
-    OpenSim_DECLARE_CONNECTOR(body_1, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_1, PhysicalFrame,
         "A frame fixed to the first body participating in the constraint.");
-    OpenSim_DECLARE_CONNECTOR(body_2, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(body_2, PhysicalFrame,
         "A frame fixed to the second body participating in the constraint.");
 
 

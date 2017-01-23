@@ -8,7 +8,7 @@ class ComplexResponse : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(ComplexResponse, ModelComponent);
 public:
     OpenSim_DECLARE_PROPERTY(strength, double, "per-coord param.");
-    OpenSim_DECLARE_CONNECTOR(coord, Coordinate, "");
+    OpenSim_DECLARE_SOCKET(coord, Coordinate, "");
 
     OpenSim_DECLARE_OUTPUT(term_1, double, getTerm1, SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(term_2, double, getTerm2, SimTK::Stage::Velocity);
@@ -143,7 +143,7 @@ void testComplexResponse() {
     // Add individual responses to the aggregate response
     auto response1 = new ComplexResponse();
     response1->setName("complex_response_j1");
-    response1->updConnector<Coordinate>("coord").connect(
+    response1->updSocket<Coordinate>("coord").connect(
         j1->getCoordinate(PinJoint::Coord::RotationZ));
     // add to aggregate which takes ownership
     aggregate->addComponent(response1);
@@ -151,7 +151,7 @@ void testComplexResponse() {
     // now create response 2
     auto response2 = new ComplexResponse();
     response2->setName("complex_response_j2");
-    response2->updConnector<Coordinate>("coord").connect(
+    response2->updSocket<Coordinate>("coord").connect(
         j2->getCoordinate(PinJoint::Coord::RotationZ));
     // add to aggregate which takes ownership
     aggregate->addComponent(response2);

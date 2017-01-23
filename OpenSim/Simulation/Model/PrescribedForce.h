@@ -91,7 +91,7 @@ public:
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
 
-    OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(frame, PhysicalFrame,
             "The frame onto which this force is applied.");
 
     /** The force applied by the PrescribedForce, this depends only on time.  
@@ -228,7 +228,7 @@ public:
 
     /** Get the frame that the prescribed force is acting upon. **/
     const OpenSim::PhysicalFrame& getFrame() const {
-        return getConnector<PhysicalFrame>("frame").getConnectee();
+        return getSocket<PhysicalFrame>("frame").getConnectee();
     }
 
     /** Convenience method to evaluate the prescribed force functions at

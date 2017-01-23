@@ -71,3 +71,22 @@ class TestBasics(unittest.TestCase):
         manager.setInitialTime(0)
         manager.setFinalTime(0.00001)
         manager.integrate(state)
+
+    def test_WrapObject(self):
+        # Make sure the WrapObjects are accessible.
+        model = osim.Model()
+
+        sphere = osim.WrapSphere()
+        model.getGround().addWrapObject(sphere)
+
+        cylinder = osim.WrapCylinder()
+        cylinder.set_radius(0.5)
+        model.getGround().addWrapObject(cylinder)
+
+        torus = osim.WrapTorus()
+        model.getGround().addWrapObject(torus)
+
+        ellipsoid = osim.WrapEllipsoid()
+        model.getGround().addWrapObject(ellipsoid)
+
+        

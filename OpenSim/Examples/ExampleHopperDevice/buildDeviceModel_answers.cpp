@@ -80,12 +80,12 @@ Device* buildDevice() {
     // Create a WeldJoint to anchor cuffA to the hopper.
     auto anchorA = new WeldJoint();
     anchorA->setName("anchorA");
-    //TODO: Connect the "child_frame" (a PhysicalFrame) Connector of anchorA to
+    //TODO: Connect the "child_frame" (a PhysicalFrame) Socket of anchorA to
     //      cuffA. Note that only the child frame is connected now; the parent
     //      frame will be connected in exampleHopperDevice.cpp.
     #pragma region Step2_TaskC_solution
 
-    anchorA->connectConnector_child_frame(*cuffA);
+    anchorA->connectSocket_child_frame(*cuffA);
 
     #pragma endregion
     
@@ -97,13 +97,13 @@ Device* buildDevice() {
     #pragma endregion
 
     //TODO: Create a WeldJoint to anchor cuffB to the hopper. Connect the
-    //      "child_frame" Connector of anchorB to cuffB and add anchorB to the
+    //      "child_frame" Socket of anchorB to cuffB and add anchorB to the
     //      device.
     #pragma region Step2_TaskC_solution
 
     auto anchorB = new WeldJoint();
     anchorB->setName("anchorB");
-    anchorB->connectConnector_child_frame(*cuffB);
+    anchorB->connectSocket_child_frame(*cuffB);
     device->addComponent(anchorB);
 
     #pragma endregion
@@ -121,10 +121,10 @@ Device* buildDevice() {
     controller->setName("controller");
     controller->set_gain(GAIN);
 
-    //TODO: Connect the controller's "actuator" Connector to pathActuator.
+    //TODO: Connect the controller's "actuator" Socket to pathActuator.
     #pragma region Step2_TaskC_solution
 
-    controller->connectConnector_actuator(*pathActuator);
+    controller->connectSocket_actuator(*pathActuator);
 
     #pragma endregion
 

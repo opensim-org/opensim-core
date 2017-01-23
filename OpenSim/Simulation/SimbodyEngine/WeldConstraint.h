@@ -49,7 +49,7 @@ class OSIMSIMULATION_API WeldConstraint
 OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, TwoFrameLinker);
 public:
     /** Default Constructor. Create an unnamed WeldConstraint with frame
-        connectors that are unsatisfied. */
+        sockets that are unsatisfied. */
     WeldConstraint();
 
     /** Convenience Constructor.
