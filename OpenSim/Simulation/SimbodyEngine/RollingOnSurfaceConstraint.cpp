@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -199,7 +199,7 @@ void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const Si
     getSystem().realize(s, SimTK::Stage::Position);
 
     // For external forces we assume w.r.t. ground
-    Vec3 spoint = _rollingFrame->findLocationInAnotherFrame(s, point, *_surfaceFrame);
+    Vec3 spoint = _rollingFrame->findStationLocationInAnotherFrame(s, point, *_surfaceFrame);
 
     // The contact point coordinates in the surface body frame 
     contactY.setDefaultPlaneNormal(UnitVec3(surfaceNormal));

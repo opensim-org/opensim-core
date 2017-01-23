@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -129,7 +129,7 @@ public:
     /** The spatial velocity V_GF {omega; v} for this Frame in ground.
         It can be used to compute the velocity of any stationary point on F,
         located at r_F (Vec3), in ground, G, as:
-            v_G = V_GF(0)*r_F + V_GF(1);
+            v_G = V_GF[1] + SimTK::cross(V_GF[0], r_F);
         Is only valid at Stage::Velocity or higher. */
     const SimTK::SpatialVec&
         getVelocityInGround(const SimTK::State& state) const;
@@ -137,7 +137,8 @@ public:
     /** The spatial acceleration A_GF {alpha; a} for this Frame in ground.
         It can also be used to compute the acceleration of any stationary point
         on F, located at r_F (Vec3), in ground, G, as:
-            a_G = A_GF(0)*r_F + A_GF(1);
+            a_G = A_GF[1] + SimTK::cross(A_GF[0], r_F) + 
+                  SimTK::cross(V_GF[0], SimTK::cross(V_GF[0], r_F));
         Is only valid at Stage::Acceleration or higher. */
     const SimTK::SpatialVec&
         getAccelerationInGround(const SimTK::State& state) const;
@@ -173,26 +174,85 @@ public:
     @param state       The state of the model.
     @param vec_F       The vector to be re-expressed.
     @param otherFrame  The frame in which the vector will be re-expressed
-    @return vec_A; the expression of the vector in otherFrame.
+    @return vec_A      The expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
                         const SimTK::Vec3& vec_F,
                         const Frame& otherFrame) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its location expressed in another frame (A). The transform accounts for
-    the difference in orientation and translation between the frames.
-    This is mathematically stated as: 
-        point_A = X_AF*point_F
+    Take a vector in this frame (F) and re-express the same vector
+    in Ground (G). This method is equivalent to `expressVectorInAnotherFrame()`
+    where `otherFrame` is always Ground.
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @param otherFrame  The frame in which the point will be re-expressed
-    @return point_A    The re-expression of the point in another frame.
+    @param vec_F       The vector to be re-expressed.
+    @return vec_G      The expression of the vector in Ground.
     */
-    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
-                    const SimTK::Vec3& point_F, const Frame& otherFrame) const;
+    SimTK::Vec3 expressVectorInGround(const SimTK::State& state,
+                        const SimTK::Vec3& vec_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in another frame (A). The transform
+    accounts for the difference in orientation and translation between the 
+    frames.
+    This is mathematically stated as: 
+        loc_A = X_AF*station_F
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @param otherFrame  The frame (A) in which the station's location 
+                       will be relative to and expressed.
+    @return loc_A      The location of the station in another frame (A).
+    */
+    SimTK::Vec3 findStationLocationInAnotherFrame(const SimTK::State& state, 
+                    const SimTK::Vec3& station_F, const Frame& otherFrame) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in Ground (G). This method is
+    equivalent to `findLocationInAnotherFrame()` where `otherFrame` is 
+    always Ground.
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getLocationInGround(state)` instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return loc_G      The location of the station in Ground.
+    */
+    SimTK::Vec3 findStationLocationInGround(const SimTK::State& state,
+                    const SimTK::Vec3& station_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its velocity relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getVelocityInGround(state)` instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return vel_G      The velocity of the station in Ground.
+    */
+    SimTK::Vec3 findStationVelocityInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its acceleration relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's method `getAccelerationInGround(state)` instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return acc_G      The acceleration of the station in Ground.
+    */
+    SimTK::Vec3 findStationAccelerationInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
+
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 

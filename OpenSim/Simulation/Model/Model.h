@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -76,6 +76,21 @@ class ScaleSet;
 //==============================================================================
 /// Model  Exceptions
 //==============================================================================
+class ModelHasNoSystem : public Exception {
+public:
+    ModelHasNoSystem(const std::string& file, size_t line,
+            const std::string& func,
+            const std::string& modelName) :
+                OpenSim::Exception(file, line, func) {
+        std::string msg = "You must first call initSystem() on your Model";
+        if (!modelName.empty()) {
+            msg += " '" + modelName + "'";
+        }
+        msg += ".";
+        addMessage(msg);
+    }
+};
+
 class PhysicalOffsetFramesFormLoop : public Exception {
 public:
     PhysicalOffsetFramesFormLoop(const std::string& file,

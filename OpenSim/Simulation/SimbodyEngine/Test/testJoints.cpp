@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -2067,7 +2067,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
         rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
 
         //Get Joint frame B location in parent, Po, to apply to parent Body
-        rB_Po = Bo.findLocationInAnotherFrame(state, rB_Bo, Po);
+        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
 
         // get the equivalent spatial force on the joint frame of the (child) body expressed in ground
         SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
