@@ -563,6 +563,8 @@ get_property(Simbody_CONFIGURATION
     TARGET   SimTKcommon
     PROPERTY IMPORTED_CONFIGURATIONS)
 
+message(${Simbody_CONFIGURATION})
+
 string(CONCAT MESSAGE
     "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
     "the current OpenSim BUILD_TYPE or CONFIGURATION.")
@@ -571,6 +573,8 @@ if(${PLATFORM_NAME} STREQUAL Windows)
     string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)  
     add_custom_target(Simbody_CONFIG_check ALL
         COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
+        COMMAND "echo" "%Simbody_CONFIG%"
+        COMMAND "echo" "$<CONFIG>"
         COMMAND "if"
               "%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%==\"%Simbody_CONFIG%\""
               "exit" "1"
