@@ -15,6 +15,13 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+string(CONCAT DEP_BUILD_MSG
+  "\n-------------------------IMPORTANT----------------------------------\n"
+  "| Make sure that all OpenSim dependencies are built with the same  |\n"
+  "| CMAKE_BUILD_TYPE as OpenSim to avoid mysterious runtime errors.  |\n"
+  "-------------------------IMPORTANT----------------------------------\n")
+message(${DEP_BUILD_MSG})
+
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -484,6 +491,18 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
     endif()
 endif()
 
+# Dependencies must be built with same BUILD_TYPE as OpenSim to avoid
+# mysterious runtime errors like 'segfault'. The following lines check
+# that dependencies, whose targets can be imported, are built with same
+# BUILD_TYPE as OpenSim. If not, an error is produced at build-time.
+# Note that not all libraries offer import-able cmake targets. It is possible
+# to encounter problems even with following lines in place if CMAKE_BUILD_TYPE
+# is not identical/compatible between OpenSim and dependencies.
+# set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG          Debug)
+# set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo)
+# set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE        Release)
+# set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL     MinSizeRel)
+
 set(OPENSIM_DEPENDENCIES_DIR 
     "" 
     CACHE 
@@ -547,6 +566,18 @@ if(NOT Simbody_FOUND)
         Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
         SIMBODY_HOME to the installation directory of Simbody.")
 endif()
+
+get_property(Simbody_BUILD_TYPE
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
+
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
+add_custom_target(Simbody_CONFIG_check ALL
+    COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_BUILD_TYPE}>>"
+    COMMENT ${MESSAGE})
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
