@@ -30,6 +30,7 @@ Tests Include:
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
     5. PhysicalOffsetFrame on PhysicalOffsetFrame in non-Multibody tree order
     6. Filtering of Frames by their type
+    7. Velocity and acceleration methods
       
      Add tests here as Frames are added to OpenSim
 
@@ -48,6 +49,7 @@ void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
 void testFilterByFrameType();
+void testVelocityAndAccelerationMethods();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -97,6 +99,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() << endl;
         failures.push_back("testFilterByFrameType");
+    }
+
+    try { testVelocityAndAccelerationMethods(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testVelocityAndAccelerationMethods");
     }
 
     if (!failures.empty()) {
@@ -223,7 +231,7 @@ void testPhysicalOffsetFrameOnBody()
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
     SimTK::Vec3 p_G = 
-        rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGround());
+        rod1.findStationLocationInAnotherFrame(s, p_R, pendulum->getGround());
     SimTK::Vec3 p_G_2 = 
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
@@ -468,3 +476,55 @@ void testFilterByFrameType()
         "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
 }
 
+void testVelocityAndAccelerationMethods()
+{
+    cout << "\nRunning testVelocityAndAccelerationMethods" << endl;
+
+    Model* pendulum = new Model("double_pendulum.osim");
+    const OpenSim::Body& rod2 = pendulum->getBodySet().get("rod2");
+    SimTK::Vec3 p2(-.2, .1, -.3);
+    Station* p2_station = new Station();
+    p2_station->set_location(p2);
+    p2_station->setParentFrame(rod2);
+    pendulum->addModelComponent(p2_station);
+
+    SimTK::State& s = pendulum->initSystem();
+    pendulum->getCoordinateSet().get("q1").setValue(s, 2.0);
+    pendulum->getCoordinateSet().get("q2").setValue(s, -1.0);
+    
+    SimTK::RungeKuttaMersonIntegrator integrator(pendulum->getSystem());
+    SimTK::TimeStepper ts(pendulum->getSystem(), integrator);
+    ts.initialize(s);
+
+    double finalT = 1.0;
+    double dt = 0.01;
+    int n = int(round(finalT / dt));
+
+    // Hold the computed kinematics from Station and Frame methods
+    SimTK::Vec3 lo, vo, ao, l, v, a;
+
+    for (int i = 1; i <= n; ++i) {
+        ts.stepTo(i*dt);
+        s = ts.getState();
+
+        // realize to acceleration to access acceleration stage cache
+        pendulum->realizeAcceleration(s);
+
+        // Compare to Station calculations
+        l = p2_station->getLocationInGround(s);
+        v = p2_station->getVelocityInGround(s);
+        a = p2_station->getAccelerationInGround(s);
+
+        lo = rod2.findStationLocationInGround(s, p2);
+        vo = rod2.findStationVelocityInGround(s, p2);
+        ao = rod2.findStationAccelerationInGround(s, p2);
+
+        cout << "t = " << s.getTime() << ": os_a = " << ao;
+        cout << " | sb_a = " << a << endl;
+
+        // Compare Station values to values from Frame
+        SimTK_TEST_EQ(l, lo);
+        SimTK_TEST_EQ(v, vo);
+        SimTK_TEST_EQ(a, ao);
+    }
+}

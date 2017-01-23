@@ -182,7 +182,7 @@ void testFromStatesStorageGivesCorrectStates() {
     // This will fail because we have not yet called initSystem() on the model.
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto),
-            OpenSim::StatesTrajectory::ModelHasNoSystem);
+            OpenSim::ModelHasNoSystem);
 
     model.initSystem();
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
@@ -245,7 +245,7 @@ void testFromStatesStorageGivesCorrectStates() {
         }
 
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());
@@ -489,7 +489,7 @@ void testFromStatesStoragePre40CorrectStates() {
 
         // More complicated computations based on state.
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());
