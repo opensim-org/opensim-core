@@ -50,8 +50,9 @@ public:
     // PROPERTIES
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(fixed, bool,
-        "Flag(true or false) specifying whether or not a marker "
-        "should be kept fixed in the marker placement step.  i.e. If false, the marker is allowed to move.");
+        "Flag(true or false) specifying whether or not the marker "
+        "is fixed in the marker placement step of scaling.  If false, the marker is free to move "
+        "to match its experimental counterpart.");
 //=============================================================================
 // METHODS
 //=============================================================================
