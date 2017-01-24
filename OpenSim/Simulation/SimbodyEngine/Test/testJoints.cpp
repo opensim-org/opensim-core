@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -1440,11 +1440,11 @@ void testPinJoint()
     // use the same coordinate name
     knee3.upd_coordinates(0).setName("knee_q");
 
-    knee3.connect(*osimModel);
+    knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
     knee3.dumpSubcomponents();
 
-    knee.connect(*osimModel);
+    knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
     knee.dumpSubcomponents();
 
@@ -2067,7 +2067,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
         rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
 
         //Get Joint frame B location in parent, Po, to apply to parent Body
-        rB_Po = Bo.findLocationInAnotherFrame(state, rB_Bo, Po);
+        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
 
         // get the equivalent spatial force on the joint frame of the (child) body expressed in ground
         SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
@@ -2248,15 +2248,15 @@ void testAutomaticJointReversal()
     auto fcpath = footConstraint->getRelativePathName(cfoot);
 
     auto& off1 = footConstraint->getFrame1();
-    auto& c1 = off1.getConnector<PhysicalFrame>("parent");
+    auto& sock1 = off1.getSocket<PhysicalFrame>("parent");
     auto& off2 = footConstraint->getFrame2();
-    auto& c2 = off2.getConnector<PhysicalFrame>("parent");
+    auto& sock2 = off2.getSocket<PhysicalFrame>("parent");
 
     auto off1Path = off1.getAbsolutePathName();
     auto off2Path = off2.getAbsolutePathName();
 
-    /*auto& pathOff1 = */c1.getConnecteeName();
-    /*auto& pathOff2 = */c2.getConnecteeName();
+    /*auto& pathOff1 = */sock1.getConnecteeName();
+    /*auto& pathOff2 = */sock2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);

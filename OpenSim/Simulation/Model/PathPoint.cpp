@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,7 +49,7 @@ changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
+    upd_location() = currentFrame.findStationLocationInAnotherFrame(s, get_location(), body);
 
     // now make "body" this PathPoint's parent Frame
     setParentFrame(body);

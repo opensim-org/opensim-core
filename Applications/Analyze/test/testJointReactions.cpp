@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,7 +35,7 @@ int main()
         analyze.run();
         Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-            std::vector<double>(24, 1e-5), __FILE__, __LINE__,
+            std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "SinglePin failed");
         cout << "SinglePin passed" << endl;
 
@@ -43,7 +43,7 @@ int main()
         analyze2.run();
         Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
-            std::vector<double>(24, 1e-5), __FILE__, __LINE__,
+            std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "DoublePendulum3D failed");
         cout << "DoublePendulum3D passed" << endl;
     }

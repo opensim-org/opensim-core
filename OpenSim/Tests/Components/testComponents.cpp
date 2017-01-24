@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Ajay Seth                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -114,7 +114,7 @@ int main()
     availableComponents.push_back(availablePointToPointSpring[0]);
 
     /** //Uncomment when dependencies of CoordinateCouplerConstraints are 
-    // specified as Connectors 
+    // specified as Sockets 
     ArrayPtrs<Constraint> availableConstraints;
     Object::getRegisteredObjectsOfGivenType(availableConstraints);
     for (int i = 0; i < availableConstraints.size(); ++i) {
@@ -194,15 +194,15 @@ void testComponent(const Component& instanceToTest)
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
 
-    // First make sure Connectors are satisfied.
+    // First make sure Sockets are satisfied.
     Component* sub = instance;
     auto comps = instance->updComponentList<Component>();
     ComponentList<Component>::iterator itc = comps.begin();
     while (sub) {
-        for (const auto& connectorName : sub->getConnectorNames()) {
-            AbstractConnector& connector = sub->updConnector(connectorName);
-            string dependencyTypeName = connector.getConnecteeTypeName();
-            cout << "Connector '" << connector.getName() <<
+        for (const auto& socketName : sub->getSocketNames()) {
+            AbstractSocket& socket = sub->updSocket(socketName);
+            string dependencyTypeName = socket.getConnecteeTypeName();
+            cout << "Socket '" << socket.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
 
             // Dependency on a Coordinate needs special treatment.
@@ -210,12 +210,12 @@ void testComponent(const Component& instanceToTest)
             // Here we see if there is a Coordinate already in the model, 
             // otherwise we add a Body and Joint so we can connect to its
             // Coordinate.
-            if (dynamic_cast<Connector<Coordinate> *>(&connector)) {
-                while (!connector.isConnected()) {
+            if (dynamic_cast<Socket<Coordinate> *>(&socket)) {
+                while (!socket.isConnected()) {
                     // Dependency on a coordinate, check if there is one in the model already
                     auto coordinates = model.getComponentList<Coordinate>();
                     if(coordinates.begin() != coordinates.end()) {
-                        connector.connect(*coordinates.begin());
+                        socket.connect(*coordinates.begin());
                         break;
                     }
                     // no luck finding a Coordinate already in the Model
@@ -228,8 +228,8 @@ void testComponent(const Component& instanceToTest)
             }
 
             std::unique_ptr<Object> dependency;
-            if (dynamic_cast< Connector<Frame>*>(&connector) ||
-                dynamic_cast< Connector<PhysicalFrame>*>(&connector)) {
+            if (dynamic_cast< Socket<Frame>*>(&socket) ||
+                dynamic_cast< Socket<PhysicalFrame>*>(&socket)) {
                 dependency.reset(Object::newInstanceOfType("Body"));
             } else {
                 dependency.reset(Object::newInstanceOfType(dependencyTypeName));
@@ -238,7 +238,7 @@ void testComponent(const Component& instanceToTest)
             if (dependency) {
                 //give it some random values including a name
                 randomize(dependency.get());
-                connector.setConnecteeName(dependency->getName());
+                socket.setConnecteeName(dependency->getName());
 
                 // add the dependency 
                 addObjectAsComponentToModel(dependency.release(), model);
@@ -260,7 +260,7 @@ void testComponent(const Component& instanceToTest)
         for (const auto& inputName : sub.getInputNames()) {
             AbstractInput& input = sub.updInput(inputName);
             
-            // Special case: Geometry cannot have both its input and connector
+            // Special case: Geometry cannot have both its input and socket
             // connected.
             if (dynamic_cast<Geometry*>(&sub) && inputName == "transform") {
                 input.setConnecteeName("");
@@ -296,7 +296,7 @@ void testComponent(const Component& instanceToTest)
         cout << "testComponents::" << className << " unable to connect to model:" << endl;
         cout << " '" << x.what() << "'" <<endl;
         cout << "Error is likely due to " << className;
-        cout << " having structural dependencies that are not specified as Connectors.";
+        cout << " having structural dependencies that are not specified as Sockets.";
         cout << endl;
     }
 
@@ -434,11 +434,11 @@ void testComponentEquivalence(const Component* a, const Component* b)
     ASSERT(same, __FILE__, __LINE__,
         className + " components are not equivalent in properties.");
 
-    int nc_a = a->getNumConnectors();
-    int nc_b = b->getNumConnectors();
-    cout << className << " getNumConnectors: " << nc_a << endl;
-    ASSERT(nc_a==nc_b, __FILE__, __LINE__, 
-        className + "components differ in number of connectors.");
+    int ns_a = a->getNumSockets();
+    int ns_b = b->getNumSockets();
+    cout << className << " getNumSockets: " << ns_a << endl;
+    ASSERT(ns_a==ns_b, __FILE__, __LINE__, 
+        className + "components differ in number of sockets.");
 
     int nin_a = a->getNumInputs();
     int nin_b = b->getNumInputs();

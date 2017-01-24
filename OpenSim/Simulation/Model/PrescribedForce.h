@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman Matt S. DeMers                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -91,7 +91,7 @@ public:
     OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
         "Three functions describing the torque the PrescribedForce applies.");
 
-    OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(frame, PhysicalFrame,
             "The frame onto which this force is applied.");
 
     /** The force applied by the PrescribedForce, this depends only on time.  
@@ -228,7 +228,7 @@ public:
 
     /** Get the frame that the prescribed force is acting upon. **/
     const OpenSim::PhysicalFrame& getFrame() const {
-        return getConnector<PhysicalFrame>("frame").getConnectee();
+        return getSocket<PhysicalFrame>("frame").getConnectee();
     }
 
     /** Convenience method to evaluate the prescribed force functions at
