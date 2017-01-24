@@ -576,8 +576,14 @@ if(${PLATFORM_NAME} STREQUAL Windows)
            "exit" "1"
         COMMENT ${MESSAGE})
 elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
+                          "exit 1\n"
+                          "fi\n")
+    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
     add_custom_target(Simbody_CONFIG_check ALL
-        COMMAND "exit" "$<NOT:$<CONFIG:${Simbody_CONFIGURATION}>>"
+        COMMAND "bash" "simbody_config_check.sh"
+                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
         COMMENT ${MESSAGE})
 endif()
 
