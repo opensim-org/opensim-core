@@ -1015,7 +1015,7 @@ void testRollingOnSurfaceConstraint()
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
     cylFrame->setName("comInRod");
-    osimModel->addFrame(cylFrame);
+    osimModel->addComponent(cylFrame);
     Mesh cylGeom("cylinder.vtp");
     cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
     cylFrame->attachGeometry(cylGeom.clone());

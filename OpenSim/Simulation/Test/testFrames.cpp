@@ -175,7 +175,7 @@ void testPhysicalOffsetFrameOnBody()
     X_RO.updR().setRotationToBodyFixedXYZ(angs_known);
 
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     SimTK::State& s = pendulum->initSystem();
     const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
@@ -247,7 +247,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(0.33, 0.22, 0.11));
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     offsetFrame->setName("first");
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
@@ -261,7 +261,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(1.5, -0.707, 0.5));
     secondFrame->setOffsetTransform(X_RO);
-    pendulum->addFrame(secondFrame);
+    pendulum->addComponent(secondFrame);
 
     SimTK::State& s = pendulum->initSystem();
 
@@ -314,7 +314,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     offsetFrame->setName("myExtraFrame");
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     SimTK::State& s1 = pendulum->initSystem();
     const SimTK::Transform& X_GO_1 = offsetFrame->getTransformInGround(s1);
@@ -425,7 +425,7 @@ void testFilterByFrameType()
         new OrdinaryOffsetFrame(rod2, X_RO_2);
 
     // add OffsetFrame to the model
-    pendulumWFrame->addFrame(anOffset);
+    pendulumWFrame->addComponent(anOffset);
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
