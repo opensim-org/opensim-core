@@ -9,6 +9,8 @@
 tmp
 # Ignore build trees.
 /build*
+# Ignore install dir.
+install
 # Ignore settings from the CLion IDE (from JetBrains).
 .idea
 

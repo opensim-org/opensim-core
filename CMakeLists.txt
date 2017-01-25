@@ -458,8 +458,9 @@ endif()
 
 
 ## On APPLE, use MACOSX_RPATH.
+## On Linux, this variable has no effect.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
-if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
+if(APPLE)
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
         "If ON, you don't need to set 
         DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
@@ -491,6 +492,14 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         endif()
     endif()
 endif()
+## Add rpath to the binaries on Linux.
+## Note -- The binaries may not be relocatable because the rpath added here is
+##         absolute. 
+if(PLATFORM_NAME MATCHES Linux)
+    set(CMAKE_INSTALL_RPATH
+       "${CMAKE_INSTALL_RPATH};${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
     "" 
@@ -513,6 +522,7 @@ if(WITH_BTK)
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
     CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${BTK_LIBRARY_DIRS}")
 endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
