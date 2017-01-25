@@ -452,7 +452,7 @@ endif()
 ## On APPLE, use MACOSX_RPATH.
 ## On Linux, this variable has no effect.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
-if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
+if(APPLE)
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
         "If ON, you don't need to set 
         DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
