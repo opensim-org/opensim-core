@@ -5,7 +5,6 @@ import org.opensim.modeling.*;
 hopper = Model();
 hopper.setName('Dennis')
 
-
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
@@ -163,14 +162,3 @@ linkGeometry = Cylinder(linkRadius, linkHalfLength);
 linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
-
-hopper.setUseVisualizer(true);
-
-state = hopper.initSystem();
-hopper.getVisualizer().show(state)
-
-manager = Manager(hopper);
-manager.setFinalTime(10.0);
-manager.integrate(state);
-
-hopper.print('Hopper.osim');
