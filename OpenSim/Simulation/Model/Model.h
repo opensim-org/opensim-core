@@ -36,7 +36,6 @@
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
@@ -175,9 +174,6 @@ public:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
         "List of joints that connect the bodies.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
-        "List of Frames that various objects can be anchored to or expressed in, Body frames are built-in and not included in this list.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
@@ -507,7 +503,6 @@ public:
     void addForce(Force *adoptee);
     void addProbe(Probe *adoptee);
     void addContactGeometry(ContactGeometry *adoptee);
-    void addFrame(Frame* adoptee);
     void addMarker(Marker *adoptee);
     // @}
 
@@ -617,12 +612,6 @@ public:
      * @return Number of bodies.
      */
     int getNumBodies() const;
-
-    /**
-    * Get the total number of frames in the model.
-    * @return Number of Frames (not including Body frames).
-    */
-    int getNumFrames() const;
 
     /**
     * Get the total number of joints in the model.
@@ -851,25 +840,17 @@ public:
     Ground& updGround();
 
     //--------------------------------------------------------------------------
-    // FRAMES
-    //--------------------------------------------------------------------------
-    FrameSet& updFrameSet() { return upd_FrameSet(); }
-    const FrameSet& getFrameSet() const { return get_FrameSet(); }
-
-
-    //--------------------------------------------------------------------------
     // CONSTRAINTS
     //--------------------------------------------------------------------------
     ConstraintSet& updConstraintSet() { return upd_ConstraintSet(); }
     const ConstraintSet& getConstraintSet() const { return get_ConstraintSet(); }
-
 
     //--------------------------------------------------------------------------
     // MARKERS
     //--------------------------------------------------------------------------
     MarkerSet& updMarkerSet() { return upd_MarkerSet(); }
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
-    int replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet);
+    int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
     void writeMarkerFile(const std::string& aFileName);
     void updateMarkerSet(MarkerSet& aMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
