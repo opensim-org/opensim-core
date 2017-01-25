@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -38,6 +38,7 @@ namespace SimTK {
 class Integrator;
 class State;
 class System;
+class TimeStepper;
 }
 
 namespace OpenSim { 
@@ -49,7 +50,21 @@ class ControllerSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class that manages the execution of a simulation.
+ * A class that manages the execution of a simulation. This class uses a
+ * SimTK::Integrator and SimTK::TimeStepper to perform the simulation. By
+ * default, a Runge-Kutta-Merson integrator is used, but can be changed by
+ * using setIntegrator().
+ * 
+ * In order to prevent an inconsistency between the Integrator and TimeStepper,
+ * we only create a TimeStepper once, specifically at the first call to
+ * integrate(state). To ensure this, the Manager will throw an exception if 
+ * setModel() or setIntegrator() is called after integrate(state) has been 
+ * called at least once.
+ *
+ * Since the call to integrate(state) takes the state as an argument, it is
+ * up to the caller to ensure that the state is a legal state if the same
+ * Manager is used to integrate again. Integrating a different state for some
+ * new arbitrary system has undefined behavior.
  */
 class OSIMSIMULATION_API Manager
 {
@@ -73,42 +88,35 @@ private:
     // This is allocated only if necessary.
     std::unique_ptr<SimTK::Integrator> _defaultInteg;
 
+    /** TimeStepper */
+    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
+
     /** Initial time of the simulation. */
     double _ti;
     /** Final time of the simulation. */
     double _tf;
-    /** First dt in an integration. */
-    double _firstDT;
     
     /** Storage for the states. */
     std::unique_ptr<Storage> _stateStore;
 
-   int _steps;
-   /** Number of integration step tries. */
-   int _trys;
-   /** Maximum number of steps in an integration. */
-   int _maxSteps;
-   /** Flag for signaling a desired halt. */
-   bool _halt;
-   /** Minimum step size. */
-   double _dtMin;
-   /** Maximum step size. */
-   double _dtMax;
-   /** Flag to indicate whether or not specified integration time steps
-   should be used.  The specified integration time steps are held in _tVec.
-   If _tVec does not contain time steps appropriate for the integration,
-   an exception is thrown. */
-   bool _specifiedDT;
-   /** Flag to indicate whether or not constant (fixed) integration time
-   steps should be used.  The constant integration time step is set using
-   setDT(). */
-   bool _constantDT;
-   /** Constant integration time step. */
-   double _dt;
-   /** Vector of integration time steps. */
-   Array<double> _tArray;
-   /** Vector of integration time step deltas. */
-   Array<double> _dtArray;
+    /** Flag for signaling a desired halt. */
+    bool _halt;
+
+    /** Flag to indicate whether or not specified integration time steps
+    should be used.  The specified integration time steps are held in _tVec.
+    If _tVec does not contain time steps appropriate for the integration,
+    an exception is thrown. */
+    bool _specifiedDT;
+    /** Flag to indicate whether or not constant (fixed) integration time
+    steps should be used.  The constant integration time step is set using
+    setDT(). */
+    bool _constantDT;
+    /** Constant integration time step. */
+    double _dt;
+    /** Vector of integration time steps. */
+    Array<double> _tArray;
+    /** Vector of integration time step deltas. */
+    Array<double> _dtArray;
 
     /** Name to be shown by the UI */
     static std::string _displayName;
@@ -121,9 +129,6 @@ private:
 
     /** controllerSet used for the integration */
     ControllerSet* _controllerSet;
-
-    /** system of equations to be integrated */
-    const SimTK::System* _system;
 
 
 //=============================================================================
@@ -152,7 +157,6 @@ public:
 
 private:
     void setNull();
-    bool constructStates();
     bool constructStorage();
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -180,41 +184,33 @@ public:
     double getInitialTime() const;
     void setFinalTime(double aTF);
     double getFinalTime() const;
-    void setFirstDT(double aDT);
-    double getFirstDT() const;
-       // SPECIFIED TIME STEP
-   void setUseSpecifiedDT(bool aTrueFalse);
-   bool getUseSpecifiedDT() const;
-   // CONSTANT TIME STEP
-   void setUseConstantDT(bool aTrueFalse);
-   bool getUseConstantDT() const;
-   // DT VECTOR
-   const Array<double>& getDTArray();
-   void setDTArray(int aN,const double aDT[],double aTI=0.0);
-   double getDTArrayDT(int aStep);
-   void printDTArray(const char *aFileName=NULL);
-   // TIME VECTOR
-   const Array<double>& getTimeArray();
-   double getTimeArrayTime(int aStep);
-   int getTimeArrayStep(double aTime);
-   void printTimeArray(const char *aFileName=NULL);
-   void resetTimeAndDTArrays(double aTime);
-
-   double getNextTimeArrayTime(double aTime);
+    // SPECIFIED TIME STEP
+    void setUseSpecifiedDT(bool aTrueFalse);
+    bool getUseSpecifiedDT() const;
+    // CONSTANT TIME STEP
+    void setUseConstantDT(bool aTrueFalse);
+    bool getUseConstantDT() const;
+    // DT VECTOR
+    const Array<double>& getDTArray();
+    void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
+    double getDTArrayDT(int aStep);
+    void printDTArray(const char *aFileName=NULL);
+    // TIME VECTOR
+    const Array<double>& getTimeArray();
+    double getTimeArrayTime(int aStep);
+    int getTimeArrayStep(double aTime);
+    void printTimeArray(const char *aFileName=NULL);
+    void resetTimeAndDTArrays(double aTime);
+    double getNextTimeArrayTime(double aTime);
 
 
-    // SYSTEM
-    // only called when need to integrate a different set of equations 
-    // then what is defined by the model 
-    void setSystem(SimTK::System* system) { _system = system; }
 
     //--------------------------------------------------------------------------
     // EXECUTION
     //--------------------------------------------------------------------------
-    bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
-    bool doIntegration( SimTK::State& s, int step, double dtFirst );
-    void initialize(SimTK::State& s, double dt);
-    void finalize( SimTK::State& s);
+    bool integrate(SimTK::State& s);
+    bool doIntegration(SimTK::State& s, int step);
+    void finalize(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
     // STATE STORAGE
@@ -234,8 +230,12 @@ public:
 
 private:
 
-   // Handles common tasks of some of the other constructors.
+    // Handles common tasks of some of the other constructors.
     Manager(Model& aModel, bool dummyVar);
+
+    // Helper functions during initialization of integration
+    void initializeStorageAndAnalyses(SimTK::State& s);
+    void initializeTimeStepper(const SimTK::State& s);
 
 //=============================================================================
 };  // END of class Manager

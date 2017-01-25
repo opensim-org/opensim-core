@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -50,7 +50,7 @@ public:
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
         "The fixed location of the station expressed in its parent frame.");
-    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
         "The frame to which this station is fixed.");
 
 public:

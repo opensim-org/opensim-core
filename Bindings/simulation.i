@@ -20,7 +20,8 @@
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-// Following three lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+// Following three lines hacked in out of order to work around WrapObjects use
+// in PhysicalFrame
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -136,7 +137,7 @@
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
-//%include <OpenSim/Simulation/Wrap/WrapObject.h>
+// WrapObject is included up above.
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
@@ -250,3 +251,66 @@
   OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
 %template(getMillard2012EquilibriumMuscleList)
   OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;
+
+// Compensate for insufficient C++11 support in SWIG
+// =================================================
+/*
+Extend concrete Joints to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
+    NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const PhysicalFrame& child) {
+        return new NAME(name, parent, child, false);
+    }
+    
+    NAME(const std::string& name,
+         const PhysicalFrame& parent,
+         const SimTK::Vec3& locationInParent,
+         const SimTK::Vec3& orientationInParent,
+         const PhysicalFrame& child,
+         const SimTK::Vec3& locationInChild,
+         const SimTK::Vec3& orientationInChild) {
+        return new NAME(name, parent, locationInParent, orientationInParent,
+                    child, locationInChild, orientationInChild, false);
+    }
+};
+%enddef
+
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
+EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
+
+%extend OpenSim::PhysicalOffsetFrame {
+    PhysicalOffsetFrame() {
+        return new PhysicalOffsetFrame();
+    }
+    PhysicalOffsetFrame(const PhysicalFrame& parent, 
+                        const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(parent, offset);
+    }
+    PhysicalOffsetFrame(const std::string& name, 
+                const PhysicalFrame& parent,
+                const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(name, parent, offset);
+    }
+        
+    PhysicalOffsetFrame(const std::string& name,
+                const std::string& parentName,
+                const SimTK::Transform& offset) {
+        return new PhysicalOffsetFrame(name, parentName, offset);
+    }
+};

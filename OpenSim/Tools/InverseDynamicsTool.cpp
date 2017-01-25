@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -367,13 +367,16 @@ bool InverseDynamicsTool::run()
         SpatialVec equivalentBodyForceAtJoint;
 
         for(int i=0; i<nt; i++){
-            StateVector genForceVec(times[i], nq, &((genForceTraj[i])[0]));
+            StateVector
+                genForceVec(times[i], genForceTraj[i]);
             genForceResults.append(genForceVec);
 
             // if there are joints requested for equivalent body forces then calculate them
             if(nj>0){
                 Vector forces(6*nj, 0.0);
-                StateVector bodyForcesVec(times[i], 6*nj, &forces[0]);
+                StateVector bodyForcesVec(times[i],
+                                          SimTK::Vector_<double>(6*nj,
+                                                                 &forces[0]));
 
                 s.updTime() = times[i];
                 Vector &q = s.updQ();

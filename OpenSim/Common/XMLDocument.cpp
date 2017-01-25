@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -54,7 +54,11 @@ using namespace std;
 // 30506 for testing 30505 conversion code
 // 30507 for changing serialization of Coordinates owned by Joint
 // 30508 for moving Connector's connectee_name to enclosing Component.
-const int XMLDocument::LatestVersion = 30508;
+// 30509 for replacing 'isDisabled' with: 'appliesForce', 'isEnforced' and
+//       'enabled', for Force, Constraint and Controller, respectively
+// 30510 for renaming Connector to Socket.
+// 30511 for replacing Probe::isDisabled with Probe::enabled.
+const int XMLDocument::LatestVersion = 30511;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -432,7 +436,6 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
 {
     using ElementItr = SimTK::Xml::element_iterator;
     
-    std::string typeName = "PhysicalFrame";
     ElementItr connectors_node = componentElt.element_begin("connectors");
     
     // See if there's a <connectors> element.

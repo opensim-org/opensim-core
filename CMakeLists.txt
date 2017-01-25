@@ -15,6 +15,14 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+string(CONCAT DEP_BUILD_MSG
+  "\n-------------------------IMPORTANT----------------------------------\n"
+  "| Make sure that all OpenSim dependencies are built with the same   |\n"
+  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
+  "| to avoid mysterious runtime errors.                               |\n"
+  "-------------------------IMPORTANT----------------------------------\n")
+message(${DEP_BUILD_MSG})
+
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -91,7 +99,18 @@ SimbodyFiles project. If OFF, you likely must set those environment variables
 for both OpenSim and Simbody." ON)
 
 option(BUILD_API_ONLY "Build/install only headers, libraries,
-wrapping, tests; not applications (ik, rra, etc.)." OFF)
+wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
+
+
+set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
+if(WIN32)
+    # For backwards compatibility in the Windows binary distribution.
+    set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT ON)
+endif()
+option(OPENSIM_BUILD_INDIVIDUAL_APPS
+    "Build/install the old command line applications (ik, id, rra, cmc, etc.)."
+    ${OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT})
+mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 
 # Configure installation directories across platforms.
@@ -181,16 +200,16 @@ endif()
 get_filename_component(ABS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" REALPATH)
 if(UNIX AND ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
              "${ABS_INSTALL_PREFIX}" STREQUAL "/usr/local"))
-    if(${BUILD_API_ONLY} AND ${OPENSIM_INSTALL_UNIX_FHS})
+    set(no_name_conflict ${BUILD_API_ONLY} OR NOT ${OPENSIM_BUILD_INDIVIDUAL_APPS})
+    if(${OPENSIM_INSTALL_UNIX_FHS} AND ${no_name_conflict})
         # In this case it's fine to install into /usr or /usr/local.
     else()
         message(SEND_ERROR "
-        Cannot install into /usr or /usr/local if building
-        applications (since OpenSim executable names conflict with those of
-        vital UNIX executables) or if the OpenSim installation does not
-        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set
-        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change
-        CMAKE_INSTALL_PREFIX.")
+        Cannot install into /usr or /usr/local if the OpenSim installation does
+        not conform to the UNIX Filesystem Hierarchy Standard or if building
+        the old command-line applications (there are name conflicts with vital
+        UNIX executables). Either (a) set OPENSIM_INSTALL_UNIX_FHS to ON, or
+        (b) change CMAKE_INSTALL_PREFIX.")
     endif()
 endif()
 
@@ -360,9 +379,9 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 
 endif()
 
-set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
+set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI or the Matlab wrapping; requires that you have SWIG and Java installed on your machine.)")
 
-set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
@@ -537,6 +556,37 @@ if(NOT Simbody_FOUND)
         SIMBODY_HOME to the installation directory of Simbody.")
 endif()
 
+# Check if Simbody targets were built using same BUILD_TYPE/CONFIGURATION as
+# current OpenSim build. If build/configuration types mismatch, stop the build.
+# ------------------------------------------------------------------------------
+get_property(Simbody_CONFIGURATION
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
+
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
+if(${PLATFORM_NAME} STREQUAL Windows)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
+        COMMAND "if"
+           "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
+           "exit" "1"
+        COMMENT ${MESSAGE})
+elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
+                          "exit 1\n"
+                          "fi\n")
+    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "bash" "simbody_config_check.sh"
+                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
+        COMMENT ${MESSAGE})
+endif()
+
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
 include_directories("${Simbody_INCLUDE_DIR}")
@@ -601,7 +651,8 @@ if(${OPENSIM_COPY_SIMBODY})
         # (in the binary build directory).  Those are produced by the OUTPUT
         # custom command below, which depends on the source files from the
         # Simbody installation directory.
-        add_custom_target(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+        add_custom_target(SimbodyFiles ALL
+            DEPENDS Simbody_CONFIG_check ${COPIED_LIB_FILES})
         set_target_properties(SimbodyFiles
             PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 

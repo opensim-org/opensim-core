@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Frank C. Anderson                                                       *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Frank C. Anderson                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -70,8 +70,8 @@ Joint::Joint(const std::string &name, const PhysicalFrame& parent,
     setName(name);
     set_reverse(reverse);
 
-    updConnector<PhysicalFrame>("parent_frame").connect(parent);
-    updConnector<PhysicalFrame>("child_frame").connect(child);
+    connectSocket_parent_frame(parent);
+    connectSocket_child_frame(child);
 }
 
 /* Convenience Constructor*/
@@ -130,8 +130,8 @@ Joint::Joint(const std::string &name,
     static_cast<PhysicalOffsetFrame&>(upd_frames(pix)).setParentFrame(parent);
     static_cast<PhysicalOffsetFrame&>(upd_frames(cix)).setParentFrame(child);
 
-    updConnector<PhysicalFrame>("parent_frame").connect(upd_frames(pix));
-    updConnector<PhysicalFrame>("child_frame").connect(upd_frames(cix));
+    connectSocket_parent_frame(upd_frames(pix));
+    connectSocket_child_frame(upd_frames(cix));
 }
 
 //=============================================================================
@@ -201,7 +201,7 @@ void Joint::extendFinalizeFromProperties()
 //-----------------------------------------------------------------------------
 const PhysicalFrame& Joint::getChildFrame() const
 {
-    return getConnector<PhysicalFrame>("child_frame").getConnectee();
+    return getSocket<PhysicalFrame>("child_frame").getConnectee();
 }
 
 //-----------------------------------------------------------------------------
@@ -209,7 +209,7 @@ const PhysicalFrame& Joint::getChildFrame() const
 //-----------------------------------------------------------------------------
 const OpenSim::PhysicalFrame& Joint::getParentFrame() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
 }
 
 const Coordinate& Joint::getCoordinate() const {
@@ -339,9 +339,9 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // The parent node in the multibody tree must part of the system
     if(get_reverse())
         // this will be the child if the joint definition is reversed
-        getConnector<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
+        getSocket<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
     else // otherwise it is the parent frame
-        getConnector<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
+        getSocket<PhysicalFrame>("parent_frame").getConnectee().addToSystem(system);
 }
 
 void Joint::extendInitStateFromProperties(SimTK::State& s) const
@@ -421,7 +421,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s,
     the mobilities of the joint (for example to satisfy prescribed motion). In 
     which case the joint power is the constraint forces projected onto the mobilities
     multiplied by the mobilities (internal coordinate velocities). Only constraints
-    internal to the joint are accounted for, not external constraints that effect
+    internal to the joint are accounted for, not external constraints that affect
     joint motion. */
 double Joint::calcPower(const SimTK::State &s) const
 {

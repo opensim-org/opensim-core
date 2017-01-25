@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -54,32 +54,39 @@ int main()
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cerr << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
     return 0;
 }
 
-void compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
+void compareModelMarkers(const Model& resultModel, const std::string& stdFileName, double tol)
 {
-    // Load std model and realize it to Velocity just in case
-    Model* refModel = new Model(stdFileName);
-    SimTK::State& sStd = refModel->initSystem();
+    // Load std model 
+    unique_ptr<Model> refModel{ new Model(stdFileName) };
 
-    const SimTK::State& s = resultModel.getWorkingState();
-    resultModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+    const MarkerSet& stdMarkers = refModel->getMarkerSet();
+    const MarkerSet& resultMarkers = resultModel.getMarkerSet();
 
-    ASSERT(sStd.getNQ()==s.getNQ());    
-    // put them in same configuration
-    sStd.updQ() = s.getQ();
-    refModel->getMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
+    //It is possible that markers are not in the same order, so access by name
+    OpenSim::Array<std::string> markerNames;
+    stdMarkers.getMarkerNames(markerNames);
+    for (int i = 0; i < markerNames.getSize(); ++i) {
+        std::string& name = markerNames[i];
+        const Marker& stdMarker = stdMarkers.get(name);
+        const Marker& marker = resultMarkers.get(name);
 
-    ASSERT(sStd.getNU()==s.getNU());    
-    ASSERT(sStd.getNZ()==s.getNZ());    
+        const SimTK::Vec3& stdLocation = stdMarker.get_location();
+        const SimTK::Vec3& location = marker.get_location();
 
-    delete refModel;
+        std::cout << "Marker `" << name << "' location: " << location
+            << " | " << stdLocation << " (standard) " << endl;
+
+        ASSERT_EQUAL(stdLocation, location, tol, __FILE__, __LINE__,
+            "Scale model marker location failed to match the standard");
+    }
 }
 
 void scaleGait2354()
@@ -122,6 +129,11 @@ void scaleGait2354()
                 setupFilePath+"subject01_scaleSet_applied.xml");
         ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
     }
+
+    //Compare model markers to the standard
+    Model model(setupFilePath + "subject01_simbody.osim");
+    compareModelMarkers(model, "std_subject01_simbody.osim", 1.0e-6);
+
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)
@@ -130,7 +142,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     IO::SetDigitsPad(4);
 
     // Construct model and read parameters file
-    ScaleTool* subject = new ScaleTool("subject01_Setup_Scale_GUI.xml");
+    std::unique_ptr<ScaleTool> subject{ new ScaleTool("subject01_Setup_Scale_GUI.xml") };
     std::string setupFilePath=subject->getPathToSubject();
 
     // Remove old results if any
@@ -143,7 +155,8 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     
     // Keep track of the folder containing setup file, will be used to locate results to compare against
     guiModel.initSystem();
-    MarkerSet *markerSet = new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
+    std::unique_ptr<MarkerSet> markerSet{ 
+        new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName()) };
     guiModel.updateMarkerSet(*markerSet);
 
     // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
@@ -169,7 +182,9 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
-    delete subject;
+    //Compare model markers to the standard
+    Model model(setupFilePath + "subject01_simbody.osim");
+    compareModelMarkers(model, "std_subject01_simbody.osim", 1.0e-6);
 }
 
 void scaleModelWithLigament()
@@ -226,6 +241,8 @@ void scaleModelWithLigament()
     //Finally make sure we didn't incorrectly scale anything else in the model
     ASSERT(std == comp, __FILE__, __LINE__, 
             "Standard model failed to match scaled.");
+
+    compareModelMarkers(comp, std_scaledModelFile, 1.0e-6);
 }
 
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {

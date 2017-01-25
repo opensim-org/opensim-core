@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -76,11 +76,11 @@ bool StatesTrajectory::isConsistent() const {
     // An empty or size-1 trajectory is necessarily consistent.
     if (getSize() <= 1) return true;
 
-    const auto& state0 = get(0);
+    const auto& state0 = operator[](0);
 
     for (unsigned itime = 1; itime < getSize(); ++itime) {
 
-        if (!state0.isConsistent(get(itime))) {
+        if (!state0.isConsistent(operator[](itime))) {
             return false;
         }
 
@@ -173,11 +173,10 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // This is what we'll return.
     StatesTrajectory states;
 
-    // Make a copy of the model so that we can get a corresponding state.
-    Model localModel(model);
-
+    OPENSIM_THROW_IF(!model.hasSystem(), ModelHasNoSystem, model.getName());
+    
     // We'll keep editing this state as we loop through time.
-    auto state = localModel.initSystem();
+    auto state = model.getWorkingState();
 
     // The labels of the columns in the storage file.
     const auto& stoLabels = sto.getColumnLabels();
@@ -203,7 +202,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
     // Check if states are missing from the Storage.
     // ---------------------------------------------
-    const auto& modelStateNames = localModel.getStateVariableNames();
+    const auto& modelStateNames = model.getStateVariableNames();
     std::vector<std::string> missingColumnNames;
     // Also, assemble the names of the states that we will actually set in the
     // trajectory, along with the corresponding state index.
@@ -219,7 +218,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
             MissingColumnsInStatesStorage, 
-            localModel.getName(), missingColumnNames);
+            model.getName(), missingColumnNames);
 
     // Check if the Storage has columns that are not states in the Model.
     // ------------------------------------------------------------------
@@ -235,7 +234,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
                     extraColumnNames.push_back(stoLabels[ic]);
                 }
             }
-            OPENSIM_THROW(ExtraColumnsInStatesStorage, localModel.getName(),
+            OPENSIM_THROW(ExtraColumnsInStatesStorage, model.getName(),
                     extraColumnNames);
         }
     }
@@ -261,12 +260,12 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
         // Put in NaNs for state variable values not in the Storage.
         for (const auto& stateName : missingColumnNames) {
-            localModel.setStateVariableValue(state, stateName, SimTK::NaN);
+            model.setStateVariableValue(state, stateName, SimTK::NaN);
         }
 
         // Fill up current State with the data for the current time.
         for (const auto& kv : statesToFillUp) {
-            localModel.setStateVariableValue(state,
+            model.setStateVariableValue(state,
                     kv.second, dependentValues[kv.first]);
         }
 

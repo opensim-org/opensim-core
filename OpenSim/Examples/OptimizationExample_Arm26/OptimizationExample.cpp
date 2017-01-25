@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -58,7 +58,6 @@ class ExampleOptimizationSystem : public OptimizerSystem {
            // Create the integrator for the simulation.
            p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
            p_integrator->setAccuracy(1.0e-7);
-           p_manager.reset(new Manager(osimModel, *p_integrator));
        }
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
@@ -70,24 +69,23 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         osimModel.updDefaultControls() = newControls;
                 
         // Integrate from initial time to final time
-        p_manager->setInitialTime(initialTime);
-        p_manager->setFinalTime(finalTime);
+        Manager manager(osimModel, *p_integrator);
+        manager.setInitialTime(initialTime);
+        manager.setFinalTime(finalTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        p_manager->integrate(s);
+        manager.integrate(s);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-        Vec3 velocity;
+        const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
-            .get("r_ulna_radius_hand"), massCenter, velocity);
-        
+        Vec3 massCenter = hand.getMassCenter();
+        Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);
         f = -velocity[0];
         stepCount++;
         
@@ -107,7 +105,6 @@ private:
     int numControls;
     State& si;
     Model& osimModel;
-    std::unique_ptr<Manager> p_manager;
     SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
 
  };

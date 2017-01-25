@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -61,7 +61,7 @@ public:
     virtual std::string getName() const = 0;
     /** This returns the absolute path name of the component to which this channel
      * belongs prepended to the channel's name. For example, this 
-     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
     
@@ -118,7 +118,7 @@ public:
     /** Output's owning Component */
     const Component& getOwner() const { return _owner.getRef(); }
     
-    /** This returns <absolute-path-to-component>/<output-name>. */
+    /** This returns <absolute-path-to-component>|<output-name>. */
     std::string getPathName() const;
     
     ChannelPath getAbsolutePath() const;
@@ -356,7 +356,7 @@ public:
     }
     std::string getPathName() const override {
         // TODO this function should be unnecessary now; remove.
-        return getOutput().getOwner().getAbsolutePathName().toString() + "/" + getName();
+        return getOutput().getOwner().getAbsolutePathName().toString() + "|" + getName();
     }
     
     ChannelPath getAbsolutePath() const override {

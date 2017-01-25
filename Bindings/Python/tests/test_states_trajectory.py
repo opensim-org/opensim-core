@@ -78,6 +78,7 @@ class TestStatesTrajectory(unittest.TestCase):
         # wrapping works.
         model = osim.Model(os.path.join(test_dir,
             "gait10dof18musc_subject01.osim"))
+        model.initSystem()
         sto = osim.Storage(self.states_sto_fname)
         states = osim.StatesTrajectory.createFromStatesStorage(
                 model, sto)

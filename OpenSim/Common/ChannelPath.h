@@ -45,14 +45,14 @@ public:
         //std::cout << "DEBUG ChannelPath constructor " << path << std::endl;
         if (path.empty()) return;
         
-        auto lastSlash = path.rfind("/");
+        auto bar = path.rfind("|");
         auto colon = path.rfind(":");
         auto leftParen = path.rfind("(");
         auto rightParen = path.rfind(")");
         
-        _componentPath = ComponentPath(path.substr(0, lastSlash));
-        _outputName = path.substr(lastSlash + 1,
-                                  std::min(colon, leftParen) - lastSlash - 1);
+        _componentPath = ComponentPath(path.substr(0, bar));
+        _outputName = path.substr(bar + 1,
+                                  std::min(colon, leftParen) - (bar + 1));
         
         // Channel name.
         if (colon != std::string::npos) {
@@ -115,7 +115,7 @@ public:
     
     std::string toString() const {
         std::string path = _componentPath.toString();
-        if (!path.empty()) path += "/";
+        if (!path.empty()) path += "|";
         path += _outputName; // TODO what if output name is empty? error?
         if (!_channelName.empty()) path += ":" + _channelName;
         if (!_alias.empty())       path += "(" + _alias + ")";

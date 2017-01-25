@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -513,34 +513,33 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(const SimTK::State& s)
 {
-    const SimbodyEngine& de = _model->getSimbodyEngine();
-
     // VARIABLES
     SimTK::Vec3 vec;
 
     const double& time = s.getTime();
+    Ground ground = _model->getGround();
 
     // POSITION
-    de.getPosition(s, *_body,_point,vec);
+    vec = _body->findStationLocationInGround(s, _point);
     if(_relativeToBody){
-        de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.findStationLocationInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _pStore->append(time, vec);
 
     // VELOCITY
-    de.getVelocity(s, *_body,_point,vec);
+    vec = _body->findStationVelocityInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _vStore->append(time, vec);
 
     // ACCELERATIONS
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-    de.getAcceleration(s, *_body,_point,vec);
+    vec = _body->findStationAccelerationInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _aStore->append(time, vec);

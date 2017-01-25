@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -201,6 +201,11 @@ public:
         OPENSIM_THROW_IF(!_tableMetaData.setValueForKey(key, value),
                          KeyExists,
                          key);
+    }
+
+    /** Whether or not table metadata for the given key exists.               */
+    bool hasTableMetaDataKey(const std::string& key) const {
+        return _tableMetaData.hasKey(key);
     }
 
     /** Get table metadata for a given key.

@@ -80,6 +80,10 @@ MODEL_ADOPT_HELPER(Controller);
     geom._markAdopted()
 %}
 
+%pythonappend OpenSim::PhysicalFrame::addWrapObject %{
+    wrapObject._markAdopted()
+%}
+
 // PrescribedController::prescribeControlForActuator takes ownership of
 // the passed-in function.
 // There are two overloads of this function; we append to both of them.
@@ -87,49 +91,6 @@ MODEL_ADOPT_HELPER(Controller);
 %pythonappend OpenSim::PrescribedController::prescribeControlForActuator %{
     args[1]._markAdopted()
 %}
-
-
-// Compensate for insufficient C++11 support in SWIG
-// =================================================
-/*
-Extend concrete Joints to use the inherited base constructors.
-This is only necessary because SWIG does not generate these inherited
-constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
-Note that CustomJoint and EllipsoidJoint do implement their own
-constructors because they have additional arguments.
-*/
-%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
-%extend OpenSim::NAME {
-    NAME() {
-        return new NAME();
-    }
-	NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const PhysicalFrame& child) {
-		return new NAME(name, parent, child, false);
-	}
-	
-	NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const SimTK::Vec3& locationInParent,
-         const SimTK::Vec3& orientationInParent,
-         const PhysicalFrame& child,
-         const SimTK::Vec3& locationInChild,
-         const SimTK::Vec3& orientationInChild) {
-		return new NAME(name, parent, locationInParent, orientationInParent,
-					child, locationInChild, orientationInChild, false);
-	}
-};
-%enddef
-
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
 
 // Typemaps
 // ========

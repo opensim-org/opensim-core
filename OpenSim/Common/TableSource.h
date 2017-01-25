@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,24 +28,6 @@
 #include "Component.h"
 
 namespace OpenSim {
-
-class TimeOutOfRange : public InvalidTimestamp {
-public:
-    TimeOutOfRange(const std::string& file,
-                   size_t line,
-                   const std::string& func,
-                   double timestamp,
-                   double minTimestamp,
-                   double maxTimestamp) :
-        InvalidTimestamp(file, line, func) {
-        std::string msg = "min = " + std::to_string(minTimestamp);
-        msg += " max = " + std::to_string(maxTimestamp);
-        msg += " timestamp = " + std::to_string(timestamp);
-
-        addMessage(msg);
-    }
-}; // class TimeOutOfRange
-
 
 /** Component representing a source of data from a TimeSeriesTable_.
 

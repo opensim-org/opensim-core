@@ -9,3 +9,5 @@ OpenSimAddLibrary(
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     )
+
+add_dependencies(osimAnalyses Simbody_CONFIG_check)

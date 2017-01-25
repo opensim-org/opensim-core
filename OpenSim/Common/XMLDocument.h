@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -94,9 +94,11 @@ public:
     bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
         bool compareDefaults=false, bool compareVersionNumbers=false);
     /** This adds an XML element to `element` of the following form:
-        <Connector_PhysicalFrame_ name="parent_frame">
-            <connectee_name>...</connectee_name>
-        </Connector_PhysicalFrame_>
+    @code
+    <Connector_PhysicalFrame_ name="parent_frame">
+        <connectee_name>...</connectee_name>
+    </Connector_PhysicalFrame_>
+    @endcode
     This syntax was revised in XML document version 30508; see
     updateConnectors30508(). As such, this function should *not* be used for
     updating versions 30508 or greater. */
@@ -104,20 +106,26 @@ public:
         const std::string& connectorTag, const std::string& connectorName, 
         const std::string& connectorValue);
     /** In version 30508, the XML syntax for Connectors changed:
-    Previous:  <connectors>
-                   <Connector_PhysicalFrame_ name="parent_frame">
-                       <connectee_name>...</connectee_name>
-                   </Connector_PhysicalFrame_>
-                   <Connector_PhysicalFrame_ name="child_frame">
-                       <connectee_name>...</connectee_name>
-                   </Connector_PhysicalFrame_>
-               </connectors>
-    New:       <connector_parent_frame_connectee_name>...
-                   </connector_parent_frame_connectee_name>
-               <connector_child_frame_connectee_name>...
-                   </connector_child_frame_connectee_name>
+    Previous:
+    @code
+    <connectors>
+        <Connector_PhysicalFrame_ name="parent_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+        <Connector_PhysicalFrame_ name="child_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+    </connectors>
+    @endcode
+    New:
+    @code
+    <connector_parent_frame_connectee_name>...
+        </connector_parent_frame_connectee_name>
+    <connector_child_frame_connectee_name>...
+        </connector_child_frame_connectee_name>
+    @endcode
     
-    If there is no <connectors> element, then this function does not edit
+    If there is no `<connectors>` element, then this function does not edit
     componentElt. */
     static void updateConnectors30508(SimTK::Xml::Element& componentElt);
     static void addPhysicalOffsetFrame(SimTK::Xml::Element& element,
