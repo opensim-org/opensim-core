@@ -20,10 +20,9 @@
 
 function J = DesignMainStarter_Manager(initial_states)
 % This script opens a Model, edits its initial state, runs a forward
-% simulation.
-
-% display the input state values to console
-display(initial_states)
+% simulation. 
+% initial_states = a State object written as Matlab vector whose entries... 
+%                  are in a particular order
 
 % Set a list of ordered state names that match the state values
 coordinateNames = [{'LHIP'} {'RHIP'} {'LKnee'} {'Rknee'}];
@@ -34,18 +33,16 @@ import org.opensim.modeling.*
 % Open a Model by name
 model = Model('../Model/WalkerModel.osim');
 
-% Initialize the system and get the initial state
+% Get a reference to the underlying computational system
 model_states = model.initSystem();
 
 % Set the coordinate values from the initial_states
-CoordSet = model.getCoordinateSet();
+coordSet = model.getCoordinateSet();
 
-for i = 1 : length(coodinateNames)
-  for u = 0 : CoordSet().getSize() - 1
-    if strmtch(coodinateNames{i}, char(CoordSet.get(u).getName()))
-          CoordSet.get(u).setValue(model_states, initial_states(i)); % LHIP
-    end
-  end
+for i = 1:length(coordinateNames)
+    idx = coordSet.getIndex( coordinateNames{idx} );
+    if (idx<0), error(['Coordiantes, ' coordinateNames{i} ', do not exist in the Model']); end
+    coordSet.get(idx).setValue(model_states, initial_states(i));
 end
 
 % add a reporter
@@ -61,9 +58,6 @@ reporter.updInput('inputs').connect( model.getCoordinateSet().get(6).getOutput('
 
 % add the reporter to the model
 model.addComponent(reporter)
-
-% make a new underlying computational system
-model_states = model.initSystem();
 
 % Simulate.
 manager = Manager(model);

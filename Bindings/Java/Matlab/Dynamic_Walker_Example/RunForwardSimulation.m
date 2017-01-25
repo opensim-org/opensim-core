@@ -19,7 +19,7 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
-% This script demonstrates calls the Forward Tool from the OpenSim library from Matlab.
+% This script demonstrates calling the Forward Tool from the OpenSim library from Matlab.
 % ----------------------------------------------------------------------- 
 
 import org.opensim.modeling.*
@@ -41,7 +41,7 @@ manager.setInitialTime(0);
 manager.setFinalTime(2);
 manager.integrate(state);
 
-% Get the states table from the manager and pring the results.
+% Get the states table from the manager and print the results.
 sTable = manager.getStatesTable();
 stofiles = STOFileAdapter();
 stofiles.write(sTable, '../Results/fwd/simulation_states.sto');
@@ -54,4 +54,4 @@ forceReporter.printResults('','../Results/fwd',-1, '.sto');
 display('Forward Tool Finished.');
 display('The following files were written to the /Results/FWD directory:')
 display('simulation_states.sto')
-display('_ForceReporter_Forces.sto');
+display([model.getName(), '_ForceReporter_Forces.sto']);

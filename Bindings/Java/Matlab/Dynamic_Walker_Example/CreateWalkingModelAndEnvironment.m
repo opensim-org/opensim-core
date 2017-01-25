@@ -1,26 +1,3 @@
-<<<<<<< HEAD
-% -----------------------------------------------------------------------
-% The OpenSim API is a toolkit for musculoskeletal modeling and
-% simulation. See http://opensim.stanford.edu and the NOTICE file
-% for more information. OpenSim is developed at Stanford University
-% and supported by the US National Institutes of Health (U54 GM072970,
-% R24 HD065690) and by DARPA through the Warrior Web program.
-%
-% Copyright (c) 2005-2016 Stanford University and the Authors
-% Author(s): Daniel A. Jacobs
-%
-% Licensed under the Apache License, Version 2.0 (the "License");
-% you may not use this file except in compliance with the License.
-% You may obtain a copy of the License at
-% http://www.apache.org/licenses/LICENSE-2.0.
-%
-% Unless required by applicable law or agreed to in writing, software
-% distributed under the License is distributed on an "AS IS" BASIS,
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-% implied. See the License for the specific language governing
-% permissions and limitations under the License.
-% -----------------------------------------------------------------------
-=======
 % ----------------------------------------------------------------------- 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           
 % simulation. See http://opensim.stanford.edu and the NOTICE file         
@@ -42,7 +19,7 @@
 % implied. See the License for the specific language governing            
 % permissions and limitations under the License.                          
 % ----------------------------------------------------------------------- 
->>>>>>> 5dab71889be198af47e3d34a7c3663951a54a1c5
+
 %CreateWalkingModelAndEnvironment
 %   This script creates a planar kneed walking model and randomly generates
 %   40 spheres for obstacles
@@ -70,13 +47,10 @@ ShankMass       = 0.05;
 ShankLength     = 0.5;
 ShankIZZ        = 1/12*ShankMass*ShankLength^2;
 
-smallInertia    = 1E-4; % Off Axis values only for consistency - unused)
-
-DEG2RAD         = pi/180;
-RAD2DEG         = 1/DEG2RAD;
+smallInertia    = 1E-4; 
 
 % Add Obstacles
-addObstacles = true;  % 1 for yes 0 for No
+addObstacles = true;
 
 % Obstacle Contact Parameters
 numSpheres = 40;
@@ -109,7 +83,7 @@ platform.setInertia(Inertia(1,1,1,0,0,0));
 
 % Create Weld Joint
 locationInParent    = Vec3(0,0,0);
-orientationInParent = Vec3(0,0,-10*DEG2RAD);
+orientationInParent = Vec3(0,0,deg2rad(-10));
 locationInChild     = Vec3(0,0,0);
 orientationInChild  = Vec3(0,0,0);
 platformToGround    = WeldJoint('PlatformToGround', ground, locationInParent, ...
@@ -189,9 +163,9 @@ LThighToPelvis = PinJoint('LThighToPelvis', pelvis, locationInParent, ...
 
 % Update the coordinates of the new joint
 jointCoordinateSet = LThighToPelvis.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([-100*DEG2RAD, 100*DEG2RAD]);
+jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
 jointCoordinateSet.get(0).setName('LHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(60*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(60));
 
 % Add Visible Object for GUI
 leftThigh.addDisplayGeometry('sphere.vtp');
@@ -216,9 +190,9 @@ RThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
 
 % Update the coordinates of the new joint
 jointCoordinateSet = RThighToPelvis.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([-100*DEG2RAD, 100*DEG2RAD]);
+jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
 jointCoordinateSet.get(0).setName('RHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Visible Object for GUI
 rightThigh.addDisplayGeometry('sphere.vtp');
@@ -243,9 +217,9 @@ LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,  ...
 
 % Update the coordinates of the new joint
 jointCoordinateSet = LShankToThigh.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([-140*DEG2RAD, 0]);
+jointCoordinateSet.get(0).setRange([deg2rad(-140), 0]);
 jointCoordinateSet.get(0).setName('LKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Visible Object for GUI
 leftShank.addDisplayGeometry('sphere.vtp');
@@ -273,9 +247,9 @@ RShankToThigh = PinJoint('RShankToRThigh', rightThigh, locationInParent, orienta
 
 % Update the coordinates of the new joint
 jointCoordinateSet = RShankToThigh.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([-140*DEG2RAD, 0]);
+jointCoordinateSet.get(0).setRange([deg2rad(-140, 0]);
 jointCoordinateSet.get(0).setName('RKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Body to Model
 osimModel.addBody(rightShank);
@@ -502,3 +476,4 @@ if(addObstacles)
 end
 % -----------------------------------------------------------------------
 osimModel.print([outputPath, outputModelName, '.osim']);
+display(['Model ' outputModelName ',printed']);

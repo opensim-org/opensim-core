@@ -19,7 +19,7 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
-% DesignMainStarterWithControls
+
 %   This script opens a Model, edits its initial state, runs a forward
 % simulation with the built-in Matlab integrators, and creates a plot from
 % the motion data.  The model has an coordinate actuator on the left knee
@@ -34,18 +34,12 @@ import org.opensim.modeling.*;
 % display('Make sure you run the script file "AddCoordinateActuator.m" first.')
 model = Model('../Model/WalkerModelTerrain_CoordAct.osim');
 
-% check to see if correct actuators are attached.
-nActuators = model.getForceSet().getSize()
-
-if nActuators == 0
-  error('No actuators attached to model ' ...
-        'run the script file "AddCoordinateActuator.m" first.');
-end
+nActuators = model.getForceSet().getSize();
 
 % Use the visualizer (must be done before the call to init system)
 model.setUseVisualizer(true);
 
-% Initialize the system and get the initial state
+% Get a reference to the underlying computational system
 osimState = model.initSystem();
 
 % Set the initial states of the model

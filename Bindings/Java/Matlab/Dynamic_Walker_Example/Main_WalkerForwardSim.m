@@ -32,7 +32,7 @@ osimModel = Model('../Model/WalkerModel.osim');
 % Use the visualizer (must be done before the call to init system)
 osimModel.setUseVisualizer(true);
 
-% Initialize the system and get the initial state
+% get a reference to the underlying computational system
 osimState = osimModel.initSystem();
 
 % Set the initial states of the model
@@ -44,7 +44,6 @@ CoordSet.get('RHip_rz').setValue(osimState,-0.17453293);
 CoordSet.get('LKnee_rz').setValue(osimState, -0.52359878);
 CoordSet.get('RKnee_rz').setValue(osimState, -0.52359878);
 
-% Recalculate the derivatives after the coordinate changes
 stateDerivVector = osimModel.computeStateVariableDerivatives(osimState);
 
 % Controls function

@@ -19,12 +19,13 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
+
 % This file is a sample client script to the following scripts in this
 % directory:
 %     AddCustomFeet.m
 %     AddExpressionPointToPointForceMagnets.m
 %     IntegrateOpenSimPlant.m
-%     PlotOpensimData.m
+%     PlotOpenSimData.m
 %
 % The file compares the performance of the
 % DW2013_WalkerModelTerrainAddCustomFeet.osim and
