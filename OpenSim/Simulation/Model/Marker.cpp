@@ -68,21 +68,12 @@ void Marker::setNull()
  * Set the 'frame name' field, which is used when the marker is added to
  * an existing model.
  *
- * @param aName name of frame
+ * @param  name of frame
  */
-void Marker::setFrameName(const string& aName)
+void Marker::setFrameName(const string& name)
 {
-    const PhysicalFrame* refFrame = dynamic_cast<const PhysicalFrame*>(&getModel().getFrameSet().get(aName));
-    if (refFrame)
-    {
-        setParentFrame(*refFrame);
-    }
-    else
-    {
-        string errorMessage = "Markers must be fixed to PhysicalFrames. " + string(aName) + " is not a PhysicalFrame.";
-        throw Exception(errorMessage);
-    }
-
+    const auto& refFrame = getModel().getComponent<PhysicalFrame>(name);
+    setParentFrame(refFrame);
 }
 
 //_____________________________________________________________________________
