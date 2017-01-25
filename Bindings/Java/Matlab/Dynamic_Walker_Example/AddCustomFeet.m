@@ -20,29 +20,7 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
-=======
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2017 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
->>>>>>> 5dab71889be198af47e3d34a7c3663951a54a1c5
+
 % This file demonstrates how to add feet to the model using a custom
 % object.
 %
@@ -68,28 +46,22 @@ model.setName( [model.getName().toCharArray()' '_CustomFeet']);
 
 % remove the current foot forces
 forceNames = [{'LFootForce'} {'RFootForce'}];
-for i = 1 : length(forceNames)
-    
-    for u = 0 : model.getForceSet().getSize() - 1
 
-        if strcmp(forceNames{i}, char(model.getForceSet().get(u).getName()));
-            model.updForceSet().remove( model.getForceSet.get(forceNames{i}) );
-            break
-        end
-    end
+for i = 1 : length(forceNames)
+    idx = model.getForceSet().getIndex( forceNames{i} );
+    if (idx < 0), error(['Force, ' forceNames{i} ', does not exist in the Model']); end
+    isSuccessful = model.updForceSet().remove(idx);
+    if (~isSuccessful), error(['The Force, ' forceNames{i} ', as not able to be removed from Model']); end
 end
 
-% remove the current foot contact geometry
+% remove the current (foot) contact geometry
 geometryNames = [{'LFootContact'} {'RFootContact'}];
 for i = 1 : length(geometryNames)
     
-    for u = 0 : model.getContactGeometrySet.getSize() - 1
-
-        if strcmp(geometryNames{i}, char(model.getContactGeometrySet().get(u).getName()));
-            model.updContactGeometrySet().remove( model.getContactGeometrySet().get(geometryNames{i}) );
-            break
-        end
-    end
+    idx = model.getContactGeometrySet().getIndex(geometryNames{i}); 
+    if (idx < 0), error(['COntact Geometry, ' geometryNames{i} ', does not exist in the Model']); end
+    isSuccessful = model.updContactGeometrySet().remove(idx);
+    if (~isSuccessful), error(['The Contact Geometry, ' geometryNames{i} ',was not able to be removed from Model']); end
 end
 
 % make rigid bodies for feet
@@ -100,7 +72,7 @@ rightFoot = Body('RightFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 leftShank= model.getBodySet().get('LeftShank');
 rightShank = model.getBodySet().get('RightShank');
 
-% make weld joints
+% weld feet to shanks
 ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
 ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0),Vec3(0,0,0), rightFoot, Vec3(0,0,0), Vec3(0,0,0));
 
@@ -163,4 +135,7 @@ model.addForce(elasticforce_l);
 model.addForce(elasticforce_r);
 
 % print new model to file.
-model.print('../Model/WalkerModel_customFeet.osim');
+newFilename = 'WalkerModel_customFeet.osim';
+isSuccessful = model.print(['../Model/',newFilename]);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');
