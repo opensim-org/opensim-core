@@ -10,3 +10,5 @@ OpenSimAddLibrary(
     SOURCES ${SOURCES}
     TESTDIRS "Test"
     )
+
+add_dependencies(osimActuators Simbody_CONFIG_check)
