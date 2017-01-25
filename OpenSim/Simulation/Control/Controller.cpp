@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -61,13 +61,36 @@ Controller::Controller()
 void Controller::constructProperties()
 {
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
-    constructProperty_isDisabled(false);
+    constructProperty_enabled(true);
     constructProperty_actuator_list();
 
     // Set is only a reference list, not ownership
     _actuatorSet.setMemoryOwner(false);
 }
 
+void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'enabled' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"enabled"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'enabled'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
+}
 
 //=============================================================================
 // GET AND SET
@@ -78,23 +101,23 @@ void Controller::constructProperties()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get whether or not this controller is disabled.
+ * Get whether or not this controller is enabled.
  */
-bool Controller::isDisabled() const
+bool Controller::isEnabled() const
 {
     if( getModel().getAllControllersEnabled() ) {
-       return( get_isDisabled() );
+       return( get_enabled() );
     } else {
-       return( true );
+       return( false );
     }
 }
 //_____________________________________________________________________________
 /**
  * Turn this controller on or off.
  */
-void Controller::setDisabled(bool aTrueFalse)
+void Controller::setEnabled(bool aTrueFalse)
 {
-    upd_isDisabled()=aTrueFalse;
+    upd_enabled() = aTrueFalse;
 }
 
 // for any post XML deserialization initialization
@@ -103,7 +126,7 @@ void Controller::extendConnectToModel(Model& model)
     Super::extendConnectToModel(model);
 
     // TODO this custom connection code can all disappear
-    // if we use a list Connector<Actuator> 
+    // if we use a list Socket<Actuator> 
 
     // make sure controller does not take ownership
     _actuatorSet.setMemoryOwner(false);
@@ -150,7 +173,7 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
-    //TODO this needs to be setting a Connector list of Actuators
+    //TODO this needs to be setting a Socket list of Actuators
 
     // make sure controller does NOT assume ownership
     _actuatorSet.setMemoryOwner(false);

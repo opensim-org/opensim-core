@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers, Ajay Seth                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,12 +43,14 @@ class Joint;
 
 /**
  * An analysis for reporting the joint reaction loads from a model. For a given
- * joint, the reaction load is calculated as the forces and moments required to 
- * constrain the body motions to satisfy the joint as if the joint did not exist.
- * The reaction load acts at the joint center (mobilizer frame) of both the parent 
- * and child bodies and either force can be reported and expressed in the either
- * the child, parent or ground frames. The default behavior is the force
- * on the child expressed in the ground frame.
+ * joint, the reaction load is calculated as the forces and moments required to
+ * constrain the body motions to satisfy the joint as if the joint did not 
+ * exist.
+ * 
+ * The reaction load acts at the joint center (mobilizer frame) of both the 
+ * parent and child bodies and either force can be reported and expressed in 
+ * any specified frame. The default behavior is the force on the child 
+ * expressed in the ground frame.
  *
  * @author Matt DeMers, Ajay Seth
  * @version 1.0
@@ -65,19 +67,18 @@ private:
      *  of each analyzed joint.*/
     struct JointReactionKey
     {
-        /* The index of the joint to be reported on in the Model's JointSet.
-           This corresponds to the index in the Vector of reaction forces/moments
-           returned by the SimbodyEngine::computeReactions() method. */
-        int jointIndex;
         /* Joint reference*/
         const Joint* joint;
-        /* The body upon which the force is applied */
-        const PhysicalFrame* appliedOnBody;
         /* Is the reaction force applied on the Body the child or the parent
            of the joint?*/
         bool isAppliedOnChild;
-        /* The reference Frame in which the force should be expressed */
-        const PhysicalFrame* expressedInFrame;
+        /* The body upon which the force is applied. Specifically, this is
+           the base frame of the body specified (i.e. child or parent) from
+           isAppliedOnChild. Note that this is only used for printing the
+           onBodyName when constructing column labels. */
+        const Frame* appliedOnBody;
+        /* The reference Frame in which the force should be expressed. */
+        const Frame* expressedInFrame;
     };
 
 protected:

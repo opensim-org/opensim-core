@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -63,9 +63,9 @@ public:
         "Default appearance attributes for this Geometry");
 
 //=============================================================================
-// CONNECTORS
+// SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
+    OpenSim_DECLARE_SOCKET_FD(frame, Frame,
         "The frame to which this geometry is attached. Note, being connected "
         "to a Frame means its transform is used to position this Geometry." );
 //=============================================================================
@@ -94,7 +94,7 @@ public:
     /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
-    this Geometry is attached (using a Connector). **/
+    this Geometry is attached (using a Socket). **/
 
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -199,12 +199,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos, vel;
-
-        osimModel->updSimbodyEngine().getPosition(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), pos);
-        osimModel->updSimbodyEngine().getVelocity(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), vel);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
+        Vec3 vel = ball.findStationVelocityInGround(osim_state, Vec3(0));
 
         double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 

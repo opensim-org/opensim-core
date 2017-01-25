@@ -5,8 +5,13 @@
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
+<<<<<<< HEAD
 % Copyright (c) 2005-2016 Stanford University and the Authors
 % Author(s): Tom Uchida, Daniel A. Jacobs.
+=======
+% Copyright (c) 2005-2017 Stanford University and the Authors
+% Author(s): Daniel A. Jacobs, Tom Uchida
+>>>>>>> 5dab71889be198af47e3d34a7c3663951a54a1c5
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

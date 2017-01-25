@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -195,14 +195,16 @@ void testVisModel(Model& model, const std::string standard_filename)
     cout << fromFile << endl;
     cout << "Length:" << fromModel.length() << "vs." << fromFile.length() << std::endl;
     int same = fromFile.compare(fromModel);
-    ASSERT(same == 0, __FILE__, __LINE__, 
-        "Visualization primitives from model do not match standard from file `"
-        + standard_filename + "'.");
+
     if (visualDebug) {
         char c;
         std::cout << "press Enter (or Return) to continue" << std::endl;
         std::cin >> c;
     }
+
+    ASSERT(same == 0, __FILE__, __LINE__, 
+        "Visualization primitives from model do not match standard from file `"
+        + standard_filename + "'.");
 }
 
 Model createModel4AppearanceTest()

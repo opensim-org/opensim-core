@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Matt DeMers, Ayman Habib, Ajay Seth                             *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -180,7 +180,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         geometryIter->getValueAs(oldGeometryFiles);
                     }
                     std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                    SimTK::Xml::Element geometrySetNode("geometry");
+                    SimTK::Xml::Element geometrySetNode("attached_geometry");
                     aNode.insertNodeAfter(aNode.element_end(), geometrySetNode);
                     // Create Mesh node for each item in oldGeometryFiles
                     for (unsigned ng = 0; ng < oldGeometryFiles.size(); ng++) {
@@ -290,8 +290,8 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 SimTK::Xml::element_iterator parentFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
                 while (parentFrame->getRequiredAttributeValue("name") != frameName)
                     parentFrame++;
-                // if parentFrame has no "attached_geometry" child, add one else find it
 
+                // if parentFrame has no "attached_geometry" child, add one else find it
                 SimTK::Xml::element_iterator frameAttachedGeometry = parentFrame->element_begin("attached_geometry");
                 if (frameAttachedGeometry == parentFrame->element_end()) {
                     SimTK::Xml::Element attachedGeomNode("attached_geometry");
