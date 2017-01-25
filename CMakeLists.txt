@@ -15,6 +15,14 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+string(CONCAT DEP_BUILD_MSG
+  "\n-------------------------IMPORTANT----------------------------------\n"
+  "| Make sure that all OpenSim dependencies are built with the same   |\n"
+  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
+  "| to avoid mysterious runtime errors.                               |\n"
+  "-------------------------IMPORTANT----------------------------------\n")
+message(${DEP_BUILD_MSG})
+
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -548,6 +556,37 @@ if(NOT Simbody_FOUND)
         SIMBODY_HOME to the installation directory of Simbody.")
 endif()
 
+# Check if Simbody targets were built using same BUILD_TYPE/CONFIGURATION as
+# current OpenSim build. If build/configuration types mismatch, stop the build.
+# ------------------------------------------------------------------------------
+get_property(Simbody_CONFIGURATION
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
+
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
+if(${PLATFORM_NAME} STREQUAL Windows)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
+        COMMAND "if"
+           "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
+           "exit" "1"
+        COMMENT ${MESSAGE})
+elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
+                          "exit 1\n"
+                          "fi\n")
+    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "bash" "simbody_config_check.sh"
+                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
+        COMMENT ${MESSAGE})
+endif()
+
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
 include_directories("${Simbody_INCLUDE_DIR}")
@@ -612,7 +651,8 @@ if(${OPENSIM_COPY_SIMBODY})
         # (in the binary build directory).  Those are produced by the OUTPUT
         # custom command below, which depends on the source files from the
         # Simbody installation directory.
-        add_custom_target(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+        add_custom_target(SimbodyFiles ALL
+            DEPENDS Simbody_CONFIG_check ${COPIED_LIB_FILES})
         set_target_properties(SimbodyFiles
             PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 

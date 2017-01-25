@@ -35,10 +35,9 @@ using namespace SimTK;
 // TODO nondecreasing or increasing? might affect upper_bound/lower_bound.
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
-// TODO accessing acceleration-level outputs.
+// TODO Improve performance of createFromStatesStorage(): it is very slow now.
 
 // Big to-do's:
-// TODO convert to data table (specify which columns).
 // TODO append two StateTrajectories together.
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
@@ -181,14 +180,13 @@ void testFromStatesStorageGivesCorrectStates() {
 
     Storage sto(statesStoFname);
 
-    // It's important that we have not yet initialized the model, 
-    // since `createFromStatesStorage()` should be able to work with such a
-    // model.
-    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+    // This will fail because we have not yet called initSystem() on the model.
+    SimTK_TEST_MUST_THROW_EXC(
+            StatesTrajectory::createFromStatesStorage(model, sto),
+            OpenSim::ModelHasNoSystem);
 
-    // However, we eventually *do* need to call initSystem() to make use of the
-    // trajectory with the model.
     model.initSystem();
+    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
     // Test that the states are correct, and also that the iterator works.
     // -------------------------------------------------------------------
@@ -248,16 +246,25 @@ void testFromStatesStorageGivesCorrectStates() {
         }
 
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());
 
         SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
 
-        // TODO acceleration-level stuff gives segfault.
-        // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
-        // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
+        // Make sure that we can realize to Dynamics without an issue.
+        // There used to be a bug (GitHub Issue #1455) wherein Instance-stage
+        // cache variables contain raw pointers to SimTK::Force objects,
+        // therefore one cannot use such a state with different instances
+        // of the same model.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+        SimTK_TEST(!SimTK::isNaN(
+                    model.getMuscles().get(0).getActiveFiberForce(state)));
+
+        // Similarly, make sure we can do an acceleration-level calculation.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+        SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
 
         itime++;
     }
@@ -301,7 +308,6 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
     // ------------------------------------
     {
         Model model("gait2354_simbody.osim");
-        // Needed for getting state variable names.
         model.initSystem();
 
         const auto stateNames = model.getStateVariableNames();
@@ -366,6 +372,9 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
         model.updForceSet().remove(30);
 
         // Test that an exception is thrown.
+        // Must call initSystem() here; otherwise the _propertySubcomponents
+        // would be stale and would still include the forces we removed above.
+        model.initSystem();
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto),
                 StatesTrajectory::ExtraColumnsInStatesStorage
@@ -391,6 +400,7 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 void testFromStatesStorageUniqueColumnLabels() {
 
     Model model("gait2354_simbody.osim");
+    model.initSystem();
     Storage sto(statesStoFname);
     
     // Edit column labels so that they are not unique.
@@ -430,9 +440,8 @@ void testFromStatesStoragePre40CorrectStates() {
     Storage sto(pre40StoFname);
     // So the test doesn't take so long.
     sto.resampleLinear(0.01);
-    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
-
     model.initSystem();
+    auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
     // Test that the states are correct.
     // ---------------------------------
@@ -481,15 +490,25 @@ void testFromStatesStoragePre40CorrectStates() {
 
         // More complicated computations based on state.
         auto loc = model.getBodySet().get("tibia_r")
-            .findLocationInAnotherFrame(state,
+            .findStationLocationInAnotherFrame(state,
                     SimTK::Vec3(1, 0.5, 0.25),
                     model.getGround());
         SimTK_TEST(!loc.isNaN());
 
         SimTK_TEST(!model.calcMassCenterVelocity(state).isNaN());
-        // TODO acceleration-level stuff gives segfault.
-        // TODO model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
-        // TODO SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
+
+        // Make sure that we can realize to Dynamics without an issue.
+        // There used to be a bug (GitHub Issue #1455) wherein Instance-stage
+        // cache variables contain raw pointers to SimTK::Force objects,
+        // therefore one cannot use such a state with different instances
+        // of the same model.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+        SimTK_TEST(!SimTK::isNaN(
+                    model.getMuscles().get(0).getActiveFiberForce(state)));
+
+        // Similarly, make sure we can do an acceleration-level calculation.
+        model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+        SimTK_TEST(!model.calcMassCenterAcceleration(state).isNaN());
 
         itime++;
     }

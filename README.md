@@ -140,6 +140,8 @@ and prints the following information to the console:
 Building from the source code
 -----------------------------
 
+**NOTE -- In all platforms (Windows, OSX, Linux), it is advised to build all OpenSim Dependencies (Simbody, BTK etc) with same *CMAKE_BUILD_TYPE* (Linux) / *CONFIGURATION* (MSVC/Xcode) as OpenSim. For example, if OpenSim is to be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*, Simbody, BTK and all other OpenSim dependencies also should be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*. Failing to do so *may* result in mysterious runtime errors like 'segfault' in standard c++ library implementation.**
+
 We support a few ways of building OpenSim:
 
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 

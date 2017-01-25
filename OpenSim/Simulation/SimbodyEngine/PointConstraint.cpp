@@ -163,7 +163,7 @@ void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State 
     // For external forces we assume point position vector is defined wrt foot (i.e., _body2)
     // because we are passing it in from a prescribed force.
     // We must also get that point position vector wrt ground (i.e., _body1)
-    Vec3 spoint = body2.findLocationInAnotherFrame(s, point, body1);
+    Vec3 spoint = body2.findStationLocationInAnotherFrame(s, point, body1);
 
     setBody1PointLocation(spoint);
     setBody2PointLocation(point);
