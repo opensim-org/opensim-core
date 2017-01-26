@@ -22,7 +22,7 @@
 
 % Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.
 
-function [fl_active,fl_passive] = muscleCurves(modelpath)
+function [fl_active,fl_passive] = plotMuscleFLCurves(modelpath)
 % modelpath input is a full path string to an OpenSim model.
 
 % Import OpenSim Libraries
@@ -80,28 +80,32 @@ while isempty(stoploop)
     end
 
     %% Muscle Coordinate finder
-    %   Find the coordinate's that each muscle crosses. This is done by
+    %   Find the coordinates that each muscle crosses. This is done by
     %   examining the moment arm contribution of the muscle across all
     %   coordinates. A muscle will contribute to any coodinate when the moment
     %   arm is non-zero.
-    muscle = musclecoordinates( model , s, musclename);
+    muscle = getMusclecoordinates( model , s, musclename);
 
-    % Get the force length curves of the muscles
+    % Get the force length curves of a muscle
     [fl_active,fl_passive] = getForceLength(model, s, muscle);
 
     %% plot the results
-
     fig = figure(1);
     clf(fig)
     hold
 
-    % Make scatter plots fot eh active and passive components
-    scatter(fl_active(:,1),fl_active(:,2))
-    scatter(fl_passive(:,1),fl_passive(:,2))
-    % Limit the X axis from 0.4 ? 1.6
+    % Make scatter plots foe the active and passive components
+    scatter(fl_active(:,1),fl_active(:,2),'b','DisplayName','Active Fiber Force')
+    scatter(fl_passive(:,1),fl_passive(:,2),'r','DisplayName','Active Passive Force')
+    % Limit the X axis from 0.4 to 1.6
     xlim([0.4 1.6]);
-
+    
+    xlabel('Force (N)')
+    ylabel('Fiber Length (Normalised')
+    
+    
     hold off
+    legend('show')
 
     % clear the muscle name.
     name =[];
@@ -114,17 +118,17 @@ end
 
 
 
-
-function muscle = musclecoordinates(model,state,muscleName)
+function muscle = getMusclecoordinates(model,state,muscleName)
 % Muscle Coordinate finder
-%   Find the coordinate's that each muscle crosses. This is done by
+%   Returns a structure with the coordinates, and coordinate ranges, that a 
+%   a muscle effects. This is done by
 %   examining the moment arm contribution of the muscle across all
 %   coordinates. A muscle will contribute to any coodinate when the moment
 %   arm is non-zero.
 
 import org.opensim.modeling.*      % Import OpenSim Libraries
 
-% get the muscleCoordinates type buy getting the concrete Class Name
+% get the muscleCoordinates type by getting the concrete Class Name
 force = model.getMuscles().get(muscleName);
 
 % get a reference to the concrete muscle class in the model
@@ -135,19 +139,20 @@ eval(['muscle =' muscleType '.safeDownCast(force);'])
 nCoord = model.getCoordinateSet.getSize();
 muscCoord =[];
 
-% iterate through coordinates, finding non-zero moment arm's
+% iterate through coordinates, finding non-zero moment arms
 for k = 0 : nCoord -1
     % get a reference to a coordinate
     aCoord = model.getCoordinateSet.get(k);
     % get coordinate Max and Min
-    rMax = aCoord.getRangeMax;
-    rMin = aCoord.getRangeMin;
+    rMax = aCoord.getRangeMax();
+    rMin = aCoord.getRangeMin();
+    rDefaut = aCoord.getDefaultValue();
     % define three points in the range to test that the moment arm is
     % non-zero
-    totalTange = rMax - rMin;
-    p(1) = rMin + totalTange/2;
-    p(2) = rMin + totalTange/3;
-    p(3) = rMin + 2*(totalTange/3);
+    totalRange = rMax - rMin;
+    p(1) = rMin + totalRange/2;
+    p(2) = rMin + totalRange/3;
+    p(3) = rMin + 2*(totalRange/3);
 
     for i = 1 : 3
 
@@ -160,13 +165,14 @@ for k = 0 : nCoord -1
         % round the numbers. This is needed because at some coordinates there
         % are moments generated at the e-18 level. This is most likely
         % numerical error. So to deal with this I round to 4 decimal points.
-        x = round((momentArm*1000))/1000;
-
-        if x ~= 0
+        tol = 1e-6;
+        if ( abs(momentArm) > tol )
             muscCoord = [muscCoord; k];
             break
         end
     end
+    % Set the coordinate value back to the default. 
+    aCoord.setValue(state, rDefaut );
 end
 
 muscle = struct();
@@ -177,8 +183,8 @@ for u = 1 : length(muscCoord)
     % Get a reference to the coordinate
     aCoord = model.getCoordinateSet.get(muscCoord(u));
     % Create an arrary of radian value's for the range
-    coordRange = (aCoord.getRangeMin:0.01:aCoord.getRangeMax)';
-    % add the coordinate's and their range values to the structure
+    coordRange = (aCoord.getRangeMin:0.01:aCoord.getRangeMax())';
+    % add the coordinates and their range values to the structure
     eval(['muscle.coordinates.' char(model.getCoordinateSet.get(muscCoord(u))) ' = [coordRange];' ])
 
 end
@@ -187,6 +193,9 @@ end
 
 
 function [fl_active,fl_passive] = getForceLength(model, s, muscle)
+%  Function gets the active and passive force length values across the
+%  possible fiber lengths of the muscle in the model. fl_active and
+%  fl_passive are a matrices of fiberlength-force pairs. 
 
 import org.opensim.modeling.*      % Import OpenSim Libraries
 
@@ -197,62 +206,64 @@ nCoords = length( coordNames );
 % Get the muscle that is needed
 force = model.getMuscles().get(muscle.name);
 % Get the muscleType of that force
-muscleType = char(force.getConcreteClassName);
+muscleType = char(force.getConcreteClassName());
 % Get a reference to the concrete muscle class in the model
 eval(['myMuscle =' muscleType '.safeDownCast(force);'])
-% Display the muscle name
-%display(char(myMuscle))
 
-% matrix for storing the total complete fl curve
-flMatrix = zeros(2,3);
+% Initilize a matrix for storing the complete fl curve;
+flMatrix = zeros(1,3);
 
 for k = 1 : nCoords
 
    % Get the name of the coordinate
-   aCoord = model.getCoordinateSet.get( char(coordNames(k)) );
-   updCoord = model.updCoordinateSet.get( char(coordNames(k)) );
+   aCoord = model.getCoordinateSet().get( char(coordNames(k)) );
+   updCoord = model.updCoordinateSet().get( char(coordNames(k)) );
    coordRange = muscle.coordinates.(coordNames{k});
    storageData = zeros( length(coordRange), 5 );
 
 
-       % Loop through each coordinate value and get the fibre
-       % length and force of the muscle.
-       for j = 1 : length( coordRange )
+   % Loop through each coordinate value and get the fiber
+   % length and force of the muscle.
+   for j = 1 : length( coordRange )
 
-            % Get a current coordinate value
-            coordValue = coordRange(j);
-            updCoord.setValue(s, coordValue);
-            updCoord.setSpeedValue(s, 0 );
+        % Get a current coordinate value
+        coordValue = coordRange(j);
+        updCoord.setValue(s, coordValue);
+        updCoord.setSpeedValue(s, 0 );
 
-            % Set the activation and fiber length
-            myMuscle.setActivation( s, 1 )
-            myMuscle.setDefaultFiberLength( 0.01 )
-            myMuscle.setFiberLength( s, myMuscle.getOptimalFiberLength )
-            % Equilibrate the forces from the activation
-            model.equilibrateMuscles( s );
+        % Set the activation and fiber length
+        myMuscle.setActivation( s, 1 )
+        myMuscle.setDefaultFiberLength( 0.01 )
+        myMuscle.setFiberLength( s, myMuscle.getOptimalFiberLength() )
+        % Equilibrate the forces from the activation
+        model.equilibrateMuscles( s );
 
-            % Store all the data in the zero matrix
-            storageData(j,:) = [...
-                rad2deg(coordValue) ...                        % Coordinate Value
-                myMuscle.getFiberLength(s) ...             % Fiber length
-                myMuscle.getNormalizedFiberLength(s) ...   % Normalized Fibre Length
-                myMuscle.getActiveFiberForce(s) ...        % Active Force
-                myMuscle.getPassiveFiberForce(s) ];        % passive fibre forces
+        % Store all the data in the result matrix. This is ineffecient, but
+        % shows what can be stored. 
+        storageData(j,:) = [...
+            rad2deg(coordValue) ...                     \% Coordinate Value
+            myMuscle.getFiberLength(s) ...             % Fiber length
+            myMuscle.getNormalizedFiberLength(s) ...   % Normalized Fiber Length
+            myMuscle.getActiveFiberForce(s) ...        % Active Force
+            myMuscle.getPassiveFiberForce(s) ];        % passive fiber forces
 
-                % check to see if that the fiber length has already been se
-            if isempty( find( myMuscle.getNormalizedFiberLength(s) == flMatrix(:,1), 1 ) )
-                flMatrix = [flMatrix ; storageData(j,3:5)];
-            end
-       end
+        % Check for redundancy in fiber length
+        if isempty( find( myMuscle.getNormalizedFiberLength(s) == flMatrix(:,1), 1 ) )
+            flMatrix = [flMatrix ; storageData(j,3:5)];
+        end
+   end
 
+   aCoord.getDefaultValue();
 
     % Reset the coordinate value back to zero
-    updCoord.setValue(s, 0);
+    updCoord.setValue(s, aCoord.getDefaultValue());
 end
 
 fl_active = flMatrix(:,1:2);
 fl_passive = flMatrix(:,[1 3]);
 
+% sometimes there is a zero value that is incorrectly stored. It is abug
+% this is a slack-patch. 
 fl_active(find(fl_active(:,1) == 0 ),: ) = [];
 fl_passive(find(fl_passive(:,1) == 0 ),: ) = [];
 
