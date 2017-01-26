@@ -58,7 +58,8 @@ using namespace std;
 //       'enabled', for Force, Constraint and Controller, respectively
 // 30510 for renaming Connector to Socket.
 // 30511 for replacing Probe::isDisabled with Probe::enabled.
-const int XMLDocument::LatestVersion = 30511;
+// 30512 for removing Model::FrameSet and moving frames to components list
+const int XMLDocument::LatestVersion = 30512;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
