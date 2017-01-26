@@ -44,7 +44,7 @@ using SimTK::Vec3;
 Marker::Marker() :
 Station()
 {
-
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -63,6 +63,16 @@ void Marker::setNull()
 {
 
 }
+//_____________________________________________________________________________
+/**
+* Construct properties and initialize their default values.
+*/
+void Marker::constructProperties()
+{
+    // Indicate whether the Marker is fixed or not (for MarkerPlacement)
+    constructProperty_fixed(false);
+}
+
 //_____________________________________________________________________________
 /**
  * Set the 'frame name' field, which is used when the marker is added to
