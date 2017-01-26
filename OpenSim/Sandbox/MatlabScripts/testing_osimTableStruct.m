@@ -1,4 +1,3 @@
-
 clear all;close all;clc;
 %%
 import org.opensim.modeling.*
