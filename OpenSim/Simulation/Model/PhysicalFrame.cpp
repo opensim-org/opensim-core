@@ -265,29 +265,20 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                 SimTK::Xml::Element frameNode("frame_name", frameName);
                 meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
 
-                SimTK::Xml::Element modelNode = bodyNode;
-                do {
-                    modelNode = modelNode.getParentElement();
+                SimTK::Xml::element_iterator componentsNode =
+                    bodyNode.element_begin("components");
 
-                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
+                if (componentsNode == bodyNode.element_end()) {
+                    SimTK::Xml::Element componentsElement("components");
+                    bodyNode.insertNodeBefore(bodyNode.element_end(), componentsElement);
+                    componentsNode = bodyNode.element_begin("components");
+                }
 
-                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
-                SimTK::Xml::element_iterator frameSetObjectsIter;
-                if (frameSetIter != modelNode.element_end()) {
-                    frameSetObjectsIter = frameSetIter->element_begin("objects");
-                }
-                else {
-                    SimTK::Xml::Element frameSetNode("FrameSet");
-                    modelNode.insertNodeAfter(modelNode.element_end(), frameSetNode);
-                    SimTK::Xml::Element frameSetObjectsNode("objects");
-                    frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
-                    frameSetObjectsIter = frameSetNode.element_begin("objects");
-                }
-                // Create Frame from composed transform
-                createFrameForXform(frameSetObjectsIter, frameName, composedXformVec6, bodyName);
+                // Create Frame from composed transform and insert in components list
+                createFrameForXform(componentsNode, frameName, composedXformVec6, bodyName);
 
                 XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
-                SimTK::Xml::element_iterator parentFrame = frameSetObjectsIter->element_begin("PhysicalOffsetFrame");
+                SimTK::Xml::element_iterator parentFrame = componentsNode->element_begin("PhysicalOffsetFrame");
                 while (parentFrame->getRequiredAttributeValue("name") != frameName)
                     parentFrame++;
 
