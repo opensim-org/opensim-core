@@ -155,8 +155,8 @@ int main()
         populate_wrapModelPrimitives(standard, false);
         testVisModelAgainstStandard(modelWithWrap, standard);
     }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -217,21 +217,21 @@ Model createModel4AppearanceTest()
     // Create offset frame and add to model
     SimTK::Transform translate(Vec3(1.0, 0., 0.));
     PhysicalOffsetFrame* oframe = new PhysicalOffsetFrame(ground, translate);
-    modelWithGroundOnly.addFrame(oframe);
+    modelWithGroundOnly.addComponent(oframe);
     // Change color and opacity
     Sphere* offsetSphere = unitSphere->clone();
     offsetSphere->upd_Appearance().set_color(SimTK::Cyan);
     offsetSphere->upd_Appearance().set_opacity(0.5);
     oframe->attachGeometry(offsetSphere);
     PhysicalOffsetFrame* ooframe = new PhysicalOffsetFrame(ground, Vec3(2.0, 0., 0.));
-    modelWithGroundOnly.addFrame(ooframe);
+    modelWithGroundOnly.addComponent(ooframe);
     // invisible Sphere
     Sphere* ooffsetSphere = unitSphere->clone();
     // Hidden   
     ooffsetSphere->upd_Appearance().set_visible(false);
     ooframe->attachGeometry(ooffsetSphere);
     PhysicalOffsetFrame* oooframe = new PhysicalOffsetFrame(ground, Vec3(3.0, 0., 0.));
-    modelWithGroundOnly.addFrame(oooframe);
+    modelWithGroundOnly.addComponent(oooframe);
     // Wireframe Sphere
     Sphere* oooffsetSphere = unitSphere->clone();
     //DecorativeGeometry::DrawWireframe is Rep : 2 in std file
