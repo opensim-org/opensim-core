@@ -5,7 +5,7 @@ class TestIterators {
     Model model = new Model();
 
     // Iterate through 
-    model.dumpSubcomponents();
+    model.dumpSubcomponentInfo();
     ComponentsList componentsList = model.getComponentsList();
     ComponentIterator compIter = componentsList.begin();
     int countComponents = 0;

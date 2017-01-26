@@ -1441,12 +1441,12 @@ void testPinJoint()
     knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.finalizeConnections(*osimModel);
-    knee3.dumpConnections();
-    knee3.dumpSubcomponents();
+    knee3.dumpConnectionInfo();
+    knee3.dumpSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
-    knee.dumpConnections();
-    knee.dumpSubcomponents();
+    knee.dumpConnectionInfo();
+    knee.dumpSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -1456,8 +1456,8 @@ void testPinJoint()
     // the resulting system and results
     osimModel->addJoint(&knee3);
 
-    knee3.dumpConnections();
-    knee.dumpConnections();
+    knee3.dumpConnectionInfo();
+    knee.dumpConnectionInfo();
 
     // BAD: have to set memoryOwner to false or program will crash when this
     // test is complete.
@@ -2262,7 +2262,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponents();
+    modelConstrained.dumpSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

@@ -1435,12 +1435,55 @@ public:
 
     /** @name Dump debugging information to the console */
     /// @{
-    /** Debugging method to list all subcomponents by name and recurse
-        into these components to list their subcomponents, and so on. */
-    void dumpSubcomponents(int depth=0) const;
-    /** List all the Sockets and Inputs and whether or not they are
-     * connected. */
-    void dumpConnections() const;
+    /** Display the class name and absolute path name for each of the given 
+    Component's descendants (children, grandchildren, etc.).
+    
+    @code{.cpp}
+    comp.dumpSubcomponentInfo();         //show all descendant Components
+    comp.dumpSubcomponentInfo<Joint>();  //show Joint descendants only
+    @endcode */
+    void dumpSubcomponentInfo() const { dumpSubcomponentInfo<Component>(); }
+    /** Same as the non-templatized dumpSubcomponentInfo(), except only
+     * subcomponents of type C are listed. */
+    template<class C = Component>
+    void dumpSubcomponentInfo() const
+    {
+        using std::cout; using std::endl;
+
+        std::string className = SimTK::NiceTypeName<C>::namestr();
+        const std::size_t colonPos = className.rfind(":");
+        if (colonPos != std::string::npos)
+            className = className.substr(colonPos+1,
+                                         className.length()-colonPos);
+        cout << "Class name and absolute path name for descendants of '"
+            << getName() << "' that are of type " << className << ":\n"
+            << endl;
+
+        ComponentList<const C> compList = getComponentList<C>();
+
+        // Step through compList once to find the longest concrete class name.
+        unsigned maxlen = 0;
+        for (const C& thisComp : compList) {
+            auto len = thisComp.getConcreteClassName().length();
+            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+        }
+        maxlen += 4; //padding
+
+        // Step through compList again to print.
+        for (const C& thisComp : compList) {
+            const std::string thisClass = thisComp.getConcreteClassName();
+            for (unsigned i=0u; i < maxlen-thisClass.length(); ++i) {
+                cout << " "; 
+            }
+            cout << "[" << thisClass << "]  "
+                 << thisComp.getAbsolutePathName() << endl;
+        }
+        cout << endl;
+    }
+
+    /** List all the Sockets and Inputs in this component (not including
+     * subcomponents) and whether or not they are connected. */
+    void dumpConnectionInfo() const;
     /// @}
 
 protected:
