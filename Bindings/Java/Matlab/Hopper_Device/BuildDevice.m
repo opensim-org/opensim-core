@@ -4,6 +4,7 @@ import org.opensim.modeling.*;
 
 % Create the device.
 % TODO talk about Container class (if it remains).
+% TODO try making this a Model.
 device = Container();
 device.setName('device')
 
@@ -11,7 +12,7 @@ device.setName('device')
 % the hopper via WeldJoints (to be added below).
 deviceMass = 2.0;
 cuffA = Body('cuffA', deviceMass/2., Vec3(0), Inertia(0.5));
-cuffB = Body('cuffA', deviceMass/2., Vec3(0), Inertia(0.5));
+cuffB = Body('cuffB', deviceMass/2., Vec3(0), Inertia(0.5));
 device.addComponent(cuffA);
 device.addComponent(cuffB);
 
@@ -41,6 +42,7 @@ device.addComponent(anchorB);
 % Attach a PathActuator between the two cuffs.
 pathActuator = PathActuator();
 pathActuator.setName('cableAtoB');
+pathActuator.updGeometryPath().setName('geompath');
 pathActuator.set_optimal_force(4000.0);
 pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
 pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));

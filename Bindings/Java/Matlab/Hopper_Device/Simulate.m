@@ -4,6 +4,7 @@ function Simulate(model, state)
 % TODO license
 
 import org.opensim.modeling.*;
+
 model.getVisualizer().show(state);
 input('Hit ENTER to start the simulation.');
 
