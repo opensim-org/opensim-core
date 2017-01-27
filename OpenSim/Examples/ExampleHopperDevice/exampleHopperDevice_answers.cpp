@@ -123,14 +123,14 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     // Add the device to the model. We need to add the device using
     // addModelComponent() rather than addComponent() because of a bug in
     // Model::initSystem().
-    model.addModelComponent(&device);
+    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    if (model.hasComponent<WrapCylinder>("thigh/patella")) {
+    const std::string patellaPath("thigh/patellaFrame/patella");
+    if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
-        auto& frame = model.updComponent<PhysicalFrame>("thigh");
-        auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
+        auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);
         cable.updGeometryPath().addPathWrap(wrapObject);
     }
 }
