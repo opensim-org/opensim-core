@@ -226,6 +226,9 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
         }
         if (versionNumber < 30512) {
+            // FrameSet was removed from Model as of 30512 and this update
+            // is responsible for moving the Frames in the FrameSet to
+            // the Model's list of components.
             SimTK::Xml::element_iterator componentsNode =
                 aNode.element_begin("components");
             SimTK::Xml::element_iterator framesNode =
@@ -251,8 +254,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     componentsNode->insertNodeAfter(componentsNode->node_end(),
                         cloneOfFrame);
                 }
-                // now delete all the objects in the FrameSet
-                framesNode->eraseNode(objects_node);
                 // now delete the FrameSet
                 framesNode->getParentElement().eraseNode(framesNode);
             }
