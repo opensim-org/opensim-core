@@ -63,15 +63,20 @@ public:
         rx = myEllipsoidJoint.getCoordinate(opensim.EllipsoidJoint.Coord_Rotation1X)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myEllipsoidJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
     };
 
 private:
