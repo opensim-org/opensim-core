@@ -25,6 +25,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Controller.h"
+#include <OpenSim/Common/Constant.h>
 
 namespace OpenSim {
 
@@ -32,6 +33,29 @@ namespace OpenSim {
 class Container : public Component {
 OpenSim_DECLARE_CONCRETE_OBJECT(Container, Component);
 };
+
+
+/** SignalGenerator is a type of Component with no inputs and only one output.
+This Component evaluates an OpenSim::Function (stored in its "function"
+property) as a function of time. */
+// TODO move to separate header file, in the Common library.
+class OSIMSIMULATION_API SignalGenerator : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(SignalGenerator, Component);
+
+public:
+    OpenSim_DECLARE_PROPERTY(function, Function,
+        "Function used to generate the signal (a function of time)");
+    OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
+
+    SignalGenerator() { constructProperties(); }
+
+    double getSignal(const SimTK::State& s) const {
+        return get_function().calcValue(SimTK::Vector(1, s.getTime())); }
+
+private:
+    void constructProperties() { constructProperty_function(Constant(0.)); }
+
+}; // end of SignalGenerator
 
 /** PropMyoController is a type of Controller that produces a control signal
 k*a, where 'k' is the gain property and 'a' is the activation input. This
