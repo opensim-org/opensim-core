@@ -1502,6 +1502,34 @@ void Component::dumpConnectionInfo() const {
     }
 }
 
+void Component::dumpOutputInfo(bool includeDescendants) const
+{
+    using std::cout; using std::endl;
+
+    // Do not display header for Components with no outputs.
+    if (getNumOutputs() > 0) {
+        std::string msg = "Outputs from " + getAbsolutePathName();
+        msg += " of type " + getConcreteClassName();
+        cout << msg << endl;
+        for (unsigned i=0u; i<msg.size(); ++i) { cout << "="; }
+        cout << endl;
+
+        std::vector<std::string> outputNames = getOutputNames();
+        for (auto thisName : outputNames) { cout << "  " << thisName << endl; }
+        cout << endl;
+    }
+
+    if (includeDescendants) {
+        ComponentList<const Component> compList =
+            getComponentList<Component>();
+        for (const Component& thisComp : compList) {
+            // compList includes all descendants (i.e., children,
+            // grandchildren, etc.) so set includeDescendants=false when
+            // calling on thisComp.
+            thisComp.dumpOutputInfo(false);
+        }
+    }
+}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
