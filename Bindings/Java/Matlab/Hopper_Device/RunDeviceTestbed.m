@@ -13,7 +13,7 @@ BuildDevice;
 
 device.dumpSubcomponentInfo();
 testbed.dumpSubcomponentInfo();
-% TODO showAllOutputs(device);
+device.dumpOutputInfo(true);
 
 % Connect the device to the testbed.
 testbedAttachment1 = 'ground';

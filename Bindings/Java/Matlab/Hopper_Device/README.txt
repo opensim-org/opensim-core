@@ -29,11 +29,5 @@ AddSignalGeneratorToDevice.m: Provides the input signal that the device's
 Simulate.m: Runs a forward simulation of an OpenSim model from a given State.
 
 
-TODO
-- Use Model instead of Container for the Device.
-- Finish showAllOutputs().
-- Finish InputSilo.
-
-
 
 

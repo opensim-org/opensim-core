@@ -11,8 +11,7 @@ hopper.setUseVisualizer(true);
 %hopper.print('Hopper.osim'); TODO walk through the OSIM file?
 
 hopper.dumpSubcomponentInfo();
-% TODO
-%ShowAllOutputs(hopper.getComponent('/Dennis/thigh'), false);
+hopper.getComponent('/Dennis/thigh').dumpOutputInfo();
 
 % Create a new ConsoleReporter. Set its name and reporting interval.
 reporter = ConsoleReporter();

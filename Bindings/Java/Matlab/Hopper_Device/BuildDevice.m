@@ -4,7 +4,7 @@ import org.opensim.modeling.*;
 
 % Create the device.
 % TODO talk about Container class (if it remains).
-% TODO try making this a Model.
+% TODO try making this a Model (done: did not work; two Grounds).
 device = Container();
 device.setName('device')
 
