@@ -90,10 +90,8 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     //      modelFrameBname), then connect them to the parent frames of each
     //      anchor. (2 lines of code for each anchor.)
 
-    // Add the device to the model. We need to add the device using
-    // addModelComponent() rather than addComponent() because of a bug in
-    // Model::initSystem().
-    model.addModelComponent(&device);
+    // Add the device to the model.
+    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
