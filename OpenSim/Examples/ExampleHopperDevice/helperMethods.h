@@ -172,9 +172,8 @@ inline void simulate(Model& model,
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses. OpenSim::ModelVisualizer
-        // adds two InputListeners; the second is InputSilo.
-        silo = dynamic_cast<SimTK::Visualizer::InputSilo*>(&viz.updInputListener(1));
+        // We use the input silo to get key presses.
+        silo = &model.updVisualizer().updInputSilo();
 
         SimTK::DecorativeText help("Press any key to start a new simulation; "
                                    "ESC to quit.");
