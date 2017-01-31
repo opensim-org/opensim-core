@@ -721,6 +721,19 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
+        const auto& connecteeName = getConnecteeName(index);
+        std::string ignore1{}, ignore2{}, ignore3{};
+        std::string currAlias{};
+        parseConnecteeName(connecteeName,
+                           ignore1, ignore2, ignore3, currAlias);
+        if(currAlias.empty()) {
+            setConnecteeName(getConnecteeName(index) + "(" + alias + ")",
+                             index);
+        } else {
+            setConnecteeName(connecteeName.substr(0, connecteeName.rfind("(")) +
+                             "(" + alias + ")", index);
+        }
+        
         _aliases[index] = alias;
     }
 
