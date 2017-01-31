@@ -59,15 +59,20 @@ public:
         rz = myPlanarJoint.getCoordinate(opensim.PlanarJoint.Coord_RotationZ)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rz = myPlanarJoint.getCoordinate(PlanarJoint.Coord.RotationZ);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rz = myPlanarJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        RotationZ,
-        TranslationX,
-        TranslationY
+        RotationZ    = 0u, ///< 0
+        TranslationX = 1u, ///< 1
+        TranslationY = 2u  ///< 2
     };
 
 private:
