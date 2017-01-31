@@ -229,7 +229,7 @@ class TestInputsOutputs(unittest.TestCase):
 
 
     def test_input_alias(self):
-        model_filename = 'wiring_inputs_and_outputs_with_TableReporter.osim'
+        model_filename = 'test_input_alias.osim'
 
         # This function creates and prints the model to a .osim file. We invoke
         # this function below.
