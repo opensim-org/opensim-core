@@ -63,6 +63,10 @@
 // Used in Component::generateDecorations.
 %include <OpenSim/Common/ModelDisplayHints.h>
 
+%include <OpenSim/Common/Path.h>
+%include <OpenSim/Common/ComponentPath.h> // TODO test
+%include <OpenSim/Common/ChannelPath.h> // TODO test
+
 namespace OpenSim {
     %ignore Output::downcast(AbstractOutput&); // suppress warning 509.
 }

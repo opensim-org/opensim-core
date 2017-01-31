@@ -23,7 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/Object.h"
+#include "osimCommonDLL.h"
+#include <string>
+#include <vector>
 
 namespace OpenSim {
 

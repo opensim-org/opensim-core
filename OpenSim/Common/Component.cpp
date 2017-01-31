@@ -633,7 +633,7 @@ void Component::setParent(const Component& parent)
     _parent.reset(&parent);
 }
 
-std::string Component::getAbsolutePathName() const
+ComponentPath Component::getAbsolutePathName() const
 {
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
@@ -647,15 +647,15 @@ std::string Component::getAbsolutePathName() const
     // The root must have a leading '/' 
     ComponentPath path(pathVec, true);
 
-    return path.toString();
+    return path;
 }
 
-std::string Component::getRelativePathName(const Component& wrt) const
+ComponentPath Component::getRelativePathName(const Component& wrt) const
 {
     ComponentPath thisP(getAbsolutePathName());
     ComponentPath wrtP(wrt.getAbsolutePathName());
 
-    return thisP.formRelativePath(wrtP).toString();
+    return thisP.formRelativePath(wrtP);
 }
 
 const Component::StateVariable* Component::

@@ -25,6 +25,17 @@
 #include "Component.h"
 
 using namespace OpenSim;
+
 std::string AbstractOutput::getPathName() const {
-    return getOwner().getAbsolutePathName() + "/" + getName();
+    // TODO remove this function.
+    return getOwner().getAbsolutePathName().toString() + "/" + getName();
+}
+
+// TODO leave these?
+ChannelPath AbstractOutput::getAbsolutePath() const {
+    return {getOwner().getAbsolutePathName(), getName()};
+}
+
+ChannelPath AbstractOutput::getRelativePath(const Component& other) const {
+    return {getOwner().getRelativePathName(other), getName()};
 }

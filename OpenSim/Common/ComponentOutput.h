@@ -32,6 +32,7 @@
 
 // INCLUDES
 #include "Exception.h"
+#include "ChannelPath.h"
 
 #include <functional>
 #include <map>
@@ -63,6 +64,9 @@ public:
      * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
+    
+    virtual ChannelPath getAbsolutePath() const = 0;
+    virtual ChannelPath getRelativePath(const Component& other) const = 0;
 };
 
 
@@ -116,6 +120,9 @@ public:
     
     /** This returns <absolute-path-to-component>|<output-name>. */
     std::string getPathName() const;
+    
+    ChannelPath getAbsolutePath() const;
+    ChannelPath getRelativePath(const Component& other) const;
 
     /** Output Interface */
     
@@ -348,8 +355,20 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathName() + "|" + getName();
+        // TODO this function should be unnecessary now; remove.
+        return getOutput().getOwner().getAbsolutePathName().toString() + "|" + getName();
     }
+    
+    ChannelPath getAbsolutePath() const override {
+        return {getOutput().getOwner().getAbsolutePathName(),
+                getOutput().getName(), _channelName, ""};
+    }
+    
+    ChannelPath getRelativePath(const Component& other) const override {
+        return {getOutput().getOwner().getRelativePathName(other),
+                getOutput().getName(), _channelName, "" /* TODO update if alias stays with output */};
+    }
+    
 private:
     mutable T _result;
     SimTK::ReferencePtr<const Output<T>> _output;

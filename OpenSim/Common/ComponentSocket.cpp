@@ -26,13 +26,24 @@
 
 using namespace OpenSim;
 
-const Property<std::string>&
+const Property<ComponentPath>&
 AbstractSocket::getConnecteeNameProp() const {
-    return _owner->getProperty<std::string>(_connecteeNameIndex);
+    return _owner->getProperty<ComponentPath>(_connecteeNameIndex);
 }
 
-Property<std::string>&
+Property<ComponentPath>&
 AbstractSocket::updConnecteeNameProp() {
-    return const_cast<Component*>(_owner.get())->updProperty<std::string>(
+    return const_cast<Component*>(_owner.get())->updProperty<ComponentPath>(
                 _connecteeNameIndex);
+}
+
+const Property<ChannelPath>&
+AbstractInput::getConnecteeNameProp() const {
+    return getOwner().getProperty<ChannelPath>(getConnecteeNameIndex());
+}
+
+Property<ChannelPath>&
+AbstractInput::updConnecteeNameProp() {
+    return const_cast<Component&>(getOwner()).updProperty<ChannelPath>(
+                getConnecteeNameIndex());
 }
