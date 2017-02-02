@@ -165,7 +165,7 @@ void testStationOnOffsetFrame()
     X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi/3.33 , SimTK::ZAxis);
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(*rod2, X_RO);
     offsetFrame->setName("myExtraFrame");
-    pendulum.addFrame(offsetFrame);
+    pendulum.addComponent(offsetFrame);
 
     // Create station in the extra frame
     Station* myStation = new Station();
