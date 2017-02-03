@@ -590,6 +590,34 @@ public:
 
         return true;
     }
+
+    /** Compose the connectee name from its constituents. This is the opposite
+    operation of parseConnecteeName().
+    Example:
+    @verbatim
+     if inputs are
+       componentPath --> "/foo/bar"
+       outputName    --> "output"
+       channelName   --> "channel"
+       alias         --> "baz"
+     then result --> /foo/bar|output:channel(baz)
+    @endverbatim
+    */
+    static std::string composeConnecteeName(const std::string& componentPath,
+                                            const std::string& outputName,
+                                            const std::string& channelName,
+                                            const std::string& alias) {
+        auto path = componentPath;
+        if(!path.empty())
+            path += "|";
+        path += outputName;
+        if(!channelName.empty())
+            path += ":" + channelName;
+        if(!alias.empty())
+            path += "(" + alias + ")";
+
+        return path;
+    }
     
 protected:
     /** Create an AbstractInput (Socket) that connects only to an 
@@ -721,6 +749,22 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
+        const auto& connecteeName = getConnecteeName(index);
+        std::string componentPath{};
+        std::string outputName{};
+        std::string channelName{};
+        std::string currAlias{};
+        parseConnecteeName(connecteeName,
+                           componentPath,
+                           outputName,
+                           channelName,
+                           currAlias);
+        setConnecteeName(composeConnecteeName(componentPath,
+                                              outputName,
+                                              channelName,
+                                              alias),
+                         index);
+        
         _aliases[index] = alias;
     }
 
