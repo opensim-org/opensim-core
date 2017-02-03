@@ -548,13 +548,13 @@ void testIntermediateFrames() {
                 model.getBodySet().get("point"),
                 // Frame is up 1m in the y direction.
                 SimTK::Transform(Vec3(0, 1, 0)));
-        model.addFrame(linkOffset);
+        model.addComponent(linkOffset);
 
         // Scaffolding for the platform.
         auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
                 model.getGround(),
                 SimTK::Transform(SimTK::Rotation(-deg45, SimTK::ZAxis)));
-        model.addFrame(platformOffset);
+        model.addComponent(platformOffset);
 
         addContactComponents<ContactType>(model,
                 *linkOffset, Vec3(0.5, 0, 0),
@@ -576,13 +576,13 @@ void testIntermediateFrames() {
                 model.getBodySet().get("point"),
                 // Frame is 0.5m to the right and 1m up.
                 SimTK::Transform(Vec3(0.5, 1, 0)));
-        model.addFrame(linkOffset);
+        model.addComponent(linkOffset);
 
         // Scaffolding for the platform.
         auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
                 model.getGround(),
                 SimTK::Transform(SimTK::Rotation(-deg90, SimTK::ZAxis)));
-        model.addFrame(platformOffset);
+        model.addComponent(platformOffset);
 
         addContactComponents<ContactType>(model, *linkOffset, Vec3(0),
                                                  *platformOffset, Vec3(0));
