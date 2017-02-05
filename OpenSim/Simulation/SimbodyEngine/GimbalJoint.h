@@ -59,15 +59,20 @@ public:
         rx = myGimbalJoint.getCoordinate(opensim.GimbalJoint.Coord_Rotation1X)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rx = myGimbalJoint.getCoordinate(GimbalJoint.Coord.Rotation1X);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myGimbalJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
     };
 
 private:

@@ -540,8 +540,6 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
         model.addProbe(dynamic_cast<Probe*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Joint >(className))
         model.addJoint(dynamic_cast<Joint*>(instance));
-    else if (Object::isObjectTypeDerivedFrom< Frame >(className))
-        model.addFrame(dynamic_cast<Frame*>(instance));
     else if (Object::isObjectTypeDerivedFrom< Component >(className))
         model.addComponent(dynamic_cast<Component*>(instance));
     else {

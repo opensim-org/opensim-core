@@ -113,7 +113,7 @@ inline void simulate(Model& model,
             unsigned key, modifiers;
             silo->waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
-        } else if(!simulateOnce) {
+        } else if (!simulateOnce) {
             std::cout << "Press <Enter> to begin simulating, or 'q' followed "
                       << "by <Enter> to quit . . . " << std::endl;
             if (std::cin.get() == 'q') { break; }
@@ -141,7 +141,7 @@ inline Model buildTestbed(bool showVisualizer)
     // Create a new OpenSim model.
     auto testbed = Model();
     testbed.setName("testbed");
-    if(showVisualizer)
+    if (showVisualizer)
         testbed.setUseVisualizer(true);
     testbed.setGravity(Vec3(0));
 

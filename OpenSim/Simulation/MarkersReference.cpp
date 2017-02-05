@@ -191,7 +191,8 @@ MarkersReference::updateInternalWeights() const {
         // Associate user weights (as specified in the marker_weights property)
         // with the corresponding marker by order of marker names
         if (wix >= 0)
-            _weights[ix++] = get_marker_weights()[wix].getWeight();
+            _weights[ix] = get_marker_weights()[wix].getWeight();
+        ++ix;
     }
 }
 

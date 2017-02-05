@@ -913,7 +913,8 @@ SimTK::Vector Component::
 // Set all values of the state variables allocated by this Component. Includes
 // state variables allocated by its subcomponents.
 void Component::
-    setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
+    setStateVariableValues(SimTK::State& state,
+                           const SimTK::Vector& values) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1510,9 +1511,7 @@ void Component::dumpOutputInfo(bool includeDescendants) const
     if (getNumOutputs() > 0) {
         std::string msg = "Outputs from " + getAbsolutePathName();
         msg += " of type " + getConcreteClassName();
-        cout << msg << endl;
-        for (unsigned i=0u; i<msg.size(); ++i) { cout << "="; }
-        cout << endl;
+        cout << msg << "\n" << std::string(msg.size(), '=') << endl;
 
         std::vector<std::string> outputNames = getOutputNames();
         for (auto thisName : outputNames) { cout << "  " << thisName << endl; }

@@ -45,7 +45,15 @@ class OSIMSIMULATION_API Marker : public Station {
     OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
 
 class Body;
-
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    OpenSim_DECLARE_PROPERTY(fixed, bool,
+        "Flag (true or false) specifying whether the marker is fixed in its "
+        "parent frame during the marker placement step of scaling.  If false, "
+        "the marker is free to move within its parent Frame to match its "
+        "experimental counterpart.");
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -71,7 +79,7 @@ public:
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class Marker
 //=============================================================================

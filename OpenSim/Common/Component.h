@@ -1184,7 +1184,8 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    void setStateVariableValues(SimTK::State& state, const SimTK::Vector& values);
+    void setStateVariableValues(SimTK::State& state,
+                                const SimTK::Vector& values) const;
 
     /**
      * Get the value of a state variable derivative computed by this Component.
@@ -1472,10 +1473,8 @@ public:
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
-            for (unsigned i=0u; i < maxlen-thisClass.length(); ++i) {
-                cout << " "; 
-            }
-            cout << "[" << thisClass << "]  "
+            cout << std::string(maxlen-thisClass.length(), ' ')
+                 << "[" << thisClass << "]  "
                  << thisComp.getAbsolutePathName() << endl;
         }
         cout << endl;
@@ -2911,14 +2910,15 @@ void Input<T>::connect(const AbstractOutput& output,
         // Update the connectee name as
         // <RelOwnerPath>/<Output><:Channel><(annotation)>
         ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
-        std::string outputName = chan.second.getName();
 
-        // Append the alias, if one has been provided.
-        if (!alias.empty())
-            outputName += "(" + alias + ")";
-
-        std::string pathStr = path.toString() + "|" + outputName;
-
+        auto pathStr =
+            composeConnecteeName(path.toString(),
+                                 chan.second.getOutput().getName(),
+                                 chan.second.getOutput().isListOutput() ?
+                                 chan.second.getChannelName() :
+                                 "",
+                                 alias);
+    
         // set the connectee name so that the connection can be
         // serialized
         int numDesiredConnections = getNumConnectees();
@@ -2958,14 +2958,15 @@ void Input<T>::connect(const AbstractChannel& channel,
     
     // Update the connectee name as
     // <RelOwnerPath>/<Output><:Channel><(annotation)>
-    ComponentPath path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
-    std::string channelName = chanT->getName();
+    ComponentPath
+        path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
 
-    // Append the alias, if one has been provided.
-    if (!alias.empty())
-        channelName += "(" + alias + ")";
-
-    std::string pathStr = path.toString() + "|" + channelName;
+    auto pathStr = composeConnecteeName(path.toString(),
+                                        chanT->getOutput().getName(),
+                                        chanT->getOutput().isListOutput() ?
+                                        chanT->getChannelName() :
+                                        "",
+                                        alias);
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();

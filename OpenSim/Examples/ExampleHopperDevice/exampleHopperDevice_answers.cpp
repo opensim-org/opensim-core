@@ -120,9 +120,7 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
     #pragma endregion
 
-    // Add the device to the model. We need to add the device using
-    // addModelComponent() rather than addComponent() because of a bug in
-    // Model::initSystem().
+    // Add the device to the model.
     model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no

@@ -35,7 +35,6 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
-#include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
@@ -147,7 +146,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
-    Object::registerType( FrameSet());
     Object::registerType( BodySet());
     Object::registerType( ComponentSet() );
     Object::registerType( ControllerSet() );
