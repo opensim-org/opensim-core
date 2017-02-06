@@ -221,6 +221,7 @@ void testPrescribedControllerOnBlock(bool enabled)
     
     osimModel.print("blockWithPrescribedController.osim");
     Model modelfileFromFile("blockWithPrescribedController.osim");
+    modelfileFromFile.finalizeFromProperties();
 
     // Verify that serialization and then deserialization is correct
     ASSERT(osimModel == modelfileFromFile);
