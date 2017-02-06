@@ -99,7 +99,7 @@ int main()
 
         // The finalize flag is for testing purposes ONLY. This way we
         // can ignore invalid properties and focus the test on serialization.
-        Model deserializedModel("allComponents.osim", false);
+        Model deserializedModel("allComponents.osim");
 
         try {
             deserializedModel.finalizeFromProperties();
