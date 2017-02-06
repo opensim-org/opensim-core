@@ -1947,23 +1947,22 @@ void testSignalGenerator() {
     world.addComponent(reporter);
 
     // Build the system.
-    // Check that the value of the input is the same as before.
     MultibodySystem system;
     world.buildUpSystem(system);
     State s = system.realizeTopology();
     system.realize(s, Stage::Model);
 
     // "Simulate."
-    const int numTimeSteps = 5;
-    for (int i = 0; i < numTimeSteps; ++i) {
+    const int numTimePoints = 5;
+    for (int i = 0; i < numTimePoints; ++i) {
         s.setTime(0.1 * i);
         system.realize(s, Stage::Report);
     }
 
     // Check that the SignalGenerator produced the correct values.
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    SimTK_TEST_EQ((int)results.getNumRows(), numTimeSteps);
-    for (int i = 0; i < numTimeSteps; ++i) {
+    SimTK_TEST_EQ((int)results.getNumRows(), numTimePoints);
+    for (int i = 0; i < numTimePoints; ++i) {
         const double time = 0.1 * i;
         system.realize(s, Stage::Report);
         SimTK_TEST_EQ(results.getRowAtIndex(i)[0],
