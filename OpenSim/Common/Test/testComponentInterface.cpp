@@ -25,6 +25,8 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/Sine.h>
+#include <OpenSim/Common/SignalGenerator.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 #include <simbody/internal/GeneralForceSubsystem.h>
 #include <simbody/internal/Force.h>
@@ -1926,6 +1928,49 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
+void testSignalGenerator() {
+    // Feed a SignalGenerator's output into a TableReporter, and make sure the
+    // reported value is correct.
+
+    // Build the model.
+    TheWorld world;
+    auto* signalGen = new SignalGenerator();
+    signalGen->setName("sinusoid");
+    const double amplitude = 1.5;
+    const double omega = 3.1;
+    const double phase = 0.3;
+    signalGen->set_function(Sine(amplitude, omega, phase));
+    world.addComponent(signalGen);
+    
+    auto* reporter = new TableReporter();
+    reporter->addToReport(signalGen->getOutput("signal"));
+    world.addComponent(reporter);
+
+    // Build the system.
+    // Check that the value of the input is the same as before.
+    MultibodySystem system;
+    world.buildUpSystem(system);
+    State s = system.realizeTopology();
+    system.realize(s, Stage::Model);
+
+    // "Simulate."
+    const int numTimeSteps = 5;
+    for (int i = 0; i < numTimeSteps; ++i) {
+        s.setTime(0.1 * i);
+        system.realize(s, Stage::Report);
+    }
+
+    // Check that the SignalGenerator produced the correct values.
+    const TimeSeriesTable_<Real>& results = reporter->getTable();
+    SimTK_TEST_EQ((int)results.getNumRows(), numTimeSteps);
+    for (int i = 0; i < numTimeSteps; ++i) {
+        const double time = 0.1 * i;
+        system.realize(s, Stage::Report);
+        SimTK_TEST_EQ(results.getRowAtIndex(i)[0],
+                amplitude * std::sin(omega * time + phase));
+    }
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1950,5 +1995,7 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+
+        SimTK_SUBTEST(testSignalGenerator);
     SimTK_END_TEST();
 }
