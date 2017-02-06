@@ -78,7 +78,7 @@ before_install:
   ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
   # This prevents the build from failing with:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
-  - rvm get head
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
