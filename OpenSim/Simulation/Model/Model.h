@@ -231,7 +231,7 @@ public:
     @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
                      defaults to true. If set to false only deserialization is performed.
     **/
-    explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
+    explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some set up functions that happen after the
