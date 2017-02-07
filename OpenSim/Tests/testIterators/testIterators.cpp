@@ -128,6 +128,7 @@ void testNestedComponentListConsistency() {
 void testComponentListConst() {
 
     Model model(modelFilename);
+    model.finalizeFromProperties();
     model.dumpSubcomponents();
 
     ComponentList<const Component> componentsList = model.getComponentList();
@@ -260,6 +261,7 @@ void testComponentListConst() {
 // components.
 void testComponentListNonConstWithConstIterator() {
     Model model(modelFilename);
+    model.finalizeFromProperties();
 
     // Making this a const ComponentList causes us to use the const
     // begin()/end() methods, which return const_iterators, and thus avoids
@@ -392,6 +394,7 @@ void testComponentListNonConstWithConstIterator() {
 // allow modifying the elements of the list.
 void testComponentListNonConstWithNonConstIterator() {
     Model model(modelFilename);
+    model.finalizeFromProperties();
 
     ComponentList<Component> componentsList = model.updComponentList();
     int numComponents = 0;
