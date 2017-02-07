@@ -623,7 +623,136 @@ hasStateStorage() const
 //-----------------------------------------------------------------------------
 // INTEGRATION
 //-----------------------------------------------------------------------------
-///____________________________________________________________________________
+/**
+* Integrate the equations of motion for the specified model, given the current
+* state (at which the integration will start) and a finalTime. Make sure to
+* use state.setTime(initialTime) to specify a starting time before calling
+* this function.
+*/
+bool Manager::
+integrate(SimTK::State& s, double finalTime)
+{
+    int step = 0;
+    double initialTime = s.getTime();
+
+    if (!_integ) {
+        throw Exception("Manager::doIntegration(): "
+            "Integrator has not been set. Construct the Manager "
+            "with an integrator, or call Manager::setIntegrator().");
+    }
+
+    // CLEAR ANY INTERRUPT
+    // Halts must arrive during an integration.
+    clearHalt();
+
+    double tReal;
+    double time = initialTime;
+
+    // CHECK SPECIFIED DT STEPPING
+
+    if (_specifiedDT) {
+        if (_tArray.getSize() <= 0) {
+            string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
+            msg += "possible-- empty time array.";
+            throw(Exception(msg));
+        }
+        double first = _tArray[0];
+        double last = _tArray.getLast();
+        if ((getTimeArrayStep(initialTime)<0) || (initialTime<first) || (finalTime>last)) {
+            string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
+            msg += "possible-- time array does not cover the requested";
+            msg += " integration interval.";
+            throw(Exception(msg));
+        }
+    }
+
+    // RECORD FIRST TIME STEP
+    if (!_specifiedDT) {
+        resetTimeAndDTArrays(time);
+        if (_tArray.getSize() <= 0) {
+            _tArray.append(time);
+        }
+    }
+    bool fixedStep = false;
+    double fixedStepSize;
+    if (_constantDT || _specifiedDT) fixedStep = true;
+
+    // Only initialize a TimeStepper if it hasn't been done yet
+    if (_timeStepper == NULL) initializeTimeStepper(s);
+
+    SimTK::Integrator::SuccessfulStepStatus status;
+
+    if (!fixedStep) {
+        _integ->setReturnEveryInternalStep(true);
+    }
+
+    _model->realizeVelocity(s);
+    initializeStorageAndAnalyses(s);
+
+    if (fixedStep) {
+        _model->realizeAcceleration(s);
+
+        if (_performAnalyses)_model->updAnalysisSet().step(s, step);
+        tReal = s.getTime();
+        if (_writeToStorage) {
+            SimTK::Vector stateValues = _model->getStateVariableValues(s);
+            StateVector vec;
+            vec.setStates(tReal, stateValues);
+            getStateStorage().append(vec);
+            if (_model->isControlled())
+                _controllerSet->storeControls(s, step);
+        }
+    }
+
+    double stepToTime = finalTime;
+
+    // LOOP
+    while (time  < finalTime) {
+        if (fixedStep) {
+            fixedStepSize = getNextTimeArrayTime(time) - time;
+            if (fixedStepSize + time >= finalTime)  fixedStepSize = finalTime - time;
+            _integ->setFixedStepSize(fixedStepSize);
+            stepToTime = time + fixedStepSize;
+        }
+
+        // stepTo() does not return if it fails. However, the final step
+        // is returned once as an ordinary return; by the time we get
+        // EndOfSimulation status we have already seen the state and don't
+        // need to record it again.
+        status = _timeStepper->stepTo(stepToTime);
+
+        if (status != SimTK::Integrator::EndOfSimulation) {
+            const SimTK::State& s = _integ->getState();
+            if (_performAnalyses)_model->updAnalysisSet().step(s, step);
+            tReal = s.getTime();
+            if (_writeToStorage) {
+                SimTK::Vector stateValues = _model->getStateVariableValues(s);
+                StateVector vec;
+                vec.setStates(tReal, stateValues);
+                getStateStorage().append(vec);
+                if (_model->isControlled())
+                    _controllerSet->storeControls(s, step);
+            }
+            step++;
+        }
+        else
+            halt();
+
+        time = _integ->getState().getTime();
+        // CHECK FOR INTERRUPT
+        if (checkHalt()) break;
+    }
+    finalize(_integ->updAdvancedState());
+    s = _integ->getState();
+
+    // CLEAR ANY INTERRUPT
+    clearHalt();
+
+    return true;
+
+}
+
+
 /**
  * Integrate the equations of motion for the specified model.
  *

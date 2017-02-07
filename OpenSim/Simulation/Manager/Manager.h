@@ -91,9 +91,11 @@ private:
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
-    /** Initial time of the simulation. */
+    /** <b>(Deprecated)</b> Initial time of the simulation. */
+    DEPRECATED_14("There will be no replacement for this constructor.")
     double _ti;
-    /** Final time of the simulation. */
+    /** <b>(Deprecated)</b> Final time of the simulation. */
+    DEPRECATED_14("There will be no replacement for this constructor.")
     double _tf;
     
     /** Storage for the states. */
@@ -180,9 +182,17 @@ public:
     void setIntegrator(SimTK::Integrator&);
 
     // Initial and final times
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    DEPRECATED_14("Set the state's time using state.setTime(time).")
     void setInitialTime(double aTI);
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    DEPRECATED_14("Get the state's time using state.getTime().")
     double getInitialTime() const;
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     void setFinalTime(double aTF);
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     double getFinalTime() const;
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -208,8 +218,10 @@ public:
     //--------------------------------------------------------------------------
     // EXECUTION
     //--------------------------------------------------------------------------
+    bool integrate(SimTK::State& s, double finalTime);
+    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     bool integrate(SimTK::State& s);
-    bool doIntegration(SimTK::State& s, int step);
     void finalize(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
@@ -236,6 +248,10 @@ private:
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(SimTK::State& s);
     void initializeTimeStepper(const SimTK::State& s);
+
+    // Helper functions for Manager::integrate()
+    DEPRECATED_14("Only used by integrate(state), which is deprecated.")
+    bool doIntegration(SimTK::State& s, int step);
 
 //=============================================================================
 };  // END of class Manager
