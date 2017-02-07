@@ -93,6 +93,24 @@ public:
     }
 };
 
+
+class ComponentIsAnOrphan : public Exception {
+public:
+    ComponentIsAnOrphan(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " has no parent or subcomponents.\n" +
+            "Verify that finalizeFromProperties() has been invoked on the " + 
+            "root Component or that this Component is not a clone, which has " +
+            "not been added to its parent.";
+        addMessage(msg);
+    }
+};
+
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -2856,9 +2874,9 @@ void Input<T>::connect(const AbstractOutput& output,
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
-        const int numPreexistingSatisfiedConnections(_connectees.size());
+        const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
-        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -2878,7 +2896,7 @@ void Input<T>::connect(const AbstractOutput& output,
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, idxThisConnectee);
+            setConnecteeName(pathStr, unsigned int(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2906,9 +2924,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     // Record the number of pre-existing satisfied connections...
-    const int numPreexistingSatisfiedConnections(_connectees.size());
+    const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
-    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
     // Update the connectee name as
@@ -2926,7 +2944,7 @@ void Input<T>::connect(const AbstractChannel& channel,
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(pathStr, idxThisConnectee);
+        setConnecteeName(pathStr, unsigned int(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     
