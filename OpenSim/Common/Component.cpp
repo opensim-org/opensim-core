@@ -1529,9 +1529,9 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
     // children in order, last child's successor is the parent's successor.
 
-    size_t nmsc = _memberSubcomponents.size();
-    size_t npsc = _propertySubcomponents.size();
-    size_t nasc = _adoptedSubcomponents.size();
+    const size_t nmsc = _memberSubcomponents.size();
+    const size_t npsc = _propertySubcomponents.size();
+    const size_t nasc = _adoptedSubcomponents.size();
 
     // If this component has no parent and has no subcomponents
     // this is an orphan component and likely failed to call 
@@ -1586,16 +1586,15 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nmsc; ++i) {
         _memberSubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < npsc; ++i) {
         _propertySubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
 }
-
 
 } // end of namespace OpenSim
