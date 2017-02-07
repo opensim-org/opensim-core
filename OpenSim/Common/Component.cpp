@@ -1528,9 +1528,22 @@ void Component::dumpConnections() const {
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
     // children in order, last child's successor is the parent's successor.
+
+    size_t nmsc = _memberSubcomponents.size();
+    size_t npsc = _propertySubcomponents.size();
+    size_t nasc = _adoptedSubcomponents.size();
+
+    // If this component has no parent and has no subcomponents
+    // this is an orphan component and likely failed to call 
+    // finalizeFromProperties on the root OR made and orphaned
+    // clone of the Component.
+    if (!(this->hasParent()) && !(nmsc + npsc + nasc) ){
+        OPENSIM_THROW(ComponentIsAnOrphan, getName(), getConcreteClassName());
+    }
+
     const Component* last = nullptr;
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
-        if (i == _memberSubcomponents.size() - 1) {
+    for (unsigned int i = 0; i < nmsc; i++) {
+        if (i == nmsc - 1) {
             _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
@@ -1540,7 +1553,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             last = _memberSubcomponents[i + 1].get();
         }
     }
-    if (size_t npsc = _propertySubcomponents.size()) {
+    if (npsc) {
         if (last)
             last->_nextComponent = _propertySubcomponents[0].get();
 
@@ -1557,7 +1570,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             }
         }
     }
-    if (size_t nasc = _adoptedSubcomponents.size()) {
+    if (nasc) {
         if (last)
             last->_nextComponent = _adoptedSubcomponents[0].get();
 
