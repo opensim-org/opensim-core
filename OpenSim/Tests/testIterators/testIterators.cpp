@@ -495,6 +495,8 @@ void testComponentListNonConstWithNonConstIterator() {
 // Ensure that we can compare const_iterator and (non-const) iterator.
 void testComponentListComparisonOperators() {
     Model model(modelFilename);
+    model.finalizeFromProperties();
+
     ComponentList<Body> list = model.updComponentList<Body>();
     ComponentList<Body>::const_iterator constIt = list.cbegin();
     ComponentList<Body>::iterator mutIt = list.begin();
