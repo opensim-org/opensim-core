@@ -92,10 +92,10 @@ private:
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
     /** <b>(Deprecated)</b> Initial time of the simulation. */
-    DEPRECATED_14("There will be no replacement for this constructor.")
+    DEPRECATED_14("Set the state's time using state.setTime(time).")
     double _ti;
     /** <b>(Deprecated)</b> Final time of the simulation. */
-    DEPRECATED_14("There will be no replacement for this constructor.")
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     double _tf;
     
     /** Storage for the states. */

@@ -209,10 +209,9 @@ int main()
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
         // Integrate
-        manager.setInitialTime(t0);
-        manager.setFinalTime(tf);
+        si.setTime(t0);
         std::cout<<"\n\nIntegrating from " << t0 << " to " << tf << std::endl;
-        manager.integrate(si);
+        manager.integrate(si, tf);
 
         // Save results
         auto controlsTable = osimModel.getControlsTable();

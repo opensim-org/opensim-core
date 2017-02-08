@@ -311,11 +311,10 @@ int main()
         }
 
         // Integrate from initial time to final time.
-        manager.setInitialTime( initialTime );
-        manager.setFinalTime( finalTime );
+        si.setTime(initialTime);
         std::cout << "\n\nIntegrating from " << initialTime
             << " to " << finalTime << std::endl;
-        manager.integrate( si );
+        manager.integrate(si, finalTime);
 
         // Save the simulation results.
         auto controlsTable = osimModel.getControlsTable();

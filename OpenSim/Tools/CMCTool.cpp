@@ -747,8 +747,8 @@ bool CMCTool::run()
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
+    s.setTime(_ti);
+    double finalTime = _tf - _targetDT - SimTK::Zero;
 
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
@@ -805,7 +805,6 @@ bool CMCTool::run()
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
     }
-    manager.setInitialTime(_ti);
 
     // ---- INTEGRATE ----
     cout<<"\n\n\n";
@@ -830,7 +829,7 @@ bool CMCTool::run()
     IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
-        manager.integrate(s);
+        manager.integrate(s, finalTime);
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
