@@ -180,16 +180,18 @@ public:
     void setIntegrator(SimTK::Integrator&);
 
     // Initial and final times
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    /** <b>(Deprecated)</b> Set the state's time using state.setTime(time). */
     DEPRECATED_14("Set the state's time using state.setTime(time).")
     void setInitialTime(double aTI);
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    /** <b>(Deprecated)</b> Get the state's time using state.getTime(). */
     DEPRECATED_14("Get the state's time using state.getTime().")
     double getInitialTime() const;
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    /** <b>(Deprecated)</b> Integrate to a specified finalTime using 
+        Manager::integrate(state, finalTime). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     void setFinalTime(double aTF);
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    /** <b>(Deprecated)</b> Integrate to a specified finalTime using
+        Manager::integrate(state, finalTime). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     double getFinalTime() const;
     // SPECIFIED TIME STEP
@@ -217,7 +219,8 @@ public:
     // EXECUTION
     //--------------------------------------------------------------------------
     bool integrate(SimTK::State& s, double finalTime);
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or */
+    /** <b>(Deprecated)</b> Integrate to a specified finalTime using
+        Manager::integrate(state, finalTime). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     bool integrate(SimTK::State& s);
     void finalize(SimTK::State& s);
