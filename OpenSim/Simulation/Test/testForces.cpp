@@ -248,8 +248,6 @@ void testExpressionBasedCoordinateForce()
                         + dh;
 
         ASSERT_EQUAL(height, pos(1), 1e-6);
-
-        manager.setInitialTime(dt*i);
     }
     
     // Test copying
