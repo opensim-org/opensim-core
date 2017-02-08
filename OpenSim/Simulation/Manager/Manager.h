@@ -91,11 +91,9 @@ private:
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
-    /** <b>(Deprecated)</b> Initial time of the simulation. */
-    DEPRECATED_14("Set the state's time using state.setTime(time).")
+    /** Initial time of the simulation. */
     double _ti;
-    /** <b>(Deprecated)</b> Final time of the simulation. */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
+    /** Final time of the simulation. */
     double _tf;
     
     /** Storage for the states. */
@@ -150,7 +148,7 @@ public:
      * must call setIntegrator() on your own. You should use one of the other
      * two constructors. */
     DEPRECATED_14("There will be no replacement for this constructor.")
-    Manager();  
+    Manager();
 
     // This class would not behave properly if copied (we would need to write a
     // complex custom copy constructor, etc.), so don't allow copies.
@@ -250,7 +248,6 @@ private:
     void initializeTimeStepper(const SimTK::State& s);
 
     // Helper functions for Manager::integrate()
-    DEPRECATED_14("Only used by integrate(state), which is deprecated.")
     bool doIntegration(SimTK::State& s, int step);
 
 //=============================================================================
