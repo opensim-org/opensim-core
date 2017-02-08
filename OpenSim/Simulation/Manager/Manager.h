@@ -223,7 +223,6 @@ public:
         Manager::integrate(state, finalTime). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
     bool integrate(SimTK::State& s);
-    void finalize(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
     // STATE STORAGE
@@ -252,6 +251,7 @@ private:
 
     // Helper functions for Manager::integrate()
     bool doIntegration(SimTK::State& s, int step);
+    void finalize(SimTK::State& s);
 
 //=============================================================================
 };  // END of class Manager
