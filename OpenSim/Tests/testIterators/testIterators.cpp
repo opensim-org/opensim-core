@@ -129,7 +129,8 @@ void testComponentListConst() {
 
     Model model(modelFilename);
 
-    ASSERT_THROW(OpenSim::ComponentIsAnOrphan, model.getComponentList());
+    ASSERT_THROW( ComponentIsRootWithNoSubcomponents,
+                    model.getComponentList());
 
     model.finalizeFromProperties();
     model.dumpSubcomponents();

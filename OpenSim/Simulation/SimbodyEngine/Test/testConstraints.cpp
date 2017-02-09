@@ -1011,6 +1011,8 @@ void testRollingOnSurfaceConstraint()
     arrowGeom.setColor(Vec3(1, 0, 0));
     ground.attachGeometry(arrowGeom.clone());
 
+    osimModel->finalizeFromProperties();
+
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));

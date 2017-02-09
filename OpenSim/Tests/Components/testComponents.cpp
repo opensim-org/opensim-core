@@ -515,6 +515,9 @@ void testSerialization(Component* instance)
 
     Component* deserializedComp = dynamic_cast<Component *>(deserializedInstance);
 
+    instance->finalizeFromProperties();
+    deserializedComp->finalizeFromProperties();
+
     testComponentEquivalence(instance, deserializedComp);
     delete deserializedInstance;
 }
