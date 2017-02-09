@@ -230,7 +230,8 @@ public:
     the file. In order to evaluate the validity of the properties (e.g. Inertia
     tensors, availability of a Mesh files, and to traverse the tree of the
     Model's subcomponents, one must invoke Model::finalizeFromProperties(), 
-    first.
+    first. Model::initSystem() invokes finalizeFromProperties() on its way to
+    creating the System and initializing the State.
 
     @param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
