@@ -310,7 +310,7 @@ size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
 
 // Determine if getRSS is providing reliable estimates of memory usage by
 // testing against an allocation of known size and verifying that the change
-// memory use is detected. Employ this method to validate the use of
+// in memory use is detected. Employ this method to validate the use of
 // memory use estimators (e.g. estimateMemoryChangeForCreator and
 // estimateMemoryChangeForCommand). Do this at the beginning of your test 
 // involving checks for memory use.
