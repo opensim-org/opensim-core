@@ -77,19 +77,19 @@ int main()
         // Left brick
         OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
         leftAnchorFrame->setName("LeftAnchor");
-        osimModel.addFrame(leftAnchorFrame);
+        osimModel.addComponent(leftAnchorFrame);
         // Right brick
         OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
-        osimModel.addFrame(rightAnchorFrame);
+        osimModel.addComponent(rightAnchorFrame);
         // Cylinder
         OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
         cylFrame->setName("CylAnchor");
-        osimModel.addFrame(cylFrame);
+        osimModel.addComponent(cylFrame);
         // Ellipsoid
         OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
         ellipsoidFrame->setName("EllipsoidAnchor");
-        osimModel.addFrame(ellipsoidFrame);
+        osimModel.addComponent(ellipsoidFrame);
 
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI

@@ -64,18 +64,23 @@ public:
         rx = myFreeJoint.getCoordinate(opensim.FreeJoint.Coord_Rotation1X)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rx = myFreeJoint.getCoordinate(FreeJoint.Coord.Rotation1X);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myFreeJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z,
-        TranslationX,
-        TranslationY,
-        TranslationZ
+        Rotation1X   = 0u, ///< 0
+        Rotation2Y   = 1u, ///< 1
+        Rotation3Z   = 2u, ///< 2
+        TranslationX = 3u, ///< 3
+        TranslationY = 4u, ///< 4
+        TranslationZ = 5u  ///< 5
     };
 
 private:

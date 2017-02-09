@@ -1546,9 +1546,13 @@ INCLUDE_FILE_PATTERNS  = "@PROJECT_SOURCE_DIR@/OpenSim/Common/Property.h"
 # instead of the = operator.
 
 # Expand Simbody's C++11 macros to the standard keywords.
+# The Simbody DEPRECATED_14 macro is converted to empty to avoid a Doxygen
+# parsing error that produces the (incorrect) warning "Found ; while parsing
+# initializer list!"
 PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
                          OpenSim_DOXYGEN_Q_PROPERTY=Q_PROPERTY \
-                         WITH_BTK=1
+                         WITH_BTK=1 \
+                         DEPRECATED_14(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.
