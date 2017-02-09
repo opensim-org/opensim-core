@@ -93,7 +93,6 @@ public:
     }
 };
 
-
 class ComponentIsAnOrphan : public Exception {
 public:
     ComponentIsAnOrphan(const std::string& file,
@@ -103,10 +102,26 @@ public:
         const std::string& componentConcreteClassName) :
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName + "' of type " +
-            componentConcreteClassName + " has no parent or subcomponents.\n" +
+            componentConcreteClassName + " has no parent and is not the root.\n" +
             "Verify that finalizeFromProperties() has been invoked on the " + 
             "root Component or that this Component is not a clone, which has " +
             "not been added to its parent.";
+        addMessage(msg);
+    }
+};
+
+class ComponentIsRootWithNoSubcomponents : public Exception {
+public:
+    ComponentIsRootWithNoSubcomponents(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " is the root but has no " + 
+            "subcomponents.\n" +
+            "Verify that finalizeFromProperties() was called on this Component.";
         addMessage(msg);
     }
 };
@@ -2175,6 +2190,10 @@ protected:
             // if currentSubpath is '.' we are in the right parent, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
+                if (current->getNumImmediateSubcomponents() == 0) {
+                    current = nullptr;
+                    continue;
+                }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
