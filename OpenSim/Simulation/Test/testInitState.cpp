@@ -152,7 +152,7 @@ void testMemoryUsage(const string& modelFile)
 
     // Throw an exception if we cannot validate estimates
     // of memory with current instrumentation
-    validateMemoryUseEstimates(20);
+    validateMemoryUseEstimates();
 
     //=========================================================================
     // Estimate the size of the model when loaded into memory
