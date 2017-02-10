@@ -117,7 +117,7 @@ protected:
     static
     std::shared_ptr<DataAdapter> createAdapter(const std::string& identifier);
 
-    /** Immplements reading functionality.                                    */
+    /** Implements reading functionality.                                    */
     virtual OutputTables extendRead(const std::string& sourceName) const = 0;
 
     /** Implements writing functionality.                                     */
@@ -129,6 +129,6 @@ private:
     static RegisteredDataAdapters _registeredDataAdapters;
 };
 
-} // namepsace OpenSim
+} // namespace OpenSim
 
 #endif // OPENSIM_DATA_ADAPTER_H_

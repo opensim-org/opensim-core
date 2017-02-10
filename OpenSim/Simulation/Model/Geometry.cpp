@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (rootModel == nullptr) {
             std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
-            return;   // Orphan Mesh not descendent of a model
+            return;   // Orphan Mesh not descendant of a model
         }
         // Current interface to Visualizer calls generateDecorations on every frame.
         // On first time through, load file and create DecorativeMeshFile and cache it

@@ -75,7 +75,7 @@ int run_tool(int argc, const char** argv) {
     const auto& setupFile = args["<setup-xml-file>"].asString();
     Object* obj = Object::makeObjectFromFile(setupFile);
     if (obj == nullptr) {
-        throw Exception( "A problem occured when trying to load file '" +
+        throw Exception( "A problem occurred when trying to load file '" +
                 setupFile + "'.");
     }
 

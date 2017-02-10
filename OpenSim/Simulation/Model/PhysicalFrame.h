@@ -126,7 +126,7 @@ public:
     const SimTK::MobilizedBody& getMobilizedBody() const;
 
     /**
-    Access a writeable SimTK::MobilizedBody that backs this PhysicalFrame.
+    Access a writable SimTK::MobilizedBody that backs this PhysicalFrame.
     The MobilizedBody is only available after Model::initSystem() has been
     invoked.
     @see getMobilizedBodyIndex
