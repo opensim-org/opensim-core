@@ -314,7 +314,7 @@ size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
 // memory use estimators (e.g. estimateMemoryChangeForCreator and
 // estimateMemoryChangeForCommand). Do this at the beginning of your test 
 // involving checks for memory use.
-void validateMemoryUseEstimates(const size_t nSamples = 11)
+void validateMemoryUseEstimates(const size_t nSamples = 20)
 {
     // Approximate size of a small OpenSim model
     size_t size = 1000 * 1024; // 1K * 1KB = 1MB;
