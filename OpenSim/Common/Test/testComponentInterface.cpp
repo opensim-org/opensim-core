@@ -521,10 +521,10 @@ void testMisc() {
     // Query existing components.
     theWorld.printComponentsMatching("");
     SimTK_TEST(theWorld.hasComponent("Foo"));
-    SimTK_TEST(!theWorld.hasComponent("Nonexistant"));
+    SimTK_TEST(!theWorld.hasComponent("Nonexistent"));
     SimTK_TEST(theWorld.hasComponent<Foo>("Foo"));
     SimTK_TEST(!theWorld.hasComponent<Bar>("Foo"));
-    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
+    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistent"));
 
 
     bar.connectSocket_childFoo(foo2);
@@ -1736,7 +1736,7 @@ void testSingleValueInputConnecteeSerialization() {
         
         // We won't wire up this input, but its connectee name should still
         // (de)serialize.
-        foo->updInput("activation").setConnecteeName("non/existant");
+        foo->updInput("activation").setConnecteeName("non/existent");
         
         // Serialize.
         world.print(modelFileName);
@@ -1762,7 +1762,7 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(fiberLength.getConnecteeName() ==
                    "../producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
-        SimTK_TEST(activation.getConnecteeName() == "non/existant");
+        SimTK_TEST(activation.getConnecteeName() == "non/existent");
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
         activation.setConnecteeName("");

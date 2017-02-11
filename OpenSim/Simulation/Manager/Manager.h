@@ -80,7 +80,7 @@ private:
 
     /** Integrator. */
     // This is the actual integrator that is used when integrate() is called.
-    // Its memory is managed elsewehere; either by the user or by the
+    // Its memory is managed elsewhere; either by the user or by the
     // _defaultInteg smart pointer.
     SimTK::ReferencePtr<SimTK::Integrator> _integ;
 

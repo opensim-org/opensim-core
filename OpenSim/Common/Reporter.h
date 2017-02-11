@@ -235,7 +235,7 @@ private:
 
     // Hold the output values in a table with values as columns and time rows
     // We write to this table in const methods, but only because we ensure
-    // those consts methods are never called with trial intergrator states.
+    // those const methods are never called with trial integrator states.
     TimeSeriesTable_<ValueT> _outputTable;
 };
 

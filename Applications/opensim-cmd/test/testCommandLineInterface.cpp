@@ -227,7 +227,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
 
     const auto cmd = subcommand + " -h";
 
-    // Nonexistant file.
+    // Nonexistent file.
     // =================
     {
         std::regex output(RE_ANY + "(Failed to load library x)\n");

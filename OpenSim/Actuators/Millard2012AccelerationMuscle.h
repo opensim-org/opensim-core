@@ -1007,8 +1007,8 @@ private:
         double fcphiV;//fiber compressive force cos pennation damping multiplier
         double fibV;  //fiber damping
 
-        //Visco elastic force multiplier
-        double fseVEM;  // ' ' visco elastic multiplier   
+        //Viscoelastic force multiplier
+        double fseVEM;  // ' ' viscoelastic multiplier   
         double fpeVEM;
         double fkVEM;
         double fcphiVEM;
@@ -1047,9 +1047,9 @@ private:
 
         double dfibV_dlce;
 
-        //Partial derivative of the visco elastic multiplier 
+        //Partial derivative of the viscoelastic multiplier 
         //w.r.t. the input variable
-        double dfseVEM_dtl;   //d(tendon force length visco elastic multiplier)
+        double dfseVEM_dtl;   //d(tendon force length viscoelastic multiplier)
                               //d(tendon length)
 
         double dfpeVEM_dlce; //d(fiber force length viscoelastic multiplier)

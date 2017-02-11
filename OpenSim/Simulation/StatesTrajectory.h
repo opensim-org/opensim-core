@@ -68,7 +68,7 @@ class Model;
  * - All states in the trajectory are consistent with each other (see
  *   isConsistent()).
  *
- * @note These gaurantees apply when using this class through C++, Java,
+ * @note These guarantees apply when using this class through C++, Java,
  * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
@@ -256,7 +256,7 @@ public:
      * - number of coordinates in the model and number of Q's in state
      * - number of speeds in the model and number of U's in state
      *
-     * Returns false otherwise. This method **cannot** gaurantee that the
+     * Returns false otherwise. This method **cannot** guarantee that the
      * trajectory will work with the given model, and makes no attempt to
      * determine if the trajectory was generated with the given model.
      */
@@ -519,7 +519,7 @@ public:
  * - All states in the trajectory are consistent with each other (see
  *   isConsistent()).
  *
- * @note These gaurantees apply when using this class through C++, Java,
+ * @note These guarantees apply when using this class through C++, Java,
  * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
