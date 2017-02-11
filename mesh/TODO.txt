@@ -30,3 +30,14 @@ Automatically generate a nice initial guess:
 //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
     //OptimalControlIterate initial_guess = ocp->make_guess_template();
     //OptimalControlSolution solution = dircol.solve(initial_guess);
+
+
+Name for project: OptoMusk (optimizing musculoskeletal)
+NMSOpt
+Neuromusculoskeletal Optimization
+nemuskopt
+
+NMSTO
+TONMS
+
+Runner

@@ -2,6 +2,8 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
+#include "testing.h"
+
 #include <mesh.h>
 
 #include <snoptProblem.hpp>
@@ -253,8 +255,8 @@ TEST_CASE("Sliding mass minimum effort with SNOPT.")
 
     int N = solution.time.size();
     std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
-    RowVectorXd expected = RowVectorXd::LinSpaced(N - 1, 14.25, -14.25);
-    RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
-    REQUIRE(Approx(errors.norm()) == 0);
+    // TODO is this correct?
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.7448, -14.7448);
+    REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected, 0.1);
 }
 
