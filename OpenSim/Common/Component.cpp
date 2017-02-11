@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
  * Contributor(s): Ayman Habib                                                *
  *                                                                            *
@@ -170,16 +170,16 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
     
-    // Provide connectors, inputs, and outputs with a pointer to its component
+    // Provide sockets, inputs, and outputs with a pointer to its component
     // (this) so that they can invoke the component's methods.
-    for (auto& it : _connectorsTable) {
+    for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
-        // Let the Connector handle any errors in the connectee_name property.
+        // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
-        // Let the Connector handle any errors in the connectee_name property.
+        // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _outputsTable) {
@@ -210,8 +210,8 @@ void Component::componentsFinalizeFromProperties() const
     }
 }
 
-// Base class implementation of non virtual connect method.
-void Component::connect(Component &root)
+// Base class implementation of non-virtual finalizeConnections method.
+void Component::finalizeConnections(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -219,16 +219,16 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    for (auto& it : _connectorsTable) {
-        auto& connector = it.second;
-        connector->disconnect();
+    for (auto& it : _socketsTable) {
+        auto& socket = it.second;
+        socket->disconnect();
         try {
-            connector->findAndConnect(root);
+            socket->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Connector '" +
-                connector->getName() + "' of type " +
-                connector->getConnecteeTypeName() +
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
+                socket->getName() + "' of type " +
+                socket->getConnecteeTypeName() +
                 " (details: " + x.what() + ").");
         }
     }
@@ -236,7 +236,7 @@ void Component::connect(Component &root)
     for (auto& it : _inputsTable) {
         auto& input = it.second;
 
-        if (!input->isListConnector() && input->getConnecteeName(0).empty()) {
+        if (!input->isListSocket() && input->getConnecteeName(0).empty()) {
             // TODO When we support verbose/debug logging we should include
             // message about unspecified Outputs but generally this OK
             // if the Input's value is not required.
@@ -268,7 +268,7 @@ void Component::connect(Component &root)
     // Allow subcomponents to form their connections
     componentsConnect(root);
 
-    // Forming connections changes the Connector which is a property
+    // Forming connections changes the Socket which is a property
     // Remark as upToDate.
     setObjectIsUpToDateWithProperties();
 }
@@ -278,31 +278,31 @@ void Component::componentsConnect(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[i].upd()->connect(root);
+        _memberSubcomponents[i].upd()->finalizeConnections(root);
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); ++i){
-        _propertySubcomponents[i].get()->connect(root);
+        _propertySubcomponents[i].get()->finalizeConnections(root);
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[i].upd()->connect(root);
+        _adoptedSubcomponents[i].upd()->finalizeConnections(root);
     }
 }
 
-void Component::disconnect()
+void Component::clearConnections()
 {
     // First give the subcomponents the opportunity to disconnect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        _memberSubcomponents[i]->disconnect();
+        _memberSubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
-        _propertySubcomponents[i]->disconnect();
+        _propertySubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        _adoptedSubcomponents[i]->disconnect();
+        _adoptedSubcomponents[i]->clearConnections();
     }
 
-    //Now cycle through and disconnect all connectors for this component
-    for (auto& it : _connectorsTable) {
+    //Now cycle through and disconnect all sockets for this component
+    for (auto& it : _socketsTable) {
         it.second->disconnect();
     }
     
@@ -913,7 +913,8 @@ SimTK::Vector Component::
 // Set all values of the state variables allocated by this Component. Includes
 // state variables allocated by its subcomponents.
 void Component::
-    setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
+    setStateVariableValues(SimTK::State& state,
+                           const SimTK::Vector& values) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1042,9 +1043,27 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
             //               </Connector_PhysicalFrame_>
             //           </connectors>
             // New:      <connector_parent_connectee_name>...
-            //               </connector_parent_connectee_name>
+            //           </connector_parent_connectee_name>
             //
             XMLDocument::updateConnectors30508(node);
+        }
+
+        if(versionNumber < 30510) {
+            // Before -- <connector_....> ... </connector_...>
+            // After  -- <socket_...> ... </socket_...>
+            for(auto iter = node.element_begin();
+                iter != node.element_end();
+                ++iter) {
+                std::string oldName{"connector"};
+                std::string newName{"socket"};
+                auto tagname = iter->getElementTag();
+                auto pos = tagname.find(oldName);
+                if(pos != std::string::npos) {
+                    tagname.replace(pos, oldName.length(), newName);
+                    iter->setElementTag(tagname);
+                }
+            }
+            
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
@@ -1466,19 +1485,19 @@ void Component::dumpSubcomponents(int depth) const
 }
 
 void Component::dumpConnections() const {
-    std::cout << "Connectors for " << getConcreteClassName() << " '"
+    std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
-    if (getNumConnectors() == 0) std::cout << " none";
+    if (getNumSockets() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (const auto& it : _connectorsTable) {
-        const auto& connector = it.second;
-        std::cout << "  " << connector->getConnecteeTypeName() << " '"
-                  << connector->getName() << "': ";
-        if (connector->getNumConnectees() == 0) {
+    for (const auto& it : _socketsTable) {
+        const auto& socket = it.second;
+        std::cout << "  " << socket->getConnecteeTypeName() << " '"
+                  << socket->getName() << "': ";
+        if (socket->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (unsigned i = 0; i < connector->getNumConnectees(); ++i) {
-                std::cout << connector->getConnecteeName(i) << " ";
+            for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
+                std::cout << socket->getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
         }

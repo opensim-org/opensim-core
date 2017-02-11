@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Thomas Uchida                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -644,7 +644,7 @@ Storage simulateModel(Model& model, double t0, double t1)
     // Simulate.
     const clock_t tStart = clock();
     cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(state, 1.0e-3);
+    manager.integrate(state);
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 

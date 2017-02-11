@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKcommon/internal/Xml.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -64,6 +65,7 @@ void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -138,6 +140,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; 
         failures.push_back("testExpressionBasedCoordinateForce");
+    }
+
+    try { testSerializeDeserialize(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testSerializeDeserialize");
     }
 
     if (!failures.empty()) {
@@ -226,8 +234,7 @@ void testExpressionBasedCoordinateForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
@@ -331,7 +338,7 @@ void testExpressionBasedPointToPointForce()
     
     // Save the forces
     //reporter->getForceStorage().print("path_spring_forces.mot");
-    double d = model.getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
+    double d = (p1 - ball.findStationLocationInGround(state, p2)).norm();
     const MobilizedBody& b1 = ground.getMobilizedBody();
     const MobilizedBody& b2 = ball.getMobilizedBody();
 
@@ -536,8 +543,7 @@ void testSpringMass()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
@@ -646,8 +652,7 @@ void testBushingForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -751,8 +756,7 @@ void testFunctionBasedBushingForce()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -873,8 +877,7 @@ void testExpressionBasedBushingForceTranslational()
         manager.setFinalTime(dt*i);
         manager.integrate(osim_state);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         // compute the height based on the analytic solution for 1-D spring-mass
         // system with zero-velocity at initial offset.
@@ -1672,4 +1675,54 @@ void testExternalForce()
         if(i !=3)
             ASSERT_EQUAL(def, val, 10*accuracy);
     }
+}
+
+void testSerializeDeserialize() {
+    std::cout << "Test serialize & deserialize." << std::endl;
+    
+    std::string origModelFile{"PushUpToesOnGroundWithMuscles.osim"};
+    std::string oldModelFile{"testForces_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testForces_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedMuscles{"glut_med1_r", "bifemlh_r",
+                                         "add_mag2_r"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto thelenMuscles = xml.getRootElement().
+                                 getRequiredElement("Model").
+                                 getRequiredElement("ForceSet").
+                                 getRequiredElement("objects").
+                                 getAllElements("Thelen2003Muscle");
+        for(unsigned i = 0; i < thelenMuscles.size(); ++i) {
+            const auto& muscleName =
+                thelenMuscles[i].getRequiredAttributeValue("name");
+            if(flippedMuscles.find(muscleName) != flippedMuscles.end()) {
+                auto elem = thelenMuscles[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+    
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldForceSet = oldModel.getForceSet();
+    const auto& newForceSet = newModel.getForceSet();
+
+    ASSERT(oldForceSet.getSize() == newForceSet.getSize());
+    for(int i = 0; i < oldForceSet.getSize(); ++i) {
+        ASSERT(oldForceSet.get(i).get_appliesForce() ==
+               newForceSet.get(i).get_appliesForce());
+
+        if(flippedMuscles.find(newForceSet.get(i).getName()) !=
+           flippedMuscles.end())
+            ASSERT(newForceSet.get(i).get_appliesForce() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

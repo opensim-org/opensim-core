@@ -1,13 +1,16 @@
 # Ignore backup files created by editors like emacs, vim.
 *~
 *.swp
+*.swo
 # Ignore cmake files.
 *CMakeCache.txt
 *CMakeFiles
 # Ignore tmp directory/file. We use it sometimes to write debug information.
 tmp
 # Ignore build trees.
-build*
+/build*
+# Ignore install dir.
+install
 # Ignore settings from the CLion IDE (from JetBrains).
 .idea
 

@@ -226,6 +226,7 @@ We have some conventional starting verbs; you should use the same ones when they
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
 `extend`  | A virtual method intended to extend a defining capability of a Base class; can either be pure virtual or not. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
 `implement` | A virtual method intended to implement a *pure* virtual function of a Base class. The derived class's implementation does *not* call any method on `Super`.
+`express` | Express a vector in a different basis (i.e., without translation). Typically used as `Frame::expressVectorIn*()`.
 
 ### ``throw`` and ``return`` are not functions
 

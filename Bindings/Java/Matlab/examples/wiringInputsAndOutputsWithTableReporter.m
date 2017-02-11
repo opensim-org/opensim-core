@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2016 Stanford University and the Authors             %
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
 % Author(s): Christopher Dembia                                           %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -52,12 +52,12 @@ reporter = TableReporterVec3();
 reporter.setName('reporter');
 reporter.set_report_time_interval(0.1);
 % Report the position of the origin of the body.
-reporter.updInput().connect(body.getOutput('position'));
+reporter.addToReport(body.getOutput('position'));
 % For comparison, we will also get the center of mass position from the
 % Model, and we can check that the two outputs are the same for our
 % one-body system. The (optional) second argument is an alias for the name
 % of the output; it is used as the column label in the table.
-reporter.updInput().connect(model.getOutput('com_position'), 'com_pos');
+reporter.addToReport(model.getOutput('com_position'), 'com_pos');
 % Display what input-output connections look like in XML (in .osim files).
 disp('Reporter input-output connections in XML:');
 disp(reporter.dump());

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -71,9 +71,6 @@ Manager::Manager(Model& model, bool dummyVar) :
 {
     setNull();
 
-    // STATES
-    constructStates();
-
     // STORAGE
     constructStorage();
 
@@ -99,30 +96,14 @@ setNull()
     _sessionName = "";
     _ti = 0.0;
     _tf = 1.0;
-    _firstDT = 1.0e-8;
-    _steps = 0;
-    _trys = 0;
-    _maxSteps = 10000;
     _halt = false;
-    _dtMax = 1.0;
-    _dtMin = 1.0e-8;
     _specifiedDT = false;
     _constantDT = false;
     _dt = 1.0e-4;
     _performAnalyses=true;
     _writeToStorage=true;
     _tArray.setSize(0);
-    _system = 0;
     _dtArray.setSize(0);
-}
-//_____________________________________________________________________________
-/**
- * Construct the states.
- */
-bool Manager::
-constructStates()
-{
-    return(true);
 }
 
 //_____________________________________________________________________________
@@ -510,9 +491,6 @@ setModel(Model& aModel)
     }
 
     _model = &aModel;
-    
-    // STATES
-    constructStates();
 
     // STORAGE
     constructStorage();
@@ -599,33 +577,6 @@ getFinalTime() const
     return(_tf);
 }
 
-//-----------------------------------------------------------------------------
-// FIRST DT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the first time step taken in an integration.
- *
- * @param aDT First integration time step.
- */
-void Manager::
-setFirstDT(double aDT)
-{
-    _firstDT = aDT;
-    if(_firstDT<1.0e-8) _firstDT = 1.0e-8;
-}
-//_____________________________________________________________________________
-/**
- * Get the first time step taken in an integration.
- *
- * @return First integration time step.
- */
-double Manager::
-getFirstDT() const
-{
-    return(_firstDT);
-}
-
 
 //=============================================================================
 // EXECUTION
@@ -680,7 +631,7 @@ hasStateStorage() const
  * the model.
  */
 bool Manager::
-integrate( SimTK::State& s, double dtFirst )
+integrate(SimTK::State& s)
 {
     
     int step = 0;
@@ -688,11 +639,11 @@ integrate( SimTK::State& s, double dtFirst )
     s.setTime( _ti );
 
     // INTEGRATE
-    return(doIntegration(s, step, dtFirst));
+    return doIntegration(s, step);
 
 }
 
-bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
+bool Manager::doIntegration(SimTK::State& s, int step) {
 
     if(!_integ) {
         throw Exception("Manager::doIntegration(): "
@@ -704,11 +655,8 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     // Halts must arrive during an integration.
     clearHalt();
 
-    double dt/*,dtPrev*/,tReal;
+    double tReal;
     double time =_ti;
-    dt=dtFirst;
-    if(dt>_dtMax) dt = _dtMax;
-    //dtPrev=dt;
 
     // CHECK SPECIFIED DT STEPPING
     
@@ -739,34 +687,21 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     double fixedStepSize;
     if( _constantDT || _specifiedDT) fixedStep = true;
 
-    // If _system is has been set we should be integrating a CMC system
-    // not the model's system.
-    const SimTK::System& sys = _system ? *_system 
-                                       : _model->getMultibodySystem();
-
     // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(sys, s);
+    if (_timeStepper == NULL) initializeTimeStepper(s);
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
-    if( fixedStep ) {
-        dt = getFixedStepSize(getTimeArrayStep(_ti));
-    } else {
+    if( !fixedStep ) {
         _integ->setReturnEveryInternalStep(true); 
     }
 
-    if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
-   
-    // We need to be at a valid stage to initialize the controls, but only when 
-    // we are integrating the complete model system, not the CMC system. This 
-    // is very ugly and a cleaner solution is required- aseth
-    if(_system == NULL)
-        sys.realize(s, SimTK::Stage::Velocity); // this is multibody system 
-    initialize(s, dt);  
+    _model->realizeVelocity(s);
+    initializeStorageAndAnalyses(s);
 
     if( fixedStep){
         s.updTime() = time;
-        sys.realize(s, SimTK::Stage::Acceleration);
+        _model->realizeAcceleration(s);
 
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
@@ -849,9 +784,8 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  * 
  * @param s system state before integration
  */
-void Manager::initialize(SimTK::State& s, double dt )
+void Manager::initializeStorageAndAnalyses(SimTK::State& s)
 {
-    // skip initializations for CMC's actuator system
     if( _writeToStorage && _performAnalyses ) { 
 
         double tReal = s.getTime();
@@ -882,11 +816,11 @@ void Manager::initialize(SimTK::State& s, double dt )
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initializeTimeStepper(
-    const SimTK::System& sys, const SimTK::State& state)
+void Manager::initializeTimeStepper(const SimTK::State& s)
 {
-    _timeStepper.reset(new SimTK::TimeStepper(sys, *_integ));
-    _timeStepper->initialize(state);
+    _timeStepper.reset(
+        new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
+    _timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
 }
 

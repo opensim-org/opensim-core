@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -138,12 +138,12 @@ const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 * Following methods set attributes of the constraint */
 void ConstantDistanceConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
 }
 
 void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
 }
 
 /** Set the location for point on body 1*/

@@ -32,13 +32,13 @@ model.addComponent(source);
 model.addComponent(rep);
 
 
-% Connectors
+% Sockets
 % ==========
 
-% Access (and iterate through) a component's AbstractConnectors, using names.
-names = joint.getConnectorNames();
+% Access (and iterate through) a component's AbstractSockets, using names.
+names = joint.getSocketNames();
 for i = 0:(names.size() - 1)
-    typeName = joint.getConnector(names.get(i)).getConnecteeTypeName();
+    typeName = joint.getSocket(names.get(i)).getConnecteeTypeName();
     assert(strcmp(typeName, 'PhysicalFrame'));
 end
 
@@ -53,9 +53,10 @@ end
 body = Body.safeDownCast(joint.getConnectee('child_frame'));
 assert(body.getMass() == 2);
 
-% Connect a connector.
-offset.updConnector('parent').connect(ground);
-assert(strcmp(offset.getConnector('parent').getConnecteeName(), '../ground'));
+% Connect a socket. Try the different methods to ensure they all work.
+offset.connectSocket_parent(ground);
+offset.updSocket('parent').connect(ground);
+assert(strcmp(offset.getSocket('parent').getConnecteeName(), '../ground'));
 
 
 
@@ -93,9 +94,9 @@ assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
 % Only need the abstract types in order to connect.
 rep.updInput('inputs').connect(coord.getOutput('value'));
 % With alias:
-rep.updInput('inputs').connect(coord.getOutput('speed'), 'target');
+rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 % These commands use the AbstractChannel.
-rep.updInput('inputs').connect(source.getOutput('column').getChannel('c1'));
+rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
                                'second_col');
 

@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Dimitar Stanev                                                  *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -42,7 +42,7 @@ the gravity compensation is considered.
 using namespace OpenSim;
 using namespace SimTK;
 
-void switchMuscles(Model& model, State& state, bool isDisabled);
+void switchMuscles(Model& model, State& state, bool appliesForce);
 void testTaskSpace();
 
 //#define PAUSE
@@ -78,11 +78,11 @@ int main()
     return 0;
 }
 
-void switchMuscles(Model& model, State& state, bool isDisabled)
+void switchMuscles(Model& model, State& state, bool appliesForce)
 {
     for (int i = 0; i < model.updMuscles().getSize(); i++)
     {
-        model.updMuscles().get(i).setDisabled(state, isDisabled);
+        model.updMuscles().get(i).setAppliesForce(state, appliesForce);
     }
 }
 
@@ -106,7 +106,7 @@ void testTaskSpace()
 
     model.buildSystem();
     State& s = model.initializeState();
-    switchMuscles(model, s, true);
+    switchMuscles(model, s, false);
 
     double dt = 0.01;
     double t_start = 0;

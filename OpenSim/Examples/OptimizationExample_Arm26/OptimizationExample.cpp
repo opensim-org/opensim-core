@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -82,12 +82,10 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-        Vec3 velocity;
+        const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
-            .get("r_ulna_radius_hand"), massCenter, velocity);
-        
+        Vec3 massCenter = hand.getMassCenter();
+        Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);
         f = -velocity[0];
         stepCount++;
         

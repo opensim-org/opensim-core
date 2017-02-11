@@ -78,7 +78,7 @@ before_install:
   ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
   # This prevents the build from failing with:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
-  - rvm get head
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
   ###########################################################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
@@ -224,8 +224,6 @@ script:
   - make -j8 install > /dev/null
 
   ## Test python wrapping.
-  # Add OpenSim libraries to library path.
-  - if [ "$WRAP" = "on" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSIM_HOME/lib:$OPENSIM_HOME/lib/x86_64-linux-gnu:$OPENSIM_DEPENDENCIES_INSTALL_DIR/BTK/lib/btk-0.4dev; fi
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.

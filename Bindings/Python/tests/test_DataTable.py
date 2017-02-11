@@ -5,6 +5,35 @@ import os, unittest
 import opensim as osim
 
 class TestDataTable(unittest.TestCase):
+    def test_vector_rowvector(self):
+        print
+        print 'Test transpose RowVector to Vector.'
+        row = osim.RowVector([1, 2, 3, 4])
+        col = row.transpose()
+        assert (col[0] == row[0] and
+                col[1] == row[1] and
+                col[2] == row[2] and
+                col[3] == row[3])
+        print 'Test transpose Vector to RowVector.'
+        row_copy = col.transpose()
+        assert (row_copy[0] == row[0] and
+                row_copy[1] == row[1] and
+                row_copy[2] == row[2] and
+                row_copy[3] == row[3])
+        print 'Test transpose RowVectorOfVec3 to VectorOfVec3.'
+        row = osim.RowVectorOfVec3([osim.Vec3(1, 2, 3), 
+                                    osim.Vec3(4, 5, 6),
+                                    osim.Vec3(7, 8, 9)])
+        col = row.transpose()
+        assert (str(col[0]) == str(row[0]) and
+                str(col[1]) == str(row[1]) and
+                str(col[2]) == str(row[2]))
+        print 'Test transpose VectorOfVec3 to RowVectorOfVec3.'
+        row_copy = col.transpose()
+        assert (str(row_copy[0]) == str(row[0]) and
+                str(row_copy[1]) == str(row[1]) and
+                str(row_copy[2]) == str(row[2]))
+    
     def test_DataTable(self):
         print
         table = osim.DataTable()

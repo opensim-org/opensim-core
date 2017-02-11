@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jack Middleton, Ayman Habib                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -117,20 +117,21 @@ public:
     bool isPrescribed(const Coordinate& coord) const;
     bool isConstrained(const Coordinate& coord) const;
     // Constraints
-    bool isDisabled(const Constraint& constraint) const {
-        return  constraint.isDisabled(*_configState);
+    bool isEnforced(const Constraint& constraint) const {
+        return constraint.isEnforced(*_configState);
     }
-    void setDisabled(Constraint& constraint, bool disable) {
-        constraint.setDisabled(*_configState, disable);
+    void setIsEnforced(Constraint& constraint, bool isEnforced) {
+        constraint.setIsEnforced(*_configState, isEnforced);
         _model->assemble(*_configState);
     }
     // Forces
-    bool isDisabled(const Force& force) const {
-        return  force.isDisabled(*_configState);
+    bool appliesForce(const Force& force) const {
+        return  force.appliesForce(*_configState);
     }
-    void setDisabled(Force& force, bool disable) const {
-        force.setDisabled(*_configState, disable);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    void setAppliesForce(Force& force, bool applyForce) const {
+        force.setAppliesForce(*_configState, applyForce);
+        _model->getMultibodySystem().realize(*_configState,
+                                             SimTK::Stage::Position);
     }
     // Muscles
     double getActivation(Muscle& act);

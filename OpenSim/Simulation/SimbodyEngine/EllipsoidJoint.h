@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -63,15 +63,20 @@ public:
         rx = myEllipsoidJoint.getCoordinate(opensim.EllipsoidJoint.Coord_Rotation1X)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myEllipsoidJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
     };
 
 private:

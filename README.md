@@ -24,7 +24,7 @@ include source code for the OpenSim GUI.
 Simple example
 --------------
 Let's simulate a simple arm whose elbow is actuated by a muscle, using 
-the C++ interface (You can find a python version of this example at 
+the C++ interface (You can find a Python version of this example at 
 `Bindings/Python/examples/build_simple_arm_model.py`):
 
 ```cpp
@@ -71,8 +71,8 @@ int main() {
     // Add a console reporter to print the muscle fiber force and elbow angle.
     ConsoleReporter* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.0);
-    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(biceps->getOutput("fiber_force"));
+    reporter->addToReport(
         elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
         "elbow_angle");
     model.addComponent(reporter);
@@ -140,6 +140,8 @@ and prints the following information to the console:
 Building from the source code
 -----------------------------
 
+**NOTE -- In all platforms (Windows, OSX, Linux), it is advised to build all OpenSim Dependencies (Simbody, BTK etc) with same *CMAKE_BUILD_TYPE* (Linux) / *CONFIGURATION* (MSVC/Xcode) as OpenSim. For example, if OpenSim is to be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*, Simbody, BTK and all other OpenSim dependencies also should be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*. Failing to do so *may* result in mysterious runtime errors like 'segfault' in standard c++ library implementation.**
+
 We support a few ways of building OpenSim:
 
 1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
@@ -194,8 +196,10 @@ On Windows using Visual Studio
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
-    * **python scripting** (optional):
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+        * Note: Older versions of MATLAB may use an older version of JVM. Run
+                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+    * **Python scripting** (optional):
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
     * The choice between 32-bit/64-bit must be the same between Java, Python,
@@ -295,7 +299,7 @@ On Windows using Visual Studio
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
            variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.
@@ -448,9 +452,11 @@ ctest -j8
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
-    * **MATLAB scripting** (optional): [Java development kit][java] 1.7.
-    * **python scripting** (optional):
-        * Mac OSX comes with python, but you could also use:
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+        * Note: Older versions of MATLAB may use an older version of JVM. Run
+                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+    * **Python scripting** (optional):
+        * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
         * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
@@ -541,7 +547,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
            docopt.cpp installation is `~/docopt.cpp-install`, then set this 
            variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.
@@ -549,8 +555,8 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers. (If you installed python
-      with homebrew, [CMake will not find the homebrew python libraries on its
+      Python it will use for building the wrappers. (If you installed Python
+      with Homebrew, [CMake will not find the Homebrew Python libraries on its
       own](https://github.com/Homebrew/homebrew/issues/25118); you must set the
       CMake variable `PYTHON_LIBRARIES` manually. Use `'$(python-config
       --prefix)/lib/libpython2.7.dylib'` in bash to get the correct value.)
@@ -646,7 +652,9 @@ specific Ubuntu versions under 'For the impatient' below.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
-    * **python scripting** (optional): `python-dev`.
+        * Note: Older versions of MATLAB may use an older version of JVM. Run
+                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+    * **Python scripting** (optional): `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
@@ -757,7 +765,7 @@ And you could get all the optional dependencies via:
     release version of the command-line applications instead of the slow debug
     versions.
 8. Set the remaining configuration options.
-    * `BUILD_EXAMPLES` to compile C++ API examples.
+    * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
       while to build; if you want to build OpenSim quickly, you can turn this
       off.

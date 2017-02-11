@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -172,7 +172,7 @@ private:
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram _forceProg;
 
-    // Temporary solution until implemented with Connectors
+    // Temporary solution until implemented with Sockets
     SimTK::ReferencePtr<const PhysicalFrame> _body1;
     SimTK::ReferencePtr<const PhysicalFrame> _body2;
     SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1; 
