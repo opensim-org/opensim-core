@@ -17,10 +17,13 @@ add_library(mesh
 # to avoid for our own code.
 target_include_directories(mesh        PUBLIC ${EIGEN3_INCLUDE_DIR})
 target_include_directories(mesh SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
-target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
+#target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
+target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(mesh snopt7_cpp)
 target_link_libraries(mesh ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
 # TODO target_link_libraries(mesh Eigen3::Eigen)
+
+# TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("INTERFACE").

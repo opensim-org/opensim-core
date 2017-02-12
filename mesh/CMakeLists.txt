@@ -13,16 +13,21 @@ set(MESH_INSTALL_INCLUDEDIR include/mesh)
 
 # Find dependencies.
 # ------------------
+# There are Moodule files in the cmake directory.
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 
-find_package(PkgConfig REQUIRED)
+#find_package(PkgConfig REQUIRED)
+#
+#pkg_check_modules(IPOPT REQUIRED ipopt)
+#pkg_check_modules(ADOLC REQUIRED adolc)
+#
+#link_directories(${IPOPT_LIBRARY_DIRS})
+#link_directories(${ADOLC_LIBRARY_DIRS})
 
-pkg_check_modules(IPOPT REQUIRED ipopt)
-pkg_check_modules(ADOLC REQUIRED adolc)
-
-link_directories(${IPOPT_LIBRARY_DIRS})
-link_directories(${ADOLC_LIBRARY_DIRS})
+find_package(IPOPT REQUIRED)
+find_package(Adolc REQUIRED)
 
 # Subdirectories.
 # ---------------
