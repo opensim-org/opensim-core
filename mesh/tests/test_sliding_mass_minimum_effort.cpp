@@ -45,6 +45,7 @@ public:
     }
 };
 
+#if defined(TOMU_WITH_SNOPT)
 TEST_CASE("Sliding mass new interface") {
 
     auto ocp = std::make_shared<SlidingMassNew<adouble>>();
@@ -69,6 +70,7 @@ TEST_CASE("Sliding mass new interface") {
     //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
     //REQUIRE(Approx(errors.norm()) == 0);
 }
+#endif
 
 template<typename T>
 class SlidingMass : public mesh::OptimalControlProblem<T> {
