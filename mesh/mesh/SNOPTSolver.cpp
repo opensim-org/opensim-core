@@ -2,18 +2,29 @@
 #include "SNOPTSolver.h"
 #include "OptimizationProblem.h"
 
-// TODO building the mesh library should not *require* snopt.
-#include <snoptProblem.hpp>
-
 using namespace mesh;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
+
+// TODO building the mesh library should not *require* snopt.
+#if !defined(TOMU_WITH_SNOPT)
+
+double SNOPTSolver::optimize_impl(VectorXd& /*variables*/) const
+{
+    throw std::runtime_error("SNOPT is not available.");
+    return -1; // TODO return NaN.
+}
+
+#else
+
+#include <snoptProblem.hpp>
 
 namespace {
 // TODO this global is a big no-no. I thought of using a lambda that captures
 // the Proxy pointer; lambdas can be converted into C function pointers, but
 // not if they capture variables (like the Proxy pointer).
 // TODO another option is to derive from snoptProblemA.
+// TODO another option is to pass the pointer within cu (see Drake).
 std::shared_ptr<const OptimizationProblemProxy> probproxy = nullptr;
 }
 
@@ -156,3 +167,5 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
 
     return F[0];
 }
+
+#endif // !defined(TOMU_WITH_SNOPT)

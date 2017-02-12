@@ -19,15 +19,20 @@ target_include_directories(mesh        PUBLIC ${EIGEN3_INCLUDE_DIR})
 target_include_directories(mesh SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
 #target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDES})
-target_link_libraries(mesh snopt7_cpp)
 target_link_libraries(mesh ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
-# TODO target_link_libraries(mesh Eigen3::Eigen)
+if(TOMU_WITH_SNOPT)
+    target_link_libraries(mesh snopt7_cpp)
+endif()
+# TODO target_link_libraries(mesh Eigen3::Eigen) Would take care of includes.
 
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 # Only use the parts of Eigen that do not have a viral license.
-# Also, make sure client projects remain non-viral ("INTERFACE").
-target_compile_definitions(mesh INTERFACE EIGEN_MPL2_ONLY)
+# Also, make sure client projects remain non-viral ("PUBLIC").
+target_compile_definitions(mesh PUBLIC EIGEN_MPL2_ONLY)
+if(TOMU_WITH_SNOPT)
+    target_compile_definitions(mesh PUBLIC TOMU_WITH_SNOPT)
+endif()
 
 # Specify the include directories that client targets should use.
 target_include_directories(mesh INTERFACE

@@ -18,6 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 
+# Avoid using pkg-config, as it is not so easy to get on Windows.
 #find_package(PkgConfig REQUIRED)
 #
 #pkg_check_modules(IPOPT REQUIRED ipopt)
