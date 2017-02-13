@@ -21,6 +21,10 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 
+% This function computes and plots the active and passive force-length curves
+% for a specified muscle over the range of possible fiber lengths. (This range
+% is only approximate for muscles that cross more than one degree of freedom.)
+%
 % Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.
 
 function [fl_active,fl_passive] = plotMuscleFLCurves(modelpath)
