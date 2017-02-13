@@ -189,71 +189,66 @@ end %function getMuscleCoordinates
 
 
 %% -----------------------------------------------------------------------------
-function [fl_active,fl_passive] = getForceLength(model, s, muscle)
-%  Function gets the active and passive force length values across the
-%  possible fiber lengths of the muscle in the model. fl_active and
-%  fl_passive are a matrices of fiberlength-force pairs. 
+function [fl_active, fl_passive] = getForceLength(model, s, muscle)
+% This function gets the active and passive force--length values across the
+% possible fiber lengths of the muscle. fl_active and fl_passive are matrices
+% containing forces corresponding to each fiber length.
 
-import org.opensim.modeling.*      % Import OpenSim Libraries
+import org.opensim.modeling.*  % Import OpenSim libraries.
 
+% Get the number of coordinates for the muscle.
 coordNames = fieldnames(muscle.coordinates);
-% get the number of coordinates for the muscle
 nCoords = length( coordNames );
 
-% Get the muscle that is needed
+% Get a reference to the concrete muscle class.
 force = model.getMuscles().get(muscle.name);
-% Get the muscleType of that force
-muscleType = char(force.getConcreteClassName());
-% Get a reference to the concrete muscle class in the model
-eval(['myMuscle =' muscleType '.safeDownCast(force);'])
+muscleClass = char(force.getConcreteClassName());
+eval(['myMuscle = ' muscleClass '.safeDownCast(force);']);
 
-% Initilize a matrix for storing the complete fl curve;
+% Initilize a matrix for storing the complete force--length curve.
 flMatrix = zeros(1,3);
 
 for k = 1 : nCoords
 
-   % Get the name of the coordinate
-   aCoord = model.getCoordinateSet().get( char(coordNames(k)) );
+   % Get the name and range of the coordinate.
    updCoord = model.updCoordinateSet().get( char(coordNames(k)) );
    coordRange = muscle.coordinates.(coordNames{k});
    storageData = zeros( length(coordRange), 5 );
 
-
-   % Loop through each coordinate value and get the fiber
-   % length and force of the muscle.
+   % Loop through each value of the coordinate and compute the fiber length and
+   % force of the muscle.
    for j = 1 : length( coordRange )
 
-        % Get a current coordinate value
+        % Set the coordinate value.
         coordValue = coordRange(j);
         updCoord.setValue(s, coordValue);
-        updCoord.setSpeedValue(s, 0 );
+        updCoord.setSpeedValue(s, 0);
 
         % Set the activation and fiber length
-        myMuscle.setActivation( s, 1 )
-        myMuscle.setDefaultFiberLength( 0.01 )
-        myMuscle.setFiberLength( s, myMuscle.getOptimalFiberLength() )
-        % Equilibrate the forces from the activation
+        myMuscle.setActivation( s, 1 );
+        myMuscle.setDefaultFiberLength( 0.01 );
+        myMuscle.setFiberLength( s, myMuscle.getOptimalFiberLength() );
+
+        % Equilibrate the muscle and tendon forces.
         model.equilibrateMuscles( s );
 
         % Store all the data in the result matrix. This is ineffecient, but
-        % shows what can be stored. 
+        % demonstrates what can be stored.
         storageData(j,:) = [...
-            rad2deg(coordValue) ...                     \% Coordinate Value
+            rad2deg(coordValue) ...                    % Coordinate value
             myMuscle.getFiberLength(s) ...             % Fiber length
-            myMuscle.getNormalizedFiberLength(s) ...   % Normalized Fiber Length
-            myMuscle.getActiveFiberForce(s) ...        % Active Force
-            myMuscle.getPassiveFiberForce(s) ];        % passive fiber forces
+            myMuscle.getNormalizedFiberLength(s) ...   % Normalized fiber length
+            myMuscle.getActiveFiberForce(s) ...        % Active fiber force
+            myMuscle.getPassiveFiberForce(s) ];        % Passive fiber force
 
-        % Check for redundancy in fiber length
+        % Check for redundancy in fiber length.
         if isempty( find( myMuscle.getNormalizedFiberLength(s) == flMatrix(:,1), 1 ) )
             flMatrix = [flMatrix ; storageData(j,3:5)];
         end
    end
 
-   aCoord.getDefaultValue();
-
-    % Reset the coordinate value back to zero
-    updCoord.setValue(s, aCoord.getDefaultValue());
+    % Reset the coordinate back to its default value.
+    updCoord.setValue(s, updCoord.getDefaultValue());
 end
 
 fl_active = flMatrix(:,1:2);
@@ -264,4 +259,4 @@ fl_passive = flMatrix(:,[1 3]);
 fl_active(find(fl_active(:,1) == 0 ),: ) = [];
 fl_passive(find(fl_passive(:,1) == 0 ),: ) = [];
 
-end
+end %function getForceLength
