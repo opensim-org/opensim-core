@@ -57,14 +57,14 @@ class ControllerSet;
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
  * we only create a TimeStepper once, specifically at the first call to
- * integrate(state). To ensure this, the Manager will throw an exception if 
- * setModel() or setIntegrator() is called after integrate(state) has been 
- * called at least once.
+ * integrate(SimTK::State&, double). To ensure this, the Manager will throw 
+ * an exception if setModel() or setIntegrator() is called after 
+ * integrate(SimTK::State&, double) has been called at least once.
  *
- * Since the call to integrate(state) takes the state as an argument, it is
- * up to the caller to ensure that the state is a legal state if the same
- * Manager is used to integrate again. Integrating a different state for some
- * new arbitrary system has undefined behavior.
+ * Since the call to integrate(SimTK::State&, double) takes the state as an 
+ * argument, it is up to the caller to ensure that the state is a legal state 
+ * if the same Manager is used to integrate again. Integrating a different 
+ * state for some new arbitrary system has undefined behavior.
  */
 class OSIMSIMULATION_API Manager
 {
@@ -180,19 +180,21 @@ public:
     void setIntegrator(SimTK::Integrator&);
 
     // Initial and final times
-    /** <b>(Deprecated)</b> Set the state's time using state.setTime(time). */
-    DEPRECATED_14("Set the state's time using state.setTime(time).")
+    /** <b>(Deprecated)</b> Set the state's time using 
+        SimTK::State::setTime(double). */
+    DEPRECATED_14("Set the state's time using SimTK::State::setTime(double).")
     void setInitialTime(double aTI);
-    /** <b>(Deprecated)</b> Get the state's time using state.getTime(). */
-    DEPRECATED_14("Get the state's time using state.getTime().")
+    /** <b>(Deprecated)</b> Get the state's time using 
+        SimTK::State::getTime(). */
+    DEPRECATED_14("Get the state's time using SimTK::State::getTime().")
     double getInitialTime() const;
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using 
-        Manager::integrate(state, finalTime). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
+        Manager::integrate(SimTK::State&, double). */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
     void setFinalTime(double aTF);
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
-        Manager::integrate(state, finalTime). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
+        Manager::integrate(SimTK::State&, double). */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
     double getFinalTime() const;
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -218,10 +220,36 @@ public:
     //--------------------------------------------------------------------------
     // EXECUTION
     //--------------------------------------------------------------------------
+    /**
+    * Integrate the equations of motion for the specified model, given the current
+    * state (at which the integration will start) and a finalTime. Make sure to
+    * use SimTK::state::setTime(double) to specify a starting time before calling
+    * this function.
+    *
+    * Example: Integrating from time = 1s to time = 2s
+    * @code
+    * SimTK::State state = model.initSystem();
+    * Manager manager(model);
+    * state.setTime(1.0);
+    * manager.integrate(state, 2.0);
+    * @endcode
+    *
+    * Example: Integrate from time = 0s to time = 10s, in 2s increments
+    * @code
+    * dTime = 2.0;
+    * finalTime = 10.0;
+    * int n = int(round(finalTime/dTime));
+    * state.setTime(0.0);
+    * for (int i = 1; i <= n; ++i) {
+    *     manager.integrate(state, i*dTime);
+    * }
+    * @endcode
+    *
+    */
     bool integrate(SimTK::State& s, double finalTime);
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
-        Manager::integrate(state, finalTime). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(state, finalTime).")
+        Manager::integrate(SimTK::State&, double). */
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
     bool integrate(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
@@ -250,7 +278,6 @@ private:
     void initializeTimeStepper(const SimTK::State& s);
 
     // Helper functions for Manager::integrate()
-    bool doIntegration(SimTK::State& s, int step);
     void finalize(SimTK::State& s);
 
 //=============================================================================

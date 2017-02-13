@@ -623,19 +623,14 @@ hasStateStorage() const
 //-----------------------------------------------------------------------------
 // INTEGRATION
 //-----------------------------------------------------------------------------
-/**
-* Integrate the equations of motion for the specified model, given the current
-* state (at which the integration will start) and a finalTime. Make sure to
-* use state.setTime(initialTime) to specify a starting time before calling
-* this function.
-*/
+
 bool Manager::
 integrate(SimTK::State& s, double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
 
     if (!_integ) {
-        throw Exception("Manager::doIntegration(): "
+        throw Exception("Manager::integrate(): "
             "Integrator has not been set. Construct the Manager "
             "with an integrator, or call Manager::setIntegrator().");
     }
@@ -747,7 +742,6 @@ integrate(SimTK::State& s, double finalTime)
 
 }
 
-
 /**
  * Integrate the equations of motion for the specified model.
  *
@@ -757,134 +751,10 @@ integrate(SimTK::State& s, double finalTime)
 bool Manager::
 integrate(SimTK::State& s)
 {
-    
-    int step = 0;
-
     s.setTime( _ti );
-
-    // INTEGRATE
-    return doIntegration(s, step);
-
+    return integrate(s, _tf);
 }
 
-bool Manager::doIntegration(SimTK::State& s, int step) {
-
-    if(!_integ) {
-        throw Exception("Manager::doIntegration(): "
-                "Integrator has not been set. Construct the Manager "
-                "with an integrator, or call Manager::setIntegrator().");
-    }
-
-    // CLEAR ANY INTERRUPT
-    // Halts must arrive during an integration.
-    clearHalt();
-
-    double tReal;
-    double time =_ti;
-
-    // CHECK SPECIFIED DT STEPPING
-    
-    if(_specifiedDT) {
-        if(_tArray.getSize()<=0) {
-            string msg="IntegRKF.integrate: ERR- specified dt stepping not";
-            msg += "possible-- empty time array.";
-            throw( Exception(msg) );
-        }
-        double first = _tArray[0];
-        double last = _tArray.getLast();
-        if((getTimeArrayStep(_ti)<0) || (_ti<first) || (_tf>last)) {
-            string msg="IntegRKF.integrate: ERR- specified dt stepping not";
-            msg +="possible-- time array does not cover the requested";
-            msg +=" integration interval.";
-            throw(Exception(msg));
-        }
-    }
-
-    // RECORD FIRST TIME STEP
-    if(!_specifiedDT) {
-        resetTimeAndDTArrays(time);
-        if(_tArray.getSize()<=0) {
-            _tArray.append(time);
-        }
-    }
-    bool fixedStep = false;
-    double fixedStepSize;
-    if( _constantDT || _specifiedDT) fixedStep = true;
-
-    // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(s);
-
-    SimTK::Integrator::SuccessfulStepStatus status;
-
-    if( !fixedStep ) {
-        _integ->setReturnEveryInternalStep(true); 
-    }
-
-    _model->realizeVelocity(s);
-    initializeStorageAndAnalyses(s);
-
-    if( fixedStep){
-        s.updTime() = time;
-        _model->realizeAcceleration(s);
-
-        if(_performAnalyses)_model->updAnalysisSet().step(s, step);
-        tReal = s.getTime();
-        if( _writeToStorage ) {
-            SimTK::Vector stateValues = _model->getStateVariableValues(s);
-            StateVector vec;
-            vec.setStates(tReal, stateValues);
-            getStateStorage().append(vec);
-            if(_model->isControlled())
-                _controllerSet->storeControls(s,step);
-        }
-    }
-
-    double stepToTime = _tf;
-
-    // LOOP
-    while( time  < _tf ) {
-        if( fixedStep ){
-              fixedStepSize = getNextTimeArrayTime( time ) - time;
-             if( fixedStepSize + time  >= _tf )  fixedStepSize = _tf - time;
-             _integ->setFixedStepSize( fixedStepSize );
-             stepToTime = time + fixedStepSize; 
-        }
-
-        // stepTo() does not return if it fails. However, the final step
-        // is returned once as an ordinary return; by the time we get
-        // EndOfSimulation status we have already seen the state and don't
-        // need to record it again.
-        status = _timeStepper->stepTo(stepToTime);
-
-        if( status != SimTK::Integrator::EndOfSimulation ) {
-            const SimTK::State& s =  _integ->getState();
-            if(_performAnalyses)_model->updAnalysisSet().step(s,step);
-            tReal = s.getTime();
-            if( _writeToStorage) {
-                SimTK::Vector stateValues = _model->getStateVariableValues(s);
-                StateVector vec;
-                vec.setStates(tReal, stateValues);
-                getStateStorage().append(vec);
-                if(_model->isControlled())
-                    _controllerSet->storeControls(s, step);
-            }
-            step++;
-        }
-        else
-            halt();
-        
-        time = _integ->getState().getTime();
-        // CHECK FOR INTERRUPT
-        if(checkHalt()) break;
-    }
-    finalize(_integ->updAdvancedState() );
-    s = _integ->getState();
-
-    // CLEAR ANY INTERRUPT
-    clearHalt();
-
-    return true;
-}
 //_____________________________________________________________________________
 /**
  * return the step size when the integrator is taking fixed

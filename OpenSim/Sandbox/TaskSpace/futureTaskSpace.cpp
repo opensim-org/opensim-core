@@ -119,7 +119,6 @@ void testTaskSpace()
 
     //manager
     OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(t_start);
     s.setTime(t_start);
 
     for (unsigned int i = 1; i*dt < t_end; ++i)
