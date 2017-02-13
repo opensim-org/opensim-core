@@ -109,8 +109,8 @@ while (~stopLoop)
     scatter(fl_passive(:,1), fl_passive(:,2), 'r', ...
             'DisplayName', 'Passive Fiber Force');
     xlim([0.4, 1.6]);
-    xlabel('Force (N)');
-    ylabel('Fiber Length (Normalised)');
+    xlabel('Fiber Length (Normalised)');
+    ylabel('Force (N)');
     legend('show');
     hold off;
 
@@ -245,7 +245,7 @@ for k = 1 : nCoords
         if isempty( find( myMuscle.getNormalizedFiberLength(s) == flMatrix(:,1), 1 ) )
             flMatrix = [flMatrix ; storageData(j,3:5)];
         end
-   end
+    end
 
     % Reset the coordinate back to its default value.
     updCoord.setValue(s, updCoord.getDefaultValue());
