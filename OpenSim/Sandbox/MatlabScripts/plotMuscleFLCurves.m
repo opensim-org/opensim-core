@@ -104,13 +104,14 @@ while (~stopLoop)
 
     % Make scatter plots for the active and passive components.
     hold on;
+    title(musclename);
     scatter(fl_active(:,1), fl_active(:,2), 'b', ...
-            'DisplayName', 'Active Fiber Force');
+            'DisplayName', 'Active');
     scatter(fl_passive(:,1), fl_passive(:,2), 'r', ...
-            'DisplayName', 'Passive Fiber Force');
+            'DisplayName', 'Passive');
     xlim([0.4, 1.6]);
     xlabel('Fiber Length (Normalised)');
-    ylabel('Force (N)');
+    ylabel('Fiber Force (N)');
     legend('show');
     hold off;
 
