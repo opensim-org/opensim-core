@@ -92,10 +92,7 @@ while (~stopLoop)
         return;
     end
 
-    % Muscle Coordinate finder
-    %   Find the Coordinates that each muscle crosses. This is done by examining
-    %   the moment arm contribution of the muscle across all Coordinates. A
-    %   muscle will contribute to any Coordinate when the moment arm is nonzero.
+    % Find the coordinates that the muscle crosses.
     muscle = getMuscleCoordinates(model, state, musclename);
 
     % Get the force--length curves of the muscle.
@@ -122,78 +119,73 @@ end %function plotMuscleFLCurves
 
 
 %% -----------------------------------------------------------------------------
-function muscle = getMuscleCoordinates(model,state,muscleName)
-% Muscle Coordinate finder
-%   Returns a structure with the coordinates, and coordinate ranges, that a 
-%   a muscle affects. This is done by
-%   examining the moment arm contribution of the muscle across all
-%   coordinates. A muscle will contribute to any coordinate when the moment
-%   arm is non-zero.
+function muscle = getMuscleCoordinates(model, state, muscleName)
+% Muscle coordinate finder
+%   Returns a structure containing the coordinates that a muscle crosses and the
+%   range of values for which the muscle can generate a moment. This is done by
+%   examining the moment arm of the muscle across all coordinates in the model
+%   and recording where the moment arm is nonzero.
 
-import org.opensim.modeling.*      % Import OpenSim Libraries
+import org.opensim.modeling.*  % Import OpenSim libraries.
 
-% get the muscleCoordinates type by getting the concrete Class Name
+% Get a reference to the concrete muscle class.
 force = model.getMuscles().get(muscleName);
+muscleClass = char(force.getConcreteClassName());
+eval(['muscle = ' muscleClass '.safeDownCast(force);']);
 
-% get a reference to the concrete muscle class in the model
-muscleType = char(force.getConcreteClassName() );
-eval(['muscle =' muscleType '.safeDownCast(force);'])
+% Initialize.
+nCoord = model.getCoordinateSet().getSize();
+muscCoord = [];  % For storing coordinate values.
 
-% get a fresh matrix to dump coordinate values into
-nCoord = model.getCoordinateSet.getSize();
-muscCoord =[];
-
-% iterate through coordinates, finding non-zero moment arms
-for k = 0 : nCoord -1
-    % get a reference to a coordinate
-    aCoord = model.getCoordinateSet.get(k);
-    % get coordinate Max and Min
+% Iterate through coordinates, finding nonzero moment arms.
+for k = 0 : nCoord - 1
+    % Get a reference to a coordinate.
+    aCoord = model.getCoordinateSet().get(k);
+    % Get coordinate's max and min values.
     rMax = aCoord.getRangeMax();
     rMin = aCoord.getRangeMin();
-    rDefaut = aCoord.getDefaultValue();
-    % define three points in the range to test that the moment arm is
-    % non-zero
+    rDefault = aCoord.getDefaultValue();
+    % Define three points in the range to test the moment arm.
     totalRange = rMax - rMin;
     p(1) = rMin + totalRange/2;
     p(2) = rMin + totalRange/3;
     p(3) = rMin + 2*(totalRange/3);
 
     for i = 1 : 3
+        aCoord.setValue(state, p(i));
 
-        aCoord.setValue(state, p(i) );
+        % Compute the moment arm of the muscle for this coordinate.
+        momentArm = muscle.computeMomentArm(state, aCoord);
 
-        % compute the moment arm of the muscle for that coordinate given
-        % the state.
-        momentArm = muscle.computeMomentArm(state,aCoord);
-
-        % round the numbers. This is needed because at some coordinates there
-        % are moments generated at the e-18 level. This is most likely
-        % numerical error. So to deal with this I round to 4 decimal points.
+        % Avoid false positives due to roundoff error.
         tol = 1e-6;
         if ( abs(momentArm) > tol )
             muscCoord = [muscCoord; k];
-            break
+            break;
         end
     end
-    % Set the coordinate value back to the default. 
-    aCoord.setValue(state, rDefaut );
+    
+    % Set the coordinate back to its default value.
+    aCoord.setValue(state, rDefault);
 end
 
+% Initialize the structure that will be returned.
 muscle = struct();
-% Cycle through each available coordinate and save its range values.
-% These will get used later to run calculate muscle force on each
-% coordinate value.
-for u = 1 : length(muscCoord)
-    % Get a reference to the coordinate
-    aCoord = model.getCoordinateSet.get(muscCoord(u));
-    % Create an arrary of radian value's for the range
-    coordRange = (aCoord.getRangeMin:0.01:aCoord.getRangeMax())';
-    % add the coordinates and their range values to the structure
-    eval(['muscle.coordinates.' char(model.getCoordinateSet.get(muscCoord(u))) ' = [coordRange];' ])
-
-end
 muscle.name = muscleName;
+
+% Cycle through each coordinate found above and save its range of values. These
+% will get used later to calculate muscle forces.
+for u = 1 : length(muscCoord)
+    % Get a reference to the coordinate.
+    aCoord = model.getCoordinateSet().get(muscCoord(u));
+    % Create an array of radian values for the range.
+    coordRange = (aCoord.getRangeMin() : 0.01 : aCoord.getRangeMax())';
+    % Store the coordinate and its range of values in the structure.
+    eval(['muscle.coordinates.', ...
+          char(model.getCoordinateSet().get(muscCoord(u))), ' = [coordRange];']);
 end
+
+end %function getMuscleCoordinates
 
 
 %% -----------------------------------------------------------------------------
