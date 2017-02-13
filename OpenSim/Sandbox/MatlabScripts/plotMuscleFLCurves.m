@@ -21,109 +21,108 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 
-% This function computes and plots the active and passive force-length curves
+% This function computes and plots the active and passive force--length curves
 % for a specified muscle over the range of possible fiber lengths. (This range
 % is only approximate for muscles that cross more than one degree of freedom.)
 %
 % Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.
 
-function [fl_active,fl_passive] = plotMuscleFLCurves(modelpath)
+
+%% -----------------------------------------------------------------------------
+function [fl_active, fl_passive] = plotMuscleFLCurves(modelpath)
 % modelpath input is a full path string to an OpenSim model.
 
-% Import OpenSim Libraries
-import org.opensim.modeling.*      
+% Import OpenSim libraries.
+import org.opensim.modeling.*
 
+display('Loading the model...');
 if nargin < 1
-    [filein, pathname] = uigetfile({'*.osim','osim'}, 'OSIM model file...');
+    [filein, pathname] = ...
+        uigetfile({'*.osim','osim'}, 'Please select an OpenSim model file...');
     model = Model(fullfile(pathname,filein));
 elseif nargin == 1
     model = Model(modelpath);
 end
 
-s =  model.initSystem();
+display('Creating the Simbody system...');
+state = model.initSystem();
 
-
-%% select a muscle
-musclelist = {};
-name = [];
-stoploop = [];
-
-for i = 0 : model.getMuscles.getSize() - 1
-    musclelist = [ musclelist ; {char(model.getMuscles.get(i).getName)} ];
-    display( char(model.getMuscles.get(i).getName ) )
+% Ensure the model contains at least one muscle.
+if (model.getMuscles().getSize() < 1)
+    display('No muscles found; exiting.');
+    return;
 end
-display('(type exit to stop).');
 
+% Display all muscle names.
+musclelist = {};
+fprintf('%d muscles found:\n', model.getMuscles().getSize());
+for i = 0 : model.getMuscles().getSize() - 1
+    thisName = char(model.getMuscles().get(i).getName());
+    musclelist = [ musclelist; {thisName} ];
+    display([ '  ', thisName ]);
+end
 
-while isempty(stoploop)
+% Prompt the user to select a muscle.
+stopLoop = false;
 
-    %%%
-    while isempty(name)
+while (~stopLoop)
+    validName = false;
 
-        string = input('Type a muscle name to plot, or exit to close; ', 's');
+    while (~validName)
+        string = input('Type a muscle name to plot, or ''exit'' to close: ', 's');
 
-        % get a valid name or 'exit'
-        nameIndex = find( cellfun(@(s) ~isempty(strmatch(string, s)), musclelist) == 1);
+        % Get a valid name or 'exit'.
+        nameIndex = ...
+            find(cellfun(@(s) ~isempty(strmatch(string, s)), musclelist) == 1);
 
         if strmatch(string, 'exit');
-            stoploop = 1;
-            break
+            stopLoop = true;
+            break;
         elseif isempty(nameIndex);
             display('Muscle name not found.');
         else
-            name = 1;
+            validName = true;
             musclename = char( musclelist(nameIndex) );
         end
     end
-    %%%
 
-    if ~isempty(stoploop)
-        display('thanks for ending this program. See you Later!')
-        close all
-        clc
-        return
+    if (stopLoop)
+        display('Exiting.');
+        close all;
+        return;
     end
 
-    %% Muscle Coordinate finder
-    %   Find the coordinates that each muscle crosses. This is done by
-    %   examining the moment arm contribution of the muscle across all
-    %   coordinates. A muscle will contribute to any coordinate when the moment
-    %   arm is non-zero.
-    muscle = getMusclecoordinates( model , s, musclename);
+    % Muscle Coordinate finder
+    %   Find the Coordinates that each muscle crosses. This is done by examining
+    %   the moment arm contribution of the muscle across all Coordinates. A
+    %   muscle will contribute to any Coordinate when the moment arm is nonzero.
+    muscle = getMuscleCoordinates(model, state, musclename);
 
-    % Get the force length curves of a muscle
-    [fl_active,fl_passive] = getForceLength(model, s, muscle);
+    % Get the force--length curves of the muscle.
+    [fl_active, fl_passive] = getForceLength(model, state, muscle);
 
-    %% plot the results
+    % Plot the results.
     fig = figure(1);
-    clf(fig)
-    hold
+    clf(fig);
 
-    % Make scatter plots for the active and passive components
-    scatter(fl_active(:,1),fl_active(:,2),'b','DisplayName','Active Fiber Force')
-    scatter(fl_passive(:,1),fl_passive(:,2),'r','DisplayName','Passive Fiber Force')
-    % Limit the X axis from 0.4 to 1.6
-    xlim([0.4 1.6]);
-    
-    xlabel('Force (N)')
-    ylabel('Fiber Length (Normalised')
-    
-    
-    hold off
-    legend('show')
+    % Make scatter plots for the active and passive components.
+    hold on;
+    scatter(fl_active(:,1), fl_active(:,2), 'b', ...
+            'DisplayName', 'Active Fiber Force');
+    scatter(fl_passive(:,1), fl_passive(:,2), 'r', ...
+            'DisplayName', 'Passive Fiber Force');
+    xlim([0.4, 1.6]);
+    xlabel('Force (N)');
+    ylabel('Fiber Length (Normalised)');
+    legend('show');
+    hold off;
 
-    % clear the muscle name.
-    name =[];
-end
+end %while (~stopLoop)
+end %function plotMuscleFLCurves
 
 
-
-
-end
-
-
-
-function muscle = getMusclecoordinates(model,state,muscleName)
+%% -----------------------------------------------------------------------------
+function muscle = getMuscleCoordinates(model,state,muscleName)
 % Muscle Coordinate finder
 %   Returns a structure with the coordinates, and coordinate ranges, that a 
 %   a muscle affects. This is done by
@@ -197,6 +196,7 @@ muscle.name = muscleName;
 end
 
 
+%% -----------------------------------------------------------------------------
 function [fl_active,fl_passive] = getForceLength(model, s, muscle)
 %  Function gets the active and passive force length values across the
 %  possible fiber lengths of the muscle in the model. fl_active and
