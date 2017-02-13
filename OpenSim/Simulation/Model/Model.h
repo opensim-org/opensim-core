@@ -228,8 +228,8 @@ public:
     NOTE: The Model is read in (deserialized) from the model file, which means
     the properties of the Model and its components are filled in from values in
     the file. In order to evaluate the validity of the properties (e.g. Inertia
-    tensors, availability of a Mesh files, and to traverse the tree of the
-    Model's subcomponents, one must invoke Model::finalizeFromProperties(), 
+    tensors, availability of Mesh files, and to traverse the tree of the
+    Model's subcomponents) one must invoke Model::finalizeFromProperties() 
     first. Model::initSystem() invokes finalizeFromProperties() on its way to
     creating the System and initializing the State.
 
