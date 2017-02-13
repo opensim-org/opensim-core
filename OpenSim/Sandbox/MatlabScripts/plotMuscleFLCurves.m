@@ -78,7 +78,7 @@ while isempty(stoploop)
     %%%
 
     if ~isempty(stoploop)
-        display('thanks for ending this program. See you Laterz!')
+        display('thanks for ending this program. See you Later!')
         close all
         clc
         return
@@ -87,7 +87,7 @@ while isempty(stoploop)
     %% Muscle Coordinate finder
     %   Find the coordinates that each muscle crosses. This is done by
     %   examining the moment arm contribution of the muscle across all
-    %   coordinates. A muscle will contribute to any coodinate when the moment
+    %   coordinates. A muscle will contribute to any coordinate when the moment
     %   arm is non-zero.
     muscle = getMusclecoordinates( model , s, musclename);
 
@@ -99,9 +99,9 @@ while isempty(stoploop)
     clf(fig)
     hold
 
-    % Make scatter plots foe the active and passive components
+    % Make scatter plots for the active and passive components
     scatter(fl_active(:,1),fl_active(:,2),'b','DisplayName','Active Fiber Force')
-    scatter(fl_passive(:,1),fl_passive(:,2),'r','DisplayName','Active Passive Force')
+    scatter(fl_passive(:,1),fl_passive(:,2),'r','DisplayName','Passive Fiber Force')
     % Limit the X axis from 0.4 to 1.6
     xlim([0.4 1.6]);
     
@@ -126,9 +126,9 @@ end
 function muscle = getMusclecoordinates(model,state,muscleName)
 % Muscle Coordinate finder
 %   Returns a structure with the coordinates, and coordinate ranges, that a 
-%   a muscle effects. This is done by
+%   a muscle affects. This is done by
 %   examining the moment arm contribution of the muscle across all
-%   coordinates. A muscle will contribute to any coodinate when the moment
+%   coordinates. A muscle will contribute to any coordinate when the moment
 %   arm is non-zero.
 
 import org.opensim.modeling.*      % Import OpenSim Libraries
