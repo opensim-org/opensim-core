@@ -49,7 +49,7 @@ Converting from v3.x to v4.0
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by 
-  `Manager::integrate(SimTK::State&, double). Here is a before-after example
+  `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
   (see the documentation in the `Manager` class for more details):
   - Before:
 	- manager.setInitialTime(0.0);
