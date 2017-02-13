@@ -254,9 +254,4 @@ end
 fl_active = flMatrix(:,1:2);
 fl_passive = flMatrix(:,[1 3]);
 
-% sometimes there is a zero value that is incorrectly stored. It is abug
-% this is a slack-patch. 
-fl_active(find(fl_active(:,1) == 0 ),: ) = [];
-fl_passive(find(fl_passive(:,1) == 0 ),: ) = [];
-
 end %function getForceLength
