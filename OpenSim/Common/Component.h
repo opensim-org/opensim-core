@@ -259,7 +259,7 @@ public:
  * is dependent on remain fixed. The concept of holding onto these values is 
  * called caching and the variables that hold these values are call 
  * <em>CacheVariables</em>. It is important to note, that cache variables are
- * not state variables. Cache variables can always be recomputed excactly
+ * not state variables. Cache variables can always be recomputed exactly
  * from the State. OpenSim uses the Simbody infrastructure to manage cache 
  * variables and their validity. Component provides a simplified interface to
  * define and access CacheVariables.
@@ -993,7 +993,7 @@ public:
     /**
     * Get a writable reference to an Input provided by this Component by name.
     *
-    * <b>C++ example:</b> get a writeable reference to an Input of a 
+    * <b>C++ example:</b> get a writable reference to an Input of a 
     * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updInput("inputName");
@@ -1053,7 +1053,7 @@ public:
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
-    * <b>C++ example:</b> get a writeable reference to an Output of a 
+    * <b>C++ example:</b> get a writable reference to an Output of a 
     * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updOutput("outputName");
@@ -1646,14 +1646,14 @@ protected:
     void initComponentTreeTraversal(const Component &root) const;
 
     ///@cond
-    /** Opportunity to remove connection related information. 
+    /** Opportunity to remove connection-related information. 
     If you override this method, be sure to invoke the base class method first,
-        using code like this :
+        using code like this:
         @code
         void MyComponent::disconnect(Component& root) {
         // disconnect your subcomponents and your Super first
         Super::extendDisconnect(); 
-            //your code to wipeout your connection related information
+            //your code to wipe out your connection-related information
     }
     @endcode  */
     //virtual void extendDisconnect() {};
@@ -1959,7 +1959,7 @@ protected:
     dependence on individual state variables. Changing a variables whose
     "invalidates" stage is the same or lower as the one specified as the
     "depends on" stage here cause the cache entry to be invalidated. For 
-    example, a body's momementum, which is dependent on position and velocity 
+    example, a body's momentum, which is dependent on position and velocity 
     states, should have Stage::Velocity as its \a dependsOnStage. Then if a
     Velocity stage variable or lower (e.g. Position stage) changes, then the 
     cache is invalidated. But, if a Dynamics stage variable (or above) is 
@@ -1990,7 +1990,7 @@ protected:
 
     
     /**
-     * Get writeable reference to the MultibodySystem that this component is
+     * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
     SimTK::MultibodySystem& updSystem() const
@@ -2381,7 +2381,7 @@ protected:
      * Output signal.  It is a placeholder for the Output and its type and
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
-     * non-existant. This also specifies at what stage the output must be valid
+     * non-existent. This also specifies at what stage the output must be valid
      * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
@@ -2938,7 +2938,7 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     if (!isListSocket()) {
-        // Remove the existing connecteee (if it exists).
+        // Remove the existing connectee (if it exists).
         disconnect();
     }
     
@@ -2962,6 +2962,7 @@ void Input<T>::connect(const AbstractChannel& channel,
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
+
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
         setConnecteeName(pathStr, unsigned int(idxThisConnectee));
     else

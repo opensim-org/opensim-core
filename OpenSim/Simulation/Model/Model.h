@@ -856,7 +856,7 @@ public:
 
     /** Get a const reference to the Ground reference frame */
     const Ground& getGround() const;
-    /** Get a writeable reference to the Ground reference frame */
+    /** Get a writable reference to the Ground reference frame */
     Ground& updGround();
 
     //--------------------------------------------------------------------------

@@ -25,7 +25,7 @@
 // testConstraints builds OpenSim models using the OpenSim API and builds an 
 // equivalent Simbody system using the Simbody API for each test case. A test 
 // fails if the OpenSim and Simbody final states of the simulation are not 
-// equivelent (norm-err less than 10x integration error tolerance)
+// equivalent (norm-err less than 10x integration error tolerance)
 //
 //  Tests Include:
 //      1. Test locking (constraint) mechanism on coordinates

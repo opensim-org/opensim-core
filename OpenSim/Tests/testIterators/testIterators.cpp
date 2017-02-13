@@ -394,7 +394,7 @@ void testComponentListNonConstWithConstIterator() {
     {
         // Lines are commented out b/c they don't compile. I (Chris) uncommented
         // them during development of the non-const iterators to check that
-        // these lines do not copmile.
+        // these lines do not compile.
         ComponentList<Body> mutBodyList = model.updComponentList<Body>();
         // ComponentList<Body>::iterator itBody = mutBodyList.cbegin();
         // Also does not work with an abstract type.

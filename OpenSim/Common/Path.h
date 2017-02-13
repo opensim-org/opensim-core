@@ -107,7 +107,7 @@ protected:
     /// absolute.
     std::vector<std::string> formRelativePathVec(const Path& otherPath) const;
 
-    /// Return the the sub-path that contains all pathElements except for
+    /// Return the sub-path that contains all pathElements except for
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {

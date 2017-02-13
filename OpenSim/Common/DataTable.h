@@ -124,7 +124,7 @@ public:
         *this = std::move(*table);
     }
 
-    /** Contruct DataTable_<double, double> from 
+    /** Construct DataTable_<double, double> from 
     DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
     of the other table is split into multiple columns of this table. For example
     , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
@@ -183,7 +183,7 @@ public:
         // replicate it to match the new number of columns. If not of
         // std::string type, drop the metadata because type information is
         // required to interpret them.
-        // Column-labels will be handled separtely as they need suffix-ing.
+        // Column-labels will be handled separately as they need suffixing.
         for(const auto& key : _dependentsMetaData.getKeys()) {
             if(key == "labels")
                 continue;
@@ -387,7 +387,7 @@ public:
         }
     }
 
-    /** Contruct DataTable_<double, double> from 
+    /** Construct DataTable_<double, double> from 
     DataTable_<double, ThatETY> where ThatETY can be SimTK::Vec<X>. Each column
     of the other table is split into multiple columns of this table. For example
     , DataTable_<double, Vec3> with 3 columns and 4 rows will construct
@@ -907,7 +907,7 @@ public:
     /// @}
 
     /** Get a string representation of the table, including the key-value pairs
-    in the table metadata. Table metadat will be of the form:
+    in the table metadata. Table metadata will be of the form:
     \code
     key => value-converted-to-string
     \endcode
@@ -929,7 +929,7 @@ public:
     auto tableAsString = table.toString({0, 1, 2, 3, 4});
     // All rows, 3 columns with specified labels.
     auto tableAsString = table.toString({}, {"col12", "col35", "col4"});
-    // Rows 5th, 3rd, 1st (in that order) and columns with specified lables (in 
+    // Rows 5th, 3rd, 1st (in that order) and columns with specified labels (in 
     // that order).
     auto tableAsString = table.toString({4, 2, 0}, {"col10", "col5", "col2"});
     // Lets say the table has 10 rows. Following will get last 3 rows in the 
@@ -939,7 +939,7 @@ public:
 
     \param rows **[Default = all rows]** Sequence of indices of rows to be 
                 printed. Rows will be printed exactly in the order specified in 
-                the sequence. Index begins at 0, ie. first row is 0. Negative
+                the sequence. Index begins at 0 (i.e. first row is 0). Negative
                 indices refer to rows starting from last row. Index -1 refers to
                 last row, -2 refers to row previous to last row and so on.
                 Default behavior is to print all rows. 

@@ -377,7 +377,7 @@ void compareHertzAndMeshContactResults()
 // In version 4.0, we introduced intermediate PhysicalFrames to
 // ContactGeometry. The test below ensures that the intermediate frames (as
 // well as the ContactGeometry's location and orientation properties) are
-// acccounted for by comparing results for equivalent systems, some of which
+// accounted for by comparing results for equivalent systems, some of which
 // use an intermediate offset frame.
 // The system is a point mass situated 1 meter along a link that is attached to
 // ground by a hinge. The contact ball (sphere or mesh) is 1 meter up and 0.5
@@ -400,7 +400,7 @@ void compareHertzAndMeshContactResults()
 // The link starts at an incline of 27 degrees and then the link drops down and
 // hits the platform.
 // We test three equivalent systems that specify the transforms for the
-// platform and ball geomtries in different ways:
+// platform and ball geometries in different ways:
 //    1. Only using WeldJoints and massless bodies.
 //    2. Using a mix of PhysicalOffsetFrames and the geometry's location and
 //       orientation properties.
@@ -566,7 +566,7 @@ void testIntermediateFrames() {
         SimTK_TEST(model.calcMassCenterVelocity(stateIntermedFrameY)[1] > 0);
     }
 
-    // Achieve transforms soleley with PhysicalOffsetFrames.
+    // Achieve transforms solely with PhysicalOffsetFrames.
     SimTK::State stateIntermedFrameXY;
     {
         Model model = createBaseModel();
