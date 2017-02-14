@@ -35,9 +35,87 @@ using namespace std;
 void testCopyModel( const string& fileName, const int nbod, 
                     const string& physicalFrameName, const int ngeom);
 
+// Cycle through properties and for match named Properties copy their values
+// from one object to another object
+void copyPropertiesFromObject(const Object& from, Object& to)
+{
+    const int numProps = from.getNumProperties();
+
+    to.setName(from.getName());
+
+    for (int px = 0; px < numProps; ++px) {
+        const AbstractProperty& fromProp = from.getPropertyByIndex(px);
+        const std::string& pName = fromProp.getName();
+        if (to.hasProperty(pName)) {
+            AbstractProperty& toProp = to.updPropertyByName(pName); // Get writable reference to my property
+            if (toProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
+                if (fromProp.isObjectProperty()) {
+                    for (int vx = 0; vx < fromProp.size(); ++vx) {
+                        const Object& fromPropertyAsObject = fromProp.getValueAsObject(vx);
+                        toProp.setValueAsObject(fromPropertyAsObject, vx);
+                    }
+                }
+                else {
+                    cout << "fromProp:" << fromProp.toString() << endl;
+                    cout << "toProp(before):" << toProp.toString() << endl;
+                    toProp = fromProp;
+                    cout << "toProp(after):" << toProp.toString() << endl;
+                }
+            }
+        }
+    }
+}
+
+
 int main()
 {
     try {
+
+        {
+            Property<double>* a = Property<double>::TypeHelper::create("a", true);
+            a->setValue(0.123456789);
+            Property<double>* b = Property<double>::TypeHelper::create("b", true);
+            b->setValue(10.0);
+
+            *b = *a;
+
+            cout << "b = " << b->toString() << endl;
+            ASSERT(*a == *b);
+        }
+
+        {
+            Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
+                SimTK::Inertia(0.33, 0.22, 0.11));
+            Body B;
+
+            Property<Body>* a = Property<Body>::TypeHelper::create("a", true);
+            a->setValue(A);
+            Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
+            b->setValue(B);
+
+            *b = *a;
+
+            cout << "b = " << b->toString() << endl;
+            ASSERT(*a == *b);
+
+            copyPropertiesFromObject(A, B);
+            ASSERT(A == B);
+        }
+
+        Model arm("arm26.osim");
+        arm.finalizeFromProperties();
+
+        auto comps = arm.getComponentList<Component>();
+
+        for (const auto& comp : comps) {
+            const std::string& type = comp.getConcreteClassName();
+            Object* to = Object::newInstanceOfType(type);
+            cout << type << ": " << comp.getName() << endl;
+            copyPropertiesFromObject(comp, *to);
+            ASSERT(comp == *to);
+        }
+
+
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
         testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
