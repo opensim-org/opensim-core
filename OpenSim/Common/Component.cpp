@@ -1536,27 +1536,20 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     const size_t npsc = _propertySubcomponents.size();
     const size_t nasc = _adoptedSubcomponents.size();
 
-    // If this isn't the root component and it has no parent, then
-    // this is an orphan component and we likely failed to call 
-    // finalizeFromProperties on the root OR this is a clone that
-    // has not been added to the root (in which case would have a parent).
-    if ((this != &root) && !this->hasParent() ) {
-        OPENSIM_THROW(ComponentIsAnOrphan, getName(), getConcreteClassName());
-    }
-
-    if ((this == &root) && !(nmsc + npsc + nasc)) {
-        ComponentIsRootWithNoSubcomponents ex(__FILE__, __LINE__, __func__,
-            getName(), getConcreteClassName());
-        if (getConcreteClassName() == "Model") {
-            // If we have a Model that is has no subcomponents we know this is 
-            // an issue of not calling finalizeFromProperties on the Model
-            throw ex;
+    if (!hasParent()) {
+        // If this isn't the root component and it has no parent, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have a parent).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
         }
-        else// Albeit strange for a Component to be root and have no subcomponents
-            // it is possible, and testComponents creates and interrogates
-            // components before they are added to a Model and many of these
-            // may have no subcomponents. So, just issue a warning in this case.
-            std::cout << "WARNING: " << ex.what() << std::endl;
+        // if the root (have no parent) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
     }
 
     const Component* last = nullptr;
