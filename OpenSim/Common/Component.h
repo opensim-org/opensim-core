@@ -120,8 +120,9 @@ public:
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName + "' of type " +
             componentConcreteClassName + " is the root but has no " + 
-            "subcomponents.\n" +
-            "Verify that finalizeFromProperties() was called on this Component.";
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
         addMessage(msg);
     }
 };
