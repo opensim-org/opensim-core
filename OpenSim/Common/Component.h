@@ -2916,7 +2916,7 @@ void Input<T>::connect(const AbstractOutput& output,
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, unsigned int(idxThisConnectee));
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2965,7 +2965,7 @@ void Input<T>::connect(const AbstractChannel& channel,
     int numDesiredConnections = getNumConnectees();
 
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(pathStr, unsigned int(idxThisConnectee));
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     
