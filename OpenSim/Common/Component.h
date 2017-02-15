@@ -105,7 +105,7 @@ public:
             componentConcreteClassName + " has no parent and is not the root.\n" +
             "Verify that finalizeFromProperties() has been invoked on the " + 
             "root Component or that this Component is not a clone, which has " +
-            "not been added to its parent.";
+            "not been added to its parent Component.";
         addMessage(msg);
     }
 };
@@ -2154,7 +2154,7 @@ public:
     const Component& getParent() const;
 
     /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
+        A component may not have a parent Component assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
