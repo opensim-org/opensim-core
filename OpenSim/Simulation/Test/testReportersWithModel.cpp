@@ -58,8 +58,8 @@ void testConsoleReporterLabels() {
     State& state = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.); manager.setFinalTime(1.);
-    manager.integrate(state);
+    state.setTime(0.0);
+    manager.integrate(state, 1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
     cout.rdbuf(oldBuf);
@@ -105,8 +105,8 @@ void testTableReporterLabels() {
     State& state = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.); manager.setFinalTime(1.);
-    manager.integrate(state);
+    state.setTime(0.0);
+    manager.integrate(state, 1.0);
 
     // Check column headings for dependent variables reported by TableReporter,
     // which should be "/world/slider/sliderCoord/value" and "height".

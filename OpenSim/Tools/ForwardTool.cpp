@@ -267,8 +267,6 @@ bool ForwardTool::run()
     Manager manager(*_model, integrator);
     setManager( manager );
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
@@ -281,10 +279,6 @@ bool ForwardTool::run()
 
     // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
     if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
-
-    // SET INITIAL AND FINAL TIME
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
 
     // get values for state variables in rawData then assign by name to model
     int numStateVariables = _model->getNumStateVariables();
@@ -312,7 +306,8 @@ bool ForwardTool::run()
         _model->printDetailedInfo(s, std::cout );
 
         cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
-        manager.integrate(s);
+        s.setTime(_ti);
+        manager.integrate(s, _tf);
     } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;

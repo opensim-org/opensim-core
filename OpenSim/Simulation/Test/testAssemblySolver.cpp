@@ -188,11 +188,10 @@ void testAssembleModelWithConstraints(string modelFile)
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(accuracy);
     Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.05);
+    state.setTime(0.0);
 
     // Simulate forward in time
-    manager.integrate(state);
+    manager.integrate(state, 0.05);
     model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     Vector positionErr = state.getQErr();
