@@ -41,3 +41,13 @@ NMSTO
 TONMS
 
 Runner
+
+
+Mixing MSVC with gfortran:
+http://stackoverflow.com/questions/3320017/mix-gfortran-msvc-objects-when-linking-undefined-reference-to-chkstk
+
+./configure --prefix=... --with-blas=BUILD --with-lapack=BUILD --enable-msvc
+must tell ifort where msvc's link.exe is, by editing ifort.cfg
+
+Does linking to gfortran.lib make the resulting binary viral?
+https://cournape.wordpress.com/2009/03/09/gfortran-visual-studio/
