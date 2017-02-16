@@ -7,7 +7,6 @@ class TestEditProperties {
   public static void main(String[] args) {
     try {
         Model model = new Model("gait10dof18musc_subject01.osim");
-        model.finalizeFromProperties();
         OpenSimContext context=null;
         long t1  = System.currentTimeMillis();
         try {
