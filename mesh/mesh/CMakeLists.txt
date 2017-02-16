@@ -41,19 +41,3 @@ target_include_directories(mesh INTERFACE
         # Used by client projects using an installed version of MESH.
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${MESH_INSTALL_INCLUDEDIR}>)
-
-
-# TODO
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/ifconsol.lib")
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libifcoremt.lib")
-
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libifport.lib")
-
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libmmt.lib")
-
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libirc.lib")
-#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/svml_dispmt.lib")
-#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinblas.lib")
-#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinlapack.lib")
-#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinmumps.lib")
-#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinmetis.lib")
