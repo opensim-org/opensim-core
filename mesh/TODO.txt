@@ -43,11 +43,84 @@ TONMS
 Runner
 
 
+# iCub provides Ipopt binaries but not for msvc14.
+http://wiki.icub.org/wiki/Installing_IPOPT
+http://www.icub.org/download/packages/windows/
+
+
+first: install wget in cygwin and run get.Blas, etc in each subdirectory.
+
 Mixing MSVC with gfortran:
 http://stackoverflow.com/questions/3320017/mix-gfortran-msvc-objects-when-linking-undefined-reference-to-chkstk
 
 ./configure --prefix=... --with-blas=BUILD --with-lapack=BUILD --enable-msvc
+--enabled-shared=yes
+enable-shared forces use of dynamic runtime (MSVC), which must be consistent
+across all libraries.
 must tell ifort where msvc's link.exe is, by editing ifort.cfg
 
 Does linking to gfortran.lib make the resulting binary viral?
 https://cournape.wordpress.com/2009/03/09/gfortran-visual-studio/
+
+LibraryHandler.c(25) fatal error C1189: Do not have function for save
+printing into a C-string (snprintf or _snprintf). I edited the configured
+config.h to have #define HAVE_SNPRINTF.
+
+dos2unix: must have this installed. this fixes the SLURRY of link errors
+(undefined symbol...)
+
+ampl is being built and statically linked to, even though i don't have it?
+
+add option to build IPOPT static libraries MD_StaticRelease vs
+MD_DynamicRelease: mismatch.
+
+Cannot link StaticRelease vs DynamicRelease; inconsistent with Ipopt.
+Make sure IPOPT is compiled with /MD instead of /MT
+http://stackoverflow.com/questions/14714877/mismatch-detected-for-runtimelibrary
+
+
+lnk1104: cannot open file 'ifconsol.lib'
+call "%IFORT_COMPILER17%bin\ifortvars.bat" intel64
+http://stackoverflow.com/questions/39683544/error-lnk1104-cannot-open-file-ifconsol-lib-using-f2py-and-intel-fortran
+
+FFLAGS='-MD -O3 -fpp -nologo
+CFLAGS='-MD -O2 -nologo -wd4996 -D_CRT_SECURE_NO_DEPRECATE -DNDEBUG   '
+CXXFLAGS='-MD -O2 -nologo -EHsc -GR -wd4996 -D_CRT_SECURE_NO_DEPRECATE
+-DNDEBUG   '
+
+OPT_CFLAGS='-MD -O2 -nologo -wd4996 -D_CRT_SECURE_NO_DEPRECATE -DNDEBUG   '
+OPT_CXXFLAGS='-MD -O2 -nologo -EHsc -GR -wd4996 -D_CRT_SECURE_NO_DEPRECATE
+-DNDEBUG   '
+OPT_FFLAGS='-MD -O3 -fpp -nologo  '
+
+http://list.coin-or.org/pipermail/ipopt/2010-September/002118.html
+http://stackoverflow.com/questions/10113017/setting-the-msvc-runtime-in-cmake
+http://stackoverflow.com/questions/14714877/mismatch-detected-for
+-runtimelibrary
+
+How appveyor is built on appveyor (using mingw):
+
+https://github.com/chrisdembia/Ipopt/blob/master/appveyor.yml
+
+IPOPT wiki, notes for compiling on windows:
+https://projects.coin-or.org/BuildTools/wiki/current-issues
+https://projects.coin-or.org/Ipopt/wiki/CompilationHints
+
+CasADi notes on building IPOPT on windows:
+https://groups.google.com/forum/#!topic/casadi-users/51stEY211XQ
+
+Julia issue about IPOPT
+https://github.com/JuliaOpt/Ipopt.jl/issues/27
+
+Compiling MUMPS on windows, conflict between link.exe from cygwin and ifortran:
+http://list.coin-or.org/pipermail/ipopt/2009-July/001647.html
+
+
+Can we compile MUMPS with gfortran and use that library with Ipopt compiled
+with MSVC? chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#uri=http://stackoverflow.com/questions/3320017/mix-gfortran-msvc-objects-when-linking-undefined-reference-to-chkstk
+
+Ipopt compiling on windows instructions:
+https://www.coin-or.org/Ipopt/documentation/node15.html#CygwinInstall
+
+
+ADOL-C source code downloads: https://www.coin-or.org/download/source/ADOL-C/
