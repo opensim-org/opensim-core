@@ -10,12 +10,14 @@ add_library(mesh
     legacy.h                                        legacy.cpp
     )
 
+# TODO
+link_directories(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/")
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
-target_include_directories(mesh        PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_link_libraries(mesh Eigen3::Eigen) # This takes care of includes.
 target_include_directories(mesh SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
 #target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDES})
@@ -23,8 +25,6 @@ target_link_libraries(mesh ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
 if(TOMU_WITH_SNOPT)
     target_link_libraries(mesh snopt7_cpp)
 endif()
-# TODO target_link_libraries(mesh Eigen3::Eigen) Would take care of includes.
-
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 # Only use the parts of Eigen that do not have a viral license.
@@ -41,3 +41,19 @@ target_include_directories(mesh INTERFACE
         # Used by client projects using an installed version of MESH.
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${MESH_INSTALL_INCLUDEDIR}>)
+
+
+# TODO
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/ifconsol.lib")
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libifcoremt.lib")
+
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libifport.lib")
+
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libmmt.lib")
+
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/libirc.lib")
+#target_link_libraries(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/svml_dispmt.lib")
+#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinblas.lib")
+#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinlapack.lib")
+#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinmumps.lib")
+#target_link_libraries(mesh "C:/Users/chris/repos/ipopt/lib/libcoinmetis.lib")

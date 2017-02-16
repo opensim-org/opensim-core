@@ -8,6 +8,7 @@
 #include <IpIpoptApplication.hpp>
 #include <adolc/adolc.h>
 #include <adolc/sparse/sparsedrivers.h>
+#include <memory>
 // TODO should not have using declarations in a header file.
 using Ipopt::Index;
 using Ipopt::Number;

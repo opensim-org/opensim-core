@@ -30,6 +30,9 @@ find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 find_package(IPOPT REQUIRED)
 find_package(Adolc REQUIRED)
 
+set(CMAKE_SHARED_LINKER_FLAGS "${IPOPT_LINK_FLAGS}")
+
+
 # Subdirectories.
 # ---------------
 # Build external libraries.
