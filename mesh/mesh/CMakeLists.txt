@@ -19,6 +19,7 @@ link_directories(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_librari
 # to avoid for our own code.
 target_link_libraries(mesh Eigen3::Eigen) # This takes care of includes.
 target_include_directories(mesh SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
+# This line was from when we used pkg-config to find ADOL-C.
 #target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(mesh SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(mesh ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
