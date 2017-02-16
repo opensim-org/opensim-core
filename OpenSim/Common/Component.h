@@ -1644,7 +1644,7 @@ protected:
     ReferencePtr with a pointer to the next Component in tree pre-order traversal.
     
     @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
-            and yet had no subcomponents.
+            and yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
