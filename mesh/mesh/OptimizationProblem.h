@@ -2,6 +2,7 @@
 #define MESH_OPTIMIZATIONPROBLEM_H
 
 #include "common.h"
+#include <memory>
 
 namespace mesh {
 
@@ -165,8 +166,9 @@ protected:
 private:
 
     // TODO this feels too Ipopt-specific..obj_factor?
-    void lagrangian(double obj_factor, const VectorX<T>& x,
-            const Eigen::VectorXd& lambda, T& result) const;
+	// TODO can delete this now; the TODO above is outdated.
+    // void lagrangian(double obj_factor, const VectorX<T>& x,
+    //         const Eigen::VectorXd& lambda, T& result) const;
 
 
     // TODO use safer types that will give exceptions for improper values.

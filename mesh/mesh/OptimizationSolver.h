@@ -7,6 +7,8 @@
 #include <adolc/adolc.h>
 #include <IpTNLP.hpp>
 
+#include <memory>
+
 namespace mesh {
 
 class AbstractOptimizationProblem;

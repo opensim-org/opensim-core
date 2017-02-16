@@ -10,11 +10,10 @@ find_path(ADOLC_INCLUDES
   NAMES
   adolc/adtl.h
   PATHS
-  $ENV{ADOLCDIR}
-  ${INCLUDE_INSTALL_DIR}
+  $ENV{ADOLCDIR}/include
 )
 
-find_library(ADOLC_LIBRARIES adolc PATHS $ENV{ADOLCDIR} ${LIB_INSTALL_DIR})
+find_library(ADOLC_LIBRARIES adolc PATHS $ENV{ADOLCDIR}/lib)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ADOLC DEFAULT_MSG
