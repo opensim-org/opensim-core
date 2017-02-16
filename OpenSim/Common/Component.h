@@ -1643,9 +1643,8 @@ protected:
     iteration or for connection. The implementation populates the _nextComponent
     ReferencePtr with a pointer to the next Component in tree pre-order traversal.
     
-    @throws ComponentIsRootWithNoSubcomponents if the Component is root, has no
-            subcomponents, and is of type Model (only displays a warning for
-            other types).
+    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
+            and yet had no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
