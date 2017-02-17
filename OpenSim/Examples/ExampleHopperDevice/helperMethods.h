@@ -53,31 +53,6 @@ inline void simulate(Model& model,
 inline Model buildTestbed(bool showVisualizer);
 
 
-//------------------------------------------------------------------------------
-// SignalGenerator is a type of Component with no inputs and only one output.
-// This Component evaluates an OpenSim::Function (stored in its "function"
-// property) as a function of time. We can use a SignalGenerator to design
-// time-varying control inputs for testing the device.
-//------------------------------------------------------------------------------
-class SignalGenerator : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SignalGenerator, Component);
-
-public:
-    OpenSim_DECLARE_PROPERTY(function, Function,
-        "Function used to generate the signal (a function of time)");
-    OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
-
-    SignalGenerator() { constructProperties(); }
-
-    double getSignal(const SimTK::State& s) const {
-        return get_function().calcValue(SimTK::Vector(1, s.getTime())); }
-
-private:
-    void constructProperties() { constructProperty_function(Constant(0.)); }
-
-}; // end of SignalGenerator
-
-
 //==============================================================================
 //                               IMPLEMENTATIONS
 //==============================================================================
@@ -123,8 +98,8 @@ inline void simulate(Model& model,
         state = initState;
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         Manager manager(model, integrator);
-        manager.setInitialTime(0.); manager.setFinalTime(5.);
-        manager.integrate(state);
+        state.setTime(0.0);
+        manager.integrate(state, 5.0);
 
         // Save the states to a storage file (if requested).
         if (saveStatesFile) {

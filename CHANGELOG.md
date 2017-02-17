@@ -48,6 +48,16 @@ Converting from v3.x to v4.0
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
+- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by 
+  `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
+  (see the documentation in the `Manager` class for more details):
+  - Before:
+	- manager.setInitialTime(0.0);
+	- manager.setFinalTime(1.0);
+	- manager.integrate(state);
+  - After:
+    - state.setTime(0.0);
+	- manager.integrate(state, 1.0);
 
 Composing a Component from other components
 -------------------------------------------

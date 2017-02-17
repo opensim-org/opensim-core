@@ -1,7 +1,5 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                       OpenSim: SignalGenerator.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +8,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
+ *            Thomas Uchida                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,48 +17,24 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied    *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
-
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
-
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
-
 #include "SignalGenerator.h"
+#include "Constant.h"
 
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
+using namespace OpenSim;
 
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
+SignalGenerator::SignalGenerator() {
+    constructProperties();
+}
 
-#include "Adapters.h"
+void SignalGenerator::constructProperties() {
+    constructProperty_function(Constant(0.));
+}
 
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // OPENSIM_OSIMCOMMON_H_
+double SignalGenerator::getSignal(const SimTK::State& s) const {
+    return get_function().calcValue(SimTK::Vector(1, s.getTime()));
+}

@@ -222,7 +222,7 @@ protected:
     This exists so that after the containing Component is copied, the 'owner'
     is the new Component. This Socket needs to be able to modify
     the associated connectee_name property in the Component. Thus, we require
-    a writeable reference. */
+    a writable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
     void setOwner(Component& o) { _owner.reset(&o); }
@@ -350,7 +350,7 @@ public:
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasParent()) {
-            // The API permits connecting to oprhans when passing in the
+            // The API permits connecting to orphans when passing in the
             // dependency directly.
             // Workaround: Identify it as a "floating"
             // Component and we will find its absolute path next time we try to

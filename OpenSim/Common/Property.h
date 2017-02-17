@@ -1127,7 +1127,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     /** Get the value of the i-th element of the <b> name </b> property. */ \
     const T& get_##name(int i) const                                        \
     {   return this->template getProperty<T>(PropertyIndex_##name)[i]; }    \
-    /** Get a writeable reference to the i-th element of the <b> name </b> property. */ \
+    /** Get a writable reference to the i-th element of the <b> name </b> property. */ \
     T& upd_##name(int i)                                                    \
     {   return this->template updProperty<T>(PropertyIndex_##name)[i]; }    \
     /** %Set the value of the i-th element of <b> name </b> property.    */ \
@@ -1212,7 +1212,7 @@ A data member is also created but is intended for internal use only:
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
     {   return this->getProperty_##pname().getValue(); }                    \
-    /** Get a writeable reference to the <b> pname </b> property.        */ \
+    /** Get a writable reference to the <b> pname </b> property.        */ \
     T& upd_##pname()                                                        \
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
@@ -1250,7 +1250,7 @@ initialized with an object of type T.
     /** Get the value of the <b> %##T </b> property.                     */ \
     const T& get_##T() const                                                \
     {   return this->getProperty_##T().getValue(); }                        \
-    /** Get a writeable reference to the <b> %##T </b> property.         */ \
+    /** Get a writable reference to the <b> %##T </b> property.         */ \
     T& upd_##T()                                                            \
     {   return this->updProperty_##T().updValue(); }                        \
     /** %Set the value of the <b> %##T </b> property.                    */ \
@@ -1292,7 +1292,7 @@ value of type T.
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
     {   return this->getProperty_##pname().getValue(); }                    \
-    /** Get a writeable reference to the <b> pname </b> property.        */ \
+    /** Get a writable reference to the <b> pname </b> property.        */ \
     T& upd_##pname()                                                        \
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \

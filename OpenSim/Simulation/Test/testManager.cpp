@@ -110,13 +110,12 @@ void testStationCalcWithManager()
     Manager manager(pendulum, integrator);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
+    state.setTime(0.0);
 
     for (int i = 1; i <= n; ++i) {
         // Reuse the same Manager to integrate a state forward repeatedly.
         // This would previously cause issues with cache validation.
-        manager.setInitialTime((i-1)*dt);
-        manager.setFinalTime(i*dt);
-        manager.integrate(state);
+        manager.integrate(state, i*dt);
 
         // realize to acceleration to access acceleration stage cache
         pendulum.realizeAcceleration(state);

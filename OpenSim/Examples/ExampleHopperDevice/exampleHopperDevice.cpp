@@ -121,8 +121,7 @@ void addConsoleReporterToHopper(Model& hopper)
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device (the SignalGenerator class is defined in
-// helperMethods.h).
+// Add a SignalGenerator to a device.
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)

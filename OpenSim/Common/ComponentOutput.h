@@ -220,7 +220,7 @@ public:
     
     virtual ~Output() {}
     
-    // TODO someone more knowledgable could try to implement these.
+    // TODO someone more knowledgeable could try to implement these.
     Output(Output&&) = delete;
     Output& operator=(Output&&) = delete;
 

@@ -236,6 +236,8 @@ namespace SimTK {
 %rename(SimTKVisualizer) SimTK::Visualizer;
 %include <simbody/internal/Visualizer.h>
 
+// Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
+// obtain keyboard input.
 // Nested classes are inaccessible from MATLAB.
 %feature("flatnested") SimTK::Visualizer::InputListener;
 %feature("flatnested") SimTK::Visualizer::InputSilo;

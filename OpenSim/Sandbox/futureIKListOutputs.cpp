@@ -129,7 +129,7 @@ protected:
         const auto& lowerb = std::lower_bound(times.begin(), times.end(), time);
         const auto& timeLowerb = *lowerb;
         const auto& ilowerb = lowerb - times.begin();
-        // If the the time is an exact match to an existing column.
+        // If the time is an exact match to an existing column.
         if (timeLowerb == time) {
             ibelow = ilowerb;
             iabove = -1;
@@ -195,7 +195,7 @@ public:
         // These target markers could have come from mixed sources.
         const auto& targets = getInput<Vec3>("targets").getVector(s);
         // To pretend like we're doing something useful, we'll multiply by
-        // the station jacobian transpose.
+        // the station Jacobian transpose.
         // TODO
         const auto& smss = getModel().getMatterSubsystem();
         SimTK::Vector f;
