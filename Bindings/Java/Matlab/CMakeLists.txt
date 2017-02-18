@@ -8,6 +8,7 @@ endif()
 # Install.
 # --------
 install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 
 # This script contains paths into the OpenSim installation that may be
 # different on different platforms, so we configure it with CMake variables.
