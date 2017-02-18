@@ -52,4 +52,7 @@ reporter.addToReport(device.getComponent('controller').getOutput('myo_control'))
 hopper.addComponent(reporter);
 
 sHD = hopper.initSystem();
-Simulate(hopper, sHD);
+Simulate(hopper, sHD, true);
+
+% This line helps prevent MATLAB from crashing when using simbody-visualizer.
+java.lang.System.gc();

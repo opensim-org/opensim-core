@@ -27,8 +27,6 @@ import org.opensim.modeling.*;
 
 % This script defines the 'hopper' variable.
 hopper = BuildHopperModel();
-% Show a visualization window when simulating.
-hopper.setUseVisualizer(true);
 %hopper.print('Hopper.osim'); TODO walk through the OSIM file?
 
 hopper.dumpSubcomponentInfo();
@@ -53,4 +51,7 @@ reporter.addToReport(...
 
 hopper.addComponent(reporter);
 sHop = hopper.initSystem();
-Simulate(hopper, sHop);
+Simulate(hopper, sHop, true);
+
+% This line helps prevent MATLAB from crashing when using simbody-visualizer.
+java.lang.System.gc();
