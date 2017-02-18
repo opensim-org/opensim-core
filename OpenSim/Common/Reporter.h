@@ -213,7 +213,7 @@ protected:
             OPENSIM_THROW(Exception,
                           "Attempting to update reporter with rows having "
                           "invalid timestamps. Hint: If running simulation in "
-                          "a loop, use clearTable() to clear table at the end"
+                          "a loop, use clearTable() to clear table at the end "
                           "of each loop.\n\n" + std::string{exception.what()});
         }
     }
