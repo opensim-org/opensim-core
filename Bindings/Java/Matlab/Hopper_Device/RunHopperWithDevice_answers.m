@@ -21,37 +21,38 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-% Build and simulate a single-legged hopping mechanism.
+% Connect the device to the hopper to increase hop height.
 
 import org.opensim.modeling.*;
 
 % This script defines the 'hopper' variable.
 hopper = BuildHopperModel();
-%hopper.print('Hopper.osim'); TODO walk through the OSIM file?
 
-hopper.dumpSubcomponentInfo();
-hopper.getComponent('/Dennis/thigh').dumpOutputInfo();
+% This script defines the 'device' variable.
+BuildDevice;
 
-% Create a new ConsoleReporter. Set its name and reporting interval.
+% Connect the device to the hopper.
+thighAttachment = '/Dennis/thigh/deviceAttachmentPoint';
+shankAttachment = '/Dennis/shank/deviceAttachmentPoint';
+ConnectDeviceToModel(device, hopper, thighAttachment, shankAttachment);
+
+% Use the vastus muscle's activation as the control signal for the device.
+device.updComponent('controller').updInput('activation').connect(...
+    hopper.getComponent('vastus').getOutput('activation'));
+
+% Configure the outputs we wish to display during the simulation.
 reporter = ConsoleReporter();
-reporter.setName('hopper_results');
-reporter.set_report_time_interval(0.2); % seconds
-
-% Connect outputs from the hopper to the reporter's inputs. Try reporting the
-% hopper's height, the vastus muscle's activation, the knee angle, and any
-% other variables of interest.
-% The last argument is an alias that is used for this quantity during reporting.
+reporter.setName([char(hopper.getName()) '_' char(device.getName()) '_results']);
+reporter.set_report_time_interval(0.2); % seconds.
 reporter.addToReport(...
     hopper.getComponent('/Dennis/slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(...
-    hopper.getComponent('/Dennis/vastus').getOutput('activation'));
-reporter.addToReport(...
-    hopper.getComponent('/Dennis/knee/kneeFlexion').getOutput('value'), ...
-    'knee_angle');
-
+reporter.addToReport(device.getComponent('cableAtoB').getOutput('actuation'));
+reporter.addToReport(device.getComponent('controller').getOutput('myo_control'));
 hopper.addComponent(reporter);
-sHop = hopper.initSystem();
-Simulate(hopper, sHop, true);
+
+sHD = hopper.initSystem();
+% The last argument determines if the simbody-visualizer should be used.
+Simulate(hopper, sHD, true);
 
 % This line helps prevent MATLAB from crashing when using simbody-visualizer.
 java.lang.System.gc();

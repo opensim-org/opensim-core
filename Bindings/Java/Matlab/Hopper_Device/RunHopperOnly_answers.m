@@ -21,38 +21,67 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-% Connect the device to the hopper to increase hop height.
+% Build and simulate a single-legged hopping mechanism.
 
 import org.opensim.modeling.*;
 
 % This script defines the 'hopper' variable.
 hopper = BuildHopperModel();
-hopper.setUseVisualizer(true);
 
-% This script defines the 'device' variable.
-BuildDevice;
+% TODO: Discover the subcomponents in the hopper, and the outputs available for
+%       reporting. Identify the outputs for the hopper's height and muscle
+%       activation.
+% [Step 1, Task A]
+% ANSWER{
+hopper.dumpSubcomponentInfo();
+hopper.getComponent('/Dennis/slider').dumpOutputInfo();
+hopper.getComponent('/Dennis/vastus').dumpOutputInfo();
+% }
 
-% Connect the device to the hopper.
-thighAttachment = '/Dennis/thigh/deviceAttachmentPoint';
-shankAttachment = '/Dennis/shank/deviceAttachmentPoint';
-ConnectDeviceToModel(device, hopper, thighAttachment, shankAttachment);
-
-% Use the vastus muscle's activation as the control signal for the device.
-device.updComponent('controller').updInput('activation').connect(...
-    hopper.getComponent('vastus').getOutput('activation'));
-
-% Configure the outputs we wish to display during the simulation.
-reporter = ConsoleReporter();
-reporter.setName([char(hopper.getName()) '_' char(device.getName()) '_results']);
-reporter.set_report_time_interval(0.2) % seconds.
+% TODO: Create a TableReporter, give it a name, and set its reporting interval
+%       to 0.2 seconds. Wire the hopper's jump height and muscle activation
+%       outputs to the reporter. Then add the reporter to the hopper.
+%       Adding an output to the reporter looks like the following; the alias
+%       becomes the column label in the table. 
+%         reporter.addToReport(...
+%           hopper.getComponent('<comp-path>').getOutput('<output-name>'), ...
+%           '<alias>');
+% [Step 1, Task B]
+% ANSWER{
+reporter = TableReporter();
+reporter.setName('hopper_results');
+reporter.set_report_time_interval(0.2); % seconds
 reporter.addToReport(...
     hopper.getComponent('/Dennis/slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(device.getComponent('cableAtoB').getOutput('actuation'));
-reporter.addToReport(device.getComponent('controller').getOutput('myo_control'));
+reporter.addToReport(...
+    hopper.getComponent('/Dennis/vastus').getOutput('activation'));
 hopper.addComponent(reporter);
+% }
 
-sHD = hopper.initSystem();
-Simulate(hopper, sHD, true);
+sHop = hopper.initSystem();
+% The last argument determines if the simbody-visualizer should be used.
+Simulate(hopper, sHop, true);
+% TODO this isn't great that Simulate makes a copy, since we want to be able to
+% access the report after the simulation.
+
+
+% TODO: Display the TableReporter's data, and save it to a file.
+% [Step 1, Task C]
+% ANSWER{
+table = reporter.getTable();
+disp(table.toString());
+CSVFileAdapter csv;
+csv.write(table, 'hopper_only_results.csv');
+% }
+
+% TODO: Convert the TableReporter's Table to a MATLAB struct and plot the
+%       the hopper's height over the motion.
+% [Step 1, Task C]
+% ANSWER{
+results = opensimTimeSeriesTableToMatlab(table);
+fieldnames(results)
+plot(results.time, results.Dennis_vastus_activation);
+% }
 
 % This line helps prevent MATLAB from crashing when using simbody-visualizer.
 java.lang.System.gc();

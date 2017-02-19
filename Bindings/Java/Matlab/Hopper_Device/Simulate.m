@@ -69,12 +69,14 @@ while true
         end
     end
 
+    % TODO more intelligent checking for reporters in the Model.
+    rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
+    rep.clearTable();
+
     % Simulate.
     state = State(initState);
     manager = Manager(model);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(5.0);
-    manager.integrate(state);
+    manager.integrate(state, 5.0);
 
     % If there is no visualizer, only simulate once.
     if ~visualize
