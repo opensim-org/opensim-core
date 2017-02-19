@@ -26,9 +26,15 @@ function Simulate(modelToCopy, state, visualize)
 
 import org.opensim.modeling.*;
 
+TODOuseCopyOfModel = false;
+
 % We make a copy of the model to avoid a dangling connection to the
 % simbody-visualizer after it has been shut down.
-model = modelToCopy.clone();
+if TODOuseCopyOfModel
+    model = modelToCopy.clone();
+else
+    model = modelToCopy;
+end
 if visualize
     model.setUseVisualizer(true);
 end
@@ -65,6 +71,9 @@ while true
         % Get the next key press.
         key = silo.waitForKeyHitKeyOnly();
         if key == 27
+            if ~TODOuseCopyOfModel
+                sviz.shutdown();
+            end
             return;
         end
     end
@@ -94,7 +103,9 @@ while true
     end
 end
 
-% This should cause the visualizer to shut down.
-model.delete();
+if TODOuseCopyOfModel
+    % This should cause the visualizer to shut down.
+    model.delete();
+end
 
 end

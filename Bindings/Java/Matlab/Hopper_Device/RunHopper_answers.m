@@ -64,16 +64,15 @@ Simulate(hopper, sHop, true);
 % TODO this isn't great that Simulate makes a copy, since we want to be able to
 % access the report after the simulation.
 
-
 % TODO: Display the TableReporter's data, and save it to a file.
 % [Step 1, Task C]
 % ANSWER{
 table = reporter.getTable();
 disp(table.toString());
-CSVFileAdapter csv;
-csv.write(table, 'hopper_only_results.csv');
+csv = CSVFileAdapter();
+csv.write(table, 'hopper_results.csv');
 % }
-
+  
 % TODO: Convert the TableReporter's Table to a MATLAB struct and plot the
 %       the hopper's height over the motion.
 % [Step 1, Task D]
@@ -81,6 +80,9 @@ csv.write(table, 'hopper_only_results.csv');
 results = opensimTimeSeriesTableToMatlab(table);
 fieldnames(results)
 plot(results.time, results.Dennis_vastus_activation);
+xlabel('time');
+ylabel('vastus activation');
+ylim([0, 1]);
 % }
 
 % This line helps prevent MATLAB from crashing when using simbody-visualizer.
