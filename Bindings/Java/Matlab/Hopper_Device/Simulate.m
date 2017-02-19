@@ -69,7 +69,8 @@ while true
         end
     end
 
-    % Clear the table for all TableReporters.
+    % Clear the table for all TableReporters. Note: this does not handle
+    % TableReporters for Vec3s, etc.
     compList = model.getComponentsList();
     compIter = compList.begin();
     while ~compIter.equals(compList.end())
@@ -81,12 +82,6 @@ while true
         end
         compIter.next();
     end
-    % % TODO more intelligent checking for reporters in the Model.
-    % for 
-    % if model.hasComponent('hopper_results')
-    %     rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
-    %     rep.clearTable();
-    % end
 
     % Simulate.
     state = State(initState);
