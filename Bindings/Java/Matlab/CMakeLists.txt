@@ -13,7 +13,7 @@ install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 # Remove parts from the hopper device example that the tutorial audience is
 # expected to fill in.
 # Anything matching `% ANSWER{ ... % }` is cut from the file.
-foreach(fname RunHopperOnly RunHopperWithDevice)
+foreach(fname RunHopper RunHopperWithDevice)
     file(STRINGS Hopper_Device/${fname}_answers.m file_contents_answers)
     list(LENGTH file_contents_answers num_lines)
     set(line_num 0)
