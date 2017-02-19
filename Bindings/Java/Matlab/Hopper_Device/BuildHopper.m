@@ -105,7 +105,7 @@ shank.addComponent(constraint);
 % through the floor (ContactHalfSpace).
 floor = ContactHalfSpace(Vec3(0), Vec3(0, 0, -pi/2), hopper.getGround(), ...
         'floor');
-footRadius = 0.1;
+footRadius = 0.07;
 foot = ContactSphere(footRadius, linkDistalPoint, shank, 'foot');
 
 stiffness = 1.e8; dissipation = 0.5; friction = [0.9, 0.9, 0.6];
