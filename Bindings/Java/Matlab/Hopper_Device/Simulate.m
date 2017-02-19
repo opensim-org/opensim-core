@@ -70,8 +70,10 @@ while true
     end
 
     % TODO more intelligent checking for reporters in the Model.
-    rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
-    rep.clearTable();
+    if model.hasComponent('hopper_results')
+        rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
+        rep.clearTable();
+    end
 
     % Simulate.
     state = State(initState);

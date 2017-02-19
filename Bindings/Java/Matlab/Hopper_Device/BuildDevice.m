@@ -20,7 +20,7 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-
+function device = BuildDevice()
 % Build a model of a device, consisting of a PathActuator, a proportional
 % myoelectric controller, and two bodies.
 
@@ -79,3 +79,5 @@ controller.set_gain(1.0);
 % Connect the controller's 'actuator' Socket to pathActuator.
 controller.connectSocket_actuator(pathActuator);
 device.addComponent(controller);
+
+end

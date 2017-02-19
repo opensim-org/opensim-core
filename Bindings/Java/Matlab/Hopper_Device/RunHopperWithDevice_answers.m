@@ -26,10 +26,10 @@
 import org.opensim.modeling.*;
 
 % This script defines the 'hopper' variable.
-hopper = BuildHopperModel();
+hopper = BuildHopper();
 
 % This script defines the 'device' variable.
-BuildDevice;
+device = BuildDevice();
 
 % Connect the device to the hopper.
 thighAttachment = '/Dennis/thigh/deviceAttachmentPoint';

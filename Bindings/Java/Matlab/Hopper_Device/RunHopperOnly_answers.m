@@ -26,7 +26,7 @@
 import org.opensim.modeling.*;
 
 % This script defines the 'hopper' variable.
-hopper = BuildHopperModel();
+hopper = BuildHopper();
 
 % TODO: Discover the subcomponents in the hopper, and the outputs available for
 %       reporting. Identify the outputs for the hopper's height and muscle

@@ -20,7 +20,9 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function hopper = BuildHopperModel()
+function hopper = BuildHopper()
+% Build a model of a one-leg hopper, with one muscle.
+
 import org.opensim.modeling.*;
 
 hopper = Model();
