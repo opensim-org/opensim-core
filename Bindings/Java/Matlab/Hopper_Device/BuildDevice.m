@@ -67,7 +67,7 @@ device.addComponent(anchorB);
 pathActuator = PathActuator();
 pathActuator.setName('cableAtoB');
 pathActuator.updGeometryPath().setName('geompath');
-pathActuator.set_optimal_force(4000.0);
+pathActuator.set_optimal_force(1000.0);
 pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
 pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
 device.addComponent(pathActuator);
