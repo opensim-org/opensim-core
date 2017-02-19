@@ -79,10 +79,9 @@ csv.write(table, 'hopper_results.csv');
 % ANSWER{
 results = opensimTimeSeriesTableToMatlab(table);
 fieldnames(results)
-plot(results.time, results.Dennis_vastus_activation);
+plot(results.time, results.height);
 xlabel('time');
-ylabel('vastus activation');
-ylim([0, 1]);
+ylabel('height');
 % }
 
 % This line helps prevent MATLAB from crashing when using simbody-visualizer.
