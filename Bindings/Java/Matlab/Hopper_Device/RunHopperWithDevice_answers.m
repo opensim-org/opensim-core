@@ -41,8 +41,8 @@ device.updComponent('controller').updInput('activation').connect(...
     hopper.getComponent('vastus').getOutput('activation'));
 
 % Configure the outputs we wish to display during the simulation.
-reporter = ConsoleReporter();
-reporter.setName([char(hopper.getName()) '_' char(device.getName()) '_results']);
+reporter = TableReporter();
+reporter.setName('hopper_device_results');
 reporter.set_report_time_interval(0.2); % seconds.
 reporter.addToReport(...
     hopper.getComponent('/Dennis/slider/yCoord').getOutput('value'), 'height');

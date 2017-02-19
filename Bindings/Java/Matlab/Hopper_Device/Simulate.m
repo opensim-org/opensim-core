@@ -69,11 +69,24 @@ while true
         end
     end
 
-    % TODO more intelligent checking for reporters in the Model.
-    if model.hasComponent('hopper_results')
-        rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
-        rep.clearTable();
+    % Clear the table for all TableReporters.
+    compList = model.getComponentsList();
+    compIter = compList.begin();
+    while ~compIter.equals(compList.end())
+        if ~isempty(strfind(compIter.getConcreteClassName(), ...
+                'TableReporter__double_'))
+            comp = model.getComponent(compIter.getAbsolutePathName());
+            reporter = TableReporter.safeDownCast(comp);
+            reporter.clearTable();
+        end
+        compIter.next();
     end
+    % % TODO more intelligent checking for reporters in the Model.
+    % for 
+    % if model.hasComponent('hopper_results')
+    %     rep = TableReporter.safeDownCast(model.updComponent('hopper_results'));
+    %     rep.clearTable();
+    % end
 
     % Simulate.
     state = State(initState);

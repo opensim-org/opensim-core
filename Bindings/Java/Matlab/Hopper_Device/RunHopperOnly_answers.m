@@ -76,7 +76,7 @@ csv.write(table, 'hopper_only_results.csv');
 
 % TODO: Convert the TableReporter's Table to a MATLAB struct and plot the
 %       the hopper's height over the motion.
-% [Step 1, Task C]
+% [Step 1, Task D]
 % ANSWER{
 results = opensimTimeSeriesTableToMatlab(table);
 fieldnames(results)
