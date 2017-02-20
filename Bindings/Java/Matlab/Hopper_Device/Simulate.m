@@ -20,21 +20,12 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function Simulate(modelToCopy, state, visualize)
+function Simulate(model, state, visualize)
 % Simulate an OpenSim model from an initial state. The provided state is
 % updated to be the state at the end of the simulation.
 
 import org.opensim.modeling.*;
 
-TODOuseCopyOfModel = false;
-
-% We make a copy of the model to avoid a dangling connection to the
-% simbody-visualizer after it has been shut down.
-if TODOuseCopyOfModel
-    model = modelToCopy.clone();
-else
-    model = modelToCopy;
-end
 if visualize
     model.setUseVisualizer(true);
 end
@@ -49,9 +40,6 @@ if visualize
     sviz.setShowSimTime(true);
     % Show "ground and sky" background instead of just a black background.
     sviz.setBackgroundTypeByInt(1);
-    % When model is deleted, the simbody-visualizer shuts down.
-    % This is done in an attempt to avoid crashing MATLAB.
-    sviz.setShutdownWhenDestructed(true);
 
     % Show help text in the visualization window.
     help = DecorativeText('Press any key to start a new simulation; ESC to quit.');
@@ -69,11 +57,16 @@ while true
         % Ignore any previous key presses.
         silo.clear();
         % Get the next key press.
-        key = silo.waitForKeyHitKeyOnly();
+        while ~silo.isAnyUserInput()
+            pause(0.01);
+        end
+        % The alternative `waitForKeyHit()` is not ideal for MATLAB, as MATLAB
+        % is not able to interrupt native functions, and `waitForKeyHit()` will
+        % hang if the simbody-visualizer is killed.
+        key = silo.takeKeyHitKeyOnly();
+        % Key 27 is ESC; see the SimTK::Visualizer::InputListener::KeyCode enum.
         if key == 27
-            if ~TODOuseCopyOfModel
-                sviz.shutdown();
-            end
+            sviz.shutdown();
             return;
         end
     end
@@ -101,11 +94,6 @@ while true
     if ~visualize
         return;
     end
-end
-
-if TODOuseCopyOfModel
-    % This should cause the visualizer to shut down.
-    model.delete();
 end
 
 end

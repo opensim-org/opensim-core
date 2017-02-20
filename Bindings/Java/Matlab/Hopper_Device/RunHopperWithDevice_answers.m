@@ -25,10 +25,10 @@
 
 import org.opensim.modeling.*;
 
-% This script defines the 'hopper' variable.
+% This function builds the hopper model; no need to edit it.
 hopper = BuildHopper();
 
-% This script defines the 'device' variable.
+% This function builds the device component; no need to edit it.
 device = BuildDevice();
 
 % Connect the device to the hopper.

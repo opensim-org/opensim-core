@@ -25,7 +25,7 @@
 
 import org.opensim.modeling.*;
 
-% This script defines the 'hopper' variable.
+% This function builds the hopper model; no need to edit it.
 hopper = BuildHopper();
 
 % TODO: Discover the subcomponents in the hopper, and the outputs available for
