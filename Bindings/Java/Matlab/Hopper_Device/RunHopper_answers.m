@@ -34,12 +34,12 @@ hopper = BuildHopper();
 % [Step 1, Task A]
 % ANSWER{
 hopper.dumpSubcomponentInfo();
-hopper.getComponent('/Dennis/slider').dumpOutputInfo();
-hopper.getComponent('/Dennis/vastus').dumpOutputInfo();
+hopper.getComponent('slider').dumpOutputInfo();
+hopper.getComponent('vastus').dumpOutputInfo();
 % }
 
 % TODO: Create a TableReporter, give it a name, and set its reporting interval
-%       to 0.2 seconds. Wire the hopper's jump height and muscle activation
+%       to 0.2 seconds. Wire the hopper's height and muscle activation
 %       outputs to the reporter. Then add the reporter to the hopper.
 %       Adding an output to the reporter looks like the following; the alias
 %       becomes the column label in the table. 
@@ -52,17 +52,15 @@ reporter = TableReporter();
 reporter.setName('hopper_results');
 reporter.set_report_time_interval(0.2); % seconds
 reporter.addToReport(...
-    hopper.getComponent('/Dennis/slider/yCoord').getOutput('value'), 'height');
+    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 reporter.addToReport(...
-    hopper.getComponent('/Dennis/vastus').getOutput('activation'));
+    hopper.getComponent('vastus').getOutput('activation'));
 hopper.addComponent(reporter);
 % }
 
 sHop = hopper.initSystem();
 % The last argument determines if the simbody-visualizer should be used.
 Simulate(hopper, sHop, true);
-% TODO this isn't great that Simulate makes a copy, since we want to be able to
-% access the report after the simulation.
 
 % TODO: Display the TableReporter's data, and save it to a file.
 % [Step 1, Task C]
@@ -83,6 +81,3 @@ plot(results.time, results.height);
 xlabel('time');
 ylabel('height');
 % }
-
-% This line helps prevent MATLAB from crashing when using simbody-visualizer.
-java.lang.System.gc();

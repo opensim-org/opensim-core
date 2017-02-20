@@ -14,6 +14,7 @@ install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 # expected to fill in.
 # Anything matching `% ANSWER{ ... % }` is cut from the file.
 foreach(fname RunHopper RunHopperWithDevice)
+    set(file_contents "")
     file(STRINGS Hopper_Device/${fname}_answers.m file_contents_answers)
     list(LENGTH file_contents_answers num_lines)
     set(line_num 0)
