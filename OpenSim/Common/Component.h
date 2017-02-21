@@ -1434,14 +1434,18 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Dump debugging information to the console */
+    /** @name Print debugging information to the console */
     /// @{
     /** Debugging method to list all subcomponents by name and recurse
         into these components to list their subcomponents, and so on. */
-    void dumpSubcomponents(int depth=0) const;
+    void printSubcomponentInfo() const;
+    
     /** List all the Sockets and Inputs and whether or not they are
      * connected. */
     void dumpConnections() const;
+
+    template<typename C>
+    void printSubcomponentInfo() const;
     /// @}
 
 protected:
