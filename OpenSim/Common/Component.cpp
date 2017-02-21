@@ -1507,47 +1507,6 @@ void Component::dumpConnections() const {
 void Component::printSubcomponentInfo() const {
     printSubcomponentInfo<Component>();
 }
-    
-template<typename C>
-void Component::printSubcomponentInfo() const {
-    std::string className = SimTK::NiceTypeName<C>::namestr();
-    const std::size_t colonPos = className.rfind(":");
-    if (colonPos != std::string::npos)
-        className = className.substr(colonPos+1, className.length()-colonPos);
-
-    std::cout << "Class name and absolute path name for descendants of '"
-              << getName() << "' that are of type " << className << ":\n"
-              << std::endl;
-
-    ComponentList<const C> compList = getComponentList<C>();
-
-    // Step through compList once to find the longest concrete class name.
-    unsigned maxlen = 0;
-    for (const C& thisComp : compList) {
-        auto len = thisComp.getConcreteClassName().length();
-        maxlen = std::max(maxlen, static_cast<unsigned>(len));
-    }
-    maxlen += 4; //padding
-
-    std::cout << std::setw(maxlen + 2) << "[" + getConcreteClassName() + "]"
-              << "  " << getAbsolutePathName() << std::endl;
-    auto prevPath = getAbsolutePathName();
-    // Step through compList again to print.
-    for (const C& thisComp : compList) {
-        const std::string thisClass = thisComp.getConcreteClassName();
-        std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
-                  << thisClass << "]  ";
-        auto path = thisComp.getAbsolutePathName();
-        auto res = std::mismatch(prevPath.begin(), prevPath.end(),
-                                 path.begin());
-        while(*res.second != '/')
-            --res.second;
-        std::cout << std::setw(std::count(path.begin(), res.second, '/') * 4)
-                  << " " << path.substr(res.second - path.begin()) << std::endl;
-        prevPath = path;
-    }
-    std::cout << std::endl;
-}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
