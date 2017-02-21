@@ -14,8 +14,18 @@ cmake_minimum_required(VERSION 3.2)
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
         OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    # The assert() macro is omitted in Release, causing "unused-variable"
+    # warnings. It is sufficient to just catch such warnings in Debug.
+    foreach(cfg RELEASE RELWITHDEBINFO MINSIZEREL)
+        set(CMAKE_CXX_FLAGS_${cfg}
+            "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-variable")
+        set(CMAKE_CXX_FLAGS_${cfg}
+            "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-parameter")
+    endforeach()
 endif()
 
 enable_testing()
 
 add_subdirectory(mesh)
+
+add_subdirectory(MuscleRedundancySolver)
