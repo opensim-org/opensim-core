@@ -1542,8 +1542,8 @@ void Component::printSubcomponentInfo() const {
                                  path.begin());
         while(*res.second != '/')
             --res.second;
-        std::cout << std::setw(res.second - path.begin()) << " "
-                  << path.substr(res.second - path.begin()) << std::endl;
+        std::cout << std::setw(std::count(path.begin(), res.second, '/') * 4)
+                  << " " << path.substr(res.second - path.begin()) << std::endl;
         prevPath = path;
     }
     std::cout << std::endl;
