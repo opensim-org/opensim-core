@@ -1508,6 +1508,28 @@ void Component::printSubcomponentInfo() const {
     printSubcomponentInfo<Component>();
 }
 
+void Component::printOutputInfo(const bool includeDescendants) const {
+    // Do not display header for Components with no outputs.
+    if (getNumOutputs() > 0) {
+        const std::string msg = "Outputs from " + getAbsolutePathName();
+        std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
+
+        std::vector<std::string> outputNames = getOutputNames();
+        for (auto thisName : outputNames)
+            std::cout << "  " << thisName << std::endl;
+        std::cout << std::endl;
+    }
+
+    if (includeDescendants) {
+        for (const Component& thisComp : getComponentList<Component>()) {
+            // compList (comp's ComponentList) includes all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
+            thisComp.printOutputInfo(false);
+        }
+    }
+}
+
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
     // children in order, last child's successor is the parent's successor.
