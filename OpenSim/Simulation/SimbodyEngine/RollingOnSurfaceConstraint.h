@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -66,9 +66,9 @@ public:
     OpenSim_DECLARE_PROPERTY(contact_radius, double,
         "A guess at the area of contact approximated by a circle of radius.");
 
-    OpenSim_DECLARE_CONNECTOR(rolling_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(rolling_body, PhysicalFrame,
         "A frame fixed to the rolling body.");
-    OpenSim_DECLARE_CONNECTOR(surface_body, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(surface_body, PhysicalFrame,
         "A frame fixed to the surface body.");
 
 //=============================================================================

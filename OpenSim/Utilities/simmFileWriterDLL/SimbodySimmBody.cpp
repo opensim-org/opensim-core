@@ -1,7 +1,7 @@
 // SimbodySimmBody.cpp
 // Authors: Peter Loan
 /*
- * Copyright (c) 2005-2016 Stanford University. All rights reserved. 
+ * Copyright (c) 2005-2017 Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 *   1. The software is used only for non-commercial research and education. It may not

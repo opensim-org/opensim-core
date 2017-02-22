@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -577,10 +577,10 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
         const Vec3& basePt = get_PathPointSet()[base].getLocation();
 
         Vec3 startPt2 = get_PathPointSet()[start].getBody()
-            .findLocationInAnotherFrame(s, startPt, aBody);
+            .findStationLocationInAnotherFrame(s, startPt, aBody);
 
         Vec3 endPt2 = get_PathPointSet()[end].getBody()
-            .findLocationInAnotherFrame(s, endPt, aBody);
+            .findStationLocationInAnotherFrame(s, endPt, aBody);
 
         aOffset = basePt + distance * (endPt2 - startPt2);
     } else if (get_PathPointSet().getSize() == 1){

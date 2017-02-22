@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -146,22 +146,18 @@ void testMcKibbenActuator()
     RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
     integrator.setAccuracy(1e-7);
     Manager manager(*model, integrator);
-    manager.setInitialTime(0.0);
+    si.setTime(0.0);
 
     for (int i = 1; i <= nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(si);
+        manager.integrate(si, dt*i);
         model->getMultibodySystem().realize(si, Stage::Velocity);
-        Vec3 pos;
-        model->updSimbodyEngine().getPosition(si, *ball, Vec3(0), pos);
+        Vec3 pos = ball->findStationLocationInGround(si, Vec3(0));
 
         double applied = actuator->computeActuation(si);;
 
         double theoretical = (pressure / (4* pow(num_turns,2) * SimTK::Pi)) * (3*pow(pos(0), 2) - pow(B, 2));
 
         ASSERT_EQUAL(applied, theoretical, 10.0);
-
-        manager.setInitialTime(dt*i);
     }
 
 
@@ -312,12 +308,10 @@ void testTorqueActuator()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model,  integrator);
 
-    manager.setInitialTime(0.0);
+    state.setTime(0.0);
 
     double final_t = 1.00;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     model->computeStateVariableDerivatives(state);
 
@@ -459,12 +453,10 @@ void testClutchedPathSpring()
     Manager manager(*model,  integrator);
     manager.setWriteToStorage(true);
 
-    manager.setInitialTime(0.0);
+    state.setTime(0.0);
 
     double final_t = 4.99999;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -484,10 +476,8 @@ void testClutchedPathSpring()
     ASSERT_EQUAL(model_force, analytical_force, 10*integ_accuracy);
 
     // unclamp and continue integrating
-    manager.setInitialTime(final_t);
     final_t = 5.99999;
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -500,10 +490,8 @@ void testClutchedPathSpring()
     ASSERT_EQUAL(model_force, 0.0, 10*integ_accuracy);
 
     // spring is reclamped at 7s so keep integrating
-    manager.setInitialTime(final_t);
     final_t = 10.0;
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -694,10 +682,9 @@ void testBodyActuator()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model, integrator);
 
-    manager.setInitialTime(0.0);
+    state1.setTime(0.0);
     double final_t = 1.00;
-    manager.setFinalTime(final_t);
-    manager.integrate(state1);
+    manager.integrate(state1, final_t);
 
     // ----------------- Test Copying the model -------------------
     // Before exiting lets see if copying the actuator works
@@ -921,10 +908,9 @@ void testActuatorsCombination()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model, integrator);
 
-    manager.setInitialTime(0.0);
+    state2.setTime(0.0);
     double final_t = 1.00;
-    manager.setFinalTime(final_t);
-    manager.integrate(state2);
+    manager.integrate(state2, final_t);
 
 
     std::cout << " ********** Test Actuator Combination time = ********** " <<

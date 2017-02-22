@@ -32,7 +32,7 @@ Converting from v3.x to v4.0
   also use the `extend` variants. Otherwise, you will enter into an infinite recursion.
 - OpenSim now makes substantial use of C++11 features; if you compile OpenSim, your compiler
   must support C++11. Also, any C++ project in which you use OpenSim must also be compiled with C++11.
-- The following components have been upgraded to use Connectors to connect to
+- The following components have been upgraded to use Sockets to connect to
   other components they depend on (instead of string properties):
   - ContactGeometry (ContactSphere, ContactHalfSpace, ContactMesh)
 - Many of the methods in ScaleTool have now been marked const.
@@ -48,6 +48,16 @@ Converting from v3.x to v4.0
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
+- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by 
+  `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
+  (see the documentation in the `Manager` class for more details):
+  - Before:
+	- manager.setInitialTime(0.0);
+	- manager.setFinalTime(1.0);
+	- manager.integrate(state);
+  - After:
+    - state.setTime(0.0);
+	- manager.integrate(state, 1.0);
 
 Composing a Component from other components
 -------------------------------------------

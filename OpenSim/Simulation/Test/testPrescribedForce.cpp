@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -156,15 +156,13 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
-        manager.setFinalTime(times[i]);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, times[i]);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 accel, angularAccel;
-        osimModel->updSimbodyEngine().getAcceleration(osim_state, body, Vec3(0), accel);
-        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, body, angularAccel);
+        Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
+        Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
         ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
         ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
         ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);

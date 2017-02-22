@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -131,6 +131,7 @@ public:
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult) const;
 
+protected:
     virtual int wrapLine(const SimTK::State& state,
                          SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                          const PathWrap& aPathWrap,
@@ -138,7 +139,6 @@ public:
 
     virtual void updateGeometry() {};
 
-protected:
    /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
      * based on the name of the quadrant. finalizeFromProperties() should be
      * called whenever the quadrant property changes. */

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -456,8 +456,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
+    osim_state.setTime(0.0);
 
     // Integrate
     /*const SimbodyMatterSubsystem& matter2 = */osimModel->getMultibodySystem().getMatterSubsystem();
@@ -466,7 +465,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     //cout << osim_state.getQ()<<endl;
     //cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
 
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, duration);
 }
 
 void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_sb, const SimTK::Vector &q_osim, const SimTK::Vector &u_osim, string errorMessagePrefix = "")
@@ -1440,13 +1439,13 @@ void testPinJoint()
     // use the same coordinate name
     knee3.upd_coordinates(0).setName("knee_q");
 
-    knee3.connect(*osimModel);
+    knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
-    knee3.dumpSubcomponents();
+    knee3.printSubcomponentInfo();
 
-    knee.connect(*osimModel);
+    knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
-    knee.dumpSubcomponents();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -2067,7 +2066,7 @@ void testEquivalentBodyForceForGenForces(Model& model)
         rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
 
         //Get Joint frame B location in parent, Po, to apply to parent Body
-        rB_Po = Bo.findLocationInAnotherFrame(state, rB_Bo, Po);
+        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
 
         // get the equivalent spatial force on the joint frame of the (child) body expressed in ground
         SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
@@ -2248,21 +2247,21 @@ void testAutomaticJointReversal()
     auto fcpath = footConstraint->getRelativePathName(cfoot);
 
     auto& off1 = footConstraint->getFrame1();
-    auto& c1 = off1.getConnector<PhysicalFrame>("parent");
+    auto& sock1 = off1.getSocket<PhysicalFrame>("parent");
     auto& off2 = footConstraint->getFrame2();
-    auto& c2 = off2.getConnector<PhysicalFrame>("parent");
+    auto& sock2 = off2.getSocket<PhysicalFrame>("parent");
 
     auto off1Path = off1.getAbsolutePathName();
     auto off2Path = off2.getAbsolutePathName();
 
-    /*auto& pathOff1 = */c1.getConnecteeName();
-    /*auto& pathOff2 = */c2.getConnecteeName();
+    /*auto& pathOff1 = */sock1.getConnecteeName();
+    /*auto& pathOff2 = */sock2.getConnecteeName();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponents();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

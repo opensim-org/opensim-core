@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -70,24 +70,21 @@ class ExampleOptimizationSystem : public OptimizerSystem {
                 
         // Integrate from initial time to final time
         Manager manager(osimModel, *p_integrator);
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        manager.integrate(s);
+        manager.integrate(s, finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-        Vec3 velocity;
+        const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
-            .get("r_ulna_radius_hand"), massCenter, velocity);
-        
+        Vec3 massCenter = hand.getMassCenter();
+        Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);
         f = -velocity[0];
         stepCount++;
         
@@ -204,10 +201,9 @@ int main()
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
-        manager.integrate(si);
+        manager.integrate(si, finalTime);
 
         auto statesTable = manager.getStatesTable();
         STOFileAdapter_<double>::write(statesTable, 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -40,6 +40,8 @@
 #include "PiecewiseConstantFunction.h"
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
+
+#include "SignalGenerator.h"
 
 #include "ObjectGroup.h"
 
@@ -81,7 +83,10 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( PiecewiseLinearFunction() );
     Object::registerType( PiecewiseConstantFunction() );
     Object::registerType( MultiplierFunction() );
-    Object::registerType(PolynomialFunction());
+    Object::registerType( PolynomialFunction() );
+
+    Object::registerType( SignalGenerator() );
+
     Object::registerType( ObjectGroup() );
     
     Object::registerType( TableSource() );

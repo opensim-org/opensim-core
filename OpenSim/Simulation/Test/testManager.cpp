@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -110,13 +110,12 @@ void testStationCalcWithManager()
     Manager manager(pendulum, integrator);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
+    state.setTime(0.0);
 
     for (int i = 1; i <= n; ++i) {
         // Reuse the same Manager to integrate a state forward repeatedly.
         // This would previously cause issues with cache validation.
-        manager.setInitialTime((i-1)*dt);
-        manager.setFinalTime(i*dt);
-        manager.integrate(state);
+        manager.integrate(state, i*dt);
 
         // realize to acceleration to access acceleration stage cache
         pendulum.realizeAcceleration(state);

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -432,7 +432,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
     {
         Marker& modelMarker = markerSet.get(i);
 
-        if (true/*!modelMarker.getFixed()*/)
+        if (!modelMarker.get_fixed())
         {
             int index = aPose.getMarkerIndex(modelMarker.getName());
             if (index >= 0)
@@ -444,7 +444,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
                     Vec3 globalPt = globalMarker;
                     double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
                     pt = conversionFactor*globalPt;
-                    pt2 = aModel.getGround().findLocationInAnotherFrame(s, pt, modelMarker.getParentFrame());
+                    pt2 = aModel.getGround().findStationLocationInAnotherFrame(s, pt, modelMarker.getParentFrame());
                     modelMarker.set_location(pt2);
                 }
                 else

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib, Chris Dembia                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -75,7 +75,7 @@ int run_tool(int argc, const char** argv) {
     const auto& setupFile = args["<setup-xml-file>"].asString();
     Object* obj = Object::makeObjectFromFile(setupFile);
     if (obj == nullptr) {
-        throw Exception( "A problem occured when trying to load file '" +
+        throw Exception( "A problem occurred when trying to load file '" +
                 setupFile + "'.");
     }
 

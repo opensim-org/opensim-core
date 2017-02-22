@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth,                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -81,11 +81,11 @@ void testPendulumModelWithNestedJoints()
     // Create WeldJoints to anchor cuff Bodies to the pendulum.
     auto* anchorA = new WeldJoint();
     anchorA->setName("anchorA");
-    anchorA->connectConnector_child_frame(*cuffA);
+    anchorA->connectSocket_child_frame(*cuffA);
 
     auto* anchorB = new WeldJoint();
     anchorB->setName("anchorB");
-    anchorB->connectConnector_child_frame(*cuffB);
+    anchorB->connectSocket_child_frame(*cuffB);
 
     // add anchors to the Device
     device->addComponent(anchorA);
@@ -97,8 +97,8 @@ void testPendulumModelWithNestedJoints()
     // Connect the device to bodies of the pendulum
     const auto& rod1 = pendulum->getComponent<OpenSim::Body>("rod1");
     const auto& rod2 = pendulum->getComponent<OpenSim::Body>("rod2");
-    anchorA->connectConnector_parent_frame(rod1);
-    anchorB->connectConnector_parent_frame(rod2);
+    anchorA->connectSocket_parent_frame(rod1);
+    anchorB->connectSocket_parent_frame(rod2);
 
     State& s = pendulum->initSystem();
 }

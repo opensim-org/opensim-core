@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -51,7 +51,7 @@ PrescribedForce::PrescribedForce(const std::string& name, const PhysicalFrame& f
     PrescribedForce()
 {
     setName(name);
-    connectConnector_frame(frame);
+    connectSocket_frame(frame);
 }
 
 //_____________________________________________________________________________
@@ -121,10 +121,10 @@ void PrescribedForce::constructProperties()
 }
 
 void PrescribedForce::setFrameName(const std::string& frameName) {
-    updConnector<PhysicalFrame>("frame").setConnecteeName(frameName);
+    updSocket<PhysicalFrame>("frame").setConnecteeName(frameName);
 }
 const std::string& PrescribedForce::getFrameName() const {
-    return getConnector<PhysicalFrame>("frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("frame").getConnecteeName();
 }
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
@@ -251,7 +251,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const bool hasTorqueFunctions = torqueFunctions.getSize()==3;
 
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (hasForceFunctions) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
@@ -267,7 +267,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
         }
         applyForceToPoint(state, frame, point, force, bodyForces);
@@ -346,7 +346,7 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     std::string BodyToReport = (forceIsGlobal?"ground": frame.getName());
     if (appliesForce) {
         labels.append(BodyToReport+"_"+getName()+"_fx");
@@ -387,7 +387,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const double time = state.getTime();
     const SimTK::Vector timeAsVector(1, time);
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (appliesForce) {
         Vec3 force = getForceApplied(state);
@@ -400,7 +400,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
         } else {
             Vec3 point = getApplicationPoint(state);
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);

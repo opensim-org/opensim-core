@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -90,7 +90,7 @@ void Station::constructProperties()
 */
 const PhysicalFrame& Station::getParentFrame() const
 {
-    return getConnector<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
 }
 
 /*
@@ -98,14 +98,14 @@ const PhysicalFrame& Station::getParentFrame() const
  */
 void Station::setParentFrame(const OpenSim::PhysicalFrame& aFrame)
 {
-    connectConnector_parent_frame(aFrame);
+    connectSocket_parent_frame(aFrame);
 }
 
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
         const OpenSim::Frame& aFrame) const
 {
     // transform location from the station's frame to the other frame
-    return getParentFrame().findLocationInAnotherFrame(s, 
+    return getParentFrame().findStationLocationInAnotherFrame(s, 
                                                 get_location(), aFrame);
 }
 

@@ -20,7 +20,8 @@
 %include <OpenSim/Simulation/MomentArmSolver.h>
 
 %include <OpenSim/Simulation/Model/Frame.h>
-// Following three lines hacked in out of order to work around WrapObjects use in PhysicalFrame
+// Following three lines hacked in out of order to work around WrapObjects use
+// in PhysicalFrame
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -32,7 +33,6 @@
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
-%include <OpenSim/Simulation/Model/FrameSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
 %template(SetBodies) OpenSim::Set<OpenSim::Body>;
@@ -136,7 +136,7 @@
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
-//%include <OpenSim/Simulation/Wrap/WrapObject.h>
+// WrapObject is included up above.
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>

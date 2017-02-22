@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -126,7 +126,7 @@ void Controller::extendConnectToModel(Model& model)
     Super::extendConnectToModel(model);
 
     // TODO this custom connection code can all disappear
-    // if we use a list Connector<Actuator> 
+    // if we use a list Socket<Actuator> 
 
     // make sure controller does not take ownership
     _actuatorSet.setMemoryOwner(false);
@@ -173,7 +173,7 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
-    //TODO this needs to be setting a Connector list of Actuators
+    //TODO this needs to be setting a Socket list of Actuators
 
     // make sure controller does NOT assume ownership
     _actuatorSet.setMemoryOwner(false);
