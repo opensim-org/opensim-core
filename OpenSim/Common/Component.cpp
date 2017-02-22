@@ -1522,7 +1522,7 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
     if (includeDescendants) {
         for (const Component& thisComp : getComponentList<Component>()) {
-            // compList (comp's ComponentList) includes all descendants (i.e.,
+            // getComponentList() returns all descendants (i.e.,
             // children, grandchildren, etc.) so set includeDescendants=false
             // when calling on thisComp.
             thisComp.printOutputInfo(false);
