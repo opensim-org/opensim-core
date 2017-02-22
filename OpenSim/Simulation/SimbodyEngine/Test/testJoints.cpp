@@ -456,8 +456,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
+    osim_state.setTime(0.0);
 
     // Integrate
     /*const SimbodyMatterSubsystem& matter2 = */osimModel->getMultibodySystem().getMatterSubsystem();
@@ -466,7 +465,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     //cout << osim_state.getQ()<<endl;
     //cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
 
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, duration);
 }
 
 void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_sb, const SimTK::Vector &q_osim, const SimTK::Vector &u_osim, string errorMessagePrefix = "")
@@ -1442,11 +1441,11 @@ void testPinJoint()
 
     knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
-    knee3.dumpSubcomponents();
+    knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
-    knee.dumpSubcomponents();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -2263,7 +2262,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponents();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

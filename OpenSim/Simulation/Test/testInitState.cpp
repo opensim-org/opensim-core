@@ -96,11 +96,10 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.05);
+    state.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager.integrate(state);
+    manager.integrate(state, 0.05);
 
     // continuous state variables after simulation
     Vector y2 = state.getY();
@@ -122,11 +121,10 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
     Manager manager2(model, integrator);
-    manager2.setInitialTime(0.0);
-    manager2.setFinalTime(0.05);
+    state2.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager2.integrate(state2);
+    manager2.integrate(state2, 0.05);
 
     // get the default continuous state variables updated
     // from the state after the simulation

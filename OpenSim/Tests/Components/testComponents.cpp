@@ -122,6 +122,8 @@ int main()
     }
     */
 
+    availableComponents.push_back(new SignalGenerator());
+
     for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
             testComponent(*availableComponents[i]);

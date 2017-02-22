@@ -190,12 +190,11 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*osimModel, integrator);
+    osim_state.setTime(0.0);
 
     for (unsigned int i = 0; i < duration/interval; ++i)
     {
-        manager.setInitialTime(i*interval);
-        manager.setFinalTime((i+1)*interval);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, (i + 1)*interval);
         double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
@@ -327,9 +326,8 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     integrator.setAccuracy(integ_accuracy);
     integrator.setMaximumStepSize(100*integ_accuracy);
     Manager manager(*osimModel, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    manager.integrate(osim_state);
+    osim_state.setTime(0.0);
+    manager.integrate(osim_state, duration);
 
     kin->printResults(prefix);
     reporter->printResults(prefix);
@@ -493,8 +491,8 @@ void testIntermediateFrames() {
         RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
         integrator.setAccuracy(integ_accuracy);
         Manager manager(model, integrator);
-        manager.setFinalTime(1.0);
-        manager.integrate(state);
+        state.setTime(0.0);
+        manager.integrate(state, 1.0);
 
         return state;
     };
