@@ -1441,11 +1441,11 @@ void testPinJoint()
 
     knee3.finalizeConnections(*osimModel);
     knee3.dumpConnections();
-    knee3.dumpSubcomponents();
+    knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
     knee.dumpConnections();
-    knee.dumpSubcomponents();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -2261,7 +2261,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponents();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

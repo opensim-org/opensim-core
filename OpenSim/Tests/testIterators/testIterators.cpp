@@ -128,7 +128,7 @@ void testNestedComponentListConsistency() {
 void testComponentListConst() {
 
     Model model(modelFilename);
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
 
     ComponentList<const Component> componentsList = model.getComponentList();
     std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;

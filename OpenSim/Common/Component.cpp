@@ -1464,26 +1464,6 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpSubcomponents(int depth) const
-{
-    std::string tabs;
-    for (int t = 0; t < depth; ++t) {
-        tabs += "\t";
-    }
-
-    std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'" << std::endl;
-    for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _propertySubcomponents.size(); ++i) {
-        _propertySubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-}
-
 void Component::dumpConnections() const {
     std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
@@ -1524,6 +1504,9 @@ void Component::dumpConnections() const {
     }
 }
 
+void Component::printSubcomponentInfo() const {
+    printSubcomponentInfo<Component>();
+}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, node is followed by all its
