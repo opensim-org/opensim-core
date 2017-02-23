@@ -89,6 +89,7 @@ void switchMuscles(Model& model, State& state, bool appliesForce)
 void testTaskSpace()
 {
     Model model("futureTaskSpace.osim");
+    model.finalizeFromProperties();
 
     std::string indexBodyName = "hand_r";
     Vec3 indexOffset(0.05, -0.14, 0.011);

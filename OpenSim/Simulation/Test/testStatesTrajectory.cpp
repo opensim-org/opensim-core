@@ -55,6 +55,7 @@ Real getStorageEntry(const Storage& sto,
 
 void testPopulateTrajectoryAndStatesTrajectoryReporter() {
     Model model("gait2354_simbody.osim");
+    model.finalizeFromProperties();
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
@@ -141,6 +142,7 @@ void testFrontBack() {
 void createStateStorageFile() {
 
     Model model("gait2354_simbody.osim");
+    model.finalizeFromProperties();
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);

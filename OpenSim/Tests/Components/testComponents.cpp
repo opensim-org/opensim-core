@@ -428,7 +428,7 @@ void testComponent(const Component& instanceToTest)
     }
 }
 
-void testComponentEquivalence(const Component* a, const Component* b) 
+void testComponentEquivalence(const Component* a, const Component* b, bool recurse = true)
 {
     const string& className = a->getConcreteClassName();
 
@@ -439,7 +439,7 @@ void testComponentEquivalence(const Component* a, const Component* b)
     int ns_a = a->getNumSockets();
     int ns_b = b->getNumSockets();
     cout << className << " getNumSockets: " << ns_a << endl;
-    ASSERT(ns_a==ns_b, __FILE__, __LINE__, 
+    ASSERT(ns_a == ns_b, __FILE__, __LINE__,
         className + "components differ in number of sockets.");
 
     int nin_a = a->getNumInputs();
@@ -451,21 +451,32 @@ void testComponentEquivalence(const Component* a, const Component* b)
     int nout_a = a->getNumOutputs();
     int nout_b = b->getNumOutputs();
     cout << className << " getNumOutputs: " << nout_a << endl;
-    ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
+    ASSERT(nout_a == nout_b, __FILE__, __LINE__,
         className + " components differ in number of outputs.");
 
-    auto aSubsList = a->getComponentList<Component>();
-    auto bSubsList = b->getComponentList<Component>();
-    auto iter_a = aSubsList.begin();
-    auto iter_b = bSubsList.begin();
+    if (recurse) {
+        try {
+            auto aSubsList = a->getComponentList<Component>();
+            auto bSubsList = b->getComponentList<Component>();
+            auto iter_a = aSubsList.begin();
+            auto iter_b = bSubsList.begin();
 
-    //Subcomponents must be equivalent too!
-    while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
-        const Component& asub = *iter_a;
-        const Component& bsub = *iter_b;
-        testComponentEquivalence(&asub, &bsub);
-        ++iter_a;
-        ++iter_b;
+            //Subcomponents must be equivalent too!
+            while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
+                const Component& asub = *iter_a;
+                const Component& bsub = *iter_b;
+                testComponentEquivalence(&asub, &bsub, false);
+                ++iter_a;
+                ++iter_b;
+            }
+        }
+        // only trap the ComponentIsRootWithNoSubcomponents
+        catch (const ComponentIsRootWithNoSubcomponents& ex) {
+            // Just print the exception message but allow the test to continue.
+            // The test is blind to whether Components should have any 
+            // subcomponents as part of its generic processing.
+            cout << ex.what() << endl;
+        }
     }
 }
 
@@ -516,6 +527,9 @@ void testSerialization(Component* instance)
     }
 
     Component* deserializedComp = dynamic_cast<Component *>(deserializedInstance);
+
+    instance->finalizeFromProperties();
+    deserializedComp->finalizeFromProperties();
 
     testComponentEquivalence(instance, deserializedComp);
     delete deserializedInstance;

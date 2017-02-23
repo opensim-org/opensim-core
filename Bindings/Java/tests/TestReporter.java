@@ -110,6 +110,7 @@ class TestReporter {
         
         String modelFileName = "double_pendulum_markers.osim";
         Model model = new Model(modelFileName);
+        model.finalizeFromProperties();
 
         ConsoleReporter consoleReporter = new ConsoleReporter();
         consoleReporter.set_report_time_interval(timeInterval);

@@ -3,6 +3,7 @@ import org.opensim.modeling.*;
 class TestIterators {
   public static void main(String[] args) {
     Model model = new Model();
+    model.finalizeFromProperties();
 
     // Iterate through 
     model.printSubcomponentInfo();
