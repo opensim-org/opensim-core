@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include <unordered_map>
 
 using namespace SimTK;
 
@@ -1510,6 +1511,16 @@ void Component::printSubcomponentInfo() const {
 
 void Component::printOutputInfo(const bool includeDescendants) const {
     using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+
+    static const std::unordered_map<std::string, std::string>
+        typeAliases{{"SimTK::Vec<2,double,1>", "Vec2"},
+                    {"SimTK::Vec<3,double,1>", "Vec3"},
+                    {"SimTK::Vec<4,double,1>", "Vec4"},
+                    {"SimTK::Vec<5,double,1>", "Vec5"},
+                    {"SimTK::Vec<6,double,1>", "Vec6"},
+                    {"SimTK::Vec<2,SimTK::Vec<3,double,1>,1>", "SpatialVec"},
+                    {"SimTK::Transform_<double>", "Transform"},
+                    {"SimTK::Vector_<double>", "Vector"}};
     
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
@@ -1527,7 +1538,10 @@ void Component::printOutputInfo(const bool includeDescendants) const {
         for(const auto& output : outputs) {
             const auto& name = output.second->getTypeName();
             std::cout << std::string(maxlen - name.length(), ' ')
-                      << "[" << name << "]  "
+                      << "[" << name;
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << " = " << typeAliases.at(name);
+            std::cout << "]  "
                       << output.first << std::endl;
         }
         std::cout << std::endl;
