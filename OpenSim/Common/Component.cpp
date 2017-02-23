@@ -128,8 +128,8 @@ void Component::addComponent(Component* subcomponent)
 {
     //get to the root Component
     const Component* root = this;
-    while (root->hasParent()) {
-        root = &(root->getParent());
+    while (root->hasOwner()) {
+        root = &(root->getOwner());
     }
     // if the root has no immediate subcomponents do not bother
     // checking if the subcomponent is in the ownership tree
@@ -167,10 +167,10 @@ void Component::finalizeFromProperties()
                       getConcreteClassName() );
 
     for (auto& comp : _memberSubcomponents) {
-        comp->setParent(*this);
+        comp->setOwner(*this);
     }
     for (auto& comp : _adoptedSubcomponents) {
-        comp->setParent(*this);
+        comp->setOwner(*this);
     }
     
     // Provide sockets, inputs, and outputs with a pointer to its component
@@ -606,27 +606,28 @@ int Component::getNumStateVariables() const
 }
 
 
-const Component& Component::getParent() const 
+const Component& Component::getOwner() const 
 {
-    if (!hasParent()) {
-        std::string msg = "Component '" + getName() + "'::getParent(). " +
-            "Has no parent Component assigned.\n" +
-            "Make sure the component was added to the Model (or its parent).";
+    if (!hasOwner()) {
+        std::string msg = "Component '" + getName() + "'::getOwner(). " +
+            "Has no owner assigned.\n" +
+            "Make sure the component was added to the Model " +
+            "(or another component).";
         throw Exception(msg);
     }
     return _parent.getRef();
 }
 
-bool Component::hasParent() const
+bool Component::hasOwner() const
 {
     return !_parent.empty();
 }
 
-void Component::setParent(const Component& parent)
+void Component::setOwner(const Component& parent)
 {
     if (&parent == this) {
-        std::string msg = "Component '" + getName() + "'::setParent(). " +
-            "Attempted to set itself as its parent.";
+        std::string msg = "Component '" + getName() + "'::setOwner(). " +
+            "Attempted to set itself as its owner.";
         throw Exception(msg);
     }
     else if (_parent.get() == &parent) {
@@ -643,8 +644,8 @@ std::string Component::getAbsolutePathName() const
 
     const Component* up = this;
 
-    while (up && up->hasParent()) {
-        up = &up->getParent();
+    while (up && up->hasOwner()) {
+        up = &up->getOwner();
         pathVec.insert(pathVec.begin(), up->getName());
     }
     // The root must have a leading '/' 
@@ -1142,31 +1143,31 @@ void Component::markAsPropertySubcomponent(const Component* component)
                        component->getName(), getName());
     }
 
-    compRef->setParent(*this);
+    compRef->setOwner(*this);
 }
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
 void Component::adoptSubcomponent(Component* subcomponent)
 {
-    OPENSIM_THROW_IF(subcomponent->hasParent(),
+    OPENSIM_THROW_IF(subcomponent->hasOwner(),
         ComponentAlreadyPartOfOwnershipTree,
         subcomponent->getName(), this->getName());
 
     //get the top-level component
     const Component* top = this;
-    while (top->hasParent())
-        top = &top->getParent();
+    while (top->hasOwner())
+        top = &top->getOwner();
 
     // cycle through all components from the top level component
     // down to verify the component is not already in the tree
     for (auto& comp : top->getComponentList<Component>()) {
-        OPENSIM_THROW_IF(subcomponent->hasParent(),
+        OPENSIM_THROW_IF(subcomponent->hasOwner(),
             ComponentAlreadyPartOfOwnershipTree,
             subcomponent->getName(), comp.getName());
     }
 
-    subcomponent->setParent(*this);
+    subcomponent->setOwner(*this);
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
 }
 
@@ -1519,7 +1520,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     const size_t npsc = _propertySubcomponents.size();
     const size_t nasc = _adoptedSubcomponents.size();
 
-    if (!hasParent()) {
+    if (!hasOwner()) {
         // If this isn't the root component and it has no parent, then
         // this is an orphan component and we likely failed to call 
         // finalizeFromProperties() on the root OR this is a clone that

@@ -1541,7 +1541,7 @@ protected:
     MemberSubcomponentIndex constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
-        component->setParent(*this);
+        component->setOwner(*this);
         _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
         return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
@@ -2195,19 +2195,21 @@ public:
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 
-    /** Access the parent of this Component.
-        An exception is thrown if the Component has no parent.
-        @see hasParent() */
-    const Component& getParent() const;
+    /** Access the owner (parent component) of this Component.
+        An exception is thrown if the Component has no owner; in this case, the
+        component is the root component, or is orphaned.
+        @see hasOwner() */
+    const Component& getOwner() const;
 
-    /** Check if this Component has a parent assigned or not.
-        A component may not have a parent Component assigned if it:
-        1) is the root component, or 2) has not been added to its parent. */
-    bool hasParent() const;
+    /** Check if this Component has an owner.
+        A component may not have an owner if it:
+        (1) is the root component, or
+        (2) has not been added to another component */
+    bool hasOwner() const;
 
 protected:
-    /** %Set this Component's reference to its parent Component */
-    void setParent(const Component& parent);
+    /** %Set this Component's reference to its owning Component */
+    void setOwner(const Component& parent);
 
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
@@ -2225,8 +2227,8 @@ protected:
             currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
             ComponentPath currentPathName(current->getName());
 
-            if (currentSubpath == upPath && current->hasParent())
-                current = &current->getParent();
+            if (currentSubpath == upPath && current->hasOwner())
+                current = &current->getOwner();
             // if currentPathName matches currentSubpath traversing the path
             else if (currentPathName == currentSubpath) {
                 ind++;

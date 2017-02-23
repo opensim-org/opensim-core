@@ -37,7 +37,7 @@ using SimTK::Transform;
 void PathPoint::
 changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
 {
-    if (!hasParent()) {
+    if (!hasOwner()) {
         throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
             " change the body on PathPoint which was not assigned to a body.");
     }

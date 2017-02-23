@@ -225,10 +225,10 @@ public:
 protected:
     void extendFinalizeFromProperties() override {
         // Create the output channels.
-        for (const auto& marker : getParent().getComponentList<Marker>()) {
+        for (const auto& marker : getOwner().getComponentList<Marker>()) {
             updOutput("model_marker_pos").addChannel(marker.getName());
         }
-        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+        for (const auto& coord : getOwner().getComponentList<Coordinate>()) {
             updOutput("coords").addChannel(coord.getName());
         }
     }
