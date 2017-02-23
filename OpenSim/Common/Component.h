@@ -1489,7 +1489,7 @@ public:
         std::cout << std::endl;
     }
 
-    /** Print outputs of this component and optionally, that of all 
+    /** Print outputs of this component and optionally, those of all 
     subcomponents.                                                            */
     void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
