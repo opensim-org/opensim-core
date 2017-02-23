@@ -1513,7 +1513,8 @@ void Component::printOutputInfo(const bool includeDescendants) const {
     
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        const std::string msg = "Outputs from " + getAbsolutePathName();
+        const std::string msg = "Outputs from " + getAbsolutePathName() +
+            " [" + getConcreteClassName() + "]";
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
         const auto& outputs = getOutputs();
