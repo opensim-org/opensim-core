@@ -324,7 +324,13 @@ out all the values of any property:
 template <class T>
 class Property : public AbstractProperty {
 public:
-    // Default constructor, destructor, copy constructor, copy assignment
+    // Default constructor and destructor.
+    Property()                           = default;
+    ~Property()                          = default;
+    // Copy assignment and move assignment is not allowed as this is an
+    // abstract class. 
+    Property& operator=(const Property&) = delete;
+    Property& operator=(Property&&)      = delete;
 
     /** Provides type-specific methods used to implement generic functionality.
     This class must be specialized for any 
@@ -570,6 +576,11 @@ public:
     }
 
 protected:
+    // Copy constructor and move constructor only available to derived
+    // classes.
+    Property(const Property&) = default;
+    Property(Property&&)      = default;
+
     /** @cond **/ // Hide from Doxygen.
     // This is the interface that SimpleProperty and ObjectProperty must
     // implement.
