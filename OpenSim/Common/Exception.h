@@ -71,7 +71,7 @@ auto result = getSomeResult();
 OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
 @endcode
 @relates OpenSim::Exception                                                   */
-// These macros also allow us to add more details (eg class name) later easily.
+// These macros also allow us to add more details (e.g. class name) later easily.
 // Note -- Extra braces enclosing "if" are to avoid problems when these macros 
 // are called within if-else statements like:
 //           if(<some condition>)
@@ -103,7 +103,7 @@ information.                                                                  */
 /**
  * A class for basic exception functionality.
  * \if developer
- * To create exception classes in OpenSim, use the following guidlines.
+ * To create exception classes in OpenSim, use the following guidelines.
  * If the intention is to derive from an exception named, for example,
  * BaseException that is part of OpenSim, use the following blueprint:
  * \code{.cpp}

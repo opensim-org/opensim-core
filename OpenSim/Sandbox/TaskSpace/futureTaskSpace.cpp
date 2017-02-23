@@ -119,18 +119,15 @@ void testTaskSpace()
 
     //manager
     OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(t_start);
+    s.setTime(t_start);
 
     for (unsigned int i = 1; i*dt < t_end; ++i)
     {
         std::cout << "Integrate " << i * dt << std::endl;
 
-        manager.setFinalTime(i*dt);
-        manager.integrate(s);
+        manager.integrate(s, i*dt);
 
         forceController->setAcceleration(Vec3(0, 10, 0));
-
-        manager.setInitialTime(i*dt);
     }
 
     //store results

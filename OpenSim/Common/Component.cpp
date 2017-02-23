@@ -1127,7 +1127,7 @@ void Component::markAsPropertySubcomponent(const Component* component)
         std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
     if ( it == _propertySubcomponents.end() ){
         // Must reconstruct the reference pointer in place in order
-        // to invoke move constuctor from SimTK::Array::push_back 
+        // to invoke move constructor from SimTK::Array::push_back 
         // otherwise it will copy and reset the Component pointer to null.
         _propertySubcomponents.push_back(
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));

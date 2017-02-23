@@ -456,8 +456,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
+    osim_state.setTime(0.0);
 
     // Integrate
     /*const SimbodyMatterSubsystem& matter2 = */osimModel->getMultibodySystem().getMatterSubsystem();
@@ -466,7 +465,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     //cout << osim_state.getQ()<<endl;
     //cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
 
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, duration);
 }
 
 void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_sb, const SimTK::Vector &q_osim, const SimTK::Vector &u_osim, string errorMessagePrefix = "")

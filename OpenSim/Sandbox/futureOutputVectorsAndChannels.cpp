@@ -31,7 +31,7 @@ public:
         const auto& lowerb = std::lower_bound(times.begin(), times.end(), time);
         const auto& timeLowerb = *lowerb;
         const auto& ilowerb = lowerb - times.begin();
-        // If the the time is an exact match to an existing column.
+        // If the time is an exact match to an existing column.
         if (timeLowerb == time) {
             const auto& row = _table.getRowAtIndex(ilowerb);
             return row[colIndex];

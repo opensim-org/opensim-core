@@ -213,7 +213,7 @@ protected:
             OPENSIM_THROW(Exception,
                           "Attempting to update reporter with rows having "
                           "invalid timestamps. Hint: If running simulation in "
-                          "a loop, use clearTable() to clear table at the end"
+                          "a loop, use clearTable() to clear table at the end "
                           "of each loop.\n\n" + std::string{exception.what()});
         }
     }
@@ -235,7 +235,7 @@ private:
 
     // Hold the output values in a table with values as columns and time rows
     // We write to this table in const methods, but only because we ensure
-    // those consts methods are never called with trial intergrator states.
+    // those const methods are never called with trial integrator states.
     TimeSeriesTable_<ValueT> _outputTable;
 };
 

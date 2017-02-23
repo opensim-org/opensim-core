@@ -37,7 +37,7 @@ class SpatialTransform;
 A class implementing a custom joint.  The underlying implementation in Simbody 
 is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint
 representation, which can be used to model both conventional (pins, slider,
-universal, etc…) as well as more complex biomechanical joints. The behavior of
+universal, etc.) as well as more complex biomechanical joints. The behavior of
 a custom joint is specified by its SpatialTransform. A SpatialTransform is com-
 prised of 6 TransformAxes (3 rotations and 3 translations) that define the
 spatial position of Child in Parent as a function of coordinates. Each transform
