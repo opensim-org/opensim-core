@@ -1509,14 +1509,26 @@ void Component::printSubcomponentInfo() const {
 }
 
 void Component::printOutputInfo(const bool includeDescendants) const {
+    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+    
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
         const std::string msg = "Outputs from " + getAbsolutePathName();
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
-        std::vector<std::string> outputNames = getOutputNames();
-        for (auto thisName : outputNames)
-            std::cout << "  " << thisName << std::endl;
+        const auto& outputs = getOutputs();
+        auto maxlen =
+            std::max_element(outputs.begin(), outputs.end(),
+                             [](const ValueType& a, const ValueType& b) {
+                                 return a.second->getTypeName().length() <
+                                        b.second->getTypeName().length();
+                             })->second->getTypeName().length() + 2;
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            std::cout << std::string(maxlen - name.length(), ' ')
+                      << "[" << name << "]  "
+                      << output.first << std::endl;
+        }
         std::cout << std::endl;
     }
 
