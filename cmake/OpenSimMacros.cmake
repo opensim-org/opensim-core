@@ -60,8 +60,6 @@ function(OpenSimAddLibrary)
     # Add the library.
     # ----------------
     # These next few lines are the most important:
-    # Specify the directories in OpenSim that contain header files.
-    include_directories(${OpenSim_SOURCE_DIR})
 
     # Create the library using the provided source and include files.
     add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
@@ -70,15 +68,28 @@ function(OpenSimAddLibrary)
     # This target links to the libraries provided as arguments to this func.
     target_link_libraries(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
 
-    # This is for exporting classes on Windows.
+    # Specify the directories in OpenSim that contain header files.
+    # PUBLIC means these values apply to both building this library and
+    # downstream targets that use this library.
+    target_include_directories(${OSIMADDLIB_LIBRARY_NAME} PUBLIC
+        # To be used when *building* this library.
+        $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}>
+        # To be used when downstream projects use this library (this
+        # ends up in the OpenSimConfig.cmake file). This path is relative
+        # to the install directory.
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+        # TODO doesn't work for Lepton.
+
+
     if(OSIMADDLIB_VENDORLIB)
 	    set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
 		set(OSIMADDLIB_FOLDER "Libraries")
     endif()
     set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-       DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
+        # This is for exporting classes on Windows.
+        DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
+        FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
     )
 
     # Install.

@@ -79,7 +79,8 @@ from the internet, we turn this option OFF." ON)
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
-    PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
+    PATH "The location of the Simbody installation to use; you can change \
+    this. Set as empty to let CMake search for Simbody automatically.")
 
 option(OPENSIM_COPY_SIMBODY "Copy Simbody headers and libraries into the
 OpenSim installation. This way, you can treat OpenSim and Simbody as one
@@ -184,12 +185,11 @@ if(UNIX AND ("${ABS_INSTALL_PREFIX}" STREQUAL "/usr" OR
     if(${BUILD_API_ONLY} AND ${OPENSIM_INSTALL_UNIX_FHS})
         # In this case it's fine to install into /usr or /usr/local.
     else()
-        message(SEND_ERROR "
-        Cannot install into /usr or /usr/local if building
-        applications (since OpenSim executable names conflict with those of
-        vital UNIX executables) or if the OpenSim installation does not
-        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set
-        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change
+        message(SEND_ERROR "Cannot install into /usr or /usr/local if building\
+        applications (since OpenSim executable names conflict with those of\
+        vital UNIX executables) or if the OpenSim installation does not\
+        conform to the UNIX Filesystem Hierarchy Standard. Either (a) set\
+        BUILD_API_ONLY and OPENSIM_INSTALL_UNIX_FHS to ON, or (b) change\
         CMAKE_INSTALL_PREFIX.")
     endif()
 endif()
@@ -360,9 +360,12 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 
 endif()
 
-set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
+set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're \
+    building the GUI and have SWIG and Java installed on your machine.)")
 
-set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if \
+    you're building the Python wrapping and have SWIG and Python installed \
+    on your machine.)")
 
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
@@ -379,31 +382,23 @@ if(${BUILD_JAVA_WRAPPING})
             # On Unix, assume host architecture to be same as target 
             # architecture.
             if(UNIX AND NOT ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
-                string(CONCAT MSG 
-                       "Matlab found is 64-bit but host is 32-bit. Matlab arch"
-                       " and OpenSim binaries arch have to be same.")
-                message(WARNING ${MSG})
+                message(WARNING "Matlab found is 64-bit but host is 32-bit. \
+                        Matlab arch and OpenSim binaries arch have to be same.")
             elseif(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "64")
-                string(CONCAT MSG 
-                       "Matlab found is 64-bit but C++ compiler chosen is "
-                       "32-bit. Matlab arch and OpenSim binaries arch have"
-                       " to be same.")
-                message(WARNING ${MSG})
+                message(WARNING "Matlab found is 64-bit but C++ compiler \
+                        chosen is 32-bit. Matlab arch and OpenSim binaries \
+                        arch have to be same.")
             endif()
         elseif(${Matlab_MEX_EXTENSION} MATCHES "32")
             # On Unix, assume host architecture to be same as target 
             # architecture.
             if(UNIX AND ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
-                string(CONCAT MSG
-                       "Matlab found is 32-bit but host is 64-bit. Matlab arch"
-                       " and OpenSim binaries arch have to be same.")
-                message(WARNING ${MSG})
+                message(WARNING "Matlab found is 32-bit but host is 64-bit. \
+                        Matlab arch and OpenSim binaries arch have to be same.")
             elseif(MSVC AND ${CMAKE_GENERATOR} MATCHES "64")
-                string(CONCAT MSG
-                       "Matlab found is 32-bit but C++ compiler chosen is "
-                       "64-bit. Matlab arch and OpenSim binaries arch have"
-                       " to be same.")
-                message(WARNING ${MSG})
+                message(WARNING "Matlab found is 32-bit but C++ compiler \
+                        chosen is 64-bit. Matlab arch and OpenSim binaries \
+                        arch have to be same.")
             endif()
         endif()
     endif()
@@ -440,7 +435,7 @@ endif()
 
 ## On APPLE, use MACOSX_RPATH.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
-if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
+if(APPLE)
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
         "If ON, you don't need to set 
         DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
@@ -536,9 +531,9 @@ mark_as_advanced(Simbody_DIR)
 
 # If Simbody is not found, Simbody_FOUND is false.
 if(NOT Simbody_FOUND)
-    message(FATAL_ERROR "
-        Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
-        SIMBODY_HOME to the installation directory of Simbody.")
+    message(FATAL_ERROR "Simbody ${SIMBODY_VERSION_TO_USE} not found. \
+        Install Simbody and set SIMBODY_HOME to the installation directory \
+        of Simbody.")
 endif()
 
 # Directories for Simbody headers and libraries for building.
