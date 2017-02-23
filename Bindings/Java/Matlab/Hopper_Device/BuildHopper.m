@@ -156,9 +156,10 @@ vastus.updGeometryPath().addPathWrap(patella);
 brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseConstantFunction();
-controlFunction.addPoint(0.0, 0.3);
-controlFunction.addPoint(2.0, 1.0);
-controlFunction.addPoint(3.9, 0.1);
+gctime = 5;
+for i = 1:size(act,2)
+    controlFunction.addPoint((act(1,i)/100)*gctime, act(2,i));
+end
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
 
@@ -185,5 +186,6 @@ linkGeometry = Cylinder(linkRadius, linkHalfLength);
 linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
+
 
 end
