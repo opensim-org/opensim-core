@@ -1529,16 +1529,25 @@ void Component::printOutputInfo(const bool includeDescendants) const {
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
         const auto& outputs = getOutputs();
-        auto maxlen =
-            std::max_element(outputs.begin(), outputs.end(),
-                             [](const ValueType& a, const ValueType& b) {
-                                 return a.second->getTypeName().length() <
-                                        b.second->getTypeName().length();
-                             })->second->getTypeName().length() + 2;
+        unsigned maxlen{};
         for(const auto& output : outputs) {
             const auto& name = output.second->getTypeName();
-            std::cout << std::string(maxlen - name.length(), ' ')
-                      << "[" << name;
+            unsigned len = name.length();
+            if(typeAliases.find(name) != typeAliases.end())
+                len += typeAliases.at(name).length();
+
+            maxlen = std::max(maxlen, len);
+        }
+        maxlen += 2;
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << std::string(maxlen -
+                                         name.length() -
+                                         typeAliases.at(name).length(), ' ');
+            else
+                std::cout << std::string(maxlen - name.length() + 3, ' ');
+            std::cout << "[" << name;
             if(typeAliases.find(name) != typeAliases.end())
                 std::cout << " = " << typeAliases.at(name);
             std::cout << "]  "
