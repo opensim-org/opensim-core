@@ -92,8 +92,9 @@ protected:
         SimTK::Body::Massless massless;
 
         // CREATE MOBILIZED BODY for body rotation about body Z
-        MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-            system.updMatterSubsystem().updMobilizedBody(getParentFrame().getMobilizedBodyIndex()),
+        MobilizedBody masslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
+            system.updMatterSubsystem().updMobilizedBody(
+                getParentFrame().getMobilizedBodyIndex()),
             P_Po,
             massless,
             childTransform0,
@@ -105,8 +106,8 @@ protected:
         SimTK::Transform childTransform1(rotToX, Vec3(0));
 
         // CREATE MOBILIZED BODY for body rotation about body X
-        MobilizedBody simtkMasslessBody2 = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody1,
+        MobilizedBody masslessBody2 = createMobilizedBody<MobilizedBody::Pin>(
+            masslessBody1,
             parentTransform1,
             massless,
             childTransform1,
@@ -119,7 +120,7 @@ protected:
 
         // CREATE MOBILIZED BODY for body rotation about body Y
         MobilizedBody mobBod = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody2,
+            masslessBody2,
             parentTransform2,
             getChildInternalRigidBody(),
             childTransform2,
