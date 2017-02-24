@@ -102,10 +102,10 @@ public:
         const std::string& componentConcreteClassName) :
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName + "' of type " +
-            componentConcreteClassName + " has no parent and is not the root.\n" +
+            componentConcreteClassName + " has no owner and is not the root.\n" +
             "Verify that finalizeFromProperties() has been invoked on the " + 
             "root Component or that this Component is not a clone, which has " +
-            "not been added to its parent Component.";
+            "not been added to another Component.";
         addMessage(msg);
     }
 };
@@ -413,7 +413,7 @@ public:
 
     /** Define a Component's internal data members and structure according to
         its properties. This includes its subcomponents as part of the component
-        ownership tree and identifies its parent (if present) in the tree.
+        ownership tree and identifies its owner (if present) in the tree.
         finalizeFromProperties propagates to all of the component's
         subcomponents prior to invoking the virtual extendFinalizeFromProperties()
         on itself.*/
@@ -2195,7 +2195,7 @@ public:
     const StateVariable* findStateVariable(const std::string& name) const;
 #endif
 
-    /** Access the owner (parent component) of this Component.
+    /** Access the owner of this Component.
         An exception is thrown if the Component has no owner; in this case, the
         component is the root component, or is orphaned.
         @see hasOwner() */
@@ -2209,7 +2209,7 @@ public:
 
 protected:
     /** %Set this Component's reference to its owning Component */
-    void setOwner(const Component& parent);
+    void setOwner(const Component& owner);
 
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
@@ -2236,7 +2236,7 @@ protected:
             }
             // if currentSubpath is empty we are at root or have a nameless 
             // comp
-            // if currentSubpath is '.' we are in the right parent, and loop
+            // if currentSubpath is '.' we are in the right owner, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
                 if (current->getNumImmediateSubcomponents() == 0) {
@@ -2652,9 +2652,10 @@ protected:
             override;
 
 private:
-    // Reference to the parent Component of this Component. It is not the previous
-    // in the tree, but is the Component one level up that owns this one.
-    SimTK::ReferencePtr<const Component> _parent;
+    // Reference to the owning Component of this Component. It is not the
+    // previous in the tree, but is the Component one level up that owns this
+    // one.
+    SimTK::ReferencePtr<const Component> _owner;
 
     // Reference pointer to the successor of the current Component in Pre-order traversal
     mutable SimTK::ReferencePtr<const Component> _nextComponent;

@@ -615,26 +615,26 @@ const Component& Component::getOwner() const
             "(or another component).";
         throw Exception(msg);
     }
-    return _parent.getRef();
+    return _owner.getRef();
 }
 
 bool Component::hasOwner() const
 {
-    return !_parent.empty();
+    return !_owner.empty();
 }
 
-void Component::setOwner(const Component& parent)
+void Component::setOwner(const Component& owner)
 {
-    if (&parent == this) {
+    if (&owner == this) {
         std::string msg = "Component '" + getName() + "'::setOwner(). " +
             "Attempted to set itself as its owner.";
         throw Exception(msg);
     }
-    else if (_parent.get() == &parent) {
+    else if (_owner.get() == &owner) {
         return;
     }
 
-    _parent.reset(&parent);
+    _owner.reset(&owner);
 }
 
 std::string Component::getAbsolutePathName() const
@@ -1521,15 +1521,15 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     const size_t nasc = _adoptedSubcomponents.size();
 
     if (!hasOwner()) {
-        // If this isn't the root component and it has no parent, then
+        // If this isn't the root component and it has no owner, then
         // this is an orphan component and we likely failed to call 
         // finalizeFromProperties() on the root OR this is a clone that
-        // has not been added to the root (in which case would have a parent).
+        // has not been added to the root (in which case would have an owner).
         if (this != &root) {
             OPENSIM_THROW(ComponentIsAnOrphan, getName(),
                 getConcreteClassName());
         }
-        // if the root (have no parent) and have no components
+        // if the root (have no owner) and have no components
         else if (!(nmsc + npsc + nasc)) {
             OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
                 getName(), getConcreteClassName());
