@@ -131,12 +131,15 @@ void Component::addComponent(Component* subcomponent)
     while (root->hasParent()) {
         root = &(root->getParent());
     }
-
-    auto components = root->getComponentList<Component>();
-    for (auto& c : components) {
-        if (subcomponent == &c) {
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                subcomponent->getName(), getName());
+    // if the root has no immediate subcomponents do not bother
+    // checking if the subcomponent is in the ownership tree
+    if ((root->getNumImmediateSubcomponents() > 0)) {
+        auto components = root->getComponentList<Component>();
+        for (auto& c : components) {
+            if (subcomponent == &c) {
+                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
+                    subcomponent->getName(), getName());
+            }
         }
     }
 
@@ -1509,11 +1512,32 @@ void Component::printSubcomponentInfo() const {
 }
 
 void Component::initComponentTreeTraversal(const Component &root) const {
-    // Going down the tree, node is followed by all its
-    // children in order, last child's successor is the parent's successor.
+    // Going down the tree, this node is followed by all its children.
+    // The last child's successor (next) is the parent's successor.
+
+    const size_t nmsc = _memberSubcomponents.size();
+    const size_t npsc = _propertySubcomponents.size();
+    const size_t nasc = _adoptedSubcomponents.size();
+
+    if (!hasParent()) {
+        // If this isn't the root component and it has no parent, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have a parent).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
+        }
+        // if the root (have no parent) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
+    }
+
     const Component* last = nullptr;
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
-        if (i == _memberSubcomponents.size() - 1) {
+    for (unsigned int i = 0; i < nmsc; i++) {
+        if (i == nmsc - 1) {
             _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
@@ -1523,7 +1547,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             last = _memberSubcomponents[i + 1].get();
         }
     }
-    if (size_t npsc = _propertySubcomponents.size()) {
+    if (npsc) {
         if (last)
             last->_nextComponent = _propertySubcomponents[0].get();
 
@@ -1540,7 +1564,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             }
         }
     }
-    if (size_t nasc = _adoptedSubcomponents.size()) {
+    if (nasc) {
         if (last)
             last->_nextComponent = _adoptedSubcomponents[0].get();
 
@@ -1556,16 +1580,15 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nmsc; ++i) {
         _memberSubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < npsc; ++i) {
         _propertySubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
 }
-
 
 } // end of namespace OpenSim

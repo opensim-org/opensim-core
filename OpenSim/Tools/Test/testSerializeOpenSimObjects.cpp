@@ -97,9 +97,8 @@ int main()
         //Serialize all the components
         testModel.print("allComponents.osim");
 
-        // The finalize flag is for testing purposes ONLY. This way we
-        // can ignore invalid properties and focus the test on serialization.
-        Model deserializedModel("allComponents.osim", false);
+        // Now, deserilaize the Model from file 
+        Model deserializedModel("allComponents.osim");
 
         try {
             deserializedModel.finalizeFromProperties();

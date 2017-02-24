@@ -93,6 +93,40 @@ public:
     }
 };
 
+class ComponentIsAnOrphan : public Exception {
+public:
+    ComponentIsAnOrphan(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " has no parent and is not the root.\n" +
+            "Verify that finalizeFromProperties() has been invoked on the " + 
+            "root Component or that this Component is not a clone, which has " +
+            "not been added to its parent Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentIsRootWithNoSubcomponents : public Exception {
+public:
+    ComponentIsRootWithNoSubcomponents(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " is the root but has no " + 
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -2167,7 +2201,7 @@ public:
     const Component& getParent() const;
 
     /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
+        A component may not have a parent Component assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
@@ -2203,6 +2237,10 @@ protected:
             // if currentSubpath is '.' we are in the right parent, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
+                if (current->getNumImmediateSubcomponents() == 0) {
+                    current = nullptr;
+                    continue;
+                }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
@@ -2902,9 +2940,9 @@ void Input<T>::connect(const AbstractOutput& output,
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
-        const int numPreexistingSatisfiedConnections(_connectees.size());
+        const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
-        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -2924,7 +2962,7 @@ void Input<T>::connect(const AbstractOutput& output,
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, idxThisConnectee);
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2952,9 +2990,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     // Record the number of pre-existing satisfied connections...
-    const int numPreexistingSatisfiedConnections(_connectees.size());
+    const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
-    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
     // Update the connectee name as
@@ -2971,8 +3009,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
-    if (idxThisConnectee < numDesiredConnections) // satisfied <= desired
-        setConnecteeName(pathStr, idxThisConnectee);
+
+    if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     

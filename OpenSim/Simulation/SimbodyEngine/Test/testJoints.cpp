@@ -2012,7 +2012,8 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", true);
+    Model gaitModel("testJointConstraints.osim");
+    gaitModel.finalizeFromProperties();
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
