@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2016 Stanford University and the Authors             %
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -20,12 +20,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Author: James Dunne, Shrinidhi K. Lakshmikanth, Chris Dembia, Tom Uchida,
+% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
 % Ajay Seth, Ayman Habib, Jen Hicks.
 
-%% // Utility function for convertin c3d data to .trc and .mot format. 
-% TODO: Write documentation
-
+%% Utility function for converting c3d data to .trc and .mot format. 
+% c3d_reading(varargin)
+% Inputs to function are pairs of string-string or string-number pairs.
+%
+% 'filepath', 'path2file'   reads c3d data at path2file.
+% 'firstRotation'           num applies first rotation of num (dble)
+% 'axis', 'X'               applies first rotation to axis X (string)
+% 'secondRotation'          num applies second rotation of num (dble) 
+% 'axis2', 'Y'              applies second rotation to axis Y (string)
+%
+% Example ? read WalkingData.c3d and perform a 90 degree rotation about X
+%   c3d_reading('filepath', 'C:/data/WalkingData.c3d',...
+%                 'firstRotation', '90'...
+%                 'axis', 'X')
 
 function c3d_reading(varargin)
 
