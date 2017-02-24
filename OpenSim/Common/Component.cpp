@@ -1530,11 +1530,14 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
         const auto& outputs = getOutputs();
         unsigned maxlen{};
+        bool printingAlias{false};
         for(const auto& output : outputs) {
             const auto& name = output.second->getTypeName();
             unsigned len = name.length();
-            if(typeAliases.find(name) != typeAliases.end())
+            if(typeAliases.find(name) != typeAliases.end()) {
                 len += typeAliases.at(name).length();
+                printingAlias = true;
+            }
 
             maxlen = std::max(maxlen, len);
         }
@@ -1545,8 +1548,10 @@ void Component::printOutputInfo(const bool includeDescendants) const {
                 std::cout << std::string(maxlen -
                                          name.length() -
                                          typeAliases.at(name).length(), ' ');
-            else
+            else if(printingAlias)
                 std::cout << std::string(maxlen - name.length() + 3, ' ');
+            else
+                std::cout << std::string(maxlen - name.length(), ' ');
             std::cout << "[" << name;
             if(typeAliases.find(name) != typeAliases.end())
                 std::cout << " = " << typeAliases.at(name);
