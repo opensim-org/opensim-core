@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -213,7 +213,7 @@ protected:
             OPENSIM_THROW(Exception,
                           "Attempting to update reporter with rows having "
                           "invalid timestamps. Hint: If running simulation in "
-                          "a loop, use clearTable() to clear table at the end"
+                          "a loop, use clearTable() to clear table at the end "
                           "of each loop.\n\n" + std::string{exception.what()});
         }
     }
@@ -235,7 +235,7 @@ private:
 
     // Hold the output values in a table with values as columns and time rows
     // We write to this table in const methods, but only because we ensure
-    // those consts methods are never called with trial intergrator states.
+    // those const methods are never called with trial integrator states.
     TimeSeriesTable_<ValueT> _outputTable;
 };
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -147,10 +147,9 @@ void testControlSetControllerOnBlock()
     Manager manager(osimModel, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
@@ -221,6 +220,7 @@ void testPrescribedControllerOnBlock(bool enabled)
     
     osimModel.print("blockWithPrescribedController.osim");
     Model modelfileFromFile("blockWithPrescribedController.osim");
+    modelfileFromFile.finalizeFromProperties();
 
     // Verify that serialization and then deserialization is correct
     ASSERT(osimModel == modelfileFromFile);
@@ -240,10 +240,9 @@ void testPrescribedControllerOnBlock(bool enabled)
     Manager manager(osimModel, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
 
     si.getQ().dump("Final position:");
 
@@ -349,10 +348,9 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Manager manager(osimModel, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
 
     string modelName = osimModel.getName();
     // Save the simulation results
@@ -391,10 +389,9 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Manager manager2(osimModel, integrator2);
 
     // Integrate from initial time to final time
-    manager2.setInitialTime(initialTime);
-    manager2.setFinalTime(finalTime);
+    s2.setTime(initialTime);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager2.integrate(s2);
+    manager2.integrate(s2, finalTime);
 
     // Save the simulation results
     Storage states(manager2.getStateStorage());

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib, Ajay Seth, Michael A. Sherman   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -836,8 +836,8 @@ private:
     //  1: Shows illegal tags 
     //  2: level 1 + registration troubleshooting
     //  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
-    //     used from ava wrapping in GUI/Matlab this catches all exceptions 
-    //     thrown by the low level libraries which is slower but helpful in 
+    //     used from Java wrapping in GUI/Matlab this catches all exceptions 
+    //     thrown by the low-level libraries which is slower but helpful in 
     //     troubleshooting.
     static int      _debugLevel;
 

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -226,14 +226,15 @@ public:
 
     /** Convenience method to get a const reference to the Coordinate associated
         with a single-degree-of-freedom Joint. If the Joint has more than one
-        Coordinate, you must provide the appropriate argument to the
-        getCoordinate() method defined in the derived class. */
+        Coordinate, you must use get_coordinates() or provide the appropriate
+        argument to the getCoordinate() method defined in the derived class. */
     const Coordinate& getCoordinate() const;
 
     /** Convenience method to get a writable reference to the Coordinate
         associated with a single-degree-of-freedom Joint. If the Joint has more
-        than one Coordinate, you must provide the appropriate argument to the
-        updCoordinate() method defined in the derived class. */
+        than one Coordinate, you must use upd_coordinates() or provide the
+        appropriate argument to the updCoordinate() method defined in the
+        derived class. */
     Coordinate& updCoordinate();
 
     bool getReverse() const { return get_reverse(); }

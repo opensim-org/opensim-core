@@ -3,9 +3,10 @@ import org.opensim.modeling.*;
 class TestIterators {
   public static void main(String[] args) {
     Model model = new Model();
+    model.finalizeFromProperties();
 
     // Iterate through 
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
     ComponentsList componentsList = model.getComponentsList();
     ComponentIterator compIter = componentsList.begin();
     int countComponents = 0;
@@ -26,7 +27,6 @@ class TestIterators {
         muscleIter.next();
     }
     // Access lists used in GUI
-    FrameSet frameset = model.getFrameSet();    int nframes = frameset.getSize();
     ForceSet fset = model.getForceSet();        int nforces = fset.getSize();
     SetMuscles musset = model.getMuscles();     int nmuscles = musset.getSize();
     SetActuators actset = model.getActuators(); int nacts = actset.getSize();

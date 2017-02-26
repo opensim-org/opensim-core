@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -210,11 +210,11 @@ public:
 
     /** Get table metadata for a given key.
 
-    If using this funciton from Python/Java/Matlab, use the following table:
+    If using this function from Python/Java/Matlab, use the following table:
     <table>
     <tr>
       <th>C++</th>
-      <th>Python / Java / Matab</th>
+      <th>Python / Java / Matlab</th>
       <th>Example</th>
     </tr>
     <tr>

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,19 +77,19 @@ int main()
         // Left brick
         OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
         leftAnchorFrame->setName("LeftAnchor");
-        osimModel.addFrame(leftAnchorFrame);
+        osimModel.addComponent(leftAnchorFrame);
         // Right brick
         OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
-        osimModel.addFrame(rightAnchorFrame);
+        osimModel.addComponent(rightAnchorFrame);
         // Cylinder
         OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
         cylFrame->setName("CylAnchor");
-        osimModel.addFrame(cylFrame);
+        osimModel.addComponent(cylFrame);
         // Ellipsoid
         OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
         ellipsoidFrame->setName("EllipsoidAnchor");
-        osimModel.addFrame(ellipsoidFrame);
+        osimModel.addComponent(ellipsoidFrame);
 
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
@@ -325,10 +325,9 @@ int main()
         osimModel.printDetailedInfo(si, cout);
 
         // Integrate from initial time to final time
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-        manager.integrate(si);
+        manager.integrate(si, finalTime);
 
         //////////////////////////////
         // SAVE THE RESULTS TO FILE //

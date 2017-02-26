@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -69,7 +69,7 @@ int main() {
     // Print out the DataTable to console. Use this for debugging only.
     std::cout << dataTable << std::endl;
 
-    // Contruction of TimeSeriesTable fails because independent column is not
+    // Construction of TimeSeriesTable fails because independent column is not
     // strictly increasing. 
     ASSERT_THROW(OpenSim::Exception,
                  TimeSeriesTable timeseries_table2{dataTable});

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -222,7 +222,7 @@ protected:
     This exists so that after the containing Component is copied, the 'owner'
     is the new Component. This Socket needs to be able to modify
     the associated connectee_name property in the Component. Thus, we require
-    a writeable reference. */
+    a writable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
     void setOwner(Component& o) { _owner.reset(&o); }
@@ -350,7 +350,7 @@ public:
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasParent()) {
-            // The API permits connecting to oprhans when passing in the
+            // The API permits connecting to orphans when passing in the
             // dependency directly.
             // Workaround: Identify it as a "floating"
             // Component and we will find its absolute path next time we try to
@@ -590,6 +590,34 @@ public:
 
         return true;
     }
+
+    /** Compose the connectee name from its constituents. This is the opposite
+    operation of parseConnecteeName().
+    Example:
+    @verbatim
+     if inputs are
+       componentPath --> "/foo/bar"
+       outputName    --> "output"
+       channelName   --> "channel"
+       alias         --> "baz"
+     then result --> /foo/bar|output:channel(baz)
+    @endverbatim
+    */
+    static std::string composeConnecteeName(const std::string& componentPath,
+                                            const std::string& outputName,
+                                            const std::string& channelName,
+                                            const std::string& alias) {
+        auto path = componentPath;
+        if(!path.empty())
+            path += "|";
+        path += outputName;
+        if(!channelName.empty())
+            path += ":" + channelName;
+        if(!alias.empty())
+            path += "(" + alias + ")";
+
+        return path;
+    }
     
 protected:
     /** Create an AbstractInput (Socket) that connects only to an 
@@ -721,6 +749,22 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
+        const auto& connecteeName = getConnecteeName(index);
+        std::string componentPath{};
+        std::string outputName{};
+        std::string channelName{};
+        std::string currAlias{};
+        parseConnecteeName(connecteeName,
+                           componentPath,
+                           outputName,
+                           channelName,
+                           currAlias);
+        setConnecteeName(composeConnecteeName(componentPath,
+                                              outputName,
+                                              channelName,
+                                              alias),
+                         index);
+        
         _aliases[index] = alias;
     }
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,7 +35,6 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
-#include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
@@ -146,7 +145,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
-    Object::registerType( FrameSet());
     Object::registerType( BodySet());
     Object::registerType( ComponentSet() );
     Object::registerType( ControllerSet() );

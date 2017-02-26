@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -739,8 +739,8 @@ int InducedAccelerations::record(const SimTK::State& s)
             const SimTK::Vec3& com = body.get_mass_center();
             
             // Get the body acceleration
-            _model->getSimbodyEngine().getAcceleration(s_analysis, body, com, vec);
-            _model->getSimbodyEngine().getAngularAcceleration(s_analysis, body, angVec);    
+            vec = body.findStationAccelerationInGround(s_analysis, com);
+            angVec = body.getAccelerationInGround(s_analysis)[0];
 
             // CONVERT TO DEGREES?
             if(getInDegrees()) 
@@ -984,7 +984,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
                 const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
 
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                _model->getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);

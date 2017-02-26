@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -97,9 +97,8 @@ int main()
         //Serialize all the components
         testModel.print("allComponents.osim");
 
-        // The finalize flag is for testing purposes ONLY. This way we
-        // can ignore invalid properties and focus the test on serialization.
-        Model deserializedModel("allComponents.osim", false);
+        // Now, deserilaize the Model from file 
+        Model deserializedModel("allComponents.osim");
 
         try {
             deserializedModel.finalizeFromProperties();

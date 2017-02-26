@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
  *            Thomas Uchida                                                   *
  *                                                                            *
@@ -120,17 +120,15 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
     #pragma endregion
 
-    // Add the device to the model. We need to add the device using
-    // addModelComponent() rather than addComponent() because of a bug in
-    // Model::initSystem().
-    model.addModelComponent(&device);
+    // Add the device to the model.
+    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    if (model.hasComponent<WrapCylinder>("thigh/patella")) {
+    const std::string patellaPath("thigh/patellaFrame/patella");
+    if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
-        auto& frame = model.updComponent<PhysicalFrame>("thigh");
-        auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
+        auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);
         cable.updGeometryPath().addPathWrap(wrapObject);
     }
 }
@@ -183,8 +181,7 @@ void addConsoleReporterToHopper(Model& hopper)
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device (the SignalGenerator class is defined in
-// helperMethods.h).
+// Add a SignalGenerator to a device.
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)

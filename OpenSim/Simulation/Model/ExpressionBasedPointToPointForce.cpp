@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -246,14 +246,13 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, *_body1, getPoint1(), gpoint);
+    SimTK::Vec3 gpoint = _body1->findStationLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, *_body2, getPoint2(), gpoint);
+    gpoint = _body2->findStationLocationInGround(state, getPoint2());
     values.append(3, &gpoint[0]);
 
     return values;

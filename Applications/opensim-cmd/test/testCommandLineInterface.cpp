@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2016 Stanford University and the Authors                     *
+ * Copyright (c) 2016-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -227,7 +227,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
 
     const auto cmd = subcommand + " -h";
 
-    // Nonexistant file.
+    // Nonexistent file.
     // =================
     {
         std::regex output(RE_ANY + "(Failed to load library x)\n");

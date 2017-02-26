@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -155,8 +155,8 @@ int main()
         populate_wrapModelPrimitives(standard, false);
         testVisModelAgainstStandard(modelWithWrap, standard);
     }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -217,21 +217,21 @@ Model createModel4AppearanceTest()
     // Create offset frame and add to model
     SimTK::Transform translate(Vec3(1.0, 0., 0.));
     PhysicalOffsetFrame* oframe = new PhysicalOffsetFrame(ground, translate);
-    modelWithGroundOnly.addFrame(oframe);
+    modelWithGroundOnly.addComponent(oframe);
     // Change color and opacity
     Sphere* offsetSphere = unitSphere->clone();
     offsetSphere->upd_Appearance().set_color(SimTK::Cyan);
     offsetSphere->upd_Appearance().set_opacity(0.5);
     oframe->attachGeometry(offsetSphere);
     PhysicalOffsetFrame* ooframe = new PhysicalOffsetFrame(ground, Vec3(2.0, 0., 0.));
-    modelWithGroundOnly.addFrame(ooframe);
+    modelWithGroundOnly.addComponent(ooframe);
     // invisible Sphere
     Sphere* ooffsetSphere = unitSphere->clone();
     // Hidden   
     ooffsetSphere->upd_Appearance().set_visible(false);
     ooframe->attachGeometry(ooffsetSphere);
     PhysicalOffsetFrame* oooframe = new PhysicalOffsetFrame(ground, Vec3(3.0, 0., 0.));
-    modelWithGroundOnly.addFrame(oooframe);
+    modelWithGroundOnly.addComponent(oooframe);
     // Wireframe Sphere
     Sphere* oooffsetSphere = unitSphere->clone();
     //DecorativeGeometry::DrawWireframe is Rep : 2 in std file
@@ -294,26 +294,6 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Frame rod 1
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Block rod 1
-    stdPrimitives.push_back(
-        DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(1).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Frame body 2
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    // Block rod 2
-    stdPrimitives.push_back(
-        DecorativeMeshFile("block.vtp").setBodyId(2).setColor(SimTK::White)
-        .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 1.5, 2 }).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Offset frame rod1
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White).setIndexOnBody(0).setScale(0.2)
@@ -325,6 +305,17 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Frame rod 1
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Block rod 1
+    stdPrimitives.push_back(
+        DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(1).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+
     // Offset frame rod2
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
@@ -337,6 +328,17 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
+    // Frame body 2
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Block rod 2
+    stdPrimitives.push_back(
+        DecorativeMeshFile("block.vtp").setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 1.5, 2 }).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+
     // Two more offset frames
     stdPrimitives.push_back(
         DecorativeFrame(1).setBodyId(1).setColor(SimTK::White)
@@ -357,10 +359,6 @@ void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& std
         DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // This the frame of the composed transform and attached geometry
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
@@ -372,6 +370,12 @@ void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& std
         .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 2, 3 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0.3, 0.3, 0.3 })));
+
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+
 
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)

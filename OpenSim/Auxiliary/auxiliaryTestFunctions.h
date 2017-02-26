@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -310,11 +310,11 @@ size_t estimateMemoryChangeForCreator(T creator, const size_t nSamples = 100)
 
 // Determine if getRSS is providing reliable estimates of memory usage by
 // testing against an allocation of known size and verifying that the change
-// memory use is detected. Employ this method to validate the use of
+// in memory use is detected. Employ this method to validate the use of
 // memory use estimators (e.g. estimateMemoryChangeForCreator and
 // estimateMemoryChangeForCommand). Do this at the beginning of your test 
 // involving checks for memory use.
-void validateMemoryUseEstimates(const size_t nSamples = 11)
+void validateMemoryUseEstimates(const size_t nSamples = 20)
 {
     // Approximate size of a small OpenSim model
     size_t size = 1000 * 1024; // 1K * 1KB = 1MB;

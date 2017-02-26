@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -1029,7 +1029,7 @@ void Millard2012AccelerationMuscle::
         double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     //========================================================================
-    //Compute visco elastic multipliers and their derivatives
+    //Compute viscoelastic multipliers and their derivatives
     //========================================================================
         AccelerationMuscleInfo ami;
         calcAccelerationMuscleInfo( ami,
@@ -1039,7 +1039,7 @@ void Millard2012AccelerationMuscle::
                                     fal  ,fv,fpe,fk,fcphi,fse);
 
     //========================================================================
-    //Compute visco elastic multipliers derivatives
+    //Compute viscoelastic multipliers derivatives
     //========================================================================
         SimTK::Vec2 fiberForceIJ = calcFiberForceIJ(a,ami);
         double Fce  = calcFiberForce(fiberForceIJ,ami);    
@@ -1309,7 +1309,7 @@ Millard2012AccelerationMuscle::initMuscleState(
         fv          = fvCurve.calcValue(dlceN1_dt);
             
         //========================================================================
-        //Compute visco elastic multipliers and their derivatives
+        //Compute viscoelastic multipliers and their derivatives
         //========================================================================            
         calcAccelerationMuscleInfo( ami,
                                     lce  ,dlce_dt,
@@ -1318,7 +1318,7 @@ Millard2012AccelerationMuscle::initMuscleState(
                                     fal  ,fv,fpe,fk,fcphi,fse);
 
         //==================================================================
-        //Compute visco elastic multipliers derivatives
+        //Compute viscoelastic multipliers derivatives
         //==================================================================
         SimTK::Vec2 fiberForceIJ = calcFiberForceIJ(a,ami);
         /*Fce  = */calcFiberForce(fiberForceIJ,ami);    
@@ -1496,7 +1496,7 @@ Millard2012AccelerationMuscle::initMuscleState(
         fv          = fvCurve.calcValue(dlceN1_dt);
             
         //============================================================
-        //Compute visco elastic multipliers and their derivatives 
+        //Compute viscoelastic multipliers and their derivatives 
         //when the fiber is at its minimum value.
         //============================================================            
         calcAccelerationMuscleInfo( ami,
@@ -1851,7 +1851,7 @@ void Millard2012AccelerationMuscle::
         ami.fcphiV = - ami.fcphi* dlceNAT_dt* bcphi;
         ami.fibV   =              dlceN_dt  * bfib;
 
-    //Visco elastic multipliers
+    //Viscoelastic multipliers
         ami.fseVEM      = ami.fse   + ami.fseV; 
         ami.fpeVEM      = ami.fpe   + ami.fpeV;
         ami.fkVEM       = ami.fk    + ami.fkV; 
@@ -1885,13 +1885,13 @@ void Millard2012AccelerationMuscle::
                             - ami.fcphi      * DdlceNATdt_Dlce* bcphi;
         ami.dfibV_dlce   = 0; //Including for future upgrade ...
 
-    //Visco elastic multiplier partial derivatives      
+    //Viscoelastic multiplier partial derivatives      
         ami.dfseVEM_dtl     = ami.dfse_dtl    + ami.dfseV_dtl;  
         ami.dfpeVEM_dlce    = ami.dfpe_dlce   + ami.dfpeV_dlce;
         ami.dfkVEM_dlce     = ami.dfk_dlce    + ami.dfkV_dlce;
         ami.dfcphiVEM_dlce  = ami.dfcphi_dlce + ami.dfcphiV_dlce;
 
-    //Visco elastic saturation
+    //Viscoelastic saturation
     //    ensure that tension (compression) elements 
     //    generate only tensile forces (compressive)
 

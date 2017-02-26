@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -57,7 +57,9 @@ using namespace std;
 // 30509 for replacing 'isDisabled' with: 'appliesForce', 'isEnforced' and
 //       'enabled', for Force, Constraint and Controller, respectively
 // 30510 for renaming Connector to Socket.
-const int XMLDocument::LatestVersion = 30510;
+// 30511 for replacing Probe::isDisabled with Probe::enabled.
+// 30512 for removing Model::FrameSet and moving frames to components list
+const int XMLDocument::LatestVersion = 30512;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

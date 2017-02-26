@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -219,7 +219,6 @@ void PistonActuator::computeForce(const SimTK::State& s,
                                     SimTK::Vector& generalizedForces) const
 {
     if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     
     if(_bodyA ==NULL || _bodyB ==NULL)
         return;
@@ -232,17 +231,18 @@ void PistonActuator::computeForce(const SimTK::State& s,
 
     SimTK::Vec3 _pointA = get_pointA();
     SimTK::Vec3 _pointB = get_pointB();
+    Ground ground = getModel().getGround();
     if (get_points_are_global())
     {
         pointA_inGround = _pointA;
         pointB_inGround = _pointB;
-        engine.transformPosition(s, getModel().getGround(), _pointA, *_bodyA, _pointA);
-        engine.transformPosition(s, getModel().getGround(), _pointB, *_bodyB, _pointB);
+        _pointA = ground.findStationLocationInAnotherFrame(s, _pointA, *_bodyA);
+        _pointB = ground.findStationLocationInAnotherFrame(s, _pointB, *_bodyB);
     }
     else
     {
-        engine.transformPosition(s, *_bodyA, _pointA, getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, _pointB, getModel().getGround(), pointB_inGround);
+        pointA_inGround = _bodyA->findStationLocationInGround(s, _pointA);
+        pointB_inGround = _bodyB->findStationLocationInGround(s, _pointB);
     }
 
     // find the direction along which the actuator applies its force

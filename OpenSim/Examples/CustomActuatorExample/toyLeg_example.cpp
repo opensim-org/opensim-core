@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -72,7 +72,7 @@ int main()
             Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl1Frame->setName("Cyl1_frame");
         cyl1Frame->attachGeometry(cyl.clone());
-        osimModel.addFrame(cyl1Frame);
+        osimModel.addComponent(cyl1Frame);
 
         // Create a second linkage body as a clone of the first
         OpenSim::Body* linkage2 = linkage1->clone();
@@ -80,7 +80,7 @@ int main()
         Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2,
             Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
-        osimModel.addFrame(cyl2Frame);
+        osimModel.addComponent(cyl2Frame);
 
         // Create a block to be the pelvis
         double blockMass = 20.0, blockSideLength = 0.2;
@@ -209,10 +209,9 @@ int main()
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
         // Integrate
-        manager.setInitialTime(t0);
-        manager.setFinalTime(tf);
+        si.setTime(t0);
         std::cout<<"\n\nIntegrating from " << t0 << " to " << tf << std::endl;
-        manager.integrate(si);
+        manager.integrate(si, tf);
 
         // Save results
         auto controlsTable = osimModel.getControlsTable();

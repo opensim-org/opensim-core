@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (rootModel == nullptr) {
             std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
-            return;   // Orphan Mesh not descendent of a model
+            return;   // Orphan Mesh not descendant of a model
         }
         // Current interface to Visualizer calls generateDecorations on every frame.
         // On first time through, load file and create DecorativeMeshFile and cache it
@@ -274,12 +274,13 @@ void Mesh::extendFinalizeFromProperties() {
         try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
+            // if the file can be opened but had bad contents e.g. binary vtp 
+            // it will be handled downstream 
 
         }
         catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't read "
+            std::cout << "Visualizer couldn't open "
                 << attempts.back() << " because:\n"
                 << e.what() << "\n";
             return;

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,7 +36,6 @@
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/FrameSet.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
@@ -76,6 +75,21 @@ class ScaleSet;
 //==============================================================================
 /// Model  Exceptions
 //==============================================================================
+class ModelHasNoSystem : public Exception {
+public:
+    ModelHasNoSystem(const std::string& file, size_t line,
+            const std::string& func,
+            const std::string& modelName) :
+                OpenSim::Exception(file, line, func) {
+        std::string msg = "You must first call initSystem() on your Model";
+        if (!modelName.empty()) {
+            msg += " '" + modelName + "'";
+        }
+        msg += ".";
+        addMessage(msg);
+    }
+};
+
 class PhysicalOffsetFramesFormLoop : public Exception {
 public:
     PhysicalOffsetFramesFormLoop(const std::string& file,
@@ -176,9 +190,6 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
         "List of joints that connect the bodies.");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(FrameSet,
-        "List of Frames that various objects can be anchored to or expressed in, Body frames are built-in and not included in this list.");
-
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
 
@@ -209,18 +220,23 @@ public:
     //--------------------------------------------------------------------------
 public:
 
-    /** Default constructor creates a %Model containing only the ground Body
+    /** Default constructor creates a %Model containing only the Ground frame
     and a set of default properties. */
     Model();
 
     /** Constructor from an OpenSim XML model file. 
+    NOTE: The Model is read in (deserialized) from the model file, which means
+    the properties of the Model and its components are filled in from values in
+    the file. In order to evaluate the validity of the properties (e.g. Inertia
+    tensors, availability of Mesh files, ...) and to identify properties as
+    subcomponents of the Model, one must invoke Model::finalizeFromProperties() 
+    first. Model::initSystem() invokes finalizeFromProperties() on its way to
+    creating the System and initializing the State.
+
     @param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
-                        
-    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
-                     defaults to true. If set to false only deserialization is performed.
     **/
-    explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
+    explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some set up functions that happen after the
@@ -507,7 +523,6 @@ public:
     void addForce(Force *adoptee);
     void addProbe(Probe *adoptee);
     void addContactGeometry(ContactGeometry *adoptee);
-    void addFrame(Frame* adoptee);
     void addMarker(Marker *adoptee);
     // @}
 
@@ -617,12 +632,6 @@ public:
      * @return Number of bodies.
      */
     int getNumBodies() const;
-
-    /**
-    * Get the total number of frames in the model.
-    * @return Number of Frames (not including Body frames).
-    */
-    int getNumFrames() const;
 
     /**
     * Get the total number of joints in the model.
@@ -847,15 +856,8 @@ public:
 
     /** Get a const reference to the Ground reference frame */
     const Ground& getGround() const;
-    /** Get a writeable reference to the Ground reference frame */
+    /** Get a writable reference to the Ground reference frame */
     Ground& updGround();
-
-    //--------------------------------------------------------------------------
-    // FRAMES
-    //--------------------------------------------------------------------------
-    FrameSet& updFrameSet() { return upd_FrameSet(); }
-    const FrameSet& getFrameSet() const { return get_FrameSet(); }
-
 
     //--------------------------------------------------------------------------
     // CONSTRAINTS
@@ -863,13 +865,12 @@ public:
     ConstraintSet& updConstraintSet() { return upd_ConstraintSet(); }
     const ConstraintSet& getConstraintSet() const { return get_ConstraintSet(); }
 
-
     //--------------------------------------------------------------------------
     // MARKERS
     //--------------------------------------------------------------------------
     MarkerSet& updMarkerSet() { return upd_MarkerSet(); }
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
-    int replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet);
+    int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
     void writeMarkerFile(const std::string& aFileName);
     void updateMarkerSet(MarkerSet& aMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);

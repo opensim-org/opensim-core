@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -96,11 +96,10 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.05);
+    state.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager.integrate(state);
+    manager.integrate(state, 0.05);
 
     // continuous state variables after simulation
     Vector y2 = state.getY();
@@ -122,11 +121,10 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
     Manager manager2(model, integrator);
-    manager2.setInitialTime(0.0);
-    manager2.setFinalTime(0.05);
+    state2.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager2.integrate(state2);
+    manager2.integrate(state2, 0.05);
 
     // get the default continuous state variables updated
     // from the state after the simulation
