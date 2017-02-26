@@ -1522,6 +1522,10 @@ public:
         }
         std::cout << std::endl;
     }
+
+    /** Print outputs of this component and optionally, those of all 
+    subcomponents.                                                            */
+    void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
 
 protected:
