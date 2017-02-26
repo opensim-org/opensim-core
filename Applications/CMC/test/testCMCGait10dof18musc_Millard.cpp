@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  testCMCGait10dof18musc.cpp             *
+ *                OpenSim:  testCMCGait10dof18musc_Millard.cpp                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -36,12 +36,6 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-    try { testGait10dof18musc(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc_Thelen");
-    }
-
     // redo with the Millard2012EquilibriumMuscle 
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
@@ -63,16 +57,17 @@ int main() {
 
 void testGait10dof18musc() {
     cout<<"\n******************************************************************" << endl;
-    cout << "*                      testGait10dof18musc                       *" << endl;
+    cout << "*                   testGait10dof18musc_Millard                   *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
+    cmc.setResultsDir("gait10dof18musc_ResultsCMC_Millard");
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
 
     if (!cmc.run())
         OPENSIM_THROW(Exception, "testGait10dof18musc " + muscleType +
             " failed to complete.");
 
-    Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
+    Storage results("gait10dof18musc_ResultsCMC_Millard/walk_subject_states.sto");
     Storage temp("gait10dof18musc_std_walk_subject_states.sto");
 
     Storage *standard = new Storage();
