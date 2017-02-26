@@ -200,11 +200,11 @@ for i = 1 : nRot
     RotAboutZ1 = [cosd(Rot),-(sin(Rot*pi/180)),0;sin(Rot*pi/180),cosd(Rot),0;0,0,1];
 
     % choose which rotation matrix to use based on user input 
-    if strcmp(rotAxis,'X') 
+    if strcmp(upper(rotAxis),'X') 
         rotationMatrix = RotAboutX1;
-    elseif strcmp(rotAxis,'Y') 
+    elseif strcmp(upper(rotAxis),'Y') 
         rotationMatrix = RotAboutY1;
-    elseif strcmpi(rotAxis,'Z')
+    elseif strcmpi(upper(rotAxis),'Z')
         rotationMatrix = RotAboutZ1;
     end
     
