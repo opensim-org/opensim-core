@@ -42,16 +42,46 @@ namespace OpenSim
 
 /** Load an OpenSim (plugin) library, using a path to a library (relative or
  * absolute) but *without* the file extension (.dll, .so, .dylib). This method
- * will prefer a debug variant of the library if OpenSim was built in debug. */
+ * will prefer a debug variant of the library if OpenSim was built in debug.
+ *
+ * In MATLAB/Python, we suggest you use LoadOpenSimLibraryExact instead of this
+ * function. If you insist on using this variant, see the examples below.
+ *
+ * To load a plugin in MATLAB, use the following:
+ * @code
+ * import org.opensim.modeling.*;
+ * opensimCommon.LoadOpenSimLibrary('<path>/osimMyPlugin');
+ * @endcode
+ * Do NOT use MATLAB's `loadlibrary()`.
+ *
+ * To load a plugin in Python, use the following:
+ * @code{.py}
+ * import opensim
+ * opensim.LoadOpenSimLibrary('<path>/osimMyPlugin')
+ * @endcode  */
 OSIMCOMMON_API OPENSIM_PORTABLE_HMODULE WINAPI LoadOpenSimLibrary(
         const std::string &lpLibFileName, bool verbose);
-/** Uses LoadOpenSimLibrary(const std::string&, bool) without verbosity. */
+/** Uses LoadOpenSimLibrary(const std::string&, bool), with verbosity. */
 OSIMCOMMON_API void LoadOpenSimLibrary(const std::string &aLibraryName);
 /** Load an OpenSim (plugin) library using the exact path specified. Therefore,
  * you must supply an exact path to the library (either relative or absolute),
  * including the file extension (.dll, .so, .dylib). The only change that may
  * be made to the path is to convert forward slashes to backslashes on Windows
  * (and vice versa on UNIX).
+ *
+ * To load a plugin in MATLAB, use the following:
+ * @code
+ * import org.opensim.modeling.*;
+ * opensimCommon.LoadOpenSimLibraryExact('<path>/osimMyPlugin.dll');
+ * @endcode
+ * Do NOT use MATLAB's `loadlibrary()`.
+ *
+ * To load a plugin in Python, use the following:
+ * @code{.py}
+ * import opensim
+ * opensim.LoadOpenSimLibraryExact('<path>/osimMyPlugin.dll')
+ * @endcode
+ * 
  * @returns true if the library was successfully loaded; false otherwise. */
 OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &exactPath,
                                             bool verbose = true);
