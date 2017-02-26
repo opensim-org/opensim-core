@@ -1440,12 +1440,12 @@ void testPinJoint()
     knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.finalizeConnections(*osimModel);
-    knee3.dumpConnectionInfo();
-    knee3.dumpSubcomponentInfo();
+    knee3.dumpConnections();
+    knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
-    knee.dumpConnectionInfo();
-    knee.dumpSubcomponentInfo();
+    knee.dumpConnections();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -2012,7 +2012,8 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", true);
+    Model gaitModel("testJointConstraints.osim");
+    gaitModel.finalizeFromProperties();
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
@@ -2261,7 +2262,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponentInfo();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

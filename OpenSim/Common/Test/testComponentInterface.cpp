@@ -690,7 +690,9 @@ void testMisc() {
                   world3.add(&bar2));
 
     cout << "Connecting theWorld:" << endl;
-    theWorld.dumpSubcomponentInfo();
+    //theWorld.dumpSubcomponents();
+    theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
     theWorld.finalizeFromProperties();
     theWorld.connect();
 
@@ -753,7 +755,8 @@ void testMisc() {
     ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
     ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
 
-    theWorld.dumpSubcomponentInfo();
+    theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
@@ -943,7 +946,8 @@ void testComponentPathNames()
     A->add(D);
     D->add(E);
 
-    top.dumpSubcomponentInfo();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathName();
     ASSERT(absPathC == "/Top/A/B/C");
@@ -983,7 +987,8 @@ void testComponentPathNames()
     F->setName("F");
     top.add(F);
 
-    top.dumpSubcomponentInfo();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string fFoo1AbsPath = 
         F->getComponent<Foo>("Foo1").getAbsolutePathName();
@@ -1015,7 +1020,8 @@ void testComponentPathNames()
     fbar2.updSocket<Foo>("childFoo")
         .setConnecteeName("../Foo1");
 
-    top.dumpSubcomponentInfo();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
     top.connect();
 }
 
