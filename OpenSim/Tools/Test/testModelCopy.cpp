@@ -55,9 +55,10 @@ void copyPropertiesFromObject(const Object& from, Object& to)
                         toProp.setValueAsObject(fromPropertyAsObject, vx);
                     }
                 }
-                else {
+                else { // SimpleProperty
                     cout << "fromProp:" << fromProp.toString() << endl;
                     cout << "toProp(before):" << toProp.toString() << endl;
+                    // does NOT invoke SimpleProperty assignment operator, why?
                     toProp = fromProp;
                     cout << "toProp(after):" << toProp.toString() << endl;
                 }
@@ -71,18 +72,21 @@ int main()
 {
     try {
 
+        //test copying a simple property 
         {
             Property<double>* a = Property<double>::TypeHelper::create("a", true);
             a->setValue(0.123456789);
             Property<double>* b = Property<double>::TypeHelper::create("b", true);
             b->setValue(10.0);
 
-            *b = *a;
+            *static_cast<SimpleProperty<double>*>(b) = 
+                *static_cast<SimpleProperty<double>*>(a);
 
             cout << "b = " << b->toString() << endl;
             ASSERT(*a == *b);
         }
 
+        //test copying a an Object property 
         {
             Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
                 SimTK::Inertia(0.33, 0.22, 0.11));
@@ -93,20 +97,33 @@ int main()
             Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
             b->setValue(B);
 
-            *b = *a;
+            *static_cast<ObjectProperty<Body>*>(b) =
+                *static_cast<ObjectProperty<Body>*>(a);
+
 
             cout << "b = " << b->toString() << endl;
             ASSERT(*a == *b);
 
-            copyPropertiesFromObject(A, B);
-            ASSERT(A == B);
+            B = A;
+            ASSERT(B == A);
+
+            Body C;
+            // This doesn't work, why?
+            copyPropertiesFromObject(A, C);
+            ASSERT(C == A);
         }
 
         Model arm("arm26.osim");
+        Model test;
+
+        test = arm;
+        ASSERT(test == arm);
+
         arm.finalizeFromProperties();
 
         auto comps = arm.getComponentList<Component>();
 
+        // coy all properties of a model and its constituent components
         for (const auto& comp : comps) {
             const std::string& type = comp.getConcreteClassName();
             Object* to = Object::newInstanceOfType(type);
