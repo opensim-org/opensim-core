@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -44,7 +44,7 @@ using SimTK::Vec3;
 Marker::Marker() :
 Station()
 {
-
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -65,24 +65,25 @@ void Marker::setNull()
 }
 //_____________________________________________________________________________
 /**
+* Construct properties and initialize their default values.
+*/
+void Marker::constructProperties()
+{
+    // Indicate whether the Marker is fixed or not (for MarkerPlacement)
+    constructProperty_fixed(false);
+}
+
+//_____________________________________________________________________________
+/**
  * Set the 'frame name' field, which is used when the marker is added to
  * an existing model.
  *
- * @param aName name of frame
+ * @param  name of frame
  */
-void Marker::setFrameName(const string& aName)
+void Marker::setFrameName(const string& name)
 {
-    const PhysicalFrame* refFrame = dynamic_cast<const PhysicalFrame*>(&getModel().getFrameSet().get(aName));
-    if (refFrame)
-    {
-        setParentFrame(*refFrame);
-    }
-    else
-    {
-        string errorMessage = "Markers must be fixed to PhysicalFrames. " + string(aName) + " is not a PhysicalFrame.";
-        throw Exception(errorMessage);
-    }
-
+    const auto& refFrame = getModel().getComponent<PhysicalFrame>(name);
+    setParentFrame(refFrame);
 }
 
 //_____________________________________________________________________________

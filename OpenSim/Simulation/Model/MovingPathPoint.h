@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -69,15 +69,15 @@ public:
         "in the Frame of the Point.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(x_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(x_coordinate, Coordinate,
         "The x_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(y_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(y_coordinate, Coordinate,
         "The y_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(z_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(z_coordinate, Coordinate,
         "The z_location function is a function of this coordinate's value.");
 
 //=============================================================================

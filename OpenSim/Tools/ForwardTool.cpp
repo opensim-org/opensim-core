@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -267,23 +267,18 @@ bool ForwardTool::run()
     Manager manager(*_model, integrator);
     setManager( manager );
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
     // Initialize integrator
     integrator.setInternalStepLimit(_maxSteps);
     integrator.setMaximumStepSize(_maxDT);
+    integrator.setMinimumStepSize(_minDT);
     integrator.setAccuracy(_errorTolerance);
 
 
     // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
     if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
-
-    // SET INITIAL AND FINAL TIME
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
 
     // get values for state variables in rawData then assign by name to model
     int numStateVariables = _model->getNumStateVariables();
@@ -311,7 +306,8 @@ bool ForwardTool::run()
         _model->printDetailedInfo(s, std::cout );
 
         cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
-        manager.integrate(s);
+        s.setTime(_ti);
+        manager.integrate(s, _tf);
     } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;

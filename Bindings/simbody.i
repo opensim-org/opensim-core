@@ -55,6 +55,10 @@ namespace SimTK {
          return new RowVector_<double>{static_cast<int>(row.size()),
                                        row.data()};
      }
+
+     Vector_<double> transpose() {
+         return $self->operator~();
+     }
  }
 %extend VectorBase<double> {
      double __getitem__(size_t i) {
@@ -75,6 +79,10 @@ namespace SimTK {
      Vector_(const std::vector<double>& row) {
          return new Vector_<double>{static_cast<int>(row.size()),
                                     row.data()};
+     }
+
+     RowVector_<double> transpose() {
+         return $self->operator~();
      }
  }
 %template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
@@ -108,6 +116,13 @@ namespace SimTK {
          return new RowVector_<Vec3>{static_cast<int>(row.size()),
                                      row.data()};
      }
+
+     Vector_<Vec3> transpose() {
+         Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
+         for(unsigned i = 0; i < colVec.nelt(); ++i)
+             colVec[i] = $self->operator[](i);
+         return colVec;
+     }
  }
 %extend VectorBase<Vec3> {
      Vec3 __getitem__(size_t i) {
@@ -128,6 +143,13 @@ namespace SimTK {
      Vector_(const std::vector<Vec3>& row) {
          return new Vector_<Vec3>{static_cast<int>(row.size()),
                                   row.data()};
+     }
+
+     RowVector_<Vec3> transpose() {
+         RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
+         for(unsigned i = 0; i < rowVec.nelt(); ++i)
+             rowVec[i] = $self->operator[](i);
+         return rowVec;
      }
  }
 %template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
@@ -210,3 +232,34 @@ namespace SimTK {
 // Used for StatesTrajectory iterating.
 %template(StdVectorState) std::vector<SimTK::State>;
 %include <SWIGSimTK/SimbodyMatterSubsystem.h>
+
+%rename(SimTKVisualizer) SimTK::Visualizer;
+%include <simbody/internal/Visualizer.h>
+
+// Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
+// obtain keyboard input.
+// Nested classes are inaccessible from MATLAB.
+%feature("flatnested") SimTK::Visualizer::InputListener;
+%feature("flatnested") SimTK::Visualizer::InputSilo;
+%rename(SimTKVisualizerInputListener) SimTK::Visualizer::InputListener;
+%rename(SimTKVisualizerInputSilo) SimTK::Visualizer::InputSilo;
+%include <simbody/internal/Visualizer_InputListener.h>
+// The following is necessary because the BackgroundType enum cannot be used
+// from MATLAB.
+namespace SimTK {
+%extend Visualizer {
+    const Visualizer& setBackgroundTypeByInt(int index) {
+        if (index == 1) $self->setBackgroundType(SimTK::Visualizer::GroundAndSky);
+        else if (index == 2) $self->setBackgroundType(SimTK::Visualizer::SolidColor);
+        return *($self);
+    }
+}
+%extend Visualizer::InputSilo {
+    unsigned waitForKeyHitKeyOnly() {
+        unsigned key = 0;
+        unsigned modifier = 0;
+        $self->waitForKeyHit(key, modifier);
+        return key;
+    }
+}
+}

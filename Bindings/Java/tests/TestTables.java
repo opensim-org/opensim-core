@@ -694,11 +694,50 @@ class TestTables {
         ikTool.run();
     }
 
+    public static void test_vector_rowvector() {
+        {
+        System.out.println("Test transpose RowVector to Vector.");
+        RowVector rowVec = new RowVector(4);
+        for(int i = 0; i < 4; ++i)
+            rowVec.set(i, i);
+        Vector colVec = rowVec.transpose();
+        assert colVec.size() == 4;
+        for(int i = 0; i < 4; ++i)
+            assert colVec.get(i) == i;
+        System.out.println("Test transpose Vector to RowVector.");
+        RowVector rowVec_copy = colVec.transpose();
+        assert rowVec_copy.size() == 4;
+        for(int i = 0; i < 4; ++i)
+            assert rowVec_copy.get(i) == i;
+        }
+        {
+        System.out.println("Test transpose RowVectorOfVec3 to VectorOfVec3.");
+        StdVectorVec3 elems = new StdVectorVec3();
+        for(int i = 0; i < 4; ++i)
+            elems.add(new Vec3(i, i+1, i+2)); 
+        RowVectorOfVec3 rowVec = new RowVectorOfVec3(elems);
+        VectorOfVec3 colVec = rowVec.transpose();
+        assert colVec.size() == 4;
+        for(int i = 0; i < 4; ++i)
+            assert colVec.get(i).get(0) == i &&
+                   colVec.get(i).get(1) == i+1 &&
+                   colVec.get(i).get(2) == i+2;
+        System.out.println("Test transpose VectorOfVec3 to RowVectorOfVec3.");
+        RowVectorOfVec3 rowVec_copy = colVec.transpose();
+        assert rowVec_copy.size() == 4;
+        for(int i = 0; i < 4; ++i)
+            assert rowVec_copy.get(i).get(0) == i &&
+                   rowVec_copy.get(i).get(1) == i+1 &&
+                   rowVec_copy.get(i).get(2) == i+2;
+        }
+    }
+
     public static void main(String[] args)  throws java.io.IOException {
         test_DataTable();
         test_DataTableVec3();
         test_TimeSeriesTable();
         test_TimeSeriesTableVec3();
         test_FlattenWithIK();
+        test_vector_rowvector();
     }
 }

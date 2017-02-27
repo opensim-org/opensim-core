@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -139,7 +139,7 @@ void  MarkersReference::getValues(const SimTK::State& s,
     double time = s.getTime();
     const auto rowView = _markerTable.getNearestRow(time);
     values.clear();
-    for(unsigned i = 0; i < rowView.ncol(); ++i)
+    for(int i = 0; i < rowView.ncol(); ++i)
         values.push_back(rowView[i]);
 }
 
@@ -191,7 +191,8 @@ MarkersReference::updateInternalWeights() const {
         // Associate user weights (as specified in the marker_weights property)
         // with the corresponding marker by order of marker names
         if (wix >= 0)
-            _weights[ix++] = get_marker_weights()[wix].getWeight();
+            _weights[ix] = get_marker_weights()[wix].getWeight();
+        ++ix;
     }
 }
 

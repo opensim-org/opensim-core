@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2016 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Dimitar Stanev                                                  *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -42,7 +42,7 @@ the gravity compensation is considered.
 using namespace OpenSim;
 using namespace SimTK;
 
-void switchMuscles(Model& model, State& state, bool isDisabled);
+void switchMuscles(Model& model, State& state, bool appliesForce);
 void testTaskSpace();
 
 //#define PAUSE
@@ -78,17 +78,18 @@ int main()
     return 0;
 }
 
-void switchMuscles(Model& model, State& state, bool isDisabled)
+void switchMuscles(Model& model, State& state, bool appliesForce)
 {
     for (int i = 0; i < model.updMuscles().getSize(); i++)
     {
-        model.updMuscles().get(i).setDisabled(state, isDisabled);
+        model.updMuscles().get(i).setAppliesForce(state, appliesForce);
     }
 }
 
 void testTaskSpace()
 {
     Model model("futureTaskSpace.osim");
+    model.finalizeFromProperties();
 
     std::string indexBodyName = "hand_r";
     Vec3 indexOffset(0.05, -0.14, 0.011);
@@ -106,7 +107,7 @@ void testTaskSpace()
 
     model.buildSystem();
     State& s = model.initializeState();
-    switchMuscles(model, s, true);
+    switchMuscles(model, s, false);
 
     double dt = 0.01;
     double t_start = 0;
@@ -119,18 +120,15 @@ void testTaskSpace()
 
     //manager
     OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(t_start);
+    s.setTime(t_start);
 
     for (unsigned int i = 1; i*dt < t_end; ++i)
     {
         std::cout << "Integrate " << i * dt << std::endl;
 
-        manager.setFinalTime(i*dt);
-        manager.integrate(s);
+        manager.integrate(s, i*dt);
 
         forceController->setAcceleration(Vec3(0, 10, 0));
-
-        manager.setInitialTime(i*dt);
     }
 
     //store results

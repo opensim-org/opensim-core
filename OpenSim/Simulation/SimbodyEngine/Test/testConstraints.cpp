@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Samuel R. Hamner                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,7 @@
 // testConstraints builds OpenSim models using the OpenSim API and builds an 
 // equivalent Simbody system using the Simbody API for each test case. A test 
 // fails if the OpenSim and Simbody final states of the simulation are not 
-// equivelent (norm-err less than 10x integration error tolerance)
+// equivalent (norm-err less than 10x integration error tolerance)
 //
 //  Tests Include:
 //      1. Test locking (constraint) mechanism on coordinates
@@ -138,6 +138,7 @@ void testPointOnLineConstraint();
 void testCoordinateCouplerConstraint();
 void testPointConstraint();
 void testConstantDistanceConstraint();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -152,6 +153,7 @@ int main()
         testCoordinateCouplerConstraint();
         // test OpenSim roll constraint against a composite of Simbody constraints
         testRollingOnSurfaceConstraint();
+        testSerializeDeserialize();
     }
     catch(const OpenSim::Exception& e) {
         e.print(cerr);
@@ -213,9 +215,8 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    manager.integrate(osim_state);
+    osim_state.setTime(0.0);
+    manager.integrate(osim_state, duration);
 }
 
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
@@ -547,10 +548,9 @@ void testCoordinateLocking()
     Vector qi = si2.getQ();
 
     // Integrate from initial time to final time
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
-    manager.integrate(si2);
+    si2.setTime(0.0);
+    cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
+    manager.integrate(si2, duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();
@@ -1009,11 +1009,13 @@ void testRollingOnSurfaceConstraint()
     arrowGeom.setColor(Vec3(1, 0, 0));
     ground.attachGeometry(arrowGeom.clone());
 
+    osimModel->finalizeFromProperties();
+
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
     cylFrame->setName("comInRod");
-    osimModel->addFrame(cylFrame);
+    osimModel->addComponent(cylFrame);
     Mesh cylGeom("cylinder.vtp");
     cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
     cylFrame->attachGeometry(cylGeom.clone());
@@ -1044,7 +1046,7 @@ void testRollingOnSurfaceConstraint()
     // for the model if it does not exist.
     //osimModel->setUseVisualizer(true);
     State osim_state = osimModel->initSystem();
-    roll->setDisabled(osim_state, false);
+    roll->setIsEnforced(osim_state, true);
     osim_state.updY() = state.getY();
 
     // compute model accelerations
@@ -1068,4 +1070,56 @@ void testRollingOnSurfaceConstraint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testRollingOnSurfaceConstraint FAILED\n");
+}
+
+void testSerializeDeserialize() {
+    std::cout << "Test serialize & deserialize." << std::endl;
+
+    std::string origModelFile{"testJointConstraints.osim"};
+    std::string oldModelFile{"testConstraints_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testConstraints_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedConstraints{"tib_pat_r_r3_con",
+                                             "tib_pat_r_tx_con",
+                                             "tib_pat_r_ty_con"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto constraints = xml.getRootElement().
+                               getRequiredElement("Model").
+                               getRequiredElement("ConstraintSet").
+                               getRequiredElement("objects").
+                               getAllElements("CoordinateCouplerConstraint");
+        for(unsigned i = 0; i < constraints.size(); ++i) {
+            const auto& constraintName =
+                constraints[i].getRequiredAttributeValue("name");
+            if(flippedConstraints.find(constraintName) !=
+               flippedConstraints.end()) {
+                auto elem = constraints[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldConstraintSet = oldModel.getConstraintSet();
+    const auto& newConstraintSet = newModel.getConstraintSet();
+
+    ASSERT(oldConstraintSet.getSize() == newConstraintSet.getSize());
+    for(int i = 0; i < oldConstraintSet.getSize(); ++i) {
+        ASSERT(oldConstraintSet.get(i).get_isEnforced() ==
+               newConstraintSet.get(i).get_isEnforced());
+
+        if(flippedConstraints.find(newConstraintSet.get(i).getName()) !=
+           flippedConstraints.end())
+            ASSERT(newConstraintSet.get(i).get_isEnforced() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

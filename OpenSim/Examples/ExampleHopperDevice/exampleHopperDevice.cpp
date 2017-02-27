@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
  *            Thomas Uchida                                                   *
  *                                                                            *
@@ -25,7 +25,7 @@
 /* This example demonstrates some of the new features of the OpenSim 4.0 API.
 The Component architecture allows us to join sub-assemblies to form larger
 Models, with information flowing between Components via Inputs, Outputs, and
-Connectors. For more information, please refer to the Component documentation.
+Sockets. For more information, please refer to the Component documentation.
 
 This interactive example consists of three steps:
   Step 1. Build and simulate a single-legged hopping mechanism.
@@ -90,17 +90,15 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     //      modelFrameBname), then connect them to the parent frames of each
     //      anchor. (2 lines of code for each anchor.)
 
-    // Add the device to the model. We need to add the device using
-    // addModelComponent() rather than addComponent() because of a bug in
-    // Model::initSystem().
-    model.addModelComponent(&device);
+    // Add the device to the model.
+    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    if (model.hasComponent<WrapCylinder>("thigh/patella")) {
+    const std::string patellaPath("thigh/patellaFrame/patella");
+    if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
-        auto& frame = model.updComponent<PhysicalFrame>("thigh");
-        auto& wrapObject = frame.upd_WrapObjectSet().get("patella");
+        auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);
         cable.updGeometryPath().addPathWrap(wrapObject);
     }
 }
@@ -123,8 +121,7 @@ void addConsoleReporterToHopper(Model& hopper)
 
 
 //------------------------------------------------------------------------------
-// Add a SignalGenerator to a device (the SignalGenerator class is defined in
-// helperMethods.h).
+// Add a SignalGenerator to a device.
 // [Step 2, Task E]
 //------------------------------------------------------------------------------
 void addSignalGeneratorToDevice(Device& device)
@@ -155,11 +152,11 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 
     // Loop through the desired device outputs and add them to the reporter.
     for (auto thisOutputName : deviceOutputs)
-        reporter->updInput("inputs").connect(device.getOutput(thisOutputName));
+        reporter->addToReport(device.getOutput(thisOutputName));
 
     for (auto thisOutputName : deviceControllerOutputs)
-        reporter->updInput("inputs").
-        connect(device.getComponent("controller").getOutput(thisOutputName));
+        reporter->addToReport(
+                device.getComponent("controller").getOutput(thisOutputName));
 
     // Add the reporter to the model.
     model.addComponent(reporter);
@@ -331,8 +328,8 @@ void run(bool showVisualizer, bool simulateOnce)
         // Use the vastus muscle's activation as the control signal for the
         // device. The vastus string (at the top of this file) must
         // be filled in.
-        //kneeDevice->updComponent("controller").updInput("activation")
-        //    .connect(assistedHopper.getComponent(vastus).getOutput("activation"));
+        //kneeDevice->updComponent("controller").updInput("activation").connect(
+        //    assistedHopper.getComponent(vastus).getOutput("activation"));
 
         // List the device outputs we wish to display during the simulation.
         std::vector<std::string> kneeDeviceOutputs{ "tension", "height" };

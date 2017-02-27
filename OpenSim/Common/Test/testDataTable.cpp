@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -101,18 +101,18 @@ int main() {
     } catch (OpenSim::Exception&) {}
 
     const auto& avgRow = table.averageRow(0.2, 0.8);
-    for(size_t i = 0; i < avgRow.ncol(); ++i)
+    for(int i = 0; i < avgRow.ncol(); ++i)
         OPENSIM_THROW_IF(std::abs(avgRow[i] - 2) > 1e-8/*epsilon*/,
                          Exception,
                          "Test failed: averageRow() failed.");
 
     const auto& nearRow = table.getNearestRow(0.55);
-    for(size_t i = 0; i < nearRow.ncol(); ++i)
+    for(int i = 0; i < nearRow.ncol(); ++i)
         ASSERT(nearRow[i] == 2);
 
     table.updNearestRow(0.55) += 2;
     table.updNearestRow(0.55) -= 2;
-    for(size_t i = 0; i < nearRow.ncol(); ++i)
+    for(int i = 0; i < nearRow.ncol(); ++i)
         ASSERT(nearRow[i] == 2);
 
     table.updMatrix() += 2;
@@ -239,7 +239,7 @@ int main() {
             numComponentsPerElement() == 6);
 
     {
-        std::cout << "Test DataTable flattenning constructor for Vec3."
+        std::cout << "Test DataTable flattening constructor for Vec3."
                   << std::endl;
         DataTable_<double, Vec3> tableVec3{};
         tableVec3.setColumnLabels({"col0", "col1", "col2"});
@@ -313,7 +313,7 @@ int main() {
 
         std::cout << tableFlat << std::endl;
 
-        std::cout << "Test DataTable flattenning constructor for Quaternion."
+        std::cout << "Test DataTable flattening constructor for Quaternion."
                   << std::endl;
         DataTable_<double, Quaternion> tableQuat{}; 
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
@@ -328,7 +328,7 @@ int main() {
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 12);
 
-        std::cout << "Test DataTable flattenning constructor for UnitVec3."
+        std::cout << "Test DataTable flattening constructor for UnitVec3."
                   << std::endl;
         DataTable_<double, Vec3> tableUnitVec3{};
         tableUnitVec3.setColumnLabels({"col0", "col1", "col2"});
@@ -343,7 +343,7 @@ int main() {
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 9);
 
-        std::cout << "Test DataTable flattenning constructor for SpatialVec."
+        std::cout << "Test DataTable flattening constructor for SpatialVec."
                   << std::endl;
         DataTable_<double, SpatialVec> tableSpatialVec{};
         tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});
@@ -367,7 +367,7 @@ int main() {
         std::cout << tableDouble << std::endl;
     }
     {
-        std::cout << "Test TimeSeriesTable flattenning constructor for Vec3"
+        std::cout << "Test TimeSeriesTable flattening constructor for Vec3"
                   << std::endl;
         TimeSeriesTable_<Vec3> tableVec3{};
         tableVec3.setColumnLabels({"col0", "col1", "col2"});
@@ -434,7 +434,7 @@ int main() {
 
         std::cout << tableFlat << std::endl;
 
-        std::cout << "Test TimeSeriesTable flattenning constructor for "
+        std::cout << "Test TimeSeriesTable flattening constructor for "
                      "Quaternion" << std::endl;
         TimeSeriesTable_<Quaternion> tableQuat{}; 
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
@@ -462,7 +462,7 @@ int main() {
 
         std::cout << tableDouble << std::endl;
 
-        std::cout << "Test TimeSeriesTable flattenning constructor for UnitVec3"
+        std::cout << "Test TimeSeriesTable flattening constructor for UnitVec3"
                   << std::endl;
         TimeSeriesTable_<Vec3> tableUnitVec3{};
         tableUnitVec3.setColumnLabels({"col0", "col1", "col2"});
@@ -479,7 +479,7 @@ int main() {
 
         std::cout << tableDouble << std::endl;
 
-        std::cout << "Test TimeSeriesTable flattenning constructor for "
+        std::cout << "Test TimeSeriesTable flattening constructor for "
                      "SpatialVec" << std::endl;
         TimeSeriesTable_<SpatialVec> tableSpatialVec{};
         tableSpatialVec.setColumnLabels({"col0", "col1", "col2"});

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth,          *
  *            Michael Sherman                                                 *
  *                                                                            *
@@ -49,7 +49,6 @@
 #include "ControllerSet.h"
 #include "CoordinateSet.h"
 #include "ForceSet.h"
-#include "FrameSet.h"
 #include "Ligament.h"
 #include "MarkerSet.h"
 #include "ProbeSet.h"
@@ -86,13 +85,12 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
-    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML file
  */
-Model::Model(const string &aFileName, const bool finalize) :
+Model::Model(const string &aFileName) :
     ModelComponent(aFileName, false),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
@@ -104,10 +102,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
-
-    if (finalize) {
-        finalizeFromProperties();
-    }
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
@@ -122,20 +116,25 @@ Model::Model(const string &aFileName, const bool finalize) :
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()){
-        cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
+        cout << "Updating Model file from " << versionNumber 
+            << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
         if (versionNumber == 10600){
             // Get node for DynamicsEngine
-            SimTK::Xml::element_iterator engIter = aNode.element_begin("DynamicsEngine");
+            SimTK::Xml::element_iterator engIter = 
+                aNode.element_begin("DynamicsEngine");
             //Get node for SimbodyEngine
             if (engIter != aNode.element_end()){
-                SimTK::Xml::element_iterator simbodyEngIter = engIter->element_begin("SimbodyEngine");
+                SimTK::Xml::element_iterator simbodyEngIter = 
+                    engIter->element_begin("SimbodyEngine");
                 // Move all Children of simbodyEngineNode to be children of _node
                 // we'll keep inserting before enginesNode then remove it;
-                SimTK::Array_<SimTK::Xml::Element> elts = simbodyEngIter->getAllElements();
+                SimTK::Array_<SimTK::Xml::Element> elts =
+                    simbodyEngIter->getAllElements();
                 while (elts.size() != 0){
                     // get first child and move it to Model
-                    aNode.insertNodeAfter(aNode.element_end(), simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
+                    aNode.insertNodeAfter(aNode.element_end(),
+                        simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
                     elts = simbodyEngIter->getAllElements();
                 }
                 engIter->eraseNode(simbodyEngIter);
@@ -151,30 +150,38 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
             aNode.insertNodeAfter(bodySetNode, jointSetElement);
             // Cycle through Bodies and move their Joint nodes under the Model's JointSet
-            SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
-            SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
+            SimTK::Xml::element_iterator  objects_node =
+                bodySetNode->element_begin("objects");
+            SimTK::Xml::element_iterator bodyIter =
+                objects_node->element_begin("Body");
             for (; bodyIter != objects_node->element_end(); ++bodyIter) {
                 std::string body_name = bodyIter->getOptionalAttributeValue("name");
                 if (body_name == "ground") {
                     SimTK::Xml::Element newGroundElement("Ground");
                     newGroundElement.setAttributeValue("name", "ground");
 
-                    SimTK::Xml::element_iterator geometryIter = bodyIter->element_begin("geometry");
+                    SimTK::Xml::element_iterator geometryIter = 
+                        bodyIter->element_begin("geometry");
                     if (geometryIter != bodyIter->element_end()) {
                         SimTK::Xml::Element cloneOfGeomety = geometryIter->clone();
-                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfGeomety);
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), 
+                            cloneOfGeomety);
                     }
 
-                    SimTK::Xml::element_iterator visObjIter = bodyIter->element_begin("VisibleObject");
+                    SimTK::Xml::element_iterator visObjIter = 
+                        bodyIter->element_begin("VisibleObject");
                     if (visObjIter != bodyIter->element_end()) {
                         SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
-                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfVisObj);
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(),
+                            cloneOfVisObj);
                     }
 
-                    SimTK::Xml::element_iterator wrapSetIter = bodyIter->element_begin("WrapObjectSet");
+                    SimTK::Xml::element_iterator wrapSetIter = 
+                        bodyIter->element_begin("WrapObjectSet");
                     if (wrapSetIter != bodyIter->element_end()) {
                         SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
-                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), cloneOfWrapSet);
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(),
+                            cloneOfWrapSet);
                     }
 
                     String test;
@@ -189,22 +196,61 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             bodyIter = objects_node->element_begin("Body");
             for (; bodyIter != objects_node->element_end(); ++bodyIter) {
                 std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                SimTK::Xml::element_iterator  joint_node = bodyIter->element_begin("Joint");
+                SimTK::Xml::element_iterator  joint_node =
+                    bodyIter->element_begin("Joint");
                 if (joint_node->element_begin() != joint_node->element_end()){
                     SimTK::Xml::Element detach_joint_node = joint_node->clone();
-                    SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
+                    SimTK::Xml::element_iterator concreteJointNode = 
+                        detach_joint_node.element_begin();
                     detach_joint_node.removeNode(concreteJointNode);
-                    SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
+                    SimTK::Xml::element_iterator parentBodyElement = 
+                        concreteJointNode->element_begin("parent_body");
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
-                    //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_frame", parent_name);
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_frame", body_name);
+
+                    XMLDocument::addConnector(*concreteJointNode, 
+                        "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, 
+                        "Connector_PhysicalFrame_", "child_frame", body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
-                    jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                    jointObjects.insertNodeAfter(jointObjects.node_end(),
+                        *concreteJointNode);
                     detach_joint_node.clearOrphan();
                 }
                 bodyIter->eraseNode(joint_node);
+            }
+        }
+        if (versionNumber < 30512) {
+            // FrameSet was removed from Model as of 30512 and this update
+            // is responsible for moving the Frames in the FrameSet to
+            // the Model's list of components.
+            SimTK::Xml::element_iterator componentsNode =
+                aNode.element_begin("components");
+            SimTK::Xml::element_iterator framesNode =
+                aNode.element_begin("FrameSet");
+
+            // If no FrameSet nothing to be done
+            if (framesNode != aNode.element_end()) {
+                if (componentsNode == aNode.element_end()) {
+                    // if no 'components' list element, create one and insert it
+                    SimTK::Xml::Element componentsElement("components");
+                    aNode.insertNodeBefore(framesNode, componentsElement);
+                }
+
+                componentsNode = aNode.element_begin("components");
+
+                SimTK::Xml::element_iterator  objects_node =
+                    framesNode->element_begin("objects");
+
+                SimTK::Xml::element_iterator frameIter =
+                    objects_node->element_begin();
+                for (; frameIter != objects_node->element_end(); ++frameIter) {
+                    SimTK::Xml::Element cloneOfFrame = frameIter->clone();
+                    componentsNode->insertNodeAfter(componentsNode->node_end(),
+                        cloneOfFrame);
+                }
+                // now delete the FrameSet
+                framesNode->getParentElement().eraseNode(framesNode);
             }
         }
     }
@@ -251,9 +297,6 @@ void Model::constructProperties()
 
     BodySet bodies;
     constructProperty_BodySet(bodies);
-
-    FrameSet frames;
-    constructProperty_FrameSet(frames);
 
     JointSet joints;
     constructProperty_JointSet(joints);
@@ -605,17 +648,19 @@ void Model::createMultibodyTree()
         // Currently we need to take a first pass at connecting the joints
         // in order to ask the joint for the frames that they attach to and
         // to determine their underlying base (physical) frames.
-        joint->connect(*this);
+        joint->finalizeConnections(*this);
 
         // hack to make sure underlying Frame is also connected so it can 
         // traverse to the base frame and get its name. This allows the
-        // (offset) frames to satisfy the connectors of Joint to be added
+        // (offset) frames to satisfy the sockets of Joint to be added
         // to a Body, for example, and not just joint itself.
         // TODO: try to create the multibody tree later when components
         // can already be expected to be connected then traverse those
         // relationships to create the multibody tree. -aseth
-        const_cast<PhysicalFrame&>(joint->getParentFrame()).connect(*this);
-        const_cast<PhysicalFrame&>(joint->getChildFrame()).connect(*this);
+        const_cast<PhysicalFrame&>(joint->getParentFrame()).
+            finalizeConnections(*this);
+        const_cast<PhysicalFrame&>(joint->getChildFrame()).
+            finalizeConnections(*this);
 
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
@@ -783,7 +828,7 @@ void Model::extendConnectToModel(Model &model)
         // PhysicalOffsetFrame can be listed in any order and may be attached
         // to any other PhysicalOffsetFrame, so we need to find their parent(s)
         // in the tree and add them first.
-        pof.connect(*this);
+        pof.finalizeConnections(*this);
         const PhysicalOffsetFrame* parentPof =
             dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
         std::vector<const PhysicalOffsetFrame*> parentPofs;
@@ -876,17 +921,6 @@ void Model::addBody(OpenSim::Body* body)
 
 //_____________________________________________________________________________
 /*
-* Add a Frame to the Model.
-*/
-void Model::addFrame(OpenSim::Frame* frame)
-{
-    if (frame){
-        updFrameSet().adoptAndAppend(frame);
-        finalizeFromProperties();
-    }
-}
-//_____________________________________________________________________________
-/*
 * Add a Marker to the Model.
 */
 void Model::addMarker(OpenSim::Marker* marker)
@@ -952,7 +986,7 @@ void Model::addProbe(OpenSim::Probe *probe)
  */
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
-    disconnect();
+    clearConnections();
     updProbeSet().remove(aProbe);
     finalizeFromProperties();
 }
@@ -993,7 +1027,7 @@ void Model::setup()
     // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
-    connect(*this);
+    finalizeConnections(*this);
 }
 
 //_____________________________________________________________________________
@@ -1004,7 +1038,7 @@ void Model::setup()
  */
 void Model::cleanup()
 {
-    disconnect();
+    clearConnections();
     upd_ForceSet().setSize(0);
 }
 
@@ -1058,7 +1092,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     auto muscles = getComponentList<Muscle>();
 
     for (auto& muscle : muscles) {
-        if (!muscle.isDisabled(state)){
+        if (muscle.appliesForce(state)){
             try{
                 muscle.equilibrate(state);
             }
@@ -1182,17 +1216,6 @@ int Model::getNumProbeStates() const {
 int Model::getNumBodies() const
 {
     return  getBodySet().getSize();
-}
-
-//_____________________________________________________________________________
-/**
-* Get the total number of frames in the model (not including Bodies).
-*
-* @return Number of frames.
-*/
-int Model::getNumFrames() const
-{
-    return  getFrameSet().getSize();
 }
 
 //_____________________________________________________________________________
@@ -1469,7 +1492,6 @@ void Model::printBasicInfo(std::ostream &aOStream) const
     aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
     aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
     aOStream<<"  contact geometries: "<< getContactGeometrySet().getSize() << std::endl;
-    aOStream<<"              frames: "<< getFrameSet().getSize() << std::endl;
     aOStream<<"misc modelcomponents: "<< getMiscModelComponentSet().getSize() << std::endl;
 
 }
@@ -1630,10 +1652,10 @@ void Model::writeMarkerFile(const string& aFileName)
 /**
  * Replace all markers in the model with the ones in the passed-in marker set.
  *
- * @param aMarkerSet The new marker set.
+ * @param aMarkerSet The new marker set to copy.
  * @return Number of markers that were successfully added to the model.
  */
-int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
+int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
 {
     int i, numAdded = 0;
 
@@ -1643,16 +1665,9 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
     // Now add the markers from aMarkerSet whose body names match bodies in the engine.
     for (i = 0; i < aMarkerSet.getSize(); i++)
     {
-        // Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-        Marker* marker = aMarkerSet.get(i).clone();
-        const string& frameName = marker->getFrameName();
-        if (getFrameSet().contains(frameName))
-        {
-            const OpenSim::PhysicalFrame* frame = dynamic_cast<const PhysicalFrame*>(&getFrameSet().get(frameName));
-            if(frame) marker->changeFrame(*frame);
-            upd_MarkerSet().adoptAndAppend(marker);
-            numAdded++;
-        }
+        Marker* marker = aMarkerSet[i].clone();
+        upd_MarkerSet().adoptAndAppend(marker);
+        ++numAdded;
     }
 
     cout << "Replaced marker set in model " << getName() << endl;
@@ -1863,7 +1878,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
     for (auto& controller : getComponentList<Controller>()) {
-        if (!controller.isDisabled()) {
+        if (controller.isEnabled()) {
             controller.computeControls(s, controls);
         }
     }
@@ -2037,7 +2052,6 @@ void Model::disownAllComponents()
     updAnalysisSet().setMemoryOwner(false);
     updMarkerSet().setMemoryOwner(false);
     updProbeSet().setMemoryOwner(false);
-    updFrameSet().setMemoryOwner(false);
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
@@ -2067,8 +2081,6 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getControllerSet().get(nameString);
     else if (typeString == "Probe")
         return getProbeSet().get(nameString);
-    else if (typeString == "Frame")
-        return getFrameSet().get(nameString);
     throw Exception("Model::getObjectByTypeAndName: no object of type " + typeString +
         " and name "+nameString+" was found in the model.");
 

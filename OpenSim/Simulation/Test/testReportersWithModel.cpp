@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Thomas Uchida                                                   *
  * Contributor(s):                                                            *
  *                                                                            *
@@ -31,7 +31,7 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-void testConsoleReporerLabels() {
+void testConsoleReporterLabels() {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -46,10 +46,8 @@ void testConsoleReporerLabels() {
     // Create ConsoleReporter, and connect Outputs without and with alias.
     auto* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.);
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value") );
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value"), "height" );
+    reporter->addToReport(slider->getCoordinate().getOutput("value"));
+    reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
     // Redirect cout to stringstream so ConsoleReporter output can be tested.
@@ -60,8 +58,8 @@ void testConsoleReporerLabels() {
     State& state = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.); manager.setFinalTime(1.);
-    manager.integrate(state);
+    state.setTime(0.0);
+    manager.integrate(state, 1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
     cout.rdbuf(oldBuf);
@@ -83,7 +81,7 @@ void testConsoleReporerLabels() {
     SimTK_TEST(idxHeading2 < idxHeading3);
 }
 
-void testTableReporerLabels() {
+void testTableReporterLabels() {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -99,18 +97,16 @@ void testTableReporerLabels() {
     // Create TableReporter, and connect Outputs without and with alias.
     auto* reporter = new TableReporter();
     reporter->set_report_time_interval(1.);
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value") );
-    reporter->updInput("inputs").connect(
-        slider->getCoordinate().getOutput("value"), "height" );
+    reporter->addToReport(slider->getCoordinate().getOutput("value"));
+    reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
     // Simulate.
     State& state = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.); manager.setFinalTime(1.);
-    manager.integrate(state);
+    state.setTime(0.0);
+    manager.integrate(state, 1.0);
 
     // Check column headings for dependent variables reported by TableReporter,
     // which should be "/world/slider/sliderCoord/value" and "height".
@@ -121,7 +117,7 @@ void testTableReporerLabels() {
 
 int main() {
     SimTK_START_TEST("testReporters");
-        SimTK_SUBTEST(testConsoleReporerLabels);
-        SimTK_SUBTEST(testTableReporerLabels);
+        SimTK_SUBTEST(testConsoleReporterLabels);
+        SimTK_SUBTEST(testTableReporterLabels);
     SimTK_END_TEST();
 };

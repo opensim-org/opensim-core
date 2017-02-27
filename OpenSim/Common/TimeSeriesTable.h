@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -308,7 +308,7 @@ public:
     row. 
 
     \throws InvalidTimeRange If beginTime is greater than or equal to endTime.
-    \trhows TimeOutOfRange If beginTime or endTime is out of range of time 
+    \throws TimeOutOfRange If beginTime or endTime is out of range of time 
                            column.                                            */
     RowVector averageRow(const double& beginTime, const double& endTime) const {
         using DT = DataTable_<double, ETY>;

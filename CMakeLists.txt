@@ -15,6 +15,14 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+string(CONCAT DEP_BUILD_MSG
+  "\n-------------------------IMPORTANT----------------------------------\n"
+  "| Make sure that all OpenSim dependencies are built with the same   |\n"
+  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
+  "| to avoid mysterious runtime errors.                               |\n"
+  "-------------------------IMPORTANT----------------------------------\n")
+message(${DEP_BUILD_MSG})
+
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -371,9 +379,9 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
 
 endif()
 
-set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
+set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI or the Matlab wrapping; requires that you have SWIG and Java installed on your machine.)")
 
-set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping and have SWIG and Python installed on your machine.)")
+set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
@@ -450,8 +458,9 @@ endif()
 
 
 ## On APPLE, use MACOSX_RPATH.
+## On Linux, this variable has no effect.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
-if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
+if(APPLE)
     option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
         "If ON, you don't need to set 
         DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
@@ -483,6 +492,14 @@ if(APPLE AND NOT (${CMAKE_VERSION} VERSION_LESS 2.8.12))
         endif()
     endif()
 endif()
+## Add rpath to the binaries on Linux.
+## Note -- The binaries may not be relocatable because the rpath added here is
+##         absolute. 
+if(PLATFORM_NAME MATCHES Linux)
+    set(CMAKE_INSTALL_RPATH
+       "${CMAKE_INSTALL_RPATH};${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
     "" 
@@ -505,6 +522,7 @@ if(WITH_BTK)
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
     CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${BTK_LIBRARY_DIRS}")
 endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
@@ -546,6 +564,37 @@ if(NOT Simbody_FOUND)
     message(FATAL_ERROR "
         Simbody ${SIMBODY_VERSION_TO_USE} not found. Install Simbody and set
         SIMBODY_HOME to the installation directory of Simbody.")
+endif()
+
+# Check if Simbody targets were built using same BUILD_TYPE/CONFIGURATION as
+# current OpenSim build. If build/configuration types mismatch, stop the build.
+# ------------------------------------------------------------------------------
+get_property(Simbody_CONFIGURATION
+    TARGET   SimTKcommon
+    PROPERTY IMPORTED_CONFIGURATIONS)
+
+string(CONCAT MESSAGE
+    "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
+    "the current OpenSim BUILD_TYPE or CONFIGURATION.")
+
+if(${PLATFORM_NAME} STREQUAL Windows)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
+        COMMAND "if"
+           "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
+           "exit" "1"
+        COMMENT ${MESSAGE})
+elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
+    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
+    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
+                          "exit 1\n"
+                          "fi\n")
+    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
+    add_custom_target(Simbody_CONFIG_check ALL
+        COMMAND "bash" "simbody_config_check.sh"
+                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
+        COMMENT ${MESSAGE})
 endif()
 
 # Directories for Simbody headers and libraries for building.
@@ -612,7 +661,8 @@ if(${OPENSIM_COPY_SIMBODY})
         # (in the binary build directory).  Those are produced by the OUTPUT
         # custom command below, which depends on the source files from the
         # Simbody installation directory.
-        add_custom_target(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+        add_custom_target(SimbodyFiles ALL
+            DEPENDS Simbody_CONFIG_check ${COPIED_LIB_FILES})
         set_target_properties(SimbodyFiles
             PROPERTIES PROJECT_LABEL "Library - Simbody Files")
 

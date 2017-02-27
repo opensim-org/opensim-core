@@ -6,7 +6,7 @@
 * Biological Structures at Stanford, funded under the NIH Roadmap for        *
 * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
 *                                                                            *
-* Portions Copyright (c) 2005-2016 Stanford University and the Authors.           *
+* Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
 * Authors: Chris Dembia                                                      *
 * Contributors: Michael Sherman, Dimitar Stanev                              *
 *                                                                            *
@@ -55,14 +55,14 @@ public: \
     * model-based controllers.
     *
     * This class provides convenient access to the quantities used in task-space
-    * or operational-space controllers, such as the jacobian and the task-space
+    * or operational-space controllers, such as the Jacobian and the task-space
     * mass matrix. Each such quantity is encapsulated in its own class, and objects
     * of these types can be used as if they were the quantities (e.g. matrix)
     * themselves. This encapsulation allows us to perform
     * the necessary calculations more efficiently under the covers.
     *
-    * Computing quantities such as the jacobian \a explicitly is often very
-    * inefficient, and is usually unnecessary. The jacobian usually appears in a
+    * Computing quantities such as the Jacobian \a explicitly is often very
+    * inefficient, and is usually unnecessary. The Jacobian usually appears in a
     * matrix-vector product, which is more efficient to compute. This class and
     * the classes within use operator overloading to allow a user to write code
     * as if they had the matrices explicitly; internally, we compute matrix-vector
@@ -82,8 +82,8 @@ public: \
     *  - \f$ \Lambda \f$ (nst x nst): task-space mass matrix.
     *  - \f$ p \f$ (nst x 1): task-space gravity forces.
     *  - \f$ \mu \f$ (nst x 1): task-space inertial forces.
-    *  - \f$ J \f$ (nst x nu): task jacobian.
-    *  - \f$ \bar{J} \f$ (nu x nst): dynamically consistent generalized inverse of the jacobian.
+    *  - \f$ J \f$ (nst x nu): task Jacobian.
+    *  - \f$ \bar{J} \f$ (nu x nst): dynamically consistent generalized inverse of the Jacobian.
     *  - \f$ N \f$ (nu x nu): nullspace projection matrix.
     *
     *  See the individual TaskSpaceQuantity's for more information.

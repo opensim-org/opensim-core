@@ -204,7 +204,9 @@ TAB_SIZE               = 4
 # will result in a user-defined paragraph with heading "Side Effects:".
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES                = "propmethods=\par Methods related to this property\n"
+ALIASES = "propmethods=\par Methods related to this property\n"               \
+          "inputmethods=\par Methods related to this input\n"                 \
+          "socketmethods=\par Methods related to this socket\n"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding
@@ -1544,9 +1546,13 @@ INCLUDE_FILE_PATTERNS  = "@PROJECT_SOURCE_DIR@/OpenSim/Common/Property.h"
 # instead of the = operator.
 
 # Expand Simbody's C++11 macros to the standard keywords.
+# The Simbody DEPRECATED_14 macro is converted to empty to avoid a Doxygen
+# parsing error that produces the (incorrect) warning "Found ; while parsing
+# initializer list!"
 PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
                          OpenSim_DOXYGEN_Q_PROPERTY=Q_PROPERTY \
-                         WITH_BTK=1
+                         WITH_BTK=1 \
+                         DEPRECATED_14(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.
@@ -1554,7 +1560,15 @@ PREDEFINED             = FINAL_11=final OVERRIDE_11=override \
 # Use the PREDEFINED tag if you want to use a different macro definition that
 # overrules the definition found in the source code.
 
-EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
+EXPAND_AS_DEFINED      = OpenSim_DECLARE_CONCRETE_OBJECT \
+                         OpenSim_DECLARE_ABSTRACT_OBJECT \
+                         OpenSim_DECLARE_CONCRETE_OBJECT_T \
+                         OpenSim_DECLARE_ABSTRACT_OBJECT_T \
+                         OpenSim_OBJECT_ANY_DEFS \
+                         OpenSim_OBJECT_NONTEMPLATE_DEFS \
+                         OpenSim_OBJECT_CONCRETE_DEFS \
+                         OpenSim_OBJECT_JAVA_DEFS \
+                         OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_UNNAMED_PROPERTY \
                          OpenSim_DECLARE_OPTIONAL_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_HELPER \
@@ -1564,8 +1578,8 @@ EXPAND_AS_DEFINED      = OpenSim_DECLARE_PROPERTY \
                          OpenSim_DECLARE_LIST_PROPERTY_ATMOST \
                          OpenSim_DECLARE_LIST_PROPERTY_RANGE \
                          OpenSim_DECLARE_PROPERTY_HELPER \
-                         OpenSim_DECLARE_CONNECTOR \
-                         OpenSim_DECLARE_CONNECTOR_FD \
+                         OpenSim_DECLARE_SOCKET \
+                         OpenSim_DECLARE_SOCKET_FD \
                          OpenSim_DECLARE_OUTPUT \
                          OpenSim_DECLARE_LIST_OUTPUT \
                          OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE \

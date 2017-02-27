@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -45,6 +45,13 @@ namespace OpenSim {
  *    class BushingForce : public TwoFrameLinker<Force, PhysicalFrame>
  * @endcode
  *
+ * @tparam C The base class.
+ * @tparam F The type of frame that the class links together.
+ *
+ * @internal @note If your base class C has a virtual `scale()` member function
+ * that you need to implement, you may want to use the scaleFrames() function
+ * in this class template (e.g., see WeldConstraint).
+ *
  * @author Ajay Seth
  */
 template <class C = Component, class F = Frame>
@@ -54,17 +61,17 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /// Frames added to satisfy the connectors of this TwoFrameLinker Component
+    /// Frames added to satisfy the sockets of this TwoFrameLinker Component
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
 
-    OpenSim_DECLARE_CONNECTOR(frame1, F,
+    OpenSim_DECLARE_SOCKET(frame1, F,
             "The first frame participating in this linker.");
-    OpenSim_DECLARE_CONNECTOR(frame2, F,
+    OpenSim_DECLARE_SOCKET(frame2, F,
             "The second frame participating in this linker.");
 
 //=============================================================================
@@ -177,16 +184,6 @@ public:
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
-    /**
-    * Scale the TwoFrameLinker component according to XYZ scale factors.
-    * Associate PhysicalFrames. Generic behavior is to scale the locations
-    * of PhyscialOffsetFrames according to the scale factors of the physical
-    * frame upon which they are attached.
-    *
-    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
-    */
-    virtual void scale(const ScaleSet& scaleSet);
-
 protected:
     /** @name Component Interface
         These methods adhere to the Component Interface**/
@@ -197,6 +194,24 @@ protected:
     void 
     updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
+
+    /**
+    * This can be used by derived classes to implement a base class' `scale()`
+    * function (e.g., see WeldConstraint). This function is NOT invoked
+    * automatically.
+    *
+    * The behavior is to scale the locations of PhyscialOffsetFrames according
+    * to the scale factors of the physical frames upon which they are attached.
+    *
+    * @internal @note Some of the base classes C used for this mixin have a
+    * virtual `scale()` member function (e.g., Constraint), but this is not
+    * true for all potential base classes.. We would ideally name this function
+    * as `scale()` and mark it as `override`, but this would give a compiler
+    * error when the base class C does not have a virtual `scale()` function.
+    *
+    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
+    */
+    void scaleFrames(const ScaleSet& scaleSet);
 
     /** Helper method to convert internal force expressed in the mobility basis
         between frame1 and frame2, dq, as individual spatial forces acting on
@@ -268,8 +283,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updConnector<F>("frame1").setConnecteeName(frame1Name);
-    this->template updConnector<F>("frame2").setConnecteeName(frame2Name);
+    this->template updSocket<F>("frame1").setConnecteeName(frame1Name);
+    this->template updSocket<F>("frame2").setConnecteeName(frame2Name);
 }
 
 template <class C, class F>
@@ -291,8 +306,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->connectSocket_frame1(get_frames(ix1));
+    this->connectSocket_frame2(get_frames(ix2));
 
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
     static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
@@ -318,8 +333,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     int ix2 = append_frames(frame2Offset);
     this->finalizeFromProperties();
 
-    this->template updConnector<F>("frame1").connect(get_frames(ix1));
-    this->template updConnector<F>("frame2").connect(get_frames(ix2));
+    this->connectSocket_frame1(get_frames(ix1));
+    this->connectSocket_frame2(get_frames(ix2));
 }
 
 template <class C, class F>
@@ -351,7 +366,7 @@ template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
+        _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
 }
@@ -360,13 +375,13 @@ template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame2() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+        _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
 }
 
 template<class C, class F>
-void TwoFrameLinker<C, F>::scale(const ScaleSet& scaleSet)
+void TwoFrameLinker<C, F>::scaleFrames(const ScaleSet& scaleSet)
 {
     SimTK::Vec3 frame1Factors(1.0);
     SimTK::Vec3 frame2Factors(1.0);
@@ -414,8 +429,8 @@ void TwoFrameLinker<C, F>::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model); //connect to frames 
     // now keep a reference to the frames
-    _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
-    _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+    _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
+    _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
 }
 
 

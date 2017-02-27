@@ -1,7 +1,7 @@
-#ifndef OPENSIM_COMPONENT_CONNECTOR_H_
-#define OPENSIM_COMPONENT_CONNECTOR_H_
+#ifndef OPENSIM_COMPONENT_SOCKET_H_
+#define OPENSIM_COMPONENT_SOCKET_H_
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  ComponentConnector.h                       *
+ *                       OpenSim:  ComponentSocket.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,17 +24,17 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
- * This file defines the Connector class, which formalizes the dependency of 
+ * This file defines the Socket class, which formalizes the dependency of 
  * of a Component on another Object/Component in order to operate, BUT it does 
  * not own it. While Components can be composites (of multiple components) 
  * they often depend on unrelated objects/components that are defined and
  * owned elsewhere.
  *
  * For example a Joint connects two bodies together, but the Joint does 
- * not own either body. Instead, the Joint has Connectors to a parent and 
+ * not own either body. Instead, the Joint has Sockets to a parent and 
  * a child body that already exists. The maintenance of the dependency and 
  * the run-time verification of the existence of the bodies is the duty
- * of the Connector.
+ * of the Socket.
  */
 
 // INCLUDES
@@ -50,7 +50,7 @@
 namespace OpenSim {
 
 //==============================================================================
-/// ComponentConnector Exceptions
+/// ComponentSocket Exceptions
 //==============================================================================
 class InputNotConnected : public Exception {
 public:
@@ -66,27 +66,27 @@ public:
 };
 
 //=============================================================================
-//                        OPENSIM COMPONENT CONNECTOR
+//                        OPENSIM COMPONENT SOCKET
 //=============================================================================
 /**
- * A Connector formalizes the dependency between a Component and another object
+ * A Socket formalizes the dependency between a Component and another object
  * (typically another Component) without owning that object. The object that
- * satisfies the requirements of the Connector we term the "connectee". When a 
- * Connector is satisfied by a connectee we have a successful "connection" or
+ * satisfies the requirements of the Socket we term the "connectee". When a 
+ * Socket is satisfied by a connectee we have a successful "connection" or
  * is said to be connected.
  *
- * The purpose of a Connector is to specify: 1) the connectee type that the
- * Component is dependent on, 2) by when (what stage) the connector must be
+ * The purpose of a Socket is to specify: 1) the connectee type that the
+ * Component is dependent on, 2) by when (what stage) the socket must be
  * connected in order for the component to function, 3) the name of a connectee
- * that can be found at run-time to satisfy the connector, and 4) whether or
- * not it is connected. A Connector maintains a reference to the instance
+ * that can be found at run-time to satisfy the socket, and 4) whether or
+ * not it is connected. A Socket maintains a reference to the instance
  * (connectee) until it is disconnected.
  *
- * For example, a Joint has two Connectors for the parent and child Bodies that
- * it joins. The type for the connector is a PhysicalFrame and any attempt to 
+ * For example, a Joint has two Sockets for the parent and child Bodies that
+ * it joins. The type for the socket is a PhysicalFrame and any attempt to 
  * connect to a non-Body (or frame rigidly attached to a Body) will throw an
- * exception. The connectAt Stage is Topology. That is, the Joint's connection to
- * a Body must be performed at the Topology system stage, and any attempt to
+ * exception. The connectAt Stage is Topology. That is, the Joint's connection 
+ * to a Body must be performed at the Topology system stage, and any attempt to
  * change the connection status will invalidate that Stage and above.
  *
  * Other Components like a Marker or a Probe that do not change the system
@@ -95,26 +95,26 @@ public:
  *
  * @author  Ajay Seth
  */
-class OSIMCOMMON_API AbstractConnector {
+class OSIMCOMMON_API AbstractSocket {
 public:
 
     // default copy constructor, copy assignment
 
-    virtual ~AbstractConnector() {};
+    virtual ~AbstractSocket() {};
     
     /// Create a dynamically-allocated copy. You must manage the memory
     /// for the returned pointer.
     /// This function exists to facilitate the use of
-    /// SimTK::ClonePtr<AbstractConnector>.
-    virtual AbstractConnector* clone() const = 0;
+    /// SimTK::ClonePtr<AbstractSocket>.
+    virtual AbstractSocket* clone() const = 0;
     
     const std::string& getName() const { return _name; }
     /** Get the system Stage when the connection should be made. */
     SimTK::Stage getConnectAtStage() const { return _connectAtStage; }
-    /** Can this Connector have more than one connectee? */
-    bool isListConnector() const { return _isList; }
-    /** The number of slots to fill in order to satisfy this connector.
-     * This is 1 for a non-list connector. */
+    /** Can this Socket have more than one connectee? */
+    bool isListSocket() const { return _isList; }
+    /** The number of slots to fill in order to satisfy this socket.
+     * This is 1 for a non-list socket. */
     unsigned getNumConnectees() const {
         return static_cast<unsigned>(getConnecteeNameProp().size());
     }
@@ -122,60 +122,60 @@ public:
     //--------------------------------------------------------------------------
     /** Derived classes must satisfy this Interface */
     //--------------------------------------------------------------------------
-    /** Is the Connector connected to its connectee(s)? For a list connector,
-    this is only true if this connector is connected to all its connectees.
+    /** Is the Socket connected to its connectee(s)? For a list socket,
+    this is only true if this socket is connected to all its connectees.
      */
     virtual bool isConnected() const = 0;
     
-    /** Get the type of object this connector connects to. */
+    /** Get the type of object this socket connects to. */
     virtual std::string getConnecteeTypeName() const = 0;
 
-    /** Generic access to the connectee. Not all connectors support this method
+    /** Generic access to the connectee. Not all sockets support this method
      * (e.g., the connectee for an Input is not an Object). */
     virtual const Object& getConnecteeAsObject() const {
-        OPENSIM_THROW(Exception, "Not supported for this type of connector.");
+        OPENSIM_THROW(Exception, "Not supported for this type of socket.");
     }
 
-    /** Connect this %Connector to the provided connectee object. If this is a
-        list connector, the connectee is appended to the list of connectees;
+    /** Connect this %Socket to the provided connectee object. If this is a
+        list socket, the connectee is appended to the list of connectees;
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this %Connector according to its connectee_name property
+    /** Connect this %Socket according to its connectee_name property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
     virtual void findAndConnect(const Component& root) {
         throw Exception("findAndConnect() not implemented; not supported "
-                        "for this type of connector", __FILE__, __LINE__);
+                        "for this type of socket", __FILE__, __LINE__);
     }
 
-    /** Disconnect this %Connector from its connectee. */
+    /** Disconnect this %Socket from its connectee. */
     virtual void disconnect() = 0;
 
-    /** %Set connectee name. This function can only be used if this connector is
-    not a list connector.                                                     */
+    /** %Set connectee name. This function can only be used if this socket is
+    not a list socket.                                                     */
     void setConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF(_isList,
                          Exception,
-                         "An index must be provided for a list Connector.");
+                         "An index must be provided for a list Socket.");
         setConnecteeName(name, 0);
     }
 
     /** %Set connectee name of a connectee among a list of connectees. This
-    function is used if this connector is a list connector.                   */
+    function is used if this socket is a list socket.                   */
     void setConnecteeName(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::setConnecteeName()");
+                                "AbstractSocket::setConnecteeName()");
         updConnecteeNameProp().setValue(ix, name);
     }
 
-    /** Get connectee name. This function can only be used if this connector is
-    not a list connector.                                                     */
+    /** Get connectee name. This function can only be used if this socket is
+    not a list socket.                                                     */
     const std::string& getConnecteeName() const {
         OPENSIM_THROW_IF(_isList,
                          Exception,
-                         "An index must be provided for a list Connector.");
+                         "An index must be provided for a list Socket.");
         return getConnecteeName(0);
     }
 
@@ -183,13 +183,13 @@ public:
     const std::string& getConnecteeName(unsigned ix) const {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractConnector::getConnecteeName()");
+                                "AbstractSocket::getConnecteeName()");
         return getConnecteeNameProp().getValue(ix);
     }
 
     void appendConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
-            "Multiple connectee names can only be appended to a list Connector.");
+            "Multiple connectee names can only be appended to a list Socket.");
         updConnecteeNameProp().appendValue(name);
     }
 
@@ -197,17 +197,18 @@ protected:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** Create a Connector with specified name and stage at which it should be
+    /** Create a Socket with specified name and stage at which it should be
     connected.
-    @param name               name of the connector, usually describes its dependency.
+    @param name               name of the socket, usually describes its 
+                              dependency.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Connector's connectee_name(s).
-    @param connectAtStage     Stage at which Connector should be connected.
-    @param owner              Component to which this Connector belongs. */
-    AbstractConnector(const std::string& name,
-                      const PropertyIndex& connecteeNameIndex,
-                      const SimTK::Stage& connectAtStage,
-                      Component& owner) :
+                              that holds this Socket's connectee_name(s).
+    @param connectAtStage     Stage at which Socket should be connected.
+    @param owner              Component to which this Socket belongs. */
+    AbstractSocket(const std::string& name,
+                   const PropertyIndex& connecteeNameIndex,
+                   const SimTK::Stage& connectAtStage,
+                   Component& owner) :
             _name(name),
             _connectAtStage(connectAtStage),
             _connecteeNameIndex(connecteeNameIndex),
@@ -216,12 +217,12 @@ protected:
 
 
     const Component& getOwner() const { return _owner.getRef(); }
-    /** %Set an internal pointer to the Component that contains this Connector.
+    /** %Set an internal pointer to the Component that contains this Socket.
     This should only be called by Component.
     This exists so that after the containing Component is copied, the 'owner'
-    is the new Component. This Connector needs to be able to modify
+    is the new Component. This Socket needs to be able to modify
     the associated connectee_name property in the Component. Thus, we require
-    a writeable reference. */
+    a writable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
     void setOwner(Component& o) { _owner.reset(&o); }
@@ -233,16 +234,16 @@ protected:
     void checkConnecteeNameProperty() {
         // TODO Move this check elsewhere once the connectee_name
         // property is a ComponentPath (or a ChannelPath?).
-        for (int iname = 0; iname < getNumConnectees(); ++iname) {
+        for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
             
             if (connecteeName.find(" ") != std::string::npos) {
-                std::string msg = "In Connector '" + getName() +
+                std::string msg = "In Socket '" + getName() +
                         "', connectee name '" + connecteeName +
                         "' contains spaces, but spaces are not allowed.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
-                           "names for a single-value Connector?";
+                           "names for a single-value Socket?";
                 }
                 // TODO Would ideally throw an exception, but some models *do*
                 // use spaces in names, and the error for this should be
@@ -267,13 +268,13 @@ protected:
 private:
     
     /// Const access to the connectee_name property from the Component in which
-    /// this Connector resides. The name of that property is something like
-    /// 'connector_<name>_connectee_name'. This is a special type of property
+    /// this Socket resides. The name of that property is something like
+    /// 'socket_<name>_connectee_name'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
-    /// `get_connector_<name>_connectee_name()` function).
+    /// `get_socket_<name>_connectee_name()` function).
     const Property<std::string>& getConnecteeNameProp() const;
     /// Writable access to the connectee_name property from the Component in
-    /// which this Connector resides. Calling this will mark the Component as
+    /// which this Socket resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteeNameProp();
@@ -293,20 +294,20 @@ private:
     friend Component;
 
 //=============================================================================
-};  // END class AbstractConnector
+};  // END class AbstractSocket
 
 
 template<class T>
-class Connector : public AbstractConnector {
+class Socket : public AbstractSocket {
 public:
 
     // default copy constructor
     
-    virtual ~Connector() {}
+    virtual ~Socket() {}
     
-    Connector<T>* clone() const override { return new Connector<T>(*this); }
+    Socket<T>* clone() const override { return new Socket<T>(*this); }
 
-    /** Is the Connector connected to object of type T? */
+    /** Is the Socket connected to object of type T? */
     bool isConnected() const override {
         return !connectee.empty();
     }
@@ -316,13 +317,13 @@ public:
     }
 
     /** Temporary access to the connectee for testing purposes. Real usage
-        will be through the Connector (and Input) interfaces. 
+        will be through the Socket (and Input) interfaces. 
         For example, Input should short circuit to its Output's getValue()
         once it is connected.
-    Return a const reference to the object connected to this Connector */
+    Return a const reference to the object connected to this Socket */
     const T& getConnectee() const {
         if (!isConnected()) {
-            std::string msg = getOwner().getConcreteClassName() + "::Connector '"
+            std::string msg = getOwner().getConcreteClassName() + "::Socket '"
                 + getName() + "' is not connected to '" + getConnecteeName()
                 + "' of type " + T::getClassName();
             OPENSIM_THROW(Exception, msg);
@@ -330,12 +331,12 @@ public:
         return connectee.getRef();
     }
 
-    /** Connect this Connector to the provided connectee object */
+    /** Connect this Socket to the provided connectee object */
     void connect(const Object& object) override {
         const T* objT = dynamic_cast<const T*>(&object);
         if (!objT) {
             std::stringstream msg;
-            msg << "Type mismatch: Connector '" << getName() << "' of type "
+            msg << "Type mismatch: Socket '" << getName() << "' of type "
                 << getConnecteeTypeName() << " cannot connect to '"
                 << object.getName() << "' of type "
                 << object.getConcreteClassName() << ".";
@@ -349,7 +350,7 @@ public:
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasParent()) {
-            // The API permits connecting to oprhans when passing in the
+            // The API permits connecting to orphans when passing in the
             // dependency directly.
             // Workaround: Identify it as a "floating"
             // Component and we will find its absolute path next time we try to
@@ -367,7 +368,7 @@ public:
         }
     }
 
-    /** Connect this Connector given its connectee_name property  */
+    /** Connect this Socket given its connectee_name property  */
     void findAndConnect(const Component& root) override;
 
     void disconnect() override {
@@ -375,43 +376,44 @@ public:
     }
     
     /** Derived classes must satisfy this Interface */
-    /** get the type of object this connector connects to*/
+    /** get the type of object this socket connects to*/
     std::string getConnecteeTypeName() const override {
         return T::getClassName();
     }
 
-    SimTK_DOWNCAST(Connector, AbstractConnector);
+    SimTK_DOWNCAST(Socket, AbstractSocket);
     
     /** For use in python/java/MATLAB bindings. */
     // This method exists for consistency with Object's safeDownCast.
-    static Connector<T>* safeDownCast(AbstractConnector* base) {
-        return dynamic_cast<Connector<T>*>(base);
+    static Socket<T>* safeDownCast(AbstractSocket* base) {
+        return dynamic_cast<Socket<T>*>(base);
     }
     
 protected:
-    /** Create a Connector that can only connect to Object of type T with 
+    /** Create a Socket that can only connect to Object of type T with 
     specified name and stage at which it should be connected. Only Component
     can ever construct this class.
-    @param name               name of the connector used to describe its dependency.
+    @param name               name of the socket used to describe its dependency.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Connector's connectee_name(s).
-    @param connectAtStage     Stage at which Connector should be connected.
+                              that holds this Socket's connectee_name(s).
+    @param connectAtStage     Stage at which Socket should be connected.
     @param owner              The component that contains this input. */
-    Connector(const std::string& name, const PropertyIndex& connecteeNameIndex,
-              const SimTK::Stage& connectAtStage,
-              Component& owner) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner),
+    Socket(const std::string& name,
+           const PropertyIndex& connecteeNameIndex,
+           const SimTK::Stage& connectAtStage,
+           Component& owner) :
+        AbstractSocket(name, connecteeNameIndex, connectAtStage, owner),
         connectee(nullptr) {}
         
-    /** So that Component can construct a Connector. */
+    /** So that Component can construct a Socket. */
     friend Component;
 
 private:
     mutable SimTK::ReferencePtr<const T> connectee;
-}; // END class Connector<T>
+}; // END class Socket<T>
             
 
-/** A specialized Connector that connects to an Output signal is an Input.
+/** A specialized Socket that connects to an Output signal is an Input.
 An AbstractInput enables maintenance of a list of unconnected Inputs. 
 An Input can either be a single-value Input or a list Input. A list Input
 can connect to multiple (Output) Channels.
@@ -465,7 +467,7 @@ entries separated by a space. For example:
 </input_experimental_markers_connectee_names>
 @endcode
 */
-class OSIMCOMMON_API AbstractInput : public AbstractConnector {
+class OSIMCOMMON_API AbstractInput : public AbstractSocket {
 public:
 
     virtual ~AbstractInput() {}
@@ -474,7 +476,7 @@ public:
     // macros do (see OpenSim_OBJECT_ABSTRACT_DEFS).
     AbstractInput* clone() const override = 0;
     
-    // Connector interface
+    // Socket interface
     void connect(const Object& object) override {
         std::stringstream msg;
         msg << "Input::connect(): ERR- Cannot connect '" << object.getName()
@@ -588,9 +590,37 @@ public:
 
         return true;
     }
+
+    /** Compose the connectee name from its constituents. This is the opposite
+    operation of parseConnecteeName().
+    Example:
+    @verbatim
+     if inputs are
+       componentPath --> "/foo/bar"
+       outputName    --> "output"
+       channelName   --> "channel"
+       alias         --> "baz"
+     then result --> /foo/bar|output:channel(baz)
+    @endverbatim
+    */
+    static std::string composeConnecteeName(const std::string& componentPath,
+                                            const std::string& outputName,
+                                            const std::string& channelName,
+                                            const std::string& alias) {
+        auto path = componentPath;
+        if(!path.empty())
+            path += "|";
+        path += outputName;
+        if(!channelName.empty())
+            path += ":" + channelName;
+        if(!alias.empty())
+            path += "(" + alias + ")";
+
+        return path;
+    }
     
 protected:
-    /** Create an AbstractInput (Connector) that connects only to an 
+    /** Create an AbstractInput (Socket) that connects only to an 
     AbstractOutput specified by name and stage at which it should be connected.
     Only Component should ever construct this class.
     @param name              name of the dependent (Abstract)Output.
@@ -602,7 +632,7 @@ protected:
                   const PropertyIndex& connecteeNameIndex,
                   const SimTK::Stage& connectAtStage,
                   Component& owner) :
-        AbstractConnector(name, connecteeNameIndex, connectAtStage, owner) {}
+        AbstractSocket(name, connecteeNameIndex, connectAtStage, owner) {}
     
 //=============================================================================
 };  // END class AbstractInput
@@ -645,7 +675,7 @@ public:
     Output<T>'s getValue() with minimal overhead. This method can be used only
     for non-list Input(s). For list Input(s), use the other overload.         */
     const T& getValue(const SimTK::State &state) const {
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isListSocket(),
                          Exception,
                          "Input<T>::getValue(): an index must be "
                          "provided for a list input.");
@@ -657,6 +687,7 @@ public:
     Output<T>'s getValue() with minimal overhead. Specify the index of the 
     Channel whose value is desired.                                           */
     const T& getValue(const SimTK::State &state, unsigned index) const {
+        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, getNumConnectees(),
                          "Input<T>::getValue()");
@@ -667,7 +698,7 @@ public:
     /** Get the Channel associated with this Input. This method can only be
     used for non-list Input(s). For list Input(s), use the other overload.    */
     const Channel& getChannel() const {
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isListSocket(),
                          Exception,
                          "Input<T>::getChannel(): an index must be "
                          "provided for a list input.");
@@ -688,7 +719,7 @@ public:
     
     const std::string& getAlias() const override {
         OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isListSocket(),
                          Exception,
                          "Input<T>::getAlias(): this is a list Input; an index "
                          "must be provided.");
@@ -718,13 +749,29 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
+        const auto& connecteeName = getConnecteeName(index);
+        std::string componentPath{};
+        std::string outputName{};
+        std::string channelName{};
+        std::string currAlias{};
+        parseConnecteeName(connecteeName,
+                           componentPath,
+                           outputName,
+                           channelName,
+                           currAlias);
+        setConnecteeName(composeConnecteeName(componentPath,
+                                              outputName,
+                                              channelName,
+                                              alias),
+                         index);
+        
         _aliases[index] = alias;
     }
 
     std::string getLabel() const override {
         OPENSIM_THROW_IF(!isConnected(),
                          InputNotConnected, getName());
-        OPENSIM_THROW_IF(isListConnector(),
+        OPENSIM_THROW_IF(isListSocket(),
                          Exception,
                          "Input<T>::getLabel(): this is a list Input; an index "
                          "must be provided.");
@@ -751,7 +798,7 @@ public:
     */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
         SimTK::Vector_<T> v(_connectees.size());
-        for (int ichan = 0; ichan < _connectees.size(); ++ichan) {
+        for (unsigned ichan = 0u; ichan < _connectees.size(); ++ichan) {
             v[ichan] = _connectees[ichan]->getValue(state);
         }
         return v;
@@ -785,7 +832,7 @@ public:
     }
 
 protected:
-    /** Create an Input<T> (Connector) that can only connect to an Output<T>
+    /** Create an Input<T> (Socket) that can only connect to an Output<T>
     name and stage at which it should be connected. Only Component should ever
     construct an Input.
     @param name               name of the Output dependency.
@@ -808,13 +855,13 @@ private:
 }; // END class Input<Y>
 
         
-/// @name Creating Connectors to other objects for your Component
+/// @name Creating Sockets to other objects for your Component
 /// Use these macros at the top of your component class declaration,
 /// near where you declare @ref Property properties.
 /// @{
 /** Create a socket for this component's dependence on another component.
  * You must specify the type of the component that can be connected to this
- * connector. The comment should describe how the connected component
+ * socket. The comment should describe how the connected component
  * (connectee) is used by this component.
  *
  * Here's an example for using this macro:
@@ -822,7 +869,7 @@ private:
  * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
  * class MyComponent : public Component {
  * public:
- *     OpenSim_DECLARE_CONNECTOR(parent, PhysicalOffsetFrame,
+ *     OpenSim_DECLARE_SOCKET(parent, PhysicalOffsetFrame,
  *             "To locate this component.");
  *     ...
  * };
@@ -830,43 +877,52 @@ private:
  *
  * @note This macro requires that you have included the header that defines
  * type `T`, as shown in the example above. We currently do not support
- * declaring connectors if `T` is only forward-declared.
+ * declaring sockets if `T` is only forward-declared.
  *
  * @note If you use this macro in your class, then you should *NOT* implement
- * a custom copy constructor---try to use the default one. The Connector will
+ * a custom copy constructor---try to use the default one. The socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Connectors in the
+ * We may add support for custom copy constructors with Sockets in the
  * future.
  *
- * @see Component::constructConnector()
- * @relates OpenSim::Connector */
-#define OpenSim_DECLARE_CONNECTOR(cname, T, comment)                        \
-    /** @name Connectors                                                 */ \
+ * @see Component::constructSocket()
+ * @relates OpenSim::Socket */
+#define OpenSim_DECLARE_SOCKET(cname, T, comment)                           \
+    /** @name Sockets                                                    */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** In an XML file, you can set this Connector's connectee name      */ \
-    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
-    /** This connector was generated with the                            */ \
-    /** #OpenSim_DECLARE_CONNECTOR macro.                                */ \
+    /** In an XML file, you can set this Socket's connectee name         */ \
+    /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
+    /** This socket was generated with the                               */ \
+    /** #OpenSim_DECLARE_SOCKET macro;                                   */ \
+    /** see AbstractSocket for more information.                         */ \
+    /** @socketmethods connectSocket_##cname##()                         */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
-        this->template constructConnector<T>(#cname,                        \
-                "Path to a Component to satisfy the Connector '"            \
+    PropertyIndex PropertyIndex_socket_##cname##_connectee_name {           \
+        this->template constructSocket<T>(#cname,                           \
+                "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Socket-related functions                                   */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    void connectSocket_##cname(const Object& object) {                      \
+        this->updSocket(#cname).connect(object);                            \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
-/* Preferably, use the #OpenSim_DECLARE_CONNECTOR macro. Only use this macro
+/* Preferably, use the #OpenSim_DECLARE_SOCKET macro. Only use this macro
  * when are you unable to include the header that defines type `T`. This might
  * be the case if you have a circular dependency between your class and `T`.
  * In such cases, you must:
  *
  *  -# forward-declare type `T`
  *  -# call this macro inside the definition of your class, and
- *  -# call #OpenSim_DEFINE_CONNECTOR_FD in your class's .cpp file (notice the
+ *  -# call #OpenSim_DEFINE_SOCKET_FD in your class's .cpp file (notice the
  *      difference: DEFINE vs DECLARE).
  *
  * MyComponent.h:
@@ -876,7 +932,7 @@ private:
  * class MyComponent : public Component {
  * OpenSim_DECLARE_CONCRETE_OBJECT(MyComponent, Component);
  * public:
- *     OpenSim_DECLARE_CONNECTOR_FD(parent, PhysicalOffsetFrame,
+ *     OpenSim_DECLARE_SOCKET_FD(parent, PhysicalOffsetFrame,
  *             "To locate this component.");
  *     ...
  * };
@@ -886,13 +942,13 @@ private:
  * MyComponent.cpp:
  * @code{.cpp}
  * #include "MyComponent.h"
- * OpenSim_DEFINE_CONNECTOR_FD(parent, OpenSim::MyComponent);
+ * OpenSim_DEFINE_SOCKET_FD(parent, OpenSim::MyComponent);
  * ...
  * @endcode
  *
  * You can also look at the OpenSim::Geometry source code for an example.
  *
- * @note Do NOT forget to call OpenSim_DEFINE_CONNECTOR_FD in your .cpp file!
+ * @note Do NOT forget to call OpenSim_DEFINE_SOCKET_FD in your .cpp file!
  *
  * The "FD" in the name of this macro stands for "forward-declared."
  *
@@ -900,56 +956,65 @@ private:
  *
  *
  * @note If you use this macro in your class, then you should *NOT* implement
- * a custom copy constructor---try to use the default one. The Connector will
+ * a custom copy constructor---try to use the default one. The Socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Connectors in the
+ * We may add support for custom copy constructors with Sockets in the
  * future.
  *
- * @see Component::constructConnector()
- * @relates OpenSim::Connector */
-#define OpenSim_DECLARE_CONNECTOR_FD(cname, T, comment)                     \
-    /** @name Connectors                                                 */ \
+ * @see Component::constructSocket()
+ * @relates OpenSim::Socket */
+#define OpenSim_DECLARE_SOCKET_FD(cname, T, comment)                        \
+    /** @name Sockets                                                    */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** In an XML file, you can set this Connector's connectee name      */ \
-    /** via the <b>\<connector_##cname##_connectee_name\></b> element.   */ \
+    /** In an XML file, you can set this socket's connectee name         */ \
+    /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
+    /** See AbstractSocket for more information.                         */ \
+    /** @socketmethods connectsocket_##cname##()                         */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_connector_##cname##_connectee_name {        \
-        constructConnector_##cname()                                        \
+    PropertyIndex PropertyIndex_socket_##cname##_connectee_name {           \
+        constructSocket_##cname()                                           \
     };                                                                      \
     /* Declare the method used in the in-class member initializer.       */ \
-    /* This method will be defined by OpenSim_DEFINE_CONNECTOR_FD.       */ \
-    PropertyIndex constructConnector_##cname();                             \
+    /* This method will be defined by OpenSim_DEFINE_SOCKET_FD.          */ \
+    PropertyIndex constructSocket_##cname();                                \
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
-    typedef T _connector_##cname##_type;                                    \
-    /** @endcond                                                         */
+    typedef T _socket_##cname##_type;                                       \
+    /** @endcond                                                         */ \
+    /** @name Socket-related functions                                   */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    void connectSocket_##cname(const Object& object) {                      \
+        this->updSocket(#cname).connect(object);                            \
+    }                                                                       \
+    /** @}                                                               */
 
 // The following doxygen-like description does NOT actually appear in doxygen.
-/* When specifying a Connector to a forward-declared type (using
- * OpenSim_DECLARE_CONNECTOR_FD in the class definition), you must call this
- * macro in your .cpp file.  The arguments are the name of the connector (the
- * same one provided to OpenSim_DECLARE_CONNECTOR_FD) and the class in which
- * the connector exists. See #OpenSim_DECLARE_CONNECTOR_FD for an example.
+/* When specifying a Socket to a forward-declared type (using
+ * OpenSim_DECLARE_SOCKET_FD in the class definition), you must call this
+ * macro in your .cpp file.  The arguments are the name of the socket (the
+ * same one provided to OpenSim_DECLARE_SOCKET_FD) and the class in which
+ * the socket exists. See #OpenSim_DECLARE_SOCKET_FD for an example.
  *
  * @warning This macro is experimental and may be removed in future versions.
  *
- * @see #OpenSim_DECLARE_CONNECTOR_FD
- * @relates OpenSim::Connector */
+ * @see #OpenSim_DECLARE_SOCKET_FD
+ * @relates OpenSim::Socket */
 // This macro defines the method that the in-class member initializer calls
-// to construct the Connector. The reason why this must be in the .cpp file is
+// to construct the Socket. The reason why this must be in the .cpp file is
 // that putting the template member function `template <typename T>
-// Component::constructConnector` in the header requires that `T` is not an
+// Component::constructSocket` in the header requires that `T` is not an
 // incomplete type (specifically, when compiling cpp files for classes OTHER
 // than `MyComponent` but that include MyComponent.h). OpenSim::Geometry is an
 // example of this scenario.
-#define OpenSim_DEFINE_CONNECTOR_FD(cname, Class)                           \
-PropertyIndex Class::constructConnector_##cname() {                         \
-    using T = _connector_##cname##_type;                                    \
+#define OpenSim_DEFINE_SOCKET_FD(cname, Class)                              \
+PropertyIndex Class::constructSocket_##cname() {                            \
+    using T = _socket_##cname##_type;                                       \
     std::string typeStr = T::getClassName();                                \
-    return this->template constructConnector<T>(#cname,                     \
-        "Path to a Component to satisfy the Connector '"                    \
+    return this->template constructSocket<T>(#cname,                        \
+        "Path to a Component that satisfies the Socket '"                   \
         #cname "' of type " + typeStr + ".");                               \
 }
 /// @}
@@ -986,14 +1051,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @name Inputs                                                     */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** This input is needed at stage istage.                            */ \
+    /** This input is needed at stage istage##.                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_INPUT macro.                                    */ \
+    /** #OpenSim_DECLARE_INPUT macro;                                    */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1002,12 +1068,32 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued (single-channel) Output.   */ \
+    /** The output must be of type T##.                                  */ \
+    /** This input is single-valued and thus cannot connect to a         */ \
+    /** list output.                                                     */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output.                                */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 
 // TODO create new macros to handle custom copy constructors: with
-// constructInput_() methods, etc. NOTE: constructProperty_() must be called first
-// within these macros, b/c the connectee_name property must exist before the
-// Input etc is constructed.
+// constructInput_() methods, etc. NOTE: constructProperty_() must be called
+// first within these macros, b/c the connectee_name property must exist before
+// the Input etc is constructed.
 
 
 /** Create a list input, which can connect to more than one Channel. This
@@ -1026,14 +1112,15 @@ PropertyIndex Class::constructConnector_##cname() {                         \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input can connect to multiple outputs, all of which are     */ \
-    /** needed at stage istage.                                          */ \
+    /** needed at stage istage##.                                        */ \
     /** In an XML file, you can set this Input's connectee name          */ \
     /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
-    /** See AbstractInput for more information.                          */ \
     /** This input was generated with the                                */ \
-    /** #OpenSim_DECLARE_LIST_INPUT macro.                               */ \
+    /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
+    /** see AbstractInput for more information.                          */ \
+    /** @inputmethods connectInput_##iname##()                           */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1043,9 +1130,30 @@ PropertyIndex Class::constructConnector_##cname() {                         \
             #iname "' of type " #T " (description: " comment "). "          \
             "To specify multiple paths, put spaces between them.", istage)  \
     };                                                                      \
-    /** @endcond                                                         */
+    /** @endcond                                                         */ \
+    /** @name Input-related functions                                    */ \
+    /** @{                                                               */ \
+    /** Connect this Input to a single-valued or list Output.            */ \
+    /** The output must be of type T##.                                  */ \
+    /** If the output is a list output, this connects to all of the      */ \
+    /** channels of the output.                                          */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the output; the alias will be used for all */ \
+    /** channels of the output.                                          */ \
+    void connectInput_##iname(const AbstractOutput& output,                 \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(output, alias);                            \
+    }                                                                       \
+    /** Connect this Input to an output channel of type T##.             */ \
+    /** You can optionally provide an alias that will be used by this    */ \
+    /** component to refer to the channel.                               */ \
+    void connectInput_##iname(const AbstractChannel& channel,               \
+                              const std::string& alias = "") {              \
+        updInput(#iname).connect(channel, alias);                           \
+    }                                                                       \
+    /** @}                                                               */
 /// @}
 
 } // end of namespace OpenSim
 
-#endif  // OPENSIM_COMPONENT_CONNECTOR_H_
+#endif  // OPENSIM_COMPONENT_SOCKET_H_

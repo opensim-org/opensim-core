@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKcommon/internal/Xml.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -64,6 +65,7 @@ void testCoordinateLimitForce();
 void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -138,6 +140,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; 
         failures.push_back("testExpressionBasedCoordinateForce");
+    }
+
+    try { testSerializeDeserialize(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testSerializeDeserialize");
     }
 
     if (!failures.empty()) {
@@ -220,14 +228,12 @@ void testExpressionBasedCoordinateForce()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-7);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = exp(-1*zeta*omega*osim_state.getTime()) *
                         (
@@ -242,8 +248,6 @@ void testExpressionBasedCoordinateForce()
                         + dh;
 
         ASSERT_EQUAL(height, pos(1), 1e-6);
-
-        manager.setInitialTime(dt*i);
     }
     
     // Test copying
@@ -314,12 +318,10 @@ void testExpressionBasedPointToPointForce()
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(model,  integrator);
-    manager.setInitialTime(0.0);
+    state.setTime(0.0);
 
     double final_t = 1.0;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     //manager.getStateStorage().print("testExpressionBasedPointToPointForce.sto");
 
@@ -331,7 +333,7 @@ void testExpressionBasedPointToPointForce()
     
     // Save the forces
     //reporter->getForceStorage().print("path_spring_forces.mot");
-    double d = model.getSimbodyEngine().calcDistance(state, ground, p1, ball, p2);
+    double d = (p1 - ball.findStationLocationInGround(state, p2)).norm();
     const MobilizedBody& b1 = ground.getMobilizedBody();
     const MobilizedBody& b2 = ball.getMobilizedBody();
 
@@ -430,12 +432,10 @@ void testPathSpring()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 10.0;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, final_t);
 
     // tension should only be velocity dependent
     osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
@@ -526,18 +526,16 @@ void testSpringMass()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-7);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-5);
@@ -549,8 +547,6 @@ void testSpringMass()
         double analytical_force = -stiffness*height;
         // analytical force corresponds in direction to the force on the ball Y index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 1e-4);
-
-        manager.setInitialTime(dt*i);
     }
 
     // Save the forces
@@ -612,7 +608,8 @@ void testBushingForce()
 
     osimModel.print("BushingForceModel.osim");
 
-    Model previousVersionModel("BushingForceModel_30000.osim", true);
+    Model previousVersionModel("BushingForceModel_30000.osim");
+    previousVersionModel.finalizeFromProperties();
     previousVersionModel.print("BushingForceModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =
@@ -636,18 +633,16 @@ void testBushingForce()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -659,8 +654,6 @@ void testBushingForce()
         double analytical_force = -stiffness*height;
         // analytical force corresponds in direction to the force on the ball Y index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
-
-        manager.setInitialTime(dt*i);
     }
 
     manager.getStateStorage().print("bushing_model_states.sto");
@@ -741,18 +734,16 @@ void testFunctionBasedBushingForce()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
@@ -764,8 +755,6 @@ void testFunctionBasedBushingForce()
         double analytical_force = -stiffness*height;
         // analytical force corresponds in direction to the force on the ball Y index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
-
-        manager.setInitialTime(dt*i);
     }
 
     osimModel.disownAllComponents();
@@ -863,18 +852,16 @@ void testExpressionBasedBushingForceTranslational()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
     
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
     
     for(int i = 1; i <=nsteps; ++i){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
-        osimModel.updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
         // compute the height based on the analytic solution for 1-D spring-mass
         // system with zero-velocity at initial offset.
@@ -892,8 +879,6 @@ void testExpressionBasedBushingForceTranslational()
         // check analytical force corresponds to the force on the ball 
         // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
-        
-        manager.setInitialTime(dt*i);
     }
     
     osimModel.disownAllComponents();
@@ -985,7 +970,7 @@ void testExpressionBasedBushingForceRotational()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel, integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
     double nsteps = 10;
@@ -996,8 +981,7 @@ void testExpressionBasedBushingForceRotational()
     double omega = sqrt(stiffness / I_y);
 
     for (int i = 1; i <= nsteps; ++i) {
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         // compute the current rotation about the y axis
@@ -1021,8 +1005,6 @@ void testExpressionBasedBushingForceRotational()
         // check analytical moment corresponds to the moment on the ball 
         // in the Y direction, index = 4
         ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
-
-        manager.setInitialTime(dt*i);
     }
 
     osimModel.disownAllComponents();
@@ -1067,16 +1049,14 @@ void testElasticFoundation()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
-
-    manager.setFinalTime(final_t);
 
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, final_t);
 
     // end timing
     cout << "Elastic Foundation simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;;
@@ -1145,17 +1125,15 @@ void testHuntCrossleyForce()
 
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    Manager manager(osimModel, integrator);
+    osim_state.setTime(0.0);
 
     double final_t = 2.0;
 
-    manager.setFinalTime(final_t);
-    
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(osim_state);
+    manager.integrate(osim_state, final_t);
 
     // end timing
     cout << "Hunt Crossley simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
@@ -1244,6 +1222,7 @@ void testCoordinateLimitForce()
 
     // Check serialization and deserialization
     Model loadedModel{"CoordinateLimitForceTest.osim"};
+    loadedModel.finalizeFromProperties();
 
     ASSERT(loadedModel == *osimModel,
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");
@@ -1288,16 +1267,15 @@ void testCoordinateLimitForce()
     // Compute the force and torque at the specified times.
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    Manager manager(*osimModel, integrator);
+    osim_state.setTime(0.0);
 
     double final_t = 1.0;
     double nsteps = 20;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         
         double h = q_h.getValue(osim_state);
@@ -1329,8 +1307,6 @@ void testCoordinateLimitForce()
             // Verify no force is being applied when within limits 
             ASSERT_EQUAL(0.0, model_force[0], 1e-5);
         }
-
-        manager.setInitialTime(dt*i);
     }
 
     manager.getStateStorage().print("coordinte_limit_force_model_states.sto");
@@ -1435,15 +1411,14 @@ void testCoordinateLimitForceRotational()
     RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
     integrator.setAccuracy(1e-8);
     Manager manager(osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
 
     double final_t = 1.0;
     double nsteps = 20;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         double ediss = clf->getDissipatedEnergy(osim_state);
@@ -1452,8 +1427,6 @@ void testCoordinateLimitForceRotational()
         /*double EKsys = */osimModel.getMultibodySystem().calcKineticEnergy(osim_state);
 
         ASSERT_EQUAL(eSys/eSys0, 1.0, integ_accuracy);
-
-        manager.setInitialTime(dt*i);
     }
 
     manager.getStateStorage().print("rotational_coordinte_limit_force_states.sto");
@@ -1531,9 +1504,8 @@ void testExternalForce()
 
     // Specify the initial and final times of the simulation.
     double tf = 2.0;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(tf);
-    manager.integrate(s);
+    s.setTime(0.0);
+    manager.integrate(s, tf);
 
     manager.getStateStorage().print("external_force_test_model_states.sto");;
 
@@ -1573,9 +1545,8 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
     integrator2.setAccuracy(accuracy);
     Manager manager2(model, integrator2);
-    manager2.setInitialTime(0.0);
-    manager2.setFinalTime(tf);
-    manager2.integrate(s2);
+    s2.setTime(0.0);
+    manager2.integrate(s2, tf);
 
     // all dofs should remain constant
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1611,9 +1582,8 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
     integrator3.setAccuracy(accuracy);
     Manager manager3(model, integrator3);
-    manager3.setInitialTime(0.0);
-    manager3.setFinalTime(tf);
-    manager3.integrate(s3);
+    s3.setTime(0.0);
+    manager3.integrate(s3, tf);
 
     // all dofs should remain constant except Y
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1661,9 +1631,8 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
     integrator4.setAccuracy(accuracy);
     Manager manager4(model, integrator4);
-    manager4.setInitialTime(0.0);
-    manager4.setFinalTime(tf);
-    manager4.integrate(s4);
+    s4.setTime(0.0);
+    manager4.integrate(s4, tf);
 
     // all dofs should remain constant except X-translation
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1672,4 +1641,54 @@ void testExternalForce()
         if(i !=3)
             ASSERT_EQUAL(def, val, 10*accuracy);
     }
+}
+
+void testSerializeDeserialize() {
+    std::cout << "Test serialize & deserialize." << std::endl;
+    
+    std::string origModelFile{"PushUpToesOnGroundWithMuscles.osim"};
+    std::string oldModelFile{"testForces_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testForces_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedMuscles{"glut_med1_r", "bifemlh_r",
+                                         "add_mag2_r"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto thelenMuscles = xml.getRootElement().
+                                 getRequiredElement("Model").
+                                 getRequiredElement("ForceSet").
+                                 getRequiredElement("objects").
+                                 getAllElements("Thelen2003Muscle");
+        for(unsigned i = 0; i < thelenMuscles.size(); ++i) {
+            const auto& muscleName =
+                thelenMuscles[i].getRequiredAttributeValue("name");
+            if(flippedMuscles.find(muscleName) != flippedMuscles.end()) {
+                auto elem = thelenMuscles[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+    
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldForceSet = oldModel.getForceSet();
+    const auto& newForceSet = newModel.getForceSet();
+
+    ASSERT(oldForceSet.getSize() == newForceSet.getSize());
+    for(int i = 0; i < oldForceSet.getSize(); ++i) {
+        ASSERT(oldForceSet.get(i).get_appliesForce() ==
+               newForceSet.get(i).get_appliesForce());
+
+        if(flippedMuscles.find(newForceSet.get(i).getName()) !=
+           flippedMuscles.end())
+            ASSERT(newForceSet.get(i).get_appliesForce() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

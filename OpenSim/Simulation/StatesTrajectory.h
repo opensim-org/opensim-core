@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -68,7 +68,7 @@ class Model;
  * - All states in the trajectory are consistent with each other (see
  *   isConsistent()).
  *
- * @note These gaurantees apply when using this class through C++, Java,
+ * @note These guarantees apply when using this class through C++, Java,
  * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
@@ -256,7 +256,7 @@ public:
      * - number of coordinates in the model and number of Q's in state
      * - number of speeds in the model and number of U's in state
      *
-     * Returns false otherwise. This method **cannot** gaurantee that the
+     * Returns false otherwise. This method **cannot** guarantee that the
      * trajectory will work with the given model, and makes no attempt to
      * determine if the trajectory was generated with the given model.
      */
@@ -404,15 +404,21 @@ public:
         }
     };
 
-    /// @name Create partial trajectory from pre-4.0 files
+    /// @name Create partial trajectory from a states Storage
     /// @{
-    /** Create a partial trajectory of States from a (pre-4.0) states Storage
+    /** Create a partial trajectory of States from a states Storage
      * object. The resulting StatesTrajectory will restore continuous state
      * variable values, but not discrete state variable values, modeling
      * option values, etc. Also, keep in mind that states Storage files usually
      * do not contain the state values to full precision, and thus cannot
      * exactly reproduce results from the initial state trajectory; constraints
      * may not be satisfied, etc.
+     *
+     * The states in the resulting trajectory will be realized to
+     * SimTK::Stage::Instance. You should not use the resulting trajectory with
+     * an instance of the model other than the one you passed to this function
+     * (the state contains Instance-stage cache variables that are pointers to
+     * objects in the model; e.g., force elements).
      *
      * @note The naming convention for state variables changed in OpenSim v4.0;
      * `ankle_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
@@ -433,6 +439,8 @@ public:
      *      ignored.
      *
      * #### Usage
+     * You must have called Model::initSystem() on your model before calling
+     * this function.
      * Here is how you might use this function in python:
      * @code{.py}
      * import opensim
@@ -443,6 +451,9 @@ public:
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
+     * 
+     * @throws ModelHasNoSystem Thrown if you have not yet called initSystem()
+     *      on the model.
      * 
      * @throws MissingColumnsInStatesStorage See the description of the
      *      `allowMissingColumns` argument.
@@ -508,7 +519,7 @@ public:
  * - All states in the trajectory are consistent with each other (see
  *   isConsistent()).
  *
- * @note These gaurantees apply when using this class through C++, Java,
+ * @note These guarantees apply when using this class through C++, Java,
  * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.

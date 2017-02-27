@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Contributor(s): Frank C. Anderson, Eran Guendelman, Chand T. John          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -384,7 +384,7 @@ bool RRATool::run()
     controller->setName( "CMC" );
     controller->setActuators(_model->updActuators());
     _model->addController(controller );
-    controller->setDisabled(false);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(.001);
     controller->setCheckTargetTime(true);
@@ -732,8 +732,8 @@ bool RRATool::run()
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
+    s.setTime(_ti);
+    double finalTime = _tf - _targetDT - SimTK::Zero;
 
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(NULL,controlConstraints, controller->updControlSet());
@@ -790,7 +790,6 @@ bool RRATool::run()
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
     }
-    manager.setInitialTime(_ti);
 
     // ---- INTEGRATE ----
     cout<<"\n\n\n";
@@ -815,7 +814,7 @@ bool RRATool::run()
     IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
-        manager.integrate(s);
+        manager.integrate(s, finalTime);
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results

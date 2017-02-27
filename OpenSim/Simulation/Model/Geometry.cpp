@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-OpenSim_DEFINE_CONNECTOR_FD(frame, Geometry);
+OpenSim_DEFINE_SOCKET_FD(frame, Geometry);
 
 Geometry::Geometry() {
     setNull();
@@ -44,21 +44,21 @@ Geometry::Geometry() {
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updConnector<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+    updSocket<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
 {
-    return getConnector<Frame>("frame").getConnectee();
+    return getSocket<Frame>("frame").getConnectee();
 }
 
 void Geometry::extendConnect(Component& root)
 {
     Super::extendConnect(root);
 
-    bool attachedToFrame = getConnector<Frame>("frame").isConnected();
+    bool attachedToFrame = getSocket<Frame>("frame").isConnected();
     bool hasInputTransform = getInput("transform").isConnected();
-    // Being both attached to a Frame (i.e. Connector<Frame> connected) 
+    // Being both attached to a Frame (i.e. Socket<Frame> connected) 
     // and the Input transform connected has ambiguous behavior so disallow it
     if (attachedToFrame && hasInputTransform ) {
         OPENSIM_THROW(Exception, getConcreteClassName() + " '" + getName()
@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (rootModel == nullptr) {
             std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
-            return;   // Orphan Mesh not descendent of a model
+            return;   // Orphan Mesh not descendant of a model
         }
         // Current interface to Visualizer calls generateDecorations on every frame.
         // On first time through, load file and create DecorativeMeshFile and cache it
@@ -274,12 +274,13 @@ void Mesh::extendFinalizeFromProperties() {
         try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
-            pmesh.loadFile(attempts.back().c_str());
             // objFile closes when destructed
+            // if the file can be opened but had bad contents e.g. binary vtp 
+            // it will be handled downstream 
 
         }
         catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't read "
+            std::cout << "Visualizer couldn't open "
                 << attempts.back() << " because:\n"
                 << e.what() << "\n";
             return;

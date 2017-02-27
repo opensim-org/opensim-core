@@ -1,5 +1,5 @@
 """
-Test that connectors, inputs, and outputs are functional in python.
+Test that sockets, inputs, and outputs are functional in python.
 """
 import os, unittest
 import opensim as osim
@@ -13,6 +13,8 @@ osim.Model.setDebugLevel(0)
 class TestAccessSubcomponents(unittest.TestCase):
     def test_individual_components(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model.finalizeFromProperties()
+        
         muscle = model.getComponent('BICshort')
         assert muscle.getName() == 'BICshort'
         # No downcasting necessary!
@@ -22,6 +24,7 @@ class TestAccessSubcomponents(unittest.TestCase):
 
     def test_component_list(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model.finalizeFromProperties()
 
         num_components = 0
         for comp in model.getComponentsList():
@@ -77,6 +80,7 @@ class TestAccessSubcomponents(unittest.TestCase):
 
     def test_component_filter(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        model.finalizeFromProperties()
 
         comps = model.getMuscleList()
         comps.setFilter(osim.ComponentFilterAbsolutePathNameContainsString('BIC'))

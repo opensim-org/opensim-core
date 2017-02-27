@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
  * Contributor(s): Ayman Habib                                                *
  *                                                                            *
@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include <unordered_map>
 
 using namespace SimTK;
 
@@ -131,12 +132,15 @@ void Component::addComponent(Component* subcomponent)
     while (root->hasParent()) {
         root = &(root->getParent());
     }
-
-    auto components = root->getComponentList<Component>();
-    for (auto& c : components) {
-        if (subcomponent == &c) {
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                subcomponent->getName(), getName());
+    // if the root has no immediate subcomponents do not bother
+    // checking if the subcomponent is in the ownership tree
+    if ((root->getNumImmediateSubcomponents() > 0)) {
+        auto components = root->getComponentList<Component>();
+        for (auto& c : components) {
+            if (subcomponent == &c) {
+                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
+                    subcomponent->getName(), getName());
+            }
         }
     }
 
@@ -170,16 +174,16 @@ void Component::finalizeFromProperties()
         comp->setParent(*this);
     }
     
-    // Provide connectors, inputs, and outputs with a pointer to its component
+    // Provide sockets, inputs, and outputs with a pointer to its component
     // (this) so that they can invoke the component's methods.
-    for (auto& it : _connectorsTable) {
+    for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
-        // Let the Connector handle any errors in the connectee_name property.
+        // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
-        // Let the Connector handle any errors in the connectee_name property.
+        // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _outputsTable) {
@@ -210,8 +214,8 @@ void Component::componentsFinalizeFromProperties() const
     }
 }
 
-// Base class implementation of non virtual connect method.
-void Component::connect(Component &root)
+// Base class implementation of non-virtual finalizeConnections method.
+void Component::finalizeConnections(Component &root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -219,16 +223,16 @@ void Component::connect(Component &root)
         finalizeFromProperties();
     }
 
-    for (auto& it : _connectorsTable) {
-        auto& connector = it.second;
-        connector->disconnect();
+    for (auto& it : _socketsTable) {
+        auto& socket = it.second;
+        socket->disconnect();
         try {
-            connector->findAndConnect(root);
+            socket->findAndConnect(root);
         }
         catch (const std::exception& x) {
-            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Connector '" +
-                connector->getName() + "' of type " +
-                connector->getConnecteeTypeName() +
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
+                socket->getName() + "' of type " +
+                socket->getConnecteeTypeName() +
                 " (details: " + x.what() + ").");
         }
     }
@@ -236,7 +240,7 @@ void Component::connect(Component &root)
     for (auto& it : _inputsTable) {
         auto& input = it.second;
 
-        if (!input->isListConnector() && input->getConnecteeName(0).empty()) {
+        if (!input->isListSocket() && input->getConnecteeName(0).empty()) {
             // TODO When we support verbose/debug logging we should include
             // message about unspecified Outputs but generally this OK
             // if the Input's value is not required.
@@ -268,7 +272,7 @@ void Component::connect(Component &root)
     // Allow subcomponents to form their connections
     componentsConnect(root);
 
-    // Forming connections changes the Connector which is a property
+    // Forming connections changes the Socket which is a property
     // Remark as upToDate.
     setObjectIsUpToDateWithProperties();
 }
@@ -278,31 +282,31 @@ void Component::componentsConnect(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[i].upd()->connect(root);
+        _memberSubcomponents[i].upd()->finalizeConnections(root);
     }
     for(unsigned int i=0; i<_propertySubcomponents.size(); ++i){
-        _propertySubcomponents[i].get()->connect(root);
+        _propertySubcomponents[i].get()->finalizeConnections(root);
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[i].upd()->connect(root);
+        _adoptedSubcomponents[i].upd()->finalizeConnections(root);
     }
 }
 
-void Component::disconnect()
+void Component::clearConnections()
 {
     // First give the subcomponents the opportunity to disconnect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        _memberSubcomponents[i]->disconnect();
+        _memberSubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
-        _propertySubcomponents[i]->disconnect();
+        _propertySubcomponents[i]->clearConnections();
     }
     for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        _adoptedSubcomponents[i]->disconnect();
+        _adoptedSubcomponents[i]->clearConnections();
     }
 
-    //Now cycle through and disconnect all connectors for this component
-    for (auto& it : _connectorsTable) {
+    //Now cycle through and disconnect all sockets for this component
+    for (auto& it : _socketsTable) {
         it.second->disconnect();
     }
     
@@ -913,7 +917,8 @@ SimTK::Vector Component::
 // Set all values of the state variables allocated by this Component. Includes
 // state variables allocated by its subcomponents.
 void Component::
-    setStateVariableValues(SimTK::State& state, const SimTK::Vector& values)
+    setStateVariableValues(SimTK::State& state,
+                           const SimTK::Vector& values) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1042,9 +1047,27 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
             //               </Connector_PhysicalFrame_>
             //           </connectors>
             // New:      <connector_parent_connectee_name>...
-            //               </connector_parent_connectee_name>
+            //           </connector_parent_connectee_name>
             //
             XMLDocument::updateConnectors30508(node);
+        }
+
+        if(versionNumber < 30510) {
+            // Before -- <connector_....> ... </connector_...>
+            // After  -- <socket_...> ... </socket_...>
+            for(auto iter = node.element_begin();
+                iter != node.element_end();
+                ++iter) {
+                std::string oldName{"connector"};
+                std::string newName{"socket"};
+                auto tagname = iter->getElementTag();
+                auto pos = tagname.find(oldName);
+                if(pos != std::string::npos) {
+                    tagname.replace(pos, oldName.length(), newName);
+                    iter->setElementTag(tagname);
+                }
+            }
+            
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
@@ -1108,7 +1131,7 @@ void Component::markAsPropertySubcomponent(const Component* component)
         std::find(_propertySubcomponents.begin(), _propertySubcomponents.end(), compRef);
     if ( it == _propertySubcomponents.end() ){
         // Must reconstruct the reference pointer in place in order
-        // to invoke move constuctor from SimTK::Array::push_back 
+        // to invoke move constructor from SimTK::Array::push_back 
         // otherwise it will copy and reset the Component pointer to null.
         _propertySubcomponents.push_back(
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
@@ -1445,40 +1468,20 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpSubcomponents(int depth) const
-{
-    std::string tabs;
-    for (int t = 0; t < depth; ++t) {
-        tabs += "\t";
-    }
-
-    std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'" << std::endl;
-    for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _propertySubcomponents.size(); ++i) {
-        _propertySubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-}
-
 void Component::dumpConnections() const {
-    std::cout << "Connectors for " << getConcreteClassName() << " '"
+    std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
-    if (getNumConnectors() == 0) std::cout << " none";
+    if (getNumSockets() == 0) std::cout << " none";
     std::cout << std::endl;
-    for (const auto& it : _connectorsTable) {
-        const auto& connector = it.second;
-        std::cout << "  " << connector->getConnecteeTypeName() << " '"
-                  << connector->getName() << "': ";
-        if (connector->getNumConnectees() == 0) {
+    for (const auto& it : _socketsTable) {
+        const auto& socket = it.second;
+        std::cout << "  " << socket->getConnecteeTypeName() << " '"
+                  << socket->getName() << "': ";
+        if (socket->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
-            for (unsigned i = 0; i < connector->getNumConnectees(); ++i) {
-                std::cout << connector->getConnecteeName(i) << " ";
+            for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
+                std::cout << socket->getConnecteeName(i) << " ";
             }
             std::cout << std::endl;
         }
@@ -1505,13 +1508,99 @@ void Component::dumpConnections() const {
     }
 }
 
+void Component::printSubcomponentInfo() const {
+    printSubcomponentInfo<Component>();
+}
+
+void Component::printOutputInfo(const bool includeDescendants) const {
+    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+
+    static const std::unordered_map<std::string, std::string>
+        typeAliases{{"SimTK::Vec<2,double,1>", "Vec2"},
+                    {"SimTK::Vec<3,double,1>", "Vec3"},
+                    {"SimTK::Vec<4,double,1>", "Vec4"},
+                    {"SimTK::Vec<5,double,1>", "Vec5"},
+                    {"SimTK::Vec<6,double,1>", "Vec6"},
+                    {"SimTK::Vec<2,SimTK::Vec<3,double,1>,1>", "SpatialVec"},
+                    {"SimTK::Transform_<double>", "Transform"},
+                    {"SimTK::Vector_<double>", "Vector"}};
+    
+    // Do not display header for Components with no outputs.
+    if (getNumOutputs() > 0) {
+        const std::string msg = "Outputs from " + getAbsolutePathName() +
+            " [" + getConcreteClassName() + "]";
+        std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
+
+        const auto& outputs = getOutputs();
+        unsigned maxlen{};
+        bool printingAlias{false};
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            unsigned len = name.length();
+            if(typeAliases.find(name) != typeAliases.end()) {
+                len += typeAliases.at(name).length();
+                printingAlias = true;
+            }
+
+            maxlen = std::max(maxlen, len);
+        }
+        maxlen += 2;
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << std::string(maxlen -
+                                         name.length() -
+                                         typeAliases.at(name).length(), ' ');
+            else if(printingAlias)
+                std::cout << std::string(maxlen - name.length() + 3, ' ');
+            else
+                std::cout << std::string(maxlen - name.length(), ' ');
+            std::cout << "[" << name;
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << " = " << typeAliases.at(name);
+            std::cout << "]  "
+                      << output.first << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    if (includeDescendants) {
+        for (const Component& thisComp : getComponentList<Component>()) {
+            // getComponentList() returns all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
+            thisComp.printOutputInfo(false);
+        }
+    }
+}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
-    // Going down the tree, node is followed by all its
-    // children in order, last child's successor is the parent's successor.
+    // Going down the tree, this node is followed by all its children.
+    // The last child's successor (next) is the parent's successor.
+
+    const size_t nmsc = _memberSubcomponents.size();
+    const size_t npsc = _propertySubcomponents.size();
+    const size_t nasc = _adoptedSubcomponents.size();
+
+    if (!hasParent()) {
+        // If this isn't the root component and it has no parent, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have a parent).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
+        }
+        // if the root (have no parent) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
+    }
+
     const Component* last = nullptr;
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
-        if (i == _memberSubcomponents.size() - 1) {
+    for (unsigned int i = 0; i < nmsc; i++) {
+        if (i == nmsc - 1) {
             _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
@@ -1521,7 +1610,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             last = _memberSubcomponents[i + 1].get();
         }
     }
-    if (size_t npsc = _propertySubcomponents.size()) {
+    if (npsc) {
         if (last)
             last->_nextComponent = _propertySubcomponents[0].get();
 
@@ -1538,7 +1627,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             }
         }
     }
-    if (size_t nasc = _adoptedSubcomponents.size()) {
+    if (nasc) {
         if (last)
             last->_nextComponent = _adoptedSubcomponents[0].get();
 
@@ -1554,16 +1643,15 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nmsc; ++i) {
         _memberSubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < npsc; ++i) {
         _propertySubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
 }
-
 
 } // end of namespace OpenSim

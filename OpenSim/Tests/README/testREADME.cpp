@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  * Contributor(s): Thomas Uchida, James Dunne                                 *
  *                                                                            *
@@ -87,8 +87,8 @@ int main() {
     // Add a console reporter to print the muscle fiber force and elbow angle.
     ConsoleReporter* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.0);
-    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
-    reporter->updInput("inputs").connect(
+    reporter->addToReport(biceps->getOutput("fiber_force"));
+    reporter->addToReport(
         elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
         "elbow_angle");
     model.addComponent(reporter);
@@ -123,12 +123,12 @@ int main() {
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0); manager.setFinalTime(10.0);
+    state.setTime(0.0);
 #ifdef VISUALIZE // To give you the chance to click View -> Save Movie.
     std::cout << "Press enter/return to begin the simulation..." << std::endl;
     getchar();
 #endif
-    manager.integrate(state);
+    manager.integrate(state, 10.0);
 
     return 0;
 };

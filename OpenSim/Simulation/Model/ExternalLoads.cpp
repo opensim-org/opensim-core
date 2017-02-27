@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -348,7 +348,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         
         // get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
         pGround = exForce.getPointAtTime(time);
-        getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
+        pAppliedBody = ground.findStationLocationInAnotherFrame(s, pGround, appliedToBody);
 
         // populate the force data for this instant in time
         for(int j =0; j<3; ++j){

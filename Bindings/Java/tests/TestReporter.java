@@ -30,8 +30,7 @@ class TestReporter {
         tableReporter.updInput("inputs").
                       connect(tableSource.getOutput("column").
                                           getChannel("col1"));
-        tableReporter.updInput("inputs").
-                      connect(tableSource.getOutput("column").
+        tableReporter.addToReport(tableSource.getOutput("column").
                                           getChannel("col2"));
 
         State state = model.initSystem();
@@ -111,12 +110,12 @@ class TestReporter {
         
         String modelFileName = "double_pendulum_markers.osim";
         Model model = new Model(modelFileName);
+        model.finalizeFromProperties();
 
         ConsoleReporter consoleReporter = new ConsoleReporter();
         consoleReporter.set_report_time_interval(timeInterval);
         consoleReporter.
-            updInput("inputs").
-            connect(model.getCoordinateSet().get(0).getOutput("value"),
+            addToReport(model.getCoordinateSet().get(0).getOutput("value"),
                     "pin1_angle");
         consoleReporter.
             updInput("inputs").
@@ -131,8 +130,7 @@ class TestReporter {
             connect(model.getCoordinateSet().get(0).getOutput("value"),
                     "q1");
         tableReporter.
-            updInput("inputs").
-            connect(model.getCoordinateSet().get(1).getOutput("value"),
+            addToReport(model.getCoordinateSet().get(1).getOutput("value"),
                     "q2");
         model.addComponent(tableReporter);
 

@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <OpenSim/OpenSim.h>
-#include "FunctionComponentConnector.h"
+#include "FunctionComponentSocket.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -18,8 +18,8 @@ void test()
 {
     Model model;
 
-    FunctionComponentConnector<double>* fun =
-        new FunctionComponentConnector<double>(testFunction);
+    FunctionComponentSocket<double>* fun =
+        new FunctionComponentSocket<double>(testFunction);
     model.addModelComponent(fun);
 
     ConsoleReporter* rep = new ConsoleReporter();
@@ -33,9 +33,8 @@ void test()
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     integrator.setMaximumStepSize(0.1);
-    manager.setInitialTime(0);
-    manager.setFinalTime(1);
-    manager.integrate(s);
+    s.setTime(0.0);
+    manager.integrate(s, 1.0);
 }
 
 int main()
