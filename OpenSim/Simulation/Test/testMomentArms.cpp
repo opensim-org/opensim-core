@@ -38,98 +38,11 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <simbody/internal/MobilizedBody_BuiltIns.h>
+
+#include "SimulationComponentsForTesting.h"
 
 using namespace OpenSim;
 using namespace std;
-
-//==============================================================================
-// CompoundJoint necessary for testing equivalent body force calculations for
-// joints comprised of more than one mobilized body.
-//==============================================================================
-class CompoundJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
-
-public:
-    /** Indices of Coordinates. */
-    enum class Coord : unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
-    };
-
-private:
-    /** Specify the Coordinates of this CompoundJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation1X)) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation2Y)) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation3Z)) };
-
-public:
-    // CONSTRUCTION
-    using Joint::Joint;
-
-protected:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override
-    {
-        using namespace SimTK;
-
-        Super::extendAddToSystem(system);
-
-        // PARENT TRANSFORM
-        const SimTK::Transform& P_Po =
-            getParentFrame().findTransformInBaseFrame();
-        // CHILD TRANSFORM
-        const SimTK::Transform& B_Bo =
-            getChildFrame().findTransformInBaseFrame();
-
-        int coordinateIndexForMobility = 0;
-
-        SimTK::Transform childTransform0(Rotation(), Vec3(0));
-
-        SimTK::Body::Massless massless;
-
-        // CREATE MOBILIZED BODY for body rotation about body Z
-        MobilizedBody masslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-            system.updMatterSubsystem().updMobilizedBody(
-                getParentFrame().getMobilizedBodyIndex()),
-            P_Po,
-            massless,
-            childTransform0,
-            coordinateIndexForMobility);
-
-        // Find the joint frame with Z aligned to body X
-        Rotation rotToX(Pi/2, YAxis);
-        SimTK::Transform parentTransform1(rotToX, Vec3(0));
-        SimTK::Transform childTransform1(rotToX, Vec3(0));
-
-        // CREATE MOBILIZED BODY for body rotation about body X
-        MobilizedBody masslessBody2 = createMobilizedBody<MobilizedBody::Pin>(
-            masslessBody1,
-            parentTransform1,
-            massless,
-            childTransform1,
-            coordinateIndexForMobility);
-
-        // Now Find the joint frame with Z aligned to body Y
-        Rotation rotToY(-Pi/2, XAxis);
-        SimTK::Transform parentTransform2(rotToY, Vec3(0));
-        SimTK::Transform childTransform2(B_Bo.R()*rotToY, B_Bo.p());
-
-        // CREATE MOBILIZED BODY for body rotation about body Y
-        MobilizedBody mobBod = createMobilizedBody<MobilizedBody::Pin>(
-            masslessBody2,
-            parentTransform2,
-            getChildInternalRigidBody(),
-            childTransform2,
-            coordinateIndexForMobility, &getChildFrame());
-    }
-//==============================================================================
-};  // END of class CompoundJoint
-//==============================================================================
-
 
 //==============================================================================
 // Common Parameters for the simulations are just global.
