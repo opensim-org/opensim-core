@@ -105,7 +105,7 @@ public:
             componentConcreteClassName + " has no parent and is not the root.\n" +
             "Verify that finalizeFromProperties() has been invoked on the " + 
             "root Component or that this Component is not a clone, which has " +
-            "not been added to its parent.";
+            "not been added to its parent Component.";
         addMessage(msg);
     }
 };
@@ -120,8 +120,9 @@ public:
         Exception(file, line, func) {
         std::string msg = "Component '" + thisName + "' of type " +
             componentConcreteClassName + " is the root but has no " + 
-            "subcomponents.\n" +
-            "Verify that finalizeFromProperties() was called on this Component.";
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
         addMessage(msg);
     }
 };
@@ -1467,14 +1468,64 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Dump debugging information to the console */
+    /** @name Print information about this component and subcomponents to the 
+     console                                                                  */
     /// @{
-    /** Debugging method to list all subcomponents by name and recurse
-        into these components to list their subcomponents, and so on. */
-    void dumpSubcomponents(int depth=0) const;
+    /** List all subcomponents by name and recurse into these components to 
+    list their subcomponents, and so on.                                      */
+    void printSubcomponentInfo() const;
+    
     /** List all the Sockets and Inputs and whether or not they are
      * connected. */
     void dumpConnections() const;
+
+    template<typename C>
+    void printSubcomponentInfo() const {
+        std::string className = SimTK::NiceTypeName<C>::namestr();
+        const std::size_t colonPos = className.rfind(":");
+        if (colonPos != std::string::npos)
+            className = className.substr(colonPos+1,
+                                         className.length()-colonPos);
+
+        std::cout << "Class name and absolute path name for descendants of '"
+                  << getName() << "' that are of type " << className << ":\n"
+                  << std::endl;
+
+        ComponentList<const C> compList = getComponentList<C>();
+
+        // Step through compList once to find the longest concrete class name.
+        unsigned maxlen = 0;
+        for (const C& thisComp : compList) {
+            auto len = thisComp.getConcreteClassName().length();
+            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+        }
+        maxlen += 4; //padding
+
+        std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
+                  << "[" + getConcreteClassName() + "]"
+                  << "  " << getAbsolutePathName() << std::endl;
+        auto prevPath = getAbsolutePathName();
+        // Step through compList again to print.
+        for (const C& thisComp : compList) {
+            const std::string thisClass = thisComp.getConcreteClassName();
+            std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
+                      << thisClass << "]  ";
+            auto path = thisComp.getAbsolutePathName();
+            auto res = std::mismatch(prevPath.begin(), prevPath.end(),
+                                     path.begin());
+            while(*res.second != '/')
+                --res.second;
+            std::cout << std::string(std::count(path.begin(),
+                                                res.second, '/') * 4, ' ')
+                      << path.substr(res.second - path.begin()) << std::endl;
+            prevPath = path;
+        }
+        std::cout << std::endl;
+    }
+
+    /** Print outputs of this component and optionally, those of all 
+    subcomponents.                                                            */
+    void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
 
 protected:
@@ -2157,7 +2208,7 @@ public:
     const Component& getParent() const;
 
     /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
+        A component may not have a parent Component assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
@@ -2918,7 +2969,7 @@ void Input<T>::connect(const AbstractOutput& output,
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, unsigned int(idxThisConnectee));
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2967,7 +3018,7 @@ void Input<T>::connect(const AbstractChannel& channel,
     int numDesiredConnections = getNumConnectees();
 
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(pathStr, unsigned int(idxThisConnectee));
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     

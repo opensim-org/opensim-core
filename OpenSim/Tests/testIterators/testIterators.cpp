@@ -133,7 +133,7 @@ void testComponentListConst() {
                     model.getComponentList());
 
     model.finalizeFromProperties();
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
 
     ComponentList<const Component> componentsList = model.getComponentList();
     cout << "list begin: " << componentsList.begin()->getName() << endl;

@@ -3,9 +3,10 @@ import org.opensim.modeling.*;
 class TestIterators {
   public static void main(String[] args) {
     Model model = new Model();
+    model.finalizeFromProperties();
 
     // Iterate through 
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
     ComponentsList componentsList = model.getComponentsList();
     ComponentIterator compIter = componentsList.begin();
     int countComponents = 0;

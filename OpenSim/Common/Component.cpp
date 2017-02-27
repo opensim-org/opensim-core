@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include <unordered_map>
 
 using namespace SimTK;
 
@@ -1467,26 +1468,6 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpSubcomponents(int depth) const
-{
-    std::string tabs;
-    for (int t = 0; t < depth; ++t) {
-        tabs += "\t";
-    }
-
-    std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'" << std::endl;
-    for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _propertySubcomponents.size(); ++i) {
-        _propertySubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-}
-
 void Component::dumpConnections() const {
     std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
@@ -1527,6 +1508,71 @@ void Component::dumpConnections() const {
     }
 }
 
+void Component::printSubcomponentInfo() const {
+    printSubcomponentInfo<Component>();
+}
+
+void Component::printOutputInfo(const bool includeDescendants) const {
+    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+
+    static const std::unordered_map<std::string, std::string>
+        typeAliases{{"SimTK::Vec<2,double,1>", "Vec2"},
+                    {"SimTK::Vec<3,double,1>", "Vec3"},
+                    {"SimTK::Vec<4,double,1>", "Vec4"},
+                    {"SimTK::Vec<5,double,1>", "Vec5"},
+                    {"SimTK::Vec<6,double,1>", "Vec6"},
+                    {"SimTK::Vec<2,SimTK::Vec<3,double,1>,1>", "SpatialVec"},
+                    {"SimTK::Transform_<double>", "Transform"},
+                    {"SimTK::Vector_<double>", "Vector"}};
+    
+    // Do not display header for Components with no outputs.
+    if (getNumOutputs() > 0) {
+        const std::string msg = "Outputs from " + getAbsolutePathName() +
+            " [" + getConcreteClassName() + "]";
+        std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
+
+        const auto& outputs = getOutputs();
+        unsigned maxlen{};
+        bool printingAlias{false};
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            unsigned len = name.length();
+            if(typeAliases.find(name) != typeAliases.end()) {
+                len += typeAliases.at(name).length();
+                printingAlias = true;
+            }
+
+            maxlen = std::max(maxlen, len);
+        }
+        maxlen += 2;
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << std::string(maxlen -
+                                         name.length() -
+                                         typeAliases.at(name).length(), ' ');
+            else if(printingAlias)
+                std::cout << std::string(maxlen - name.length() + 3, ' ');
+            else
+                std::cout << std::string(maxlen - name.length(), ' ');
+            std::cout << "[" << name;
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << " = " << typeAliases.at(name);
+            std::cout << "]  "
+                      << output.first << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    if (includeDescendants) {
+        for (const Component& thisComp : getComponentList<Component>()) {
+            // getComponentList() returns all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
+            thisComp.printOutputInfo(false);
+        }
+    }
+}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
     // Going down the tree, this node is followed by all its children.
@@ -1536,27 +1582,20 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     const size_t npsc = _propertySubcomponents.size();
     const size_t nasc = _adoptedSubcomponents.size();
 
-    // If this isn't the root component and it has no parent, then
-    // this is an orphan component and we likely failed to call 
-    // finalizeFromProperties on the root OR this is a clone that
-    // has not been added to the root (in which case would have a parent).
-    if ((this != &root) && !this->hasParent() ) {
-        OPENSIM_THROW(ComponentIsAnOrphan, getName(), getConcreteClassName());
-    }
-
-    if ((this == &root) && !(nmsc + npsc + nasc)) {
-        ComponentIsRootWithNoSubcomponents ex(__FILE__, __LINE__, __func__,
-            getName(), getConcreteClassName());
-        if (getConcreteClassName() == "Model") {
-            // If we have a Model that is has no subcomponents we know this is 
-            // an issue of not calling finalizeFromProperties on the Model
-            throw ex;
+    if (!hasParent()) {
+        // If this isn't the root component and it has no parent, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have a parent).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
         }
-        else// Albeit strange for a Component to be root and have no subcomponents
-            // it is possible, and testComponents creates and interrogates
-            // components before they are added to a Model and many of these
-            // may have no subcomponents. So, just issue a warning in this case.
-            std::cout << "WARNING: " << ex.what() << std::endl;
+        // if the root (have no parent) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
     }
 
     const Component* last = nullptr;

@@ -70,12 +70,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
                 
         // Integrate from initial time to final time
         Manager manager(osimModel, *p_integrator);
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        manager.integrate(s);
+        manager.integrate(s, finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
@@ -202,10 +201,9 @@ int main()
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
-        manager.integrate(si);
+        manager.integrate(si, finalTime);
 
         auto statesTable = manager.getStatesTable();
         STOFileAdapter_<double>::write(statesTable, 
