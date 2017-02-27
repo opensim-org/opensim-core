@@ -77,6 +77,7 @@ csv.write(table, 'hopper_results.csv');
 % ANSWER{
 results = opensimTimeSeriesTableToMatlab(table);
 fieldnames(results)
+figure;
 plot(results.time, results.height);
 xlabel('time');
 ylabel('height');

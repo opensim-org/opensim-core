@@ -156,10 +156,22 @@ vastus.updGeometryPath().addPathWrap(patella);
 brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseConstantFunction();
-gctime = 5;
-for i = 1:size(act,2)
-    controlFunction.addPoint((act(1,i)/100)*gctime, act(2,i));
+
+
+try evalin('base','user_act');
+    disp('User activation found...')
+    user_act = evalin('base','user_act');
+    for i = 1:size(user_act,2)
+        controlFunction.addPoint(user_act(1,i), user_act(2,i));
+    end
+catch 
+    disp('User activation not found, using default activation...')
+    controlFunction.addPoint(0.0, 0.3);
+    controlFunction.addPoint(2.0, 1.0);
+    controlFunction.addPoint(3.9, 0.1)   
 end
+
+
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
 
