@@ -324,8 +324,6 @@ out all the values of any property:
 template <class T>
 class Property : public AbstractProperty {
 public:
-    // Default constructor, destructor, copy constructor, copy assignment 
-
     /** Provides type-specific methods used to implement generic functionality.
     This class must be specialized for any 
     type T that is used in a Property\<T> instantiation, unless T is an 
@@ -570,6 +568,12 @@ public:
     }
 
 protected:
+    Property() = default;
+    ~Property() = default;
+    Property(const Property&) = default;
+    Property(Property&&) = default;
+    Property& operator=(const Property&) = default;
+    Property& operator=(Property&&) = default;
     /** @cond **/ // Hide from Doxygen.
     // This is the interface that SimpleProperty and ObjectProperty must
     // implement.
@@ -712,6 +716,16 @@ public:
 
     SimpleProperty* clone() const override final 
     {   return new SimpleProperty(*this); }
+
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const SimpleProperty&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
    
     std::string toString() const override final {
         std::stringstream out;
@@ -962,6 +976,16 @@ public:
 
     ObjectProperty* clone() const override final 
     {   return new ObjectProperty(*this); }
+
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const ObjectProperty&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
 
     // Implementation of these methods must be deferred until Object has been
     // declared; see Object.h.
