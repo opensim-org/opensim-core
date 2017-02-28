@@ -24,7 +24,7 @@
 import org.opensim.modeling.*
 
 % Open Model
-walkerModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+walkerModel = Model('../Model/WalkerModel.osim');
 
 % Add Analyses to the Model
 forceReporter = ForceReporter();
@@ -44,10 +44,10 @@ tool.setStartTime(0);
 tool.setFinalTime(2);
 
 % Define the prefix for the result files
-tool.setName('DW2013_WalkerModelTerrain');
+tool.setName('WalkerModel.osim');
 
 % Set Input States File
-tool.setStatesFileName('../Model/DW2013_WalkerModelTerrain_Initial_states.sto');
+tool.setStatesFileName('../Model/WalkerModel_Initial_states.sto');
 
 % Set Results Directory (will create without prompt)
 tool.setResultsDir('../Results/FWD');
@@ -58,8 +58,4 @@ statusVal = tool.run();
 % Cleanup
 % clearvars walkerModel forceReporter tool state statusVal
 display('Forward Tool Finished.');
-display('The following files were written to the /Results/FWD directory:')
-display('DW2013_WalkerModelTerrain_states.sto')
-display('DW2013_WalkerModelTerrain_controls.sto');
-display('DW2013_WalkerModelTerrain_states_degrees.mot');
-display('DW2013_WalkerModelTerrain_ForceReporter_forces.sto');
+display('Ouput files were written to the /Results/FWD directory:')

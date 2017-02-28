@@ -1,0 +1,8 @@
+DW2013_WalkerModelTerrain_Initial_states
+version=1
+nRows=1
+nColumns=13
+inDegrees=no
+endheader
+time	Pelvis_tx	Pelvis_ty	LHip_rz	RHip_rz	LKnee_rz	RKnee_rz	Pelvis_tx_u	Pelvis_ty_u	LHip_rz_u	RHip_rz_u	LKnee_rz_u	RKnee_rz_u
+      0.00000000	      0.00000000	      1.00000000	      0.52359878	     -0.17453293	     -0.52359878	     -0.52359878	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000
