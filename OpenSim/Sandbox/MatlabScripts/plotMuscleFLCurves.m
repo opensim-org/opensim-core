@@ -29,7 +29,7 @@
 
 
 %% -----------------------------------------------------------------------------
-function [fl_active, fl_passive] = plotMuscleFLCurves(modelpath)
+function plotMuscleFLCurves(modelpath)
 % modelpath input is a full path string to an OpenSim model.
 
 % Import OpenSim libraries.
