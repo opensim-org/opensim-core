@@ -22,3 +22,6 @@ dependencies/*
 
 # Ignore log files from OpenSim crashing
 *.log
+
+# MAC File System files
+.DS_Store
