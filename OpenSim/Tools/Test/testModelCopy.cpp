@@ -35,59 +35,29 @@ using namespace std;
 void testCopyModel( const string& fileName, const int nbod, 
                     const string& physicalFrameName, const int ngeom);
 
-// Cycle through properties and for match named Properties copy their values
-// from one object to another object
-void copyPropertiesFromObject(const Object& from, Object& to)
-{
-    const int numProps = from.getNumProperties();
-
-    to.setName(from.getName());
-
-    for (int px = 0; px < numProps; ++px) {
-        const AbstractProperty& fromProp = from.getPropertyByIndex(px);
-        const std::string& pName = fromProp.getName();
-        if (to.hasProperty(pName)) {
-            AbstractProperty& toProp = to.updPropertyByName(pName); // Get writable reference to my property
-            if (toProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
-                if (fromProp.isObjectProperty()) {
-                    for (int vx = 0; vx < fromProp.size(); ++vx) {
-                        const Object& fromPropertyAsObject = fromProp.getValueAsObject(vx);
-                        toProp.setValueAsObject(fromPropertyAsObject, vx);
-                    }
-                }
-                else { // SimpleProperty
-                    cout << "fromProp:" << fromProp.toString() << endl;
-                    cout << "toProp(before):" << toProp.toString() << endl;
-                    // does NOT invoke SimpleProperty assignment operator, why?
-                    toProp = fromProp;
-                    cout << "toProp(after):" << toProp.toString() << endl;
-                }
-            }
-        }
-    }
-}
-
-
 int main()
 {
     try {
 
-        //test copying a simple property 
+        // Test copying a simple property.
         {
-            Property<double>* a = Property<double>::TypeHelper::create("a", true);
+            std::cout << "Test copying a simple property." << std::endl;
+            Property<double>* a =
+                Property<double>::TypeHelper::create("a", true);
             a->setValue(0.123456789);
-            Property<double>* b = Property<double>::TypeHelper::create("b", true);
+            Property<double>* b =
+                Property<double>::TypeHelper::create("b", true);
             b->setValue(10.0);
 
-            *static_cast<SimpleProperty<double>*>(b) = 
-                *static_cast<SimpleProperty<double>*>(a);
+            b->assign(*a);
 
             cout << "b = " << b->toString() << endl;
             ASSERT(*a == *b);
         }
 
-        //test copying a an Object property 
+        // Test copying a an Object property.
         {
+            std::cout << "Test copying a object property." << std::endl;
             Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
                 SimTK::Inertia(0.33, 0.22, 0.11));
             Body B;
@@ -97,41 +67,22 @@ int main()
             Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
             b->setValue(B);
 
-            *static_cast<ObjectProperty<Body>*>(b) =
-                *static_cast<ObjectProperty<Body>*>(a);
-
+            b->assign(*a);
 
             cout << "b = " << b->toString() << endl;
             ASSERT(*a == *b);
 
             B = A;
             ASSERT(B == A);
-
-            Body C;
-            // This doesn't work, why?
-            copyPropertiesFromObject(A, C);
-            ASSERT(C == A);
         }
 
         Model arm("arm26.osim");
-        Model test;
+        Model armAssigned;
 
-        test = arm;
-        ASSERT(test == arm);
+        armAssigned = arm;
+        ASSERT(armAssigned == arm);
 
         arm.finalizeFromProperties();
-
-        auto comps = arm.getComponentList<Component>();
-
-        // coy all properties of a model and its constituent components
-        for (const auto& comp : comps) {
-            const std::string& type = comp.getConcreteClassName();
-            Object* to = Object::newInstanceOfType(type);
-            cout << type << ": " << comp.getName() << endl;
-            copyPropertiesFromObject(comp, *to);
-            ASSERT(comp == *to);
-        }
-
 
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
