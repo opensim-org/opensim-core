@@ -186,4 +186,9 @@ linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
 
+%% Print model to file
+% ------------------
+hopper.print('dennis_hopper.osim');
+display('Model written to file (.osim)')
+
 end

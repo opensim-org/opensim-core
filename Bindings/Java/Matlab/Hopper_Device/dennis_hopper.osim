@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30512">
+	<Model name="Dennis">
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="pelvis">
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Brick name="pelvis_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>../Dennis/pelvis</socket_frame_connectee_name>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+							</Appearance>
+							<!--Half lengths in X, Y, Z respectively.-->
+							<half_lengths>0.10000000000000001 0.10000000000000001 0.10000000000000001</half_lengths>
+						</Brick>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>30</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.20000000000000004 0.20000000000000004 0.20000000000000004 0 0 0</inertia>
+				</Body>
+				<Body name="thigh">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="patellaFrame">
+							<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+							<WrapObjectSet>
+								<objects>
+									<WrapCylinder name="patella">
+										<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+										<quadrant>x</quadrant>
+										<!--The radius of the cylinder.-->
+										<radius>0.080000000000000002</radius>
+										<!--The length of the cylinder.-->
+										<length>0.070000000000000007</length>
+									</WrapCylinder>
+								</objects>
+								<groups />
+							</WrapObjectSet>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../Dennis/thigh</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="deviceAttachmentPoint">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../Dennis/thigh</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.035000000000000003 0.14999999999999999 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+					</components>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Cylinder name="thigh_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>../Dennis/thigh</socket_frame_connectee_name>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+							</Appearance>
+							<!--Radius of cylinder.-->
+							<radius>0.035000000000000003</radius>
+							<!--Half-Height of cylinder.-->
+							<half_height>0.25</half_height>
+						</Cylinder>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>10</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.21139583333333334 0.0061250000000000011 0.21139583333333334 0 0 0</inertia>
+				</Body>
+				<Body name="shank">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PointOnLineConstraint name="pointonlineconstraint_">
+							<!--Path to a Component that satisfies the Socket 'line_body' of type PhysicalFrame (description: A frame fixed to the body that contains the line along which the point on the follower body can move.).-->
+							<socket_line_body_connectee_name>ground</socket_line_body_connectee_name>
+							<!--Path to a Component that satisfies the Socket 'follower_body' of type PhysicalFrame (description: A frame fixed to the body that contains the point that is constrained to move along a line.).-->
+							<socket_follower_body_connectee_name>shank</socket_follower_body_connectee_name>
+							<!--Direction of the line specified in the line body frame.-->
+							<line_direction_vec>0 1 0</line_direction_vec>
+							<!--The default point on the line specified in the line body frame.-->
+							<point_on_line>0 0 0</point_on_line>
+							<!--The point on (and specified in) the follower body constrained to the line.-->
+							<point_on_follower>0 -0.25 0</point_on_follower>
+						</PointOnLineConstraint>
+						<PhysicalOffsetFrame name="deviceAttachmentPoint">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../Dennis/shank</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.035000000000000003 0 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+					</components>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Cylinder name="thigh_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>../Dennis/shank</socket_frame_connectee_name>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+							</Appearance>
+							<!--Radius of cylinder.-->
+							<radius>0.035000000000000003</radius>
+							<!--Half-Height of cylinder.-->
+							<half_height>0.25</half_height>
+						</Cylinder>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>10</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.21139583333333334 0.0061250000000000011 0.21139583333333334 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<SliderJoint name="slider">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>ground_offset</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>pelvis_offset</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="yCoord">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>1</default_value>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/ground</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 1.5707963267948966</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="pelvis_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/pelvis</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 1.5707963267948966</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</SliderJoint>
+				<PinJoint name="hip">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<CoordinateLimitForce name="hipFlexion_LimitForce">
+							<!--Coordinate (name) to be limited.-->
+							<coordinate>hipFlexion</coordinate>
+							<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+							<upper_stiffness>20</upper_stiffness>
+							<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+							<upper_limit>110</upper_limit>
+							<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+							<lower_stiffness>20</lower_stiffness>
+							<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+							<lower_limit>-90</lower_limit>
+							<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+							<damping>5</damping>
+							<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+							<transition>10</transition>
+							<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+							<compute_dissipation_energy>false</compute_dissipation_energy>
+						</CoordinateLimitForce>
+					</components>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>pelvis_offset</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>thigh_offset</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="hipFlexion">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0.34999999999999998</default_value>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="pelvis_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/pelvis</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="thigh_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/thigh</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="knee">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<CoordinateLimitForce name="kneeFlexion_LimitForce">
+							<!--Coordinate (name) to be limited.-->
+							<coordinate>kneeFlexion</coordinate>
+							<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+							<upper_stiffness>50</upper_stiffness>
+							<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+							<upper_limit>140</upper_limit>
+							<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+							<lower_stiffness>40</lower_stiffness>
+							<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+							<lower_limit>10</lower_limit>
+							<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+							<damping>2</damping>
+							<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+							<transition>10</transition>
+							<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+							<compute_dissipation_energy>false</compute_dissipation_energy>
+						</CoordinateLimitForce>
+					</components>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>shank_offset</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>thigh_offset</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="kneeFlexion">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0.75</default_value>
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="shank_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/shank</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="thigh_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../Dennis/thigh</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.25 0</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+			</objects>
+			<groups />
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects>
+				<PrescribedController name="prescribedcontroller_">
+					<!--The list of model actuators that this controller will control.The keyword ALL indicates the controller will control all the actuators in the model-->
+					<actuator_list>vastus</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<FunctionSet name="ControlFunctions">
+						<objects>
+							<PiecewiseConstantFunction>
+								<x> 0 2 3.9</x>
+								<y> 0.3 1 0.1</y>
+							</PiecewiseConstantFunction>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
+			<groups />
+		</ControllerSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<HuntCrossleyForce name="huntcrossleyforce_">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>floor foot</geometry>
+								<stiffness>100000000</stiffness>
+								<dissipation>0.5</dissipation>
+								<static_friction>0.90000000000000002</static_friction>
+								<dynamic_friction>0.90000000000000002</dynamic_friction>
+								<viscous_friction>0.59999999999999998</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+				</HuntCrossleyForce>
+				<Thelen2003Muscle name="vastus">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="origin">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>Dennis/thigh</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.035000000000000003 0.10000000000000001 0</location>
+								</PathPoint>
+								<PathPoint name="insertion">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>Dennis/shank</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.035000000000000003 0.14999999999999999 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap name="pathwrap_">
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>patella</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>4000</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.55000000000000004</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.25</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+				</Thelen2003Muscle>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects>
+				<ContactHalfSpace name="floor">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame_connectee_name>Dennis/ground</socket_frame_connectee_name>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 -1.5707963267948966</orientation>
+				</ContactHalfSpace>
+				<ContactSphere name="foot">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame_connectee_name>Dennis/shank</socket_frame_connectee_name>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 -0.25 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.070000000000000007</radius>
+				</ContactSphere>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
