@@ -127,7 +127,8 @@ void testCopyModel(const string& fileName, const int nbod,
     modelCopy->finalizeFromProperties();
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
-    ASSERT( model->getActuators().getSize() == modelCopy->getActuators().getSize() );
+    ASSERT(model->getActuators().getSize() ==
+           modelCopy->getActuators().getSize());
 
     //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
     // Compare state
@@ -138,7 +139,8 @@ void testCopyModel(const string& fileName, const int nbod,
     Model *cloneModel = modelCopy->clone();
     cloneModel->finalizeFromProperties();
     ASSERT(*model == *cloneModel);
-    ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
+    ASSERT(model->getActuators().getSize() ==
+           cloneModel->getActuators().getSize());
 
     // Compare state again
     
