@@ -247,13 +247,9 @@ bool Object::operator==(const Object& other) const
     if (other.getNumProperties() != numProps)
         return false;
 
-    std::cout << "operator==()" << std::endl;
-    std::cout << getName() << std::endl;
     for (int px = 0; px < numProps; ++px) {
         const AbstractProperty& myProp    = getPropertyByIndex(px);
         const AbstractProperty& otherProp = other.getPropertyByIndex(px);
-        std::cout << myProp.getName() << " " << otherProp.getName()
-                  << std::endl;
 
         if (!myProp.equals(otherProp))
             return false;

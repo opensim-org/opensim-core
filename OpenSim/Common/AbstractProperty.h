@@ -196,6 +196,7 @@ public:
     @returns The index assigned to this value in the list. **/
     template <class T> int appendValue(const T& value);
 
+    /** Assign (copy) property *that* to this object. */
     virtual void assign(const AbstractProperty& that) = 0;
     /**@}**/
 
