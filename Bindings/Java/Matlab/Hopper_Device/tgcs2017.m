@@ -22,7 +22,7 @@ function varargout = tgcs2017(varargin)
 
 % Edit the above text to modify the response to help tgcs2017
 
-% Last Modified by GUIDE v2.5 09-Feb-2017 15:49:43
+% Last Modified by GUIDE v2.5 28-Feb-2017 11:35:39
 
 % Begin initialization code - DO NOT EDIT
 
@@ -67,10 +67,10 @@ function varargout = tgcs2017_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-% NEWACT - Plot new activation.
-function newact_Callback(hObject, eventdata, handles)
+% NEW_MUSC_ACT - Plot new activation.
+function new_musc_act_Callback(hObject, eventdata, handles)
 
-names = {'clear','newact'};
+names = {'clear','new_musc_act'};
 
 for n = 1:length(names)
     set(handles.(names{n}),'Enable','off')
@@ -93,3 +93,203 @@ cla(ax,'reset');
 axis([0 5 0 1])
 xlabel('Jump Time (s)')
 ylabel('Activation')
+
+
+% --- Executes on button press in without_device.
+function without_device_Callback(hObject, eventdata, handles)
+% hObject    handle to without_device (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of without_device
+
+
+% --- Executes on button press in radio_with_device.
+function radio_with_device_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_with_device (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radio_with_device
+
+
+% --- Executes on button press in enable_passive.
+function checkbox_passive_enable_Callback(hObject, eventdata, handles)
+% hObject    handle to enable_passive (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of enable_passive
+
+
+
+function cost_recent_Callback(hObject, eventdata, handles)
+% hObject    handle to cost_recent (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of cost_recent as text
+%        str2double(get(hObject,'String')) returns contents of cost_recent as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function cost_recent_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to cost_recent (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function cost_best_Callback(hObject, eventdata, handles)
+% hObject    handle to cost_best (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of cost_best as text
+%        str2double(get(hObject,'String')) returns contents of cost_best as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function cost_best_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to cost_best (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function max_jump_recent_Callback(hObject, eventdata, handles)
+% hObject    handle to max_jump_recent (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of max_jump_recent as text
+%        str2double(get(hObject,'String')) returns contents of max_jump_recent as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function max_jump_recent_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to max_jump_recent (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function max_jump_best_Callback(hObject, eventdata, handles)
+% hObject    handle to max_jump_best (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of max_jump_best as text
+%        str2double(get(hObject,'String')) returns contents of max_jump_best as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function max_jump_best_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to max_jump_best (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function axes1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate axes1
+
+
+% --- Executes on button press in enable_passive.
+function enable_passive_Callback(hObject, eventdata, handles)
+% hObject    handle to enable_passive (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of enable_passive
+
+
+% --- Executes on button press in active_patella_wrap.
+function active_patella_wrap_Callback(hObject, eventdata, handles)
+% hObject    handle to active_patella_wrap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of active_patella_wrap
+
+
+% --- Executes on button press in active_as_prop_myo.
+function active_as_prop_myo_Callback(hObject, eventdata, handles)
+% hObject    handle to active_as_prop_myo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of active_as_prop_myo
+
+
+% --- Executes on button press in passive_patella_wrap.
+function passive_patella_wrap_Callback(hObject, eventdata, handles)
+% hObject    handle to passive_patella_wrap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of passive_patella_wrap
+
+
+% --- Executes on slider movement.
+function spring_stiffness_Callback(hObject, eventdata, handles)
+% hObject    handle to spring_stiffness (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function spring_stiffness_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to spring_stiffness (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in simulate.
+function simulate_Callback(hObject, eventdata, handles)
+% hObject    handle to simulate (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in new_device_act.
+function new_device_act_Callback(hObject, eventdata, handles)
+% hObject    handle to new_device_act (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
