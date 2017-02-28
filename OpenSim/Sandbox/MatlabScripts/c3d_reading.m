@@ -194,10 +194,10 @@ for i = 1 : nRot
         rotOrder = 'secondRotation';
     end
     
-    % Create roation matrices according to Rot (degrees)   
-    RotAboutX1 = [1,0,0;0,cosd(Rot),-(sin(Rot*pi/180));0,sin(Rot*pi/180),cosd(Rot)];
-    RotAboutY1 = [cosd(Rot),0,sin(Rot*pi/180);0,1,0;-(sin(Rot*pi/180)),0,cosd(Rot)];
-    RotAboutZ1 = [cosd(Rot),-(sin(Rot*pi/180)),0;sin(Rot*pi/180),cosd(Rot),0;0,0,1];
+    % Create rotation matrices according to Rot (degrees)   
+    RotAboutX1 = [1,0,0;0,cosd(Rot),-sind(Rot);0,sind(Rot),cosd(Rot)];
+    RotAboutY1 = [cosd(Rot),0,sind(Rot);0,1,0;-sind(Rot),0,cosd(Rot)];
+    RotAboutZ1 = [cosd(Rot),-sind(Rot),0;sind(Rot),cosd(Rot),0;0,0,1];
 
     % choose which rotation matrix to use based on user input 
     if strcmp(upper(rotAxis),'X') 
