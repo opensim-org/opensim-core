@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30512">
-	<Model name="WalkerModel_AddPathSpring">
+	<Model name="WalkerModel">
 		<!--List of components that this component owns and serializes.-->
 		<components>
 			<PhysicalOffsetFrame name="Platform_geom_frame_1">
+				<!--The geometry used to display the axes of this Frame.-->
+				<FrameGeometry name="frame_geometry">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>..</socket_frame_connectee_name>
+					<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+					<input_transform_connectee_name></input_transform_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+				</FrameGeometry>
 				<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 				<attached_geometry>
 					<Mesh name="Platform_geom_1">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>Platform_geom_frame_1</socket_frame_connectee_name>
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
 						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 						<input_transform_connectee_name></input_transform_connectee_name>
 						<!--Scale factors in X, Y, Z directions respectively.-->
@@ -25,75 +34,22 @@
 					</Mesh>
 				</attached_geometry>
 				<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-				<socket_parent_connectee_name>Platform</socket_parent_connectee_name>
+				<socket_parent_connectee_name>../Platform</socket_parent_connectee_name>
 				<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 				<translation>4.5 0 0</translation>
 			</PhysicalOffsetFrame>
-			<PathSpring name="path_spring_r">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-				<GeometryPath>
-					<!--The set of points defining the path-->
-					<PathPointSet>
-						<objects>
-							<PathPoint name="right_shank">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightShank</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-							<PathPoint name="right_thigh">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightThigh</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-						</objects>
-						<groups />
-					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
-				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>100</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
-			<PathSpring name="path_spring_l">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-				<GeometryPath>
-					<!--The set of points defining the path-->
-					<PathPointSet>
-						<objects>
-							<PathPoint name="left_shank">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftShank</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-							<PathPoint name="left_thigh">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftThigh</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-						</objects>
-						<groups />
-					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
-				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>1000</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
+			<!--The geometry used to display the axes of this Frame.-->
+			<FrameGeometry name="frame_geometry">
+				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+				<socket_frame_connectee_name>..</socket_frame_connectee_name>
+				<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+				<input_transform_connectee_name></input_transform_connectee_name>
+				<!--Scale factors in X, Y, Z directions respectively.-->
+				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+			</FrameGeometry>
 			<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 			<attached_geometry />
 			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -116,6 +72,15 @@
 		<BodySet>
 			<objects>
 				<Body name="Platform">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry />
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -131,11 +96,20 @@
 					<inertia>1 1 1 0 0 0</inertia>
 				</Body>
 				<Body name="Pelvis">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="Pelvis_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>Pelvis</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
 							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
@@ -164,11 +138,20 @@
 					<inertia>0.0001 0.0066666700000000004 0.0001 0 0 0</inertia>
 				</Body>
 				<Body name="LeftThigh">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="LeftThigh_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>LeftThigh</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
 							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
@@ -197,11 +180,20 @@
 					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="RightThigh">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="RightThigh_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>RightThigh</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
 							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
@@ -230,11 +222,20 @@
 					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="LeftShank">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="LeftShank_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>LeftShank</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
 							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
@@ -263,11 +264,20 @@
 					<inertia>0.0001 0.0001 0.00104167 0 0 0</inertia>
 				</Body>
 				<Body name="RightShank">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="RightShank_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>RightShank</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
 							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
@@ -305,14 +315,23 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>ground_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>Platform</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../Platform</socket_child_frame_connectee_name>
 					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
 					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>ground</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../ground</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -324,7 +343,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>Platform_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>Pelvis</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../Pelvis</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="Pelvis_rot">
@@ -387,8 +406,17 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="Platform_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>Platform</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../Platform</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.025000000000000001 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -417,16 +445,34 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>Pelvis</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../Pelvis</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 -0.20000000000000001</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>LeftThigh</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../LeftThigh</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -455,16 +501,34 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>Pelvis</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../Pelvis</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0.20000000000000001</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>RightThigh</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../RightThigh</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -493,16 +557,34 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>LeftThigh</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../LeftThigh</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="LeftShank_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>LeftShank</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../LeftShank</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -531,16 +613,34 @@
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>RightThigh</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../RightThigh</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="RightShank_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>RightShank</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../RightShank</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.25 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -762,7 +862,7 @@
 			<objects>
 				<ContactSphere name="LFootContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>LeftShank</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../LeftShank</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 -0.20000000000000001 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -772,7 +872,7 @@
 				</ContactSphere>
 				<ContactSphere name="RFootContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>RightShank</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../RightShank</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 -0.20000000000000001 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -782,7 +882,7 @@
 				</ContactSphere>
 				<ContactSphere name="LKneeContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>LeftShank</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../LeftShank</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.25 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -792,7 +892,7 @@
 				</ContactSphere>
 				<ContactSphere name="RKneeContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>RightShank</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../RightShank</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.25 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -802,7 +902,7 @@
 				</ContactSphere>
 				<ContactSphere name="LHipContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>Pelvis</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../Pelvis</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -812,7 +912,7 @@
 				</ContactSphere>
 				<ContactSphere name="RHipContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>Pelvis</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../Pelvis</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -822,7 +922,7 @@
 				</ContactSphere>
 				<ContactHalfSpace name="PlatformContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>Platform</socket_frame_connectee_name>
+					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.025000000000000001 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->

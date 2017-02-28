@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30512">
-	<Model name="WalkerModel_AddPathSpring">
+	<Model name="WalkerModelTerrain_CoordAct">
 		<!--List of components that this component owns and serializes.-->
 		<components>
 			<PhysicalOffsetFrame name="Platform_geom_frame_1">
@@ -29,68 +29,35 @@
 				<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 				<translation>4.5 0 0</translation>
 			</PhysicalOffsetFrame>
-			<PathSpring name="path_spring_r">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
+			<PathActuator name="pathAct_LK">
+				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+				<min_control>-Inf</min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+				<max_control>Inf</max_control>
+				<!--The set of points defining the path of the muscle.-->
 				<GeometryPath>
 					<!--The set of points defining the path-->
 					<PathPointSet>
 						<objects>
-							<PathPoint name="right_shank">
+							<PathPoint name="pathAct_point1">
 								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightShank</socket_parent_frame_connectee_name>
+								<socket_parent_frame_connectee_name>WalkerModelTerrain_CoordAct/LeftThigh</socket_parent_frame_connectee_name>
 								<!--The fixed location of the station expressed in its parent frame.-->
 								<location>0 0 0</location>
 							</PathPoint>
-							<PathPoint name="right_thigh">
+							<PathPoint name="pathAct_point2">
 								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightThigh</socket_parent_frame_connectee_name>
+								<socket_parent_frame_connectee_name>WalkerModelTerrain_CoordAct/LeftShank</socket_parent_frame_connectee_name>
 								<!--The fixed location of the station expressed in its parent frame.-->
 								<location>0 0 0</location>
 							</PathPoint>
 						</objects>
 						<groups />
 					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
 				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>100</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
-			<PathSpring name="path_spring_l">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-				<GeometryPath>
-					<!--The set of points defining the path-->
-					<PathPointSet>
-						<objects>
-							<PathPoint name="left_shank">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftShank</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-							<PathPoint name="left_thigh">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftThigh</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-						</objects>
-						<groups />
-					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
-				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>1000</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
+				<!--The maximum force this actuator can produce.-->
+				<optimal_force>10</optimal_force>
+			</PathActuator>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">

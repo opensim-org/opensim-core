@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
-% Copyright (c) 2005-2016 Stanford University and the Authors
+% Copyright (c) 2005-2017 Stanford University and the Authors
 % Author(s): James Dunne, Daniel A. Jacobs.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,5 @@ forceReporter.printResults('','../Results/fwd',-1, '.sto');
 % Cleanup
 % clearvars walkerModel forceReporter tool state statusVal
 display('Forward Tool Finished.');
-display('The following files were written to the /Results/FWD directory:')
-display('simulation_states.sto')
-display([model.getName(), '_ForceReporter_Forces.sto']);
+display('Output files were written to the /Results/FWD directory:')
+

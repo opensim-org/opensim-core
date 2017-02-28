@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30512">
-	<Model name="WalkerModel_AddPathSpring">
+	<Model name="WalkerModelTerrainAddMillardMuscle">
 		<!--List of components that this component owns and serializes.-->
 		<components>
 			<PhysicalOffsetFrame name="Platform_geom_frame_1">
@@ -29,68 +29,6 @@
 				<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 				<translation>4.5 0 0</translation>
 			</PhysicalOffsetFrame>
-			<PathSpring name="path_spring_r">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-				<GeometryPath>
-					<!--The set of points defining the path-->
-					<PathPointSet>
-						<objects>
-							<PathPoint name="right_shank">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightShank</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-							<PathPoint name="right_thigh">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/RightThigh</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-						</objects>
-						<groups />
-					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
-				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>100</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
-			<PathSpring name="path_spring_l">
-				<!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-				<GeometryPath>
-					<!--The set of points defining the path-->
-					<PathPointSet>
-						<objects>
-							<PathPoint name="left_shank">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftShank</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-							<PathPoint name="left_thigh">
-								<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-								<socket_parent_frame_connectee_name>WalkerModel_AddPathSpring/LeftThigh</socket_parent_frame_connectee_name>
-								<!--The fixed location of the station expressed in its parent frame.-->
-								<location>0 0 0</location>
-							</PathPoint>
-						</objects>
-						<groups />
-					</PathPointSet>
-					<!--Used to initialize the color cache variable-->
-					<default_color>0.90000000000000002 0.90000000000000002 0.90000000000000002</default_color>
-				</GeometryPath>
-				<!--The resting length (m) of the PathSpring-->
-				<resting_length>1</resting_length>
-				<!--The linear stiffness (N/m) of the PathSpring-->
-				<stiffness>1000</stiffness>
-				<!--The dissipation factor (s/m) of the PathSpring-->
-				<dissipation>0.01</dissipation>
-			</PathSpring>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
@@ -749,6 +687,136 @@
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
 					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
+				<Millard2012EquilibriumMuscle name="muscle_r">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="right_shank">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>WalkerModelTerrainAddMillardMuscle/RightShank</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0 0 0</location>
+								</PathPoint>
+								<PathPoint name="right_thigh">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>WalkerModelTerrainAddMillardMuscle/RightThigh</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0 0 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>500</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.14999999999999999</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.10000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.29999999999999999</pennation_angle_at_optimal>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="muscle_l">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="left_shank">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>WalkerModelTerrainAddMillardMuscle/LeftShank</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0 0 0</location>
+								</PathPoint>
+								<PathPoint name="left_thigh">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>WalkerModelTerrainAddMillardMuscle/LeftThigh</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0 0 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>500</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.14999999999999999</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.10000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.29999999999999999</pennation_angle_at_optimal>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
 			</objects>
 			<groups />
 		</ForceSet>
