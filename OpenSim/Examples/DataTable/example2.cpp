@@ -69,7 +69,7 @@ int main() {
     // Print out the DataTable to console. Use this for debugging only.
     std::cout << dataTable << std::endl;
 
-    // Contruction of TimeSeriesTable fails because independent column is not
+    // Construction of TimeSeriesTable fails because independent column is not
     // strictly increasing. 
     ASSERT_THROW(OpenSim::Exception,
                  TimeSeriesTable timeseries_table2{dataTable});

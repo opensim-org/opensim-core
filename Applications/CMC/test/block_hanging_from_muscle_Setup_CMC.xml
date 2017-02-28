@@ -22,7 +22,7 @@
 		<!--Maximum integration step size.-->
 		<maximum_integrator_step_size>1</maximum_integrator_step_size>
 		<!--Minimum integration step size.-->
-		<minimum_integrator_step_size>0</minimum_integrator_step_size>
+		<minimum_integrator_step_size>       1e-8 </minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator step size is decreased.-->
 		<integrator_error_tolerance>1e-008</integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->

@@ -25,7 +25,7 @@
 // testConstraints builds OpenSim models using the OpenSim API and builds an 
 // equivalent Simbody system using the Simbody API for each test case. A test 
 // fails if the OpenSim and Simbody final states of the simulation are not 
-// equivelent (norm-err less than 10x integration error tolerance)
+// equivalent (norm-err less than 10x integration error tolerance)
 //
 //  Tests Include:
 //      1. Test locking (constraint) mechanism on coordinates
@@ -215,9 +215,8 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    manager.integrate(osim_state);
+    osim_state.setTime(0.0);
+    manager.integrate(osim_state, duration);
 }
 
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
@@ -549,10 +548,9 @@ void testCoordinateLocking()
     Vector qi = si2.getQ();
 
     // Integrate from initial time to final time
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
-    manager.integrate(si2);
+    si2.setTime(0.0);
+    cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
+    manager.integrate(si2, duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();
@@ -1010,6 +1008,8 @@ void testRollingOnSurfaceConstraint()
     Mesh arrowGeom("arrow.vtp");
     arrowGeom.setColor(Vec3(1, 0, 0));
     ground.attachGeometry(arrowGeom.clone());
+
+    osimModel->finalizeFromProperties();
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);

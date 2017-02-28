@@ -89,6 +89,7 @@ void switchMuscles(Model& model, State& state, bool appliesForce)
 void testTaskSpace()
 {
     Model model("futureTaskSpace.osim");
+    model.finalizeFromProperties();
 
     std::string indexBodyName = "hand_r";
     Vec3 indexOffset(0.05, -0.14, 0.011);
@@ -119,18 +120,15 @@ void testTaskSpace()
 
     //manager
     OpenSim::Manager manager(model, integrator);
-    manager.setInitialTime(t_start);
+    s.setTime(t_start);
 
     for (unsigned int i = 1; i*dt < t_end; ++i)
     {
         std::cout << "Integrate " << i * dt << std::endl;
 
-        manager.setFinalTime(i*dt);
-        manager.integrate(s);
+        manager.integrate(s, i*dt);
 
         forceController->setAcceleration(Vec3(0, 10, 0));
-
-        manager.setInitialTime(i*dt);
     }
 
     //store results

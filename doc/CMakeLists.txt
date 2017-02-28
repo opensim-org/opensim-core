@@ -98,7 +98,7 @@ if(${DOXYGEN_FOUND})
         *and* install Simbody Doxygen documentation. By default,
         OpenSim's Doxygen documentation will link to your *local* Simbody
         Doxygen documentation, and this variable is automatically populated 
-        with the location of Simbody's Doyxgen files.
+        with the location of Simbody's Doxygen files.
         However, when the OpenSim Doxygen documentation is put online, 
         there is no 'local' Simbody Doxygen documentation. In this case, 
         set this variable to a URL where one can find the correct 

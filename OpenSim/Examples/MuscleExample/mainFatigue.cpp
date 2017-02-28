@@ -220,10 +220,9 @@ int main()
         osimModel.printDetailedInfo(si, std::cout);
 
         // Integrate from initial time to final time
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         std::cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-        manager.integrate(si);
+        manager.integrate(si, finalTime);
 
         //////////////////////////////
         // SAVE THE RESULTS TO FILE //

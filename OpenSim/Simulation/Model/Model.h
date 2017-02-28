@@ -220,18 +220,23 @@ public:
     //--------------------------------------------------------------------------
 public:
 
-    /** Default constructor creates a %Model containing only the ground Body
+    /** Default constructor creates a %Model containing only the Ground frame
     and a set of default properties. */
     Model();
 
     /** Constructor from an OpenSim XML model file. 
+    NOTE: The Model is read in (deserialized) from the model file, which means
+    the properties of the Model and its components are filled in from values in
+    the file. In order to evaluate the validity of the properties (e.g. Inertia
+    tensors, availability of Mesh files, ...) and to identify properties as
+    subcomponents of the Model, one must invoke Model::finalizeFromProperties() 
+    first. Model::initSystem() invokes finalizeFromProperties() on its way to
+    creating the System and initializing the State.
+
     @param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
-                        
-    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
-                     defaults to true. If set to false only deserialization is performed.
     **/
-    explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
+    explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some set up functions that happen after the
@@ -851,7 +856,7 @@ public:
 
     /** Get a const reference to the Ground reference frame */
     const Ground& getGround() const;
-    /** Get a writeable reference to the Ground reference frame */
+    /** Get a writable reference to the Ground reference frame */
     Ground& updGround();
 
     //--------------------------------------------------------------------------

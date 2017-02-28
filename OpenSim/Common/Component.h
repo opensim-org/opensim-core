@@ -93,6 +93,40 @@ public:
     }
 };
 
+class ComponentIsAnOrphan : public Exception {
+public:
+    ComponentIsAnOrphan(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " has no parent and is not the root.\n" +
+            "Verify that finalizeFromProperties() has been invoked on the " + 
+            "root Component or that this Component is not a clone, which has " +
+            "not been added to its parent Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentIsRootWithNoSubcomponents : public Exception {
+public:
+    ComponentIsRootWithNoSubcomponents(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " is the root but has no " + 
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -226,7 +260,7 @@ public:
  * is dependent on remain fixed. The concept of holding onto these values is 
  * called caching and the variables that hold these values are call 
  * <em>CacheVariables</em>. It is important to note, that cache variables are
- * not state variables. Cache variables can always be recomputed excactly
+ * not state variables. Cache variables can always be recomputed exactly
  * from the State. OpenSim uses the Simbody infrastructure to manage cache 
  * variables and their validity. Component provides a simplified interface to
  * define and access CacheVariables.
@@ -960,7 +994,7 @@ public:
     /**
     * Get a writable reference to an Input provided by this Component by name.
     *
-    * <b>C++ example:</b> get a writeable reference to an Input of a 
+    * <b>C++ example:</b> get a writable reference to an Input of a 
     * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updInput("inputName");
@@ -1020,7 +1054,7 @@ public:
     /**
     * Get a writable reference to an Output provided by this Component by name.
     *
-    * <b>C++ example:</b> get a writeable reference to an Output of a 
+    * <b>C++ example:</b> get a writable reference to an Output of a 
     * Component in a model
     * @code{.cpp}
     * model.updComponent("/path/to/component").updOutput("outputName");
@@ -1434,14 +1468,64 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Dump debugging information to the console */
+    /** @name Print information about this component and subcomponents to the 
+     console                                                                  */
     /// @{
-    /** Debugging method to list all subcomponents by name and recurse
-        into these components to list their subcomponents, and so on. */
-    void dumpSubcomponents(int depth=0) const;
+    /** List all subcomponents by name and recurse into these components to 
+    list their subcomponents, and so on.                                      */
+    void printSubcomponentInfo() const;
+    
     /** List all the Sockets and Inputs and whether or not they are
      * connected. */
     void dumpConnections() const;
+
+    template<typename C>
+    void printSubcomponentInfo() const {
+        std::string className = SimTK::NiceTypeName<C>::namestr();
+        const std::size_t colonPos = className.rfind(":");
+        if (colonPos != std::string::npos)
+            className = className.substr(colonPos+1,
+                                         className.length()-colonPos);
+
+        std::cout << "Class name and absolute path name for descendants of '"
+                  << getName() << "' that are of type " << className << ":\n"
+                  << std::endl;
+
+        ComponentList<const C> compList = getComponentList<C>();
+
+        // Step through compList once to find the longest concrete class name.
+        unsigned maxlen = 0;
+        for (const C& thisComp : compList) {
+            auto len = thisComp.getConcreteClassName().length();
+            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+        }
+        maxlen += 4; //padding
+
+        std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
+                  << "[" + getConcreteClassName() + "]"
+                  << "  " << getAbsolutePathName() << std::endl;
+        auto prevPath = getAbsolutePathName();
+        // Step through compList again to print.
+        for (const C& thisComp : compList) {
+            const std::string thisClass = thisComp.getConcreteClassName();
+            std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
+                      << thisClass << "]  ";
+            auto path = thisComp.getAbsolutePathName();
+            auto res = std::mismatch(prevPath.begin(), prevPath.end(),
+                                     path.begin());
+            while(*res.second != '/')
+                --res.second;
+            std::cout << std::string(std::count(path.begin(),
+                                                res.second, '/') * 4, ' ')
+                      << path.substr(res.second - path.begin()) << std::endl;
+            prevPath = path;
+        }
+        std::cout << std::endl;
+    }
+
+    /** Print outputs of this component and optionally, those of all 
+    subcomponents.                                                            */
+    void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
 
 protected:
@@ -1603,24 +1687,27 @@ protected:
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build the tree of Components from this component through its descendants. 
-    This method is invoked whenever a ComponentList<C> is requested. Note, all
-    components must been added to the model (or its subcomponents), otherwise it
-    will not be included in the tree and will not be found for iteration or for
-    connection. The implementation populates _nextComponent ReferencePtr with a
-    pointer to the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants.
+    This method is invoked whenever a ComponentList<C> is requested. Note that
+    all components must have been added to the model (or its subcomponents),
+    otherwise it will not be included in the tree and will not be found for
+    iteration or for connection. The implementation populates the _nextComponent
+    ReferencePtr with a pointer to the next Component in tree pre-order traversal.
+    
+    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
+            yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
     ///@cond
-    /** Opportunity to remove connection related information. 
+    /** Opportunity to remove connection-related information. 
     If you override this method, be sure to invoke the base class method first,
-        using code like this :
+        using code like this:
         @code
         void MyComponent::disconnect(Component& root) {
         // disconnect your subcomponents and your Super first
         Super::extendDisconnect(); 
-            //your code to wipeout your connection related information
+            //your code to wipe out your connection-related information
     }
     @endcode  */
     //virtual void extendDisconnect() {};
@@ -1926,7 +2013,7 @@ protected:
     dependence on individual state variables. Changing a variables whose
     "invalidates" stage is the same or lower as the one specified as the
     "depends on" stage here cause the cache entry to be invalidated. For 
-    example, a body's momementum, which is dependent on position and velocity 
+    example, a body's momentum, which is dependent on position and velocity 
     states, should have Stage::Velocity as its \a dependsOnStage. Then if a
     Velocity stage variable or lower (e.g. Position stage) changes, then the 
     cache is invalidated. But, if a Dynamics stage variable (or above) is 
@@ -1957,7 +2044,7 @@ protected:
 
     
     /**
-     * Get writeable reference to the MultibodySystem that this component is
+     * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
     SimTK::MultibodySystem& updSystem() const
@@ -2121,7 +2208,7 @@ public:
     const Component& getParent() const;
 
     /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
+        A component may not have a parent Component assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
@@ -2157,6 +2244,10 @@ protected:
             // if currentSubpath is '.' we are in the right parent, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
+                if (current->getNumImmediateSubcomponents() == 0) {
+                    current = nullptr;
+                    continue;
+                }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
@@ -2344,7 +2435,7 @@ protected:
      * Output signal.  It is a placeholder for the Output and its type and
      * enables the Component to automatically traverse its dependencies and
      * provide a meaningful message if the provided Output is incompatible or
-     * non-existant. This also specifies at what stage the output must be valid
+     * non-existent. This also specifies at what stage the output must be valid
      * for the component to consume it as an input.  If the Output's
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
@@ -2856,9 +2947,9 @@ void Input<T>::connect(const AbstractOutput& output,
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
-        const int numPreexistingSatisfiedConnections(_connectees.size());
+        const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
-        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -2878,7 +2969,7 @@ void Input<T>::connect(const AbstractOutput& output,
         // serialized
         int numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, idxThisConnectee);
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2901,14 +2992,14 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     if (!isListSocket()) {
-        // Remove the existing connecteee (if it exists).
+        // Remove the existing connectee (if it exists).
         disconnect();
     }
     
     // Record the number of pre-existing satisfied connections...
-    const int numPreexistingSatisfiedConnections(_connectees.size());
+    const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
-    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
     // Update the connectee name as
@@ -2925,8 +3016,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     
     // Set the connectee name so the connection can be serialized.
     int numDesiredConnections = getNumConnectees();
+
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
-        setConnecteeName(pathStr, idxThisConnectee);
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     

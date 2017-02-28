@@ -521,10 +521,10 @@ void testMisc() {
     // Query existing components.
     theWorld.printComponentsMatching("");
     SimTK_TEST(theWorld.hasComponent("Foo"));
-    SimTK_TEST(!theWorld.hasComponent("Nonexistant"));
+    SimTK_TEST(!theWorld.hasComponent("Nonexistent"));
     SimTK_TEST(theWorld.hasComponent<Foo>("Foo"));
     SimTK_TEST(!theWorld.hasComponent<Bar>("Foo"));
-    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistant"));
+    SimTK_TEST(!theWorld.hasComponent<Foo>("Nonexistent"));
 
 
     bar.connectSocket_childFoo(foo2);
@@ -690,7 +690,9 @@ void testMisc() {
                   world3.add(&bar2));
 
     cout << "Connecting theWorld:" << endl;
-    theWorld.dumpSubcomponents();
+    //theWorld.dumpSubcomponents();
+    theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
     theWorld.finalizeFromProperties();
     theWorld.connect();
 
@@ -753,7 +755,8 @@ void testMisc() {
     ASSERT_EQUAL(3.5, foo.getInputValue<double>(s, "fiberLength"), 1e-10);
     ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
 
-    theWorld.dumpSubcomponents();
+    theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
@@ -943,7 +946,8 @@ void testComponentPathNames()
     A->add(D);
     D->add(E);
 
-    top.dumpSubcomponents();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathName();
     ASSERT(absPathC == "/Top/A/B/C");
@@ -983,7 +987,8 @@ void testComponentPathNames()
     F->setName("F");
     top.add(F);
 
-    top.dumpSubcomponents();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string fFoo1AbsPath = 
         F->getComponent<Foo>("Foo1").getAbsolutePathName();
@@ -1015,7 +1020,8 @@ void testComponentPathNames()
     fbar2.updSocket<Foo>("childFoo")
         .setConnecteeName("../Foo1");
 
-    top.dumpSubcomponents();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
     top.connect();
 }
 
@@ -1736,7 +1742,7 @@ void testSingleValueInputConnecteeSerialization() {
         
         // We won't wire up this input, but its connectee name should still
         // (de)serialize.
-        foo->updInput("activation").setConnecteeName("non/existant");
+        foo->updInput("activation").setConnecteeName("non/existent");
         
         // Serialize.
         world.print(modelFileName);
@@ -1762,7 +1768,7 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(fiberLength.getConnecteeName() ==
                    "../producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
-        SimTK_TEST(activation.getConnecteeName() == "non/existant");
+        SimTK_TEST(activation.getConnecteeName() == "non/existent");
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
         activation.setConnecteeName("");
@@ -1950,5 +1956,6 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+
     SimTK_END_TEST();
 }

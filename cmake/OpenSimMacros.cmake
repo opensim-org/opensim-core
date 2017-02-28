@@ -159,7 +159,7 @@ endfunction()
 # DATAFILES: Files necessary to run the test. These will be copied into the
 #   corresponding build directory.
 # LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
-# SOURCES: Extra source files for the exectuable.
+# SOURCES: Extra source files for the executable.
 #
 # Here's an example:
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
