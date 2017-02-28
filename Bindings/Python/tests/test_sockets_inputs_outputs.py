@@ -228,22 +228,53 @@ class TestInputsOutputs(unittest.TestCase):
                 rep.getInput('inputs')).getValue(s, 3) == 2.0)
 
 
+    def test_input_alias(self):
+        model_filename = 'test_input_alias.osim'
 
+        # This function creates and prints the model to a .osim file. We invoke
+        # this function below.
+        def print_model():
+            model = osim.Model()
+            model.setName('model')
 
+            # Create a body with name 'body', mass of 1 kg, center of mass at
+            # the origin of the body, and unit inertia
+            # (Ixx = Iyy = Izz = 1 kg-m^2).
+            body = osim.Body('body', 1.0, osim.Vec3(0), osim.Inertia(1))
 
+            # Create a free joint (all 6 degrees of freedom) with Ground as
+            # the parent body and 'body' as the child body.
+            joint = osim.FreeJoint('joint', model.getGround(), body)
 
+            # Add the body and joint to the model.
+            model.addComponent(body)
+            model.addComponent(joint)
 
+            # Create a TableReporter to save quantities to a file after
+            # simulating.
+            reporter = osim.TableReporterVec3()
+            reporter.setName('reporter')
+            reporter.set_report_time_interval(0.1)
+            reporter.addToReport(model.getOutput('com_position'))
+            reporter.getInput('inputs').setAlias(0, 'com_pos')
 
+            # Display what input-output connections look like in XML
+            # (in .osim files).
+            print("Reporter input-output connections in XML:\n" + \
+                  reporter.dump())
 
+            model.addComponent(reporter)
 
+            model.printToXML(model_filename)
 
+        # Create and print the model file.
+        print_model()
+        # Load the model file.
+        deserialized_model = osim.Model(model_filename)
+        state = deserialized_model.initSystem()
 
+        # We can fetch the TableReporter from within the deserialized model.
+        reporter = osim.TableReporterVec3.safeDownCast(
+                deserialized_model.getComponent('reporter'))
 
-
-
-
-
-
-
-
-
+        assert reporter.getInput('inputs').getAlias(0) == 'com_pos'

@@ -35,7 +35,6 @@ using namespace SimTK;
 // TODO nondecreasing or increasing? might affect upper_bound/lower_bound.
 // TODO detailed exceptions when integrity checks fail.
 // TODO currently, one gets segfaults if state is not realized.
-// TODO Improve performance of createFromStatesStorage(): it is very slow now.
 
 // Big to-do's:
 // TODO append two StateTrajectories together.
@@ -56,6 +55,7 @@ Real getStorageEntry(const Storage& sto,
 
 void testPopulateTrajectoryAndStatesTrajectoryReporter() {
     Model model("gait2354_simbody.osim");
+    model.finalizeFromProperties();
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
@@ -142,6 +142,7 @@ void testFrontBack() {
 void createStateStorageFile() {
 
     Model model("gait2354_simbody.osim");
+    model.finalizeFromProperties();
 
     // To assist with creating interesting (non-zero) coordinate values:
     model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
@@ -167,8 +168,8 @@ void createStateStorageFile() {
     auto& initState = model.initSystem();
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setFinalTime(0.15);
-    manager.integrate(initState);
+    initState.setTime(0.0);
+    manager.integrate(initState, 0.15);
     manager.getStateStorage().print(statesStoFname);
 }
 

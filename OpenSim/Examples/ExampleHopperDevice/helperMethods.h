@@ -34,7 +34,7 @@ namespace OpenSim {
 
 
 //------------------------------------------------------------------------------
-// Display the class name and basolute path name for each of the given 
+// Display the class name and absolute path name for each of the given
 // Component's descendants (children, grandchildren, etc.).
 //
 // Examples:
@@ -73,31 +73,6 @@ inline void simulate(Model& model,
 inline Model buildTestbed(bool showVisualizer);
 
 
-//------------------------------------------------------------------------------
-// SignalGenerator is a type of Component with no inputs and only one output.
-// This Component evaluates an OpenSim::Function (stored in its "function"
-// property) as a function of time. We can use a SignalGenerator to design
-// time-varying control inputs for testing the device.
-//------------------------------------------------------------------------------
-class SignalGenerator : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SignalGenerator, Component);
-
-public:
-    OpenSim_DECLARE_PROPERTY(function, Function,
-        "Function used to generate the signal (a function of time)");
-    OpenSim_DECLARE_OUTPUT(signal, double, getSignal, SimTK::Stage::Time);
-
-    SignalGenerator() { constructProperties(); }
-
-    double getSignal(const SimTK::State& s) const {
-        return get_function().calcValue(SimTK::Vector(1, s.getTime())); }
-
-private:
-    void constructProperties() { constructProperty_function(Constant(0.)); }
-
-}; // end of SignalGenerator
-
-
 //==============================================================================
 //                               IMPLEMENTATIONS
 //==============================================================================
@@ -128,8 +103,8 @@ inline void showSubcomponentInfo(const Component& comp)
     // Step through compList again to print.
     for (const C& thisComp : compList) {
         const std::string thisClass = thisComp.getConcreteClassName();
-        for (unsigned i=0u; i < maxlen-thisClass.length(); ++i) { cout << " "; }
-        cout << "[" << thisClass << "]  " << thisComp.getAbsolutePathName() << endl;
+        cout << std::string(maxlen-thisClass.length(), ' ') << "[" << thisClass
+             << "]  " << thisComp.getAbsolutePathName() << endl;
     }
     cout << endl;
 }
@@ -141,9 +116,7 @@ inline void showAllOutputs(const Component& comp, bool includeDescendants)
     // Do not display header for Components with no outputs.
     if (comp.getNumOutputs() > 0) {
         const std::string msg = "Outputs from " + comp.getAbsolutePathName();
-        cout << msg << endl;
-        for (unsigned i=0u; i<msg.size(); ++i) { cout << "="; }
-        cout << endl;
+        cout << msg << "\n" << std::string(msg.size(), '=') << endl;
 
         std::vector<std::string> outputNames = comp.getOutputNames();
         for (auto thisName : outputNames) { cout << "  " << thisName << endl; }
@@ -172,9 +145,8 @@ inline void simulate(Model& model,
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses. OpenSim::ModelVisualizer
-        // adds two InputListeners; the second is InputSilo.
-        silo = dynamic_cast<SimTK::Visualizer::InputSilo*>(&viz.updInputListener(1));
+        // We use the input silo to get key presses.
+        silo = &model.updVisualizer().updInputSilo();
 
         SimTK::DecorativeText help("Press any key to start a new simulation; "
                                    "ESC to quit.");
@@ -195,7 +167,7 @@ inline void simulate(Model& model,
             unsigned key, modifiers;
             silo->waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
-        } else if(!simulateOnce) {
+        } else if (!simulateOnce) {
             std::cout << "Press <Enter> to begin simulating, or 'q' followed "
                       << "by <Enter> to quit . . . " << std::endl;
             if (std::cin.get() == 'q') { break; }
@@ -205,8 +177,8 @@ inline void simulate(Model& model,
         state = initState;
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         Manager manager(model, integrator);
-        manager.setInitialTime(0.); manager.setFinalTime(5.);
-        manager.integrate(state);
+        state.setTime(0.0);
+        manager.integrate(state, 5.0);
 
         // Save the states to a storage file (if requested).
         if (saveStatesFile) {
@@ -223,7 +195,7 @@ inline Model buildTestbed(bool showVisualizer)
     // Create a new OpenSim model.
     auto testbed = Model();
     testbed.setName("testbed");
-    if(showVisualizer)
+    if (showVisualizer)
         testbed.setUseVisualizer(true);
     testbed.setGravity(Vec3(0));
 

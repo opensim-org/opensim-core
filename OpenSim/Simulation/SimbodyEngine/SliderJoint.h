@@ -58,13 +58,18 @@ public:
         tx = mySliderJoint.getCoordinate(opensim.SliderJoint.Coord_TranslationX)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         tx = mySliderJoint.getCoordinate(SliderJoint.Coord.TranslationX);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        tx = mySliderJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        TranslationX
+        TranslationX = 0u ///< 0
     };
 
 private:

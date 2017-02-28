@@ -33,9 +33,8 @@ void test()
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     integrator.setMaximumStepSize(0.1);
-    manager.setInitialTime(0);
-    manager.setFinalTime(1);
-    manager.integrate(s);
+    s.setTime(0.0);
+    manager.integrate(s, 1.0);
 }
 
 int main()

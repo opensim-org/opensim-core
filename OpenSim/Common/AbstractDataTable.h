@@ -210,11 +210,11 @@ public:
 
     /** Get table metadata for a given key.
 
-    If using this funciton from Python/Java/Matlab, use the following table:
+    If using this function from Python/Java/Matlab, use the following table:
     <table>
     <tr>
       <th>C++</th>
-      <th>Python / Java / Matab</th>
+      <th>Python / Java / Matlab</th>
       <th>Example</th>
     </tr>
     <tr>

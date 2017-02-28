@@ -95,7 +95,7 @@ void previewMarkerData(const std::string& markerDataFile)
     // Add the markersSource Component to the model
     markerWorld.addComponent(markersSource);
 
-    // Get the underlying Table backing the the marker Source so we 
+    // Get the underlying Table backing the marker Source so we 
     // know how many markers we have and their names
     const auto& markerData = markersSource->getTable();
 

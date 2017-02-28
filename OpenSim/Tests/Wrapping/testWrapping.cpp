@@ -859,13 +859,12 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     Manager manager(osimModel, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     const double start = SimTK::realTime();
     integrator.resetAllStatistics();
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
     cout << "simulation time = " << SimTK::realTime()-start
          << " seconds (wallclock time)\n" << endl;
 

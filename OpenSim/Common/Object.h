@@ -836,8 +836,8 @@ private:
     //  1: Shows illegal tags 
     //  2: level 1 + registration troubleshooting
     //  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
-    //     used from ava wrapping in GUI/Matlab this catches all exceptions 
-    //     thrown by the low level libraries which is slower but helpful in 
+    //     used from Java wrapping in GUI/Matlab this catches all exceptions 
+    //     thrown by the low-level libraries which is slower but helpful in 
     //     troubleshooting.
     static int      _debugLevel;
 

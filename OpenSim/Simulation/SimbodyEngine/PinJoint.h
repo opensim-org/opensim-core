@@ -60,13 +60,18 @@ public:
         rz = myPinJoint.getCoordinate(opensim.PinJoint.Coord_RotationZ)
         \endcode
 
-        <b>Java/Matlab example</b>
+        <b>Java example</b>
         \code{.java}
         rz = myPinJoint.getCoordinate(PinJoint.Coord.RotationZ);
         \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rz = myPinJoint.get_coordinates(0);
+        \endcode
     */
     enum class Coord: unsigned {
-        RotationZ
+        RotationZ = 0u ///< 0
     };
 
 private:

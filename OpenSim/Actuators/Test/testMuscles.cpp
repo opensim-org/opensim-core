@@ -412,14 +412,13 @@ void simulateMuscle(
     Manager manager(model, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout<<"\nIntegrating from " << initialTime<< " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;
@@ -901,6 +900,7 @@ void testThelen2003Muscle()
         // Print model and read back in.
         myModel.print(filename);
         Model myModel2(filename);
+        myModel2.finalizeFromProperties();
 
         const Thelen2003Muscle& myMcl2 = dynamic_cast<const Thelen2003Muscle&>(
             myModel2.getMuscles().get("myMuscle") );

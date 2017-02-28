@@ -68,7 +68,7 @@ protected:
     PropertyBool _replaceForceSetProp;
     bool &_replaceForceSet;
     
-    /** Names of the xml files used to construct an force set for the
+    /** Names of the xml files used to construct a force set for the
     model. */
     PropertyStrArray _forceSetFilesProp;
     Array<std::string> &_forceSetFiles;
@@ -90,8 +90,8 @@ protected:
     double &_tf;
     
     /** A flag used to specify whether or not equilibrium is solved for
-    the auxiliary states.  This often needs to be done auxiliary sates whose
-    starting values are unknown (e.g., muscle fiber lengths). */
+    the auxiliary states.  This often needs to be done for auxiliary states
+    whose starting values are unknown (e.g., muscle fiber lengths). */
     OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
     bool &_solveForEquilibriumForAuxiliaryStates;
     
