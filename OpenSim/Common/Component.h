@@ -1687,12 +1687,15 @@ protected:
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build the tree of Components from this component through its descendants. 
-    This method is invoked whenever a ComponentList<C> is requested. Note, all
-    components must been added to the model (or its subcomponents), otherwise it
-    will not be included in the tree and will not be found for iteration or for
-    connection. The implementation populates _nextComponent ReferencePtr with a
-    pointer to the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants.
+    This method is invoked whenever a ComponentList<C> is requested. Note that
+    all components must have been added to the model (or its subcomponents),
+    otherwise it will not be included in the tree and will not be found for
+    iteration or for connection. The implementation populates the _nextComponent
+    ReferencePtr with a pointer to the next Component in tree pre-order traversal.
+    
+    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
+            yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
@@ -2964,7 +2967,7 @@ void Input<T>::connect(const AbstractOutput& output,
     
         // set the connectee name so that the connection can be
         // serialized
-        int numDesiredConnections = getNumConnectees();
+        const unsigned numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
             setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
@@ -3012,7 +3015,7 @@ void Input<T>::connect(const AbstractChannel& channel,
                                         alias);
     
     // Set the connectee name so the connection can be serialized.
-    int numDesiredConnections = getNumConnectees();
+    const unsigned numDesiredConnections = getNumConnectees();
 
     if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
         setConnecteeName(pathStr, unsigned(idxThisConnectee));

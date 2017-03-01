@@ -19,21 +19,27 @@
 % implied. See the License for the specific language governing            
 % permissions and limitations under the License.                          
 % ----------------------------------------------------------------------- 
+
 %CreateWalkingModelAndEnvironment
 %   This script creates a planar kneed walking model and randomly generates
 %   40 spheres for obstacles
-% -----------------------------------------------------------------------     
+% -----------------------------------------------------------------------
 
-% User Define Constants for Model
-% Body Parameters
+% User Section - Adjust these parameters at will
+outputPath = '..\Model\';
+outputModelName = 'WalkerModel';
+
+% Model Body Parameters
 PlatformLength  = 10;
 PlatformWidth   = 0.05;
 PlatformOffset  = 0.5;
 
 PelvisMass      = 0.5;
 PelvisWidth     = 0.4;
+PelvisIYY       = 1/12*PelvisMass*PelvisWidth^2;
+PelvisIZZ       = 1/12*PelvisMass*PelvisWidth^2;
 
-ThighMass       = 0.5;
+ThighMass       = 0.05;
 ThighLength     = 0.5;
 ThighIZZ        = 1/12*ThighMass*ThighLength^2;
 
@@ -41,8 +47,10 @@ ShankMass       = 0.05;
 ShankLength     = 0.5;
 ShankIZZ        = 1/12*ShankMass*ShankLength^2;
 
-DEG2RAD         = pi/180;
-RAD2DEG         = 1/DEG2RAD;
+smallInertia    = 1E-4; 
+
+% Add Obstacles
+addObstacles = true;
 
 % Obstacle Contact Parameters
 numSpheres = 40;
@@ -57,7 +65,10 @@ import org.opensim.modeling.*
 
 % Open Model
 osimModel = Model();
-osimModel.setName('DW2013_WalkerModelTerrain');
+if(addObstacles)
+    outputModelName = [outputModelName, 'Terrain'];
+end
+osimModel.setName(outputModelName);
 osimModel.setAuthors('Daniel A. Jacobs, Ajay Seth');
 
 % Get a Handle to Ground Body
@@ -67,12 +78,12 @@ ground = osimModel.getGroundBody();
 % Platform
 platform            = Body();
 platform.setName('Platform');
-platform.setMass(0);
-platform.setInertia(Inertia(0,0,0,0,0,0));
+platform.setMass(1);
+platform.setInertia(Inertia(1,1,1,0,0,0));
 
 % Create Weld Joint
 locationInParent    = Vec3(0,0,0);
-orientationInParent = Vec3(0,0,-10*DEG2RAD);
+orientationInParent = Vec3(0,0,deg2rad(-10));
 locationInChild     = Vec3(0,0,0);
 orientationInChild  = Vec3(0,0,0);
 platformToGround    = WeldJoint('PlatformToGround', ground, locationInParent, ...
@@ -101,7 +112,7 @@ pelvisMasslessToPlatform    = SliderJoint('PelvisMasslessToPlatform', platform, 
     locationInParent, orientationInParent, pelvisMassless, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet  = pelvisMasslessToPlatform.getCoordinateSet();
+jointCoordinateSet  = pelvisMasslessToPlatform.upd_CoordinateSet();
 jointCoordinateSet.get(0).setRange([0, 100]);
 jointCoordinateSet.get(0).setName('Pelvis_tx');
 jointCoordinateSet.get(0).setDefaultValue(0);
@@ -113,7 +124,7 @@ osimModel.addBody(pelvisMassless);
 pelvis              = Body();
 pelvis.setName('Pelvis');
 pelvis.setMass(PelvisMass);
-pelvis.setInertia(Inertia(1,1,1,0,0,0));
+pelvis.setInertia(Inertia(smallInertia,PelvisIYY,smallInertia,0,0,0));
 
 % Create a Slider Joint
 locationInParent    = Vec3(0,0,0);
@@ -124,7 +135,7 @@ pelvisToPelvisMassless    = SliderJoint('PelvisToPelvisMassless', pelvisMassless
     locationInParent, orientationInParent, pelvis, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet  = pelvisToPelvisMassless.getCoordinateSet();
+jointCoordinateSet  = pelvisToPelvisMassless.upd_CoordinateSet();
 jointCoordinateSet.get(0).setRange([0, 5]);
 jointCoordinateSet.get(0).setName('Pelvis_ty');
 jointCoordinateSet.get(0).setDefaultValue(1.0);
@@ -140,7 +151,7 @@ osimModel.addBody(pelvis);
 leftThigh = Body();
 leftThigh.setName('LeftThigh');
 leftThigh.setMass(ThighMass);
-leftThigh.setInertia(Inertia(1,1,ThighIZZ,0,0,0));
+leftThigh.setInertia(Inertia(smallInertia,smallInertia,ThighIZZ,0,0,0));
 
 % Create a Pin joint
 locationInParent    = Vec3(0,0,-PelvisWidth/2);
@@ -151,10 +162,10 @@ LThighToPelvis = PinJoint('LThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, leftThigh, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = LThighToPelvis.getCoordinateSet();
-jointCoordinateSet.get(0).setRange([-100*DEG2RAD, 100*DEG2RAD]);
+jointCoordinateSet = LThighToPelvis.upd_CoordinateSet();
+jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
 jointCoordinateSet.get(0).setName('LHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(60*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(60));
 
 % Add Visible Object for GUI
 leftThigh.addDisplayGeometry('sphere.vtp');
@@ -167,7 +178,7 @@ osimModel.addBody(leftThigh);
 rightThigh = Body();
 rightThigh.setName('RightThigh');
 rightThigh.setMass(ThighMass);
-rightThigh.setInertia(Inertia(1,1,ThighIZZ,0,0,0));
+rightThigh.setInertia(Inertia(smallInertia,smallInertia,ThighIZZ,0,0,0));
 
 % Create a Pin joint
 locationInParent    = Vec3(0,0,PelvisWidth/2);
@@ -178,10 +189,10 @@ RThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, rightThigh, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = RThighToPelvis.getCoordinateSet();
-jointCoordinateSet.get(0).setRange([-100*DEG2RAD, 100*DEG2RAD]);
+jointCoordinateSet = RThighToPelvis.upd_CoordinateSet();
+jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
 jointCoordinateSet.get(0).setName('RHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Visible Object for GUI
 rightThigh.addDisplayGeometry('sphere.vtp');
@@ -194,7 +205,7 @@ osimModel.addBody(rightThigh);
 leftShank = Body();
 leftShank.setName('LeftShank');
 leftShank.setMass(ShankMass);
-leftShank.setInertia(Inertia(1,1,ShankIZZ,0,0,0));
+leftShank.setInertia(Inertia(smallInertia,smallInertia,ShankIZZ,0,0,0));
 
 % Create a Pin joint
 locationInParent    = Vec3(0,-ThighLength/2,0);
@@ -205,10 +216,10 @@ LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,  ...
     orientationInParent, leftShank, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = LShankToThigh.getCoordinateSet();
-jointCoordinateSet.get(0).setRange([-140*DEG2RAD, 0]);
+jointCoordinateSet = LShankToThigh.upd_CoordinateSet();
+jointCoordinateSet.get(0).setRange([deg2rad(-140), 0]);
 jointCoordinateSet.get(0).setName('LKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Visible Object for GUI
 leftShank.addDisplayGeometry('sphere.vtp');
@@ -221,7 +232,7 @@ osimModel.addBody(leftShank);
 rightShank = Body();
 rightShank.setName('RightShank');
 rightShank.setMass(ShankMass);
-rightShank.setInertia(Inertia(1,1,ShankIZZ,0,0,0));
+rightShank.setInertia(Inertia(smallInertia,smallInertia,ShankIZZ,0,0,0));
 
 % Rod Visuals
 rightShank.addDisplayGeometry('sphere.vtp');
@@ -235,10 +246,10 @@ orientationInChild  = Vec3(0,0,0);
 RShankToThigh = PinJoint('RShankToRThigh', rightThigh, locationInParent, orientationInParent, rightShank, locationInChild, orientationInChild, false);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = RShankToThigh.getCoordinateSet();
-jointCoordinateSet.get(0).setRange([-140*DEG2RAD, 0]);
+jointCoordinateSet = RShankToThigh.upd_CoordinateSet();
+jointCoordinateSet.get(0).setRange([deg2rad(-140, 0]);
 jointCoordinateSet.get(0).setName('RKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(0*DEG2RAD);
+jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
 
 % Add Body to Model
 osimModel.addBody(rightShank);
@@ -422,43 +433,47 @@ RHipLimitTorque.setName('RHipLimitTorque');
 osimModel.addForce(RHipLimitTorque);
 % -----------------------------------------------------------------------
 % Create Hunt Crossley Obstacle Forces
-ObstacleForces = HuntCrossleyForce();
-ObstacleForces.setName('ObstacleForces');
-ObstacleForces.setStiffness(stiffness);
-ObstacleForces.setDissipation(dissipation);
-ObstacleForces.setStaticFriction(staticFriction);
-ObstacleForces.setDynamicFriction(dynamicFriction);
-ObstacleForces.setViscousFriction(viscousFriction);
-ObstacleForces.setTransitionVelocity(0.2);
-ObstacleForces.addGeometry('LFootContact');
-ObstacleForces.addGeometry('RFootContact');
+if(addObstacles)
+    ObstacleForces = HuntCrossleyForce();
+    ObstacleForces.setName('ObstacleForces');
+    ObstacleForces.setStiffness(stiffness);
+    ObstacleForces.setDissipation(dissipation);
+    ObstacleForces.setStaticFriction(staticFriction);
+    ObstacleForces.setDynamicFriction(dynamicFriction);
+    ObstacleForces.setViscousFriction(viscousFriction);
+    ObstacleForces.setTransitionVelocity(0.2);
+    ObstacleForces.addGeometry('LFootContact');
+    ObstacleForces.addGeometry('RFootContact');
 
-% Add Spheres
-% This way of setting the seed was added in Matlab2011a as an error fix.
-% Do not use the older versions to set the seed and state in rand or randn.
-if(exist('rng', 'file'))
-    rng(0, 'twister');
-else
-   warning('CreateWalkingModelAndEnvironment:RNG', ...
-           ['\tYou are using a version of Matlab before 2011a and do', ...
-           'not have the rng function.  The location of your terrain', ...
-           'obstacles will be different than the base model.']); 
-end
-% You can comment this line out if necessary. However, your obstacles will 
-% be in a different place than the first model.  
-for i = 1:1:numSpheres
-    radius = minObstacleRadius+(maxObstacleRadius - minObstacleRadius)*rand(1,1);
-    locX = endingPoint-distance*abs(.30*randn(1,1))-PlatformOffset;
-    locY = PlatformWidth/2-radius*0.8;
-    locZ = PelvisWidth/2*(sign(-0.5+rand(1,1)));
-    sphere = ContactSphere(radius, Vec3(locX,locY,locZ), platform);
-    name = ['Obstacle',num2str(i)];
-    sphere.setName(name);
-    osimModel.addContactGeometry(sphere);
-    ObstacleForces.addGeometry(name);
-end
+    % Add Spheres
+    % This way of setting the seed was added in Matlab2011a as an error fix.
+    % Do not use the older versions to set the seed and state in rand or randn.
+    if(exist('rng', 'file'))
+        rng(0, 'twister');
+    else
+       warning('CreateWalkingModelAndEnvironment:RNG', ...
+               ['\tYou are using a version of Matlab before 2011a and do', ...
+               'not have the rng function.  The location of your terrain', ...
+               'obstacles will be different than the base model.']);
+    end
+    % You can comment this line out if necessary. However, your obstacles will
+    % be in a different place than the first model.
+    for i = 1:1:numSpheres
+        radius = minObstacleRadius+(maxObstacleRadius - minObstacleRadius)*rand(1,1);
+        locX = endingPoint-distance*abs(.30*randn(1,1))-PlatformOffset;
+        locY = PlatformWidth/2-radius*0.8;
+        locZ = PelvisWidth/2*(sign(-0.5+rand(1,1)));
+        sphere = ContactSphere(radius, Vec3(locX,locY,locZ), platform);
+        name = ['Obstacle',num2str(i)];
+        sphere.setName(name);
+        osimModel.addContactGeometry(sphere);
+        ObstacleForces.addGeometry(name);
+    end
 
-% Add Force to the Model
-osimModel.addForce(ObstacleForces);
+    % Add Force to the Model
+    osimModel.addForce(ObstacleForces);
+
+end
 % -----------------------------------------------------------------------
-osimModel.print('../Model/DW2013_WalkerModelTerrainUserEdit.osim');
+osimModel.print([outputPath, outputModelName, '.osim']);
+display(['Model ' outputModelName ',printed']);
