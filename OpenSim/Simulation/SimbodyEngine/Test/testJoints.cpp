@@ -1355,11 +1355,13 @@ void testPinJoint()
     knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.finalizeConnections(*osimModel);
-    knee3.dumpConnections();
+    knee3.printSocketInfo();
+    knee3.printInputInfo();
     knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
-    knee.dumpConnections();
+    knee.printSocketInfo();
+    knee.printInputInfo();
     knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
@@ -1370,8 +1372,10 @@ void testPinJoint()
     // the resulting system and results
     osimModel->addJoint(&knee3);
 
-    knee3.dumpConnections();
-    knee.dumpConnections();
+    knee3.printSocketInfo();
+    knee3.printInputInfo();
+    knee.printSocketInfo();
+    knee.printInputInfo();
 
     // BAD: have to set memoryOwner to false or program will crash when this
     // test is complete.

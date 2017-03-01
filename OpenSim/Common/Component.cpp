@@ -1468,7 +1468,7 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpConnections() const {
+void Component::printSocketInfo() const {
     std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
     if (getNumSockets() == 0) std::cout << " none";
@@ -1486,7 +1486,9 @@ void Component::dumpConnections() const {
             std::cout << std::endl;
         }
     }
-    
+}
+
+void Component::printInputInfo() const {
     std::cout << "Inputs for " << getConcreteClassName() << " '"
               << getName() << "':";
     if (getNumInputs() == 0) std::cout << " none";
