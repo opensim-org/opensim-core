@@ -1476,11 +1476,11 @@ public:
     void printSubcomponentInfo() const;
     
     /** List all the Sockets of this component and whether or not they are 
-    connected. */
+    connected. Also list the connectee names for sockets that are connected. */
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. */
+    connected. Also list the connectee names for inputs that are connected. */
     void printInputInfo() const;
 
     template<typename C>
