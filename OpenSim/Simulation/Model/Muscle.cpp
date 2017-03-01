@@ -47,7 +47,7 @@ Muscle::Muscle()
 {
     constructProperties();
     // override the value of default _minControl, _maxControl
-    setMinControl(0.0);
+
     setMaxControl(1.0);
 }
 

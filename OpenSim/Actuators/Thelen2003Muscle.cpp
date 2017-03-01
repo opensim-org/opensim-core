@@ -160,6 +160,8 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.050);
     constructProperty_minimum_activation(0.01);
+
+    setMinControl(get_minimum_activation());
 }
 
 //=============================================================================

@@ -55,6 +55,8 @@ void Millard2012EquilibriumMuscle::constructProperties()
     constructProperty_ForceVelocityCurve(ForceVelocityCurve());
     constructProperty_FiberForceLengthCurve(FiberForceLengthCurve());
     constructProperty_TendonForceLengthCurve(TendonForceLengthCurve());
+
+    setMinControl(get_minimum_activation());
 }
 
 void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
