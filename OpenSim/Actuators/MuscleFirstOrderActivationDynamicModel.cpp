@@ -77,8 +77,7 @@ clampActivation(double activation) const
 double MuscleFirstOrderActivationDynamicModel::
 calcDerivative(double activation, double excitation) const
 {
-    //excitation = clamp(get_minimum_activation(), excitation, 1.0);
-    //activation = clamp(get_minimum_activation(), activation, 1.0);
+    activation = clamp(get_minimum_activation(), activation, 1.0);
 
     double tau = (excitation > activation) ?
         get_activation_time_constant() * (0.5 + 1.5*activation) : 
