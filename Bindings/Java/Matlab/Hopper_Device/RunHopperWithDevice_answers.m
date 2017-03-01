@@ -41,8 +41,8 @@ device = BuildDevice();
 %       'deviceAttachmentPoint'.
 % [Step 2, Task A]
 % ANSWER{
-device.dumpSubcomponentInfo();
-hopper.dumpSubcomponentInfo();
+device.printSubcomponentInfo();
+hopper.printSubcomponentInfo();
 % }
 
 % TODO: Get the 'anchor' joints in the device, and downcast them to the
@@ -85,8 +85,8 @@ end
 %       ToyPropMyoController subcomponents.
 % [Step 2, Task E]
 % ANSWER{
-device.getComponent('cableAtoB').dumpOutputInfo();
-device.getComponent('controller').dumpOutputInfo();
+device.getComponent('cableAtoB').printOutputInfo();
+device.getComponent('controller').printOutputInfo();
 % TODO device.getComponent('controller').dumpInputInfo();
 % }
 
