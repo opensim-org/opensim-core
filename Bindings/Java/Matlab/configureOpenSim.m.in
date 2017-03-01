@@ -1,8 +1,25 @@
  function configureOpenSim
 %% configureOpenSim() adds OpenSim library paths to MATLAB path files
 %    Allows user to select the location of the OpenSim install directory
-%    and add these paths to the matlab library paths. Will allow MATLAB 
-%    users to run OpenSim calls in Matlab.
+%    and add these paths to the MATLAB library paths. Will allow MATLAB 
+%    users to run OpenSim calls in MATLAB.
+%    On all platforms, this script adds (i) the location of
+%    org.opensim.modeling.jar (the OpenSim Java bindings) to MATLAB's java
+%    class path (javaclasspath.txt); and (ii) the location of OpenSim's shared
+%    libraries (DLLs on Windows, .so files on Linux, .dylib files on macOS) to
+%    MATLAB's java library path (javalibrarypath.txt). On Windows, this script
+%    additionally adds the location of the DLLs (bin dir) to MATLAB's path
+%    (e.g., addpath).
+%TODO run as administrator.
+%TODO mention in messages that we deleted an older version of MATLAB.
+%MATLAB 2012b was the first version to allow javaclasspath.txt in the prefdir.
+% 2012b was version 8.0.
+% TODO could also just comment out the lines containing the old opensim paths
+% (rather than deleting those lines altogether).
+%  if verLessThan('matlab', '8.0') 
+%TODO make sure we delete any OpenSim mention in old toolbox
+%classpath/librarypath folders.
+% TODO save backup versions of javaclasspath and javalibrarypath.txt files.
 % #----------------------------------------------------------------------- %
 % #The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % #simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -31,13 +48,18 @@
     correctFolder=0;
     while ~correctFolder
         prospectiveOpenSimFolder = getenv('OPENSIM_HOME');
-        openSimFolder = uigetdir(prospectiveOpenSimFolder, 'Select the folder where OpenSim is installed.');
+        openSimFolder = uigetdir(prospectiveOpenSimFolder, ...
+                'Select the folder where OpenSim is installed.');
+                % TODO on macOS, there is no "Select the folder...". Perhaps
+                % print that message to the command prompt on Mac.
         if ~openSimFolder  % user cancelled process
             error('User cancelled function')
         end
         % Check if the correct OpenSim directory is selected
-        if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt'))
-            h = msgbox('Folder is not an OpenSim Install folder. Please select OpenSim Install folder', 'Error');
+        if ~exist(fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', ...
+                    'OpenSim_buildinfo.txt'))
+            h = msgbox(['Folder is not an OpenSim Install folder. ' ...
+                        'Please select OpenSim Install folder'], 'Error');
             uiwait(h)
         else
             correctFolder = 1;
@@ -47,13 +69,15 @@
     end
 %% Edit the classpath.txt file (need full path for print)
     % Create the string names used
-    classFile = fullfile(mr, 'toolbox', 'local', 'classpath.txt');
-    OpenSimJarPath =  fullfile(openSimFolder, '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
+    % TODO GUI distribution might put this file elsewhere.
+    OpenSimJarPath =  fullfile(openSimFolder, ...
+            '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
+    classFile = fullfile(prefdir, 'javaclasspath.txt');
     % Edit the class path txt file
     success = edit_path_txt_file(classFile, OpenSimJarPath);
-    % If above failed, Matlab is probably new. Try newer technique.
+    % If above failed, Matlab is probably new. Try older technique.
     if ~success
-        classFile = fullfile(prefdir, 'javaclasspath.txt');
+        classFile = fullfile(mr, 'toolbox', 'local', 'classpath.txt');
         success = edit_path_txt_file(classFile, OpenSimJarPath);
         if ~success
             h = msgbox('Failed to add classpath.', 'Error');
@@ -63,12 +87,12 @@
     end
 %% Edit the librarypath.txt (need full path for print)
     % Create the string names used
-    libraryFile = fullfile(mr, 'toolbox', 'local', 'librarypath.txt');
     OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
+    libraryFile = fullfile(prefdir, 'javalibrarypath.txt');
     % Edit the library path txt file
     success = edit_path_txt_file(libraryFile, OpenSimLibPath);
     if ~success
-        libraryFile = fullfile(prefdir, 'javalibrarypath.txt');
+        libraryFile = fullfile(mr, 'toolbox', 'local', 'librarypath.txt');
         success = edit_path_txt_file(libraryFile, OpenSimLibPath);
         if ~success
             h = msgbox('Failed to add librarypath.', 'Error');
@@ -76,12 +100,17 @@
             error('Program exit');
         end
     end
-%% Edit Matlab path
-    cleanMatlabSearchPath
-    addpath(OpenSimLibPath)
-    savepath
+%% On Windows, Edit Matlab path
+    if ispc
+        cleanMatlabSearchPath
+        addpath(OpenSimLibPath)
+        savepath
+    end
 %% Display message
-    h = msgbox('Paths have been successfully updated. To complete setup, restart Matlab. To test your set up, type: model = org.opensim.modeling.Model();',  [char(openSimFolder) ' Successfully added!']);
+    h = msgbox(['Paths have been successfully updated. ' ...
+            'To complete setup, restart MATLAB. To test your set up, ' ...
+            'type: model = org.opensim.modeling.Model();'], ...
+            [char(openSimFolder) ' Successfully added!']);
     uiwait(h)
 end
 
@@ -145,10 +174,13 @@ function checkSystemInfo(openSimFolder)
     % check to see if the buildinfo.txt file is present. This file will give
     % us install type info that determines compatability between MATLAB and
     % opensim (both 64 bit?)
-    buildinfo_file = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt');
+    buildinfo_file = fullfile(openSimFolder, ...
+            '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt');
     if ~exist(buildinfo_file)
         % is systemInfo.txt file available?
-        h = msgbox(strcat('Unable to check if OpenSim is 64bit or 32bit. File ', buildinfo_file, ' not found.'), 'Error');
+        h = msgbox(strcat(...
+                'Unable to check if OpenSim is 64bit or 32bit. File ', ...
+                buildinfo_file, ' not found.'), 'Error');
         uiwait(h)
         return
     else
@@ -159,11 +191,13 @@ function checkSystemInfo(openSimFolder)
         OpenSimIs64bit = not(isempty(strfind(platformID, '64')));
         MatlabIs64bit = not(isempty(strfind(mexext, '64')));
         if MatlabIs64bit && not(OpenSimIs64bit)
-            h = msgbox('Matlab is 64 bit. OpenSim is 32 bit. Re-build OpenSim with 64 bit compiler.','Error');
+            h = msgbox(['Matlab is 64 bit. OpenSim is 32 bit. ' ...
+                    'Re-build OpenSim with 64 bit compiler.'],'Error');
             uiwait(h)
             error('Program exit')
         elseif not(MatlabIs64bit) && OpenSimIs64bit
-            h = msgbox('Matlab is 32 bit. OpenSim is 64 bit. Re-build OpenSim with 32 bit compiler.','Error');
+            h = msgbox(['Matlab is 32 bit. OpenSim is 64 bit. ' ...
+                    'Re-build OpenSim with 32 bit compiler.'],'Error');
             uiwait(h)
             error('Program exit') 
         end
@@ -194,7 +228,8 @@ function cleanMatlabSearchPath
      folderName = matlabPath(startString+1 : finishString-1);
      
      % check to see if the folder string contains 'OpenSim' or 'bin'
-     if ~isempty(strfind(lower(folderName), 'opensim')) && ~isempty(strfind(folderName, 'bin'))
+     if ~isempty(strfind(lower(folderName), 'opensim')) && ...
+                ~isempty(strfind(folderName, 'bin'))
          rmpath(folderName)
      end     
  end
