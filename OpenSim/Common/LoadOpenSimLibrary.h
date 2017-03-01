@@ -81,6 +81,11 @@ OSIMCOMMON_API void LoadOpenSimLibrary(const std::string &aLibraryName);
  * import opensim
  * opensim.LoadOpenSimLibraryExact('<path>/osimMyPlugin.dll')
  * @endcode
+ *
+ * @note If your (plugin) library depends on other libraries, make sure they
+ * are available as well (e.g., by setting the appropriate values for
+ * environment variables like `PATH` (Windows), `LD_LIBRARY_PATH` (Linux), and
+ * `DYLD_LIBRARY_PATH` (macOS)).
  * 
  * @returns true if the library was successfully loaded; false otherwise. */
 OSIMCOMMON_API bool LoadOpenSimLibraryExact(const std::string &exactPath,
