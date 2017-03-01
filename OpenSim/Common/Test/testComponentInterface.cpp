@@ -782,7 +782,22 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
-
+// In order to access subcomponents in a copy, One must invoke
+// finalizeFromProperties() after copying. This test makes sure that you get an
+// exception if you did not call finalizeFromProperties() before calling a
+// method like getComponentList().
+void testExceptionsFinalizeFromPropertiesAfterCopy() {
+    TheWorld theWorld;
+    {
+        MultibodySystem system;
+        Foo* foo = new Foo();
+        theWorld.add(foo);
+    }
+    {
+        TheWorld copy = theWorld;
+        SimTK_TEST_MUST_THROW(copy.getComponentList());
+    }
+}
 
 void testListInputs() {
     MultibodySystem system;
@@ -1941,6 +1956,7 @@ int main() {
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
+        SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
