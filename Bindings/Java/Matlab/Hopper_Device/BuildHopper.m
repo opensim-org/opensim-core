@@ -156,9 +156,22 @@ vastus.updGeometryPath().addPathWrap(patella);
 brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseConstantFunction();
-controlFunction.addPoint(0.0, 0.3);
-controlFunction.addPoint(2.0, 1.0);
-controlFunction.addPoint(3.9, 0.1);
+
+
+try evalin('base','user_act');
+    disp('User activation found...')
+    user_act = evalin('base','user_act');
+    for i = 1:size(user_act,2)
+        controlFunction.addPoint(user_act(1,i), user_act(2,i));
+    end
+catch 
+    disp('User activation not found, using default activation...')
+    controlFunction.addPoint(0.0, 0.3);
+    controlFunction.addPoint(2.0, 1.0);
+    controlFunction.addPoint(3.9, 0.1)   
+end
+
+
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
 
@@ -185,5 +198,6 @@ linkGeometry = Cylinder(linkRadius, linkHalfLength);
 linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
+
 
 end
