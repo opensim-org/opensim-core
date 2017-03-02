@@ -2690,7 +2690,8 @@ private:
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
     // list of subcomponents that are contained in this Component's properties
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    SimTK::ResetOnCopy<SimTK::Array_<SimTK::ReferencePtr<Component>>>
+        _propertySubcomponents;
     // Keep fixed list of data member Components upon construction
     SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
