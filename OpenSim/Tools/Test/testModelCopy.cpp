@@ -38,6 +38,52 @@ void testCopyModel( const string& fileName, const int nbod,
 int main()
 {
     try {
+
+        // Test copying a simple property.
+        {
+            std::cout << "Test copying a simple property." << std::endl;
+            Property<double>* a =
+                Property<double>::TypeHelper::create("a", true);
+            a->setValue(0.123456789);
+            Property<double>* b =
+                Property<double>::TypeHelper::create("b", true);
+            b->setValue(10.0);
+
+            b->assign(*a);
+
+            cout << "b = " << b->toString() << endl;
+            ASSERT(*a == *b);
+        }
+
+        // Test copying a an Object property.
+        {
+            std::cout << "Test copying a object property." << std::endl;
+            Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
+                SimTK::Inertia(0.33, 0.22, 0.11));
+            Body B;
+
+            Property<Body>* a = Property<Body>::TypeHelper::create("a", true);
+            a->setValue(A);
+            Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
+            b->setValue(B);
+
+            b->assign(*a);
+
+            cout << "b = " << b->toString() << endl;
+            ASSERT(*a == *b);
+
+            B = A;
+            ASSERT(B == A);
+        }
+
+        Model arm("arm26.osim");
+        Model armAssigned;
+
+        armAssigned = arm;
+        ASSERT(armAssigned == arm);
+
+        arm.finalizeFromProperties();
+
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
         testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
@@ -81,7 +127,8 @@ void testCopyModel(const string& fileName, const int nbod,
     modelCopy->finalizeFromProperties();
     // At this point properties should all match. assert that
     ASSERT(*model==*modelCopy);
-    ASSERT( model->getActuators().getSize() == modelCopy->getActuators().getSize() );
+    ASSERT(model->getActuators().getSize() ==
+           modelCopy->getActuators().getSize());
 
     //SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
     // Compare state
@@ -92,7 +139,8 @@ void testCopyModel(const string& fileName, const int nbod,
     Model *cloneModel = modelCopy->clone();
     cloneModel->finalizeFromProperties();
     ASSERT(*model == *cloneModel);
-    ASSERT(model->getActuators().getSize() == cloneModel->getActuators().getSize());
+    ASSERT(model->getActuators().getSize() ==
+           cloneModel->getActuators().getSize());
 
     // Compare state again
     
