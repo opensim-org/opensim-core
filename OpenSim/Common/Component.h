@@ -1475,9 +1475,13 @@ public:
     list their subcomponents, and so on.                                      */
     void printSubcomponentInfo() const;
     
-    /** List all the Sockets and Inputs and whether or not they are
-     * connected. */
-    void dumpConnections() const;
+    /** List all the Sockets of this component and whether or not they are 
+    connected. Also list the connectee names for sockets that are connected. */
+    void printSocketInfo() const;
+
+    /** List all the inputs of this component and whether or not they are 
+    connected. Also list the connectee names for inputs that are connected. */
+    void printInputInfo() const;
 
     template<typename C>
     void printSubcomponentInfo() const {

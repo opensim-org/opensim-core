@@ -1468,15 +1468,31 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpConnections() const {
-    std::cout << "Sockets for " << getConcreteClassName() << " '"
-              << getName() << "':";
-    if (getNumSockets() == 0) std::cout << " none";
+void Component::printSocketInfo() const {
+    std::cout << "Sockets for component " << getName() << " of type ["
+              << getConcreteClassName() << "] along with connectee names:";
+    if (getNumSockets() == 0)
+        std::cout << " none";
     std::cout << std::endl;
+
+    size_t maxlenTypeName{}, maxlenSockName{};
+    for(const auto& sock : _socketsTable) {
+        maxlenTypeName = std::max(maxlenTypeName,
+                                  sock.second->getConnecteeTypeName().length());
+        maxlenSockName = std::max(maxlenSockName,
+                                  sock.second->getName().length());
+    }
+    maxlenTypeName += 4;
+    maxlenSockName += 1;
+    
     for (const auto& it : _socketsTable) {
         const auto& socket = it.second;
-        std::cout << "  " << socket->getConnecteeTypeName() << " '"
-                  << socket->getName() << "': ";
+        std::cout << std::string(maxlenTypeName -
+                                 socket->getConnecteeTypeName().length(), ' ')
+                  << "[" << socket->getConnecteeTypeName() << "]"
+                  << std::string(maxlenSockName -
+                                 socket->getName().length(), ' ')
+                  << socket->getName() << " : ";
         if (socket->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
@@ -1486,15 +1502,34 @@ void Component::dumpConnections() const {
             std::cout << std::endl;
         }
     }
-    
-    std::cout << "Inputs for " << getConcreteClassName() << " '"
-              << getName() << "':";
-    if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
+}
+
+void Component::printInputInfo() const {
+    std::cout << "Inputs for component " << getName() << " of type ["
+              << getConcreteClassName() << "] along with connectee names:";
+    if (getNumInputs() == 0)
+        std::cout << " none";
+    std::cout << std::endl;
+
+    size_t maxlenTypeName{}, maxlenInputName{};
+    for(const auto& input : _inputsTable) {
+        maxlenTypeName = std::max(maxlenTypeName,
+                                input.second->getConnecteeTypeName().length());
+        maxlenInputName = std::max(maxlenInputName,
+                                input.second->getName().length());
+    }
+    maxlenTypeName += 4;
+    maxlenInputName += 1;
+
     for (const auto& it : _inputsTable) {
         const auto& input = it.second;
-        std::cout << "  " << input->getConnecteeTypeName() << " '"
-                  << input->getName() << "': ";
+        std::cout << std::string(maxlenTypeName -
+                                 input->getConnecteeTypeName().length(), ' ')
+                  << "[" << input->getConnecteeTypeName() << "]"
+                  << std::string(maxlenInputName -
+                                 input->getName().length(), ' ')
+                  << input->getName() << " : ";
         if (input->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
@@ -1506,6 +1541,7 @@ void Component::dumpConnections() const {
             std::cout << std::endl;
         }
     }
+    std::cout << std::endl;
 }
 
 void Component::printSubcomponentInfo() const {
