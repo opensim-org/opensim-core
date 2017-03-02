@@ -1508,21 +1508,15 @@ public:
         std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
                   << "[" + getConcreteClassName() + "]"
                   << "  " << getAbsolutePathName() << std::endl;
-        auto prevPath = getAbsolutePathName();
+
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
             std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
                       << thisClass << "]  ";
-            auto path = thisComp.getAbsolutePathName();
-            auto res = std::mismatch(prevPath.begin(), prevPath.end(),
-                                     path.begin());
-            while(*res.second != '/')
-                --res.second;
-            std::cout << std::string(std::count(path.begin(),
-                                                res.second, '/') * 4, ' ')
-                      << path.substr(res.second - path.begin()) << std::endl;
-            prevPath = path;
+            auto path = ComponentPath(thisComp.getAbsolutePathName());
+            std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
+                      << "/" << path.getComponentName() << std::endl;
         }
         std::cout << std::endl;
     }
