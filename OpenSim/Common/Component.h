@@ -1468,8 +1468,7 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Print information about this component and subcomponents to the 
-     console                                                                  */
+    /** @name Print information to the console */
     /// @{
     /** List all subcomponents by name and recurse into these components to 
     list their subcomponents, and so on.                                      */
@@ -2077,6 +2076,8 @@ protected:
     getCacheVariableIndex(const std::string& name) const;
 
     // End of System Creation and Access Methods.
+    //@} 
+
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsupported-friend"
@@ -2190,32 +2191,6 @@ protected:
     }
 #endif
 
-public:
-#ifndef SWIG // StateVariable is protected.
-    /**
-     * Find a StateVariable of this Component (includes its subcomponents).
-     * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called)
-     */
-    const StateVariable* findStateVariable(const std::string& name) const;
-#endif
-
-    /** Access the owner of this Component.
-        An exception is thrown if the Component has no owner; in this case, the
-        component is the root component, or is orphaned.
-        @see hasOwner() */
-    const Component& getOwner() const;
-
-    /** Check if this Component has an owner.
-        A component may not have an owner if it:
-        (1) is the root component, or
-        (2) has not been added to another component */
-    bool hasOwner() const;
-
-protected:
-    /** %Set this Component's reference to its owning Component */
-    void setOwner(const Component& owner);
-
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
     {
@@ -2284,7 +2259,35 @@ protected:
         return nullptr;
     }
 
-    //@} 
+public:
+#ifndef SWIG // StateVariable is protected.
+    /**
+     * Find a StateVariable of this Component (includes its subcomponents).
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    const StateVariable* findStateVariable(const std::string& name) const;
+#endif
+
+    /// @name Access to the owning component (advanced).
+    /// @{
+    /** Access the owner of this Component.
+     * An exception is thrown if the %Component has no owner; in this case, the
+     * component is the root component, or is orphaned.
+     * @see hasOwner() */
+    const Component& getOwner() const;
+
+    /** (For advanced users) Check if this %Component has an owner.
+     * A component may not have an owner if it:
+     * (1) is the root component, or
+     * (2) has not been added to another component */
+    bool hasOwner() const;
+
+protected:
+    /** %Set this %Component's reference to its owning %Component */
+    void setOwner(const Component& owner);
+
+    /// @}
 
     /** @name Internal methods for constructing Sockets, Outputs, Inputs
      * To declare Socket%s, Output%s, and Input%s for your component,
