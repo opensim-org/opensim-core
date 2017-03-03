@@ -1,5 +1,5 @@
-%module(directors="1") opensimModelSimulation
-%module opensimModelSimulation
+%module(directors="1") opensimSimulation
+%module opensimSimulation
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
@@ -175,7 +175,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %extend OpenSim::Model {
     static void LoadOpenSimLibrary(std::string libraryName){
-        LoadOpenSimLibrary(libraryName);
+        LoadOpenSimLibrary(libraryName, true);
     }
     
     void setDefaultControls(SimTK::Vector& newControls) {

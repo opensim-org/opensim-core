@@ -1,5 +1,5 @@
-%module(directors="1") opensimModelCommon
-%module opensimModelCommon
+%module(directors="1") opensimCommon
+%module opensimCommon
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 

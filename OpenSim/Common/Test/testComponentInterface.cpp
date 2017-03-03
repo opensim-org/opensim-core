@@ -692,6 +692,7 @@ void testMisc() {
     cout << "Connecting theWorld:" << endl;
     //theWorld.dumpSubcomponents();
     theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
     theWorld.finalizeFromProperties();
     theWorld.connect();
 
@@ -755,6 +756,7 @@ void testMisc() {
     ASSERT_EQUAL(1.5, foo.getInputValue<double>(s, "activation"), 1e-10);
 
     theWorld.printSubcomponentInfo();
+    theWorld.printOutputInfo();
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
@@ -780,7 +782,22 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
-
+// In order to access subcomponents in a copy, One must invoke
+// finalizeFromProperties() after copying. This test makes sure that you get an
+// exception if you did not call finalizeFromProperties() before calling a
+// method like getComponentList().
+void testExceptionsFinalizeFromPropertiesAfterCopy() {
+    TheWorld theWorld;
+    {
+        MultibodySystem system;
+        Foo* foo = new Foo();
+        theWorld.add(foo);
+    }
+    {
+        TheWorld copy = theWorld;
+        SimTK_TEST_MUST_THROW(copy.getComponentList());
+    }
+}
 
 void testListInputs() {
     MultibodySystem system;
@@ -945,6 +962,7 @@ void testComponentPathNames()
     D->add(E);
 
     top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathName();
     ASSERT(absPathC == "/Top/A/B/C");
@@ -985,6 +1003,7 @@ void testComponentPathNames()
     top.add(F);
 
     top.printSubcomponentInfo();
+    top.printOutputInfo();
 
     std::string fFoo1AbsPath = 
         F->getComponent<Foo>("Foo1").getAbsolutePathName();
@@ -1017,6 +1036,7 @@ void testComponentPathNames()
         .setConnecteeName("../Foo1");
 
     top.printSubcomponentInfo();
+    top.printOutputInfo();
     top.connect();
 }
 
@@ -1936,6 +1956,7 @@ int main() {
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
+        SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);

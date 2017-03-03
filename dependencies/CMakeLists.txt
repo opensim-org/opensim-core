@@ -147,9 +147,10 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              TAG        ea7d94640b084d9feaa55e140c76e696f242a06a 
+              TAG        9e761bbb372e5da90ae478d2a5d3a4952ad94b27 
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
+                     
 
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
