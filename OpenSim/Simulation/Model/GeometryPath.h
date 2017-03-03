@@ -77,9 +77,6 @@ private:
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
 
-    // Pointer to the Object that owns this GeometryPath object.
-    SimTK::ReferencePtr<Object> _owner;
-
     // Solver used to compute moment-arms. The GeometryPath owns this object,
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
@@ -117,8 +114,6 @@ public:
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    Object* getOwner() const { return _owner.get(); }
-    void setOwner(Object *anObject) {_owner = anObject; };
 
     /** If you call this prior to extendAddToSystem() it will be used to initialize
     the color cache variable. Otherwise %GeometryPath will choose its own

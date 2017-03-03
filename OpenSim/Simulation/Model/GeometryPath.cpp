@@ -202,8 +202,8 @@ void GeometryPath::namePathPoints(int aStartingIndex)
     {
         sprintf(indx,"%d",i+1);
         PathPoint& point = get_PathPointSet().get(i);
-        if (point.getName()=="" && _owner) {
-            point.setName(_owner->getName() + "-P" + indx);
+        if (point.getName()=="" && hasOwner()) {
+            point.setName(getOwner().getName() + "-P" + indx);
         }
     }
 }
