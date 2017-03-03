@@ -3,6 +3,6 @@
 
 int main(int argc, char* argv[]) {
     OpenSim::MuscleRedundancySolver mrs;
-    mrs.run();
+    mrs.solve();
     return EXIT_SUCCESS;
 }

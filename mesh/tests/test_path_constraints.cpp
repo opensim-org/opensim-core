@@ -32,8 +32,10 @@ public:
         derivatives[0] = states[1];
         // udot = a
         derivatives[1] = controls[0];
-    }
-    void path_constraints(const VectorX<T>& /*states*/,
+}
+    void path_constraints(unsigned /*i_mesh*/,
+                          const T& /*time*/,
+                          const VectorX<T>& /*states*/,
                           const VectorX<T>& controls,
                           Ref<VectorX<T>> constr) const override
     {

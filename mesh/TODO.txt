@@ -42,6 +42,8 @@ TONMS
 
 Runner
 
+add "printProblemInfo()" to display the values of variable bounds, the number
+ of constraints, the number of dynamics whatever, etc. For debugging.
 
 # iCub provides Ipopt binaries but not for msvc14.
 http://wiki.icub.org/wiki/Installing_IPOPT

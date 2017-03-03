@@ -18,6 +18,9 @@ public:
     virtual int num_controls() const = 0;
     // TODO assume 0?
     virtual int num_path_constraints() const { return 0; }
+
+    virtual void print_description() const;
+
     virtual void bounds(
             double& initial_time_lower, double& initial_time_upper,
             double& final_time_lower, double& final_time_upper,
@@ -36,12 +39,27 @@ public:
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
             Eigen::Ref<Eigen::VectorXd> path_constraints_upper) const = 0;
 
+    /// Perform any precalculations or caching (e.g., interpolating data)
+    /// necessary before the optimal control problem is solved. This is
+    /// invoked every time there's a new mesh (e.g., in each mesh refinement
+    /// iteration).
+    /// To perform any caching in member variables, you have to use a
+    /// const_cast:
+    /// @code{.cpp}
+    /// const_cast<MyOCP*>(this)->data = ...;
+    /// @endcode
+    /// @param mesh The length of mesh is the number of mesh points. The mesh
+    ///             points are normalized and are thus within [0, 1].
+    virtual void initialize_on_mesh(const Eigen::VectorXd& mesh) const;
+
     // TODO use Eigen, not std::vector.
     // TODO must pass in the time.
     virtual void dynamics(const VectorX<T>& states,
                           const VectorX<T>& controls,
-                          Eigen::Ref<VectorX<T>> derivative) const = 0;
-    virtual void path_constraints(const VectorX<T>& states,
+                          Eigen::Ref<VectorX<T>> derivative) const;
+    virtual void path_constraints(unsigned index,
+                                  const T& time,
+                                  const VectorX<T>& states,
                                   const VectorX<T>& controls,
                                   Eigen::Ref<VectorX<T>> constraints) const;
     // TODO alternate form that takes a matrix; state at every time.
@@ -60,7 +78,30 @@ public:
 };
 
 template<typename T>
-void OptimalControlProblem<T>::path_constraints(const VectorX <T>&,
+void OptimalControlProblem<T>::print_description() const {
+    std::cout << "Description of this optimal control problem:" << std::endl;
+    std::cout << "Number of states: "
+              << this->num_states() << std::endl;
+    std::cout << "Number of controls: "
+              << this->num_controls() << std::endl;
+    std::cout << "Number of path constraints: "
+              << this->num_path_constraints() << std::endl;
+}
+
+template<typename T>
+void OptimalControlProblem<T>::initialize_on_mesh(const Eigen::VectorXd&) const
+{}
+
+template<typename T>
+void OptimalControlProblem<T>::dynamics(const VectorX<T>&,
+                                        const VectorX<T>&,
+                                        Eigen::Ref<VectorX<T>>) const
+{}
+
+template<typename T>
+void OptimalControlProblem<T>::path_constraints(unsigned,
+                                                const T&,
+                                                const VectorX <T>&,
                                                 const VectorX <T>&,
                                                 Eigen::Ref<VectorX<T>>) const {}
 
@@ -100,7 +141,6 @@ struct FinalBounds : public Bounds {
 
 template<typename T>
 class OptimalControlProblemNamed : public OptimalControlProblem<T> {
-public:
 private:
     struct ContinuousVariableInfo {
         std::string name;
@@ -113,6 +153,9 @@ private:
         Bounds bounds;
     };
 public:
+    OptimalControlProblemNamed() = default;
+    OptimalControlProblemNamed(const std::string& name) : m_name(name) {}
+
     void set_time(const InitialBounds& initial_time,
             const FinalBounds& final_time)
     {
@@ -129,6 +172,11 @@ public:
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
     {
+        // TODO proper handling of bounds: if initial_bounds is omitted,
+        // then its values come from bounds.
+        // TODO want to avoid adding unnecessary constraints to the optimization
+        // problem if initial/final bounds are omitted. Use the Bounds'
+        // objects' "is_set()" function.
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
     }
     void add_path_constraint(const std::string& name, const Bounds& bounds) {
@@ -139,6 +187,51 @@ public:
     int num_path_constraints() const override final
     {
         return m_path_constraint_infos.size();
+    }
+    void print_description() const override final
+    {
+        using std::cout;
+        using std::endl;
+        auto print_continuous_var_info = [](
+                const std::string& var_type,
+                const std::vector<ContinuousVariableInfo>& infos) {
+            cout << var_type << ":";
+            if (!infos.empty())
+                cout << " (total number: " << infos.size() << ")" << endl;
+            else
+                cout << " none" << endl;
+            for (const auto& info : infos) {
+                cout << "  " << info.name << ". bounds: ["
+                        << info.bounds.lower << ", "
+                        << info.bounds.upper << "] ";
+                if (info.initial_bounds.is_set()) {
+                    cout << " initial bounds: ["
+                            << info.initial_bounds.lower << ", "
+                            << info.initial_bounds.upper << "].";
+                }
+                if (info.initial_bounds.is_set()) {
+                    cout << " final bounds: ["
+                            << info.final_bounds.lower << ", "
+                            << info.final_bounds.upper << "]";
+                }
+                cout << endl;
+            }
+        };
+
+        cout << "Description of optimal control problem "
+             << m_name << ":" << endl;
+
+        print_continuous_var_info("States", m_state_infos);
+        print_continuous_var_info("Controls", m_control_infos);
+
+        cout << "Path constraints: (total number: "
+             << this->num_path_constraints() << ")" << endl;
+        for (const auto& info : m_path_constraint_infos) {
+            cout << "  " << info.name << ". bounds: ["
+                 << info.bounds.lower << ", "
+                 << info.bounds.upper << "]"
+                 << endl;
+        }
     }
     void bounds(double& initial_time_lower, double& initial_time_upper,
                 double& final_time_lower, double& final_time_upper,
@@ -210,16 +303,13 @@ public:
         }
     }
 private:
+    std::string m_name = "<unnamed>";
     InitialBounds m_initial_time_bounds;
     FinalBounds m_final_time_bounds;
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };
-
-
-
-
 
 } // namespace mesh
 

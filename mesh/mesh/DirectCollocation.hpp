@@ -159,19 +159,24 @@ void LowOrder<T>::set_ocproblem(
     // TODO won't work if the bounds don't include zero!
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
     // input
+
+    // Set the mesh.
+    // -------------
     const unsigned num_mesh_intervals = m_num_mesh_points - 1;
-    const double interval_frac = 1.0 / num_mesh_intervals;
     // For integrating the integral cost.
     // The duration of each mesh interval.
-    VectorXd mesh_intervals =
-            VectorXd::Constant(num_mesh_intervals, interval_frac);
+    VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
+    VectorXd mesh_intervals = mesh.tail(num_mesh_intervals)
+                            - mesh.head(num_mesh_intervals);
     m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
     // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
     m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
             0.5 * mesh_intervals;
-    m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) =
+    m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
             0.5 * mesh_intervals;
+
+    m_ocproblem->initialize_on_mesh(mesh);
 }
 
 template<typename T>
@@ -261,9 +266,11 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     MatrixX<T> path_constraints(m_num_path_constraints, m_num_mesh_points);
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
+        const T time = step_size * i_mesh + initial_time;
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
                               derivs.col(i_mesh));
-        m_ocproblem->path_constraints(states.col(i_mesh), controls.col(i_mesh),
+        m_ocproblem->path_constraints(i_mesh, time,
+                                      states.col(i_mesh), controls.col(i_mesh),
                                       path_constraints.col(i_mesh));
     }
 
