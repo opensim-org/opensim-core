@@ -1,23 +1,9 @@
 function [xy] = get_user_act()
 
-% GET_USER_ACT adapted from:
-
-%GETCURVE  Interactive creation of a cubic spline curve.
-%
-%   [xy, spcv] = getcurve;  asks for a point sequence to be specified
-%   by mouse clicks on a grid provided.
-%   The points picked are available in the array XY.
-%   The spline curve is available in SPCV.
-%   A closed curve will be drawn if the first and last point are
-%   sufficiently close to each other.
-%   Repeated points create a corner in the curve.
-
-%   Copyright 1987-2011 The MathWorks, Inc.
-
+% GET_USER_ACT 
 
 w = [0 5 0 1];
 axis(w), hold on, grid on
-
 
 pts = line('Xdata',NaN,'Ydata',NaN,'marker','o');
 
