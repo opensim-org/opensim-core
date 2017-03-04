@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include <unordered_map>
 
 using namespace SimTK;
 
@@ -131,12 +132,15 @@ void Component::addComponent(Component* subcomponent)
     while (root->hasParent()) {
         root = &(root->getParent());
     }
-
-    auto components = root->getComponentList<Component>();
-    for (auto& c : components) {
-        if (subcomponent == &c) {
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                subcomponent->getName(), getName());
+    // if the root has no immediate subcomponents do not bother
+    // checking if the subcomponent is in the ownership tree
+    if ((root->getNumImmediateSubcomponents() > 0)) {
+        auto components = root->getComponentList<Component>();
+        for (auto& c : components) {
+            if (subcomponent == &c) {
+                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
+                    subcomponent->getName(), getName());
+            }
         }
     }
 
@@ -1463,7 +1467,8 @@ void Component::AddedStateVariable::
     return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
-void Component::dumpConnectionInfo() const {
+
+void Component::dumpConnections() const {
     std::cout << "Sockets for " << getConcreteClassName() << " '"
               << getName() << "':";
     if (getNumSockets() == 0) std::cout << " none";
@@ -1503,39 +1508,99 @@ void Component::dumpConnectionInfo() const {
     }
 }
 
-void Component::dumpOutputInfo(bool includeDescendants) const
-{
-    using std::cout; using std::endl;
+void Component::printSubcomponentInfo() const {
+    printSubcomponentInfo<Component>();
+}
 
+void Component::printOutputInfo(const bool includeDescendants) const {
+    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+
+    static const std::unordered_map<std::string, std::string>
+        typeAliases{{"SimTK::Vec<2,double,1>", "Vec2"},
+                    {"SimTK::Vec<3,double,1>", "Vec3"},
+                    {"SimTK::Vec<4,double,1>", "Vec4"},
+                    {"SimTK::Vec<5,double,1>", "Vec5"},
+                    {"SimTK::Vec<6,double,1>", "Vec6"},
+                    {"SimTK::Vec<2,SimTK::Vec<3,double,1>,1>", "SpatialVec"},
+                    {"SimTK::Transform_<double>", "Transform"},
+                    {"SimTK::Vector_<double>", "Vector"}};
+    
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        std::string msg = "Outputs from " + getAbsolutePathName();
-        msg += " of type " + getConcreteClassName();
-        cout << msg << "\n" << std::string(msg.size(), '=') << endl;
+        const std::string msg = "Outputs from " + getAbsolutePathName() +
+            " [" + getConcreteClassName() + "]";
+        std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
-        std::vector<std::string> outputNames = getOutputNames();
-        for (auto thisName : outputNames) { cout << "  " << thisName << endl; }
-        cout << endl;
+        const auto& outputs = getOutputs();
+        unsigned maxlen{};
+        bool printingAlias{false};
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            unsigned len = name.length();
+            if(typeAliases.find(name) != typeAliases.end()) {
+                len += typeAliases.at(name).length();
+                printingAlias = true;
+            }
+
+            maxlen = std::max(maxlen, len);
+        }
+        maxlen += 2;
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << std::string(maxlen -
+                                         name.length() -
+                                         typeAliases.at(name).length(), ' ');
+            else if(printingAlias)
+                std::cout << std::string(maxlen - name.length() + 3, ' ');
+            else
+                std::cout << std::string(maxlen - name.length(), ' ');
+            std::cout << "[" << name;
+            if(typeAliases.find(name) != typeAliases.end())
+                std::cout << " = " << typeAliases.at(name);
+            std::cout << "]  "
+                      << output.first << std::endl;
+        }
+        std::cout << std::endl;
     }
 
     if (includeDescendants) {
-        ComponentList<const Component> compList =
-            getComponentList<Component>();
-        for (const Component& thisComp : compList) {
-            // compList includes all descendants (i.e., children,
-            // grandchildren, etc.) so set includeDescendants=false when
-            // calling on thisComp.
-            thisComp.dumpOutputInfo(false);
+        for (const Component& thisComp : getComponentList<Component>()) {
+            // getComponentList() returns all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
+            thisComp.printOutputInfo(false);
         }
     }
 }
 
 void Component::initComponentTreeTraversal(const Component &root) const {
-    // Going down the tree, node is followed by all its
-    // children in order, last child's successor is the parent's successor.
+    // Going down the tree, this node is followed by all its children.
+    // The last child's successor (next) is the parent's successor.
+
+    const size_t nmsc = _memberSubcomponents.size();
+    const size_t npsc = _propertySubcomponents.size();
+    const size_t nasc = _adoptedSubcomponents.size();
+
+    if (!hasParent()) {
+        // If this isn't the root component and it has no parent, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have a parent).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
+        }
+        // if the root (have no parent) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
+    }
+
     const Component* last = nullptr;
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
-        if (i == _memberSubcomponents.size() - 1) {
+    for (unsigned int i = 0; i < nmsc; i++) {
+        if (i == nmsc - 1) {
             _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
@@ -1545,7 +1610,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             last = _memberSubcomponents[i + 1].get();
         }
     }
-    if (size_t npsc = _propertySubcomponents.size()) {
+    if (npsc) {
         if (last)
             last->_nextComponent = _propertySubcomponents[0].get();
 
@@ -1562,7 +1627,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             }
         }
     }
-    if (size_t nasc = _adoptedSubcomponents.size()) {
+    if (nasc) {
         if (last)
             last->_nextComponent = _adoptedSubcomponents[0].get();
 
@@ -1578,16 +1643,15 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nmsc; ++i) {
         _memberSubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < npsc; ++i) {
         _propertySubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
 }
-
 
 } // end of namespace OpenSim

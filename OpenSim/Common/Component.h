@@ -93,6 +93,40 @@ public:
     }
 };
 
+class ComponentIsAnOrphan : public Exception {
+public:
+    ComponentIsAnOrphan(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " has no parent and is not the root.\n" +
+            "Verify that finalizeFromProperties() has been invoked on the " + 
+            "root Component or that this Component is not a clone, which has " +
+            "not been added to its parent Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentIsRootWithNoSubcomponents : public Exception {
+public:
+    ComponentIsRootWithNoSubcomponents(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " is the root but has no " + 
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -1434,31 +1468,28 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Dump debugging information to the console */
+    /** @name Print information about this component and subcomponents to the 
+     console                                                                  */
     /// @{
-    /** Display the class name and absolute path name for each of the given 
-    Component's descendants (children, grandchildren, etc.).
+    /** List all subcomponents by name and recurse into these components to 
+    list their subcomponents, and so on.                                      */
+    void printSubcomponentInfo() const;
     
-    @code{.cpp}
-    comp.dumpSubcomponentInfo();         //show all descendant Components
-    comp.dumpSubcomponentInfo<Joint>();  //show Joint descendants only
-    @endcode */
-    void dumpSubcomponentInfo() const { dumpSubcomponentInfo<Component>(); }
-    /** Same as the non-templatized dumpSubcomponentInfo(), except only
-     * subcomponents of type C are listed. */
-    template<class C = Component>
-    void dumpSubcomponentInfo() const
-    {
-        using std::cout; using std::endl;
+    /** List all the Sockets and Inputs and whether or not they are
+     * connected. */
+    void dumpConnections() const;
 
+    template<typename C>
+    void printSubcomponentInfo() const {
         std::string className = SimTK::NiceTypeName<C>::namestr();
         const std::size_t colonPos = className.rfind(":");
         if (colonPos != std::string::npos)
             className = className.substr(colonPos+1,
                                          className.length()-colonPos);
-        cout << "Class name and absolute path name for descendants of '"
-            << getName() << "' that are of type " << className << ":\n"
-            << endl;
+
+        std::cout << "Class name and absolute path name for descendants of '"
+                  << getName() << "' that are of type " << className << ":\n"
+                  << std::endl;
 
         ComponentList<const C> compList = getComponentList<C>();
 
@@ -1470,23 +1501,31 @@ public:
         }
         maxlen += 4; //padding
 
+        std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
+                  << "[" + getConcreteClassName() + "]"
+                  << "  " << getAbsolutePathName() << std::endl;
+        auto prevPath = getAbsolutePathName();
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
-            cout << std::string(maxlen-thisClass.length(), ' ')
-                 << "[" << thisClass << "]  "
-                 << thisComp.getAbsolutePathName() << endl;
+            std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
+                      << thisClass << "]  ";
+            auto path = thisComp.getAbsolutePathName();
+            auto res = std::mismatch(prevPath.begin(), prevPath.end(),
+                                     path.begin());
+            while(*res.second != '/')
+                --res.second;
+            std::cout << std::string(std::count(path.begin(),
+                                                res.second, '/') * 4, ' ')
+                      << path.substr(res.second - path.begin()) << std::endl;
+            prevPath = path;
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 
-    /** List all the Sockets and Inputs in this component (not including
-     * subcomponents) and whether or not they are connected. */
-    void dumpConnectionInfo() const;
-    /** Display the name of each output generated by this component. Optionally
-     * include outputs generated by all the Component's descendants (children,
-     * grandchildren, etc.) by setting includeDescendants=true to suppress. */
-    void dumpOutputInfo(bool includeDescendants = false) const;
+    /** Print outputs of this component and optionally, those of all 
+    subcomponents.                                                            */
+    void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
 
 protected:
@@ -1648,12 +1687,15 @@ protected:
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build the tree of Components from this component through its descendants. 
-    This method is invoked whenever a ComponentList<C> is requested. Note, all
-    components must been added to the model (or its subcomponents), otherwise it
-    will not be included in the tree and will not be found for iteration or for
-    connection. The implementation populates _nextComponent ReferencePtr with a
-    pointer to the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants.
+    This method is invoked whenever a ComponentList<C> is requested. Note that
+    all components must have been added to the model (or its subcomponents),
+    otherwise it will not be included in the tree and will not be found for
+    iteration or for connection. The implementation populates the _nextComponent
+    ReferencePtr with a pointer to the next Component in tree pre-order traversal.
+    
+    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
+            yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
@@ -2166,7 +2208,7 @@ public:
     const Component& getParent() const;
 
     /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
+        A component may not have a parent Component assigned if it:
         1) is the root component, or 2) has not been added to its parent. */
     bool hasParent() const;
 
@@ -2202,6 +2244,10 @@ protected:
             // if currentSubpath is '.' we are in the right parent, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
+                if (current->getNumImmediateSubcomponents() == 0) {
+                    current = nullptr;
+                    continue;
+                }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
@@ -2901,9 +2947,9 @@ void Input<T>::connect(const AbstractOutput& output,
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
-        const int numPreexistingSatisfiedConnections(_connectees.size());
+        const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
-        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -2921,9 +2967,9 @@ void Input<T>::connect(const AbstractOutput& output,
     
         // set the connectee name so that the connection can be
         // serialized
-        int numDesiredConnections = getNumConnectees();
+        const unsigned numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, idxThisConnectee);
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2951,9 +2997,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     // Record the number of pre-existing satisfied connections...
-    const int numPreexistingSatisfiedConnections(_connectees.size());
+    const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
-    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
     // Update the connectee name as
@@ -2969,9 +3015,10 @@ void Input<T>::connect(const AbstractChannel& channel,
                                         alias);
     
     // Set the connectee name so the connection can be serialized.
-    int numDesiredConnections = getNumConnectees();
-    if (idxThisConnectee < numDesiredConnections) // satisfied <= desired
-        setConnecteeName(pathStr, idxThisConnectee);
+    const unsigned numDesiredConnections = getNumConnectees();
+
+    if (idxThisConnectee < numDesiredConnections) // satisifed <= desired
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     

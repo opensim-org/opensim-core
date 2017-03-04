@@ -85,13 +85,12 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
-    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML file
  */
-Model::Model(const string &aFileName, const bool finalize) :
+Model::Model(const string &aFileName) :
     ModelComponent(aFileName, false),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
@@ -103,10 +102,6 @@ Model::Model(const string &aFileName, const bool finalize) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
-
-    if (finalize) {
-        finalizeFromProperties();
-    }
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;

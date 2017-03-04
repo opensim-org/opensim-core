@@ -157,7 +157,6 @@ brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseConstantFunction();
 
-
 try evalin('base','user_act');
     disp('User activation found...')
     user_act = evalin('base','user_act');
@@ -170,7 +169,6 @@ catch
     controlFunction.addPoint(2.0, 1.0);
     controlFunction.addPoint(3.9, 0.1)   
 end
-
 
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);

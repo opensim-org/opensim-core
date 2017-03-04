@@ -103,7 +103,8 @@ public:
     Trajectory createTrajectory(const Vector& x) const {
         Trajectory traj;
         for (int istep = 0; istep < nsteps; ++istep) {
-            Step step; step.state = State();
+            Step step; 
+            step.state = State();
             step.state.updY() = x[indices];
             step.excitations = x[indices];
             step.yDotGuess = (x[indices+1] - x[indices])/h;
@@ -122,7 +123,7 @@ public:
             // Must use operator form.
             // TODO this method does not exist yet.
             model.getMatterSubsystem().calcMobilizerReactionForces(step.state,
-                    step.yDotGuess, step.lambda?,
+                    step.yDotGuess, step.lambda,
                     allReactionForces);
             f += allReactionForces[kneeIndex].norm();
         }

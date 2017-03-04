@@ -70,7 +70,7 @@
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-#include <simbody/internal/MobilizedBody_BuiltIns.h>
+#include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -146,91 +146,6 @@ public:
     }
 }; // End of MultidimensionalFunction
 
-
-//=============================================================================
-// CompoundJoint necessary for testing equivalent body force calculations
-// for joints comprised by more than one mobilized body.
-//=============================================================================
-class CompoundJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
-
-public:
-    /** Indices of Coordinates. */
-    enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
-    };
-
-private:
-    /** Specify the Coordinates of this CompoundJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation1X)) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation2Y)) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation3Z)) };
-
-public:
-    // CONSTRUCTION
-    using Joint::Joint;
-
-protected:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override
-    {
-        using namespace SimTK;
-
-        Super::extendAddToSystem(system);
-
-        // PARENT TRANSFORM
-        const SimTK::Transform& P_Po =
-            getParentFrame().findTransformInBaseFrame();
-        // CHILD TRANSFORM
-        const SimTK::Transform& B_Bo = getChildFrame().findTransformInBaseFrame();
-
-        int coordinateIndexForMobility = 0;
-
-        SimTK::Transform childTransform0(Rotation(), Vec3(0));
-
-        SimTK::Body::Massless massless;
-
-        // CREATE MOBILIZED BODY for body rotation about body Z
-        MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-            system.updMatterSubsystem().updMobilizedBody(getParentFrame().getMobilizedBodyIndex()),
-            P_Po,
-            massless,
-            childTransform0,
-            coordinateIndexForMobility);
-
-        // Find the joint frame with Z aligned to body X
-        Rotation rotToX(Pi/2, YAxis);
-        SimTK::Transform parentTransform1(rotToX, Vec3(0));
-        SimTK::Transform childTransform1(rotToX, Vec3(0));
-
-        // CREATE MOBILIZED BODY for body rotation about body X
-        MobilizedBody simtkMasslessBody2 = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody1,
-            parentTransform1,
-            massless,
-            childTransform1,
-            coordinateIndexForMobility);
-
-        // Now Find the joint frame with Z aligned to body Y
-        Rotation rotToY(-Pi/2, XAxis);
-        SimTK::Transform parentTransform2(rotToY, Vec3(0));
-        SimTK::Transform childTransform2(B_Bo.R()*rotToY, B_Bo.p());
-        
-        // CREATE MOBILIZED BODY for body rotation about body Y
-        MobilizedBody mobBod = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody2,
-            parentTransform2,
-            getChildInternalRigidBody(),
-            childTransform2,
-            coordinateIndexForMobility, &getChildFrame());
-    }
-//=============================================================================
-};  // END of class CompoundJoint
-//=============================================================================
 
 void testCustomVsUniversalPin();
 void testCustomJointVsFunctionBased();
@@ -1440,12 +1355,12 @@ void testPinJoint()
     knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.finalizeConnections(*osimModel);
-    knee3.dumpConnectionInfo();
-    knee3.dumpSubcomponentInfo();
+    knee3.dumpConnections();
+    knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
-    knee.dumpConnectionInfo();
-    knee.dumpSubcomponentInfo();
+    knee.dumpConnections();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -2012,7 +1927,8 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", true);
+    Model gaitModel("testJointConstraints.osim");
+    gaitModel.finalizeFromProperties();
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
@@ -2261,7 +2177,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponentInfo();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);

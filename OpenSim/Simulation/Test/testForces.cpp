@@ -608,7 +608,8 @@ void testBushingForce()
 
     osimModel.print("BushingForceModel.osim");
 
-    Model previousVersionModel("BushingForceModel_30000.osim", true);
+    Model previousVersionModel("BushingForceModel_30000.osim");
+    previousVersionModel.finalizeFromProperties();
     previousVersionModel.print("BushingForceModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =
@@ -1221,6 +1222,7 @@ void testCoordinateLimitForce()
 
     // Check serialization and deserialization
     Model loadedModel{"CoordinateLimitForceTest.osim"};
+    loadedModel.finalizeFromProperties();
 
     ASSERT(loadedModel == *osimModel,
         "Deserialized CoordinateLimitForceTest failed to be equivalent to original.");

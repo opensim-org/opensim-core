@@ -70,12 +70,18 @@ add_dependencies(RunMatlabTests JavaBindings)
 # Tests.
 # ------
 
+# From examples.
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
+    ../examples/wiringInputsAndOutputsWithTableReporter.m)
+# These files use the SimTK::Visualizer; they do not yet make for good tests.
+#OpenSimAddMatlabTest(RunHopper_answers ../Hopper_Device/RunHopper_answers.m)
+#OpenSimAddMatlabTest(RunHopperWithDevice_answers
+#    ../Hopper_Device/RunHopperWithDevice_answers.m)
+
 OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
-OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
-    ../examples/wiringInputsAndOutputsWithTableReporter.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"

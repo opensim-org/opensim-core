@@ -33,9 +33,9 @@ hopper = BuildHopper();
 %       activation.
 % [Step 1, Task A]
 % ANSWER{
-hopper.dumpSubcomponentInfo();
-hopper.getComponent('slider').dumpOutputInfo();
-hopper.getComponent('vastus').dumpOutputInfo();
+hopper.printSubcomponentInfo();
+hopper.getComponent('slider').printOutputInfo();
+hopper.getComponent('vastus').printOutputInfo();
 % }
 
 % TODO: Create a TableReporter, give it a name, and set its reporting interval
