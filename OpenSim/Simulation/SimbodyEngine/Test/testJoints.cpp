@@ -1370,8 +1370,8 @@ void testPinJoint()
     // the resulting system and results
     osimModel->addJoint(&knee3);
 
-    knee3.dumpConnectionInfo();
-    knee.dumpConnectionInfo();
+    knee3.dumpConnections();
+    knee.dumpConnections();
 
     // BAD: have to set memoryOwner to false or program will crash when this
     // test is complete.
