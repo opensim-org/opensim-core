@@ -5,6 +5,30 @@
 #include <Eigen/Dense>
 #include <fstream>
 
+// Eigen support for adouble as a scalar type. This allows Eigen to use
+// epsilon() etc. on adouble.
+// https://eigen.tuxfamily.org/dox/TopicCustomizing_CustomScalar.html
+namespace Eigen {
+
+template<> struct NumTraits<adouble> : NumTraits<double>
+{
+    typedef adouble Real;
+    typedef adouble NonInteger;
+    typedef adouble Nested;
+
+    enum {
+        IsComplex = 0,
+        IsInteger = 0,
+        IsSigned  = 1,
+        RequireInitialization = 1,
+        ReadCost = 1, // TODO
+        AddCost = 3, // TODO
+        MulCost = 3 // TODO
+    };
+};
+
+} // namespace Eigen
+
 namespace mesh {
 
 using VectorXa = Eigen::Matrix<adouble, Eigen::Dynamic, 1>;
