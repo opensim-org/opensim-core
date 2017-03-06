@@ -44,9 +44,12 @@ public:
         auto actuators = _model.getComponentList<ScalarActuator>();
         for (const auto& actuator : actuators) {
             if (actuator.get_appliesForce()) {
-                this->add_control(actuator.getAbsolutePathName(),
+                this->add_control(actuator.getAbsolutePathName() + "_e",
                                   {actuator.get_min_control(),
                                    actuator.get_max_control()});
+                this->add_state(actuator.getAbsolutePathName() + "_a",
+                                {actuator.get_min_control(),
+                                 actuator.get_max_control()});
             }
         }
 
@@ -122,22 +125,59 @@ public:
         mesh::write(times, this->_desiredMoments,
                     "DEBUG_desiredMoments.csv",
                     columnLabels);
+
+
+        // Muscle Analysis: muscle-tendon length.
+        // --------------------------------------
+        // TODO tailored to hanging mass: just use absoluate value of the
+        // coordinate value.
+        mutableThis->_muscleTendonLength.resize(1, times.size());
+        const auto& kinematics = this->_mrs.getKinematicsData();
+        const auto& muscleTendonLengthColumn =
+                kinematics.getDependentColumn("joint/height/value");
+        GCVSpline muscleTendonLengthData(5, kinematics.getNumRows(),
+                &kinematics.getIndependentColumn()[0],
+                &muscleTendonLengthColumn[0],
+                "muscleTendonLength", 0);
+        for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
+            mutableThis->_muscleTendonLength(i_mesh) =
+                    std::abs(muscleTendonLengthData.calcValue(
+                            SimTK::Vector(1, times[i_mesh])));
+        }
+
     }
-    //void dynamics(const mesh::VectorX<T>& /*states*/,
-    //              const mesh::VectorX<T>& controls,
-    //              Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
-    //}
+    void dynamics(const mesh::VectorX<T>& states,
+                  const mesh::VectorX<T>& controls,
+                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+        // TODO first solve a static optimization problem.
+
+        // Activation dynamics.
+        // --------------------
+        static const double actTimeConst   = 0.015;
+        static const double deactTimeConst = 0.060;
+        static const double tanhSteepness  = 0.1;
+        for (Eigen::Index i_act = 0; i_act < states.size(); ++i_act) {
+            const T& a = states[i_act];
+            const T& e = controls[i_act];
+            const T temp1 = 0.5 + 1.5 * a;
+            const T tempAct = 1.0 / (actTimeConst * temp1);
+            const T tempDeact = temp1 / deactTimeConst;
+            const T f = 0.5 * tanh(tanhSteepness * (e - a));
+            const T timeConst = tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
+            derivatives[i_act] = timeConst * (e - a);
+        }
+    }
     void path_constraints(unsigned i_mesh,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& /*states*/,
-                          const mesh::VectorX<T>& controls,
+                          const mesh::VectorX<T>& states,
+                          const mesh::VectorX<T>& /*controls*/,
                           Eigen::Ref<mesh::VectorX<T>> constraints)
             const override {
         // /*const TODO*/ auto generatedMoments = _mrs.controlToMoment * controls;
         // TODO constraints = _desiredMoments[index] - generatedMoments;
         constraints =
                 this->_desiredMoments.col(i_mesh).template cast<adouble>() -
-                this->_controlToMoment * controls;
+                this->_controlToMoment * states;
     }
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
@@ -151,6 +191,8 @@ private:
     double _initialTime = SimTK::NaN;
     double _finalTime = SimTK::NaN;
     Eigen::MatrixXd _desiredMoments;
+    Eigen::MatrixXd _muscleTendonLength;
+    Eigen::MatrixXd _muscleTendonVelocity;
     // TODO make general.
     double _controlToMoment;
 };
@@ -182,7 +224,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this);
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
-                                                  20);
+                                                  100);
     mesh::OptimalControlSolution ocp_solution = dircol.solve();
 
     // Return the solution.
@@ -191,11 +233,16 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
     Solution solution;
     solution.excitations.setColumnLabels(actuatorsToUse);
+    solution.activations.setColumnLabels(actuatorsToUse);
     for (int i = 0; i < ocp_solution.time.cols(); ++i) {
         // Each column of controls is a different time.
         SimTK::RowVector controls(ocp_solution.controls.rows(),
                                   ocp_solution.controls.col(i)[0]);
         solution.excitations.appendRow(ocp_solution.time[i], controls);
+
+        SimTK::RowVector states(ocp_solution.states.rows(),
+                                ocp_solution.states.col(i)[0]);
+        solution.activations.appendRow(ocp_solution.time[i], states);
     }
     return solution;
 }

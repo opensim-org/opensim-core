@@ -65,15 +65,15 @@ void testHangingMassRoundtrip() {
         mrs.setKinematicsData(states);
         MuscleRedundancySolver::Solution solution = mrs.solve();
 
-        const auto& actual = solution.excitations.getDependentColumn(
+        const auto& actual = solution.activations.getDependentColumn(
                 "/hanging_mass/actuator");
 
-        const auto& timeVec = solution.excitations.getIndependentColumn();
+        const auto& timeVec = solution.activations.getIndependentColumn();
         SimTK::Vector expected(timeVec.size(), &timeVec[0]);
-        for (int i = 0; i < expected.size(); ++ i) {
+        for (int i = 0; i < expected.size(); ++i) {
             expected[i] = std::sin(2 * SimTK::Pi * expected[i]);
-            // std::cout << "DEBUG " << actual[i]
-            //           << " "      << expected[i] << std::endl;
+            std::cout << "DEBUG " << actual[i]
+                      << " "      << expected[i] << std::endl;
         }
         SimTK_TEST_EQ_TOL(actual, expected, 0.1);
     }

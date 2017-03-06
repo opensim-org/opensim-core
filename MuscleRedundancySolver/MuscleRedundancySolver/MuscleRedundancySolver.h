@@ -13,6 +13,7 @@ public:
 
     struct Solution {
         TimeSeriesTable excitations;
+        TimeSeriesTable activations;
     };
 
     //OpenSim_DECLARE_PROPERTY(model_file, std::string,
@@ -46,6 +47,7 @@ public:
 
 private:
     Model _model;
+    // TODO make this a StatesTrajectory?
     TimeSeriesTable _kinematics;
 
     // To determine which actuators enter the optimal control problem.
