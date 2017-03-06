@@ -7,7 +7,7 @@
 // TODO should not be needed/**/:
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
-using namespace OpenSim; // TODO should not be necessary (see header).
+using namespace OpenSim;
 
 GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
                                 const std::vector<std::string>& labels) {
@@ -23,6 +23,8 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
     return set;
 }
 
+/// "Separate" denotes that the dynamics are not coming from OpenSim, but
+/// rather are coded separately.
 template<typename T>
 class MRSProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
 public:
@@ -116,7 +118,7 @@ public:
                     &forceTrajectory[i][0], forceTrajectory[i].size());
         }
         // TODO looks very noisy:
-        std::cout << "DEBUG " << this->_desiredMoments << std::endl;
+        //std::cout << "DEBUG " << this->_desiredMoments << std::endl;
         mesh::write(times, this->_desiredMoments,
                     "DEBUG_desiredMoments.csv",
                     columnLabels);
@@ -124,12 +126,6 @@ public:
     //void dynamics(const mesh::VectorX<T>& /*states*/,
     //              const mesh::VectorX<T>& controls,
     //              Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
-    //}
-    //virtual void path_constraints(const T& time,
-    //                              const VectorX<T>& /*states*/,
-    //                              const VectorX<T>& controls,
-    //                              Eigen::Ref<VectorX<T>> constraints) const {
-    //
     //}
     void path_constraints(unsigned i_mesh,
                           const T& /*time*/,
@@ -139,24 +135,10 @@ public:
             const override {
         // /*const TODO*/ auto generatedMoments = _mrs.controlToMoment * controls;
         // TODO constraints = _desiredMoments[index] - generatedMoments;
-        // TODO constraints = this->_desiredMoments[i_mesh] - controls;
-        constraints.setZero(); // TODO is this necessary?
-        // TODO don't do subtractions individually...
-        for (int i_con = 0; i_con < constraints.size(); ++i_con) {
-            constraints[i_con] = this->_desiredMoments(i_con, i_mesh) -
-                            this->_controlToMoment * controls[i_con];
-        }
+        constraints =
+                this->_desiredMoments.col(i_mesh).template cast<adouble>() -
+                this->_controlToMoment * controls;
     }
-    //virtual void path_constraints(const T& time,
-    //                              const MatrixX<T>& /*states*/,
-    //                              const MatrixX<T>& controls,
-    //                              Eigen::Ref<MatrixX<T>> constraints) const {
-    //    TODO desired_moments =;
-    //    TODO generated_moments = TODO matrix multiplication controls;
-    //    constraints = desired_moments - generated_moments;
-    //}
-    // TODO alternate form that takes a matrix; state at every time.
-    //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
                        const mesh::VectorX<T>& controls,

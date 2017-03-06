@@ -3,8 +3,6 @@
 
 #include <OpenSim/OpenSim.h>
 
-// TODO edit DECLARE_PROPERTY macros so that this class does not need to be
-// in the OpenSim namespace.
 namespace OpenSim {
 
 // TODO if this solves for the activity of any actuator, then it should not
