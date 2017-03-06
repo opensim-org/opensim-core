@@ -30,10 +30,8 @@ namespace OpenSim {
 
 //------------------------------------------------------------------------------
 // Device is a type of ModelComponent that contains all the parts comprising the
-// assistive device model (a PathActuator plus bodies and joints for attaching
-// the actuator to the hopper or testbed). Devices are built by buildDevice()
-// (see buildDeviceModel.cpp).
-// [Step 2, Task A]
+// assistive device model (a PathActuator plus bodies and joints).
+// Devices are built by buildDevice()
 //------------------------------------------------------------------------------
 class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
@@ -44,24 +42,18 @@ public:
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
 
     // The lengthening speed of the device.
-    //TODO: Add an output called "speed" (to report the PathActuator's
-    //      lengthening speed).
     OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
 
     // The force transmitted by the device.
-    //TODO: Add an output called "tension".
     OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
 
     // The power produced(+) or dissipated(-) by the device.
-    //TODO: Add an output called "power".
     OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
     // The height of the model to which the device is attached.
-    //TODO: Add an output called "height".
     OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
 
     // The center of mass height of the model to which the device is attached.
-    //TODO: Add an output called "com_height".
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
 
@@ -71,48 +63,18 @@ public:
         return getComponent<PathActuator>("cableAtoB").getLength(s);
     }
     double getSpeed(const SimTK::State& s) const {
-        //TODO
-                #pragma region Step2_TaskA_solution
-
         return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
-
-                #pragma endregion
     }
     double getTension(const SimTK::State& s) const {
-        //TODO
-                #pragma region Step2_TaskA_solution
-
         return getComponent<PathActuator>("cableAtoB").computeActuation(s);
-
-                #pragma endregion
     }
     double getPower(const SimTK::State& s) const {
-        //TODO
-                #pragma region Step2_TaskA_solution
-
         return getComponent<PathActuator>("cableAtoB").getPower(s);
-
-                #pragma endregion
     }
     double getHeight(const SimTK::State& s) const {
-        //TODO: Provide the name of the coordinate corresponding to the
-        //      hopper's height. You found this in Step 1, Task A.
-        //const std::string hopperHeightCoord = "/Dennis/?????"; //fill this in
-                #pragma region Step2_TaskA_solution
-
         static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
-
-                #pragma endregion
-
-        //TODO: Use "getModel().getComponent(hopperHeightCoord)
-        //               .getOutputValue<?????>(?????);"
-        //      to return the output value from hopperHeightCoord.
-                #pragma region Step2_TaskA_solution
-
         return getModel().getComponent(hopperHeightCoord)
             .getOutputValue<double>(s, "value");
-
-                #pragma endregion
     }
     double getCenterOfMassHeight(const SimTK::State& s) const {
         SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
