@@ -5,6 +5,8 @@
 #include <mesh.h>
 #include <legacy.h>
 
+#include "testing.h"
+
 using Eigen::Vector4d;
 using Eigen::Vector2d;
 using Eigen::VectorXd;
@@ -17,6 +19,8 @@ using namespace mesh;
 
 // TEST a problem without derivative information.
 
+
+// TODO test exceptions for upper bound < lower bound.
 
 // TODO allow copying the problem...
 
@@ -182,3 +186,40 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; constraints and ADOL-C.") {
     REQUIRE(Approx(solution[3]) == 1.379408);
 
 }
+
+TEST_CASE("Generating an initial guess using problem bounds",
+          "[initialguess]") {
+    /// This problem has all 4 possible pairs of parameter bounds, and is
+    /// used to ensure that
+    /// OptimizationProblemProxy::initial_guess_from_bounds() computes
+    /// an initial guess as desired for each of these 4 cases.
+    /// The 4 possible cases:
+    /// @verbatim
+    /// (-inf, inf) -> guess is 0.
+    /// [a, b]      -> guess is (b+a)/2.
+    /// (-inf, b]   -> guess is b.
+    /// [a, inf)    -> guess is a.
+    /// @endverbatim
+    class VarietyOfBounds : public OptimizationProblem<adouble> {
+    public:
+        const double inf = std::numeric_limits<double>::infinity();
+        VarietyOfBounds() : OptimizationProblem(4, 0) {
+            set_variable_bounds(Vector4d(-inf, -20, -inf,  50),
+                                Vector4d( inf,  10,   -8, inf));
+        }
+        void objective(const VectorXa& x, adouble& obj_value) const override {
+            obj_value = x.squaredNorm();
+        }
+    };
+
+    VarietyOfBounds problem;
+    const auto proxy = problem.make_proxy();
+
+    VectorXd actual = proxy->initial_guess_from_bounds();
+    Vector4d expected(0, -5, -8, 50);
+    REQUIRE_EIGEN(actual, expected, 1e-10);
+}
+
+
+
+

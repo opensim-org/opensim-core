@@ -16,6 +16,12 @@ public:
     virtual const Eigen::VectorXd& variable_upper_bounds() const = 0;
     virtual const Eigen::VectorXd& constraint_lower_bounds() const = 0;
     virtual const Eigen::VectorXd& constraint_upper_bounds() const = 0;
+    /// Create an initial guess for this problem according to the
+    /// following rules:
+    ///   - unconstrained variable: 0.
+    ///   - lower and upper bounds: midpoint of the bounds.
+    ///   - only one bound: value of the bound.
+    Eigen::VectorXd initial_guess_from_bounds() const;
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     virtual void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
@@ -144,8 +150,8 @@ protected:
     {
         // TODO make sure num_variables has been set.
         // TODO can only call this if m_num_variables etc are already set.
-        assert(lower.size()==m_num_variables);
-        assert(upper.size()==m_num_variables);
+        assert(lower.size() == m_num_variables);
+        assert(upper.size() == m_num_variables);
         // TODO where should this ordering check go?
         // TODO make sure that this check works (test it).
         assert((lower.array() <= upper.array()).all());

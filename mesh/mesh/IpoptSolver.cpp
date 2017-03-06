@@ -50,7 +50,8 @@ IpoptSolver::TNLP::TNLP(
 
 bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
                                      Index& num_constraints,
-                                     Index& num_nonzeros_jacobian, Index& num_nonzeros_hessian,
+                                     Index& num_nonzeros_jacobian,
+                                     Index& num_nonzeros_hessian,
                                      IndexStyleEnum& index_style)
 {
     num_variables = m_problem->num_variables();

@@ -13,10 +13,9 @@ OptimizationSolver::OptimizationSolver(
 double OptimizationSolver::optimize(Eigen::VectorXd& variables) const
 {
     // If the user did not provide an initial guess, then we choose
-    // the initial guess to be all zeros.
-    // TODO Could be smarter: use the midpoint of the bounds of the variables.
+    // the initial guess based on the bounds.
     if (variables.size() == 0) {
-        variables = VectorXd::Zero(m_problem->num_variables());
+        variables = m_problem->initial_guess_from_bounds();
     }
     return optimize_impl(variables);
 }
