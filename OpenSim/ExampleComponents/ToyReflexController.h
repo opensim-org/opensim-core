@@ -27,7 +27,7 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "Controller.h"
+#include "OpenSim/Simulation/Control/Controller.h"
 
 
 namespace OpenSim { 

@@ -1,0 +1,132 @@
+#ifndef _OPENSIM_DEVICE_H_
+#define _OPENSIM_DEVICE_H_
+/* -------------------------------------------------------------------------- *
+ *               OpenSim:  defineDeviceAndController_answers.h                *
+ * -------------------------------------------------------------------------- *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
+ *                                                                            *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Chris Dembia, Shrinidhi K. Lakshmikanth, Ajay Seth,             *
+ *            Thomas Uchida                                                   *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
+#include <OpenSim/OpenSim.h>
+
+namespace OpenSim {
+
+//------------------------------------------------------------------------------
+// Device is a type of ModelComponent that contains all the parts comprising the
+// assistive device model (a PathActuator plus bodies and joints for attaching
+// the actuator to the hopper or testbed). Devices are built by buildDevice()
+// (see buildDeviceModel.cpp).
+// [Step 2, Task A]
+//------------------------------------------------------------------------------
+class Device : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
+
+public:
+    // Outputs that report quantities in which we are interested.
+    // The total length of the device.
+    OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
+
+    // The lengthening speed of the device.
+    //TODO: Add an output called "speed" (to report the PathActuator's
+    //      lengthening speed).
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+
+    // The force transmitted by the device.
+    //TODO: Add an output called "tension".
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension, SimTK::Stage::Dynamics);
+
+    // The power produced(+) or dissipated(-) by the device.
+    //TODO: Add an output called "power".
+    OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
+
+    // The height of the model to which the device is attached.
+    //TODO: Add an output called "height".
+    OpenSim_DECLARE_OUTPUT(height, double, getHeight, SimTK::Stage::Position);
+
+    // The center of mass height of the model to which the device is attached.
+    //TODO: Add an output called "com_height".
+    OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
+                           SimTK::Stage::Position);
+
+    // Member functions that access quantities in which we are interested. These
+    // methods are used by the outputs declared above.
+    double getLength(const SimTK::State& s) const {
+        return getComponent<PathActuator>("cableAtoB").getLength(s);
+    }
+    double getSpeed(const SimTK::State& s) const {
+        //TODO
+                #pragma region Step2_TaskA_solution
+
+        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+
+                #pragma endregion
+    }
+    double getTension(const SimTK::State& s) const {
+        //TODO
+                #pragma region Step2_TaskA_solution
+
+        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+
+                #pragma endregion
+    }
+    double getPower(const SimTK::State& s) const {
+        //TODO
+                #pragma region Step2_TaskA_solution
+
+        return getComponent<PathActuator>("cableAtoB").getPower(s);
+
+                #pragma endregion
+    }
+    double getHeight(const SimTK::State& s) const {
+        //TODO: Provide the name of the coordinate corresponding to the
+        //      hopper's height. You found this in Step 1, Task A.
+        //const std::string hopperHeightCoord = "/Dennis/?????"; //fill this in
+                #pragma region Step2_TaskA_solution
+
+        static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
+
+                #pragma endregion
+
+        //TODO: Use "getModel().getComponent(hopperHeightCoord)
+        //               .getOutputValue<?????>(?????);"
+        //      to return the output value from hopperHeightCoord.
+                #pragma region Step2_TaskA_solution
+
+        return getModel().getComponent(hopperHeightCoord)
+            .getOutputValue<double>(s, "value");
+
+                #pragma endregion
+    }
+    double getCenterOfMassHeight(const SimTK::State& s) const {
+        SimTK::Vec3 com_position = getModel().calcMassCenterPosition(s);
+        return com_position[SimTK::YAxis];
+    }
+
+protected:
+    // Change the color of the device's path as its tension changes.
+    void extendRealizeDynamics(const SimTK::State& s) const override {
+        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        double level = fmin(1., getTension(s) / actuator.get_optimal_force());
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
+    }
+
+}; // end of Device
+    
+#endif // _OPENSIM_DEVICE_H_
