@@ -29,7 +29,7 @@
 namespace OpenSim {
 
 //------------------------------------------------------------------------------
-// Device is a type of ModelComponent that contains all the parts comprising the
+// Device is a type of ModelComponent that contains all the parts comprising a
 // assistive device model (a PathActuator plus bodies and joints for attaching
 // the actuator to the hopper or testbed). Devices are built by buildDevice()
 // (see buildDeviceModel.cpp).
