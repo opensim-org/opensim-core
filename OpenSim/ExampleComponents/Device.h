@@ -1,7 +1,7 @@
 #ifndef _OPENSIM_DEVICE_H_
 #define _OPENSIM_DEVICE_H_
 /* -------------------------------------------------------------------------- *
- *               OpenSim:  defineDeviceAndController_answers.h                *
+ *               OpenSim:  Device.h                                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -30,8 +30,11 @@ namespace OpenSim {
 
 //------------------------------------------------------------------------------
 // Device is a type of ModelComponent that contains all the parts comprising the
-// assistive device model (a PathActuator plus bodies and joints).
-// Devices are built by buildDevice()
+// assistive device model (a PathActuator plus bodies and joints for attaching
+// the actuator to the hopper or testbed). Devices are built by buildDevice()
+// (see buildDeviceModel.cpp).
+// This class is written to be used with Hopper example and is not generic
+// to be used elsewhere.
 //------------------------------------------------------------------------------
 class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
@@ -56,6 +59,8 @@ public:
     // The center of mass height of the model to which the device is attached.
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
+
+    Device(const std::string& pathActuator, const std::string& )
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.

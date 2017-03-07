@@ -32,14 +32,14 @@
 using namespace std;
 using namespace OpenSim;
 
-static osimSimulationInstantiator instantiator; 
+static osimExampleComponentsInstantiator instantiator; 
 
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
- * the osimSimulation library.
+ * the osimExampleComponents library.
  */
-OSIMSIMULATION_API void RegisterTypes_osimSimulation()
+OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExampleComponents()
 {
   try {
 
@@ -48,18 +48,18 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     
   } catch (const std::exception& e) {
     std::cerr 
-        << "ERROR during osimSimulation Object registration:\n"
+        << "ERROR during osimExampleComponents Object registration:\n"
         << e.what() << "\n";
   }
 }
 
 
-osimSimulationInstantiator::osimSimulationInstantiator() 
+osimExampleComponentsInstantiator::osimExampleComponentsInstantiator() 
 { 
         registerDllClasses(); 
 } 
     
-void osimSimulationInstantiator::registerDllClasses() 
+void osimExampleComponentsInstantiator::registerDllClasses() 
 { 
-        RegisterTypes_osimSimulation(); 
+        RegisterTypes_osimExampleComponents(); 
 } 

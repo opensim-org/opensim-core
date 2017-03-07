@@ -1,7 +1,7 @@
-#ifndef _RegisterTypes_osimExamplecomponents_h_
-#define _RegisterTypes_osimExamplecomponents_h_
+#ifndef _REGISTERTYPES_OSIMEXAMPLECOMPONENTS_H_
+#define _REGISTERTYPES_OSIMEXAMPLECOMPONENTS_H_
 /* -------------------------------------------------------------------------- *
- *                  OpenSim:  RegisterTypes_osimExamplecomponents.h           *
+ *                  OpenSim:  RegisterTypes_osimExampleComponents.h           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +10,6 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,29 +22,28 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimExamplecomponentsDLL.h"
+#include "osimExampleComponentsDLL.h"
 
 
 extern "C" {
 
-OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExamplecomponents(); 
+OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExampleComponents(); 
 
 }
 
 /**
  * A class intended for the purpose of automatically registering classes defined in this examplecomponents Dll
  */
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond 
-class osimExamplecomponentsInstantiator 
+class osimExampleComponentsInstantiator 
 { 
 public: 
-        osimExamplecomponentsInstantiator(); 
+        osimExampleComponentsInstantiator(); 
 private: 
         void registerDllClasses(); 
 }; 
 /// @endcond
 
-#endif // __RegisterTypes_osimExamplecomponents_h__
+#endif // _REGISTERTYPES_OSIMEXAMPLECOMPONENTS_H_
 
 
