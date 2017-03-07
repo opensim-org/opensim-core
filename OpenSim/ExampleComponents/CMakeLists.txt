@@ -5,7 +5,7 @@ file(GLOB SOURCES *.cpp)
 OpenSimAddLibrary(
     KIT ExampleComponents
     AUTHORS "Ajay_Seth-Michael_Sherman-Ayman_Habib"
-    LINKLIBS ${Simbody_LIBRARIES} osimCommon osimSimulation osimActuators osimAnalyses osimTools
+    LINKLIBS ${Simbody_LIBRARIES} osimCommon osimSimulation
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     )

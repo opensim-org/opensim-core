@@ -45,6 +45,7 @@ OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExampleComponents()
 
       Object::registerType( ToyReflexController() );
       Object::registerType( ToyPropMyoController() );
+      Object::registerType( Device() );
     
   } catch (const std::exception& e) {
     std::cerr 

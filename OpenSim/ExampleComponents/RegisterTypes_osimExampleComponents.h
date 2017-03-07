@@ -32,7 +32,8 @@ OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExampleComponents();
 }
 
 /**
- * A class intended for the purpose of automatically registering classes defined in this examplecomponents Dll
+ * A class intended for the purpose of automatically registering classes 
+ * defined in this examplecomponents Dll
  */
     /// @cond 
 class osimExampleComponentsInstantiator 
