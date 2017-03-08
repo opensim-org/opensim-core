@@ -199,7 +199,7 @@ public:
                             SimTK::Array_<std::string>& attempts);
 
     /** Add a directory to the search path to be used by the function
-    findGeometryPath. The added paths are searched in the 
+    findGeometryFile. The added paths are searched in the 
     reverse-chronological order -- the latest path added is searched first. */
     static void addDirToSearch(const std::string& dir);
     /**@}**/
