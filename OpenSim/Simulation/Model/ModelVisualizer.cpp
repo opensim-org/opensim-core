@@ -160,7 +160,14 @@ findGeometryFile(const Model& aModel,
     if (geoFileIsAbsolute) {
         attempts.push_back(geoFile);
         foundIt = Pathname::fileExists(attempts.back());
-    } else {  
+    } else {
+        for(auto dir = dirsToSearch.crbegin();
+            dir != dirsToSearch.crend();
+            ++dir) {
+            attempts.push_back(*dir + geoFile);
+            if(Pathname::fileExists(attempts.back()))
+                return true;
+        }
         const string geoDir = "Geometry" + Pathname::getPathSeparator();
         string modelDir;
         if (aModel.getInputFileName() == "Unassigned") 
@@ -192,6 +199,17 @@ findGeometryFile(const Model& aModel,
     }
 
     return foundIt;
+}
+
+// Initialize the static variable.
+std::vector<std::string> ModelVisualizer::dirsToSearch{};
+
+void ModelVisualizer::addDirToSearch(const std::string& dir) {
+    // Make sure to add trailing path-separator if one is not present.
+    if(dir.back() == Pathname::getPathSeparator().back())
+        dirsToSearch.push_back(dir);
+    else
+        dirsToSearch.push_back(dir + "/");
 }
 
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's

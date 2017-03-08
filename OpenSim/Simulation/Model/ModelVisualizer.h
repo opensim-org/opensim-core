@@ -180,6 +180,9 @@ public:
         
     The search rule is as follows:
       - If \a geoFile is an absolute pathname no search is done.
+      - Otherwise, try the search paths added through addDirToSearch. The paths
+        are searched in reverse-chronological order -- the latest path added is
+        searched first.
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.
@@ -194,6 +197,11 @@ public:
                             const std::string&          geoFile,
                             bool&                       isAbsolute,
                             SimTK::Array_<std::string>& attempts);
+
+    /** Add a directory to the search path to be used by the function
+    findGeometryPath. The added paths are searched in the 
+    reverse-chronological order -- the latest path added is searched first. */
+    static void addDirToSearch(const std::string& dir);
     /**@}**/
 
 
@@ -227,6 +235,9 @@ private:
     // This is just a reference -- it is owned by the Simbody Visualizer so 
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
+
+    // List of directories to search.
+    static std::vector<std::string> dirsToSearch;
 };
 
 
