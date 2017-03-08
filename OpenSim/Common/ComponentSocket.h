@@ -349,7 +349,7 @@ public:
         std::string ownerPathName = getOwner().getAbsolutePathName();
 
         // Check if the connectee is an orphan (yet to be adopted component)
-        if (!objT->hasParent()) {
+        if (!objT->hasOwner()) {
             // The API permits connecting to orphans when passing in the
             // dependency directly.
             // Workaround: Identify it as a "floating"

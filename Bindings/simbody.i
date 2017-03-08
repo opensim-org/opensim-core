@@ -246,6 +246,11 @@ namespace SimTK {
 %include <simbody/internal/Visualizer_InputListener.h>
 // The following is necessary because the BackgroundType enum cannot be used
 // from MATLAB.
+// The new version of takeKeyHit() allows returning the value rather than using
+// an output variable as an argument, which is difficult to manage with SWIG.
+// The alternative `waitForKeyHit()` is not ideal for MATLAB, as MATLAB is not
+// able to interrupt native functions, and `waitForKeyHit()` will hang if the
+// simbody-visualizer is killed.
 namespace SimTK {
 %extend Visualizer {
     const Visualizer& setBackgroundTypeByInt(int index) {
@@ -255,10 +260,10 @@ namespace SimTK {
     }
 }
 %extend Visualizer::InputSilo {
-    unsigned waitForKeyHitKeyOnly() {
+    unsigned takeKeyHitKeyOnly() {
         unsigned key = 0;
         unsigned modifier = 0;
-        $self->waitForKeyHit(key, modifier);
+        $self->takeKeyHit(key, modifier);
         return key;
     }
 }

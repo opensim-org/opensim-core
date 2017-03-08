@@ -207,7 +207,7 @@ public:
         // whenever the inputs are updated, so that we can create new output
         // channels.
         std::vector<std::string> labels;
-        for (const auto& marker : getParent().getComponentList<Marker>()) {
+        for (const auto& marker : getOwner().getComponentList<Marker>()) {
             labels.push_back(marker.getName());
         }
     }
@@ -222,7 +222,7 @@ public:
     /* TODOv
     std::vector<std::string> getSolutionLabels() const {
         std::vector<std::string> labels;
-        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+        for (const auto& coord : getOwner().getComponentList<Coordinate>()) {
             labels.push_back(coord.getName());
         }
         return labels;
@@ -263,12 +263,12 @@ public:
 protected:
     void extendFinalizeFromProperties() override {
         std::vector<std::string> modelMarkerLabels;
-        for (const auto& marker : getParent().getComponentList<Marker>()) {
+        for (const auto& marker : getOwner().getComponentList<Marker>()) {
             modelMarkerLabels.push_back(marker.getName());
         }
         updOutput("model_marker_pos").setLabels(modelMarkerLabels);
         std::vector<std::string> coordLabels;
-        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+        for (const auto& coord : getOwner().getComponentList<Coordinate>()) {
             coordLabels.push_back(coord.getName());
         }
         updOutput("coords").setLabels(coordLabels);

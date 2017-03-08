@@ -204,9 +204,12 @@ public:
     void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
 #endif
     /**
-     * Get indices of columns corresponding to identifier, empty array if identifier is not found in labels
+     * Get indices of columns whose labels begin with the specified "identifier"
+     * (prefix). Returns an empty Array if none of the column labels begin with
+     * the identifier.
      */
-    OpenSim::Array<int>  getColumnIndicesForIdentifier(const std::string& identifier) const;
+    OpenSim::Array<int>
+        getColumnIndicesForIdentifier(const std::string& identifier) const;
 
     // STEP INTERVAL
     void setStepInterval(int aStepInterval);

@@ -86,6 +86,9 @@ public:
 #ifndef SWIG
     PropertyDblArray& operator=(const PropertyDblArray &aProperty);
 #endif
+
+    void assign(const AbstractProperty& that) override;
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------

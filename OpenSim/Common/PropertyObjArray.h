@@ -98,6 +98,16 @@ public:
         return (*this);
     }
 
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyObjArray&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------

@@ -71,6 +71,7 @@ public:
     //--------------------------------------------------------------------------
 public:
     PropertyDbl& operator=(const PropertyDbl &aProperty);
+    void assign(const AbstractProperty& that) override;
 
     //--------------------------------------------------------------------------
     // GET AND SET

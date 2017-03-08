@@ -217,18 +217,18 @@ void Mesh::extendFinalizeFromProperties() {
 
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
-        if (!hasParent()) {
+        if (!hasOwner()) {
             std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
             return;   // Orphan Mesh not part of a model yet
         }
-        const Component* parent = &getParent();
-        while (parent != nullptr) {
-            if (dynamic_cast<const Model*>(parent) != nullptr) {
-                rootModel = parent;
+        const Component* owner = &getOwner();
+        while (owner != nullptr) {
+            if (dynamic_cast<const Model*>(owner) != nullptr) {
+                rootModel = owner;
                 break;
             }
-            if (parent->hasParent())
-                parent = &(parent->getParent()); // traverse up Component tree
+            if (owner->hasOwner())
+                owner = &(owner->getOwner()); // traverse up Component tree
             else
                 break; // can't traverse up.
         }
