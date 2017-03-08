@@ -20,8 +20,20 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function hopper = BuildHopper()
+function hopper = BuildHopper(varargin)
 % Build a model of a one-leg hopper, with one muscle.
+
+p = inputParser();
+defaultMuscleModel = 'Thelen2003';
+defaultPrintModel = false;
+
+addOptional(p,'muscleModel',defaultMuscleModel)
+addOptional(p,'printModel',defaultPrintModel)
+
+parse(p,varargin{:});
+
+muscleModel = p.Results.muscleModel;
+printModel = p.Results.printModel;
 
 import org.opensim.modeling.*;
 
@@ -129,8 +141,15 @@ hopper.addForce(contactForce);
 % Create the vastus muscle and set its origin and insertion points.
 mclFmax = 4000.; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
 mclPennAng = 0.;
-vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
-        mclTendonSlackLen, mclPennAng);
+switch muscleModel
+    case 'Thelen2003'
+        vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
+                    mclTendonSlackLen, mclPennAng);
+    case 'Millard2012Equilibrium'
+        vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
+                mclTendonSlackLen, mclPennAng);
+end
+    
 vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
 vastus.addNewPathPoint('insertion', shank, Vec3(linkRadius, 0.15, 0));
 hopper.addForce(vastus);
@@ -197,5 +216,9 @@ linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
 
+%% Print model
+if printModel
+    hopper.print('hopper.osim');
+end
 
 end
