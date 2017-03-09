@@ -201,7 +201,7 @@ public:
     /** Add a directory to the search path to be used by the function
     findGeometryFile. The added paths are searched in the 
     reverse-chronological order -- the latest path added is searched first. */
-    static void addDirToSearch(const std::string& dir);
+    static void addDirToSearchGeometryFile(const std::string& dir);
     /**@}**/
 
 
@@ -237,7 +237,7 @@ private:
     SimTK::Visualizer::InputSilo*   _silo;
 
     // List of directories to search.
-    static std::vector<std::string> dirsToSearch;
+    static SimTK::Array_<std::string> dirsToSearch;
 };
 
 

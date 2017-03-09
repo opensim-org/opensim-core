@@ -202,9 +202,9 @@ findGeometryFile(const Model& aModel,
 }
 
 // Initialize the static variable.
-std::vector<std::string> ModelVisualizer::dirsToSearch{};
+SimTK::Array_<std::string> ModelVisualizer::dirsToSearch{};
 
-void ModelVisualizer::addDirToSearch(const std::string& dir) {
+void ModelVisualizer::addDirToSearchGeometryFile(const std::string& dir) {
     // Make sure to add trailing path-separator if one is not present.
     if(dir.back() == Pathname::getPathSeparator().back())
         dirsToSearch.push_back(dir);
