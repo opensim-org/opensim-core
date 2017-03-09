@@ -4,10 +4,27 @@
 
 #include <mesh.h>
 #include <OpenSim/OpenSim.h>
-// TODO should not be needed/**/:
+// TODO should not be needed:
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
 using namespace OpenSim;
+
+void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
+{
+    auto write = [&](const TimeSeriesTable& table, const std::string& suffix)
+    {
+        if (table.getNumRows()) {
+            STOFileAdapter_<double>::write(table,
+                                           prefix + "_" + suffix + ".sto");
+        }
+    };
+
+    write(excitation, "excitation");
+    write(activation, "activation");
+    write(norm_fiber_length, "norm_fiber_length");
+    write(norm_fiber_velocity, "norm_fiber_velocity");
+    write(other_controls, "other_controls");
+}
 
 /// Given a table, create a spline for each colum in `labels`, and provide all
 /// of these splines in a set.
@@ -33,17 +50,19 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
 template<typename T>
 class MRSProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
 public:
-    MRSProblemSeparate(const MuscleRedundancySolver& mrs)
+    MRSProblemSeparate(const MuscleRedundancySolver& mrs,
+                       const GCVSplineSet& inverseDynamics)
             : mesh::OptimalControlProblemNamed<T>("MRS"),
-              _mrs(mrs), _model(mrs.getModel()) {
+              _mrs(mrs), _model(mrs.getModel()),
+              _inverseDynamics(inverseDynamics) {
         SimTK::State state = _model.initSystem();
 
         // Set the time bounds.
         // TODO when time is a variable, this has to be more advanced:
         const auto& times = _mrs.getKinematicsData().getIndependentColumn();
-        this->_initialTime = times.front();
-        this->_finalTime = times.back();
-        this->set_time({this->_initialTime}, {this->_finalTime});
+        _initialTime = times.front();
+        _finalTime = times.back();
+        this->set_time({_initialTime}, {_finalTime});
 
         // States and controls for actuators.
         // ----------------------------------
@@ -70,8 +89,9 @@ public:
             this->add_control(actuPath + "_control",
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
-            this->_controlToMoment = actuator.getOptimalForce();
+            _controlToMoment = actuator.getOptimalForce();
 
+            _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
 
@@ -98,7 +118,29 @@ public:
             this->add_path_constraint(
                     actuator.getAbsolutePathName() + "_equilibrium", 0);
 
+            _muscleLabels.push_back(actuPath);
             _numMuscles++;
+        }
+
+        // Store muscle parameters.
+        _max_isometric_force.resize(_numMuscles);
+        _optimal_fiber_length.resize(_numMuscles);
+        _tendon_slack_length.resize(_numMuscles);
+        _max_contraction_velocity.resize(_numMuscles);
+        _pennation_angle_at_optimal.resize(_numMuscles);
+        int i_mus = 0;
+        for (const auto& muscle : _model.getComponentList<Muscle>()) {
+            if (!muscle.get_appliesForce()) continue;
+
+            _max_isometric_force[i_mus] = muscle.get_max_isometric_force();
+            _optimal_fiber_length[i_mus] = muscle.get_optimal_fiber_length();
+            _tendon_slack_length[i_mus] = muscle.get_tendon_slack_length();
+            _max_contraction_velocity[i_mus] =
+                    muscle.get_max_contraction_velocity();
+            _pennation_angle_at_optimal[i_mus] =
+                    muscle.get_pennation_angle_at_optimal();
+
+            i_mus++;
         }
 
         // Add a constraint for each joint moment.
@@ -115,62 +157,68 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
 
-        // Run inverse dynamics, evaluated at all mesh points.
-        // ---------------------------------------------------
+        //// Run inverse dynamics, evaluated at all mesh points.
+        //// ---------------------------------------------------
 
-        // Disable all actuators in the model, as we don't want them to
-        // contribute generalized forces that would reduce the inverse
-        // dynamics moments to track.
-        auto actuators = mutableThis->_model
-                .template updComponentList<Actuator>();
-        for (auto& actuator : actuators) {
-            actuator.set_appliesForce(false);
-        }
+        //// Disable all actuators in the model, as we don't want them to
+        //// contribute generalized forces that would reduce the inverse
+        //// dynamics moments to track.
+        //auto actuators = mutableThis->_model
+        //        .template updComponentList<Actuator>();
+        //for (auto& actuator : actuators) {
+        //    actuator.set_appliesForce(false);
+        //}
 
-        InverseDynamicsSolver invdyn(_model);
-        SimTK::State state = mutableThis->_model.initSystem();
+        //InverseDynamicsSolver invdyn(_model);
+        //SimTK::State state = mutableThis->_model.initSystem();
 
-        // Assemble functions for coordinate values. Functions must be in the
-        // same order as the joint moments (multibody tree order).
-        auto coords = _model.getCoordinatesInMultibodyTreeOrder();
-        std::vector<std::string> columnLabels(coords.size());
-        for (size_t i = 0; i < coords.size(); ++i) {
-            // The first state variable in the coordinate should be its value.
-            // TODOosim make it easy to get the full name of a state variable
-            // Perhaps expose the StateVariable class.
-            //columnLabels[i] = coords[i]->getStateVariableNames()[0];
-            // This will yield something like "knee/flexion/value".
-            columnLabels[i] = ComponentPath(coords[i]->getAbsolutePathName())
-                    .formRelativePath(_model.getAbsolutePathName()).toString()
-                    + "/value";
-        }
-        FunctionSet coordFunctions =
-                createGCVSplineSet(_mrs.getKinematicsData(), columnLabels);
+        //// Assemble functions for coordinate values. Functions must be in the
+        //// same order as the joint moments (multibody tree order).
+        //auto coords = _model.getCoordinatesInMultibodyTreeOrder();
+        //std::vector<std::string> columnLabels(coords.size());
+        //for (size_t i = 0; i < coords.size(); ++i) {
+        //    // The first state variable in the coordinate should be its value.
+        //    // TODOosim make it easy to get the full name of a state variable
+        //    // Perhaps expose the StateVariable class.
+        //    //columnLabels[i] = coords[i]->getStateVariableNames()[0];
+        //    // This will yield something like "knee/flexion/value".
+        //    columnLabels[i] = ComponentPath(coords[i]->getAbsolutePathName())
+        //            .formRelativePath(_model.getAbsolutePathName()).toString()
+        //            + "/value";
+        //}
+        //FunctionSet coordFunctions =
+        //        createGCVSplineSet(_mrs.getKinematicsData(), columnLabels);
 
-        // Convert normalized mesh points into times at which to evaluate
-        // net joint moments.
-        // TODO this variant ignores our data for generalized speeds.
-        Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
-        SimTK::Array_<double> simtkTimes(
-                times.data(), times.data() + times.size(), SimTK::DontCopy());
+        //// Convert normalized mesh points into times at which to evaluate
+        //// net joint moments.
+        //// TODO this variant ignores our data for generalized speeds.
+        //Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
+        //SimTK::Array_<double> simtkTimes(
+        //        times.data(), times.data() + times.size(), SimTK::DontCopy());
 
-        // Compute the desired joint moments.
-        SimTK::Array_<SimTK::Vector> forceTrajectory;
-        invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
+        //// Compute the desired joint moments.
+        //SimTK::Array_<SimTK::Vector> forceTrajectory;
+        //invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
 
         // Store the desired joint moments in an Eigen matrix.
+        Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         // TODO probably has to be VectorX<T> to use with subtraction.
-        mutableThis->_desiredMoments.resize(forceTrajectory[0].size(),
+        mutableThis->_desiredMoments.resize(_inverseDynamics.getSize(),
                                             times.size());
-        for (size_t i = 0; i < size_t(times.size()); ++i) {
-            mutableThis->_desiredMoments.col(i) = Eigen::Map<Eigen::VectorXd>(
-                    &forceTrajectory[i][0], forceTrajectory[i].size());
+        for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
+            for (size_t i_dof = 0; i_dof < size_t(_inverseDynamics.getSize());
+                 ++i_dof)
+            {
+                const double value = _inverseDynamics[i_dof].calcValue(
+                        SimTK::Vector(1, times[i_time]));
+                mutableThis->_desiredMoments(i_dof, i_time) = value;
+            }
+            //mutableThis->_desiredMoments.col(i) = Eigen::Map<Eigen::VectorXd>(
+            //        &forceTrajectory[i][0], forceTrajectory[i].size());
         }
         // TODO looks very noisy:
         //std::cout << "DEBUG " << this->_desiredMoments << std::endl;
-        mesh::write(times, this->_desiredMoments,
-                    "DEBUG_desiredMoments.csv",
-                    columnLabels);
+        mesh::write(times, _desiredMoments, "DEBUG_desiredMoments.csv");
 
 
         // Muscle Analysis: muscle-tendon length.
@@ -178,7 +226,7 @@ public:
         // TODO tailored to hanging mass: just use absoluate value of the
         // coordinate value.
         mutableThis->_muscleTendonLength.resize(1, times.size());
-        const auto& kinematics = this->_mrs.getKinematicsData();
+        const auto& kinematics = _mrs.getKinematicsData();
         const auto& muscleTendonLengthColumn =
                 kinematics.getDependentColumn("joint/height/value");
         GCVSpline muscleTendonLengthData(5, kinematics.getNumRows(),
@@ -205,29 +253,27 @@ public:
         static const double actTimeConst   = 0.015;
         static const double deactTimeConst = 0.060;
         static const double tanhSteepness  = 0.1;
-        for (Eigen::Index i_act = 0; i_act < this->_numMuscles; ++i_act)
-        {
-            const Eigen::Index i_mus = i_act + this->_numCoordActuators;
+        for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
 
             // Unpack variables.
-            const T& excitation = controls[2 * i_mus];
-            const T& activation = states[2 * i_mus];
-            const T& normFibVel = controls[2 * i_mus + 1];
+            const T& excitation = controls[_numCoordActuators + 2 * i_act];
+            const T& activation = states[2 * i_act];
+            const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
 
             // Activation dynamics.
             //     f = 0.5 tanh(b(e - a))
-            //     z = (0.5 + 1.5a)
+            //     z = 0.5 + 1.5a
             // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
-            const T temp1 = 0.5 + 1.5 * activation;
-            const T tempAct = 1.0 / (actTimeConst * temp1);
-            const T tempDeact = temp1 / deactTimeConst;
+            const T timeConstFactor = 0.5 + 1.5 * activation;
+            const T tempAct = 1.0 / (actTimeConst * timeConstFactor);
+            const T tempDeact = timeConstFactor / deactTimeConst;
             const T f = 0.5 * tanh(tanhSteepness * (excitation - activation));
             const T timeConst = tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
             derivatives[2 * i_act] = timeConst * (excitation - activation);
 
             // Fiber dynamics.
             derivatives[2 * i_act + 1] =
-                    this->_max_contraction_velocity * normFibVel;
+                    _max_contraction_velocity[i_act] * normFibVel;
         }
 
         // TODO std::cout << "DEBUG dynamics " << derivatives << std::endl;
@@ -278,39 +324,37 @@ public:
         };
 
         // Assemble generalized forces to apply to the joints.
-        mesh::VectorX<T> genForce(this->_numDOFs);
+        mesh::VectorX<T> genForce(_numDOFs);
         genForce.setZero();
 
         // CoordinateActuators.
         // --------------------
-        for (Eigen::Index i_act = 0; i_act < this->_numCoordActuators; ++i_act)
-        {
-            genForce[0] += this->_controlToMoment * controls[i_act];
+        for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
+            genForce[0] += _controlToMoment * controls[i_act];
         }
 
         // Muscles.
         // --------
-        for (Eigen::Index i_act = 0; i_act < this->_numMuscles; ++i_act) {
-            const Eigen::Index i_mus = i_act + this->_numCoordActuators;
+        for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
 
             // Unpack variables.
             // -----------------
-            const T& activation = states[2 * i_mus];
-            const T& normFibVel = controls[2 * i_mus + 1];
-            const T& normFibLen = states[2 * i_mus + 1];
+            const T& activation = states[2 * i_act];
+            const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
+            const T& normFibLen = states[2 * i_act + 1];
 
             // Intermediate quantities.
             // ------------------------
-            const T fibLen = normFibLen * this->_optimal_fiber_length;
+            const T fibLen = normFibLen * _optimal_fiber_length[i_act];
             // TODO cache this somewhere; this is constant.
-            const T fibWidth = this->_optimal_fiber_length
-                             * sin(this->_pennation_angle_at_optimal);
+            const double fibWidth = _optimal_fiber_length[i_act]
+                             * sin(_pennation_angle_at_optimal[i_act]);
             // Tendon length.
-            const T& musTenLen = this->_muscleTendonLength(i_act, i_mesh);
+            const T& musTenLen = _muscleTendonLength(i_act, i_mesh);
             // lT = lMT - sqrt(lM^2 - w^2)
             const T tenLen = musTenLen
                            - sqrt(fibLen*fibLen - fibWidth*fibWidth);
-            const T normTenLen = tenLen / this->_tendon_slack_length;
+            const T normTenLen = tenLen / _tendon_slack_length[i_act];
             const T cosPenn = (musTenLen - tenLen) / fibLen;
 
             // Curves/multipliers.
@@ -344,7 +388,7 @@ public:
             constraints[i_act] = normFibForceAlongTen - normTenForce;
 
             // Used to evaluate the joint moment error.
-            genForce[0] += -this->_max_isometric_force * normTenForce;
+            genForce[0] += -_max_isometric_force[i_act] * normTenForce;
         }
 
 
@@ -352,46 +396,218 @@ public:
         // ===================
         // /*const TODO*/ auto generatedMoments = _mrs.controlToMoment * controls;
         // TODO constraints = _desiredMoments[index] - generatedMoments;
-        constraints.segment(this->_numMuscles, this->_numDOFs)
-                = this->_desiredMoments.col(i_mesh).template cast<adouble>()
+        constraints.segment(_numMuscles, _numDOFs)
+                = _desiredMoments.col(i_mesh).template cast<adouble>()
                 - genForce;
 
-        // TODO std::cout << "DEBUG constraints " << constraints << std::endl;
+        // std::cout << "DEBUG constraints " << constraints << std::endl;
     }
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
                        const mesh::VectorX<T>& controls,
                        T& integrand) const override {
-        integrand = controls.squaredNorm();
+        // Use a map to skip over fiber velocities.
+        using ExcitationsVector = Eigen::Map<const mesh::VectorX<T>,
+        /* pointer alignment: Unaligned */   0,
+        /* pointer increment btn elements */ Eigen::InnerStride<2>>;
+        ExcitationsVector muscleExcit(controls.data() + _numCoordActuators,
+                                      _numMuscles);
+
+        integrand = controls.head(_numCoordActuators).squaredNorm()
+                  + muscleExcit.squaredNorm();
+    }
+    MuscleRedundancySolver::Solution interpret_solution(
+            const mesh::OptimalControlSolution& ocp_sol) const
+    {
+
+        MuscleRedundancySolver::Solution sol;
+        if (_numCoordActuators) {
+            sol.other_controls.setColumnLabels(_otherControlsLabels);
+        }
+        if (_numMuscles) {
+            sol.excitation.setColumnLabels(_muscleLabels);
+            sol.activation.setColumnLabels(_muscleLabels);
+            sol.norm_fiber_length.setColumnLabels(_muscleLabels);
+            sol.norm_fiber_velocity.setColumnLabels(_muscleLabels);
+        }
+
+        for (int i_time = 0; i_time < ocp_sol.time.cols(); ++i_time) {
+            const auto& time = ocp_sol.time[i_time];
+            const auto& controls = ocp_sol.controls.col(i_time);
+            const auto& states = ocp_sol.states.col(i_time);
+
+            // Other controls.
+            // ---------------
+            // The first _numCoordActuators rows of the controls matrix
+            // are for the CoordinateActuators.
+            if (_numCoordActuators) {
+                SimTK::RowVector other_controls(_numCoordActuators,
+                                                controls.data(),
+                                                true /* <- this is a view */);
+                sol.other_controls.appendRow(time, other_controls);
+            }
+
+            // Muscle-related quantities.
+            // --------------------------
+            if (_numMuscles == 0) continue;
+            //TODOfor (int i_act = 0; i_act < _numMuscles; ++i_act) {
+            //TODO    const int i_mus = _numCoordActuators + 2 * i_act;
+            //TODO    excitation_row[i_act] = ocp_sol.controls.col(i_time)[i_mus];
+            //TODO}
+            SimTK::RowVector excitation(_numMuscles,
+                                        1 /* stride: skip over fiber vel. */,
+                                        controls.data() + _numCoordActuators,
+                                        true /* makes this a view */);
+            sol.excitation.appendRow(time, excitation);
+
+            SimTK::RowVector activation(_numMuscles,
+                                        1 /* stride: skip over fiber length */,
+                                        states.data(),
+                                        true /* makes this a view */);
+            sol.activation.appendRow(time, activation);
+
+            SimTK::RowVector fiber_length(_numMuscles,
+                                          1 /* stride: skip over activation */,
+                                          states.data() + 1,
+                                          true /* makes this a view */);
+            sol.norm_fiber_length.appendRow(time, fiber_length);
+
+            SimTK::RowVector fiber_velocity(_numMuscles,
+                                       1 /* stride: skip over excit. */,
+                                       controls.data() + _numCoordActuators + 1,
+                                       true /* makes this a view */);
+            sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
+        }
+        return sol;
+
+            // TODO // Each column of controls is a different time.
+            // TODO if (ocp_solution.controls.rows()) {
+            // TODO     // TODO this can be DontCopy.
+            // TODO     SimTK::RowVector controls(ocp_solution.controls.rows(),
+            // TODO                               ocp_solution.controls.col(i)[0]);
+            // TODO     solution.excitations.appendRow(ocp_solution.time[i], controls);
+            // TODO }
+
+            // TODO if (ocp_solution.states.rows()) {
+            // TODO     SimTK::RowVector states(ocp_solution.states.rows(),
+            // TODO                             ocp_solution.states.col(i)[0]);
+            // TODO     solution.activations.appendRow(ocp_solution.time[i], states);
+            //}
+
     }
 private:
     const MuscleRedundancySolver& _mrs;
     Model _model;
+    const GCVSplineSet& _inverseDynamics;
     double _initialTime = SimTK::NaN;
     double _finalTime = SimTK::NaN;
+
+    // Bookkeeping.
     int _numDOFs;
     int _numCoordActuators;
     int _numMuscles;
+    std::vector<std::string> _muscleLabels;
+    std::vector<std::string> _otherControlsLabels;
+
+    // Cached quantities to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLength;
     Eigen::MatrixXd _muscleTendonVelocity;
     // TODO make general (CoordinateActuator optimal force).
     double _controlToMoment;
 
-    // TODO muscle parameters.
-    // Units: optimal fiber lengths per second.
-    double _max_contraction_velocity = 10;
+    // Muscle parameters.
+    Eigen::VectorXd _max_isometric_force;
     // Units: meters.
-    double _optimal_fiber_length = 0.10;
-    // Units: radians. TODO
-    double _pennation_angle_at_optimal = 0.1;
-    double _tendon_slack_length = 0.10;
-    double _max_isometric_force = 10;
+    Eigen::VectorXd _optimal_fiber_length;
+    // Units: meters.
+    Eigen::VectorXd _tendon_slack_length;
+    // Units: optimal fiber lengths per second.
+    Eigen::VectorXd _max_contraction_velocity;
+    // Units: radians.
+    Eigen::VectorXd _pennation_angle_at_optimal;
 };
 
 MuscleRedundancySolver::MuscleRedundancySolver() {
     //constructProperty_model_file("");
     //constructProperty_kinematics_file("");
+}
+
+// TODO SimTK::Array_<SimTK::Vector>
+GCVSplineSet
+MuscleRedundancySolver::computeInverseDynamics() const {
+    Model modelForID(_model);
+    modelForID.finalizeFromProperties();
+    // Disable all actuators in the model, as we don't want them to
+    // contribute generalized forces that would reduce the inverse
+    // dynamics moments to track.
+    auto actuators = modelForID.updComponentList<Actuator>();
+    for (auto& actuator : actuators) {
+        actuator.set_appliesForce(false);
+    }
+
+    InverseDynamicsSolver invdyn(modelForID);
+    SimTK::State state = modelForID.initSystem();
+
+    // Assemble functions for coordinate values. Functions must be in the
+    // same order as the joint moments (multibody tree order).
+    auto coords = modelForID.getCoordinatesInMultibodyTreeOrder();
+    std::vector<std::string> columnLabels(coords.size());
+    for (size_t i = 0; i < coords.size(); ++i) {
+        // The first state variable in the coordinate should be its value.
+        // TODOosim make it easy to get the full name of a state variable
+        // Perhaps expose the StateVariable class.
+        //columnLabels[i] = coords[i]->getStateVariableNames()[0];
+        // This will yield something like "knee/flexion/value".
+        columnLabels[i] = ComponentPath(coords[i]->getAbsolutePathName())
+                .formRelativePath(modelForID.getAbsolutePathName()).toString()
+                + "/value";
+    }
+    FunctionSet coordFunctions =
+            createGCVSplineSet(getKinematicsData(), columnLabels);
+
+    // Convert normalized mesh points into times at which to evaluate
+    // net joint moments.
+    // TODO this variant ignores our data for generalized speeds.
+    const auto& times = getKinematicsData().getIndependentColumn();
+    // TODO avoid copy.
+    SimTK::Array_<double> simtkTimes(times); // , SimTK::DontCopy());
+
+    // Perform Inverse Dynamics.
+    // -------------------------
+    SimTK::Array_<SimTK::Vector> forceTrajectory;
+    invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
+
+    // TODO use Storage instead to perform filtering.
+    //TimeSeriesTable forceTrajectoryTable;
+    //const size_t numDOFs = forceTrajectory[0].size();
+    //std::vector<std::string> labels(numDOFs);
+    //for (size_t i = 0; i < numDOFs; ++i) {
+    //    labels[i] = "force" + std::to_string(i);
+    //}
+    //forceTrajectoryTable.setColumnLabels(labels);
+//  //  for (TODO append rows.)
+    //for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
+    //    forceTrajectoryTable.appendRow(times[i_time],
+    //                                   forceTrajectory[i_time].transpose());
+    //}
+    //return createGCVSplineSet(forceTrajectoryTable, labels);
+
+    Storage forceTrajectorySto;
+    const size_t numDOFs = forceTrajectory[0].size();
+    OpenSim::Array<std::string> labels("", numDOFs);
+    for (size_t i = 0; i < numDOFs; ++i) {
+        labels[i] = "force" + std::to_string(i);
+    }
+    forceTrajectorySto.setColumnLabels(labels);
+    for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
+        forceTrajectorySto.append(times[i_time], forceTrajectory[i_time]);
+    }
+    // Filter; otherwise, inverse dynamics moments are too noisy.
+    forceTrajectorySto.pad(forceTrajectorySto.getSize() / 2);
+    // TODO make the filter frequency a parameter.
+    forceTrajectorySto.lowpassIIR(6);
+    return GCVSplineSet(5, &forceTrajectorySto);
 }
 
 MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
@@ -406,9 +622,29 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         }
     }
 
+    // Run inverse dynamics.
+    // ---------------------
+    //SimTK::Array_<SimTK::Vector> forceTrajectory;
+    const auto forceTrajectory = computeInverseDynamics();
+
+    //// Store the desired joint moments in an Eigen matrix.
+    //// TODO probably has to be VectorX<T> to use with subtraction.
+    //mutableThis->_desiredMoments.resize(forceTrajectory[0].size(),
+    //                                    times.size());
+    //for (size_t i = 0; i < size_t(times.size()); ++i) {
+    //    mutableThis->_desiredMoments.col(i) = Eigen::Map<Eigen::VectorXd>(
+    //            &forceTrajectory[i][0], forceTrajectory[i].size());
+    //}
+    //// TODO looks very noisy:
+    ////std::cout << "DEBUG " << this->_desiredMoments << std::endl;
+    //mesh::write(times, _desiredMoments, "DEBUG_desiredMoments.csv",
+    //            columnLabels);
+
+
     // Solve the optimal control problem.
     // ----------------------------------
-    auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this);
+    auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
+                                                             forceTrajectory);
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
                                                   100);
@@ -418,22 +654,5 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // --------------------
     // TODO remove
     ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
-    Solution solution;
-    solution.excitations.setColumnLabels(actuatorsToUse);
-    solution.activations.setColumnLabels(actuatorsToUse);
-    for (int i = 0; i < ocp_solution.time.cols(); ++i) {
-        // Each column of controls is a different time.
-        if (ocp_solution.controls.rows()) {
-            SimTK::RowVector controls(ocp_solution.controls.rows(),
-                                      ocp_solution.controls.col(i)[0]);
-            solution.excitations.appendRow(ocp_solution.time[i], controls);
-        }
-
-        if (ocp_solution.states.rows()) {
-            SimTK::RowVector states(ocp_solution.states.rows(),
-                                    ocp_solution.states.col(i)[0]);
-            solution.activations.appendRow(ocp_solution.time[i], states);
-        }
-    }
-    return solution;
+    return ocp->interpret_solution(ocp_solution);
 }
