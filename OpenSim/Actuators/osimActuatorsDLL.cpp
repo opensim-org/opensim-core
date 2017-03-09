@@ -52,7 +52,7 @@ static void Plugin_Detach()
 //
 // The code below handles both Windows and Linux library entrypoints
 //
-#if defined(WIN32)
+#if defined(_WIN32)
 //=============================================================================
 // DLL Main Entry Point
 //=============================================================================

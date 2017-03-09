@@ -46,14 +46,14 @@
 #include "Set.h"
 
 
-#ifdef WIN32
+#ifdef _WIN32
 
 extern template class OSIMCOMMON_API Array<bool>;
 extern template class OSIMCOMMON_API Array<int>;
 extern template class OSIMCOMMON_API Array<double>;
 extern template class OSIMCOMMON_API Array<std::string>;
 
-#endif  // WIN32
+#endif  // _WIN32
 
 
 #endif  // __osimCommonTemplates_h__
