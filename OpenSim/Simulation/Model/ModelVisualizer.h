@@ -175,7 +175,8 @@ public:
     @param[out]     attempts
         On return, this is a list of the absolute path names that were tried.
         If \a geoFile was found, attempts.back() (the last entry) is the
-        absolute path name of \a geoFile.
+        absolute path name of \a geoFile. The last entry of this array will be
+        the path that succeeded in finding the geometry file.
     @returns \c true if \a geoFile was located and is readable.
         
     The search rule is as follows:

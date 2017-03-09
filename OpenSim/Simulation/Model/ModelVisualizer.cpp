@@ -139,6 +139,8 @@ void ModelVisualizer::show(const SimTK::State& state) const {
 
 // See if we can find the given file. The rules are
 //  - if it is an absolute pathname, we only get one shot, else:
+//  - search the user added paths in dirToSearch in reverse chronological order
+//    i.e. latest path added is searched first.
 //  - define "modelDir" to be the absolute pathname of the 
 //      directory from which we read in the .osim model, if we did,
 //      otherwise modelDir="." (current directory).
