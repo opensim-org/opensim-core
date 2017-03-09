@@ -46,9 +46,6 @@ using SimTK::Vec3;
 Muscle::Muscle()
 {
     constructProperties();
-    // override the value of default _minControl, _maxControl
-
-    setMaxControl(1.0);
 }
 
 //_____________________________________________________________________________
@@ -96,6 +93,33 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
             XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
         }
+        if (versionNumber <= 30513) {
+            SimTK::Xml::element_iterator minControlElt =
+                aNode.element_begin("min_control");
+            double minControl = 0;
+            if (minControlElt != aNode.element_end()) {
+                minControlElt->getValueAs<double>(minControl);
+
+                // remove the min_control property in XML since it is a result
+                // of a mistake with the previous versions not updating
+                // the min_control to reflect the min_activation. Removing it
+                // allows the Muscle to use the default that is specified by the
+                // derived concrete Muscle
+                if (SimTK::isNumericallyEqual(minControl, 0.0)) {
+                    aNode.removeNode(minControlElt);
+                }
+            }
+            SimTK::Xml::element_iterator maxControlElt =
+                aNode.element_begin("max_control");
+            double maxControl = 0;
+            if (maxControlElt != aNode.element_end()) {
+                maxControlElt->getValueAs<double>(maxControl);
+                // allow Muscle to use its default
+                if (SimTK::isNumericallyEqual(maxControl, 1.0)) {
+                    aNode.removeNode(maxControlElt);
+                }
+            }
+        }
     }
     // Call base class now assuming aNode has been corrected for current version
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -115,6 +139,10 @@ void Muscle::constructProperties()
     constructProperty_max_contraction_velocity(10.0);
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_ignore_activation_dynamics(false);
+
+    // By default the min and max controls on muscle are 0.0 and 1.0
+    setMinControl(0.0);
+    setMaxControl(1.0);
 }
 
 
