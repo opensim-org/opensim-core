@@ -85,6 +85,8 @@ public:
 public:
     PropertyIntArray& operator=(const PropertyIntArray &aProperty);
 
+    void assign(const AbstractProperty& that) override;
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------

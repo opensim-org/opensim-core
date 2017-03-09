@@ -1251,22 +1251,18 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
         rData.append(data);
     }
 }
-/**
- * Get the list of indices of columns corresponding to passed in identifier
- * Normally you provide a prefix and all column numbers that share this suffix in their header are passed back
- */
-OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
+
+OpenSim::Array<int>
+Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
 {
     Array<int> found;
-    int lid = (int)identifier.length();
+    const size_t lid = identifier.length();
 
-    if(lid < 1) // an empty identifier should not expect data back
+    if (lid < 1)  // Identifier is empty; return empty Array.
         return found;
 
-    int startIndex = 0;
-    int size = _columnLabels.getSize();
-    for(int i=startIndex;i<size;++i){
-        if(_columnLabels[i].compare(0,lid, identifier)==0)
+    for (int i = 0; i < _columnLabels.getSize(); ++i) {
+        if (_columnLabels[i].compare(0,lid, identifier) == 0)
             found.append(i);
     }
     return found;
