@@ -209,7 +209,7 @@ void ModelVisualizer::addDirToSearchGeometryFile(const std::string& dir) {
     if(dir.back() == Pathname::getPathSeparator().back())
         dirsToSearch.push_back(dir);
     else
-        dirsToSearch.push_back(dir + "/");
+        dirsToSearch.push_back(dir + Pathname::getPathSeparator());
 }
 
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's
