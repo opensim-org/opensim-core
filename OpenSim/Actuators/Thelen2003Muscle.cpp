@@ -100,6 +100,13 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         "%s: F-v extrapolation threshold must be greater than 1.0/Flen",
         getName().c_str());
 
+
+    OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
+        InvalidPropertyValue, getProperty_minimum_activation().getName());
+
+    OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
+        InvalidPropertyValue, getProperty_min_control().getName());
+
     // Set properties of subcomponents.
     auto& pennMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
@@ -681,9 +688,6 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
     double dadt = getActivationModel().calcDerivative(activation,excitation);
     return dadt;
 }  
-
-
-
 
 
 //==============================================================================
