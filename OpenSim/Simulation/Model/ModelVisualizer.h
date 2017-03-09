@@ -181,9 +181,9 @@ public:
         
     The search rule is as follows:
       - If \a geoFile is an absolute pathname no search is done.
-      - Otherwise, try the search paths added through addDirToSearch. The paths
-        are searched in reverse-chronological order -- the latest path added is
-        searched first.
+      - Otherwise, try the search paths added through 
+        addDirToSearchGeometryFile(). The paths are searched in 
+        reverse-chronological order -- the latest path added is searched first.
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.
