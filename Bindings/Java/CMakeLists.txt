@@ -63,9 +63,25 @@ add_subdirectory(OpenSimJNI)
 # ---------------------
 find_package(Java 1.7 REQUIRED)
 
+# To avoid compiling stale .java files, delete any existing files and copy
+# over the new files from the module-specific directories (see
+# OpenSimJNI/CMakeLists.txt).
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DEPENDS ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+    COMMAND ${CMAKE_COMMAND} -E remove ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/*
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/simbody
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/common
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/simulation
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/actuators-analysis-tools
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
