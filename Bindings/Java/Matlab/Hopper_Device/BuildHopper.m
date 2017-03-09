@@ -25,14 +25,24 @@ function hopper = BuildHopper(varargin)
 
 p = inputParser();
 defaultMuscleModel = 'Thelen2003';
-defaultPrintModel = false;
+defaultMaxIsometricForce = 4000.0;
+defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
+defaultActivation = [0.0 2.0 3.9;
+                     0.3 1.0 0.1];
+defaultPrintModel = false; 
 
 addOptional(p,'muscleModel',defaultMuscleModel)
+addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
+addOptional(p,'MillardTendonParams',defaultMillardTendonParams)
+addOptional(p,'activation',defaultActivation)
 addOptional(p,'printModel',defaultPrintModel)
 
 parse(p,varargin{:});
 
 muscleModel = p.Results.muscleModel;
+maxIsometricForce = p.Results.maxIsometricForce;
+MillardTendonParams = p.Results.MillardTendonParams;
+activation = p.Results.activation;
 printModel = p.Results.printModel;
 
 import org.opensim.modeling.*;
@@ -139,15 +149,25 @@ hopper.addForce(contactForce);
 %% Actuator.
 % ----------
 % Create the vastus muscle and set its origin and insertion points.
-mclFmax = 4000.; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
+mclFmax = maxIsometricForce; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
 mclPennAng = 0.;
 switch muscleModel
     case 'Thelen2003'
         vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
-                    mclTendonSlackLen, mclPennAng);
+            mclTendonSlackLen, mclPennAng);
     case 'Millard2012Equilibrium'
         vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
-                mclTendonSlackLen, mclPennAng);
+            mclTendonSlackLen, mclPennAng);
+        
+        eIso = MillardTendonParams(1);
+        kIso = MillardTendonParams(2);
+        fToe = MillardTendonParams(3);
+        curviness = MillardTendonParams(4);
+        tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
+        vastus.setTendonForceLengthCurve(tendonFL);
+        
+        lTs = MillardTendonParams(5);
+        vastus.setTendonSlackLength(lTs);     
 end
     
 vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
@@ -176,22 +196,16 @@ brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseConstantFunction();
 
-try evalin('base','user_act');
-    disp('User activation found...')
-    user_act = evalin('base','user_act');
-    for i = 1:size(user_act,2)
-        controlFunction.addPoint(user_act(1,i), user_act(2,i));
-    end
-catch 
-    disp('User activation not found, using default activation...')
-    controlFunction.addPoint(0.0, 0.3);
-    controlFunction.addPoint(2.0, 1.0);
-    controlFunction.addPoint(3.9, 0.1)   
+% controlFunction.addPoint(0.0, 0.3);
+% controlFunction.addPoint(2.0, 1.0);
+% controlFunction.addPoint(3.9, 0.1);
+
+for i = 1:size(activation,2)
+    controlFunction.addPoint(activation(1,i), activation(2,i));
 end
 
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
-
 
 % Device attachment frames.
 % -------------------------

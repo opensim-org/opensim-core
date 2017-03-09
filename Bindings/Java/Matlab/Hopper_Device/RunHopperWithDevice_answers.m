@@ -31,7 +31,6 @@ hopper = BuildHopper();
 % This function builds the device component; no need to edit it.
 device = BuildDevice();
 
-
 %% Connect the device to the hopper.
 % ----------------------------------
 
