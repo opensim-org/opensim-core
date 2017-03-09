@@ -48,7 +48,7 @@ Converting from v3.x to v4.0
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
-- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by 
+- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
   `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
   (see the documentation in the `Manager` class for more details):
   - Before:
@@ -126,6 +126,9 @@ programmatically in MATLAB or python.
 - Thelen2003Muscle, Millard2012EquilibriumMuscle, and
   Millard2012AccelerationMuscle now throw an exception if the force equilibrium
   calculation fails to converge (PR #1201).
+- Thelen2003Muscle and Millard2012EquilibriumMuscle no longer clamp excitations (i.e. controls)
+  internally. If controls are out of bounds an Exception is thrown. Also, the min_control
+  property now defaults to the minimum_activation. It is the responsibility of the controller (or solver) to provide controls that are within the valid ranges defined by the Actuators and that includes the specific bounds of Muscle models. (PR #1548)
 
 Documentation
 --------------
