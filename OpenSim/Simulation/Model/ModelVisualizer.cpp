@@ -139,13 +139,13 @@ void ModelVisualizer::show(const SimTK::State& state) const {
 
 // See if we can find the given file. The rules are
 //  - if it is an absolute pathname, we only get one shot, else:
-//  - search the user added paths in dirToSearch in reverse chronological order
-//    i.e. latest path added is searched first.
 //  - define "modelDir" to be the absolute pathname of the 
 //      directory from which we read in the .osim model, if we did,
 //      otherwise modelDir="." (current directory).
 //  - look for the geometry file in modelDir
 //  - look for the geometry file in modelDir/Geometry
+//  - search the user added paths in dirToSearch in reverse chronological order
+//    i.e. latest path added is searched first.
 //  - look for the geometry file in installDir/Geometry
 bool ModelVisualizer::
 findGeometryFile(const Model& aModel, 
@@ -163,13 +163,6 @@ findGeometryFile(const Model& aModel,
         attempts.push_back(geoFile);
         foundIt = Pathname::fileExists(attempts.back());
     } else {
-        for(auto dir = dirsToSearch.crbegin();
-            dir != dirsToSearch.crend();
-            ++dir) {
-            attempts.push_back(*dir + geoFile);
-            if(Pathname::fileExists(attempts.back()))
-                return true;
-        }
         const string geoDir = "Geometry" + Pathname::getPathSeparator();
         string modelDir;
         if (aModel.getInputFileName() == "Unassigned") 
@@ -190,6 +183,18 @@ findGeometryFile(const Model& aModel,
         if (!foundIt) {
             attempts.push_back(modelDir + geoDir + geoFile); 
             foundIt = Pathname::fileExists(attempts.back());
+        }
+
+        if (!foundIt) {
+            for(auto dir = dirsToSearch.crbegin();
+                dir != dirsToSearch.crend();
+                ++dir) {
+                attempts.push_back(*dir + geoFile);
+                if(Pathname::fileExists(attempts.back())) {
+                    foundIt = true;
+                    break;
+                }
+            }
         }
 
         if (!foundIt) {
