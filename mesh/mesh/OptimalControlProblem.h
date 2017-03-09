@@ -18,6 +18,8 @@ public:
     virtual int num_controls() const = 0;
     // TODO assume 0?
     virtual int num_path_constraints() const { return 0; }
+    virtual std::vector<std::string> get_state_names() const { return {}; }
+    virtual std::vector<std::string> get_control_names() const { return {}; }
 
     virtual void print_description() const;
 
@@ -187,6 +189,20 @@ public:
     int num_path_constraints() const override final
     {
         return m_path_constraint_infos.size();
+    }
+    std::vector<std::string> get_state_names() const override {
+        std::vector<std::string> names;
+        for (const auto& info : m_state_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    std::vector<std::string> get_control_names() const override {
+        std::vector<std::string> names;
+        for (const auto& info : m_control_infos) {
+            names.push_back(info.name);
+        }
+        return names;
     }
     void print_description() const override final
     {

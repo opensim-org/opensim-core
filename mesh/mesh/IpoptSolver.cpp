@@ -34,7 +34,9 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
     status = app->OptimizeTNLP(nlp);
     if (status != Ipopt::Solve_Succeeded) {
         // TODO give detailed diagnostics.
-        throw std::runtime_error("[mesh] Failed to find a solution.");
+        // TODO throw exception.
+        // throw std::runtime_error("[mesh] Failed to find a solution.");
+        std::cerr << "[mesh] Failed to find a solution." << std::endl;
     }
     variables = nlp->get_solution();
     return nlp->get_optimal_objective_value();

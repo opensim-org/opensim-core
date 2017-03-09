@@ -15,6 +15,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
         const std::string& transcrip,
         const std::string& optsolver,
         const unsigned& num_mesh_points)
+        : m_ocproblem(ocproblem)
 {
     std::locale loc;
     std::string transcrip_lower = transcrip;
@@ -56,6 +57,8 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
     solution.states = traj.states;
     solution.controls = traj.controls;
     solution.objective = obj_value;
+    solution.state_names = m_ocproblem->get_state_names();
+    solution.control_names = m_ocproblem->get_control_names();
     return solution;
 }
 

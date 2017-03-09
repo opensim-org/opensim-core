@@ -18,17 +18,31 @@ struct OptimalControlSolution {
     Eigen::RowVectorXd time;
     Eigen::MatrixXd states;
     Eigen::MatrixXd controls;
+    std::vector<std::string> state_names;
+    std::vector<std::string> control_names;
     double objective;
     void write(const std::string& filepath) const {
         std::ofstream f(filepath);
 
         // Column headers.
         f << "time";
-        for (int i_state = 0; i_state < states.rows(); ++i_state) {
-            f << ",state" << i_state;
+        if (state_names.size() == size_t(states.rows())) {
+            for (int i_state = 0; i_state < states.rows(); ++i_state) {
+                f << "," << state_names[i_state];
+            }
+        } else {
+            for (int i_state = 0; i_state < states.rows(); ++i_state) {
+                f << ",state" << i_state;
+            }
         }
-        for (int i_control = 0; i_control < controls.rows(); ++i_control) {
-            f << ",control" << i_control;
+        if (control_names.size() == size_t(controls.rows())) {
+            for (int i_control = 0; i_control < controls.rows(); ++i_control) {
+                f << "," << control_names[i_control];
+            }
+        } else {
+            for (int i_control = 0; i_control < controls.rows(); ++i_control) {
+                f << ",control" << i_control;
+            }
         }
         f << std::endl;
 
