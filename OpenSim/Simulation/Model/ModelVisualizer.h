@@ -182,7 +182,7 @@ public:
     The search rule is as follows:
       - If \a geoFile is an absolute pathname no search is done.
       - Otherwise, try the search paths added through 
-        addDirToSearchGeometryFile(). The paths are searched in 
+        addDirToGeometrySearchPaths(). The paths are searched in 
         reverse-chronological order -- the latest path added is searched first.
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
@@ -202,7 +202,7 @@ public:
     /** Add a directory to the search path to be used by the function
     findGeometryFile. The added paths are searched in the 
     reverse-chronological order -- the latest path added is searched first. */
-    static void addDirToSearchGeometryFile(const std::string& dir);
+    static void addDirToGeometrySearchPaths(const std::string& dir);
     /**@}**/
 
 
