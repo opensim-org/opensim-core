@@ -9,21 +9,22 @@ function configureOpenSim()
 %    path (e.g., for converting OpenSim data tables to MATLAB structs).
 %    
 %    Windows users must also ensure OpenSim's bin directory is on the operating
-%    system's PATH (search for "environment" in the Windows start menu TODO is
-%    this true?). OpenSim's installer usually does this for you.
+%    system's PATH (search for "environment" in the Windows start menu). 
+%    OpenSim's installer usually does this for you.
 %
-%    For this function to work, it must be located in its original place in
-%    the OpenSim installation: @OPENSIM_INSTALL_MATLABEXDIR@
+%    Depending on your operating system, this function may require
+%    administrator (or sudo) privileges to succeed.
+%
+%    For this function to work, it must be located in its original place 
+%    in the OpenSim installation: @OPENSIM_INSTALL_MATLABEXDIR@
 %
 % What this function does:
-%    On all platforms, this function adds (a) the location of
-%    org-opensim-modeling.jar (the OpenSim Java bindings) to MATLAB's Java
-%    class path (javaclasspath.txt), (b) the location of OpenSim's shared
+%    This function adds (a) the location of org-opensim-modeling.jar 
+%    (the OpenSim Java bindings) to MATLAB's Java class path 
+%    (javaclasspath.txt), (b) the location of OpenSim's shared
 %    libraries (.dll on Windows, .so on Linux, .dylib on macOS) to
 %    MATLAB's Java library path (javalibrarypath.txt), and (c) the location of
 %    OpenSim's MATLAB Utilities to the MATLAB path (e.g., addpath).
-%    On Windows, this script additionally adds the location of OpenSim's .dll
-%    files (bin dir) to MATLAB's path (TODO necessary?)
 %
 % Removing existing OpenSim paths:
 %    This function tries detect any OpenSim installations you may have
@@ -37,12 +38,9 @@ function configureOpenSim()
 %    editing files within the MATLAB installation.
 %
 %    This function requires MATLAB 2007b or later to run.
-%
-%    TODO if the function requires administrator (sudo, on UNIX) privileges but
-%    you did not start MATLAB as an administrator (or with sudo), this function
-%    notifies you may need to TODO.
 
 
+% TODO user must make sure OpenSim bin dir is on the PATH.
 % TODO only remove old MATLAB install if adding the new one will work.
 %    TODO administrator necessary?
 %TODO run as administrator.
@@ -108,23 +106,25 @@ try
     OpenSimJarPath =  fullfile(openSimFolder, ...
             '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
-    % Keep track of if we have issues removing pre-existing OpenSim installs.
-    rmPrev = true;
+    % Keep track of if (1) we detected existing OpenSim
+    % and (2) if we had issues existing OpenSim entries.
+    rmPrev = [false false];
     % The verLessThan function was introduced in MATLAB 2007a.
     matlabOlderThan2012b = verLessThan('matlab', '8.0');
     if matlabOlderThan2012b 
         % The prefdir mechanism doesn't exist yet; only check and use the
         % pre-2012b mechanism.
-        rmPrev = rmPrev && editPathTxtFile(classFileTool, OpenSimJarPath);
+        % Must use single | to avoid short-circuit behavior of ||.
+        rmPrev = rmPrev | editPathTxtFile(classFileTool, OpenSimJarPath);
     else
         % Previous versions of this script only used the pre-2012b mechanism,
         % so even if the user has 2012b or later, we must check the pre-2012b
         % mechanism. But we won't try to add the jar path to the file in the
         % toolbox directory.
-        rmPrev = rmPrev && editPathTxtFile(classFileTool, '');
+        rmPrev = rmPrev | editPathTxtFile(classFileTool, '');
         % We will only add the jar path using the prefdir mechanism.
         classFilePref = fullfile(prefdir, 'javaclasspath.txt');
-        rmPrev = rmPrev && editPathTxtFile(classFilePref, OpenSimJarPath);
+        rmPrev = rmPrev | editPathTxtFile(classFilePref, OpenSimJarPath);
     end
 
 %    % Edit the class path txt file
@@ -145,11 +145,11 @@ try
     OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
     libraryFileTool = fullfile(toolboxLocal, 'librarypath.txt');
     if matlabOlderThan2012b
-        rmPrev = rmPrev && editPathTxtFile(libraryFileTool, OpenSimLibPath);
+        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, OpenSimLibPath);
     else
-        rmPrev = rmPrev && editPathTxtFile(libraryFileTool, '');
+        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, '');
         libraryFilePref = fullfile(prefdir, 'javalibrarypath.txt');
-        rmPrev = rmPrev && editPathTxtFile(libraryFilePref, OpenSimLibPath);
+        rmPrev = rmPrev | editPathTxtFile(libraryFilePref, OpenSimLibPath);
     end
     % TODO
     %if ~success
@@ -165,58 +165,54 @@ try
     cleanMatlabSearchPath();
     utilitiesPath = fullfile(thisFolder, 'Utilities');
     addpath(utilitiesPath);
-    fprintf('-- Added %s to the MATLAB path.\n', utilitiesPath);
-    if ispc
-        addpath(OpenSimLibPath);
-        fprintf('-- Added %s to the MATLAB path.\n', OpenSimLibPath);
-    end
-    fprintf('\n');
-    % TODO savepath only works if the user calls it directly...
+    fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
     status = savepath;
-    % TODO handle this failing.
     if status ~= 0 % Status is 0 for success (see doc savepath). 
-        showMessage(['Unable to save changes to the MATLAB path. ' ...
-                'Restart MATLAB as administrator (or with sudo, on UNIX) ' ...
-                'and re-run configureOpenSim.m.'], 'Error', true);
+        fprintf(['-- Could not save changes to the MATLAB path. ' ...
+                 'Therefore, you will not have access to OpenSim-related '...
+                 'MATLAB utilities like osimTableToStruct(). ' ...
+                 'Restart MATLAB as administrator (or with sudo, on UNIX) '...
+                 'and re-run configureOpenSim.m.'])
     end
 
-%% Display message
-% TODO However, we were not able to remove pre-existing OpenSim entries; see
-% the Command Window for details.
+%% Display final message.
     msg = ['Paths have been successfully updated for the copy of OpenSim '...
-            'installed at ' openSimFolder ...
-            '. To complete setup, restart MATLAB. To test your set up, ' ...
-            'type: `model = org.opensim.modeling.Model();`'];
-    if ~rmPrev
-        % We detected previous OpenSim entries but couldn't remove them.
-        msg = [msg ' However, we were unable to remove existing '...
+            'installed at ' openSimFolder '.'];
+    if rmPrev(1) && rmPrev(2) 
+        % We detected previous OpenSim entries and couldn't remove them.
+        msg = [msg ' However, we were unable to fully remove existing '...
                 'installations of OpenSim from MATLAB. '...
                 'Either remove them manually (see Command Window for '...
                 'details), or restart ' ...
                 'MATLAB as administrator (or with sudo, on UNIX) ' ...
                 ' and re-run configureOpenSim.m.'];
     end
+    if ispc && rmPrev(1) 
+        msg = [msg ' Make sure your Windows PATH (search for ' ...
+                   '"environment" in the Windows start menu) ' ...
+                   'contains ' OpenSimLibPath '.'];
+        % If the user does not have a pre-existing OpenSim installation,
+        % we assume the OpenSim installer successfully edited the PATH;
+        % no need for a message.
+    end
+    msg = [msg ' To complete setup, restart MATLAB. To test your set up, ' ...
+           'type: `model = org.opensim.modeling.Model();`'];
     showMessage(msg, 'OpenSim successfully added', false);
 catch ME
     throwAsCaller(ME); % Avoid a stacktrace.
-end % end try...catch
-end % end function
+end % try...catch
+end % function
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function couldRemovePreexisting = editPathTxtFile(txtname, spath)
+function rmPrev = editPathTxtFile(txtname, spath)
     % Edits Java path .txt files. Deletes old entries and adds the new path
     % spath if spath is not empty.
-
-    % file does not exist, don't want to add
-    % file does not exist, want to add, can edit
-    % file does not exist, want to add, cannot edit
-    % file exists, don't want to add 
-    % file exists, want to add, can edit
-    % file exists, want to add, cannot edit
-
-    couldRemovePreexisting = true;
-
+    % return value:
+    % (1): have we detected existing OpenSim entries?
+    % (2): did we have trouble removing existing OpenSim entries.
+    rmPrev = [false false];
+    
     % If the file does not exist then there are no old entries to delete; if
     % we are not adding an entry, then there is nothing to do.
     if ~exist(txtname, 'file') && isempty(spath)
@@ -225,7 +221,6 @@ function couldRemovePreexisting = editPathTxtFile(txtname, spath)
 
     % If the file exists, then check if it has existing OpenSim entries.
     entries = cell(0);
-    foundExisting = false;
     if exist(txtname, 'file')
         fileIDread = fopen(txtname, 'r');
         if fileIDread == -1
@@ -238,14 +233,14 @@ function couldRemovePreexisting = editPathTxtFile(txtname, spath)
             end
         else
             C = textscan(fileIDread,'%s', 'delimiter','\n');
-            [entries, foundExisting] = searchForOpenSimString(C, txtname);
+            [entries, rmPrev(1)] = searchForOpenSimString(C, txtname);
         end
         fclose(fileIDread);
     end
 
     % If we detected previous OpenSim entries or if want to add an entry,
     % then we need to be able to write to the file.
-    if foundExisting || ~isempty(spath)
+    if rmPrev(1) || ~isempty(spath)
         fileIDwrite = fopen(txtname, 'w');
         if fileIDwrite == -1
             if isempty(spath)
@@ -254,9 +249,10 @@ function couldRemovePreexisting = editPathTxtFile(txtname, spath)
                 % TODO this message should show in a pop-up.
                 fprintf(['-- Unable to remove existing OpenSim entries in ' ...
                         '%s.\n'], txtname);
-                couldRemovePreexisting = false;
+                rmPrev(2) = true;
                 return;
             else
+                % TODO test this by running in 2012b mode.
                 showMessage(['Unable to add OpenSim to ' txtname '.'], ...
                         'Error', true);
             end
@@ -268,16 +264,19 @@ function couldRemovePreexisting = editPathTxtFile(txtname, spath)
             fprintf(fileIDwrite, '%s\n', entries{i});
         end
         fclose(fileIDwrite);
-        msg = ['-- Added ' spath ' to ' txtname];
-        if foundExisting
+        if ispc
+            msg = ['-- Added ' strrep(spath, '\', '\\') ' to ' ...
+                    strrep(txtname, '\', '\\')];
+        else
+            msg = ['-- Added ' spath ' to ' txtname];
+        end
+        % TODO look at other fprintfs wit paths.
+        if rmPrev(1)
             msg = [msg ' and commented out pre-existing OpenSim entries'];
         end
         msg = [msg '.\n\n'];
         fprintf(msg);
     end
-
-
-
 
 
     %% If the file does not exist, try creating it.
