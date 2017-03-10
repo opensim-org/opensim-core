@@ -99,12 +99,12 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             double minControl = 0;
             if (minControlElt != aNode.element_end()) {
                 minControlElt->getValueAs<double>(minControl);
-
-                // remove the min_control property in XML since it is a result
-                // of a mistake with the previous versions not updating
-                // the min_control to reflect the min_activation. Removing it
-                // allows the Muscle to use the default that is specified by the
-                // derived concrete Muscle
+                // If the min_control value is 0, then remove the min_control
+                // property in XML since it is likely a result of a mistake. In
+                // previous versions, the min_control property was no updated
+                // to reflect the Muscle's min_activation. Removing it allows
+                // the Muscle to use the appropriate default specified by the
+                // derived concrete Muscle.
                 if (SimTK::isNumericallyEqual(minControl, 0.0)) {
                     aNode.removeNode(minControlElt);
                 }
