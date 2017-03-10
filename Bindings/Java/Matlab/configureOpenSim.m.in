@@ -29,7 +29,7 @@ function configureOpenSim()
 % Removing existing OpenSim paths:
 %    This function tries detect any OpenSim installations you may have
 %    previously configured with MATLAB, and removes them from the Java class
-%    path, Java library path, and MATLAB path (all 3 points above).
+%    path, Java library path, and MATLAB path (all 3 items above).
 %  
 % MATLAB versions older than 2012b:
 %    If your MATLAB version is older than 2012b, we must use an older mechanism
@@ -38,22 +38,6 @@ function configureOpenSim()
 %    editing files within the MATLAB installation.
 %
 %    This function requires MATLAB 2007b or later to run.
-
-
-% TODO user must make sure OpenSim bin dir is on the PATH.
-% TODO only remove old MATLAB install if adding the new one will work.
-%    TODO administrator necessary?
-%TODO run as administrator.
-%TODO mention in messages that we deleted an older version of MATLAB.
-%MATLAB 2012b was the first version to allow javaclasspath.txt in the prefdir.
-% 2012b was version 8.0.
-% TODO could also just comment out the lines containing the old opensim paths
-% (rather than deleting those lines altogether).
-%  if verLessThan('matlab', '8.0') 
-%TODO make sure we delete any OpenSim mention in old toolbox
-%classpath/librarypath folders.
-% TODO save backup versions of javaclasspath and javalibrarypath.txt files.
-% TODO i
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -107,7 +91,7 @@ try
             '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
     % Keep track of if (1) we detected existing OpenSim
-    % and (2) if we had issues existing OpenSim entries.
+    % and (2) if we had issues removing existing OpenSim entries.
     rmPrev = [false false];
     % The verLessThan function was introduced in MATLAB 2007a.
     matlabOlderThan2012b = verLessThan('matlab', '8.0');
@@ -127,19 +111,6 @@ try
         rmPrev = rmPrev | editPathTxtFile(classFilePref, OpenSimJarPath);
     end
 
-%    % Edit the class path txt file
-%    success = editPathTxtFile(classFile, OpenSimJarPath);
-%    % If above failed, Matlab is probably new. Try older technique. TODO
-%    if ~success
-%        classFile = fullfile(toolboxLocal, 'classpath.txt');
-%        success = editPathTxtFile(classFile, OpenSimJarPath);
-%        if ~success
-%            h = msgbox('Failed to add classpath.', 'Error');
-%            uiwait(h)
-%            error('Program exit');
-%        end
-%    end TODO
-
 %% Edit the Java library path.
     % Create the string names used
     OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
@@ -151,15 +122,6 @@ try
         libraryFilePref = fullfile(prefdir, 'javalibrarypath.txt');
         rmPrev = rmPrev | editPathTxtFile(libraryFilePref, OpenSimLibPath);
     end
-    % TODO
-    %if ~success
-    %    success = editPathTxtFile(libraryFile, OpenSimLibPath);
-    %    if ~success
-    %        h = msgbox('Failed to add librarypath.', 'Error');
-    %        uiwait(h)
-    %        error('Program exit');
-    %    end
-    %end
 
 %% Edit MATLAB path
     cleanMatlabSearchPath();
@@ -246,14 +208,14 @@ function rmPrev = editPathTxtFile(txtname, spath)
             if isempty(spath)
                 % If we weren't trying to add an entry, then we don't need to
                 % generate an error; just notify the user.
-                % TODO this message should show in a pop-up.
                 fprintf(['-- Unable to remove existing OpenSim entries in ' ...
                         '%s.\n'], txtname);
                 rmPrev(2) = true;
                 return;
             else
-                % TODO test this by running in 2012b mode.
-                showMessage(['Unable to add OpenSim to ' txtname '.'], ...
+                showMessage(['Unable to add OpenSim to ' txtname '. ' ...
+                    'Restart MATLAB as administrator (or with sudo, ' ...
+                    'on UNIX) and re-run configureOpenSim.m.'], ...
                         'Error', true);
             end
         end
@@ -270,7 +232,6 @@ function rmPrev = editPathTxtFile(txtname, spath)
         else
             msg = ['-- Added ' spath ' to ' txtname];
         end
-        % TODO look at other fprintfs wit paths.
         if rmPrev(1)
             msg = [msg ' and commented out pre-existing OpenSim entries'];
         end
@@ -278,54 +239,6 @@ function rmPrev = editPathTxtFile(txtname, spath)
         fprintf(msg);
     end
 
-
-    %% If the file does not exist, try creating it.
-    %if not(exist(txtname, 'file'))
-    %    fileID = fopen(txtname, 'w');
-    %    if fileID == -1
-    %        return
-    %    end
-    %end
-    %% Open the txt file
-    %fileIDtest = fopen(txtname, 'r+');
-    %% Return fail if file id is invalid.
-    %if fileIDtest == -1
-    %    % TODO must do this check AFTER reading and checking for existing
-    %    % entries.
-    %    % TODO Detected an existing OpenSim installation configured with
-    %    % MATLAB, but insufficient privileges to remove it. Restart MATLAB as
-    %    % administrator (or with sudo, on UNIX) and re-run configureOpenSim.m.
-    %    return
-    %end
-    %fclose(fileIDtest);
-    %fileIDread = fopen(txtname, 'r');
-    %C = textscan(fileIDread,'%s', 'delimiter','\n');
-    %fclose(fileIDread);
-    %% Search the lines for previous entries and delete
-    %[Cnew, Cdeleted] = searchForOpenSimString(C);
-    %% If any lines were deleted, save a backup and tell the user.
-    %if length(Cdeleted) ~= 0
-    %    % Save a backup with the current date and time.
-    %    backupPath = strrep(txtname, '.txt', ...
-    %                                ['_backup' datestr(now, 30) '.txt']);
-    %                                % TODO just comment out instead.
-    %    copyfile(txtname, backupPath);
-    %    % TODO show these messages in a msgbox?
-    %    fprintf(['Saved backup to ' backupPath '.\n']);
-    %end
-    %% Add matlab jar path to cell
-    %[Cnrows,Cncols] = cellfun(@size, Cnew);
-    %Cnew{1}{Cnrows+1} = {spath};
-    %% Print the new cell array back to the txt file
-    %fileIDwrite = fopen(txtname, 'w');
-    %for i=1:Cnrows+1
-    %    fprintf(fileIDwrite, '%s\n', char(Cnew{1}{i}));
-    %end
-    %fclose(fileIDwrite);
-    %fprintf(['Added ' spath ' to ' txtname '.\n']);
-    %for iDel = 1:length(Cdeleted)
-    %    fprintf(['Removed ' Cdeleted{iDel} ' from ' txtname '.\n']);
-    %end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -382,7 +295,7 @@ function cleanMatlabSearchPath()
     
     % get the matlab path    
     matlabPath         = path;
-    % matlab path is just 1 long string, so index location of ';'
+    % matlab path is just 1 long string, so index location of ';' or ':'
     if ispc
         pathSep = ';';
     else
