@@ -18,7 +18,6 @@ void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
                                            prefix + "_" + suffix + ".sto");
         }
     };
-
     write(excitation, "excitation");
     write(activation, "activation");
     write(norm_fiber_length, "norm_fiber_length");
@@ -157,49 +156,8 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
 
-        //// Run inverse dynamics, evaluated at all mesh points.
-        //// ---------------------------------------------------
-
-        //// Disable all actuators in the model, as we don't want them to
-        //// contribute generalized forces that would reduce the inverse
-        //// dynamics moments to track.
-        //auto actuators = mutableThis->_model
-        //        .template updComponentList<Actuator>();
-        //for (auto& actuator : actuators) {
-        //    actuator.set_appliesForce(false);
-        //}
-
-        //InverseDynamicsSolver invdyn(_model);
-        //SimTK::State state = mutableThis->_model.initSystem();
-
-        //// Assemble functions for coordinate values. Functions must be in the
-        //// same order as the joint moments (multibody tree order).
-        //auto coords = _model.getCoordinatesInMultibodyTreeOrder();
-        //std::vector<std::string> columnLabels(coords.size());
-        //for (size_t i = 0; i < coords.size(); ++i) {
-        //    // The first state variable in the coordinate should be its value.
-        //    // TODOosim make it easy to get the full name of a state variable
-        //    // Perhaps expose the StateVariable class.
-        //    //columnLabels[i] = coords[i]->getStateVariableNames()[0];
-        //    // This will yield something like "knee/flexion/value".
-        //    columnLabels[i] = ComponentPath(coords[i]->getAbsolutePathName())
-        //            .formRelativePath(_model.getAbsolutePathName()).toString()
-        //            + "/value";
-        //}
-        //FunctionSet coordFunctions =
-        //        createGCVSplineSet(_mrs.getKinematicsData(), columnLabels);
-
-        //// Convert normalized mesh points into times at which to evaluate
-        //// net joint moments.
-        //// TODO this variant ignores our data for generalized speeds.
-        //Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
-        //SimTK::Array_<double> simtkTimes(
-        //        times.data(), times.data() + times.size(), SimTK::DontCopy());
-
-        //// Compute the desired joint moments.
-        //SimTK::Array_<SimTK::Vector> forceTrajectory;
-        //invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
-
+        // Run inverse dynamics, evaluated at all mesh points.
+        // ---------------------------------------------------
         // Store the desired joint moments in an Eigen matrix.
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         // TODO probably has to be VectorX<T> to use with subtraction.
@@ -213,11 +171,7 @@ public:
                         SimTK::Vector(1, times[i_time]));
                 mutableThis->_desiredMoments(i_dof, i_time) = value;
             }
-            //mutableThis->_desiredMoments.col(i) = Eigen::Map<Eigen::VectorXd>(
-            //        &forceTrajectory[i][0], forceTrajectory[i].size());
         }
-        // TODO looks very noisy:
-        //std::cout << "DEBUG " << this->_desiredMoments << std::endl;
         mesh::write(times, _desiredMoments, "DEBUG_desiredMoments.csv");
 
 
@@ -415,6 +369,7 @@ public:
 
         integrand = controls.head(_numCoordActuators).squaredNorm()
                   + muscleExcit.squaredNorm();
+        integrand = 0; // TODO
     }
     MuscleRedundancySolver::Solution interpret_solution(
             const mesh::OptimalControlSolution& ocp_sol) const
@@ -450,10 +405,6 @@ public:
             // Muscle-related quantities.
             // --------------------------
             if (_numMuscles == 0) continue;
-            //TODOfor (int i_act = 0; i_act < _numMuscles; ++i_act) {
-            //TODO    const int i_mus = _numCoordActuators + 2 * i_act;
-            //TODO    excitation_row[i_act] = ocp_sol.controls.col(i_time)[i_mus];
-            //TODO}
             SimTK::RowVector excitation(_numMuscles,
                                         1 /* stride: skip over fiber vel. */,
                                         controls.data() + _numCoordActuators,
@@ -479,21 +430,6 @@ public:
             sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
         }
         return sol;
-
-            // TODO // Each column of controls is a different time.
-            // TODO if (ocp_solution.controls.rows()) {
-            // TODO     // TODO this can be DontCopy.
-            // TODO     SimTK::RowVector controls(ocp_solution.controls.rows(),
-            // TODO                               ocp_solution.controls.col(i)[0]);
-            // TODO     solution.excitations.appendRow(ocp_solution.time[i], controls);
-            // TODO }
-
-            // TODO if (ocp_solution.states.rows()) {
-            // TODO     SimTK::RowVector states(ocp_solution.states.rows(),
-            // TODO                             ocp_solution.states.col(i)[0]);
-            // TODO     solution.activations.appendRow(ocp_solution.time[i], states);
-            //}
-
     }
 private:
     const MuscleRedundancySolver& _mrs;
@@ -512,7 +448,6 @@ private:
     // Cached quantities to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLength;
-    Eigen::MatrixXd _muscleTendonVelocity;
     // TODO make general (CoordinateActuator optimal force).
     double _controlToMoment;
 
