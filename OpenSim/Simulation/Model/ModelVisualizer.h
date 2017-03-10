@@ -175,7 +175,8 @@ public:
     @param[out]     attempts
         On return, this is a list of the absolute path names that were tried.
         If \a geoFile was found, attempts.back() (the last entry) is the
-        absolute path name of \a geoFile.
+        absolute path name of \a geoFile. The last entry of this array will be
+        the path that succeeded in finding the geometry file.
     @returns \c true if \a geoFile was located and is readable.
         
     The search rule is as follows:
@@ -183,6 +184,9 @@ public:
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.
+      - Otherwise, try the search paths added through 
+        addDirToGeometrySearchPaths(). The paths are searched in 
+        reverse-chronological order -- the latest path added is searched first.
       - Finally, try installDir/geoFile where installDir is taken from
         the OPENSIM_HOME environment variable if it exists, otherwise
         a default installation directory. 
@@ -194,6 +198,11 @@ public:
                             const std::string&          geoFile,
                             bool&                       isAbsolute,
                             SimTK::Array_<std::string>& attempts);
+
+    /** Add a directory to the search path to be used by the function
+    findGeometryFile. The added paths are searched in the 
+    reverse-chronological order -- the latest path added is searched first. */
+    static void addDirToGeometrySearchPaths(const std::string& dir);
     /**@}**/
 
 
@@ -227,6 +236,9 @@ private:
     // This is just a reference -- it is owned by the Simbody Visualizer so 
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
+
+    // List of directories to search.
+    static SimTK::Array_<std::string> dirsToSearch;
 };
 
 
