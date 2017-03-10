@@ -732,8 +732,8 @@ if( WIN32 )
         message(AUTHOR_WARNING "OpenSim::GetCompilerVersion() "
             "in OpenSim/version.h does not handle this newer version "
             "(v${MSVC_VERSION}) of Microsoft Visual C++. "
-			"Update OpenSim/version.h and the condition for this warning "
-			"in the root CMakeLists.txt.")
+            "Update OpenSim/version.h and the condition for this warning "
+            "in the root CMakeLists.txt.")
     endif()
     set(OPENSIM_COMPILER_INFO ${MSVC_VERSION})
 else()
