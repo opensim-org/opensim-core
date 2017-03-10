@@ -28,7 +28,7 @@
  */
 
 // UNIX PLATFORM
-#ifndef WIN32
+#ifndef _WIN32
 
 #define OSIMACTUATORS_API
 

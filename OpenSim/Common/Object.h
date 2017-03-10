@@ -27,7 +27,7 @@
  * Author: Frank C. Anderson 
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #pragma warning( disable : 4786 )
 #pragma warning( disable : 4660 )
@@ -47,7 +47,7 @@
 
 
 // EXPORT LINE FOR MICROSOFT VISUAL C++
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef SWIG
 template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif

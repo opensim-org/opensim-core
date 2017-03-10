@@ -36,7 +36,7 @@
 
 
 using namespace OpenSim;
-#ifdef WIN32
+#ifdef _WIN32
 
 //template class OSIMCOMMON_API Array<bool>;
 //template class OSIMCOMMON_API Array<int>;
@@ -45,7 +45,7 @@ using namespace OpenSim;
 
 //template class OSIMCOMMON_API Set<Material>;
 
-#endif  // WIN32
+#endif  // _WIN32
 
 
 typedef Array<bool> ArrayBool;

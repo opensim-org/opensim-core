@@ -26,7 +26,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson, Ajay Seth 
  */
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
@@ -45,7 +45,7 @@
 #endif
 
 #ifndef SWIG
-#ifdef WIN32
+#ifdef _WIN32
 template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 #endif
 #endif
