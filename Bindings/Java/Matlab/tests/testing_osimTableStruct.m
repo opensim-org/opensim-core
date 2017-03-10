@@ -1,103 +1,74 @@
+function testing_osimTableStruct
+
+%% clear working space
 clear all;close all;clc;
-%%
+%% import opensim libraries
 import org.opensim.modeling.*
+%% Build a vec3 times series table programmatically 
+table = DataTableVec3();
+labels = StdVectorString();
+labels.add('marker1');labels.add('marker2');
+labels.add('marker3');labels.add('marker4');
+table.setColumnLabels(labels);
 
-%% Use a c3dAdapter to turn read a c3d file
-c3dAdapter =C3DFileAdapter();
-c3d_data = c3dAdapter .read('test_walking.c3d');
-
-%% get a table of markers 
-% This is a vec3 table
-markerTable_vec3 = c3d_data.get('markers');
-% flatten to get a table of doubles
-markerTable_doubles = markerTable_vec3.flatten();
-
-%% convert to OpenSim objects
-% Struct of Vec3's
-markerStruct_vec3 = osimTableToStruct(markerTable_vec3);
-% Struct of doubles. 
-markerStruct_doubles = osimTableToStruct(markerTable_doubles);
-
-%% Convert structs back to tables
-markerTable_Frank_vec3 = osimTableFromStruct(markerStruct_vec3);
-% Struct of doubles. 
-markerTable_Frank_doubles = osimTableFromStruct(markerStruct_doubles);
-
-%% Transformation from table to struct
-
-% number of labels and rows for the initial opensim table
-nLabels1 = markerTable_vec3.getNumColumns();
-nRows1 = markerTable_vec3.getNumRows();
-
-% number of labels and rows in the intermediate struct
-labels = fieldnames(markerStruct_vec3);
-nLabels2 = length(labels) - 1;
-nRows2   = length(markerStruct_vec3.(labels{1}));
-
-% number of labels and rows for the final opensim table
-nLabels3 = markerTable_Frank_vec3.getNumColumns();
-nRows3 =   markerTable_Frank_vec3.getNumRows();
-
-if nLabels1 == nLabels2 && nLabels2 == nLabels3
-    disp(['number of labels are consistent across each data type'])
-else 
-    error(['number of labels are inconsistent between transformation'])
+for i = 1 : 10
+    elem = Vec3(randi(10,1),randi(10,1),randi(10,1));
+    elems = StdVectorVec3();
+    elems.add(elem); elems.add(elem); elems.add(elem); elems.add(elem);
+    row = RowVectorOfVec3(elems);
+    table.appendRow(0.1,row);
 end
 
-if nRows1 == nRows2 && nRows2 == nRows3
-    disp(['number of Rows are consistent across each data type'])
-else 
-    error(['number of labels are inconsistent between transformation'])
+% Set the indpendentColumn (Time) values
+indCol = table.getIndependentColumn();
+for i = 0 : 9
+    indCol.set(i, i/100)
 end
 
-% check 500 random columns and rows and compare elements across all types    
-randomLabelIndex = randi([1 nLabels1-1],1,500);
-randomRowIndex = randi([1 nRows1-1],1,500);
+%% Turn DataTable to a timesSeriesTable, then flatten
+tsTable = TimeSeriesTableVec3(table);
+tsTable_d = tsTable().flatten();
 
-for i = 1 : 500 
-    
-%   disp(char(markerTable_vec3.getColumnLabel(randomLabelIndex(i))));
-    colData = markerTable_vec3.getDependentColumnAtIndex(randomLabelIndex(i));
-    data1 = colData.get(randomRowIndex(i));
-    
-    labels{randomLabelIndex(i)+1};
-    data2 = markerStruct_vec3.(labels{randomLabelIndex(i)+1})(randomRowIndex(i)+1,:);
-   
-%     disp([num2str(data1.get(0)) ' ' num2str(data1.get(1)) ' ' num2str(data1.get(2))  ]);
-%     disp([num2str(data2(1)) ' ' num2str(data2(2)) ' ' num2str(data2(3))  ]);
-%     disp(sprintf ( '\n') );
+%% Convert to OpenSim Tables to Matlab data type
+mData = osimTableToStruct(tsTable);
+mData_d = osimTableToStruct(tsTable_d);
+% Convert Matlab Structs back to OpenSim tables
+tsTable_2 = osimTableFromStruct(mData);
+tsTable_d_2 = osimTableFromStruct(mData_d);
 
-     if data1.get(0) ~= data2(1) || data1.get(1) ~= data2(2) || data1.get(2) ~= data2(3)
-        error('Transform from table to struct resulted in incorrect values')
-     end
-     
-    if i == 500
-        disp('Transformation from table to struct was successfull - data in correct index')
+%% Check the number of columns and rows are maintained
+nCol = tsTable.getNumColumns();nRow = tsTable.getNumRows();
+nCold = tsTable_d.getNumColumns();nRowd = tsTable_d.getNumRows();
+nCol_2 = tsTable_2.getNumColumns();nRow_2 = tsTable_2.getNumRows();
+nCold_2 = tsTable_d_2.getNumColumns();nRowd_2 = tsTable_d_2.getNumRows();
+
+assert(nCol == nCol_2 & nRow == nRow_2,'Vec3 conversion OpenSim-Matlab_OpenSim incorrect: Rows or Columns not preserved');
+assert(nCold == nCold_2 & nRowd == nRowd_2,'dbl conversion OpenSim-Matlab_OpenSim incorrect: Rows or Columns not preserved');
+
+%% Check data across is conserved across conversions. 
+
+for u = 0 : 9
+    for i = 0 : 3
+        % get the data from the element
+        d = tsTable.getRowAtIndex(u).getElt(0,i);
+        d2 = tsTable_2.getRowAtIndex(u).getElt(0,i);
+        
+        assert( d.get(0) == d2.get(0) & d.get(1) == d2.get(1) & d.get(2) == d2.get(2),['Data at row= ' num2str(u) ' & column= '  num2str(i) ' is not retained during conversion'])
     end
 end
 
-%% test that the resulting struct is the same as the original
-
-% check 500 random columns and rows and compare elements across all types    
-randomLabelIndex = randi([1 nLabels1-1],1,500);
-randomRowIndex = randi([1 nRows1-1],1,500);
-
-for i = 1 : 500 
-    
-%   disp(char(markerTable_vec3.getColumnLabel(randomLabelIndex(i))));
-    colData = markerTable_vec3.getDependentColumnAtIndex(randomLabelIndex(i));
-    data1 = colData.get(randomRowIndex(i));
-    
-    colData = markerTable_Frank_vec3.getDependentColumnAtIndex(randomLabelIndex(i));
-    data2 = colData.get(randomRowIndex(i));
-   
-     if data1.get(0) ~= data2.get(0) || data1.get(1) ~= data2.get(1) || data1.get(2) ~= data2.get(2)
-        error('New Table is different from original')
-     end
-     
-    if i == 500
-        disp('New Table is the same as the original')
+for u = 0 : 9
+    for i = 0 : 11
+        % get the data from the element
+        d = tsTable_d.getRowAtIndex(u).getElt(0,i);
+        d2 = tsTable_d_2.getRowAtIndex(u).getElt(0,i);
+        
+        assert(d == d2,['Data at row= ' num2str(u) ' & column= '  num2str(i) ' is not retained during conversion'])
     end
+end
+
+disp('New Table is the same as the original')
+
 end
 
 
