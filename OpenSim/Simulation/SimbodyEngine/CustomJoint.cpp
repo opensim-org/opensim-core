@@ -53,28 +53,26 @@ CustomJoint::CustomJoint()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name,
-                         const PhysicalFrame& parent,
-                         const PhysicalFrame& child,
-                         SpatialTransform& spatialTransform,
-                         bool reverse) :
-                         Super(name, parent, child, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const PhysicalFrame&  child,
+                         SpatialTransform&     spatialTransform) :
+                         Super(name, parent, child)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
 }
 
-CustomJoint::CustomJoint(const std::string& name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    SpatialTransform& spatialTransform,
-    bool reverse) :
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const SimTK::Vec3&    locationInParent,
+                         const SimTK::Vec3&    orientationInParent,
+                         const PhysicalFrame&  child,
+                         const SimTK::Vec3&    locationInChild,
+                         const SimTK::Vec3&    orientationInChild,
+                         SpatialTransform&     spatialTransform) :
+    Super(name, parent, locationInParent, orientationInParent,
+          child, locationInChild, orientationInChild)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
