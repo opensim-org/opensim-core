@@ -1082,20 +1082,52 @@ OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass);
 // getClassName() when it is available, otherwise a specialization.
 template <class T> struct Object_GetClassName 
 {   static const std::string& name() {return T::getClassName();} };
-template <> struct Object_GetClassName<double> 
-{   static const std::string name() {return "double";} };
-template <> struct Object_GetClassName<int> 
-{   static const std::string name() {return "int";} };
 template <> struct Object_GetClassName<bool> 
 {   static const std::string name() {return "bool";} };
+template <> struct Object_GetClassName<signed char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<unsigned char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<short int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned short int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<long long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned long long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<float> 
+{   static const std::string name() {return "float";} };
+template <> struct Object_GetClassName<double> 
+{   static const std::string name() {return "double";} };
+template <> struct Object_GetClassName<long double> 
+{   static const std::string name() {return "double";} };
 template <> struct Object_GetClassName<std::string> 
 {   static const std::string name() {return "string";} };
+template <> struct Object_GetClassName<SimTK::Vec2> 
+{   static const std::string name() {return "Vec2";} };
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
+template <> struct Object_GetClassName<SimTK::Vec6> 
+{   static const std::string name() {return "Vec6";} };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
 {   static const std::string name() {return "Vector"; } };
 template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
 {   static const std::string name() {return "Vector_<Vec3>";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec6>>
+{   static const std::string name() {return "Vector_<Vec6>";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::SpatialVec>>
+{   static const std::string name() {return "Vector_<SpatialVec>";} };
 template <> struct Object_GetClassName<SimTK::SpatialVec>
 {   static const std::string name() {return "SpatialVec";} };
 template <> struct Object_GetClassName<SimTK::Transform>
