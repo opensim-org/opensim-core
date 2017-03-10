@@ -268,7 +268,7 @@ constructors because they have additional arguments.
     NAME(const std::string& name,
          const PhysicalFrame& parent,
          const PhysicalFrame& child) {
-        return new NAME(name, parent, child, false);
+        return new NAME(name, parent, child);
     }
     
     NAME(const std::string& name,
@@ -279,7 +279,7 @@ constructors because they have additional arguments.
          const SimTK::Vec3& locationInChild,
          const SimTK::Vec3& orientationInChild) {
         return new NAME(name, parent, locationInParent, orientationInParent,
-                    child, locationInChild, orientationInChild, false);
+                    child, locationInChild, orientationInChild);
     }
 };
 %enddef
