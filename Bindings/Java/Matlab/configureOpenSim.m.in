@@ -433,16 +433,16 @@ function showMessage(msg, title, isError)
     % command line.
     % http://stackoverflow.com/questions/6754430/determine-if-matlab-has-a-display-available
     if usejava('jvm') && ~feature('ShowFigureWindows')
-        h = msgbox(msg, title);
-        uiwait(h);
-        if isError
-            error([title ': ' msg]);
-        end
-    else
         if isError
             error([title ': ' msg]);
         else
             disp(['-- ' title ': ' msg]);
+        end
+    else
+        h = msgbox(msg, title);
+        uiwait(h);
+        if isError
+            error([title ': ' msg]);
         end
     end
 end
