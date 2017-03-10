@@ -156,8 +156,8 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
 
-        // Run inverse dynamics, evaluated at all mesh points.
-        // ---------------------------------------------------
+        // Evaluate inverse dynamics result at all mesh points.
+        // ----------------------------------------------------
         // Store the desired joint moments in an Eigen matrix.
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         // TODO probably has to be VectorX<T> to use with subtraction.
@@ -369,7 +369,6 @@ public:
 
         integrand = controls.head(_numCoordActuators).squaredNorm()
                   + muscleExcit.squaredNorm();
-        integrand = 0; // TODO
     }
     MuscleRedundancySolver::Solution interpret_solution(
             const mesh::OptimalControlSolution& ocp_sol) const
@@ -468,7 +467,6 @@ MuscleRedundancySolver::MuscleRedundancySolver() {
     //constructProperty_kinematics_file("");
 }
 
-// TODO SimTK::Array_<SimTK::Vector>
 GCVSplineSet
 MuscleRedundancySolver::computeInverseDynamics() const {
     Model modelForID(_model);
@@ -513,21 +511,8 @@ MuscleRedundancySolver::computeInverseDynamics() const {
     SimTK::Array_<SimTK::Vector> forceTrajectory;
     invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
 
-    // TODO use Storage instead to perform filtering.
-    //TimeSeriesTable forceTrajectoryTable;
-    //const size_t numDOFs = forceTrajectory[0].size();
-    //std::vector<std::string> labels(numDOFs);
-    //for (size_t i = 0; i < numDOFs; ++i) {
-    //    labels[i] = "force" + std::to_string(i);
-    //}
-    //forceTrajectoryTable.setColumnLabels(labels);
-//  //  for (TODO append rows.)
-    //for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
-    //    forceTrajectoryTable.appendRow(times[i_time],
-    //                                   forceTrajectory[i_time].transpose());
-    //}
-    //return createGCVSplineSet(forceTrajectoryTable, labels);
-
+    // Post-process Inverse Dynamics results.
+    // --------------------------------------
     Storage forceTrajectorySto;
     const size_t numDOFs = forceTrajectory[0].size();
     OpenSim::Array<std::string> labels("", numDOFs);
@@ -559,21 +544,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Run inverse dynamics.
     // ---------------------
-    //SimTK::Array_<SimTK::Vector> forceTrajectory;
     const auto forceTrajectory = computeInverseDynamics();
-
-    //// Store the desired joint moments in an Eigen matrix.
-    //// TODO probably has to be VectorX<T> to use with subtraction.
-    //mutableThis->_desiredMoments.resize(forceTrajectory[0].size(),
-    //                                    times.size());
-    //for (size_t i = 0; i < size_t(times.size()); ++i) {
-    //    mutableThis->_desiredMoments.col(i) = Eigen::Map<Eigen::VectorXd>(
-    //            &forceTrajectory[i][0], forceTrajectory[i].size());
-    //}
-    //// TODO looks very noisy:
-    ////std::cout << "DEBUG " << this->_desiredMoments << std::endl;
-    //mesh::write(times, _desiredMoments, "DEBUG_desiredMoments.csv",
-    //            columnLabels);
 
 
     // Solve the optimal control problem.

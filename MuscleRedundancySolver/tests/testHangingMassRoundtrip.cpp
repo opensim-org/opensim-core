@@ -157,48 +157,22 @@ void testIsometricMuscleRoundtrip() {
 
         // Check the answer. The differences in excitation and activation are
         // likely due to differences in the muscle model.
-
-        // Excitation.
-        {
-
-            const auto& actual = solution.excitation.getDependentColumn(
+        auto compare = [](const TimeSeriesTable& table, double expected,
+                          double tol) {
+            const auto& actual = table.getDependentColumn(
                     "/isometric_muscle/actuator");
-            // For some reason, this muscle model only requires an excitation
-            // of 0.4 to achieve the motion.
-            SimTK::Vector expected(solution.excitation.getNumRows(), 0.4);
-            SimTK_TEST_EQ_TOL(actual, expected, 0.01);
-        }
+            SimTK::Vector expectedVector(table.getNumRows(), expected);
+            SimTK_TEST_EQ_TOL(actual, expectedVector, tol);
+        };
 
-        // Activation.
-        {
-            const auto& actual = solution.activation.getDependentColumn(
-                    "/isometric_muscle/actuator");
-            SimTK::Vector expected(solution.activation.getNumRows(), 0.4);
-            SimTK_TEST_EQ_TOL(actual, expected, 0.01);
-        }
-
-        // Fiber velocity.
-        {
-
-            const auto& actual =
-                    solution.norm_fiber_velocity.getDependentColumn(
-                            "/isometric_muscle/actuator");
-            SimTK::Vector expected(
-                    solution.norm_fiber_velocity.getNumRows(), 0.0);
-            SimTK_TEST_EQ_TOL(actual, expected, 0.01);
-        }
-
-        // Fiber length.
-        {
-            const auto& actual =
-                    solution.norm_fiber_length.getDependentColumn(
-                            "/isometric_muscle/actuator");
-            // The fiber must be shorter than 0.1 meters so that the tendon is
-            // not slack and convey a force.
-            SimTK::Vector expected(
-                    solution.norm_fiber_length.getNumRows(), 0.98);
-            SimTK_TEST_EQ_TOL(actual, expected, 0.01);
-        }
+        // For some reason, this muscle model only requires an excitation
+        // of 0.4 to achieve the motion.
+        compare(solution.excitation, 0.4, 0.01);
+        compare(solution.activation, 0.4, 0.01);
+        compare(solution.norm_fiber_velocity, 0.0, 0.01);
+        // The fiber must be shorter than 0.1 meters so that the tendon is
+        // not slack and convey a force.
+        compare(solution.norm_fiber_length, 0.98, 0.01);
     }
     // TODO test other muscle states (e.g, isometric at a greater
     // muscle-tendon length, and thus a different activation).
