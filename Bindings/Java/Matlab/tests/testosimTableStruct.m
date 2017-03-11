@@ -1,4 +1,3 @@
-function testing_osimTableStruct
 
 %% clear working space
 clear all;close all;clc;
@@ -68,8 +67,6 @@ for u = 0 : 9
 end
 
 disp('New Table is the same as the original')
-
-end
 
 
 
