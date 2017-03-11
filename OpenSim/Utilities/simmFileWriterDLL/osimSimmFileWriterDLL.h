@@ -29,7 +29,7 @@
 */
 
 // UNIX PLATFORM
-#ifndef _WIN32
+#ifndef WIN32
 
 #define OSIMSIMMFILEWRITER_API
 
