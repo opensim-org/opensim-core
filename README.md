@@ -121,7 +121,7 @@ and prints the following information to the console:
         [reporter]
                     |           /m|             |
                     | odel_/biceps|             |
-                time| /fiber_force|  elbow_angle|
+                time| |fiber_force|  elbow_angle|
         ------------| ------------| ------------|
                    0|     1.180969|    1.5707963|
                    1|     57.27509|   0.77066412|
