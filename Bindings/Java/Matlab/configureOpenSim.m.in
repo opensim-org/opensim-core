@@ -8,9 +8,13 @@ function configureOpenSim()
 %    This script also adds some OpenSim MATLAB utility functions to your MATLAB
 %    path (e.g., for converting OpenSim data tables to MATLAB structs).
 %    
-%    Windows users must also ensure OpenSim's bin directory is on the operating
+%    Windows users must ensure OpenSim's bin directory is on the operating
 %    system's PATH (search for "environment" in the Windows start menu). 
 %    OpenSim's installer usually does this for you.
+%
+%    Linux users must ensure OpenSim's lib directory on the library path
+%    (LD_LIBRRAY_PATH), and may need to replace MATLAB's libstdc++ 
+%    (see https://github.com/opensim-org/opensim-core/issues/1397).
 %
 %    Depending on your operating system, this function may require
 %    administrator (or sudo) privileges to succeed.
