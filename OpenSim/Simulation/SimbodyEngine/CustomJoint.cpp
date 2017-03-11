@@ -233,7 +233,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
-    if (get_reverse()){
+    if (isReversed){
         inb = getChildFrame().getMobilizedBody();
         inbX = getChildFrame().findTransformInBaseFrame();
 
@@ -281,7 +281,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
 
     SimTK::MobilizedBody::Direction dir =
-        SimTK::MobilizedBody::Direction(get_reverse());
+        SimTK::MobilizedBody::Direction(isReversed);
 
     SimTK::MobilizedBody::FunctionBased
         simtkBody(inb, inbX, 

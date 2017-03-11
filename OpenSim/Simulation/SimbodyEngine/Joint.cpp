@@ -151,6 +151,7 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
 void Joint::setNull()
 {
     setAuthors("Ajay Seth");
+    isReversed = false;
 }
 
 //_____________________________________________________________________________
@@ -161,9 +162,6 @@ void Joint::constructProperties()
 {
     // Generalized coordinates
     constructProperty_coordinates();
-
-    // Transform direction (parent->child or child->parent)
-    constructProperty_reverse(false);
 
     //Default frames list is empty
     constructProperty_frames();
@@ -324,7 +322,7 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
 
     // The parent node in the multibody tree must part of the system
-    if(get_reverse())
+    if(isReversed)
         // this will be the child if the joint definition is reversed
         getSocket<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
     else // otherwise it is the parent frame

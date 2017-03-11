@@ -102,12 +102,6 @@ public:
         "List containing the generalized coordinates (q's) that parameterize "
         "this joint.");
 
-    OpenSim_DECLARE_PROPERTY(reverse, bool,
-        "Advanced option. Specify the direction of the joint in the multibody tree: "
-        "parent->child (forward, reverse is false) or child->parent (reverse is true) "
-        "NOTE: the Joint transform and its coordinates maintain a parent->child "
-        "sense, even if the Joint is reversed.");
-
     OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
         "Physical frames owned by the Joint that are used to satisfy the Joint's "
         "parent and child frame connections. For examples, PhysicalOffsetFrames "
@@ -209,9 +203,9 @@ public:
         derived class. */
     Coordinate& updCoordinate();
 
-    bool getReverse() const { return get_reverse(); }
+    bool getIsReversed() const { return isReversed; }
 
-    //Model building
+    // Model building
     int numCoordinates() const { return getProperty_coordinates().size(); }
 
     // Utility
@@ -380,7 +374,7 @@ protected:
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
-        if (get_reverse()){
+        if (isReversed){
             inb = getChildFrame().getMobilizedBody();
             SimTK::Transform swap = inbX;
             inbX = outbX;
@@ -446,7 +440,7 @@ protected:
                           const PhysicalFrame* physicalFrame = nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
-            SimTK::MobilizedBody::Direction(get_reverse());
+            SimTK::MobilizedBody::Direction(isReversed);
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
@@ -501,10 +495,17 @@ private:
         _slaveBodyForChild = slaveForChild;
     }
 
-private:
-    //=========================================================================
+    //==========================================================================
     // DATA
-    //=========================================================================
+    //==========================================================================
+protected:
+    // Specifies the direction of the Joint in the multibody tree: parent->child
+    // (isReversed is false; default) or child->parent (isReversed is true). The
+    // Joint's transform and coordinates maintain a parent->child sense even if
+    // the joint is reversed.
+    bool isReversed = false;
+
+private:
     SimTK::ReferencePtr<Body> _slaveBodyForParent;
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
@@ -512,10 +513,10 @@ private:
 
     friend class JointSet;
 
-//=============================================================================
+//==============================================================================
 };  // END of class Joint
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 // Specializations
 template <>
