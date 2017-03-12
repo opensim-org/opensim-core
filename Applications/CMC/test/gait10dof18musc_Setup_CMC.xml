@@ -8,7 +8,7 @@
 		<!--List of xml files used to construct an force set for the model.-->
 		<force_set_files> gait10dof_Reserve_Actuators.xml</force_set_files>
 		<!--Directory used for writing results.-->
-		<results_directory>gait10dof18musc_ResultsCMC</results_directory>
+        <results_directory />
 		<!--Output precision.  It is 8 by default.-->
 		<output_precision>8</output_precision>
 		<!--Initial time for the simulation.-->
