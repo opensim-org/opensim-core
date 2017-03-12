@@ -101,6 +101,20 @@ for both OpenSim and Simbody. To make a distributable installation on macOS,
 this should be set to ON to avoid using absolute paths for RPATHs to Simbody
 libraries." ON)
 
+option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
+the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
+into the package. If you are building OpenSim on the same machine on which you
+plan to use it, you can leave this OFF. If you are distributing OpenSim to
+other computers, you should turn this ON. If macOS, this option affects how
+RPATH is set for the SWIG-generated shared libraries. This variable has no
+effect if BUILD_PYTHON_WRAPPING is OFF." OFF)
+# There are many potential ways to distribute the python bindings; here's how
+# you might want to set the above option for different ways of distributing:
+#   simtk.org GUI distribution, macOS: ON (since no env. vars are set)
+#   simtk.org GUI distrubution, Windows: OFF (PATH is set)
+#   pypi: ON (there is no way to install the C++ libraries otherwise)
+#   debian, homebrew, conda: OFF (can have a separate C++ library package)
+
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
@@ -431,6 +445,21 @@ if(${BUILD_JAVA_WRAPPING})
     endif()
 endif()
 
+if(${BUILD_PYTHON_WRAPPING})
+    # PythonInterp is supposed to come before PythonLibs.
+    find_package(PythonInterp 2.7 REQUIRED)
+    find_package(PythonLibs 2.7 REQUIRED)
+
+    # We update the python install dir to include the python version,
+    # now that we know it. We replace the token "VERSION" with the actual python
+    # version.
+    string(REPLACE "VERSION" "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
+        OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
+    # This must be done before adding the OpenSim libraries, since
+    # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
+    # OpenSimMacros.cmake).
+endif()
+
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
@@ -526,6 +555,10 @@ if(WITH_BTK)
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
     CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
+        "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
     # TODO this should be handled separately between macOS and Linux.
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${BTK_LIBRARY_DIRS}")
 endif()
@@ -623,12 +656,11 @@ if(${OPENSIM_COPY_SIMBODY})
     # is only needed for programmers goes in sdk/lib.
     # TODO use SimbodyConfig.cmake variables instead of these globs.
     if(WIN32)
-        file(GLOB SIMBODY_BIN_FILES
-            ${Simbody_BIN_DIR}/*.dll
-            ${Simbody_BIN_DIR}/*.exe)
-        file(GLOB SIMBODY_ARCHIVE_FILES
-            ${Simbody_LIB_DIR}/*.lib)
+        file(GLOB SIMBODY_BIN_FILES ${Simbody_BIN_DIR}/*.dll
+                                    ${Simbody_BIN_DIR}/*.exe)
+        file(GLOB SIMBODY_ARCHIVE_FILES ${Simbody_LIB_DIR}/*.lib)
     else()
+        # TODO simbody-visualizer executable probably isn't even there.
         file(GLOB SIMBODY_BIN_FILES
             ${Simbody_BIN_DIR}/simbody*) # executables only (e.g., visualizer).
         # If the LIB_DIR is some common place for libraries (e.g., /usr/lib/),
@@ -688,6 +720,10 @@ if(${OPENSIM_COPY_SIMBODY})
                 VERBATIM)
         endforeach()
     endif()
+endif()
+if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(SimTK "${Simbody_BIN_DIR}"
+        "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 
