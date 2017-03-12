@@ -655,6 +655,39 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
         }
 
+        // Version 30514 removed the user-facing "reverse" property from Joint.
+        // The parent and child frames are swapped if a "reverse" element is
+        // found and its value is "true".
+        if (documentVersion < 30514) {
+            auto reverseElt = aNode.element_begin("reverse");
+            auto parentElt  = aNode.element_begin(
+                                  "socket_parent_frame_connectee_name");
+            auto childElt   = aNode.element_begin(
+                                  "socket_child_frame_connectee_name");
+
+            if (reverseElt != aNode.element_end()) {
+                bool swapFrames = false;
+                reverseElt->getValue().tryConvertToBool(swapFrames);
+
+                if (swapFrames
+                    && parentElt != aNode.element_end()
+                    && childElt  != aNode.element_end())
+                {
+                    std::string oldParentFrameName = "";
+                    std::string oldChildFrameName  = "";
+
+                    parentElt->getValueAs<std::string>(oldParentFrameName);
+                    childElt->getValueAs<std::string>(oldChildFrameName);
+
+                    parentElt->setValue(oldChildFrameName);
+                    childElt->setValue(oldParentFrameName);
+                }
+
+                // Remove old "reverse" element.
+                aNode.eraseNode(reverseElt);
+            }
+        }
+
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
