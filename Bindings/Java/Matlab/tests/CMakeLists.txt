@@ -32,6 +32,7 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
             matlab_add_unit_test(NAME Matlab_${TESTNAME}_${cfg}
                 UNITTEST_FILE "${_full_path_to_mfile}"
                 TEST_ARGS CONFIGURATIONS ${cfg}
+                ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
                 NO_UNITTEST_FRAMEWORK
                 )
             #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
@@ -44,6 +45,7 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
     else()
         matlab_add_unit_test(NAME Matlab_${TESTNAME}
             UNITTEST_FILE "${_full_path_to_mfile}"
+            ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
             NO_UNITTEST_FRAMEWORK
             )
         #TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
@@ -71,11 +73,13 @@ add_dependencies(RunMatlabTests JavaBindings)
 # ------
 
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
+    ../examples/wiringInputsAndOutputsWithTableReporter.m)
+
 OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
-OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
-    ../examples/wiringInputsAndOutputsWithTableReporter.m)
+OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
