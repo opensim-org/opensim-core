@@ -758,7 +758,7 @@ void Model::extendConnectToModel(Model &model)
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, *ground, *child);
-            free->upd_reverse() = mob.isReversedFromJoint();
+            free->isReversed = mob.isReversedFromJoint();
             // TODO: Joints are currently required to be in the JointSet
             // When the reordering of Joints is eliminated (see following else block)
             // this limitation can be removed and the free joint adopted as in 
@@ -769,7 +769,7 @@ void Model::extendConnectToModel(Model &model)
         else{
             // Update the directionality of the joint according to tree's
             // preferential direction
-            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
+            static_cast<Joint*>(mob.getJointRef())->isReversed =
                 mob.isReversedFromJoint();
 
             // order the joint components in the order of the multibody tree

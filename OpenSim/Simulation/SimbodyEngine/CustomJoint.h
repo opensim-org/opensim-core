@@ -72,24 +72,21 @@ public:
     CustomJoint();
 
     /** Construct joint with supplied coordinates and transform axes */
-    CustomJoint( const std::string &name,
-                 const PhysicalFrame& parent,
-                 const PhysicalFrame& child,
-                 SpatialTransform& spatialTransform,
-                 bool reverse=false);
+    CustomJoint(const std::string&    name,
+                const PhysicalFrame&  parent,
+                const PhysicalFrame&  child,
+                SpatialTransform&     spatialTransform);
 
     /** Joint constructor with explicit parent and child offsets in terms of
         their location and orientation. */
-    CustomJoint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        SpatialTransform& spatialTransform,
-        bool reverse=false);
-
+    CustomJoint(const std::string&    name,
+                const PhysicalFrame&  parent,
+                const SimTK::Vec3&    locationInParent,
+                const SimTK::Vec3&    orientationInParent,
+                const PhysicalFrame&  child,
+                const SimTK::Vec3&    locationInChild,
+                const SimTK::Vec3&    orientationInChild,
+                SpatialTransform&     spatialTransform);
 
     // default destructor, copy constructor, copy assignment
 
