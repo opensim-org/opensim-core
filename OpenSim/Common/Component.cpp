@@ -1552,16 +1552,6 @@ void Component::printSubcomponentInfo() const {
 void Component::printOutputInfo(const bool includeDescendants) const {
     using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
 
-    static const std::unordered_map<std::string, std::string>
-        typeAliases{{"SimTK::Vec<2,double,1>", "Vec2"},
-                    {"SimTK::Vec<3,double,1>", "Vec3"},
-                    {"SimTK::Vec<4,double,1>", "Vec4"},
-                    {"SimTK::Vec<5,double,1>", "Vec5"},
-                    {"SimTK::Vec<6,double,1>", "Vec6"},
-                    {"SimTK::Vec<2,SimTK::Vec<3,double,1>,1>", "SpatialVec"},
-                    {"SimTK::Transform_<double>", "Transform"},
-                    {"SimTK::Vector_<double>", "Vector"}};
-    
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
         const std::string msg = "Outputs from " + getAbsolutePathName() +
@@ -1569,34 +1559,15 @@ void Component::printOutputInfo(const bool includeDescendants) const {
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
         const auto& outputs = getOutputs();
-        unsigned maxlen{};
-        bool printingAlias{false};
-        for(const auto& output : outputs) {
-            const auto& name = output.second->getTypeName();
-            unsigned len = name.length();
-            if(typeAliases.find(name) != typeAliases.end()) {
-                len += typeAliases.at(name).length();
-                printingAlias = true;
-            }
-
-            maxlen = std::max(maxlen, len);
-        }
+        size_t maxlen{};
+        for(const auto& output : outputs)
+            maxlen = std::max(maxlen, output.second->getTypeName().length());
         maxlen += 2;
+        
         for(const auto& output : outputs) {
             const auto& name = output.second->getTypeName();
-            if(typeAliases.find(name) != typeAliases.end())
-                std::cout << std::string(maxlen -
-                                         name.length() -
-                                         typeAliases.at(name).length(), ' ');
-            else if(printingAlias)
-                std::cout << std::string(maxlen - name.length() + 3, ' ');
-            else
-                std::cout << std::string(maxlen - name.length(), ' ');
-            std::cout << "[" << name;
-            if(typeAliases.find(name) != typeAliases.end())
-                std::cout << " = " << typeAliases.at(name);
-            std::cout << "]  "
-                      << output.first << std::endl;
+            std::cout << std::string(maxlen - name.length(), ' ');
+            std::cout << "[" << name  << "]  " << output.first << std::endl;
         }
         std::cout << std::endl;
     }
