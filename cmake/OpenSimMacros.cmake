@@ -87,6 +87,11 @@ function(OpenSimAddLibrary)
     # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so
     # (Linux) or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac
     # .a static archives are only needed at link time so go in sdk/lib.
+    if(WIN32)
+        set(OSIMADDLIB_LIBRARY_DESTINATION sdk/lib)
+    else()
+        set(OSIMADDLIB_LIBRARY_DESTINATION lib)
+    endif()
     install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
         EXPORT OpenSimTargets
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
