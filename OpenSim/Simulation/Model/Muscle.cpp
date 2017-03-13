@@ -93,7 +93,7 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
             XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
         }
-        if (versionNumber <= 30513) {
+        if (versionNumber < 30513) {
             SimTK::Xml::element_iterator minControlElt =
                 aNode.element_begin("min_control");
             double minControl = 0;
