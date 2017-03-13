@@ -2242,8 +2242,7 @@ void testUserJointReversal()
 
     // Open model.
     auto model = Model("double_pendulum_testReverse.osim");
-    //model.finalizeFromProperties();
-    model.initSystem();
+    model.finalizeConnections(model); //calls finalizeFromProperties internally
 
     // The topology is specified as follows:
     //     [ground] <- (pin1) <- [rod1] <- (pin2) <- [rod2]
