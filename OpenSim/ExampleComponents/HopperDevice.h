@@ -1,7 +1,7 @@
 #ifndef _OPENSIM_DEVICE_H_
 #define _OPENSIM_DEVICE_H_
 /* -------------------------------------------------------------------------- *
- *               OpenSim:  Device.h                                           *
+ *               OpenSim:  HopperDevice.h                                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -29,15 +29,15 @@
 namespace OpenSim {
 
 //------------------------------------------------------------------------------
-// Device is a type of ModelComponent that contains all the parts comprising a
-// assistive device model (a PathActuator plus bodies and joints for attaching
-// the actuator to the hopper or testbed). Devices are built by buildDevice()
-// (see buildDeviceModel.cpp).
+// HopperDevice is a type of ModelComponent that contains all the parts
+// comprising a assistive device model (a PathActuator plus bodies and joints
+// for attaching the actuator to the hopper or testbed). Devices are built by
+// buildDevice() (see buildDeviceModel.cpp).
 // This class is written to be used with Hopper example and is not generic
 // to be used elsewhere.
 //------------------------------------------------------------------------------
-class Device : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
+class HopperDevice : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(HopperDevice, ModelComponent);
 
 public:
     // Outputs that report quantities in which we are interested.
@@ -60,7 +60,7 @@ public:
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
 
-    Device(const std::string& pathActuator, const std::string& )
+    HopperDevice(const std::string& pathActuator, const std::string& )
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
@@ -94,6 +94,6 @@ protected:
         actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
     }
 
-}; // end of Device
+}; // end of HopperDevice
     
 #endif // _OPENSIM_DEVICE_H_
