@@ -107,7 +107,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_amplitude(1.0);
-        constructProperty_omega(2 * SimTK::Pi);
+        constructProperty_omega(1.0);
         constructProperty_phase(0.0);
         constructProperty_offset(0.0);
     }
