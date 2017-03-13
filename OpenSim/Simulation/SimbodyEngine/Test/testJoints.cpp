@@ -2244,11 +2244,13 @@ void testUserJointReversal()
     auto model = Model("double_pendulum_testReverse.osim");
     model.finalizeConnections(model); //calls finalizeFromProperties internally
 
-    // The topology is specified as follows:
-    //     [ground] <- (pin1) <- [rod1] <- (pin2) <- [rod2]
-    // but the "reverse" element of "pin2" is "true" so, after deserialization,
-    // the topology should be the following:
-    //     [ground] <- (pin1) <- [rod1] -> (pin2) -> [rod2]
+    // In this model file:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod1 and child is rod2
+    // but the "reverse" element of pin2 is set to "true" so, after
+    // deserialization, the following should be true:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
     auto& pin1 = model.getComponent<Joint>("pin1");
     ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
         __FILE__, __LINE__,
