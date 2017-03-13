@@ -585,6 +585,20 @@ public:
         return ComponentList<T>(*this);
     }
 
+    /**
+     * Uses getComponentList<T>() to count the number of underlying
+     * subcomponents of the specified type.
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
+    template <typename T = Component>
+    unsigned countNumComponents() const {
+        unsigned count = 0u;
+        for (const auto& comp : getComponentList<T>())
+            ++count;
+        return count;
+    }
+
     /** Class that permits iterating over components/subcomponents (but does
      * not actually contain the components themselves). */
     template <typename T>
