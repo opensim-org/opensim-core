@@ -1,5 +1,3 @@
-Some notes to consider (from CONTRIBUTING.md):
-
 Fixes issue #<issue_number>
 
 ### Brief summary of changes
