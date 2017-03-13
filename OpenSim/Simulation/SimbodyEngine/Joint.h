@@ -203,8 +203,6 @@ public:
         derived class. */
     Coordinate& updCoordinate();
 
-    bool getIsReversed() const { return isReversed; }
-
     // Model building
     int numCoordinates() const { return getProperty_coordinates().size(); }
 
