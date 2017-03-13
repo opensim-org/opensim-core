@@ -1,0 +1,1 @@
+%include <Bindings/examplecomponents.i>

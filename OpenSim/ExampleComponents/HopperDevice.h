@@ -60,7 +60,8 @@ public:
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
 
-    HopperDevice(const std::string& pathActuator, const std::string& )
+    HopperDevice() = default;
+    HopperDevice(const std::string& pathActuator, const std::string& );
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
@@ -95,5 +96,7 @@ protected:
     }
 
 }; // end of HopperDevice
+
+} // namespace OpenSim
     
 #endif // _OPENSIM_DEVICE_H_

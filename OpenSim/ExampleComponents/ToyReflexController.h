@@ -27,6 +27,7 @@
 //============================================================================
 // INCLUDE
 //============================================================================
+#include "osimExampleComponentsDLL.h"
 #include "OpenSim/Simulation/Control/Controller.h"
 
 
@@ -42,7 +43,7 @@ namespace OpenSim {
  *
  * @author  Ajay Seth
  */
-class OSIMSIMULATION_API ToyReflexController : public Controller {
+class OSIMEXAMPLECOMPONENTS_API ToyReflexController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(ToyReflexController, Controller);
 
 public:

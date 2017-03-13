@@ -22,8 +22,9 @@
 
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimExampleComponents.h"
-
+#include "ToyPropMyoController.h"
 #include "ToyReflexController.h"
+#include "HopperDevice.h"
 
 #include <string>
 #include <iostream>
@@ -32,7 +33,7 @@
 using namespace std;
 using namespace OpenSim;
 
-static osimExampleComponentsInstantiator instantiator; 
+static osimExampleComponentsInstantiator osimExampleComponentsInstantiator; 
 
 //_____________________________________________________________________________
 /**
@@ -45,7 +46,7 @@ OSIMEXAMPLECOMPONENTS_API void RegisterTypes_osimExampleComponents()
 
       Object::registerType( ToyReflexController() );
       Object::registerType( ToyPropMyoController() );
-      Object::registerType( Device() );
+      Object::registerType( HopperDevice() );
     
   } catch (const std::exception& e) {
     std::cerr 

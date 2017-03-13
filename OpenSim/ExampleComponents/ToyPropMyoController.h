@@ -25,6 +25,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Simulation/Control/Controller.h"
+#include "OpenSim/Simulation/Model/Actuator.h"
 #include <OpenSim/Common/Constant.h>
 
 namespace OpenSim {
