@@ -10,3 +10,4 @@ function(MRSAddTest TEST_NAME LIB_DEPENDENCIES)
 endfunction()
 
 MRSAddTest(testHangingMassRoundtrip osimMuscleRedundancySolver)
+MRSAddTest(testSingleMuscle osimMuscleRedundancySolver)
