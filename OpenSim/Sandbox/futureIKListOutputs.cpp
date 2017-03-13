@@ -398,9 +398,8 @@ void testFutureIKListOutputs() {
     modelMarkers->updInput("inputs").connect(ik->getOutput("model_marker_pos"));
     // Connect to all channels in the "coords" list output.
     solution->updInput("inputs").connect(ik->getOutput("coords"));
-    hjc->dumpConnections();
-    ik->dumpConnections();
-
+    hjc->printSocketInfo();
+    ik->printSocketInfo();
 
     model.printSubcomponentInfo();
 
