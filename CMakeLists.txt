@@ -490,7 +490,7 @@ endif()
 
 
 ## RPATH 
-# If it is necesasry to not put RPATHS in the installed binaries, set
+# If it is necessary to not put RPATHS in the installed binaries, set
 # set CMAKE_SKIP_INSTALL_RPATH to OFF.
 if(APPLE)
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
