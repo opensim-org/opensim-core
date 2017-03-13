@@ -89,4 +89,6 @@ class TestBasics(unittest.TestCase):
         ellipsoid = osim.WrapEllipsoid()
         model.getGround().addWrapObject(ellipsoid)
 
+    def test_ToyReflexController(self):
+        controller = osim.ToyReflexController()
         
