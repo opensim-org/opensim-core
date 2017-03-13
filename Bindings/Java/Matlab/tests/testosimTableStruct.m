@@ -10,12 +10,16 @@ labels.add('marker1');labels.add('marker2');
 labels.add('marker3');labels.add('marker4');
 table.setColumnLabels(labels);
 
+R = Rotation(pi/3, Vec3(0.1, 0.2, 0.3));
+
 for i = 1 : 10
     elem = Vec3(randi(10,1),randi(10,1),randi(10,1));
     elems = StdVectorVec3();
     elems.add(elem); elems.add(elem); elems.add(elem); elems.add(elem);
     row = RowVectorOfVec3(elems);
-    table.appendRow(0.1,row);
+    
+    rotatedRow = R.multiply(row);    
+    table.appendRow(0.1,rotatedRow);
 end
 
 % Set the indpendentColumn (Time) values
