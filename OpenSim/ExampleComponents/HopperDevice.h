@@ -24,7 +24,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include "osimExampleComponentsDLL.h"
+#include <OpenSim/Simulation/Model/PathActuator.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -36,7 +40,7 @@ namespace OpenSim {
 // This class is written to be used with Hopper example and is not generic
 // to be used elsewhere.
 //------------------------------------------------------------------------------
-class HopperDevice : public ModelComponent {
+class OSIMEXAMPLECOMPONENTS_API HopperDevice : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(HopperDevice, ModelComponent);
 
 public:
@@ -59,9 +63,6 @@ public:
     // The center of mass height of the model to which the device is attached.
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
-
-    HopperDevice() = default;
-    HopperDevice(const std::string& pathActuator, const std::string& );
 
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
