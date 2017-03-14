@@ -424,7 +424,8 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
     }
     osimModel.equilibrateMuscles(si);
 
-    osimModel.printBasicInfo(cout);
+    osimModel.finalizeFromProperties();
+    osimModel.printBasicInfo();
 
     simulate(osimModel, si, initialTime, finalTime);
 
@@ -846,7 +847,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 }// end of simulateModelWithCables()
 
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime) {
-    //  osimModel.printBasicInfo(cout);
+    // osimModel.finalizeFromProperties();
+    // osimModel.printBasicInfo();
 
     // Dump model back out; no automated test provided here though.
     // osimModel.print(osimModel.getName() + "_out.osim");
