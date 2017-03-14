@@ -1645,9 +1645,10 @@ protected:
     /** Perform any time-invariant calculations, data structure initializations,
     or other configuration based on the component's properties to form a
     functioning (but not yet connected) component. For example, each property
-    should be checked to ensure that its value is within an acceptable range. Do
-    not perform any configuration that depends on the SimTK::MultibodySystem; it
-    is not available at this point.
+    should be checked to ensure that its value is within an acceptable range.
+    When this method returns, the component will be marked as being up-to-date
+    with its properties. Do not perform any configuration that depends on the
+    SimTK::MultibodySystem; it is not available at this point.
 
     If you override this method, be sure to invoke the base class method first,
     using code like this:
