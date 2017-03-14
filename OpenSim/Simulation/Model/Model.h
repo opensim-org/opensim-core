@@ -927,15 +927,16 @@ public:
      *
      * @param aOStream Output stream.
      */
-    void printBasicInfo(std::ostream &aOStream) const;
+    void printBasicInfo(std::ostream& aOStream = std::cout) const;
 
     /**
      * Print detailed information about the model.
      *
-     * @param s   the system State.
+     * @param s        the system State.
      * @param aOStream Output stream.
      */
-    void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
+    void printDetailedInfo(const SimTK::State& s,
+                           std::ostream& aOStream = std::cout) const;
 
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 

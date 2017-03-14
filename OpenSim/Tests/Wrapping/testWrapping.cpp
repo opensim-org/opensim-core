@@ -415,6 +415,9 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
     osimModel.addController(&actuatorController);
     osimModel.disownAllComponents(); // because PrescribedController is on stack
 
+    osimModel.finalizeFromProperties();
+    osimModel.printBasicInfo();
+
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
@@ -424,10 +427,7 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
     }
     osimModel.equilibrateMuscles(si);
 
-    osimModel.printBasicInfo(cout);
-
     simulate(osimModel, si, initialTime, finalTime);
-
 
 }// end of simulateModelWithMusclesNoViz()
 
@@ -846,7 +846,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 }// end of simulateModelWithCables()
 
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime) {
-    //  osimModel.printBasicInfo(cout);
+    // osimModel.finalizeFromProperties();
+    // osimModel.printBasicInfo();
 
     // Dump model back out; no automated test provided here though.
     // osimModel.print(osimModel.getName() + "_out.osim");

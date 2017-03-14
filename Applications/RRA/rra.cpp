@@ -126,7 +126,8 @@ int main(int argc,char **argv)
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
-    model.printBasicInfo(cout);
+    model.finalizeFromProperties();
+    model.printBasicInfo();
     cout<<"-----------------------------------------------------------------------\n\n";
 
 

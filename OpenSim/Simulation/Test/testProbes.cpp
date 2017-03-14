@@ -488,7 +488,8 @@ void simulateMuscle(
     MuscleAnalysis* muscleReporter = new MuscleAnalysis(&model);
     model.addAnalysis(muscleReporter);
     model.print("testProbesModel.osim");
-    model.printBasicInfo(cout);
+    model.finalizeFromProperties();
+    model.printBasicInfo();
 
 
 
