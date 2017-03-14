@@ -186,6 +186,10 @@ namespace SimTK {
     RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
         return operator*(*$self, row);
     }
+
+    RowVector_<Vec3> multiply(const RowVectorView_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
 }
 
 
@@ -225,8 +229,8 @@ namespace SimTK {
 typedef int MobilizedBodyIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
 %include <SWIGSimTK/PolygonalMesh.h>
