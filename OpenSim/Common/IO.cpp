@@ -107,7 +107,7 @@ FixSlashesInFilePath(const std::string &path)
 {
     std::string fixedPath = path;
     for(unsigned int i=0;i<fixedPath.length();i++) {
-#ifdef WIN32
+#ifdef _WIN32
         if(fixedPath[i] == '/') fixedPath[i] = '\\';
 #else
         if(fixedPath[i] == '\\') fixedPath[i] = '/';

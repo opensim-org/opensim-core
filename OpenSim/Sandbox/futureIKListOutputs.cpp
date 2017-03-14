@@ -402,7 +402,7 @@ void testFutureIKListOutputs() {
     ik->dumpConnections();
 
 
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
 
     SimTK::State& s = model.initSystem();
     

@@ -20,14 +20,20 @@ function(OpenSimGenerateJavaWrapper
         "${_swig_common_args}"
         )
 
+    # This directory will hold the SWIG-generated .java files, but SWIG won't
+    # create this directory for us.
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME})
     add_custom_command(
         # This target actually creates a lot more (all the produced .java files)
         # but we will just use these two files as a proxy for all of those.
         OUTPUT ${OUTPUT_CXX_FILE} ${OUTPUT_H_FILE}
+        # To avoid compiling stale .java files, delete any existing .java files.
+        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}/*
         COMMAND ${SWIG_EXECUTABLE}
             -v # verbose
             -o ${OUTPUT_CXX_FILE}
-            -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+            -outdir ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}
             ${_swig_common_args}
         DEPENDS ${_${NAME}_dependencies}
         COMMENT "Generating Java bindings source code with SWIG: ${NAME}")

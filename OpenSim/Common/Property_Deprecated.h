@@ -76,7 +76,7 @@ template <class T> class Array;
     #define OSIMCOMMON_API
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4290 )   // VC++ non-ANSI Exception handling
 #pragma warning( disable : 4251 )   // VC2010 no-dll export of std::string
 

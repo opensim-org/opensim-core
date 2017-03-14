@@ -27,7 +27,7 @@
 #define osimToolsDLL_h__
 
 // UNIX PLATFORM
-#ifndef WIN32
+#ifndef _WIN32
 
 #define OSIMTOOLS_API
 

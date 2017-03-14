@@ -55,6 +55,8 @@ void Millard2012EquilibriumMuscle::constructProperties()
     constructProperty_ForceVelocityCurve(ForceVelocityCurve());
     constructProperty_FiberForceLengthCurve(FiberForceLengthCurve());
     constructProperty_TendonForceLengthCurve(TendonForceLengthCurve());
+
+    setMinControl(get_minimum_activation());
 }
 
 void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
@@ -104,7 +106,11 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     // an elastic tendon is used with no fiber damping).
     if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
         // Compliant tendon with no damping.
-        set_minimum_activation(clamp(0.01, get_minimum_activation(), 1));
+        OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
+            InvalidPropertyValue, getProperty_minimum_activation().getName());
+
+        OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
+            InvalidPropertyValue, getProperty_min_control().getName());
 
         if (falCurve.getMinValue() < 0.1)
             falCurve.setMinValue(0.1);
@@ -112,7 +118,13 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
                                   0.1, eccSlopeNearVmax, eccForceMax);
 
-    } else { //singularity-free model
+    } else { //singularity-free model still cannot have excitations below 0
+        OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.0,
+            InvalidPropertyValue, getProperty_minimum_activation().getName());
+
+        OPENSIM_THROW_IF_FRMOBJ(getMinControl() < 0.0,
+            InvalidPropertyValue, getProperty_min_control().getName());
+
         set_minimum_activation(clamp(0, get_minimum_activation(), 1));
         falCurve.setMinValue(0.0);
         fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,

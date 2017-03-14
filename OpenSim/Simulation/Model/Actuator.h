@@ -175,13 +175,11 @@ public:
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
 
-    // manage bounds on Control
-    void setMinControl(const double& aMinControl) 
-    {   set_min_control(aMinControl); }
-    double getMinControl() const { return get_min_control(); }
-    void setMaxControl(const double& aMaxControl) 
-    {   set_max_control(aMaxControl); }
-    double getMaxControl() const { return get_max_control(); }
+    /** Methods to manage the bounds on ScalarActuator's control */
+    void setMinControl(const double& aMinControl);
+    double getMinControl() const;
+    void setMaxControl(const double& aMaxControl);
+    double getMaxControl() const;
 
     //--------------------------------------------------------------------------
     // Overriding Actuation

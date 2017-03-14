@@ -728,6 +728,13 @@ set(OPENSIM_SYSTEM_INFO ${CMAKE_SYSTEM})
 set(OPENSIM_OS_NAME ${CMAKE_SYSTEM_NAME})
 
 if( WIN32 )
+    if (${MSVC_VERSION} GREATER 1910)
+        message(AUTHOR_WARNING "OpenSim::GetCompilerVersion() "
+            "in OpenSim/version.h does not handle this newer version "
+            "(v${MSVC_VERSION}) of Microsoft Visual C++. "
+            "Update OpenSim/version.h and the condition for this warning "
+            "in the root CMakeLists.txt.")
+    endif()
     set(OPENSIM_COMPILER_INFO ${MSVC_VERSION})
 else()
     set(OPENSIM_COMPILER_INFO ${CMAKE_CXX_COMPILER} )

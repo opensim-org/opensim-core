@@ -2125,9 +2125,9 @@ void testAutomaticJointReversal()
     //model.setUseVisualizer(true);
     SimTK::State& s = model.initSystem();
 
-    ASSERT(hip->get_reverse() == true);
-    ASSERT(knee->get_reverse() == true);
-    ASSERT(ankle->get_reverse() == true);
+    ASSERT(hip->getIsReversed() == true);
+    ASSERT(knee->getIsReversed() == true);
+    ASSERT(ankle->getIsReversed() == true);
 
     SimTK::Transform pelvisX = pelvis->getTransformInGround(s);
     cout << "Pelvis Transform (reverse): " << pelvisX << endl;

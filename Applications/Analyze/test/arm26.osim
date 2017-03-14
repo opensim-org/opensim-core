@@ -1,1563 +1,1462 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20302">
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30513">
 	<Model name="arm26">
-		<defaults/>
-		<credits> The OpenSim Development Team (Reinbolt, J; Seth, A; Habib, A; Hamner, S) </credits>
-		<publications> This is an example model distributed with OpenSim </publications>
-		<ForceSet name="">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+			<attached_geometry>
+				<Mesh name="ground_geom_1">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_ribs.vtp</mesh_file>
+				</Mesh>
+				<Mesh name="ground_geom_2">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_spine.vtp</mesh_file>
+				</Mesh>
+				<Mesh name="ground_geom_3">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_skull.vtp</mesh_file>
+				</Mesh>
+				<Mesh name="ground_geom_4">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_jaw.vtp</mesh_file>
+				</Mesh>
+				<Mesh name="ground_geom_5">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_r_clavicle.vtp</mesh_file>
+				</Mesh>
+				<Mesh name="ground_geom_6">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame_connectee_name>ground</socket_frame_connectee_name>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>1 1 1</scale_factors>
+					<!--Default appearance attributes for this Geometry-->
+					<Appearance>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>1</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>1 1 1</color>
+					</Appearance>
+					<!--Name of geometry file.-->
+					<mesh_file>ground_r_scapula.vtp</mesh_file>
+				</Mesh>
+			</attached_geometry>
+			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+			<WrapObjectSet>
+				<objects>
+					<WrapCylinder name="TRIlongglen">
+						<!--Whether or not the WrapObject is considered active in computing paths-->
+						<active>true</active>
+						<!--Body-fixed Euler angle sequence for the orientation of the WrapObject-->
+						<xyz_body_rotation>1.3753194500000001 -0.29461157999999998 2.4359560400000002</xyz_body_rotation>
+						<!--Translation of the WrapObject.-->
+						<translation>-0.043905 -0.0038999999999999998 0.14779999999999999</translation>
+						<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+						<quadrant>x</quadrant>
+						<!--The radius of the cylinder.-->
+						<radius>0.0030000000000000001</radius>
+						<!--The length of the cylinder.-->
+						<length>0.029999999999999999</length>
+					</WrapCylinder>
+				</objects>
+				<groups />
+			</WrapObjectSet>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8065999999999995 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
+		<credits>The OpenSim Development Team (Reinbolt, J; Seth, A; Habib, A; Hamner, S)</credits>
+		<!--Publications and references associated with the model.-->
+		<publications>This is an example model distributed with OpenSim</publications>
+		<!--Units for all lengths.-->
+		<length_units>meters</length_units>
+		<!--Units for all forces.-->
+		<force_units>N</force_units>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
 			<objects>
-				<Thelen2003Muscle name="TRIlong">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="TRIlong-P1">
-									<location>      -0.05365000      -0.01373000       0.14723000 </location>
-									<body> ground </body>
-								</PathPoint>
-								<PathPoint name="TRIlong-P2">
-									<location>      -0.02714000      -0.11441000      -0.00664000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlong-P3">
-									<location>      -0.03184000      -0.22637000      -0.01217000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlong-P4">
-									<location>      -0.01743000      -0.26757000      -0.01208000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlong-P5">
-									<location>      -0.02190000       0.01046000      -0.00078000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects>
-								<PathWrap name="">
-									<wrap_object> TRI </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-								<PathWrap name="">
-									<wrap_object> TRIlonghh </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-								<PathWrap name="">
-									<wrap_object> TRIlongglen </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-							</objects>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     798.52000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.13400000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.14300000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.20943951 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="TRIlat">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="TRIlat-P1">
-									<location>      -0.00599000      -0.12646000       0.00428000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlat-P2">
-									<location>      -0.02344000      -0.14528000       0.00928000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlat-P3">
-									<location>      -0.03184000      -0.22637000      -0.01217000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlat-P4">
-									<location>      -0.01743000      -0.26757000      -0.01208000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRIlat-P5">
-									<location>      -0.02190000       0.01046000      -0.00078000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects>
-								<PathWrap name="">
-									<wrap_object> TRI </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-							</objects>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.09800000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.15707963 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="TRImed">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="TRImed-P1">
-									<location>      -0.00838000      -0.13695000      -0.00906000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRImed-P2">
-									<location>      -0.02601000      -0.15139000      -0.01080000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRImed-P3">
-									<location>      -0.03184000      -0.22637000      -0.01217000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRImed-P4">
-									<location>      -0.01743000      -0.26757000      -0.01208000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="TRImed-P5">
-									<location>      -0.02190000       0.01046000      -0.00078000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects>
-								<PathWrap name="">
-									<wrap_object> TRI </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-							</objects>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.09080000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.15707963 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="BIClong">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="BIClong-P1">
-									<location>      -0.03923500       0.00347000       0.14795000 </location>
-									<body> ground </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P2">
-									<location>      -0.02894500       0.01391000       0.15639000 </location>
-									<body> ground </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P3">
-									<location>       0.02131000       0.01793000       0.01028000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P4">
-									<location>       0.02378000      -0.00511000       0.01201000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P5">
-									<location>       0.01345000      -0.02827000       0.00136000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P6">
-									<location>       0.01068000      -0.07736000      -0.00165000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P7">
-									<location>       0.01703000      -0.12125000       0.00024000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P8">
-									<location>       0.02280000      -0.17540000      -0.00630000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BIClong-P9">
-									<location>       0.00751000      -0.04839000       0.02179000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects>
-								<PathWrap name="">
-									<wrap_object> BIClonghh </wrap_object>
-									<method> hybrid </method>
-									<range> 2 3 </range>
-								</PathWrap>
-							</objects>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.11570000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.27230000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="BICshort">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="BICshort-P1">
-									<location>       0.00467500      -0.01231000       0.13475000 </location>
-									<body> ground </body>
-								</PathPoint>
-								<PathPoint name="BICshort-P2">
-									<location>      -0.00707500      -0.04004000       0.14507000 </location>
-									<body> ground </body>
-								</PathPoint>
-								<PathPoint name="BICshort-P3">
-									<location>       0.01117000      -0.07576000      -0.01101000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BICshort-P4">
-									<location>       0.01703000      -0.12125000      -0.01079000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BICshort-P5">
-									<location>       0.02280000      -0.17540000      -0.00630000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BICshort-P6">
-									<location>       0.00751000      -0.04839000       0.02179000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects/>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     435.56000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.13210000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.19230000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-				<Thelen2003Muscle name="BRA">
-					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.00000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
-					<GeometryPath name="">
-						<PathPointSet name="">
-							<objects>
-								<PathPoint name="BRA-P1">
-									<location>       0.00680000      -0.17390000      -0.00360000 </location>
-									<body> r_humerus </body>
-								</PathPoint>
-								<PathPoint name="BRA-P2">
-									<location>      -0.00320000      -0.02390000       0.00090000 </location>
-									<body> r_ulna_radius_hand </body>
-								</PathPoint>
-							</objects>
-							<groups/>
-						</PathPointSet>
-						<PathWrapSet name="">
-							<objects>
-								<PathWrap name="">
-									<wrap_object> TRI </wrap_object>
-									<method> hybrid </method>
-									<range> -1 -1 </range>
-								</PathWrap>
-							</objects>
-							<groups/>
-						</PathWrapSet>
-					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
-					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>     987.26000000 </max_isometric_force>
-					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.08580000 </optimal_fiber_length>
-					<!--Resting length of the tendon-->
-					<tendon_slack_length>       0.05350000 </tendon_slack_length>
-					<!--Angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
-					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
-					    per second-->
-					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
-					<!--time constant for ramping up of muscle activation-->
-					<activation_time_constant>       0.01000000 </activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
-					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
-					<!--maximum contraction velocity at full activation in fiber lengths per
-					    second-->
-					<Vmax>      10.00000000 </Vmax>
-					<!--maximum contraction velocity at low activation in fiber lengths per
-					    second-->
-					<Vmax0>       5.00000000 </Vmax0>
-					<!--tendon strain due to maximum isometric muscle force-->
-					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
-					<!--passive muscle strain due to maximum isometric muscle force-->
-					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>       0.50000000 </KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>       4.00000000 </KshapePassive>
-					<!--passive damping in the force-velocity relationship-->
-					<damping>       0.05000000 </damping>
-					<!--force-velocity shape factor-->
-					<Af>       0.30000000 </Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>       1.80000000 </Flen>
-				</Thelen2003Muscle>
-			</objects>
-			<groups/>
-		</ForceSet>
-		<length_units> meters </length_units>
-		<force_units> N </force_units>
-		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      -9.80660000       0.00000000 </gravity>
-		<!--Bodies in the model.-->
-		<BodySet name="">
-			<objects>
-				<Body name="ground">
-					<mass>       0.00000000 </mass>
-					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       0.00000000 </inertia_xx>
-					<inertia_yy>       0.00000000 </inertia_yy>
-					<inertia_zz>       0.00000000 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint/>
-					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_ribs.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-							    <display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_spine.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_skull.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_jaw.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_r_clavicle.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> ground_r_scapula.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups/>
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-						<!--Whether to show a coordinate frame-->
-							<show_axes> false </show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference> 4 </display_preference>
-					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects>
-							<WrapCylinder name="TRIlongglen">
-								<xyz_body_rotation>       1.37531945      -0.29461158       2.43595604 </xyz_body_rotation>
-								<translation>      -0.04390500      -0.00390000       0.14780000 </translation>
-								<active> true </active>
-								<quadrant> x </quadrant>
-								<VisibleObject name="">
-									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-									    .obj-->
-									<GeometrySet name="">
-										<objects/>
-										<groups/>
-									</GeometrySet>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--transform relative to owner specified as 3 rotations (rad) followed by
-									    3 translations rX rY rZ tx ty tz-->
-									<transform>       1.37531945      -0.29461158       2.43595604      -0.04390500      -0.00390000       0.14780000 </transform>
-									<!--Whether to show a coordinate frame-->
-									<show_axes> false </show_axes>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-									    individual geometries-->
-										<display_preference> 4 </display_preference>
-								</VisibleObject>
-								<radius>       0.00300000 </radius>
-								<length>       0.03000000 </length>
-							</WrapCylinder>
-						</objects>
-						<groups/>
-					</WrapObjectSet>
-				</Body>
 				<Body name="r_humerus">
-					<mass>       1.86457200 </mass>
-					<mass_center>       0.00000000      -0.18049600       0.00000000 </mass_center>
-					<inertia_xx>       0.01481000 </inertia_xx>
-					<inertia_yy>       0.00455100 </inertia_yy>
-					<inertia_zz>       0.01319300 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<CustomJoint name="r_shoulder">
-							<parent_body> ground </parent_body>
-							<location_in_parent>      -0.01754500      -0.00700000       0.17000000 </location_in_parent>
-							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
-							<location>       0.00000000       0.00000000       0.00000000 </location>
-							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
-								<objects>
-									<Coordinate name="r_shoulder_elev">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<range>      -1.57079633       3.14159265 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-								</objects>
-								<groups/>
-							</CoordinateSet>
-							<reverse> false </reverse>
-							<SpatialTransform name="">
-								<!--3 Axes for rotations are listed first.-->
-								<TransformAxis name="rotation1">
-									<function>
-										<LinearFunction name="">
-											<coefficients>       1.00000000       0.00000000 </coefficients>
-										</LinearFunction>
-									</function>
-									<coordinates> r_shoulder_elev </coordinates>
-									<axis>      -0.05889802       0.00230000       0.99826136 </axis>
-								</TransformAxis>
-								<TransformAxis name="rotation2">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       1.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="rotation3">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.99826136      -0.00000000       0.05889802 </axis>
-								</TransformAxis>
-								<!--3 Axes for translations are listed next.-->
-								<TransformAxis name="translation1">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       1.00000000       0.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="translation2">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       1.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="translation3">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       0.00000000       1.00000000 </axis>
-								</TransformAxis>
-							</SpatialTransform>
-						</CustomJoint>
-					</Joint>
-					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_humerus.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-							    <display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups/>
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-						<!--Whether to show a coordinate frame-->
-							<show_axes> false </show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference> 4 </display_preference>
-					</VisibleObject>
-					<WrapObjectSet name="">
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="r_humerus_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_humerus</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_humerus.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+					<WrapObjectSet>
 						<objects>
 							<WrapEllipsoid name="TRIlonghh">
-								<xyz_body_rotation>       3.00161725      -0.85346600       2.57418611 </xyz_body_rotation>
-								<translation>      -0.00780000      -0.00410000      -0.00140000 </translation>
-								<active> true </active>
-								<quadrant> z </quadrant>
-								<VisibleObject name="">
-									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-									    .obj-->
-									<GeometrySet name="">
-										<objects/>
-										<groups/>
-									</GeometrySet>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--transform relative to owner specified as 3 rotations (rad) followed by
-									    3 translations rX rY rZ tx ty tz-->
-									<transform>       3.00161725      -0.85346600       2.57418611      -0.00780000      -0.00410000      -0.00140000 </transform>
-									<!--Whether to show a coordinate frame-->
-									<show_axes> false </show_axes>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-									    individual geometries-->
-										<display_preference> 4 </display_preference>
-								</VisibleObject>
-								<dimensions>       0.03500000       0.02000000       0.02000000 </dimensions>
+								<!--Whether or not the WrapObject is considered active in computing paths-->
+								<active>true</active>
+								<!--Body-fixed Euler angle sequence for the orientation of the WrapObject-->
+								<xyz_body_rotation>3.0016172499999998 -0.85346599999999995 2.5741861099999999</xyz_body_rotation>
+								<!--Translation of the WrapObject.-->
+								<translation>-0.0077999999999999996 -0.0041000000000000003 -0.0014</translation>
+								<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+								<quadrant>z</quadrant>
+								<dimensions> 0.035 0.02 0.02</dimensions>
 							</WrapEllipsoid>
 							<WrapEllipsoid name="BIClonghh">
-								<xyz_body_rotation>      -2.00433611      -1.00164446       0.97546452 </xyz_body_rotation>
-								<translation>       0.00330000       0.00730000       0.00030000 </translation>
-								<active> true </active>
-								<quadrant> -y </quadrant>
-								<VisibleObject name="">
-									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-									    .obj-->
-									<GeometrySet name="">
-										<objects/>
-										<groups/>
-									</GeometrySet>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--transform relative to owner specified as 3 rotations (rad) followed by
-									    3 translations rX rY rZ tx ty tz-->
-									<transform>      -2.00433611      -1.00164446       0.97546452       0.00330000       0.00730000       0.00030000 </transform>
-									<!--Whether to show a coordinate frame-->
-									<show_axes> false </show_axes>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-									    individual geometries-->
-										<display_preference> 4 </display_preference>
-								</VisibleObject>
-								<dimensions>       0.02500000       0.02000000       0.02000000 </dimensions>
+								<!--Whether or not the WrapObject is considered active in computing paths-->
+								<active>true</active>
+								<!--Body-fixed Euler angle sequence for the orientation of the WrapObject-->
+								<xyz_body_rotation>-2.0043361100000001 -1.0016444600000001 0.97546451999999995</xyz_body_rotation>
+								<!--Translation of the WrapObject.-->
+								<translation>0.0033 0.0073000000000000001 0.00029999999999999997</translation>
+								<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+								<quadrant>-y</quadrant>
+								<dimensions> 0.025 0.02 0.02</dimensions>
 							</WrapEllipsoid>
 							<WrapCylinder name="TRI">
-								<xyz_body_rotation>      -0.14014994      -0.00628319       0.15498524 </xyz_body_rotation>
-								<translation>       0.00280000      -0.29190000      -0.00690000 </translation>
-								<active> true </active>
-								<quadrant> all </quadrant>
-								<VisibleObject name="">
-									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-									    .obj-->
-									<GeometrySet name="">
-										<objects/>
-										<groups/>
-									</GeometrySet>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--transform relative to owner specified as 3 rotations (rad) followed by
-									    3 translations rX rY rZ tx ty tz-->
-									<transform>      -0.14014994      -0.00628319       0.15498524       0.00280000      -0.29190000      -0.00690000 </transform>
-									<!--Whether to show a coordinate frame-->
-									<show_axes> false </show_axes>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-									    individual geometries-->
-										<display_preference> 4 </display_preference>
-								</VisibleObject>
-								<radius>       0.01600000 </radius>
-								<length>       0.05000000 </length>
+								<!--Whether or not the WrapObject is considered active in computing paths-->
+								<active>true</active>
+								<!--Body-fixed Euler angle sequence for the orientation of the WrapObject-->
+								<xyz_body_rotation>-0.14014994 -0.0062831900000000001 0.15498524</xyz_body_rotation>
+								<!--Translation of the WrapObject.-->
+								<translation>0.0028 -0.29189999999999999 -0.0068999999999999999</translation>
+								<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
+								<quadrant>all</quadrant>
+								<!--The radius of the cylinder.-->
+								<radius>0.016</radius>
+								<!--The length of the cylinder.-->
+								<length>0.050000000000000003</length>
 							</WrapCylinder>
 						</objects>
-						<groups/>
+						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1.8645719999999999</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 -0.18049599999999999 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.01481 0.0045510000000000004 0.013193 0 0 0</inertia>
 				</Body>
 				<Body name="r_ulna_radius_hand">
-					<mass>       1.53431500 </mass>
-					<mass_center>       0.00000000      -0.18147900       0.00000000 </mass_center>
-					<inertia_xx>       0.01928100 </inertia_xx>
-					<inertia_yy>       0.00157100 </inertia_yy>
-					<inertia_zz>       0.02006200 </inertia_zz>
-					<inertia_xy>       0.00000000 </inertia_xy>
-					<inertia_xz>       0.00000000 </inertia_xz>
-					<inertia_yz>       0.00000000 </inertia_yz>
-					<!--Joint that connects this body with the parent body.-->
-					<Joint>
-						<CustomJoint name="r_elbow">
-							<parent_body> r_humerus </parent_body>
-							<location_in_parent>       0.00610000      -0.29040000      -0.01230000 </location_in_parent>
-							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
-							<location>       0.00000000       0.00000000       0.00000000 </location>
-							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-							<!--Generalized coordinates parameterizing this joint.-->
-							<CoordinateSet name="">
-								<objects>
-									<Coordinate name="r_elbow_flex">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<range>       0.00000000       2.26892803 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-								</objects>
-								<groups/>
-							</CoordinateSet>
-							<reverse> false </reverse>
-							<SpatialTransform name="">
-								<!--3 Axes for rotations are listed first.-->
-								<TransformAxis name="rotation1">
-									<function>
-										<LinearFunction name="">
-											<coefficients>       1.00000000       0.00000000 </coefficients>
-										</LinearFunction>
-									</function>
-									<coordinates> r_elbow_flex </coordinates>
-									<axis>       0.04940001       0.03660001       0.99810825 </axis>
-								</TransformAxis>
-								<TransformAxis name="rotation2">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       1.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="rotation3">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.99810825       0.00000000      -0.04940001 </axis>
-								</TransformAxis>
-								<!--3 Axes for translations are listed next.-->
-								<TransformAxis name="translation1">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       1.00000000       0.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="translation2">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       1.00000000       0.00000000 </axis>
-								</TransformAxis>
-								<TransformAxis name="translation3">
-									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
-									</function>
-									<coordinates> </coordinates>
-									<axis>       0.00000000       0.00000000       1.00000000 </axis>
-								</TransformAxis>
-							</SpatialTransform>
-						</CustomJoint>
-					</Joint>
-					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_ulna.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_radius.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_lunate.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_scaphoid.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_pisiform.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_triquetrum.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_capitate.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_trapezium.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_trapezoid.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_hamate.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_1mc.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_2mc.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_3mc.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_4mc.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_5mc.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_thumbprox.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_thumbdist.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_2proxph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_2midph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_2distph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_3proxph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_3midph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_3distph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_4proxph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_4midph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_4distph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_5proxph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_5midph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-								<DisplayGeometry name="">
-									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> arm_r_5distph.vtp </geometry_file>
-									<!--Color used to display the geometry when visible-->
-									<color>       1.00000000       1.00000000       1.00000000 </color>
-									<!--Name of texture file .jpg, .bmp-->
-									<texture_file>  </texture_file>
-									<!--in body transform specified as 3 rotations (rad) followed by 3
-									    translations rX rY rZ tx ty tz-->
-									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference> 4 </display_preference>
-									<!--Display opacity between 0.0 and 1.0-->
-									<opacity>       1.00000000 </opacity>
-								</DisplayGeometry>
-							</objects>
-							<groups/>
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
-						<!--Whether to show a coordinate frame-->
-							<show_axes> false </show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference> 4 </display_preference>
-					</VisibleObject>
-					<WrapObjectSet name="">
-						<objects/>
-						<groups/>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="r_ulna_radius_hand_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_ulna.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_2">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_radius.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_3">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_lunate.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_4">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_scaphoid.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_5">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_pisiform.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_6">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_triquetrum.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_7">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_capitate.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_8">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_trapezium.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_9">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_trapezoid.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_10">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_hamate.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_11">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_1mc.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_12">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_2mc.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_13">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_3mc.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_14">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_4mc.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_15">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_5mc.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_16">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_thumbprox.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_17">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_thumbdist.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_18">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_2proxph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_19">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_2midph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_20">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_2distph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_21">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_3proxph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_22">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_3midph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_23">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_3distph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_24">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_4proxph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_25">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_4midph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_26">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_4distph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_27">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_5proxph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_28">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_5midph.vtp</mesh_file>
+						</Mesh>
+						<Mesh name="r_ulna_radius_hand_geom_29">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>r_ulna_radius_hand</socket_frame_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>arm_r_5distph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
 					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1.5343150000000001</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 -0.181479 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.019281 0.0015709999999999999 0.020062 0 0 0</inertia>
 				</Body>
 			</objects>
-			<groups/>
+			<groups />
 		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<CustomJoint name="r_shoulder">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>ground_offset</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>r_humerus</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="r_shoulder_elev">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.5707963300000001 3.1415926500000002</range>
+							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+							<clamped>false</clamped>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>false</locked>
+							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+							<prescribed_function />
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>ground</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.017545000000000002 -0.0070000000000000001 0.17000000000000001</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+					<SpatialTransform>
+						<!--3 Axes for rotations are listed first.-->
+						<TransformAxis name="rotation1">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates>r_shoulder_elev</coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>-0.058898020000000002 0.0023 0.99826135999999999</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<LinearFunction name="function">
+								<coefficients> 1 0</coefficients>
+							</LinearFunction>
+						</TransformAxis>
+						<TransformAxis name="rotation2">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 1 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="rotation3">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0.99826135999999999 -0 0.058898020000000002</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<!--3 Axes for translations are listed next.-->
+						<TransformAxis name="translation1">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>1 0 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="translation2">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 1 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="translation3">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 0 1</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+					</SpatialTransform>
+				</CustomJoint>
+				<CustomJoint name="r_elbow">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>r_humerus_offset</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>r_ulna_radius_hand</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="r_elbow_flex">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>0 2.2689280300000001</range>
+							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+							<clamped>false</clamped>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>false</locked>
+							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+							<prescribed_function />
+						</Coordinate>
+					</coordinates>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="r_humerus_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>r_humerus</socket_parent_connectee_name>
+							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.0061000000000000004 -0.29039999999999999 -0.0123</translation>
+							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
+					<SpatialTransform>
+						<!--3 Axes for rotations are listed first.-->
+						<TransformAxis name="rotation1">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates>r_elbow_flex</coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0.049400010000000001 0.036600010000000002 0.99810825000000003</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<LinearFunction name="function">
+								<coefficients> 1 0</coefficients>
+							</LinearFunction>
+						</TransformAxis>
+						<TransformAxis name="rotation2">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 1 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="rotation3">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0.99810825000000003 0 -0.049400010000000001</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<!--3 Axes for translations are listed next.-->
+						<TransformAxis name="translation1">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>1 0 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="translation2">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 1 0</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+						<TransformAxis name="translation3">
+							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
+							<coordinates></coordinates>
+							<!--Rotation or translation axis for the transform.-->
+							<axis>0 0 1</axis>
+							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
+							<Constant name="function">
+								<value>0</value>
+							</Constant>
+						</TransformAxis>
+					</SpatialTransform>
+				</CustomJoint>
+			</objects>
+		</JointSet>
 		<!--Constraints in the model.-->
-		<ConstraintSet name="">
-			<objects/>
-			<groups/>
+		<ConstraintSet>
+			<objects />
+			<groups />
 		</ConstraintSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<Thelen2003Muscle name="TRIlong">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="TRIlong-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.053650000000000003 -0.013729999999999999 0.14723</location>
+								</PathPoint>
+								<PathPoint name="TRIlong-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.027140000000000001 -0.11441 -0.0066400000000000001</location>
+								</PathPoint>
+								<PathPoint name="TRIlong-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.03184 -0.22636999999999999 -0.01217</location>
+								</PathPoint>
+								<PathPoint name="TRIlong-P4">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
+								</PathPoint>
+								<PathPoint name="TRIlong-P5">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRI</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRIlonghh</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRIlongglen</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>798.51999999999998</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.13400000000000001</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.14299999999999999</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.20943951</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="TRIlat">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="TRIlat-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.0059899999999999997 -0.12645999999999999 0.00428</location>
+								</PathPoint>
+								<PathPoint name="TRIlat-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.023439999999999999 -0.14527999999999999 0.0092800000000000001</location>
+								</PathPoint>
+								<PathPoint name="TRIlat-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.03184 -0.22636999999999999 -0.01217</location>
+								</PathPoint>
+								<PathPoint name="TRIlat-P4">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
+								</PathPoint>
+								<PathPoint name="TRIlat-P5">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRI</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>624.29999999999995</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1138</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.098000000000000004</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.15707963</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="TRImed">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="TRImed-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.0083800000000000003 -0.13694999999999999 -0.0090600000000000003</location>
+								</PathPoint>
+								<PathPoint name="TRImed-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.026009999999999998 -0.15139 -0.010800000000000001</location>
+								</PathPoint>
+								<PathPoint name="TRImed-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.03184 -0.22636999999999999 -0.01217</location>
+								</PathPoint>
+								<PathPoint name="TRImed-P4">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
+								</PathPoint>
+								<PathPoint name="TRImed-P5">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRI</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>624.29999999999995</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1138</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.090800000000000006</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.15707963</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BIClong">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="BIClong-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.039234999999999999 0.00347 0.14795</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.028944999999999999 0.01391 0.15639</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.021309999999999999 0.017930000000000001 0.010279999999999999</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P4">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.023779999999999999 -0.00511 0.01201</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P5">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.01345 -0.02827 0.0013600000000000001</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P6">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.01068 -0.077359999999999998 -0.00165</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P7">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.01703 -0.12125 0.00024000000000000001</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P8">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.022800000000000001 -0.1754 -0.0063</location>
+								</PathPoint>
+								<PathPoint name="BIClong-P9">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.0075100000000000002 -0.048390000000000002 0.02179</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>BIClonghh</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>2 3</range>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>624.29999999999995</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1157</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.27229999999999999</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BICshort">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="BICshort-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.0046750000000000003 -0.01231 0.13475000000000001</location>
+								</PathPoint>
+								<PathPoint name="BICshort-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.0070749999999999997 -0.040039999999999999 0.14507</location>
+								</PathPoint>
+								<PathPoint name="BICshort-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.011169999999999999 -0.075759999999999994 -0.011010000000000001</location>
+								</PathPoint>
+								<PathPoint name="BICshort-P4">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.01703 -0.12125 -0.010789999999999999</location>
+								</PathPoint>
+								<PathPoint name="BICshort-P5">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.022800000000000001 -0.1754 -0.0063</location>
+								</PathPoint>
+								<PathPoint name="BICshort-P6">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.0075100000000000002 -0.048390000000000002 0.02179</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects />
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>435.56</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1321</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.1923</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BRA">
+					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
+					<appliesForce>true</appliesForce>
+					<!--The set of points defining the path of the muscle.-->
+					<GeometryPath>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="BRA-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>0.0067999999999999996 -0.1739 -0.0035999999999999999</location>
+								</PathPoint>
+								<PathPoint name="BRA-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<!--The fixed location of the station expressed in its parent frame.-->
+									<location>-0.0032000000000000002 -0.023900000000000001 0.00089999999999999998</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--The wrap objects that are associated with this path-->
+						<PathWrapSet>
+							<objects>
+								<PathWrap>
+									<!--A WrapObject that this PathWrap interacts with.-->
+									<wrap_object>TRI</wrap_object>
+									<!--The wrapping method used to solve the path around the wrap object.-->
+									<method>hybrid</method>
+									<!--The range of indices to use to compute the path over the wrap object.-->
+									<range>-1 -1</range>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+					</GeometryPath>
+					<!--The maximum force this actuator can produce.-->
+					<optimal_force>1</optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>987.25999999999999</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.085800000000000001</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.053499999999999999</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
+					<max_contraction_velocity>10</max_contraction_velocity>
+					<!--tendon strain at maximum isometric muscle force-->
+					<FmaxTendonStrain>0.033000000000000002</FmaxTendonStrain>
+					<!--passive muscle strain at maximum isometric muscle force-->
+					<FmaxMuscleStrain>0.59999999999999998</FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>0.5</KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>4</KshapePassive>
+					<!--force-velocity shape factor-->
+					<Af>0.29999999999999999</Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>1.8</Flen>
+					<!--Activation time constant, in seconds-->
+					<activation_time_constant>0.01</activation_time_constant>
+					<!--Deactivation time constant, in seconds-->
+					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
+					<!--Lower bound on activation-->
+					<minimum_activation> 0.0 </minimum_activation>
+					<!--Minimum allowed value for the control signal.-->
+					<min_control> 0.0 </min_control>
+				</Thelen2003Muscle>
+			</objects>
+			<groups />
+		</ForceSet>
 		<!--Markers in the model.-->
-		<MarkerSet name="">
+		<MarkerSet>
 			<objects>
 				<Marker name="r_acromion">
-					<!--Body segment in the model on which the marker resides.-->
-					<body> ground </body>
-					<!--Location of a marker on the body segment.-->
-					<location>      -0.01256000       0.04000000       0.17000000 </location>
-					<!--Flag (true or false) specifying whether or not a marker should be kept
-					    fixed in the marker placement step.  i.e. If false, the marker is
-					    allowed to move.-->
-					<fixed> false </fixed>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.01256 0.040000000000000001 0.17000000000000001</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
 				</Marker>
 				<Marker name="r_humerus_epicondyle">
-					<!--Body segment in the model on which the marker resides.-->
-					<body> r_humerus </body>
-					<!--Location of a marker on the body segment.-->
-					<location>       0.00500000      -0.29040000       0.03000000 </location>
-					<!--Flag (true or false) specifying whether or not a marker should be kept
-					    fixed in the marker placement step.  i.e. If false, the marker is
-					    allowed to move.-->
-					<fixed> false </fixed>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.0050000000000000001 -0.29039999999999999 0.029999999999999999</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
 				</Marker>
 				<Marker name="r_radius_styloid">
-					<!--Body segment in the model on which the marker resides.-->
-					<body> r_ulna_radius_hand </body>
-					<!--Location of a marker on the body segment.-->
-					<location>      -0.00110000      -0.23559000       0.09430000 </location>
-					<!--Flag (true or false) specifying whether or not a marker should be kept
-					    fixed in the marker placement step.  i.e. If false, the marker is
-					    allowed to move.-->
-					<fixed> false </fixed>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.0011000000000000001 -0.23558999999999999 0.094299999999999995</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
 				</Marker>
 			</objects>
-			<groups/>
+			<groups />
 		</MarkerSet>
-		<!--ContactGeometry objects in the model.-->
-		<ContactGeometrySet name="">
-			<objects/>
-			<groups/>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
 		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>
-

@@ -102,22 +102,20 @@ public:
     // CONSTRUCTION
     EllipsoidJoint();
     /** Convenience Joint like Constructor */
-    EllipsoidJoint( const std::string& name,
-                    const PhysicalFrame& parent,
-                    const PhysicalFrame& child,
-                    const SimTK::Vec3& ellipsoidRadii,
-                    bool reverse = false);
+    EllipsoidJoint(const std::string&    name,
+                   const PhysicalFrame&  parent,
+                   const PhysicalFrame&  child,
+                   const SimTK::Vec3&    ellipsoidRadii);
 
     /** Deprecated Joint Constructor*/
-    EllipsoidJoint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        const SimTK::Vec3& ellipsoidRadii,
-        bool reverse=false);
+    EllipsoidJoint(const std::string&    name,
+                   const PhysicalFrame&  parent,
+                   const SimTK::Vec3&    locationInParent,
+                   const SimTK::Vec3&    orientationInParent,
+                   const PhysicalFrame&  child,
+                   const SimTK::Vec3&    locationInChild,
+                   const SimTK::Vec3&    orientationInChild,
+                   const SimTK::Vec3&    ellipsoidRadii);
 
     //Set properties
     void setEllipsoidRadii(const SimTK::Vec3& radii);
