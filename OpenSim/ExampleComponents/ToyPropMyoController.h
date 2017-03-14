@@ -36,7 +36,7 @@ Controller is intended to simulate a proportional myoelectric controller [1],
 and can control any ScalarActuator (set using the "actuator" socket).
 This class intended for demonstrative purposes only.
 [1] https://en.wikipedia.org/wiki/Proportional_myoelectric_control */
-class OSIMSIMULATION_API ToyPropMyoController : public Controller {
+class OSIMEXAMPLECOMPONENTS_API ToyPropMyoController : public Controller {
     OpenSim_DECLARE_CONCRETE_OBJECT(ToyPropMyoController, Controller);
 
  public:
