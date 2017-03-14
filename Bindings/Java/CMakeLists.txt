@@ -89,6 +89,9 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/actuators-analysis-tools
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/examplecomponents
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 
             -source 1.6 -target 1.6
