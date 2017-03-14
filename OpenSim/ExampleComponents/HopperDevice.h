@@ -1,5 +1,5 @@
-#ifndef _OPENSIM_DEVICE_H_
-#define _OPENSIM_DEVICE_H_
+#ifndef _OPENSIM_HOPPERDEVICE_H_
+#define _OPENSIM_HOPPERDEVICE_H_
 /* -------------------------------------------------------------------------- *
  *               OpenSim:  HopperDevice.h                                     *
  * -------------------------------------------------------------------------- *
@@ -100,4 +100,4 @@ protected:
 
 } // namespace OpenSim
     
-#endif // _OPENSIM_DEVICE_H_
+#endif // _OPENSIM_HOPPERDEVICE_H_
