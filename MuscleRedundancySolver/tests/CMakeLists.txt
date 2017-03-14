@@ -11,3 +11,4 @@ endfunction()
 
 MRSAddTest(testHangingMassRoundtrip osimMuscleRedundancySolver)
 MRSAddTest(testSingleMuscle osimMuscleRedundancySolver)
+MRSAddTest(testSingleMuscleDeGroote2016 osimMuscleRedundancySolver)
