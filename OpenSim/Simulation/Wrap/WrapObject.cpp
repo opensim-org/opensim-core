@@ -178,3 +178,59 @@ int WrapObject::wrapPathSegment(const SimTK::State& s,
 
    return return_code;
 }
+
+void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
+        int versionNumber) {
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion < 30515) {
+            // Replace 3.3 display_preference, color, and VisibleObject with
+            // Appearance's visible and color.
+            // We ignore most of VisibleObject's other properties (e.g.,
+            // transform), since it would be misleading to draw the wrap object
+            // in the wrong place.
+            SimTK::Xml::Element appearanceNode("Appearance"); 
+
+            // color.
+            SimTK::Xml::element_iterator colorIter =
+                    node.element_begin("color");
+            if (colorIter != node.element_end()) {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        node.removeNode(colorIter));
+            }
+
+            // display_preference -> visible
+            SimTK::Xml::Element visibleNode("visible");
+            SimTK::Xml::element_iterator dispPrefIter =
+                    node.element_begin("display_preference");
+            if (dispPrefIter != node.element_end()) {
+                if (dispPrefIter->getValueAs<int>() == 0) {
+                    visibleNode.setValue("false");
+                }
+                node.removeNode(dispPrefIter);
+            }
+            SimTK::Xml::element_iterator visObjIter =
+                    node.element_begin("VisibleObject");
+            if (visObjIter != node.element_end()) {
+                SimTK::Xml::element_iterator voDispPrefIter =
+                        visObjIter->element_begin("display_preference");
+                if (voDispPrefIter != visObjIter->element_end()) {
+                    if (voDispPrefIter->getValueAs<int>() == 0) {
+                        visibleNode.setValue("false");
+                    }
+                }
+                node.removeNode(visObjIter);
+            }
+            if (visibleNode.getValue() != "") {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        visibleNode);
+            }
+
+            // Add Appearance to the WrapObject.
+            if (appearanceNode.hasNode()) {
+                node.insertNodeAfter(node.element_end(), appearanceNode);
+            }
+        }
+    }
+    Super::updateFromXMLNode(node, versionNumber);
+}

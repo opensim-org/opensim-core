@@ -47,6 +47,7 @@ public:
 };
 
 void testWrapCylinder();
+void testWrapObjectUpdateFromXMLNode30515();
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime);
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation=0.5);
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime);
@@ -70,6 +71,14 @@ int main()
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
+
+    try{
+        testWrapObjectUpdateFromXMLNode30515();
+    } catch (const std::exception& e) {
+         std::cout << "Exception: " << e.what() << std::endl;
+         failures.push_back("testWrapObjectUpdateFromXMLNode30515");
+    }
+
 
     cout << "Done" << endl;
     return 0;
@@ -877,4 +886,52 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     states.setWriteSIMMHeader(true);
     states.print(osimModel.getName()+"_states_degrees.mot");
 } // end of simulate()
+
+// In XMLDocument version 30515, we converted VisibleObject, color and
+// display_preference properties to Appearance properties.
+void testWrapObjectUpdateFromXMLNode30515() {
+    XMLDocument doc("testWrapObject_updateFromXMLNode30515.osim");
+    // Make sure this test is not weakened by the model in the repository being
+    // updated.
+    SimTK_TEST(doc.getDocumentVersion() == 20302);
+    Model model("testWrapObject_updateFromXMLNode30515.osim");
+    model.finalizeFromProperties();
+    model.print("testWrapObject_updateFromXMLNode30515_updated.osim");
+    const auto& wrapObjSet = model.getGround().getWrapObjectSet();
+
+    // WrapSphere has:
+    //   display_preference = default
+    //   color = default
+    //   VisibleObject display_preference = 0
+    {
+        const auto& sphere = wrapObjSet.get("wrapsphere");
+        SimTK_TEST(!sphere.get_Appearance().get_visible());
+        SimTK_TEST_EQ(sphere.get_Appearance().get_color(), SimTK::White);
+    }
+
+    // WrapCylinder has:
+    //   display_preference = 0
+    //   color = default
+    //   VisibleObject display_preference = 4 
+    {
+        const auto& cyl = wrapObjSet.get("wrapcylinder");
+        // The outer display_preference overrides the inner one.
+        SimTK_TEST(!cyl.get_Appearance().get_visible());
+        SimTK_TEST_EQ(cyl.get_Appearance().get_color(), SimTK::White);
+    }
+
+    // WrapEllipsoid has:
+    //   display_preference = 3
+    //   color = 1 0.5 0
+    //   VisibleObject display_preference = 4
+    {
+        const auto& ellipsoid = wrapObjSet.get("wrapellipsoid");
+        SimTK_TEST(ellipsoid.get_Appearance().get_visible());
+        SimTK_TEST_EQ(ellipsoid.get_Appearance().get_color(), Vec3(1, 0.5, 0));
+    }
+}
+
+
+
+
 
