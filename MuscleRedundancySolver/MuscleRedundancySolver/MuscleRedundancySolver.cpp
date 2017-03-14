@@ -1,11 +1,12 @@
 
-
 #include "MuscleRedundancySolver.h"
 
 #include <mesh.h>
 #include <OpenSim/OpenSim.h>
 // TODO should not be needed:
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
+
+#include <algorithm>
 
 using namespace OpenSim;
 
@@ -50,10 +51,9 @@ template<typename T>
 class MRSProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
 public:
     MRSProblemSeparate(const MuscleRedundancySolver& mrs,
-                       const GCVSplineSet& inverseDynamics)
+                       const Model& model, const GCVSplineSet& inverseDynamics)
             : mesh::OptimalControlProblemNamed<T>("MRS"),
-              _mrs(mrs), _model(mrs.getModel()),
-              _inverseDynamics(inverseDynamics) {
+              _mrs(mrs), _model(model), _inverseDynamics(inverseDynamics) {
         SimTK::State state = _model.initSystem();
 
         // Set the time bounds.
@@ -84,15 +84,24 @@ public:
         _numCoordActuators = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
+            if (!actuator.get_appliesForce()) continue;
+
             const auto& actuPath = actuator.getAbsolutePathName();
             this->add_control(actuPath + "_control",
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
-            _controlToMoment = actuator.getOptimalForce();
 
             _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
+        _optimal_force.resize(_numCoordActuators);
+        int i_act = 0;
+        for (const auto& actuator :
+                _model.getComponentList<CoordinateActuator>()) {
+            if (!actuator.get_appliesForce()) continue;
+            _optimal_force[i_act] = actuator.getOptimalForce();
+        }
+
 
         _numMuscles = 0;
         for (const auto& actuator : _model.getComponentList<Muscle>()) {
@@ -284,7 +293,7 @@ public:
         // CoordinateActuators.
         // --------------------
         for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
-            genForce[0] += _controlToMoment * controls[i_act];
+            genForce[0] += _optimal_force[i_act] * controls[i_act];
         }
 
         // Muscles.
@@ -447,8 +456,10 @@ private:
     // Cached quantities to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLength;
-    // TODO make general (CoordinateActuator optimal force).
-    double _controlToMoment;
+    // TODO moment arms.
+
+    // CoordinateActuator optimal forces.
+    Eigen::VectorXd _optimal_force;
 
     // Muscle parameters.
     Eigen::VectorXd _max_isometric_force;
@@ -463,12 +474,13 @@ private:
 };
 
 MuscleRedundancySolver::MuscleRedundancySolver() {
+    constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
+    constructProperty_create_reserve_actuators(-1);
     //constructProperty_model_file("");
     //constructProperty_kinematics_file("");
 }
 
-GCVSplineSet
-MuscleRedundancySolver::computeInverseDynamics() const {
+GCVSplineSet MuscleRedundancySolver::computeInverseDynamics() const {
     Model modelForID(_model);
     modelForID.finalizeFromProperties();
     // Disable all actuators in the model, as we don't want them to
@@ -523,10 +535,14 @@ MuscleRedundancySolver::computeInverseDynamics() const {
     for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
         forceTrajectorySto.append(times[i_time], forceTrajectory[i_time]);
     }
-    // Filter; otherwise, inverse dynamics moments are too noisy.
-    forceTrajectorySto.pad(forceTrajectorySto.getSize() / 2);
-    // TODO make the filter frequency a parameter.
-    forceTrajectorySto.lowpassIIR(6);
+    const double& cutoffFrequency =
+            get_lowpass_cutoff_frequency_for_joint_moments();
+    if (cutoffFrequency > 0) {
+        // Filter; otherwise, inverse dynamics moments are too noisy.
+        forceTrajectorySto.pad(forceTrajectorySto.getSize() / 2);
+        // TODO make the filter frequency a parameter.
+        forceTrajectorySto.lowpassIIR(cutoffFrequency);
+    }
     return GCVSplineSet(5, &forceTrajectorySto);
 }
 
@@ -544,12 +560,54 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Run inverse dynamics.
     // ---------------------
+    OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+            get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
+                     "Invalid value for cutoff frequency for joint moments.");
     const auto forceTrajectory = computeInverseDynamics();
 
+    // Create reserve actuators.
+    // -------------------------
+    Model model(_model);
+    if (get_create_reserve_actuators() != -1) {
+        const auto& optimalForce = get_create_reserve_actuators();
+        OPENSIM_THROW_IF(optimalForce <= 0, Exception,
+            "Invalid value (" + std::to_string(optimalForce)
+            + ") for create_reserve_actuators; should be -1 or positive.");
+
+        std::cout << "Adding reserve actuators with an optimal force of "
+                  << optimalForce << "..." << std::endl;
+
+        SimTK::State state = model.initSystem();
+        std::vector<std::string> coordNames;
+        // Borrowed from CoordinateActuator::CreateForceSetOfCoordinateAct...
+        for (auto& coord : model.getCoordinatesInMultibodyTreeOrder()) {
+            if (!coord->isConstrained(state)) {
+                // TODO use path to coord instead of just its name.
+                auto* actu = new CoordinateActuator();
+                actu->setCoordinate(const_cast<Coordinate*>(coord.get()));
+                auto path = coord->getAbsolutePathName();
+                coordNames.push_back(path);
+                // Get rid of model name.
+                path = ComponentPath(path).formRelativePath(
+                        model.getAbsolutePathName()).toString();
+                // Get rid of slashes in the path; slashes not allowed in names.
+                std::replace(path.begin(), path.end(), '/', '_');
+                actu->setName("reserve_" + path);
+                actu->setOptimalForce(optimalForce);
+                model.addComponent(actu);
+            }
+        }
+        std::cout << "Added " << coordNames.size() << " reserve actuator(s), "
+                "for each of the following coordinates:" << std::endl;
+        for (const auto& name : coordNames) {
+            std::cout << "    " << name << std::endl;
+        }
+    }
 
     // Solve the optimal control problem.
     // ----------------------------------
     auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
+                                                             model,
                                                              forceTrajectory);
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",

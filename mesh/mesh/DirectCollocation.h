@@ -21,6 +21,9 @@ struct OptimalControlSolution {
     std::vector<std::string> state_names;
     std::vector<std::string> control_names;
     double objective;
+    // TODO allow reading, to use this as an initial guess.
+    // related class: OptimalControlIterate
+
     void write(const std::string& filepath) const {
         std::ofstream f(filepath);
 

@@ -77,6 +77,7 @@ void testIsometricMuscleRoundtrip() {
         MuscleRedundancySolver mrs;
         mrs.setModel(model);
         mrs.setKinematicsData(states);
+        mrs.set_lowpass_cutoff_frequency_for_joint_moments(6);
         MuscleRedundancySolver::Solution solution = mrs.solve();
         solution.write("testSingleMuscle_isometric_muscle");
 

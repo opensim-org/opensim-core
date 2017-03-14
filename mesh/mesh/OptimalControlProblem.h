@@ -164,6 +164,7 @@ public:
         m_initial_time_bounds = initial_time;
         m_final_time_bounds = final_time;
     }
+    // TODO make sure initial and final bounds are within the bounds.
     void add_state(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
