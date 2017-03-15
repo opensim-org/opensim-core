@@ -20,3 +20,11 @@ mesh_add_test(test_path_constraints mesh)
 if(TOMU_WITH_SNOPT)
     mesh_add_test(test_snopt mesh) # snopt7_cpp
 endif()
+
+if(OpenMP_FOUND)
+    mesh_add_test(test_adolc_parallelized_openmp mesh)
+    target_compile_options(test_adolc_parallelized_openmp PRIVATE
+            "${OpenMP_CXX_FLAGS}")
+    set_property(TARGET test_adolc_parallelized_openmp APPEND PROPERTY
+            LINK_FLAGS "${OpenMP_CXX_FLAGS}")
+endif()

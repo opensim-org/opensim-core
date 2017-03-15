@@ -9,6 +9,10 @@ else()
 endif()
 cmake_minimum_required(VERSION 3.2)
 
+set(CMAKE_CXX_STANDARD 11)
+# Using c++11 is not optional.
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
 # TODO treat Ipopt and such as system headers to ignore their warnings.
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
