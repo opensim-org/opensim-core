@@ -580,10 +580,10 @@ void testLiftingMassAgainstGravity()
             const auto& actual = actualTable.getDependentColumnAtIndex(0);
             SimTK::Vector expected = interp(actualTable, expectedTable,
                                             expectedColumnLabel);
-            for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-                //std::cout << "DEBUG " << actual[i] << " " << expected[i]
-                //        << std::endl;
-            }
+            //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+            //    std::cout << "DEBUG " << actual[i] << " " << expected[i]
+            //            << std::endl;
+            //}
             SimTK_TEST_EQ_TOL(actual, expected, tol);
         };
         // A weaker check.
