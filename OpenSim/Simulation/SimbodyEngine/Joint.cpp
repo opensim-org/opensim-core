@@ -655,6 +655,84 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
         }
 
+        // Version 30514 removed the user-facing "reverse" property from Joint.
+        // The parent and child frames are swapped if a "reverse" element is
+        // found and its value is "true".
+        if (documentVersion < 30514) {
+            auto reverseElt = aNode.element_begin("reverse");
+
+            if (reverseElt != aNode.element_end()) {
+                bool swapFrames = false;
+                reverseElt->getValue().tryConvertToBool(swapFrames);
+
+                if (swapFrames) {
+                    std::string oldParentFrameName = "";
+                    std::string oldChildFrameName  = "";
+
+                    // Find names of parent and child frames. If more than one
+                    // "parent_frame" or "child_frame" element exists, keep the
+                    // first one. The "parent_frame" and "child_frame" elements
+                    // may be listed in either order.
+                    SimTK::Xml::element_iterator connectorsNode =
+                        aNode.element_begin("connectors");
+                    SimTK::Xml::element_iterator connectorElt = connectorsNode->
+                        element_begin("Connector_PhysicalFrame_");
+                    SimTK::Xml::element_iterator connecteeNameElt;
+
+                    while (connectorElt != connectorsNode->element_end())
+                    {
+                        if (connectorElt->getRequiredAttributeValue("name") ==
+                            "parent_frame" && oldParentFrameName.empty())
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->getValueAs<std::string>(
+                                oldParentFrameName);
+                        }
+                        else if (connectorElt->getRequiredAttributeValue("name")
+                                 == "child_frame" && oldChildFrameName.empty())
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->getValueAs<std::string>(
+                                oldChildFrameName);
+                        }
+                        ++connectorElt;
+                    }
+
+                    // Swap parent and child frame names. If more than one
+                    // "parent_frame" or "child_frame" element exists, assign
+                    // the same value to all such elements.
+                    connectorsNode = aNode.element_begin("connectors");
+                    connectorElt = connectorsNode->element_begin(
+                                   "Connector_PhysicalFrame_");
+
+                    while (connectorElt != connectorsNode->element_end())
+                    {
+                        if (connectorElt->getRequiredAttributeValue("name") ==
+                            "parent_frame")
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->setValue(oldChildFrameName);
+                        }
+                        else if (connectorElt->getRequiredAttributeValue("name")
+                                 == "child_frame")
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->setValue(oldParentFrameName);
+                        }
+                        ++connectorElt;
+                    }
+                }
+
+                // Remove "reverse" element regardless of its value (it is no
+                // longer a property of Joint).
+                aNode.eraseNode(reverseElt);
+            }
+        }
+
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
