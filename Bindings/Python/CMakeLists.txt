@@ -141,7 +141,8 @@ macro(OpenSimAddPythonModule)
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
     
-    target_link_libraries(${_libname} osimTools ${PYTHON_LIBRARIES})
+    target_link_libraries(${_libname}
+        osimTools osimExampleComponents ${PYTHON_LIBRARIES})
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -196,6 +197,7 @@ OpenSimAddPythonModule(MODULE simulation)
 OpenSimAddPythonModule(MODULE actuators)
 OpenSimAddPythonModule(MODULE analyses)
 OpenSimAddPythonModule(MODULE tools)
+OpenSimAddPythonModule(MODULE examplecomponents)
 
 
 # Copy files to create complete package in the build tree.

@@ -1,6 +1,6 @@
 
 subdirs(Common Simulation Actuators Analyses Utilities Tools Examples
-    Tests)
+    Tests ExampleComponents)
 
 add_subdirectory(Sandbox)
 

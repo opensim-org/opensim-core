@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  ToyReflexController.cpp                        *
+ *                      OpenSim:  ToyReflexController.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -75,8 +75,10 @@ void ToyReflexController::extendConnectToModel(Model &model)
         const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[cnt]);
         // control muscles only
         if(!musc){
-            cout << "ToyReflexController:: WARNING- controller assigned a non-muscle actuator ";
-            cout << actuators[cnt].getName() << " which will be ignored." << endl;
+            cout << "ToyReflexController:: WARNING- controller assigned a "
+                    "non-muscle actuator ";
+            cout << actuators[cnt].getName() << " which will be ignored."
+                 << endl;
             actuators.remove(cnt);
         }else
             cnt++;
@@ -93,8 +95,8 @@ void ToyReflexController::extendConnectToModel(Model &model)
  * @param s         current state of the system
  * @param controls  system wide controls to which this controller can add
  */
-void ToyReflexController::computeControls(const State& s, Vector &controls) const
-{   
+void ToyReflexController::computeControls(const State& s,
+                                          Vector &controls) const {   
     // get time
     s.getTime();
 
@@ -112,7 +114,8 @@ void ToyReflexController::computeControls(const State& s, Vector &controls) cons
         const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
         speed = musc->getLengtheningSpeed(s);
         // un-normalize muscle's maximum contraction velocity (fib_lengths/sec) 
-        max_speed = musc->getOptimalFiberLength()*musc->getMaxContractionVelocity();
+        max_speed =
+            musc->getOptimalFiberLength()*musc->getMaxContractionVelocity();
         control = 0.5*get_gain()*(fabs(speed)+speed)/max_speed;
 
         SimTK::Vector actControls(1,control);
