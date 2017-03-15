@@ -19,6 +19,7 @@
 								<translation>      -0.00320000       0.00490000      -0.00200000 </translation>
 								<active> true </active>
 								<quadrant> all </quadrant>
+                                <display_preference> 1 </display_preference>
 								<VisibleObject name="">
 									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
 									    .obj-->
@@ -68,7 +69,7 @@
 							</WrapCylinder>
 							<WrapEllipsoid name="wrapellipsoid">
                                 <color> 1 0.5 0 </color>
-                                <display_preference> 3 </display_preference>
+                                <display_preference> 2 </display_preference>
 								<xyz_body_rotation>       1.66070000      -0.01880000       0.03250000 </xyz_body_rotation>
 								<translation>      -0.00080000      -0.05980000      -0.00170000 </translation>
 								<active> true </active>
@@ -89,7 +90,7 @@
 									<show_axes> false </show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
 									    individual geometries-->
-									<display_preference> 4 </display_preference>
+									<display_preference> 3 </display_preference>
 								</VisibleObject>
 								<dimensions>       0.00200000       0.00700000       0.08000000 </dimensions>
 							</WrapEllipsoid>

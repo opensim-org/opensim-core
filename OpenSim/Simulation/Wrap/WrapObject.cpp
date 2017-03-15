@@ -190,22 +190,47 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             // transform), since it would be misleading to draw the wrap object
             // in the wrong place.
             SimTK::Xml::Element appearanceNode("Appearance"); 
+            // Use the correct defaults for WrapObject's appearance, which
+            // are different from the default Appearance.
+            SimTK::Xml::Element color("color");
+            color.setValue("0 1 1"); // SimTK::Cyan
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    color);
+            SimTK::Xml::Element defaultOpacity("opacity");
+            defaultOpacity.setValue("0.5");
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    defaultOpacity);
+            SimTK::Xml::Element defaultSurfProp("SurfaceProperties");
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    defaultSurfProp);
+            SimTK::Xml::Element rep("representation");
+            rep.setValue("3"); // VisualRepresentation::DrawSurface
+            defaultSurfProp.insertNodeAfter(defaultSurfProp.element_end(), rep);
+            bool appearanceModified = false;
 
             // color.
             SimTK::Xml::element_iterator colorIter =
                     node.element_begin("color");
             if (colorIter != node.element_end()) {
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
-                        node.removeNode(colorIter));
+                color.setValue(colorIter->getValue());
+                node.removeNode(colorIter);
+                appearanceModified = true;
             }
 
-            // display_preference -> visible
+            // display_preference -> visible, representation
             SimTK::Xml::Element visibleNode("visible");
             SimTK::Xml::element_iterator dispPrefIter =
                     node.element_begin("display_preference");
             if (dispPrefIter != node.element_end()) {
                 if (dispPrefIter->getValueAs<int>() == 0) {
                     visibleNode.setValue("false");
+                    appearanceModified = true;
+                } else if (dispPrefIter->getValueAs<int>() < 4) {
+                    // Set `representation`.
+                    // If the value is 4, we use 3 instead, which is the
+                    // default (above).
+                    rep.setValue(dispPrefIter->getValue());
+                    appearanceModified = true;
                 }
                 node.removeNode(dispPrefIter);
             }
@@ -217,6 +242,15 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                 if (voDispPrefIter != visObjIter->element_end()) {
                     if (voDispPrefIter->getValueAs<int>() == 0) {
                         visibleNode.setValue("false");
+                        appearanceModified = true;
+                    } else if (rep.getValue() == "3" && 
+                            voDispPrefIter->getValueAs<int>() < 4) {
+                        // Set `representation`.
+                        // The representation still has its default value,
+                        // meaning the user only specified the inner display
+                        // preference, therefore we should use this one.
+                        rep.setValue(voDispPrefIter->getValue());
+                        appearanceModified = true;
                     }
                 }
                 node.removeNode(visObjIter);
@@ -224,10 +258,11 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             if (visibleNode.getValue() != "") {
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                         visibleNode);
+                appearanceModified = true;
             }
 
             // Add Appearance to the WrapObject.
-            if (appearanceNode.hasNode()) {
+            if (appearanceModified) {
                 node.insertNodeAfter(node.element_end(), appearanceNode);
             }
         }
