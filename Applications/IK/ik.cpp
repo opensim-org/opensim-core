@@ -145,7 +145,8 @@ int main(int argc,char **argv)
 
     // PRINT MODEL INFORMATION
     //Model& model = ik.getModel();
-    //model.printBasicInfo(cout);
+    //model.finalizeFromProperties();
+    //model.printBasicInfo();
 
     // start timing
     std::clock_t startTime = std::clock();

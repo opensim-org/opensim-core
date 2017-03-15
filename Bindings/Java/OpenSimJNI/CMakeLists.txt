@@ -59,6 +59,11 @@ OpenSimGenerateJavaWrapper(actuators-analysis-tools
     ${SWIG_JAVA_ACTUATORS_CXX_FILE}
     ${SWIG_JAVA_ACTUATORS_H_FILE})
 
+OpenSimGenerateJavaWrapper(examplecomponents
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_INTERFACE_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE})
+
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
                     ${JAVA_INCLUDE_PATH}
@@ -75,11 +80,13 @@ add_library(osim${KIT}
     ${SWIG_JAVA_SIMULATION_CXX_FILE} 
     ${SWIG_JAVA_SIMULATION_H_FILE}
     ${SWIG_JAVA_ACTUATORS_CXX_FILE} 
-    ${SWIG_JAVA_ACTUATORS_H_FILE} 
+    ${SWIG_JAVA_ACTUATORS_H_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
 
-target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
+target_link_libraries(osim${KIT} osimTools osimSimmFileWriter osimExampleComponents)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -103,6 +110,7 @@ set_source_files_properties(
         ${SWIG_JAVA_COMMON_CXX_FILE}
         ${SWIG_JAVA_SIMULATION_CXX_FILE}
         ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+        ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
 if(${OPENSIM_USE_INSTALL_RPATH})

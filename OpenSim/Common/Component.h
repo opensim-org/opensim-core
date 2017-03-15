@@ -585,6 +585,20 @@ public:
         return ComponentList<T>(*this);
     }
 
+    /**
+     * Uses getComponentList<T>() to count the number of underlying
+     * subcomponents of the specified type.
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
+    template <typename T = Component>
+    unsigned countNumComponents() const {
+        unsigned count = 0u;
+        for (const auto& comp : getComponentList<T>())
+            ++count;
+        return count;
+    }
+
     /** Class that permits iterating over components/subcomponents (but does
      * not actually contain the components themselves). */
     template <typename T>
@@ -1642,20 +1656,22 @@ protected:
     @endcode   */
     virtual void extendAddComponent(Component* subcomponent) {};
 
-    /** Perform any time invariant calculation, data structure initializations or
-    other component configuration based on its properties necessary to form a  
-    functioning, yet not connected component. It also marks the Component
-    as up-to-date with its properties when complete. Do not perform any
-    configuration that depends on the SimTK::MultibodySystem; it is not
-    available at this point.
+    /** Perform any time-invariant calculations, data structure initializations,
+    or other configuration based on the component's properties to form a
+    functioning (but not yet connected) component. For example, each property
+    should be checked to ensure that its value is within an acceptable range.
+    When this method returns, the component will be marked as being up-to-date
+    with its properties. Do not perform any configuration that depends on the
+    SimTK::MultibodySystem; it is not available at this point.
 
     If you override this method, be sure to invoke the base class method first,
-        using code like this :
+    using code like this:
         @code
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
             // ... your code goes here
-            // ... initialize any internal data structures 
+            // ... catch invalid property values
+            // ... initialize any internal data structures
         }
         @endcode   */
     virtual void extendFinalizeFromProperties() {};
