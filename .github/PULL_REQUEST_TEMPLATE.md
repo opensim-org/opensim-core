@@ -6,7 +6,7 @@ Fixes issue #<issue_number>
 
 ### Looking for feedback on...
 
-### CHANGELOG.md (checklist)
+### CHANGELOG.md (choose one)
 
 - [ ] no need to update
 - [ ] updated
