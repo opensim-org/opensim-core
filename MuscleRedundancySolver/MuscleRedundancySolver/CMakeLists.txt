@@ -1,6 +1,7 @@
 
 add_library(osimMuscleRedundancySolver
-        MuscleRedundancySolver.h MuscleRedundancySolver.cpp)
+        MuscleRedundancySolver.h MuscleRedundancySolver.cpp
+        DeGroote2016Muscle.h)
 target_link_libraries(osimMuscleRedundancySolver osimTools mesh)
 # Do not generate warnings from OpenSim headers ("SYSTEM").
 target_include_directories(osimMuscleRedundancySolver
