@@ -320,7 +320,7 @@ interpret_iterate(const Eigen::VectorXd& x) const
 
 template<typename T>
 template<typename S>
-LowOrder<T>::template TrajectoryView<S>
+typename LowOrder<T>::template TrajectoryView<S>
 LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
@@ -334,7 +334,7 @@ LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-LowOrder<T>::template TrajectoryView<S>
+typename LowOrder<T>::template TrajectoryView<S>
 LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return TrajectoryView<S>(
