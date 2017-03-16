@@ -16,13 +16,22 @@ public:
                        const double& tendon_slack_length,
                        const double& pennation_angle_at_optimal,
                        const double& max_contraction_velocity) :
-            m_max_isometric_force(max_isometric_force),
-            m_optimal_fiber_length(optimal_fiber_length),
-            m_tendon_slack_length(tendon_slack_length),
-            m_pennation_angle_at_optimal(pennation_angle_at_optimal),
-            m_max_contraction_velocity(max_contraction_velocity) {
-        m_fiber_width = optimal_fiber_length*sin(pennation_angle_at_optimal);
+            _max_isometric_force(max_isometric_force),
+            _optimal_fiber_length(optimal_fiber_length),
+            _tendon_slack_length(tendon_slack_length),
+            _pennation_angle_at_optimal(pennation_angle_at_optimal),
+            _max_contraction_velocity(max_contraction_velocity) {
+        _fiber_width = optimal_fiber_length*sin(pennation_angle_at_optimal);
     }
+
+    double get_max_isometric_force() const { return _max_isometric_force; }
+    double get_optimal_fiber_length() const { return _optimal_fiber_length; }
+    double get_tendon_slack_length() const { return _tendon_slack_length; }
+    double get_pennation_angle_at_optimal() const
+    { return _pennation_angle_at_optimal; }
+    double get_max_contraction_velocity() const
+    { return _max_contraction_velocity; }
+
     T calcNormTendonForce(const T& musTenLength,
                           const T& normFiberLength) const {
         // Tendon force-length curve.
@@ -33,19 +42,17 @@ public:
         // TODO computing tendon force is why we'd want a single "continuous"
         // function rather than separate dynamics and path constraints
         // functions.
-        const T fibLen = normFiberLength * m_optimal_fiber_length;
-        // TODO cache this somewhere; this is constant.
-        const double fibWidth = m_optimal_fiber_length
-                * sin(m_pennation_angle_at_optimal);
+        const T fibLen = normFiberLength * _optimal_fiber_length;
         // Tendon length.
         // lT = lMT - sqrt(lM^2 - w^2)
-        const T tenLen = musTenLength - sqrt(fibLen*fibLen - fibWidth*fibWidth);
-        const T normTenLen = tenLen / m_tendon_slack_length;
+        const T tenLen = musTenLength
+                       - sqrt(fibLen*fibLen - _fiber_width*_fiber_width);
+        const T normTenLen = tenLen / _tendon_slack_length;
         return c1 * exp(kT * (normTenLen - c2)) - c3;
     }
     void calcTendonForce(const T& musTenLength, const T& normFiberLength,
                          T& tendonForce) const {
-        tendonForce = m_max_isometric_force
+        tendonForce = _max_isometric_force
                 * calcNormTendonForce(musTenLength, normFiberLength);
     }
     void calcActivationDynamics(const T& excitation, const T& activation,
@@ -67,7 +74,7 @@ public:
                                  const T& activation,
                                  const T& normFiberLength,
                                  const T& normFiberVelocity,
-                                 T& residual) const {
+                                 T& residual, T& normTendonForce) const {
         // Curve parameters.
         // -----------------
         // Active force-length curve.
@@ -96,18 +103,18 @@ public:
 
         // Intermediate quantities.
         // ------------------------
-        const T fibLength = normFiberLength*m_optimal_fiber_length;
+        const T fibLength = normFiberLength*_optimal_fiber_length;
         // Tendon length.
         // lT = lMT - sqrt(lM^2 - w^2)
         const T tenLength = musTenLength
-                - sqrt(fibLength*fibLength - m_fiber_width*m_fiber_width);
+                - sqrt(fibLength*fibLength - _fiber_width*_fiber_width);
         const T cosPenn = (musTenLength - tenLength)/fibLength;
 
         // Curves/multipliers.
         // -------------------
         // Tendon force-length curve.
-        const T normTenForce = calcNormTendonForce(musTenLength,
-                                                   normFiberLength);
+        normTendonForce = calcNormTendonForce(musTenLength,
+                                              normFiberLength);
 
         // Active force-length curve.
         // Sum of 3 gaussians.
@@ -132,7 +139,17 @@ public:
                         + passiveFibForce;
         const T normFibForceAlongTen = normFibForce*cosPenn;
 
-        residual = normFibForceAlongTen - normTenForce;
+        residual = normFibForceAlongTen - normTendonForce;
+    }
+    /// This alternative does not return normalized tendon force.
+    void calcEquilibriumResidual(const T& musTenLength,
+                                 const T& activation,
+                                 const T& normFiberLength,
+                                 const T& normFiberVelocity,
+                                 T& residual) const {
+        T normTendonForce;
+        calcEquilibriumResidual(musTenLength, activation, normFiberLength,
+                                normFiberVelocity, residual, normTendonForce);
     }
 
 protected:
@@ -143,12 +160,12 @@ protected:
 
 private:
     constexpr static double NaN = std::numeric_limits<double>::quiet_NaN();
-    double m_max_isometric_force = NaN;
-    double m_optimal_fiber_length = NaN;
-    double m_tendon_slack_length = NaN;
-    double m_pennation_angle_at_optimal = NaN;
-    double m_max_contraction_velocity = NaN;
-    double m_fiber_width = NaN;
+    double _max_isometric_force = NaN;
+    double _optimal_fiber_length = NaN;
+    double _tendon_slack_length = NaN;
+    double _pennation_angle_at_optimal = NaN;
+    double _max_contraction_velocity = NaN;
+    double _fiber_width = NaN;
 };
 
 #endif // MRS_DEGROOTE2016MUSCLE_H_

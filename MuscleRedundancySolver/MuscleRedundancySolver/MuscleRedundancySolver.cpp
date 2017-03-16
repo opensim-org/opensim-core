@@ -1,9 +1,10 @@
 
 #include "MuscleRedundancySolver.h"
+#include "DeGroote2016Muscle.h"
 
 #include <mesh.h>
 #include <OpenSim/OpenSim.h>
-// TODO should not be needed:
+// TODO should not be needed after updating to a newer OpenSim:
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
 #include <algorithm>
@@ -130,23 +131,18 @@ public:
             _numMuscles++;
         }
 
-        // Store muscle parameters.
-        _max_isometric_force.resize(_numMuscles);
-        _optimal_fiber_length.resize(_numMuscles);
-        _tendon_slack_length.resize(_numMuscles);
-        _max_contraction_velocity.resize(_numMuscles);
-        _pennation_angle_at_optimal.resize(_numMuscles);
+        // Create De Groote muscles.
+        _muscles.resize(_numMuscles);
         int i_mus = 0;
-        for (const auto& muscle : _model.getComponentList<Muscle>()) {
-            if (!muscle.get_appliesForce()) continue;
+        for (const auto& osimMus : _model.getComponentList<Muscle>()) {
+            if (!osimMus.get_appliesForce()) continue;
 
-            _max_isometric_force[i_mus] = muscle.get_max_isometric_force();
-            _optimal_fiber_length[i_mus] = muscle.get_optimal_fiber_length();
-            _tendon_slack_length[i_mus] = muscle.get_tendon_slack_length();
-            _max_contraction_velocity[i_mus] =
-                    muscle.get_max_contraction_velocity();
-            _pennation_angle_at_optimal[i_mus] =
-                    muscle.get_pennation_angle_at_optimal();
+            _muscles[i_mus] = DeGroote2016Muscle<T>(
+                    osimMus.get_max_isometric_force(),
+                    osimMus.get_optimal_fiber_length(),
+                    osimMus.get_tendon_slack_length(),
+                    osimMus.get_pennation_angle_at_optimal(),
+                    osimMus.get_max_contraction_velocity());
 
             i_mus++;
         }
@@ -211,11 +207,6 @@ public:
 
         // Actuator dynamics.
         // ==================
-        // Parameters.
-        // -----------
-        static const double actTimeConst   = 0.015;
-        static const double deactTimeConst = 0.060;
-        static const double tanhSteepness  = 0.1;
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
 
             // Unpack variables.
@@ -224,19 +215,12 @@ public:
             const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
 
             // Activation dynamics.
-            //     f = 0.5 tanh(b(e - a))
-            //     z = 0.5 + 1.5a
-            // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
-            const T timeConstFactor = 0.5 + 1.5 * activation;
-            const T tempAct = 1.0 / (actTimeConst * timeConstFactor);
-            const T tempDeact = timeConstFactor / deactTimeConst;
-            const T f = 0.5 * tanh(tanhSteepness * (excitation - activation));
-            const T timeConst = tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
-            derivatives[2 * i_act] = timeConst * (excitation - activation);
+            _muscles[i_act].calcActivationDynamics(excitation, activation,
+                                                   derivatives[2 * i_act]);
 
             // Fiber dynamics.
             derivatives[2 * i_act + 1] =
-                    _max_contraction_velocity[i_act] * normFibVel;
+                    _muscles[i_act].get_max_contraction_velocity() * normFibVel;
         }
 
         // TODO std::cout << "DEBUG dynamics " << derivatives << std::endl;
@@ -249,42 +233,6 @@ public:
             const override {
         // Actuator equilibrium.
         // =====================
-        // Parameters.
-        // -----------
-        // Tendon force-length curve.
-        static const double kT = 35;
-        static const double c1 = 0.200;
-        static const double c2 = 0.995;
-        static const double c3 = 0.250;
-
-        // Active force-length curve.
-        static const double b11 =  0.815;
-        static const double b21 =  1.055;
-        static const double b31 =  0.162;
-        static const double b41 =  0.063;
-        static const double b12 =  0.433;
-        static const double b22 =  0.717;
-        static const double b32 = -0.030;
-        static const double b42 =  0.200;
-        static const double b13 =  0.100;
-        static const double b23 =  1.000;
-        static const double b33 =  0.354;
-        static const double b43 =  0.000;
-
-        // Passive force-length curve.
-        static const double kPE = 4.0;
-        static const double e0  = 0.6;
-
-        // Muscle force-velocity.
-        static const double d1 = -0.318;
-        static const double d2 = -8.149;
-        static const double d3 = -0.374;
-        static const double d4 =  0.886;
-
-        auto gaussian = [](const T& x, const double& b1, const double& b2,
-                           const double& b3, const double& b4) -> T {
-            return b1 * exp((-0.5 * pow(x - b2, 2)) / (b3 + b4 * x));
-        };
 
         // Assemble generalized forces to apply to the joints.
         mesh::VectorX<T> genForce(_numDOFs);
@@ -299,59 +247,23 @@ public:
         // Muscles.
         // --------
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
-
             // Unpack variables.
-            // -----------------
             const T& activation = states[2 * i_act];
             const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
             const T& normFibLen = states[2 * i_act + 1];
 
-            // Intermediate quantities.
-            // ------------------------
-            const T fibLen = normFibLen * _optimal_fiber_length[i_act];
-            // TODO cache this somewhere; this is constant.
-            const double fibWidth = _optimal_fiber_length[i_act]
-                             * sin(_pennation_angle_at_optimal[i_act]);
-            // Tendon length.
+            // Get the total muscle-tendon length from the data.
             const T& musTenLen = _muscleTendonLength(i_act, i_mesh);
-            // lT = lMT - sqrt(lM^2 - w^2)
-            const T tenLen = musTenLen
-                           - sqrt(fibLen*fibLen - fibWidth*fibWidth);
-            const T normTenLen = tenLen / _tendon_slack_length[i_act];
-            const T cosPenn = (musTenLen - tenLen) / fibLen;
 
-            // Curves/multipliers.
-            // -------------------
-            // Tendon force-length curve.
-            const T normTenForce = c1 * exp(kT * (normTenLen - c2)) - c3;
+            T normTenForce;
+            _muscles[i_act].calcEquilibriumResidual(musTenLen, activation,
+                                                    normFibLen, normFibVel,
+                                                    constraints[i_act],
+                                                    normTenForce);
 
-            // Active force-length curve.
-            // Sum of 3 gaussians.
-            const T activeForceLenMult =
-                    gaussian(normFibLen, b11, b21, b31, b41) +
-                    gaussian(normFibLen, b12, b22, b32, b42) +
-                    gaussian(normFibLen, b13, b23, b33, b43);
-
-            // Passive force-length curve.
-            const T passiveFibForce = (exp(kPE * (normFibLen - 1)/ e0) - 1) /
-                    (exp(kPE) - 1);
-
-            // Force-velocity curve.
-            const T tempV = d2 * normFibVel + d3;
-            const T tempLogArg = tempV + sqrt(pow(tempV, 2) + 1);
-            const T forceVelMult = d1 * log(tempLogArg) + d4;
-
-            // Equilibrium constraint.
-            // -----------------------
-            const T normFibForce =
-                    activation * activeForceLenMult * forceVelMult
-                        + passiveFibForce;
-            const T normFibForceAlongTen = normFibForce * cosPenn;
-
-            constraints[i_act] = normFibForceAlongTen - normTenForce;
-
-            // Used to evaluate the joint moment error.
-            genForce[0] += -_max_isometric_force[i_act] * normTenForce;
+            // TODO use moment arms to take care of the sign.
+            genForce[0] += -
+                    _muscles[i_act].get_max_isometric_force() * normTenForce;
         }
 
 
@@ -453,7 +365,7 @@ private:
     std::vector<std::string> _muscleLabels;
     std::vector<std::string> _otherControlsLabels;
 
-    // Cached quantities to use during the optimization.
+    // "Experimental" data to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLength;
     // TODO moment arms.
@@ -461,16 +373,8 @@ private:
     // CoordinateActuator optimal forces.
     Eigen::VectorXd _optimal_force;
 
-    // Muscle parameters.
-    Eigen::VectorXd _max_isometric_force;
-    // Units: meters.
-    Eigen::VectorXd _optimal_fiber_length;
-    // Units: meters.
-    Eigen::VectorXd _tendon_slack_length;
-    // Units: optimal fiber lengths per second.
-    Eigen::VectorXd _max_contraction_velocity;
-    // Units: radians.
-    Eigen::VectorXd _pennation_angle_at_optimal;
+    // De Groote muscles.
+    std::vector<DeGroote2016Muscle<T>> _muscles;
 };
 
 MuscleRedundancySolver::MuscleRedundancySolver() {
